@@ -30,7 +30,7 @@ These extensions can be reused, cloned, and modified as needed.
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Last updated: March 28, 2023
+Last updated: November 12, 2024
 Interpretation and Definitions  
 
 ## Interpretation  
@@ -43,7 +43,7 @@ meaning regardless of whether they appear in singular or in plural.
 
 For the purposes of this Disclaimer:
   * Company (referred to as either "the Company", "We", "Us" or "Our" in this
-    Disclaimer) refers to Emporix AG, Fabrikstrasse 5, 6330 Cham, Switzerland.
+    Disclaimer) refers to Emporix AG, Bundesplatz 16, 6300 Zug.
   * Service refers to the Application.
   * You means the individual accessing the Service, or the company, or other
     legal entity on behalf of which such individual is accessing or using the
