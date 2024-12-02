@@ -1,7 +1,7 @@
 {
   "hosting": [
     {
-      "target": "algolia-synonyms-emporix",
+      "target": "emporix-algolia-synonyms",
       "public": "dist",
       "ignore": [
         "firebase.json",
