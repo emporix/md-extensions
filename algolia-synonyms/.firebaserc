@@ -1,5 +1,14 @@
 {
-  "projects": {
-    "default": "frontend-extensions"
-  }
+  "projects": {},
+  "targets": {
+    "frontend-extensions": {
+      "hosting": {
+        "emporix-algolia-synonyms": [
+          "emporix-algolia-synonyms"
+        ]
+      }
+    }
+  },
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
 }
