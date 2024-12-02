@@ -44,4 +44,3 @@ jobs:
           projectId: frontend-extensions
           channelId: live
           target: emporix-algolia-synonyms
-          entryPoint: ./algolia-synonyms
