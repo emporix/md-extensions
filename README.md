@@ -105,9 +105,8 @@ consequential, special or similar damages, even if advised of the possibility
 of such damages.
 # Contact Us  
 
-If you have any questions about this Disclaimer, You can contact Us:
-  * By email: 
+If you have any questions about this Disclaimer, you can contact us:
+  * by email: 
     * info@emporix.com
     * support@emporix.com
-  * By visiting this page on our website: <http://www.emporix.com>
-  * Ideas please submit under https://emporix.ideas.aha.io/ 
+  * through the [Emporix Support Portal](http://support.emporix.com) 
