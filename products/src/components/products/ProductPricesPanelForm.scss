@@ -1,0 +1,12 @@
+$brand-grey-300: #c0d0df;
+
+.price-panel {
+  height: 60px;
+  border-bottom: 1px solid $brand-grey-300;
+  &-title {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 20px;
+
+  }
+}

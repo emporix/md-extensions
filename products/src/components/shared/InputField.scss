@@ -1,0 +1,31 @@
+.input-field-wrapper {
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+
+  label {
+    color: black;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 0.875rem;
+    line-height: 1rem;
+  }
+
+  .p-inputtext,
+  .p-inputwrapper,
+  .p-dropdown,
+  .p-inputgroup,
+  .p-multiselect {
+    width: 100%;
+  }
+  &--checkbox-mode {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: flex-end;
+
+    >*:first-child {
+      margin-left: 8px;
+    }
+  }
+}

@@ -1,0 +1,33 @@
+$brand-grey-400: #99acbc;
+
+.tier-label {
+  margin-left: 72px;
+}
+
+.tier-index {
+  min-width: 56px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: $brand-grey-400;
+}
+
+.tier-unit {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: $brand-grey-400;
+}
+
+.tier-row-1 {
+  height: 32px;
+}
+
+.tier-input {
+  max-width: 120px;
+}
+
+.btn.icon.p-button-icon-only {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
