@@ -7,14 +7,10 @@ const Context = createContext<DashboardContextType>({
   tenant: '',
   language: '',
   token: '',
-  site: undefined,
   currency: undefined,
   contentLanguage: '',
   permissions: {},
   onError: () => {
-    // NOOP
-  },
-  onSiteChange: () => {
     // NOOP
   },
 })

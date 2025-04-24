@@ -22,14 +22,10 @@ const RemoteComponent = ({
     tenant: 'default',
     language: 'default',
     token: 'default',
-    site: undefined,
     currency: undefined,
     contentLanguage: 'default',
     permissions: {},
     onError: () => {
-      // NOOP
-    },
-    onSiteChange: () => {
       // NOOP
     },
   },

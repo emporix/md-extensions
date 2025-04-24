@@ -41,7 +41,7 @@ const AssetsViewer = (props: {
         selectedAssets.map(async (assetId) => await deleteAsset(assetId))
       )
       toast.showToast(
-        t('categories.media.toast.bulkDeleteSuccess', {
+        t('products.media.toast.bulkDeleteSuccess', {
           itemsLength: selectedAssets.length,
         }),
         '',

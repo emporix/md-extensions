@@ -29,12 +29,26 @@ export default tseslint
       },
       rules: {
         ...reactHooks.configs.recommended.rules,
+        'react-hooks/exhaustive-deps': 'off',
+        'prettier/prettier': true,
+        'react/prop-types': 'off',
         'react-refresh/only-export-components': [
           'warn',
           { allowConstantExport: true },
         ],
-        'prettier/prettier': true,
         'typescript-eslint/no-explicit-any': false,
+        '@typescript-eslint/no-misused-promises': 'off',
+        '@typescript-eslint/ban-ts-comment': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          {
+            argsIgnorePattern: '^_',
+            varsIgnorePattern: '^_',
+            caughtErrorsIgnorePattern: '^_',
+          },
+        ],
+        'no-console': ['error', { allow: ['error', 'info', 'warn'] }],
       },
     }
   )

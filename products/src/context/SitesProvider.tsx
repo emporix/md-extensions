@@ -23,7 +23,6 @@ export const useSites = () => useContext(SiteContext)
 export const SiteProvider: FC<Props> = ({ children }) => {
   const { token } = useDashboardContext()
   const { getSites } = useSitesApi()
-  const { onSiteChange } = useDashboardContext()
   const [sites, setSites] = useState<Site[]>([])
   const [currentSite, setCurrentSite] = useState<Site>()
 
@@ -46,7 +45,6 @@ export const SiteProvider: FC<Props> = ({ children }) => {
       return
     }
     setCurrentSite(site)
-    onSiteChange(site)
   }
 
   return (

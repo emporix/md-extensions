@@ -297,7 +297,7 @@ const MediaAssetUpload = (props: {
       <div className="card">
         <div className="grid grid-nogutter">
           <div className="col-6 module-subtitle mb-3 mt-5">
-            {t('categories.media.fileUploaderTitle')}
+            {t('products.media.fileUploaderTitle')}
           </div>
         </div>
 

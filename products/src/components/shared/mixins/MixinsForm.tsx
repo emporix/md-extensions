@@ -103,7 +103,7 @@ const ArrayComponent = ({
     if (fields.length === 0) {
       columns.push(
         <span key={item.key} className="schema-empty-array">
-          {t('schema.mixins.emptyArray', { type: item.arrayType })}
+          {t('products.mixins.emptyArray', { type: item.arrayType })}
         </span>
       )
     }

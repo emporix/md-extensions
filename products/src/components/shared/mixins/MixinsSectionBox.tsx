@@ -45,7 +45,7 @@ const MixinsSectionBox = (props: MixinsSectionBoxProps) => {
             <Button className="p-button-secondary" onClick={append}>
               <BsPlusLg size={16}></BsPlusLg>
               <label style={{ marginLeft: '1.5em' }}>
-                {t('schema.mixins.addNew')}
+                {t('products.mixins.addNew')}
               </label>
             </Button>
           </div>

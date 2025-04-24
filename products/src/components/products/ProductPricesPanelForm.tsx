@@ -309,7 +309,7 @@ const ProductPricesPanelForm = ({
 
           {selectedPriceModel?.id && (
             <Link
-              to={`/ price-models/${selectedPriceModel.id}`}
+              to={`/price-models/${selectedPriceModel.id}`}
               className={
                 'text-xs highlight-text flex align-items-center cursor-pointer'
               }

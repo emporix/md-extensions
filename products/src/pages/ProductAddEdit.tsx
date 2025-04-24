@@ -150,14 +150,14 @@ const ProductAddEditView = () => {
     } finally {
       blockPanel(false)
       setIsDeletingProduct(false)
-      navigate('/ products')
+      navigate('/products')
     }
   }, [id])
 
   return (
     <div className="module products">
       <div className="col-12">
-        <BackButton label={t('products.title')} to={'/ products'} />
+        <BackButton label={t('products.title')} to={'/products'} />
       </div>
       <>
         <HeaderSection

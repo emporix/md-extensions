@@ -152,6 +152,10 @@ export default {
         useAsMain: 'Use as main image',
         deleteImage: 'Delete image',
         addImage: 'Add image',
+        toast: {
+          bulkDeleteSuccess: '{{itemsLength}} images were deleted',
+        },
+        fileUploaderTitle: 'Upload images',
       },
       demo: {
         tabTitle: 'Demo feature',
@@ -234,6 +238,10 @@ export default {
   attributes: {
     willProduceVariants: 'Will produce variants with attributes: ',
     withValues: ' with values:',
+  },
+  mixins: {
+    addNew: 'Add New',
+    emptyArray: 'Array of {{type}} type is empty. No elements to display.',
   },
   actions: {
     delete: {
