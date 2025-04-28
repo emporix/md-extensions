@@ -1,0 +1,17 @@
+$brand-grey-300: #c0d0df;
+
+.edited-image {
+  width: min-content;
+  position: relative;
+  padding: 0.5rem;
+  border: 1px solid $brand-grey-300;
+  border-radius: 0.15rem;
+}
+
+.edited-image-delete {
+  position: absolute;
+  right: -0.75rem;
+  top: -0.625rem;
+  color: red;
+  cursor: pointer;
+}

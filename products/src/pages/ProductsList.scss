@@ -1,0 +1,51 @@
+$brand-grey-300: #c0d0df;
+
+.products {
+  &-table {
+    background-color: white;
+    border-left: 1px solid $brand-grey-300;
+    width: 100%;
+  }
+  .tree {
+    & .p-tree {
+      border-left: 0;
+      border-top: 1px solid $brand-grey-300;
+      border-bottom: 1px solid $brand-grey-300;
+      height: 100%;
+      padding: 0;
+      border-radius: 0;
+      font-family: 'Lato';
+      font-style: normal;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 17px;
+      letter-spacing: 0.5px;
+
+      & .p-tree-container {
+        & .p-treenode {
+          padding: 0;
+          & .p-treenode-content {
+            padding: 4px;
+            border-bottom: 0.7px solid #dde6ee;
+            border-radius: 0;
+            & .p-tree-toggler {
+              width: 18px;
+              height: 18px;
+              margin: 4px 4px;
+              color: #596168;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .thumb {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    background-color: #dde6ee;
+    width: 32px;
+    height: 32px;
+  }
+}

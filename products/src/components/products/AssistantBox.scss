@@ -1,0 +1,29 @@
+.assisted-box-row {
+  font-size: 0.875rem;
+  line-height: 1rem;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1500;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.progress {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1510;
+  transform: translateX(-50%) translateY(-50%);
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}

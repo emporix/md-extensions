@@ -1,0 +1,14 @@
+import { useNavigate } from 'react-router'
+import { NavigateOptions, To } from 'react-router'
+
+const useCustomNavigate = () => {
+  const navigate = useNavigate()
+
+  const customNavigate = (to: To, options?: NavigateOptions) => {
+    navigate(to, options)
+  }
+
+  return { navigate: customNavigate }
+}
+
+export default useCustomNavigate
