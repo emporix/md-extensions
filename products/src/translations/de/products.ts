@@ -21,6 +21,7 @@ export default {
       name: 'Filtern nach Produktname',
       code: 'Filtern vach Code',
       productType: 'Filtern nach Produkttyp',
+      type: 'Filtern nach Produkttyp',
     },
     actions: 'Aktionen',
   },

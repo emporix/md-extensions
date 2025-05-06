@@ -123,7 +123,7 @@ const ProductsTable = (props: ProductsTableProps) => {
         <DropdownFilter
           dropdownOptions={productTypesDropdownOptions}
           filterOptions={options}
-          placeholder={t('productTemplates.attributes.table.filter.type')}
+          placeholder={t('products.table.filters.type')}
         />
       )
     },

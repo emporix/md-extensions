@@ -21,6 +21,7 @@ export default {
       name: 'Filter by product name',
       code: 'Filter by code',
       productType: 'Filter by product type',
+      type: 'Filter by product type',
     },
     actions: 'Actions',
   },
