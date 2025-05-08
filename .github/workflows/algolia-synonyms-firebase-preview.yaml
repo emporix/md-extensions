@@ -11,7 +11,7 @@ on:
       - 'algolia-synonyms/**'
 
 jobs:
-  build_and_deploy:
+  build_and_deploy_preview:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -36,7 +36,7 @@ jobs:
 
       - run: yarn build:dev
       - uses: FirebaseExtended/action-hosting-deploy@v0
-        id: firebase-hosting-deploy-preview
+        id: firebase-preview
         with:
           firebaseToolsVersion: "12.9.1"
           firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}"
