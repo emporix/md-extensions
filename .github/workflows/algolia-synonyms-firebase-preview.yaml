@@ -22,10 +22,6 @@ jobs:
         node: [20.x]
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.branch }}
-
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
