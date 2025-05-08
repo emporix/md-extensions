@@ -1,0 +1,50 @@
+name: (products) Build and deploy (dev, stage) to Firebase
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'products/**'
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./products
+
+    strategy:
+      matrix:
+        node: [20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'yarn'
+          cache-dependency-path: ./products/yarn.lock
+
+      - run: yarn install
+
+      - run: yarn build:dev
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        id: firebase-hosting-deploy-dev
+        with:
+          firebaseToolsVersion: "12.9.1"
+          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}"
+          projectId: frontend-extensions-develop
+          channelId: live
+          target: emporix-products-develop
+
+      - run: yarn build:stage
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        id: firebase-hosting-deploy-stage
+        with:
+          firebaseToolsVersion: "12.9.1"
+          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_STAGE }}"
+          projectId: frontend-extensions-stage
+          channelId: live
+          target: emporix-products-stage
