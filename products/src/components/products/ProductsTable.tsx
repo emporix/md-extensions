@@ -21,7 +21,7 @@ import {
   DataTableFilterParams,
   DataTablePageParams,
   DataTableSortParams,
-} from 'primereact'
+} from 'primereact/datatable'
 import { numericColumn } from '../shared/NumericColumn'
 import { DisplayMixin, parseColumnProps } from '../../models/DisplayMixin'
 import { TableExtensions } from '../shared/TableExtensions'

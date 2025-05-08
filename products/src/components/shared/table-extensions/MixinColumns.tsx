@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useMixinColumns } from '../../../hooks/useMixinColumns.tsx'
 import { SchemaAttributeType, SchemaType } from '../../../models/Schema'
-import { Dropdown } from 'primereact'
+import { Dropdown } from 'primereact/dropdown'
 import { SelectedMixinRow } from './SelectedMixinRow'
 import { useConfiguration } from '../../../context/ConfigurationProvider'
 import AddCustomMixinDialog from './AddCustomMixinDialog'

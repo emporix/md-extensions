@@ -1,5 +1,5 @@
 import InputField from '../shared/InputField'
-import { Galleria } from 'primereact'
+import { Galleria } from 'primereact/galleria'
 import { useProductData } from '../../context/ProductDataProvider'
 import { Button } from 'primereact/button'
 import { useTranslation } from 'react-i18next'

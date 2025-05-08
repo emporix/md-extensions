@@ -6,11 +6,12 @@ import {
   DataTableSortParams,
 } from 'primereact/datatable'
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router-dom'
 import { Metadata } from '../models/Metadata'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedValue } from './useLocalizedValue'
-import { ColumnProps, FilterMatchMode } from 'primereact'
+import { ColumnProps } from 'primereact/column'
+import { FilterMatchMode } from 'primereact/api'
 
 export interface PaginationProps extends DataTableProps {
   currentPage: number

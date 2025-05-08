@@ -1,6 +1,6 @@
 import customize from '../../../assets/images/customize.svg'
 import { Button } from 'primereact/button'
-import { Link } from 'react-router'
+import { Link } from 'react-router-dom'
 
 interface EmptyTableProps {
   text: string

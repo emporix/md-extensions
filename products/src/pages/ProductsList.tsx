@@ -16,13 +16,14 @@ import HeaderSection from '../components/shared/HeaderSection'
 import { SplitButton } from 'primereact/splitbutton'
 import { ProductType } from '../models/Category'
 import useCustomNavigate from '../hooks/useCustomNavigate.tsx'
-import { DataTable, FileUpload } from 'primereact'
 import { Dialog } from 'primereact/dialog'
 import TableActions from '../components/shared/TableActions'
 import { useConfiguration } from '../context/ConfigurationProvider'
 import BatchDeleteButton from '../components/shared/BatchDeleteButton'
 import { DisplayMixin } from '../models/DisplayMixin.ts'
 import { useDashboardContext } from '../context/Dashboard.context.tsx'
+import { DataTable } from 'primereact/datatable'
+import { FileUpload } from 'primereact/fileupload'
 
 interface ProductsActionProps {
   productId: string

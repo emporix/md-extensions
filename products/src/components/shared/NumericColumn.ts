@@ -1,4 +1,4 @@
-import { ColumnAlignType } from 'primereact'
+import { ColumnAlignType } from 'primereact/column'
 
 export const numericColumn = {
   align: 'right' as ColumnAlignType,

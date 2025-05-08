@@ -1,4 +1,4 @@
-import { HashRouter, Navigate, Outlet, Route, Routes } from 'react-router'
+import { HashRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { AppState } from './models/AppState.model'
 import { DashboardProvider } from './context/Dashboard.context'
 import { useTranslation } from 'react-i18next'
