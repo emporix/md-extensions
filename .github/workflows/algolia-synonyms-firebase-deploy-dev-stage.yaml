@@ -1,15 +1,10 @@
-name: (algolia-synonyms) Build and deploy to Firebase
+name: (algolia-synonyms) Build and deploy (dev, stage) to Firebase
 on:
   push:
     branches:
       - master
     paths:
       - 'algolia-synonyms/**'
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: "The branch to run the workflow on"
-        default: "master"
 
 jobs:
   build_and_deploy:
@@ -35,12 +30,22 @@ jobs:
 
       - run: yarn install
 
-      - run: yarn build
+      - run: yarn build:dev
       - uses: FirebaseExtended/action-hosting-deploy@v0
         id: firebase-hosting-deploy
         with:
           firebaseToolsVersion: "12.9.1"
           firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA }}"
-          projectId: frontend-extensions
+          projectId: frontend-extensions-develop
           channelId: live
-          target: emporix-algolia-synonyms
+          target: emporix-algolia-synonyms-develop
+
+      - run: yarn build:stage
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        id: firebase-hosting-deploy
+        with:
+          firebaseToolsVersion: "12.9.1"
+          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA }}"
+          projectId: frontend-extensions-stage
+          channelId: live
+          target: emporix-algolia-synonyms-stage
