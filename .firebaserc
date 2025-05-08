@@ -7,6 +7,20 @@
           "emporix-algolia-synonyms"
         ]
       }
+    },
+    "frontend-extensions-stage": {
+      "hosting": {
+        "emporix-algolia-synonyms-stage": [
+          "emporix-algolia-synonyms-stage"
+        ]
+      }
+    },
+    "frontend-extensions-develop": {
+      "hosting": {
+        "emporix-algolia-synonyms-develop": [
+          "emporix-algolia-synonyms-develop"
+        ]
+      }
     }
   },
   "etags": {},
