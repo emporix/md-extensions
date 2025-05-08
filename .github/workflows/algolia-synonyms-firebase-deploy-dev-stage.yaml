@@ -35,7 +35,7 @@ jobs:
         id: firebase-hosting-deploy
         with:
           firebaseToolsVersion: "12.9.1"
-          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA }}"
+          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}"
           projectId: frontend-extensions-develop
           channelId: live
           target: emporix-algolia-synonyms-develop
@@ -45,7 +45,7 @@ jobs:
         id: firebase-hosting-deploy
         with:
           firebaseToolsVersion: "12.9.1"
-          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA }}"
+          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_STAGE }}"
           projectId: frontend-extensions-stage
           channelId: live
           target: emporix-algolia-synonyms-stage

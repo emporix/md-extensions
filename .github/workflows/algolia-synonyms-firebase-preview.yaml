@@ -39,7 +39,7 @@ jobs:
         id: firebase-hosting-deploy-preview
         with:
           firebaseToolsVersion: "12.9.1"
-          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA }}"
+          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}"
           projectId: frontend-extensions-develop
           target: emporix-algolia-synonyms-develop
           expires: 5d
