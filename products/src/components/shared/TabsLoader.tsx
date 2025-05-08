@@ -1,4 +1,4 @@
-import { Skeleton } from 'primereact'
+import { Skeleton } from 'primereact/skeleton'
 
 interface TabsSpinnerProps {
   className: string

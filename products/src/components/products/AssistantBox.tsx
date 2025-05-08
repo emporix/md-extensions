@@ -3,18 +3,16 @@ import { useTranslation } from 'react-i18next'
 import { Dialog } from 'primereact/dialog'
 import { Button } from 'primereact/button'
 import { useConfiguration } from '../../context/ConfigurationProvider'
-import {
-  InputTextarea,
-  MultiSelect,
-  ProgressSpinner,
-  RadioButton,
-} from 'primereact'
 import InputField from '../shared/InputField'
 import { useAiApi } from '../../api/ai'
 import { Controller, useForm } from 'react-hook-form'
 import { useToast } from '../../context/ToastProvider'
 import './AssistantBox.scss'
 import Localized from '../../models/Localized.ts'
+import { InputTextarea } from 'primereact/inputtextarea'
+import { RadioButton } from 'primereact/radiobutton'
+import { ProgressSpinner } from 'primereact/progressspinner'
+import { MultiSelect } from 'primereact/multiselect'
 
 interface AssistantBoxProps {
   productName: Localized

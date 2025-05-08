@@ -9,7 +9,6 @@ import { deepClone } from '../../helpers/utils'
 import EmptyTable from '../shared/EmptyTable'
 import { Button } from 'primereact/button'
 import { InputNumber } from 'primereact/inputnumber'
-import i18n from 'i18next'
 import Localized from '../../models/Localized'
 import useForm from '../../hooks/useForm.tsx'
 import { useUIBlocker } from '../../context/UIBlcoker'
@@ -17,6 +16,7 @@ import { useProductData } from '../../context/ProductDataProvider'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue.tsx'
 import MdDataTable from '../shared/MdDataTable'
 import { useDashboardContext } from '../../context/Dashboard.context.tsx'
+import i18n from '../../translations/i18n.ts'
 
 interface ProductBundleProps {
   bundledItems: BundledProduct[]

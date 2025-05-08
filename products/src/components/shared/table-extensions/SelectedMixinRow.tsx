@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { DisplayMixin } from '../../../models/DisplayMixin'
-import { Button, InputSwitch } from 'primereact'
+import { Button } from 'primereact/button'
+import { InputSwitch } from 'primereact/inputswitch'
 import { BsPencilFill } from 'react-icons/bs'
 import { useLocalizedValue } from '../../../hooks/useLocalizedValue'
 

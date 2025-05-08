@@ -1,5 +1,4 @@
-import { useNavigate } from 'react-router'
-import { NavigateOptions, To } from 'react-router'
+import { NavigateOptions, To, useNavigate } from 'react-router-dom'
 
 const useCustomNavigate = () => {
   const navigate = useNavigate()

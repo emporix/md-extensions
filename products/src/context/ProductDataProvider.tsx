@@ -15,7 +15,7 @@ import {
   ProductType,
 } from '../models/Category'
 import { useLocalizedValue } from '../hooks/useLocalizedValue.tsx'
-import { useParams, useSearchParams } from 'react-router'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { useProductsApi } from '../api/products'
 import Localized from '../models/Localized'
 import { useToast } from './ToastProvider'

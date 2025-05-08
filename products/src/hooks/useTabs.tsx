@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { TabViewTabChangeParams } from 'primereact/tabview'
-import { useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router-dom'
 
 export const useTabs = (tabs: string[], withQuery = true) => {
   const [activeTab, setActiveTab] = useState<string>()

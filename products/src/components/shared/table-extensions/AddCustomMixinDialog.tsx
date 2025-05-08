@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { InputText } from 'primereact/inputtext'
-import { Button, Dialog } from 'primereact'
+import { Button } from 'primereact/button'
+import { Dialog } from 'primereact/dialog'
 import { useTranslation } from 'react-i18next'
 import { SchemaAttributeType } from '../../../models/Schema'
 import InputField from '../InputField'

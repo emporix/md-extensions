@@ -1,5 +1,5 @@
 import { SchemaAttributeType } from './Schema'
-import { FilterMatchMode } from 'primereact'
+import { FilterMatchMode } from 'primereact/api'
 import { LocalizedInput } from '../hooks/useLocalizedValue'
 import Localized from './Localized.ts'
 

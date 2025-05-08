@@ -10,7 +10,7 @@ import InputField from '../shared/InputField'
 import { useProductData } from '../../context/ProductDataProvider'
 import { useUIBlocker } from '../../context/UIBlcoker'
 import { useSites } from '../../context/SitesProvider'
-import { InputText } from 'primereact'
+import { InputText } from 'primereact/inputtext'
 import { useDashboardContext } from '../../context/Dashboard.context.tsx'
 
 interface ProductSuppliersProps {
