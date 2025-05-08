@@ -1,0 +1,46 @@
+name: (algolia-synonyms) Firebase preview
+
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - opened
+      - synchronize
+    paths:
+      - 'algolia-synonyms/**'
+
+jobs:
+  build_and_deploy_preview:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./algolia-synonyms
+
+    strategy:
+      matrix:
+        node: [20.x]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'yarn'
+          cache-dependency-path: ./algolia-synonyms/yarn.lock
+
+      - run: yarn install
+
+      - run: yarn build:dev
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        id: firebase-preview
+        with:
+          firebaseToolsVersion: "12.9.1"
+          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}"
+          projectId: frontend-extensions-develop
+          target: emporix-algolia-synonyms-develop
+          expires: 5d
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
