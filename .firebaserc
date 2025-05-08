@@ -5,6 +5,9 @@
       "hosting": {
         "emporix-algolia-synonyms": [
           "emporix-algolia-synonyms"
+        ],
+        "emporix-products": [
+          "emporix-products"
         ]
       }
     },
@@ -12,6 +15,9 @@
       "hosting": {
         "emporix-algolia-synonyms-stage": [
           "emporix-algolia-synonyms-stage"
+        ],
+        "emporix-products-stage": [
+          "emporix-products-stage"
         ]
       }
     },
@@ -19,6 +25,9 @@
       "hosting": {
         "emporix-algolia-synonyms-develop": [
           "emporix-algolia-synonyms-develop"
+        ],
+        "emporix-products-develop": [
+          "emporix-products-develop"
         ]
       }
     }
