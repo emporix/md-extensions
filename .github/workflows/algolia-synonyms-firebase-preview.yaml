@@ -1,4 +1,4 @@
-name: (algolia-synonyms) Build and deploy (dev, stage) to Firebase
+name: (algolia-synonyms) Firebase preview
 
 on:
   pull_request:
