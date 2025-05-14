@@ -12,5 +12,5 @@ export type AppState = {
   currency: Entry | undefined
   contentLanguage: string
   permissions: Permissions
-  onError: (originalRequest: any, error: any) => void
+  onError: (error: unknown) => void
 }

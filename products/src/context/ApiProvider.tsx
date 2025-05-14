@@ -23,9 +23,8 @@ const ApiProvider = ({ children }: Props) => {
     api.interceptors.response.use(
       (response) => response,
       async (error: AxiosError<ErrorResponse>) => {
-        const originalRequest = error.config
         if (error?.response?.status === 401) {
-          onError(originalRequest, error)
+          onError(error)
         }
         return Promise.reject(error)
       }
