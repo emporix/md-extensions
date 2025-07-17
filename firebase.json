@@ -177,8 +177,8 @@
       } ]
     },
     {
-      "target": "emporix-usage-statistics-develop",
-      "public": "usage-statistics/dist",
+      "target": "emporix-statistics-develop",
+      "public": "statistics/dist",
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -199,8 +199,8 @@
       } ]
     },
     {
-      "target": "emporix-usage-statistics-stage",
-      "public": "usage-statistics/dist",
+      "target": "emporix-statistics-stage",
+      "public": "statistics/dist",
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -221,8 +221,8 @@
       } ]
     },
     {
-      "target": "emporix-usage-statistics",
-      "public": "usage-statistics/dist",
+      "target": "emporix-statistics",
+      "public": "statistics/dist",
       "ignore": [
         "firebase.json",
         "**/.*",
