@@ -31,7 +31,8 @@ export const fetchAllTenants = async (tenant: string, token: string) => {
 }
 
 export const fetchStatistics = async (
-  tenant: string,
+  authTenant: string,
+  dataTenant: string,
   token: string,
   filters: StatisticsFilters
 ) => {
@@ -43,16 +44,17 @@ export const fetchStatistics = async (
   })
   
   const statistics = await callApi<ApiCallsStatisticsResponse>(
-    `/statistics/tenants/${tenant}/usage/apicalls?${params.toString()}`,
+    `/statistics/tenants/${dataTenant}/usage/apicalls?${params.toString()}`,
     'GET',
-    tenant,
+    authTenant,
     token
   )
   return statistics
 }
 
 export const fetchMakeStatistics = async (
-  tenant: string,
+  authTenant: string,
+  dataTenant: string,
   token: string,
   filters: StatisticsFilters
 ) => {
@@ -64,9 +66,9 @@ export const fetchMakeStatistics = async (
   })
   
   const statistics = await callApi<MakeStatisticsResponse>(
-    `/statistics/${tenant}/usages/make?${params.toString()}`,
+    `/statistics/${dataTenant}/usages/make?${params.toString()}`,
     'GET',
-    tenant,
+    authTenant,
     token
   )
   return statistics

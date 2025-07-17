@@ -41,7 +41,7 @@ const Statistics: React.FC = () => {
 
   const fetchApiCallsData = async (filters: StatisticsFilters) => {
     try {
-      const apiData = await fetchStatistics(selectedTenant, token, filters)
+      const apiData = await fetchStatistics(tenant, selectedTenant, token, filters)
       setStatisticsData(apiData)
       
       // Update summary with actual API data
@@ -59,7 +59,7 @@ const Statistics: React.FC = () => {
 
   const fetchMakeData = async (filters: StatisticsFilters) => {
     try {
-      const makeData = await fetchMakeStatistics(selectedTenant, token, filters)
+      const makeData = await fetchMakeStatistics(tenant, selectedTenant, token, filters)
       setMakeStatisticsData(makeData)
       
       // Update Make summary with actual data - Make uses different field names
