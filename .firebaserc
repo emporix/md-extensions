@@ -9,6 +9,9 @@
         "emporix-products": [
           "emporix-products"
         ],
+        "emporix-usage-statistics": [
+          "emporix-usage-statistics"
+        ],
         "emporix-site-settings": [
           "emporix-site-settings"
         ]
@@ -22,6 +25,9 @@
         "emporix-products-stage": [
           "emporix-products-stage"
         ],
+        "emporix-usage-statistics-stage": [
+          "emporix-usage-statistics-stage"
+        ],
         "emporix-site-settings-stage": [
           "emporix-site-settings-stage"
         ]
@@ -34,6 +40,9 @@
         ],
         "emporix-products-develop": [
           "emporix-products-develop"
+        ],
+        "emporix-usage-statistics-develop": [
+          "emporix-usage-statistics-develop"
         ],
         "emporix-site-settings-develop": [
           "emporix-site-settings-develop"
