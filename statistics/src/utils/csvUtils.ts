@@ -1,4 +1,4 @@
-import { ApiCallsStatisticsResponse, MakeStatisticsResponse } from '../models/Statistics.model'
+import { ApiCallsStatisticsResponse, MakeStatisticsResponse, DatabaseStatisticsResponse, CloudinaryStatisticsResponse } from '../models/Statistics.model'
 
 // Utility function to download CSV file
 export const downloadCSV = (csvContent: string, filename: string) => {
@@ -198,6 +198,174 @@ export const convertMultiTenantMakeToCSV = (
         cumulativeDataTransfer.toString()
       ]
       csvRows.push(row.join(','))
+    })
+  })
+
+  return csvRows.join('\n')
+} 
+
+// Convert Database data to CSV format
+export const convertDatabaseToCSV = (
+  data: DatabaseStatisticsResponse | null,
+  tenantName: string = 'Unknown'
+): string => {
+  if (!data || !data.tenantUsage?.range?.values) {
+    return 'No data available'
+  }
+
+  const headers = ['Date', 'Tenant', 'Storage (GB)', 'Cumulative Storage (GB)']
+  const csvRows = [headers.join(',')]
+
+  let cumulativeStorage = 0
+  
+  // Sort by date to ensure proper cumulative calculation
+  const sortedValues = [...data.tenantUsage.range.values].sort((a, b) => 
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  )
+
+  sortedValues.forEach(item => {
+    // Convert bytes to GB (1 GB = 1,073,741,824 bytes)
+    const storageGB = (item.totalBytes || 0) / (1024 * 1024 * 1024)
+    cumulativeStorage += storageGB
+    
+    const row = [
+      item.date,
+      tenantName,
+      storageGB.toFixed(3),
+      cumulativeStorage.toFixed(3)
+    ]
+    csvRows.push(row.join(','))
+  })
+
+  return csvRows.join('\n')
+}
+
+// Convert multi-tenant Database data to CSV format
+export const convertMultiTenantDatabaseToCSV = (
+  tenantData: Record<string, DatabaseStatisticsResponse>,
+  selectedTenants: string[]
+): string => {
+  const headers = ['Date', 'Tenant', 'Storage (GB)']
+  const csvRows = [headers.join(',')]
+
+  // Create a map to store all dates
+  const allDates = new Set<string>()
+  
+  // Collect all unique dates
+  selectedTenants.forEach(tenant => {
+    const data = tenantData[tenant]
+    if (data?.tenantUsage?.range?.values) {
+      data.tenantUsage.range.values.forEach(item => {
+        allDates.add(item.date)
+      })
+    }
+  })
+
+  // Sort dates
+  const sortedDates = Array.from(allDates).sort((a, b) => 
+    new Date(a).getTime() - new Date(b).getTime()
+  )
+
+  // For each date, add rows for each tenant
+  sortedDates.forEach(date => {
+    selectedTenants.forEach(tenant => {
+      const data = tenantData[tenant]
+      if (data?.tenantUsage?.range?.values) {
+        const dateItem = data.tenantUsage.range.values.find(item => item.date === date)
+        if (dateItem) {
+          // Convert bytes to GB
+          const storageGB = (dateItem.totalBytes || 0) / (1024 * 1024 * 1024)
+          const row = [date, tenant, storageGB.toFixed(3)]
+          csvRows.push(row.join(','))
+        }
+      }
+    })
+  })
+
+  return csvRows.join('\n')
+} 
+
+// Convert Cloudinary data to CSV format
+export const convertCloudinaryToCSV = (
+  data: CloudinaryStatisticsResponse | null,
+  tenantName: string = 'Unknown'
+): string => {
+  if (!data || !data.tenantUsage?.range?.values) {
+    return 'No data available'
+  }
+
+  const headers = ['Date', 'Tenant', 'Storage (GB)', 'Cumulative Storage (GB)', 'Number of Objects', 'Cumulative Objects']
+  const csvRows = [headers.join(',')]
+
+  let cumulativeStorage = 0
+  let cumulativeObjects = 0
+  
+  // Sort by date to ensure proper cumulative calculation
+  const sortedValues = [...data.tenantUsage.range.values].sort((a, b) => 
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  )
+
+  sortedValues.forEach(item => {
+    // Convert bytes to GB (1 GB = 1,073,741,824 bytes)
+    const storageGB = (item.storageBytes || 0) / (1024 * 1024 * 1024)
+    const objects = item.numberOfObjects || 0
+    cumulativeStorage += storageGB
+    cumulativeObjects += objects
+    
+    const row = [
+      item.date,
+      tenantName,
+      storageGB.toFixed(3),
+      cumulativeStorage.toFixed(3),
+      objects.toString(),
+      cumulativeObjects.toString()
+    ]
+    csvRows.push(row.join(','))
+  })
+
+  return csvRows.join('\n')
+}
+
+// Convert multi-tenant Cloudinary data to CSV format
+export const convertMultiTenantCloudinaryToCSV = (
+  tenantData: Record<string, CloudinaryStatisticsResponse>,
+  selectedTenants: string[]
+): string => {
+  const headers = ['Date', 'Tenant', 'Storage (GB)', 'Number of Objects']
+  const csvRows = [headers.join(',')]
+
+  // Create a map to store all dates
+  const allDates = new Set<string>()
+  
+  // Collect all unique dates
+  selectedTenants.forEach(tenant => {
+    const data = tenantData[tenant]
+    if (data?.tenantUsage?.range?.values) {
+      data.tenantUsage.range.values.forEach(item => {
+        allDates.add(item.date)
+      })
+    }
+  })
+
+  // Sort dates
+  const sortedDates = Array.from(allDates).sort((a, b) => 
+    new Date(a).getTime() - new Date(b).getTime()
+  )
+
+  // For each date, add rows for each tenant
+  sortedDates.forEach(date => {
+    selectedTenants.forEach(tenant => {
+      const data = tenantData[tenant]
+      if (data?.tenantUsage?.range?.values) {
+        const dateItem = data.tenantUsage.range.values.find(item => item.date === date)
+        if (dateItem) {
+          // Convert bytes to GB
+          const storageGB = (dateItem.storageBytes || 0) / (1024 * 1024 * 1024)
+          const objects = dateItem.numberOfObjects || 0
+          const row = [date, tenant, storageGB.toFixed(3), objects.toString()]
+          csvRows.push(row.join(','))
+        }
+      }
     })
   })
 

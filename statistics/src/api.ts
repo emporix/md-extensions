@@ -1,4 +1,4 @@
-import { ApiCallsStatisticsResponse, MakeStatisticsResponse, StatisticsFilters, UserTenantsResponse } from './models/Statistics.model'
+import { ApiCallsStatisticsResponse, MakeStatisticsResponse, DatabaseStatisticsResponse, CloudinaryStatisticsResponse, StatisticsFilters, UserTenantsResponse } from './models/Statistics.model'
 
 export const callApi = async <T, R = undefined>(
   path: string,
@@ -85,6 +85,58 @@ export const fetchMakeStatistics = async (
   
   const statistics = await callApi<MakeStatisticsResponse>(
     `/statistics/${dataTenant}/usages/make?${params.toString()}`,
+    'GET',
+    headerTenant,
+    token
+  )
+  return statistics
+}
+
+export const fetchDatabaseStatistics = async (
+  authTenant: string,
+  dataTenant: string,
+  token: string,
+  filters: StatisticsFilters
+) => {
+  const { timeUnit, startTime, endTime } = filters
+  const params = new URLSearchParams({
+    timeunit: timeUnit,
+    startTime,
+    endTime,
+  })
+  
+  // Special tenants use authTenant for header, others use dataTenant
+  const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
+  const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
+  
+  const statistics = await callApi<DatabaseStatisticsResponse>(
+    `/statistics/${dataTenant}/usages/mongodbStorage?${params.toString()}`,
+    'GET',
+    headerTenant,
+    token
+  )
+  return statistics
+}
+
+export const fetchCloudinaryStatistics = async (
+  authTenant: string,
+  dataTenant: string,
+  token: string,
+  filters: StatisticsFilters
+) => {
+  const { timeUnit, startTime, endTime } = filters
+  const params = new URLSearchParams({
+    timeunit: timeUnit,
+    startTime,
+    endTime,
+  })
+  
+  // Special tenants use authTenant for header, others use dataTenant
+  const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
+  const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
+  
+  const statistics = await callApi<CloudinaryStatisticsResponse>(
+    `/statistics/${dataTenant}/usages/cloudinary?${params.toString()}`,
     'GET',
     headerTenant,
     token

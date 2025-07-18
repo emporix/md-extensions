@@ -5,28 +5,33 @@ import { StatisticsSummary } from '../models/Statistics.model'
 interface SummaryCardsProps {
   summary: StatisticsSummary
   agreementLabel: string
+  unit?: string // Optional unit to append to values (e.g., "GB")
 }
 
-const SummaryCards: React.FC<SummaryCardsProps> = ({ summary, agreementLabel }) => {
+const SummaryCards: React.FC<SummaryCardsProps> = ({ summary, agreementLabel, unit }) => {
   const { t } = useTranslation()
 
   const formatNumber = (num: number | undefined) => {
     if (num === undefined || num === null || isNaN(num)) {
-      return '0'
+      return unit ? `0 ${unit}` : '0'
     }
-    return num.toLocaleString()
+    const formatted = num.toLocaleString()
+    return unit ? `${formatted} ${unit}` : formatted
   }
 
   const formatLargeNumber = (num: number | undefined) => {
     if (num === undefined || num === null || isNaN(num)) {
-      return '0'
+      return unit ? `0 ${unit}` : '0'
     }
+    let formatted = ''
     if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + 'M'
+      formatted = (num / 1000000).toFixed(1) + 'M'
     } else if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'K'
+      formatted = (num / 1000).toFixed(1) + 'K'
+    } else {
+      formatted = num.toLocaleString()
     }
-    return num.toLocaleString()
+    return unit ? `${formatted} ${unit}` : formatted
   }
 
   return (

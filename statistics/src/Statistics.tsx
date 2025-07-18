@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { TabView, TabPanel } from 'primereact/tabview'
 import { useTranslation } from 'react-i18next'
 import { useDashboardContext } from './context/Dashboard.context'
-import { fetchStatistics, fetchMakeStatistics } from './api'
-import { ApiCallsStatisticsResponse, MakeStatisticsResponse, StatisticsFilters, StatisticsSummary, TimeUnit } from './models/Statistics.model'
+import { fetchStatistics, fetchMakeStatistics, fetchDatabaseStatistics, fetchCloudinaryStatistics } from './api'
+import { ApiCallsStatisticsResponse, MakeStatisticsResponse, DatabaseStatisticsResponse, CloudinaryStatisticsResponse, StatisticsFilters, StatisticsSummary, TimeUnit } from './models/Statistics.model'
 import ApiCallsView from './views/ApiCallsView'
 import MakeView from './views/MakeView'
 import AiView from './views/AiView'
@@ -13,13 +13,17 @@ import WebhooksView from './views/WebhooksView'
 import TenantSelector from './components/TenantSelector'
 import SharedControls from './components/SharedControls'
 import MultiTenantStatisticsTab from './components/MultiTenantStatisticsTab'
-import { aggregateApiCallsData, aggregateMakeData } from './utils/aggregationUtils'
+import { aggregateApiCallsData, aggregateMakeData, aggregateDatabaseData, aggregateCloudinaryData } from './utils/aggregationUtils'
 import { 
   downloadCSV, 
   convertApiCallsToCSV, 
   convertMakeToCSV,
+  convertDatabaseToCSV,
+  convertCloudinaryToCSV,
   convertMultiTenantApiCallsToCSV,
-  convertMultiTenantMakeToCSV 
+  convertMultiTenantMakeToCSV,
+  convertMultiTenantDatabaseToCSV,
+  convertMultiTenantCloudinaryToCSV 
 } from './utils/csvUtils'
 
 const Statistics: React.FC = () => {
@@ -33,8 +37,12 @@ const Statistics: React.FC = () => {
   const [activeTabIndex, setActiveTabIndex] = useState(0)
   const [statisticsData, setStatisticsData] = useState<Record<string, ApiCallsStatisticsResponse>>({})
   const [makeStatisticsData, setMakeStatisticsData] = useState<Record<string, MakeStatisticsResponse>>({})
+  const [databaseStatisticsData, setDatabaseStatisticsData] = useState<Record<string, DatabaseStatisticsResponse>>({})
+  const [cloudinaryStatisticsData, setCloudinaryStatisticsData] = useState<Record<string, CloudinaryStatisticsResponse>>({})
   const [summary, setSummary] = useState<Record<string, StatisticsSummary>>({})
   const [makeSummary, setMakeSummary] = useState<Record<string, StatisticsSummary>>({})
+  const [databaseSummary, setDatabaseSummary] = useState<Record<string, StatisticsSummary>>({})
+  const [cloudinarySummary, setCloudinarySummary] = useState<Record<string, StatisticsSummary>>({})
   const [loadedTabs, setLoadedTabs] = useState<Set<number>>(new Set([0]))
 
   const fetchApiCallsData = async (filters: StatisticsFilters) => {
@@ -89,6 +97,58 @@ const Statistics: React.FC = () => {
     }
   }
 
+  const fetchDatabaseData = async (filters: StatisticsFilters) => {
+    try {
+      const newDatabaseStatisticsData: Record<string, DatabaseStatisticsResponse> = {}
+      const newDatabaseSummary: Record<string, StatisticsSummary> = {}
+
+      for (const selectedTenant of selectedTenants) {
+        const databaseData = await fetchDatabaseStatistics(tenant, selectedTenant, token, filters)
+        newDatabaseStatisticsData[selectedTenant] = databaseData
+
+                 // Update Database summary with actual data
+         newDatabaseSummary[selectedTenant] = {
+           yesterday: databaseData?.tenantUsage?.summary?.totalBytesLastDay || 0,
+           thisWeek: databaseData?.tenantUsage?.summary?.totalBytesThisWeek || 0,
+           thisMonth: databaseData?.tenantUsage?.summary?.totalBytesThisMonth || 0,
+           thisYear: databaseData?.tenantUsage?.summary?.totalBytesThisYear || 0,
+           agreedAnnual: databaseData?.maxAllowedUsage || 0,
+         }
+      }
+
+      setDatabaseStatisticsData(newDatabaseStatisticsData)
+      setDatabaseSummary(newDatabaseSummary)
+    } catch (error) {
+      console.error('Error fetching Database statistics:', error)
+    }
+  }
+
+  const fetchCloudinaryData = async (filters: StatisticsFilters) => {
+    try {
+      const newCloudinaryStatisticsData: Record<string, CloudinaryStatisticsResponse> = {}
+      const newCloudinarySummary: Record<string, StatisticsSummary> = {}
+
+      for (const selectedTenant of selectedTenants) {
+        const cloudinaryData = await fetchCloudinaryStatistics(tenant, selectedTenant, token, filters)
+        newCloudinaryStatisticsData[selectedTenant] = cloudinaryData
+
+                 // Update Cloudinary summary with actual data
+         newCloudinarySummary[selectedTenant] = {
+           yesterday: cloudinaryData?.tenantUsage?.summary?.storageBytesLastDay || 0,
+           thisWeek: cloudinaryData?.tenantUsage?.summary?.storageBytesThisWeek || 0,
+           thisMonth: cloudinaryData?.tenantUsage?.summary?.storageBytesThisMonth || 0,
+           thisYear: cloudinaryData?.tenantUsage?.summary?.storageBytesThisYear || 0,
+           agreedAnnual: cloudinaryData?.maxAllowedUsage || 0,
+         }
+      }
+
+      setCloudinaryStatisticsData(newCloudinaryStatisticsData)
+      setCloudinarySummary(newCloudinarySummary)
+    } catch (error) {
+      console.error('Error fetching Cloudinary statistics:', error)
+    }
+  }
+
   const fetchDataForTab = async (tabIndex: number) => {
     setIsLoading(true)
     
@@ -105,6 +165,12 @@ const Statistics: React.FC = () => {
           break
         case 1: // Make
           await fetchMakeData(filters)
+          break
+        case 2: // Database
+          await fetchDatabaseData(filters)
+          break
+        case 3: // Cloudinary
+          await fetchCloudinaryData(filters)
           break
         // Add more cases for other tabs when implemented
         default:
@@ -173,6 +239,16 @@ const Statistics: React.FC = () => {
     return aggregateMakeData(selectedTenants, makeStatisticsData, makeSummary)
   }
 
+  // Helper function to aggregate Database data across all selected tenants
+  const getAggregatedDatabaseData = () => {
+    return aggregateDatabaseData(selectedTenants, databaseStatisticsData, databaseSummary)
+  }
+
+  // Helper function to aggregate Cloudinary data across all selected tenants
+  const getAggregatedCloudinaryData = () => {
+    return aggregateCloudinaryData(selectedTenants, cloudinaryStatisticsData, cloudinarySummary)
+  }
+
   // CSV Download handlers
   const handleDownloadApiCallsCSV = (tenantName: string = 'Unknown') => {
     const tenantData = tenantName === 'Total (All Selected Tenants)' 
@@ -206,6 +282,42 @@ const Statistics: React.FC = () => {
       // Download single tenant CSV
       const csvContent = convertMakeToCSV(tenantData, tenantName)
       const filename = `make-statistics-${tenantName}-${new Date().toISOString().split('T')[0]}.csv`
+      downloadCSV(csvContent, filename)
+    }
+  }
+
+  const handleDownloadDatabaseCSV = (tenantName: string = 'Unknown') => {
+    const tenantData = tenantName === 'Total (All Selected Tenants)' 
+      ? getAggregatedDatabaseData().data
+      : databaseStatisticsData[tenantName]
+    
+    if (tenantName === 'Total (All Selected Tenants)' && selectedTenants.length > 1) {
+      // Download multi-tenant CSV
+      const csvContent = convertMultiTenantDatabaseToCSV(databaseStatisticsData, selectedTenants)
+      const filename = `database-statistics-all-tenants-${new Date().toISOString().split('T')[0]}.csv`
+      downloadCSV(csvContent, filename)
+    } else {
+      // Download single tenant CSV
+      const csvContent = convertDatabaseToCSV(tenantData, tenantName)
+      const filename = `database-statistics-${tenantName}-${new Date().toISOString().split('T')[0]}.csv`
+      downloadCSV(csvContent, filename)
+    }
+  }
+
+  const handleDownloadCloudinaryCSV = (tenantName: string = 'Unknown') => {
+    const tenantData = tenantName === 'Total (All Selected Tenants)' 
+      ? getAggregatedCloudinaryData().data
+      : cloudinaryStatisticsData[tenantName]
+    
+    if (tenantName === 'Total (All Selected Tenants)' && selectedTenants.length > 1) {
+      // Download multi-tenant CSV
+      const csvContent = convertMultiTenantCloudinaryToCSV(cloudinaryStatisticsData, selectedTenants)
+      const filename = `cloudinary-statistics-all-tenants-${new Date().toISOString().split('T')[0]}.csv`
+      downloadCSV(csvContent, filename)
+    } else {
+      // Download single tenant CSV
+      const csvContent = convertCloudinaryToCSV(tenantData, tenantName)
+      const filename = `cloudinary-statistics-${tenantName}-${new Date().toISOString().split('T')[0]}.csv`
       downloadCSV(csvContent, filename)
     }
   }
@@ -263,6 +375,58 @@ const Statistics: React.FC = () => {
     )
   }
 
+  const createDatabaseRenderer = (tenantName: string) => (
+    data: DatabaseStatisticsResponse | null, 
+    summary: StatisticsSummary, 
+    hideControls: boolean, 
+    isLoadingParam: boolean
+  ) => {
+    const displayName = data?.tenant === 'aggregated' ? 'Total (All Selected Tenants)' : tenantName
+    
+    return (
+      <DatabaseView
+        data={data}
+        summary={summary}
+        timeUnit={timeUnit}
+        startDate={startDate}
+        endDate={endDate}
+        isLoading={isLoadingParam}
+        onTimeUnitChange={handleTimeUnitChange}
+        onStartDateChange={handleStartDateChange}
+        onEndDateChange={handleEndDateChange}
+        hideControls={hideControls}
+        onDownloadCSV={() => handleDownloadDatabaseCSV(displayName)}
+        tenantName={displayName}
+      />
+    )
+  }
+
+  const createCloudinaryRenderer = (tenantName: string) => (
+    data: CloudinaryStatisticsResponse | null, 
+    summary: StatisticsSummary, 
+    hideControls: boolean, 
+    isLoadingParam: boolean
+  ) => {
+    const displayName = data?.tenant === 'aggregated' ? 'Total (All Selected Tenants)' : tenantName
+    
+    return (
+      <CloudinaryView
+        data={data}
+        summary={summary}
+        timeUnit={timeUnit}
+        startDate={startDate}
+        endDate={endDate}
+        isLoading={isLoadingParam}
+        onTimeUnitChange={handleTimeUnitChange}
+        onStartDateChange={handleStartDateChange}
+        onEndDateChange={handleEndDateChange}
+        hideControls={hideControls}
+        onDownloadCSV={() => handleDownloadCloudinaryCSV(displayName)}
+        tenantName={displayName}
+      />
+    )
+  }
+
   // Generic render function that works for both aggregated and individual views
   const renderApiCallsView = (data: ApiCallsStatisticsResponse | null, summary: StatisticsSummary, hideControls: boolean, isLoadingParam: boolean) => {
     const tenantName = data?.tenant === 'aggregated' ? 'Total (All Selected Tenants)' : data?.tenant || 'Unknown'
@@ -272,6 +436,16 @@ const Statistics: React.FC = () => {
   const renderMakeView = (data: MakeStatisticsResponse | null, summary: StatisticsSummary, hideControls: boolean, isLoadingParam: boolean) => {
     const tenantName = data?.tenant === 'aggregated' ? 'Total (All Selected Tenants)' : data?.tenant || 'Unknown'
     return createMakeRenderer(tenantName)(data, summary, hideControls, isLoadingParam)
+  }
+
+  const renderDatabaseView = (data: DatabaseStatisticsResponse | null, summary: StatisticsSummary, hideControls: boolean, isLoadingParam: boolean) => {
+    const tenantName = data?.tenant === 'aggregated' ? 'Total (All Selected Tenants)' : data?.tenant || 'Unknown'
+    return createDatabaseRenderer(tenantName)(data, summary, hideControls, isLoadingParam)
+  }
+
+  const renderCloudinaryView = (data: CloudinaryStatisticsResponse | null, summary: StatisticsSummary, hideControls: boolean, isLoadingParam: boolean) => {
+    const tenantName = data?.tenant === 'aggregated' ? 'Total (All Selected Tenants)' : data?.tenant || 'Unknown'
+    return createCloudinaryRenderer(tenantName)(data, summary, hideControls, isLoadingParam)
   }
 
   return (
@@ -325,45 +499,43 @@ const Statistics: React.FC = () => {
               />
             )}
           </TabPanel>
-          <TabPanel header={t('ai')}>
-            {activeTabIndex === 2 && (
-              <div>
-                {selectedTenants.length > 1 && (
-                  <div style={{ margin: '0 1rem 1rem 1rem' }}>
-                    <SharedControls
-                      timeUnit={timeUnit}
-                      startDate={startDate}
-                      endDate={endDate}
-                      onTimeUnitChange={handleTimeUnitChange}
-                      onStartDateChange={handleStartDateChange}
-                      onEndDateChange={handleEndDateChange}
-                    />
-                  </div>
-                )}
-                <AiView />
-              </div>
-            )}
-          </TabPanel>
           <TabPanel header={t('database')}>
-            {activeTabIndex === 3 && (
-              <div>
-                {selectedTenants.length > 1 && (
-                  <div style={{ margin: '0 1rem 1rem 1rem' }}>
-                    <SharedControls
-                      timeUnit={timeUnit}
-                      startDate={startDate}
-                      endDate={endDate}
-                      onTimeUnitChange={handleTimeUnitChange}
-                      onStartDateChange={handleStartDateChange}
-                      onEndDateChange={handleEndDateChange}
-                    />
-                  </div>
-                )}
-                <DatabaseView />
-              </div>
+            {activeTabIndex === 2 && (
+              <MultiTenantStatisticsTab
+                selectedTenants={selectedTenants}
+                timeUnit={timeUnit}
+                startDate={startDate}
+                endDate={endDate}
+                isLoading={isLoading}
+                onTimeUnitChange={handleTimeUnitChange}
+                onStartDateChange={handleStartDateChange}
+                onEndDateChange={handleEndDateChange}
+                tenantData={databaseStatisticsData}
+                tenantSummaries={databaseSummary}
+                getAggregatedData={getAggregatedDatabaseData}
+                renderTenantView={renderDatabaseView}
+              />
             )}
           </TabPanel>
           <TabPanel header={t('cloudinary')}>
+            {activeTabIndex === 3 && (
+              <MultiTenantStatisticsTab
+                selectedTenants={selectedTenants}
+                timeUnit={timeUnit}
+                startDate={startDate}
+                endDate={endDate}
+                isLoading={isLoading}
+                onTimeUnitChange={handleTimeUnitChange}
+                onStartDateChange={handleStartDateChange}
+                onEndDateChange={handleEndDateChange}
+                tenantData={cloudinaryStatisticsData}
+                tenantSummaries={cloudinarySummary}
+                getAggregatedData={getAggregatedCloudinaryData}
+                renderTenantView={renderCloudinaryView}
+              />
+            )}
+          </TabPanel>
+          <TabPanel header={t('ai')}>
             {activeTabIndex === 4 && (
               <div>
                 {selectedTenants.length > 1 && (
@@ -378,7 +550,7 @@ const Statistics: React.FC = () => {
                     />
                   </div>
                 )}
-                <CloudinaryView />
+                <AiView />
               </div>
             )}
           </TabPanel>

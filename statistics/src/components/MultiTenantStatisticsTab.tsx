@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { Card } from 'primereact/card'
 import { Divider } from 'primereact/divider'
 import SharedControls from './SharedControls'
-import { ApiCallsStatisticsResponse, MakeStatisticsResponse, StatisticsSummary, TimeUnit } from '../models/Statistics.model'
+import { ApiCallsStatisticsResponse, MakeStatisticsResponse, DatabaseStatisticsResponse, CloudinaryStatisticsResponse, StatisticsSummary, TimeUnit } from '../models/Statistics.model'
 
-interface MultiTenantStatisticsTabProps<T> {
+interface MultiTenantStatisticsTabProps<T extends ApiCallsStatisticsResponse | MakeStatisticsResponse | DatabaseStatisticsResponse | CloudinaryStatisticsResponse> {
   selectedTenants: string[]
   timeUnit: TimeUnit
   startDate: Date
@@ -23,7 +23,7 @@ interface MultiTenantStatisticsTabProps<T> {
   renderTenantView: (data: T | null, summary: StatisticsSummary, hideControls: boolean, isLoading: boolean) => React.ReactNode
 }
 
-function MultiTenantStatisticsTab<T extends ApiCallsStatisticsResponse | MakeStatisticsResponse>({
+function MultiTenantStatisticsTab<T extends ApiCallsStatisticsResponse | MakeStatisticsResponse | DatabaseStatisticsResponse | CloudinaryStatisticsResponse>({
   selectedTenants,
   timeUnit,
   startDate,

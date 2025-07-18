@@ -60,8 +60,55 @@ export interface MakeStatisticsResponse extends BaseStatisticsApiResponse {
   }
 }
 
+// Database specific interface
+export interface DatabaseStatisticsResponse extends BaseStatisticsApiResponse {
+  tenantUsage: {
+    summary: {
+      totalBytesLastDay: number
+      totalBytesThisWeek: number
+      totalBytesThisMonth: number
+      totalBytesThisYear: number
+    }
+    range: {
+      period: string
+      startTime: string
+      endTime: string
+      values: Array<{
+        date: string
+        totalBytes: number
+      }>
+    }
+  }
+}
+
+// Cloudinary specific interface
+export interface CloudinaryStatisticsResponse extends BaseStatisticsApiResponse {
+  tenantUsage: {
+    summary: {
+      numberOfObjectsLastDay: number
+      numberOfObjectsThisWeek: number
+      numberOfObjectsThisMonth: number
+      numberOfObjectsThisYear: number
+      storageBytesLastDay: number
+      storageBytesThisWeek: number
+      storageBytesThisMonth: number
+      storageBytesThisYear: number
+    }
+    range: {
+      period: string
+      startTime: string
+      endTime: string
+      values: Array<{
+        date: string
+        numberOfObjects: number
+        storageBytes: number
+      }>
+    }
+  }
+}
+
 // Union type for all statistics responses
-export type StatisticsApiResponse = ApiCallsStatisticsResponse | MakeStatisticsResponse
+export type StatisticsApiResponse = ApiCallsStatisticsResponse | MakeStatisticsResponse | DatabaseStatisticsResponse | CloudinaryStatisticsResponse
 
 export interface StatisticsSummary {
   yesterday: number
