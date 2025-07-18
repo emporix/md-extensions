@@ -1,4 +1,4 @@
-import { ApiCallsStatisticsResponse, MakeStatisticsResponse, StatisticsFilters } from './models/Statistics.model'
+import { ApiCallsStatisticsResponse, MakeStatisticsResponse, StatisticsFilters, UserTenantsResponse } from './models/Statistics.model'
 
 export const callApi = async <T, R = undefined>(
   path: string,
@@ -30,6 +30,16 @@ export const fetchAllTenants = async (tenant: string, token: string) => {
   return response
 }
 
+export const fetchUserTenants = async (tenant: string, token: string) => {
+  const response = await callApi<UserTenantsResponse>(
+    `/auth-adapter/users/me/tenants`,
+    'GET',
+    tenant,
+    token
+  )
+  return response
+}
+
 export const fetchStatistics = async (
   authTenant: string,
   dataTenant: string,
@@ -43,10 +53,14 @@ export const fetchStatistics = async (
     endTime,
   })
   
+  // Special tenants use authTenant for header, others use dataTenant
+  const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
+  const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
+  
   const statistics = await callApi<ApiCallsStatisticsResponse>(
     `/statistics/tenants/${dataTenant}/usage/apicalls?${params.toString()}`,
     'GET',
-    authTenant,
+    headerTenant,
     token
   )
   return statistics
@@ -65,10 +79,14 @@ export const fetchMakeStatistics = async (
     endTime,
   })
   
+  // Special tenants use authTenant for header, others use dataTenant
+  const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
+  const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
+  
   const statistics = await callApi<MakeStatisticsResponse>(
     `/statistics/${dataTenant}/usages/make?${params.toString()}`,
     'GET',
-    authTenant,
+    headerTenant,
     token
   )
   return statistics

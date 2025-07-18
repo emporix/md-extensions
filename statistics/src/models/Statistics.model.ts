@@ -77,4 +77,17 @@ export interface StatisticsFilters {
   timeUnit: TimeUnit
   startTime: string
   endTime: string
-} 
+}
+
+// Auth-adapter response interfaces
+export interface UserTenantApplication {
+  id: string
+  roles?: string[]
+}
+
+export interface UserTenant {
+  tenant: string
+  applications: UserTenantApplication[]
+}
+
+export type UserTenantsResponse = UserTenant[] 

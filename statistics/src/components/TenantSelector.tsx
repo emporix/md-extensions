@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { MultiSelect } from 'primereact/multiselect'
-import { fetchAllTenants } from '../api'
+import { fetchAllTenants, fetchUserTenants } from '../api'
 
 interface TenantSelectorProps {
   currentTenant: string
@@ -17,13 +17,11 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [selectedTenants, setSelectedTenants] = useState<string[]>([currentTenant])
 
-  // Special tenants that can see the dropdown
+  // Special tenants that use the allTenants endpoint
   const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
 
   useEffect(() => {
-    if (specialTenants.includes(currentTenant)) {
-      fetchTenants()
-    }
+    fetchTenants()
   }, [currentTenant, token])
 
   useEffect(() => {
@@ -33,8 +31,21 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
   const fetchTenants = async () => {
     setIsLoading(true)
     try {
-      const response = await fetchAllTenants(currentTenant, token)
-      setTenants(response.tenants || [])
+      if (specialTenants.includes(currentTenant)) {
+        // Use allTenants endpoint for special tenants
+        const response = await fetchAllTenants(currentTenant, token)
+        setTenants(response.tenants || [])
+      } else {
+        // Use auth-adapter endpoint for other tenants
+        const response = await fetchUserTenants(currentTenant, token)
+        // Filter tenants that have MANAGEMENT_DASHBOARD application
+        const managementTenants = response
+          .filter(userTenant => 
+            userTenant.applications.some(app => app.id === 'MANAGEMENT_DASHBOARD')
+          )
+          .map(userTenant => userTenant.tenant)
+        setTenants(managementTenants)
+      }
     } catch (error) {
       console.error('Error fetching tenants:', error)
       setTenants([])
@@ -47,11 +58,6 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
     const newTenants = e.value
     setSelectedTenants(newTenants)
     onTenantChange(newTenants)
-  }
-
-  // Only show dropdown for special tenants
-  if (!specialTenants.includes(currentTenant)) {
-    return null
   }
 
   // Convert tenants array to dropdown options
