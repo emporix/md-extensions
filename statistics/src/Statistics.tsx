@@ -11,47 +11,53 @@ import DatabaseView from './views/DatabaseView'
 import CloudinaryView from './views/CloudinaryView'
 import WebhooksView from './views/WebhooksView'
 import TenantSelector from './components/TenantSelector'
+import SharedControls from './components/SharedControls'
+import MultiTenantStatisticsTab from './components/MultiTenantStatisticsTab'
+import { aggregateApiCallsData, aggregateMakeData } from './utils/aggregationUtils'
+import { 
+  downloadCSV, 
+  convertApiCallsToCSV, 
+  convertMakeToCSV,
+  convertMultiTenantApiCallsToCSV,
+  convertMultiTenantMakeToCSV 
+} from './utils/csvUtils'
 
 const Statistics: React.FC = () => {
   const { t } = useTranslation()
   const { token, tenant } = useDashboardContext()
-  const [selectedTenant, setSelectedTenant] = useState<string>(tenant)
+  const [selectedTenants, setSelectedTenants] = useState<string[]>([tenant])
   const [isLoading, setIsLoading] = useState(false)
   const [timeUnit, setTimeUnit] = useState<TimeUnit>('day')
   const [startDate, setStartDate] = useState<Date>(new Date('2025-07-09'))
   const [endDate, setEndDate] = useState<Date>(new Date('2025-07-16'))
   const [activeTabIndex, setActiveTabIndex] = useState(0)
-  const [statisticsData, setStatisticsData] = useState<ApiCallsStatisticsResponse | null>(null)
-  const [makeStatisticsData, setMakeStatisticsData] = useState<MakeStatisticsResponse | null>(null)
-  const [summary, setSummary] = useState<StatisticsSummary>({
-    yesterday: 0,
-    thisWeek: 1240,
-    thisMonth: 5647,
-    thisYear: 75422,
-    agreedAnnual: 240000,
-  })
-  const [makeSummary, setMakeSummary] = useState<StatisticsSummary>({
-    yesterday: 0,
-    thisWeek: 0,
-    thisMonth: 0,
-    thisYear: 0,
-    agreedAnnual: 0,
-  })
+  const [statisticsData, setStatisticsData] = useState<Record<string, ApiCallsStatisticsResponse>>({})
+  const [makeStatisticsData, setMakeStatisticsData] = useState<Record<string, MakeStatisticsResponse>>({})
+  const [summary, setSummary] = useState<Record<string, StatisticsSummary>>({})
+  const [makeSummary, setMakeSummary] = useState<Record<string, StatisticsSummary>>({})
   const [loadedTabs, setLoadedTabs] = useState<Set<number>>(new Set([0]))
 
   const fetchApiCallsData = async (filters: StatisticsFilters) => {
     try {
-      const apiData = await fetchStatistics(tenant, selectedTenant, token, filters)
-      setStatisticsData(apiData)
+      const newStatisticsData: Record<string, ApiCallsStatisticsResponse> = {}
+      const newSummary: Record<string, StatisticsSummary> = {}
       
-      // Update summary with actual API data
-      setSummary({
-        yesterday: apiData?.tenantUsage?.summary?.lastDay || 0,
-        thisWeek: apiData?.tenantUsage?.summary?.thisWeek || 0,
-        thisMonth: apiData?.tenantUsage?.summary?.thisMonth || 0,
-        thisYear: apiData?.tenantUsage?.summary?.thisYear || 0,
-        agreedAnnual: apiData?.maxAllowedUsage || 0,
-      })
+      for (const selectedTenant of selectedTenants) {
+        const apiData = await fetchStatistics(tenant, selectedTenant, token, filters)
+        newStatisticsData[selectedTenant] = apiData
+        
+        // Update summary with actual API data
+        newSummary[selectedTenant] = {
+          yesterday: apiData?.tenantUsage?.summary?.lastDay || 0,
+          thisWeek: apiData?.tenantUsage?.summary?.thisWeek || 0,
+          thisMonth: apiData?.tenantUsage?.summary?.thisMonth || 0,
+          thisYear: apiData?.tenantUsage?.summary?.thisYear || 0,
+          agreedAnnual: apiData?.maxAllowedUsage || 0,
+        }
+      }
+      
+      setStatisticsData(newStatisticsData)
+      setSummary(newSummary)
     } catch (error) {
       console.error('Error fetching API statistics:', error)
     }
@@ -59,17 +65,25 @@ const Statistics: React.FC = () => {
 
   const fetchMakeData = async (filters: StatisticsFilters) => {
     try {
-      const makeData = await fetchMakeStatistics(tenant, selectedTenant, token, filters)
-      setMakeStatisticsData(makeData)
+      const newMakeStatisticsData: Record<string, MakeStatisticsResponse> = {}
+      const newMakeSummary: Record<string, StatisticsSummary> = {}
       
-      // Update Make summary with actual data - Make uses different field names
-      setMakeSummary({
-        yesterday: makeData?.tenantUsage?.summary?.operationsLastDay || 0,
-        thisWeek: makeData?.tenantUsage?.summary?.operationsThisWeek || 0,
-        thisMonth: makeData?.tenantUsage?.summary?.operationsThisMonth || 0,
-        thisYear: makeData?.tenantUsage?.summary?.operationsThisYear || 0,
-        agreedAnnual: makeData?.maxAllowedUsage || 0,
-      })
+      for (const selectedTenant of selectedTenants) {
+        const makeData = await fetchMakeStatistics(tenant, selectedTenant, token, filters)
+        newMakeStatisticsData[selectedTenant] = makeData
+        
+        // Update Make summary with actual data - Make uses different field names
+        newMakeSummary[selectedTenant] = {
+          yesterday: makeData?.tenantUsage?.summary?.operationsLastDay || 0,
+          thisWeek: makeData?.tenantUsage?.summary?.operationsThisWeek || 0,
+          thisMonth: makeData?.tenantUsage?.summary?.operationsThisMonth || 0,
+          thisYear: makeData?.tenantUsage?.summary?.operationsThisYear || 0,
+          agreedAnnual: makeData?.maxAllowedUsage || 0,
+        }
+      }
+      
+      setMakeStatisticsData(newMakeStatisticsData)
+      setMakeSummary(newMakeSummary)
     } catch (error) {
       console.error('Error fetching Make statistics:', error)
     }
@@ -116,7 +130,7 @@ const Statistics: React.FC = () => {
 
   useEffect(() => {
     // Update selected tenant when context tenant changes
-    setSelectedTenant(tenant)
+    setSelectedTenants([tenant])
   }, [tenant])
 
   useEffect(() => {
@@ -124,12 +138,12 @@ const Statistics: React.FC = () => {
     if (loadedTabs.has(activeTabIndex)) {
       fetchDataForTab(activeTabIndex)
     }
-  }, [timeUnit, startDate, endDate, selectedTenant, token])
+  }, [timeUnit, startDate, endDate, selectedTenants, token])
 
   useEffect(() => {
     // Fetch data for the initial tab (API Calls) on component mount
     fetchDataForTab(0)
-  }, [selectedTenant, token])
+  }, [selectedTenants, token])
 
   const handleTimeUnitChange = (unit: TimeUnit) => {
     setTimeUnit(unit)
@@ -143,10 +157,121 @@ const Statistics: React.FC = () => {
     setEndDate(date)
   }
 
-  const handleTenantChange = (newTenant: string) => {
-    setSelectedTenant(newTenant)
+  const handleTenantChange = (newTenants: string[]) => {
+    setSelectedTenants(newTenants)
     // Reset loaded tabs when tenant changes so data is refetched
     setLoadedTabs(new Set([activeTabIndex]))
+  }
+
+  // Helper function to aggregate API calls data across all selected tenants
+  const getAggregatedApiCallsData = () => {
+    return aggregateApiCallsData(selectedTenants, statisticsData, summary)
+  }
+
+  // Helper function to aggregate Make data across all selected tenants
+  const getAggregatedMakeData = () => {
+    return aggregateMakeData(selectedTenants, makeStatisticsData, makeSummary)
+  }
+
+  // CSV Download handlers
+  const handleDownloadApiCallsCSV = (tenantName: string = 'Unknown') => {
+    const tenantData = tenantName === 'Total (All Selected Tenants)' 
+      ? getAggregatedApiCallsData().data
+      : statisticsData[tenantName]
+    
+    if (tenantName === 'Total (All Selected Tenants)' && selectedTenants.length > 1) {
+      // Download multi-tenant CSV
+      const csvContent = convertMultiTenantApiCallsToCSV(statisticsData, selectedTenants)
+      const filename = `api-calls-statistics-all-tenants-${new Date().toISOString().split('T')[0]}.csv`
+      downloadCSV(csvContent, filename)
+    } else {
+      // Download single tenant CSV
+      const csvContent = convertApiCallsToCSV(tenantData, tenantName)
+      const filename = `api-calls-statistics-${tenantName}-${new Date().toISOString().split('T')[0]}.csv`
+      downloadCSV(csvContent, filename)
+    }
+  }
+
+  const handleDownloadMakeCSV = (tenantName: string = 'Unknown') => {
+    const tenantData = tenantName === 'Total (All Selected Tenants)' 
+      ? getAggregatedMakeData().data
+      : makeStatisticsData[tenantName]
+    
+    if (tenantName === 'Total (All Selected Tenants)' && selectedTenants.length > 1) {
+      // Download multi-tenant CSV
+      const csvContent = convertMultiTenantMakeToCSV(makeStatisticsData, selectedTenants)
+      const filename = `make-statistics-all-tenants-${new Date().toISOString().split('T')[0]}.csv`
+      downloadCSV(csvContent, filename)
+    } else {
+      // Download single tenant CSV
+      const csvContent = convertMakeToCSV(tenantData, tenantName)
+      const filename = `make-statistics-${tenantName}-${new Date().toISOString().split('T')[0]}.csv`
+      downloadCSV(csvContent, filename)
+    }
+  }
+
+  // Create wrapper functions for individual tenant rendering
+  const createApiCallsRenderer = (tenantName: string) => (
+    data: ApiCallsStatisticsResponse | null, 
+    summary: StatisticsSummary, 
+    hideControls: boolean, 
+    isLoadingParam: boolean
+  ) => {
+    const displayName = data?.tenant === 'aggregated' ? 'Total (All Selected Tenants)' : tenantName
+    
+    return (
+      <ApiCallsView
+        data={data}
+        summary={summary}
+        timeUnit={timeUnit}
+        startDate={startDate}
+        endDate={endDate}
+        isLoading={isLoadingParam}
+        onTimeUnitChange={handleTimeUnitChange}
+        onStartDateChange={handleStartDateChange}
+        onEndDateChange={handleEndDateChange}
+        hideControls={hideControls}
+        onDownloadCSV={() => handleDownloadApiCallsCSV(displayName)}
+        tenantName={displayName}
+      />
+    )
+  }
+
+  const createMakeRenderer = (tenantName: string) => (
+    data: MakeStatisticsResponse | null, 
+    summary: StatisticsSummary, 
+    hideControls: boolean, 
+    isLoadingParam: boolean
+  ) => {
+    const displayName = data?.tenant === 'aggregated' ? 'Total (All Selected Tenants)' : tenantName
+    
+    return (
+      <MakeView
+        data={data}
+        summary={summary}
+        timeUnit={timeUnit}
+        startDate={startDate}
+        endDate={endDate}
+        isLoading={isLoadingParam}
+        onTimeUnitChange={handleTimeUnitChange}
+        onStartDateChange={handleStartDateChange}
+        onEndDateChange={handleEndDateChange}
+        hideControls={hideControls}
+        onDownloadCSV={() => handleDownloadMakeCSV(displayName)}
+        tenantName={displayName}
+      />
+    )
+  }
+
+  // Generic render function that works for both aggregated and individual views
+  const renderApiCallsView = (data: ApiCallsStatisticsResponse | null, summary: StatisticsSummary, hideControls: boolean, isLoadingParam: boolean) => {
+    const tenantName = data?.tenant === 'aggregated' ? 'Total (All Selected Tenants)' : data?.tenant || 'Unknown'
+    return createApiCallsRenderer(tenantName)(data, summary, hideControls, isLoadingParam)
+  }
+
+  const renderMakeView = (data: MakeStatisticsResponse | null, summary: StatisticsSummary, hideControls: boolean, isLoadingParam: boolean) => {
+    const tenantName = data?.tenant === 'aggregated' ? 'Total (All Selected Tenants)' : data?.tenant || 'Unknown'
+    return createMakeRenderer(tenantName)(data, summary, hideControls, isLoadingParam)
   }
 
   return (
@@ -166,9 +291,8 @@ const Statistics: React.FC = () => {
         <TabView activeIndex={activeTabIndex} onTabChange={handleTabChange}>
           <TabPanel header={t('apiCalls')}>
             {activeTabIndex === 0 && (
-              <ApiCallsView
-                data={statisticsData}
-                summary={summary}
+              <MultiTenantStatisticsTab
+                selectedTenants={selectedTenants}
                 timeUnit={timeUnit}
                 startDate={startDate}
                 endDate={endDate}
@@ -176,14 +300,17 @@ const Statistics: React.FC = () => {
                 onTimeUnitChange={handleTimeUnitChange}
                 onStartDateChange={handleStartDateChange}
                 onEndDateChange={handleEndDateChange}
+                tenantData={statisticsData}
+                tenantSummaries={summary}
+                getAggregatedData={getAggregatedApiCallsData}
+                renderTenantView={renderApiCallsView}
               />
             )}
           </TabPanel>
           <TabPanel header={t('make')}>
             {activeTabIndex === 1 && (
-              <MakeView
-                data={makeStatisticsData}
-                summary={makeSummary}
+              <MultiTenantStatisticsTab
+                selectedTenants={selectedTenants}
                 timeUnit={timeUnit}
                 startDate={startDate}
                 endDate={endDate}
@@ -191,20 +318,88 @@ const Statistics: React.FC = () => {
                 onTimeUnitChange={handleTimeUnitChange}
                 onStartDateChange={handleStartDateChange}
                 onEndDateChange={handleEndDateChange}
+                tenantData={makeStatisticsData}
+                tenantSummaries={makeSummary}
+                getAggregatedData={getAggregatedMakeData}
+                renderTenantView={renderMakeView}
               />
             )}
           </TabPanel>
           <TabPanel header={t('ai')}>
-            {activeTabIndex === 2 && <AiView />}
+            {activeTabIndex === 2 && (
+              <div>
+                {selectedTenants.length > 1 && (
+                  <div style={{ margin: '0 1rem 1rem 1rem' }}>
+                    <SharedControls
+                      timeUnit={timeUnit}
+                      startDate={startDate}
+                      endDate={endDate}
+                      onTimeUnitChange={handleTimeUnitChange}
+                      onStartDateChange={handleStartDateChange}
+                      onEndDateChange={handleEndDateChange}
+                    />
+                  </div>
+                )}
+                <AiView />
+              </div>
+            )}
           </TabPanel>
           <TabPanel header={t('database')}>
-            {activeTabIndex === 3 && <DatabaseView />}
+            {activeTabIndex === 3 && (
+              <div>
+                {selectedTenants.length > 1 && (
+                  <div style={{ margin: '0 1rem 1rem 1rem' }}>
+                    <SharedControls
+                      timeUnit={timeUnit}
+                      startDate={startDate}
+                      endDate={endDate}
+                      onTimeUnitChange={handleTimeUnitChange}
+                      onStartDateChange={handleStartDateChange}
+                      onEndDateChange={handleEndDateChange}
+                    />
+                  </div>
+                )}
+                <DatabaseView />
+              </div>
+            )}
           </TabPanel>
           <TabPanel header={t('cloudinary')}>
-            {activeTabIndex === 4 && <CloudinaryView />}
+            {activeTabIndex === 4 && (
+              <div>
+                {selectedTenants.length > 1 && (
+                  <div style={{ margin: '0 1rem 1rem 1rem' }}>
+                    <SharedControls
+                      timeUnit={timeUnit}
+                      startDate={startDate}
+                      endDate={endDate}
+                      onTimeUnitChange={handleTimeUnitChange}
+                      onStartDateChange={handleStartDateChange}
+                      onEndDateChange={handleEndDateChange}
+                    />
+                  </div>
+                )}
+                <CloudinaryView />
+              </div>
+            )}
           </TabPanel>
           <TabPanel header={t('webhooks')}>
-            {activeTabIndex === 5 && <WebhooksView />}
+            {activeTabIndex === 5 && (
+              <div>
+                {selectedTenants.length > 1 && (
+                  <div style={{ margin: '0 1rem 1rem 1rem' }}>
+                    <SharedControls
+                      timeUnit={timeUnit}
+                      startDate={startDate}
+                      endDate={endDate}
+                      onTimeUnitChange={handleTimeUnitChange}
+                      onStartDateChange={handleStartDateChange}
+                      onEndDateChange={handleEndDateChange}
+                    />
+                  </div>
+                )}
+                <WebhooksView />
+              </div>
+            )}
           </TabPanel>
         </TabView>
       </div>

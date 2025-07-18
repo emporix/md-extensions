@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Dropdown } from 'primereact/dropdown'
+import { MultiSelect } from 'primereact/multiselect'
 import { fetchAllTenants } from '../api'
 
 interface TenantSelectorProps {
   currentTenant: string
   token: string
-  onTenantChange: (tenant: string) => void
+  onTenantChange: (tenants: string[]) => void
 }
 
 const TenantSelector: React.FC<TenantSelectorProps> = ({ 
@@ -15,7 +15,7 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
 }) => {
   const [tenants, setTenants] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [selectedTenant, setSelectedTenant] = useState(currentTenant)
+  const [selectedTenants, setSelectedTenants] = useState<string[]>([currentTenant])
 
   // Special tenants that can see the dropdown
   const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
@@ -27,7 +27,7 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
   }, [currentTenant, token])
 
   useEffect(() => {
-    setSelectedTenant(currentTenant)
+    setSelectedTenants([currentTenant])
   }, [currentTenant])
 
   const fetchTenants = async () => {
@@ -43,10 +43,10 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
     }
   }
 
-  const handleTenantChange = (e: { value: string }) => {
-    const newTenant = e.value
-    setSelectedTenant(newTenant)
-    onTenantChange(newTenant)
+  const handleTenantChange = (e: { value: string[] }) => {
+    const newTenants = e.value
+    setSelectedTenants(newTenants)
+    onTenantChange(newTenants)
   }
 
   // Only show dropdown for special tenants
@@ -62,22 +62,24 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-      <span style={{ color: '#6c757d', fontSize: '0.9rem' }}>Tenant:</span>
-      <Dropdown
-        value={selectedTenant}
+      <span style={{ color: '#6c757d', fontSize: '0.9rem' }}>Tenants:</span>
+      <MultiSelect
+        value={selectedTenants}
         options={tenantOptions}
         onChange={handleTenantChange}
-        placeholder="Select tenant"
+        placeholder="Select tenants"
         disabled={isLoading}
         filter
         showClear={false}
         style={{ 
-          minWidth: '200px',
+          minWidth: '250px',
           fontSize: '0.9rem'
         }}
         panelStyle={{ 
           maxHeight: '300px' 
         }}
+        display="chip"
+        maxSelectedLabels={3}
       />
     </div>
   )

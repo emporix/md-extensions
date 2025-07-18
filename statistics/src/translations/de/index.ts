@@ -21,4 +21,6 @@ export default {
   agreedAnnualMakeUsageLegend: 'Vereinbarte jährliche Make-Nutzung',
   makeUsageWithinPeriod: 'Make-Nutzung innerhalb des angegebenen Zeitraums',
   totalMakeUsage: 'Gesamtzahl der Make-Nutzung',
+  totalAllSelectedTenants: 'Gesamt (Alle ausgewählten Tenants)',
+  downloadCSV: 'CSV herunterladen',
 }

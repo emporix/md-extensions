@@ -21,4 +21,6 @@ export default {
   agreedAnnualMakeUsageLegend: 'Agreed Annual Make Usage',
   makeUsageWithinPeriod: 'Make usage within particular period',
   totalMakeUsage: 'Total number of Make usage',
+  totalAllSelectedTenants: 'Total (All Selected Tenants)',
+  downloadCSV: 'Download CSV',
 }

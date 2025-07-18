@@ -1,5 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { Button } from 'primereact/button'
 import SummaryCards from '../components/SummaryCards'
 import StatisticsChart from '../components/StatisticsChart'
 import TimeUnitSelector from '../components/TimeUnitSelector'
@@ -16,6 +17,9 @@ interface MakeViewProps {
   onTimeUnitChange: (unit: TimeUnit) => void
   onStartDateChange: (date: Date) => void
   onEndDateChange: (date: Date) => void
+  hideControls?: boolean
+  onDownloadCSV?: () => void
+  tenantName?: string
 }
 
 const MakeView: React.FC<MakeViewProps> = ({
@@ -28,6 +32,8 @@ const MakeView: React.FC<MakeViewProps> = ({
   onTimeUnitChange,
   onStartDateChange,
   onEndDateChange,
+  hideControls = false,
+  onDownloadCSV,
 }) => {
   const { t } = useTranslation()
 
@@ -42,15 +48,36 @@ const MakeView: React.FC<MakeViewProps> = ({
       <SummaryCards summary={summary} agreementLabel={t('agreedAnnualMakeUsage')} />
 
       <div className="chart-container" style={{ margin: '0 1rem' }}>
-        <div className="chart-controls">
-          <TimeUnitSelector timeUnit={timeUnit} onTimeUnitChange={onTimeUnitChange} />
-          <DateRangePicker
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={onStartDateChange}
-            onEndDateChange={onEndDateChange}
-          />
-        </div>
+        {!hideControls && (
+          <div className="chart-controls">
+            <TimeUnitSelector timeUnit={timeUnit} onTimeUnitChange={onTimeUnitChange} />
+            <DateRangePicker
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={onStartDateChange}
+              onEndDateChange={onEndDateChange}
+            />
+            {onDownloadCSV && (
+              <Button
+                label={t('downloadCSV')}
+                icon="pi pi-download"
+                onClick={onDownloadCSV}
+                className="p-button-sm"
+                style={{ marginLeft: '0.5rem' }}
+              />
+            )}
+          </div>
+        )}
+        {hideControls && onDownloadCSV && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '0 1rem 1rem 0' }}>
+            <Button
+              label={t('downloadCSV')}
+              icon="pi pi-download"
+              onClick={onDownloadCSV}
+              className="p-button-sm"
+            />
+          </div>
+        )}
 
         <StatisticsChart
           data={data}
