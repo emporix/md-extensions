@@ -1,6 +1,5 @@
-import { ApiCallsStatisticsResponse, MakeStatisticsResponse, DatabaseStatisticsResponse, CloudinaryStatisticsResponse } from '../models/Statistics.model'
+import { ApiCallsStatisticsResponse, MakeStatisticsResponse, DatabaseStatisticsResponse, CloudinaryStatisticsResponse, AiStatisticsResponse, WebhooksStatisticsResponse } from '../models/Statistics.model'
 
-// Utility function to download CSV file
 export const downloadCSV = (csvContent: string, filename: string) => {
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
   const link = document.createElement('a')
@@ -16,7 +15,6 @@ export const downloadCSV = (csvContent: string, filename: string) => {
   }
 }
 
-// Convert API calls data to CSV format
 export const convertApiCallsToCSV = (
   data: ApiCallsStatisticsResponse | null,
   tenantName: string = 'Unknown'
@@ -30,13 +28,12 @@ export const convertApiCallsToCSV = (
 
   let cumulativeSum = 0
   
-  // Sort by date to ensure proper cumulative calculation
   const sortedValues = [...data.tenantUsage.range.values].sort((a, b) => 
     new Date(a.date).getTime() - new Date(b.date).getTime()
   )
 
   sortedValues.forEach(item => {
-    const apiCalls = item.value || 0
+    const apiCalls = item.requestsCount || 0
     cumulativeSum += apiCalls
     
     const row = [
@@ -51,7 +48,6 @@ export const convertApiCallsToCSV = (
   return csvRows.join('\n')
 }
 
-// Convert Make data to CSV format
 export const convertMakeToCSV = (
   data: MakeStatisticsResponse | null,
   tenantName: string = 'Unknown'
@@ -66,7 +62,6 @@ export const convertMakeToCSV = (
   let cumulativeOperations = 0
   let cumulativeDataTransfer = 0
   
-  // Sort by date to ensure proper cumulative calculation
   const sortedValues = [...data.tenantUsage.range.values].sort((a, b) => 
     new Date(a.date).getTime() - new Date(b.date).getTime()
   )
@@ -91,7 +86,6 @@ export const convertMakeToCSV = (
   return csvRows.join('\n')
 }
 
-// Convert multiple tenants' API calls data to CSV format
 export const convertMultiTenantApiCallsToCSV = (
   tenantData: Record<string, ApiCallsStatisticsResponse>,
   selectedTenants: string[]
@@ -99,7 +93,6 @@ export const convertMultiTenantApiCallsToCSV = (
   const headers = ['Date', 'Tenant', 'API Calls', 'Cumulative API Calls']
   const csvRows = [headers.join(',')]
 
-  // Get all unique dates
   const allDates = new Set<string>()
   selectedTenants.forEach(tenant => {
     const data = tenantData[tenant]
@@ -108,12 +101,10 @@ export const convertMultiTenantApiCallsToCSV = (
     }
   })
 
-  // Sort dates
   const sortedDates = Array.from(allDates).sort((a, b) => 
     new Date(a).getTime() - new Date(b).getTime()
   )
 
-  // For each tenant, calculate cumulative data
   selectedTenants.forEach(tenant => {
     const data = tenantData[tenant]
     if (!data?.tenantUsage?.range?.values) return
@@ -121,12 +112,10 @@ export const convertMultiTenantApiCallsToCSV = (
     let cumulativeSum = 0
     const valueMap = new Map<string, number>()
     
-    // Create a map of date -> value for this tenant
     data.tenantUsage.range.values.forEach(item => {
-      valueMap.set(item.date, item.value || 0)
+      valueMap.set(item.date, item.requestsCount || 0)
     })
 
-    // Add rows for each date
     sortedDates.forEach(date => {
       const apiCalls = valueMap.get(date) || 0
       cumulativeSum += apiCalls
@@ -144,7 +133,6 @@ export const convertMultiTenantApiCallsToCSV = (
   return csvRows.join('\n')
 }
 
-// Convert multiple tenants' Make data to CSV format
 export const convertMultiTenantMakeToCSV = (
   tenantData: Record<string, MakeStatisticsResponse>,
   selectedTenants: string[]
@@ -152,7 +140,6 @@ export const convertMultiTenantMakeToCSV = (
   const headers = ['Date', 'Tenant', 'Operations', 'Cumulative Operations', 'Data Transfer (Bytes)', 'Cumulative Data Transfer (Bytes)']
   const csvRows = [headers.join(',')]
 
-  // Get all unique dates
   const allDates = new Set<string>()
   selectedTenants.forEach(tenant => {
     const data = tenantData[tenant]
@@ -161,12 +148,10 @@ export const convertMultiTenantMakeToCSV = (
     }
   })
 
-  // Sort dates
   const sortedDates = Array.from(allDates).sort((a, b) => 
     new Date(a).getTime() - new Date(b).getTime()
   )
 
-  // For each tenant, calculate cumulative data
   selectedTenants.forEach(tenant => {
     const data = tenantData[tenant]
     if (!data?.tenantUsage?.range?.values) return
@@ -176,13 +161,11 @@ export const convertMultiTenantMakeToCSV = (
     const operationsMap = new Map<string, number>()
     const dataTransferMap = new Map<string, number>()
     
-    // Create maps of date -> value for this tenant
     data.tenantUsage.range.values.forEach(item => {
       operationsMap.set(item.date, item.operations || 0)
       dataTransferMap.set(item.date, item.dataTransferBytes || 0)
     })
 
-    // Add rows for each date
     sortedDates.forEach(date => {
       const operations = operationsMap.get(date) || 0
       const dataTransfer = dataTransferMap.get(date) || 0
@@ -204,7 +187,6 @@ export const convertMultiTenantMakeToCSV = (
   return csvRows.join('\n')
 } 
 
-// Convert Database data to CSV format
 export const convertDatabaseToCSV = (
   data: DatabaseStatisticsResponse | null,
   tenantName: string = 'Unknown'
@@ -218,13 +200,11 @@ export const convertDatabaseToCSV = (
 
   let cumulativeStorage = 0
   
-  // Sort by date to ensure proper cumulative calculation
   const sortedValues = [...data.tenantUsage.range.values].sort((a, b) => 
     new Date(a.date).getTime() - new Date(b.date).getTime()
   )
 
   sortedValues.forEach(item => {
-    // Convert bytes to GB (1 GB = 1,073,741,824 bytes)
     const storageGB = (item.totalBytes || 0) / (1024 * 1024 * 1024)
     cumulativeStorage += storageGB
     
@@ -240,7 +220,6 @@ export const convertDatabaseToCSV = (
   return csvRows.join('\n')
 }
 
-// Convert multi-tenant Database data to CSV format
 export const convertMultiTenantDatabaseToCSV = (
   tenantData: Record<string, DatabaseStatisticsResponse>,
   selectedTenants: string[]
@@ -248,10 +227,8 @@ export const convertMultiTenantDatabaseToCSV = (
   const headers = ['Date', 'Tenant', 'Storage (GB)']
   const csvRows = [headers.join(',')]
 
-  // Create a map to store all dates
   const allDates = new Set<string>()
   
-  // Collect all unique dates
   selectedTenants.forEach(tenant => {
     const data = tenantData[tenant]
     if (data?.tenantUsage?.range?.values) {
@@ -261,19 +238,16 @@ export const convertMultiTenantDatabaseToCSV = (
     }
   })
 
-  // Sort dates
   const sortedDates = Array.from(allDates).sort((a, b) => 
     new Date(a).getTime() - new Date(b).getTime()
   )
 
-  // For each date, add rows for each tenant
   sortedDates.forEach(date => {
     selectedTenants.forEach(tenant => {
       const data = tenantData[tenant]
       if (data?.tenantUsage?.range?.values) {
         const dateItem = data.tenantUsage.range.values.find(item => item.date === date)
         if (dateItem) {
-          // Convert bytes to GB
           const storageGB = (dateItem.totalBytes || 0) / (1024 * 1024 * 1024)
           const row = [date, tenant, storageGB.toFixed(3)]
           csvRows.push(row.join(','))
@@ -285,7 +259,6 @@ export const convertMultiTenantDatabaseToCSV = (
   return csvRows.join('\n')
 } 
 
-// Convert Cloudinary data to CSV format
 export const convertCloudinaryToCSV = (
   data: CloudinaryStatisticsResponse | null,
   tenantName: string = 'Unknown'
@@ -300,13 +273,11 @@ export const convertCloudinaryToCSV = (
   let cumulativeStorage = 0
   let cumulativeObjects = 0
   
-  // Sort by date to ensure proper cumulative calculation
   const sortedValues = [...data.tenantUsage.range.values].sort((a, b) => 
     new Date(a.date).getTime() - new Date(b.date).getTime()
   )
 
   sortedValues.forEach(item => {
-    // Convert bytes to GB (1 GB = 1,073,741,824 bytes)
     const storageGB = (item.storageBytes || 0) / (1024 * 1024 * 1024)
     const objects = item.numberOfObjects || 0
     cumulativeStorage += storageGB
@@ -326,7 +297,6 @@ export const convertCloudinaryToCSV = (
   return csvRows.join('\n')
 }
 
-// Convert multi-tenant Cloudinary data to CSV format
 export const convertMultiTenantCloudinaryToCSV = (
   tenantData: Record<string, CloudinaryStatisticsResponse>,
   selectedTenants: string[]
@@ -334,10 +304,8 @@ export const convertMultiTenantCloudinaryToCSV = (
   const headers = ['Date', 'Tenant', 'Storage (GB)', 'Number of Objects']
   const csvRows = [headers.join(',')]
 
-  // Create a map to store all dates
   const allDates = new Set<string>()
   
-  // Collect all unique dates
   selectedTenants.forEach(tenant => {
     const data = tenantData[tenant]
     if (data?.tenantUsage?.range?.values) {
@@ -347,22 +315,169 @@ export const convertMultiTenantCloudinaryToCSV = (
     }
   })
 
-  // Sort dates
   const sortedDates = Array.from(allDates).sort((a, b) => 
     new Date(a).getTime() - new Date(b).getTime()
   )
 
-  // For each date, add rows for each tenant
   sortedDates.forEach(date => {
     selectedTenants.forEach(tenant => {
       const data = tenantData[tenant]
       if (data?.tenantUsage?.range?.values) {
         const dateItem = data.tenantUsage.range.values.find(item => item.date === date)
         if (dateItem) {
-          // Convert bytes to GB
           const storageGB = (dateItem.storageBytes || 0) / (1024 * 1024 * 1024)
           const objects = dateItem.numberOfObjects || 0
           const row = [date, tenant, storageGB.toFixed(3), objects.toString()]
+          csvRows.push(row.join(','))
+        }
+      }
+    })
+  })
+
+  return csvRows.join('\n')
+} 
+
+export const convertAiToCSV = (
+  data: AiStatisticsResponse | null,
+  tenantName: string = 'Unknown'
+): string => {
+  if (!data || !data.tenantUsage?.range?.values) {
+    return 'No data available'
+  }
+
+  const headers = ['Date', 'Tenant', 'Input Tokens', 'Cumulative Input Tokens', 'Output Tokens', 'Cumulative Output Tokens']
+  const csvRows = [headers.join(',')]
+
+  let cumulativeInput = 0
+  let cumulativeOutput = 0
+  
+  const sortedValues = [...data.tenantUsage.range.values].sort((a, b) => 
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  )
+
+  sortedValues.forEach(item => {
+    const inputTokens = item.inputUsage || 0
+    const outputTokens = item.outputUsage || 0
+    cumulativeInput += inputTokens
+    cumulativeOutput += outputTokens
+    
+    const row = [
+      item.date,
+      tenantName,
+      inputTokens.toString(),
+      cumulativeInput.toString(),
+      outputTokens.toString(),
+      cumulativeOutput.toString()
+    ]
+    csvRows.push(row.join(','))
+  })
+
+  return csvRows.join('\n')
+}
+
+export const convertMultiTenantAiToCSV = (
+  tenantData: Record<string, AiStatisticsResponse>,
+  selectedTenants: string[]
+): string => {
+  const headers = ['Date', 'Tenant', 'Input Tokens', 'Output Tokens']
+  const csvRows = [headers.join(',')]
+
+  const allDates = new Set<string>()
+  
+  selectedTenants.forEach(tenant => {
+    const data = tenantData[tenant]
+    if (data?.tenantUsage?.range?.values) {
+      data.tenantUsage.range.values.forEach(item => {
+        allDates.add(item.date)
+      })
+    }
+  })
+
+  const sortedDates = Array.from(allDates).sort((a, b) => 
+    new Date(a).getTime() - new Date(b).getTime()
+  )
+
+  sortedDates.forEach(date => {
+    selectedTenants.forEach(tenant => {
+      const data = tenantData[tenant]
+      if (data?.tenantUsage?.range?.values) {
+        const dateItem = data.tenantUsage.range.values.find(item => item.date === date)
+        if (dateItem) {
+          const inputTokens = dateItem.inputUsage || 0
+          const outputTokens = dateItem.outputUsage || 0
+          const row = [date, tenant, inputTokens.toString(), outputTokens.toString()]
+          csvRows.push(row.join(','))
+        }
+      }
+    })
+  })
+
+  return csvRows.join('\n')
+} 
+
+export const convertWebhooksToCSV = (
+  data: WebhooksStatisticsResponse | null,
+  tenantName: string = 'Unknown'
+): string => {
+  if (!data || !data.tenantUsage?.range?.values) {
+    return 'No data available'
+  }
+
+  const headers = ['Date', 'Tenant', 'Emitted Events', 'Cumulative Emitted Events']
+  const csvRows = [headers.join(',')]
+
+  let cumulativeEvents = 0
+  
+  const sortedValues = [...data.tenantUsage.range.values].sort((a, b) => 
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  )
+
+  sortedValues.forEach(item => {
+    const events = item.emittedEvents || 0
+    cumulativeEvents += events
+    
+    const row = [
+      item.date,
+      tenantName,
+      events.toString(),
+      cumulativeEvents.toString()
+    ]
+    csvRows.push(row.join(','))
+  })
+
+  return csvRows.join('\n')
+}
+
+export const convertMultiTenantWebhooksToCSV = (
+  tenantData: Record<string, WebhooksStatisticsResponse>,
+  selectedTenants: string[]
+): string => {
+  const headers = ['Date', 'Tenant', 'Emitted Events']
+  const csvRows = [headers.join(',')]
+
+  const allDates = new Set<string>()
+  
+  selectedTenants.forEach(tenant => {
+    const data = tenantData[tenant]
+    if (data?.tenantUsage?.range?.values) {
+      data.tenantUsage.range.values.forEach(item => {
+        allDates.add(item.date)
+      })
+    }
+  })
+
+  const sortedDates = Array.from(allDates).sort((a, b) => 
+    new Date(a).getTime() - new Date(b).getTime()
+  )
+
+  sortedDates.forEach(date => {
+    selectedTenants.forEach(tenant => {
+      const data = tenantData[tenant]
+      if (data?.tenantUsage?.range?.values) {
+        const dateItem = data.tenantUsage.range.values.find(item => item.date === date)
+        if (dateItem) {
+          const events = dateItem.emittedEvents || 0
+          const row = [date, tenant, events.toString()]
           csvRows.push(row.join(','))
         }
       }

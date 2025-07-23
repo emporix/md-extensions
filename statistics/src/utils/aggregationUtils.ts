@@ -1,6 +1,5 @@
-import { ApiCallsStatisticsResponse, MakeStatisticsResponse, DatabaseStatisticsResponse, CloudinaryStatisticsResponse, StatisticsSummary } from '../models/Statistics.model'
+import { ApiCallsStatisticsResponse, MakeStatisticsResponse, DatabaseStatisticsResponse, CloudinaryStatisticsResponse, AiStatisticsResponse, WebhooksStatisticsResponse, StatisticsSummary } from '../models/Statistics.model'
 
-// Generic aggregation function for API calls data
 export const aggregateApiCallsData = (
   selectedTenants: string[],
   tenantData: Record<string, ApiCallsStatisticsResponse>,
@@ -17,7 +16,6 @@ export const aggregateApiCallsData = (
     return { data: null, summary: { yesterday: 0, thisWeek: 0, thisMonth: 0, thisYear: 0, agreedAnnual: 0 } }
   }
 
-  // Aggregate summary data
   const aggregatedSummary: StatisticsSummary = {
     yesterday: validTenantSummaries.reduce((sum, s) => sum + (s.yesterday || 0), 0),
     thisWeek: validTenantSummaries.reduce((sum, s) => sum + (s.thisWeek || 0), 0),
@@ -26,32 +24,29 @@ export const aggregateApiCallsData = (
     agreedAnnual: validTenantSummaries.reduce((sum, s) => sum + (s.agreedAnnual || 0), 0),
   }
 
-  // Create aggregated chart data
   const firstTenantData = validTenantData[0]
   if (!firstTenantData?.tenantUsage?.range?.values) {
     return { data: null, summary: aggregatedSummary }
   }
 
-  // Create a map to aggregate values by date
   const dateValueMap = new Map<string, number>()
   
   validTenantData.forEach(data => {
     data.tenantUsage.range.values.forEach(item => {
       const currentValue = dateValueMap.get(item.date) || 0
-      dateValueMap.set(item.date, currentValue + (item.value || 0))
+      dateValueMap.set(item.date, currentValue + (item.requestsCount || 0))
     })
   })
 
-  // Create aggregated data structure
   const aggregatedData: ApiCallsStatisticsResponse = {
     tenant: 'aggregated',
     maxAllowedUsage: aggregatedSummary.agreedAnnual,
     tenantUsage: {
       summary: {
-        lastDay: aggregatedSummary.yesterday,
-        thisWeek: aggregatedSummary.thisWeek,
-        thisMonth: aggregatedSummary.thisMonth,
-        thisYear: aggregatedSummary.thisYear,
+        requestsCountLastDay: aggregatedSummary.yesterday,
+        requestsCountThisWeek: aggregatedSummary.thisWeek,
+        requestsCountThisMonth: aggregatedSummary.thisMonth,
+        requestsCountThisYear: aggregatedSummary.thisYear,
       },
       range: {
         period: firstTenantData.tenantUsage.range.period,
@@ -59,7 +54,7 @@ export const aggregateApiCallsData = (
         endTime: firstTenantData.tenantUsage.range.endTime,
         values: firstTenantData.tenantUsage.range.values.map(item => ({
           date: item.date,
-          value: dateValueMap.get(item.date) || 0,
+          requestsCount: dateValueMap.get(item.date) || 0,
         })),
       },
     },
@@ -68,7 +63,6 @@ export const aggregateApiCallsData = (
   return { data: aggregatedData, summary: aggregatedSummary }
 }
 
-// Generic aggregation function for Make data
 export const aggregateMakeData = (
   selectedTenants: string[],
   tenantData: Record<string, MakeStatisticsResponse>,
@@ -85,7 +79,6 @@ export const aggregateMakeData = (
     return { data: null, summary: { yesterday: 0, thisWeek: 0, thisMonth: 0, thisYear: 0, agreedAnnual: 0 } }
   }
 
-  // Aggregate summary data
   const aggregatedSummary: StatisticsSummary = {
     yesterday: validTenantSummaries.reduce((sum, s) => sum + (s.yesterday || 0), 0),
     thisWeek: validTenantSummaries.reduce((sum, s) => sum + (s.thisWeek || 0), 0),
@@ -94,13 +87,11 @@ export const aggregateMakeData = (
     agreedAnnual: validTenantSummaries.reduce((sum, s) => sum + (s.agreedAnnual || 0), 0),
   }
 
-  // Create aggregated chart data
   const firstTenantData = validTenantData[0]
   if (!firstTenantData?.tenantUsage?.range?.values) {
     return { data: null, summary: aggregatedSummary }
   }
 
-  // Create a map to aggregate values by date
   const dateOperationsMap = new Map<string, number>()
   const dateDataTransferMap = new Map<string, number>()
   
@@ -113,7 +104,6 @@ export const aggregateMakeData = (
     })
   })
 
-  // Calculate aggregated data transfer bytes for summary
   const aggregatedDataTransfer = {
     lastDay: validTenantData.reduce((sum, data) => sum + (data.tenantUsage.summary.dataTransferBytesLastDay || 0), 0),
     thisWeek: validTenantData.reduce((sum, data) => sum + (data.tenantUsage.summary.dataTransferBytesThisWeek || 0), 0),
@@ -121,7 +111,6 @@ export const aggregateMakeData = (
     thisYear: validTenantData.reduce((sum, data) => sum + (data.tenantUsage.summary.dataTransferBytesThisYear || 0), 0),
   }
 
-  // Create aggregated data structure
   const aggregatedData: MakeStatisticsResponse = {
     tenant: 'aggregated',
     maxAllowedUsage: aggregatedSummary.agreedAnnual,
@@ -152,7 +141,6 @@ export const aggregateMakeData = (
   return { data: aggregatedData, summary: aggregatedSummary }
 } 
 
-// Generic aggregation function for Database data
 export const aggregateDatabaseData = (
   selectedTenants: string[],
   tenantData: Record<string, DatabaseStatisticsResponse>,
@@ -169,7 +157,6 @@ export const aggregateDatabaseData = (
     return { data: null, summary: { yesterday: 0, thisWeek: 0, thisMonth: 0, thisYear: 0, agreedAnnual: 0 } }
   }
 
-  // Aggregate summary data
   const aggregatedSummary: StatisticsSummary = {
     yesterday: validTenantSummaries.reduce((sum, s) => sum + (s.yesterday || 0), 0),
     thisWeek: validTenantSummaries.reduce((sum, s) => sum + (s.thisWeek || 0), 0),
@@ -178,13 +165,11 @@ export const aggregateDatabaseData = (
     agreedAnnual: validTenantSummaries.reduce((sum, s) => sum + (s.agreedAnnual || 0), 0),
   }
 
-  // Create aggregated chart data
   const firstTenantData = validTenantData[0]
   if (!firstTenantData?.tenantUsage?.range?.values) {
     return { data: null, summary: aggregatedSummary }
   }
 
-  // Create a map to aggregate values by date
   const dateTotalBytesMap = new Map<string, number>()
   
   validTenantData.forEach(data => {
@@ -194,7 +179,6 @@ export const aggregateDatabaseData = (
     })
   })
 
-  // Create aggregated data structure
   const aggregatedData: DatabaseStatisticsResponse = {
     tenant: 'aggregated',
     maxAllowedUsage: aggregatedSummary.agreedAnnual,
@@ -220,7 +204,6 @@ export const aggregateDatabaseData = (
   return { data: aggregatedData, summary: aggregatedSummary }
 } 
 
-// Generic aggregation function for Cloudinary data
 export const aggregateCloudinaryData = (
   selectedTenants: string[],
   tenantData: Record<string, CloudinaryStatisticsResponse>,
@@ -237,7 +220,6 @@ export const aggregateCloudinaryData = (
     return { data: null, summary: { yesterday: 0, thisWeek: 0, thisMonth: 0, thisYear: 0, agreedAnnual: 0 } }
   }
 
-  // Aggregate summary data
   const aggregatedSummary: StatisticsSummary = {
     yesterday: validTenantSummaries.reduce((sum, s) => sum + (s.yesterday || 0), 0),
     thisWeek: validTenantSummaries.reduce((sum, s) => sum + (s.thisWeek || 0), 0),
@@ -246,13 +228,11 @@ export const aggregateCloudinaryData = (
     agreedAnnual: validTenantSummaries.reduce((sum, s) => sum + (s.agreedAnnual || 0), 0),
   }
 
-  // Create aggregated chart data
   const firstTenantData = validTenantData[0]
   if (!firstTenantData?.tenantUsage?.range?.values) {
     return { data: null, summary: aggregatedSummary }
   }
 
-  // Create maps to aggregate values by date
   const dateStorageBytesMap = new Map<string, number>()
   const dateNumberOfObjectsMap = new Map<string, number>()
   
@@ -265,7 +245,6 @@ export const aggregateCloudinaryData = (
     })
   })
 
-  // Create aggregated data structure
   const aggregatedData: CloudinaryStatisticsResponse = {
     tenant: 'aggregated',
     maxAllowedUsage: aggregatedSummary.agreedAnnual,
@@ -288,6 +267,158 @@ export const aggregateCloudinaryData = (
           date: item.date,
           numberOfObjects: dateNumberOfObjectsMap.get(item.date) || 0,
           storageBytes: dateStorageBytesMap.get(item.date) || 0,
+        })),
+      },
+    },
+  }
+
+  return { data: aggregatedData, summary: aggregatedSummary }
+} 
+
+export const aggregateAiData = (
+  selectedTenants: string[],
+  tenantData: Record<string, AiStatisticsResponse>,
+  inputSummaries: Record<string, StatisticsSummary>,
+  outputSummaries: Record<string, StatisticsSummary>
+): { data: AiStatisticsResponse | null; inputSummary: StatisticsSummary; outputSummary: StatisticsSummary } => {
+  if (selectedTenants.length <= 1) {
+    return { 
+      data: null, 
+      inputSummary: { yesterday: 0, thisWeek: 0, thisMonth: 0, thisYear: 0, agreedAnnual: 0 },
+      outputSummary: { yesterday: 0, thisWeek: 0, thisMonth: 0, thisYear: 0, agreedAnnual: 0 }
+    }
+  }
+
+  const validTenantData = selectedTenants.map(tenant => tenantData[tenant]).filter(Boolean)
+  const validInputSummaries = selectedTenants.map(tenant => inputSummaries[tenant]).filter(Boolean)  
+  const validOutputSummaries = selectedTenants.map(tenant => outputSummaries[tenant]).filter(Boolean)
+
+  if (validTenantData.length === 0) {
+    return { 
+      data: null, 
+      inputSummary: { yesterday: 0, thisWeek: 0, thisMonth: 0, thisYear: 0, agreedAnnual: 0 },
+      outputSummary: { yesterday: 0, thisWeek: 0, thisMonth: 0, thisYear: 0, agreedAnnual: 0 }
+    }
+  }
+
+  const aggregatedInputSummary: StatisticsSummary = {
+    yesterday: validInputSummaries.reduce((sum, s) => sum + (s.yesterday || 0), 0),
+    thisWeek: validInputSummaries.reduce((sum, s) => sum + (s.thisWeek || 0), 0),
+    thisMonth: validInputSummaries.reduce((sum, s) => sum + (s.thisMonth || 0), 0),
+    thisYear: validInputSummaries.reduce((sum, s) => sum + (s.thisYear || 0), 0),
+    agreedAnnual: validInputSummaries.reduce((sum, s) => sum + (s.agreedAnnual || 0), 0),
+  }
+
+  const aggregatedOutputSummary: StatisticsSummary = {
+    yesterday: validOutputSummaries.reduce((sum, s) => sum + (s.yesterday || 0), 0),
+    thisWeek: validOutputSummaries.reduce((sum, s) => sum + (s.thisWeek || 0), 0),
+    thisMonth: validOutputSummaries.reduce((sum, s) => sum + (s.thisMonth || 0), 0),
+    thisYear: validOutputSummaries.reduce((sum, s) => sum + (s.thisYear || 0), 0),
+    agreedAnnual: validOutputSummaries.reduce((sum, s) => sum + (s.agreedAnnual || 0), 0),
+  }
+
+  const firstTenantData = validTenantData[0]
+  if (!firstTenantData?.tenantUsage?.range?.values) {
+    return { data: null, inputSummary: aggregatedInputSummary, outputSummary: aggregatedOutputSummary }
+  }
+
+  const dateInputUsageMap = new Map<string, number>()
+  const dateOutputUsageMap = new Map<string, number>()
+  
+  validTenantData.forEach(data => {
+    data.tenantUsage.range.values.forEach(item => {
+      const currentInputUsage = dateInputUsageMap.get(item.date) || 0
+      const currentOutputUsage = dateOutputUsageMap.get(item.date) || 0
+      dateInputUsageMap.set(item.date, currentInputUsage + (item.inputUsage || 0))
+      dateOutputUsageMap.set(item.date, currentOutputUsage + (item.outputUsage || 0))
+    })
+  })
+
+  const aggregatedData: AiStatisticsResponse = {
+    tenant: 'aggregated',
+    maxAllowedUsage: aggregatedInputSummary.agreedAnnual + aggregatedOutputSummary.agreedAnnual,
+    tenantUsage: {
+      summary: {
+        inputUsageLastDay: aggregatedInputSummary.yesterday,
+        inputUsageThisWeek: aggregatedInputSummary.thisWeek,
+        inputUsageThisMonth: aggregatedInputSummary.thisMonth,
+        inputUsageThisYear: aggregatedInputSummary.thisYear,
+        outputUsageLastDay: aggregatedOutputSummary.yesterday,
+        outputUsageThisWeek: aggregatedOutputSummary.thisWeek,
+        outputUsageThisMonth: aggregatedOutputSummary.thisMonth,
+        outputUsageThisYear: aggregatedOutputSummary.thisYear,
+      },
+      range: {
+        period: firstTenantData.tenantUsage.range.period,
+        startTime: firstTenantData.tenantUsage.range.startTime,
+        endTime: firstTenantData.tenantUsage.range.endTime,
+        values: firstTenantData.tenantUsage.range.values.map(item => ({
+          date: item.date,
+          inputUsage: dateInputUsageMap.get(item.date) || 0,
+          outputUsage: dateOutputUsageMap.get(item.date) || 0,
+        })),
+      },
+    },
+  }
+
+  return { data: aggregatedData, inputSummary: aggregatedInputSummary, outputSummary: aggregatedOutputSummary }
+} 
+
+export const aggregateWebhooksData = (
+  selectedTenants: string[],
+  tenantData: Record<string, WebhooksStatisticsResponse>,
+  tenantSummaries: Record<string, StatisticsSummary>
+): { data: WebhooksStatisticsResponse | null; summary: StatisticsSummary } => {
+  if (selectedTenants.length <= 1) {
+    return { data: null, summary: { yesterday: 0, thisWeek: 0, thisMonth: 0, thisYear: 0, agreedAnnual: 0 } }
+  }
+
+  const validTenantData = selectedTenants.map(tenant => tenantData[tenant]).filter(Boolean)
+  const validTenantSummaries = selectedTenants.map(tenant => tenantSummaries[tenant]).filter(Boolean)
+
+  if (validTenantData.length === 0) {
+    return { data: null, summary: { yesterday: 0, thisWeek: 0, thisMonth: 0, thisYear: 0, agreedAnnual: 0 } }
+  }
+
+  const aggregatedSummary: StatisticsSummary = {
+    yesterday: validTenantSummaries.reduce((sum, s) => sum + (s.yesterday || 0), 0),
+    thisWeek: validTenantSummaries.reduce((sum, s) => sum + (s.thisWeek || 0), 0),
+    thisMonth: validTenantSummaries.reduce((sum, s) => sum + (s.thisMonth || 0), 0),
+    thisYear: validTenantSummaries.reduce((sum, s) => sum + (s.thisYear || 0), 0),
+    agreedAnnual: validTenantSummaries.reduce((sum, s) => sum + (s.agreedAnnual || 0), 0),
+  }
+
+  const firstTenantData = validTenantData[0]
+  if (!firstTenantData?.tenantUsage?.range?.values) {
+    return { data: null, summary: aggregatedSummary }
+  }
+
+  const dateEmittedEventsMap = new Map<string, number>()
+  
+  validTenantData.forEach(data => {
+    data.tenantUsage.range.values.forEach(item => {
+      const currentValue = dateEmittedEventsMap.get(item.date) || 0
+      dateEmittedEventsMap.set(item.date, currentValue + (item.emittedEvents || 0))
+    })
+  })
+
+  const aggregatedData: WebhooksStatisticsResponse = {
+    tenant: 'aggregated',
+    maxAllowedUsage: aggregatedSummary.agreedAnnual,
+    tenantUsage: {
+      summary: {
+        emittedEventsLastDay: aggregatedSummary.yesterday,
+        emittedEventsThisWeek: aggregatedSummary.thisWeek,
+        emittedEventsThisMonth: aggregatedSummary.thisMonth,
+        emittedEventsThisYear: aggregatedSummary.thisYear,
+      },
+      range: {
+        period: firstTenantData.tenantUsage.range.period,
+        startTime: firstTenantData.tenantUsage.range.startTime,
+        endTime: firstTenantData.tenantUsage.range.endTime,
+        values: firstTenantData.tenantUsage.range.values.map(item => ({
+          date: item.date,
+          emittedEvents: dateEmittedEventsMap.get(item.date) || 0,
         })),
       },
     },

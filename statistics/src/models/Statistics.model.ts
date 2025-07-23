@@ -1,26 +1,24 @@
-// Base interface for common fields
 export interface BaseStatisticsApiResponse {
   tenant: string
   maxAllowedUsage?: number
   tenantUsage: {
-    summary: any // Will be more specific in derived interfaces
+    summary: any
     range: {
       period: string
       startTime: string
       endTime: string
-      values: Array<any> // Will be more specific in derived interfaces
+      values: Array<any>
     }
   }
 }
 
-// API Calls specific interface
 export interface ApiCallsStatisticsResponse extends BaseStatisticsApiResponse {
   tenantUsage: {
     summary: {
-      lastDay: number
-      thisWeek: number
-      thisMonth: number
-      thisYear: number
+      requestsCountLastDay: number
+      requestsCountThisWeek: number
+      requestsCountThisMonth: number
+      requestsCountThisYear: number
     }
     range: {
       period: string
@@ -28,13 +26,33 @@ export interface ApiCallsStatisticsResponse extends BaseStatisticsApiResponse {
       endTime: string
       values: Array<{
         date: string
-        value: number
+        requestsCount: number
       }>
     }
   }
 }
 
-// Make specific interface
+export interface ApiCallsExpandedStatisticsResponse extends BaseStatisticsApiResponse {
+  tenantUsage: {
+    summary: {
+      requestsCountLastDay: number
+      requestsCountThisWeek: number
+      requestsCountThisMonth: number
+      requestsCountThisYear: number
+    }
+    range: {
+      period: string
+      startTime: string
+      endTime: string
+      values: Array<{
+        date: string
+        requestsCount: number
+        apiproxy?: string
+      }>
+    }
+  }
+}
+
 export interface MakeStatisticsResponse extends BaseStatisticsApiResponse {
   tenantUsage: {
     summary: {
@@ -60,7 +78,6 @@ export interface MakeStatisticsResponse extends BaseStatisticsApiResponse {
   }
 }
 
-// Database specific interface
 export interface DatabaseStatisticsResponse extends BaseStatisticsApiResponse {
   tenantUsage: {
     summary: {
@@ -81,7 +98,6 @@ export interface DatabaseStatisticsResponse extends BaseStatisticsApiResponse {
   }
 }
 
-// Cloudinary specific interface
 export interface CloudinaryStatisticsResponse extends BaseStatisticsApiResponse {
   tenantUsage: {
     summary: {
@@ -107,8 +123,52 @@ export interface CloudinaryStatisticsResponse extends BaseStatisticsApiResponse 
   }
 }
 
-// Union type for all statistics responses
-export type StatisticsApiResponse = ApiCallsStatisticsResponse | MakeStatisticsResponse | DatabaseStatisticsResponse | CloudinaryStatisticsResponse
+export interface AiStatisticsResponse extends BaseStatisticsApiResponse {
+  tenantUsage: {
+    summary: {
+      inputUsageLastDay: number
+      inputUsageThisWeek: number
+      inputUsageThisMonth: number
+      inputUsageThisYear: number
+      outputUsageLastDay: number
+      outputUsageThisWeek: number
+      outputUsageThisMonth: number
+      outputUsageThisYear: number
+    }
+    range: {
+      period: string
+      startTime: string
+      endTime: string
+      values: Array<{
+        date: string
+        inputUsage: number
+        outputUsage: number
+      }>
+    }
+  }
+}
+
+export interface WebhooksStatisticsResponse extends BaseStatisticsApiResponse {
+  tenantUsage: {
+    summary: {
+      emittedEventsLastDay: number
+      emittedEventsThisWeek: number
+      emittedEventsThisMonth: number
+      emittedEventsThisYear: number
+    }
+    range: {
+      period: string
+      startTime: string
+      endTime: string
+      values: Array<{
+        date: string
+        emittedEvents: number
+      }>
+    }
+  }
+}
+
+export type StatisticsApiResponse = ApiCallsStatisticsResponse | MakeStatisticsResponse | DatabaseStatisticsResponse | CloudinaryStatisticsResponse | AiStatisticsResponse | WebhooksStatisticsResponse
 
 export interface StatisticsSummary {
   yesterday: number
@@ -126,7 +186,6 @@ export interface StatisticsFilters {
   endTime: string
 }
 
-// Auth-adapter response interfaces
 export interface UserTenantApplication {
   id: string
   roles?: string[]

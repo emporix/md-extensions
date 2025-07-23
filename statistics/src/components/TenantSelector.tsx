@@ -17,7 +17,6 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [selectedTenants, setSelectedTenants] = useState<string[]>([currentTenant])
 
-  // Special tenants that use the allTenants endpoint
   const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
 
   useEffect(() => {
@@ -32,13 +31,10 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
     setIsLoading(true)
     try {
       if (specialTenants.includes(currentTenant)) {
-        // Use allTenants endpoint for special tenants
         const response = await fetchAllTenants(currentTenant, token)
         setTenants(response.tenants || [])
       } else {
-        // Use auth-adapter endpoint for other tenants
         const response = await fetchUserTenants(currentTenant, token)
-        // Filter tenants that have MANAGEMENT_DASHBOARD application
         const managementTenants = response
           .filter(userTenant => 
             userTenant.applications.some(app => app.id === 'MANAGEMENT_DASHBOARD')
@@ -60,7 +56,6 @@ const TenantSelector: React.FC<TenantSelectorProps> = ({
     onTenantChange(newTenants)
   }
 
-  // Convert tenants array to dropdown options
   const tenantOptions = tenants.map(tenant => ({
     label: tenant,
     value: tenant

@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { Card } from 'primereact/card'
 import { Divider } from 'primereact/divider'
 import SharedControls from './SharedControls'
-import { ApiCallsStatisticsResponse, MakeStatisticsResponse, DatabaseStatisticsResponse, CloudinaryStatisticsResponse, StatisticsSummary, TimeUnit } from '../models/Statistics.model'
+import { ApiCallsStatisticsResponse, MakeStatisticsResponse, DatabaseStatisticsResponse, CloudinaryStatisticsResponse, AiStatisticsResponse, WebhooksStatisticsResponse, StatisticsSummary, TimeUnit } from '../models/Statistics.model'
 
-interface MultiTenantStatisticsTabProps<T extends ApiCallsStatisticsResponse | MakeStatisticsResponse | DatabaseStatisticsResponse | CloudinaryStatisticsResponse> {
+interface MultiTenantStatisticsTabProps<T extends ApiCallsStatisticsResponse | MakeStatisticsResponse | DatabaseStatisticsResponse | CloudinaryStatisticsResponse | AiStatisticsResponse | WebhooksStatisticsResponse> {
   selectedTenants: string[]
   timeUnit: TimeUnit
   startDate: Date
@@ -14,16 +14,13 @@ interface MultiTenantStatisticsTabProps<T extends ApiCallsStatisticsResponse | M
   onTimeUnitChange: (unit: TimeUnit) => void
   onStartDateChange: (date: Date) => void
   onEndDateChange: (date: Date) => void
-  // Data and summary for each tenant
   tenantData: Record<string, T>
   tenantSummaries: Record<string, StatisticsSummary>
-  // Aggregation function
   getAggregatedData: () => { data: T | null; summary: StatisticsSummary }
-  // Render function for individual tenant views
   renderTenantView: (data: T | null, summary: StatisticsSummary, hideControls: boolean, isLoading: boolean) => React.ReactNode
 }
 
-function MultiTenantStatisticsTab<T extends ApiCallsStatisticsResponse | MakeStatisticsResponse | DatabaseStatisticsResponse | CloudinaryStatisticsResponse>({
+function MultiTenantStatisticsTab<T extends ApiCallsStatisticsResponse | MakeStatisticsResponse | DatabaseStatisticsResponse | CloudinaryStatisticsResponse | AiStatisticsResponse | WebhooksStatisticsResponse>({
   selectedTenants,
   timeUnit,
   startDate,

@@ -37,7 +37,6 @@ const CloudinaryView: React.FC<CloudinaryViewProps> = ({
 }) => {
   const { t } = useTranslation()
 
-  // Convert summary values from bytes to GB for display
   const convertBytesToGB = (bytes: number): number => {
     return bytes / (1024 * 1024 * 1024)
   }
@@ -50,7 +49,6 @@ const CloudinaryView: React.FC<CloudinaryViewProps> = ({
     agreedAnnual: convertBytesToGB(summary.agreedAnnual),
   }
 
-  // Convert chart data from bytes to GB
   const convertedData: CloudinaryStatisticsResponse | null = data ? {
     ...data,
     tenantUsage: {

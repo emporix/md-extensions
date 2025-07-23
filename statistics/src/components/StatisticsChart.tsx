@@ -1,6 +1,6 @@
 import React from 'react'
 import { Chart } from 'react-chartjs-2'
-import { ApiCallsStatisticsResponse, MakeStatisticsResponse, DatabaseStatisticsResponse, CloudinaryStatisticsResponse, StatisticsSummary, TimeUnit } from '../models/Statistics.model'
+import { ApiCallsStatisticsResponse, MakeStatisticsResponse, DatabaseStatisticsResponse, CloudinaryStatisticsResponse, AiStatisticsResponse, WebhooksStatisticsResponse, StatisticsSummary, TimeUnit } from '../models/Statistics.model'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -29,7 +29,7 @@ ChartJS.register(
 )
 
 interface StatisticsChartProps {
-  data: ApiCallsStatisticsResponse | MakeStatisticsResponse | DatabaseStatisticsResponse | CloudinaryStatisticsResponse | null
+  data: ApiCallsStatisticsResponse | MakeStatisticsResponse | DatabaseStatisticsResponse | CloudinaryStatisticsResponse | AiStatisticsResponse | WebhooksStatisticsResponse | null
   summary: StatisticsSummary
   timeUnit: TimeUnit
   chartLegends: {
@@ -38,6 +38,7 @@ interface StatisticsChartProps {
     total: string
   }
   isLoading: boolean
+  chartType?: 'input' | 'output'
 }
 
 const StatisticsChart: React.FC<StatisticsChartProps> = ({
@@ -46,6 +47,7 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({
   timeUnit,
   chartLegends,
   isLoading,
+  chartType,
 }) => {
   const getWeekNumber = (date: Date): number => {
     const firstDayOfYear = new Date(date.getFullYear(), 0, 1)
@@ -54,7 +56,6 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({
   }
 
   const createChartData = () => {
-    // Handle case where data is null or undefined
     if (!data || !data.tenantUsage || !data.tenantUsage.range || !data.tenantUsage.range.values) {
       return {
         labels: [],
@@ -91,26 +92,33 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({
       }
     }
 
-    // Helper function to get the value from API calls, Make, Database, or Cloudinary data
     const getValue = (item: any): number => {
-      if ('value' in item) {
-        return item.value || 0 // API calls data
+      if ('requestsCount' in item) {
+        return item.requestsCount || 0
+      } else if ('value' in item) {
+        return item.value || 0
       } else if ('operations' in item) {
-        return item.operations || 0 // Make data
+        return item.operations || 0
       } else if ('totalBytes' in item) {
-        return item.totalBytes || 0 // Database data
+        return item.totalBytes || 0
       } else if ('storageBytes' in item) {
-        return item.storageBytes || 0 // Cloudinary data
+        return item.storageBytes || 0
+      } else if ('inputUsage' in item && 'outputUsage' in item) {
+        if (chartType === 'output') {
+          return item.outputUsage || 0
+        } else {
+          return item.inputUsage || 0
+        }
+      } else if ('emittedEvents' in item) {
+        return item.emittedEvents || 0
       }
       return 0
     }
 
-    // Check if this is database or cloudinary data (no cumulative series)
     const isDatabaseData = data.tenantUsage.range.values.some((item: any) => 'totalBytes' in item)
     const isCloudinaryData = data.tenantUsage.range.values.some((item: any) => 'storageBytes' in item)
     const skipCumulativeSeries = isDatabaseData || isCloudinaryData
 
-    // Create base datasets (agreement line and bar chart)
     const baseDatasets = [
       {
         type: 'line' as const,
@@ -134,14 +142,12 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({
       },
     ]
 
-    // Add cumulative line only for API calls and Make data (skip for database and cloudinary)
     const datasets = skipCumulativeSeries ? baseDatasets : [
       ...baseDatasets,
       {
         type: 'line' as const,
         label: chartLegends.total,
         data: data.tenantUsage.range.values.map((_: any, index: number) => {
-          // Calculate cumulative sum for the line chart (reverse order for chronological)
           const values = data.tenantUsage.range.values.slice().reverse()
           return values.slice(0, index + 1).reduce((sum: number, d: any) => sum + getValue(d), 0)
         }),
@@ -168,7 +174,6 @@ const StatisticsChart: React.FC<StatisticsChartProps> = ({
     }
   }
 
-  // Check if this is database or cloudinary data to add GB formatting
   const isDatabaseData = data && data.tenantUsage?.range?.values?.some((item: any) => 'totalBytes' in item)
   const isCloudinaryData = data && data.tenantUsage?.range?.values?.some((item: any) => 'storageBytes' in item)
   const useGBFormatting = isDatabaseData || isCloudinaryData

@@ -1,4 +1,4 @@
-import { ApiCallsStatisticsResponse, MakeStatisticsResponse, DatabaseStatisticsResponse, CloudinaryStatisticsResponse, StatisticsFilters, UserTenantsResponse } from './models/Statistics.model'
+import { ApiCallsStatisticsResponse, ApiCallsExpandedStatisticsResponse, MakeStatisticsResponse, DatabaseStatisticsResponse, CloudinaryStatisticsResponse, AiStatisticsResponse, WebhooksStatisticsResponse, StatisticsFilters, UserTenantsResponse } from './models/Statistics.model'
 
 export const callApi = async <T, R = undefined>(
   path: string,
@@ -53,12 +53,11 @@ export const fetchStatistics = async (
     endTime,
   })
   
-  // Special tenants use authTenant for header, others use dataTenant
   const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
   const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
   
   const statistics = await callApi<ApiCallsStatisticsResponse>(
-    `/statistics/tenants/${dataTenant}/usage/apicalls?${params.toString()}`,
+    `/statistics/${dataTenant}/usages/apicalls?${params.toString()}`,
     'GET',
     headerTenant,
     token
@@ -79,7 +78,6 @@ export const fetchMakeStatistics = async (
     endTime,
   })
   
-  // Special tenants use authTenant for header, others use dataTenant
   const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
   const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
   
@@ -105,7 +103,6 @@ export const fetchDatabaseStatistics = async (
     endTime,
   })
   
-  // Special tenants use authTenant for header, others use dataTenant
   const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
   const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
   
@@ -131,12 +128,87 @@ export const fetchCloudinaryStatistics = async (
     endTime,
   })
   
-  // Special tenants use authTenant for header, others use dataTenant
   const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
   const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
   
   const statistics = await callApi<CloudinaryStatisticsResponse>(
     `/statistics/${dataTenant}/usages/cloudinary?${params.toString()}`,
+    'GET',
+    headerTenant,
+    token
+  )
+  return statistics
+}
+
+export const fetchAiStatistics = async (
+  authTenant: string,
+  dataTenant: string,
+  token: string,
+  filters: StatisticsFilters
+) => {
+  const { timeUnit, startTime, endTime } = filters
+  const params = new URLSearchParams({
+    timeunit: timeUnit,
+    startTime,
+    endTime,
+  })
+  
+  const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
+  const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
+  
+  const statistics = await callApi<AiStatisticsResponse>(
+    `/statistics/${dataTenant}/usages/ai?${params.toString()}`,
+    'GET',
+    headerTenant,
+    token
+  )
+  return statistics
+}
+
+export const fetchWebhooksStatistics = async (
+  authTenant: string,
+  dataTenant: string,
+  token: string,
+  filters: StatisticsFilters
+) => {
+  const { timeUnit, startTime, endTime } = filters
+  const params = new URLSearchParams({
+    timeunit: timeUnit,
+    startTime,
+    endTime,
+  })
+  
+  const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
+  const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
+  
+  const statistics = await callApi<WebhooksStatisticsResponse>(
+    `/statistics/${dataTenant}/usages/webhooks?${params.toString()}`,
+    'GET',
+    headerTenant,
+    token
+  )
+  return statistics
+}
+
+export const fetchExpandedApiCallsStatistics = async (
+  authTenant: string,
+  dataTenant: string,
+  token: string,
+  filters: StatisticsFilters
+) => {
+  const { timeUnit, startTime, endTime } = filters
+  const params = new URLSearchParams({
+    timeunit: timeUnit,
+    startTime,
+    endTime,
+    expand: 'proxy'
+  })
+  
+  const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
+  const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
+  
+  const statistics = await callApi<ApiCallsExpandedStatisticsResponse>(
+    `/statistics/${dataTenant}/usages/apicalls?${params.toString()}`,
     'GET',
     headerTenant,
     token

@@ -1,11 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'primereact/button'
+import { Panel } from 'primereact/panel'
 import SummaryCards from '../components/SummaryCards'
 import StatisticsChart from '../components/StatisticsChart'
+import ApiProxyChart from '../components/ApiProxyChart'
 import TimeUnitSelector from '../components/TimeUnitSelector'
 import DateRangePicker from '../components/DateRangePicker'
-import { ApiCallsStatisticsResponse, StatisticsSummary, TimeUnit } from '../models/Statistics.model'
+import { ApiCallsStatisticsResponse, ApiCallsExpandedStatisticsResponse, StatisticsSummary, TimeUnit, StatisticsFilters } from '../models/Statistics.model'
+import { fetchExpandedApiCallsStatistics } from '../api'
+import { useDashboardContext } from '../context/Dashboard.context'
 
 interface ApiCallsViewProps {
   data: ApiCallsStatisticsResponse | null
@@ -34,13 +38,40 @@ const ApiCallsView: React.FC<ApiCallsViewProps> = ({
   onEndDateChange,
   hideControls = false,
   onDownloadCSV,
+  tenantName
 }) => {
   const { t } = useTranslation()
+  const { token, tenant } = useDashboardContext()
+  const [showAdvancedData, setShowAdvancedData] = useState(false)
+  const [expandedData, setExpandedData] = useState<ApiCallsExpandedStatisticsResponse | null>(null)
+  const [isLoadingExpanded, setIsLoadingExpanded] = useState(false)
 
   const chartLegends = {
     agreement: t('agreedAnnualApiCallsLegend'),
     withinPeriod: t('apiCallsWithinPeriod'),
     total: t('totalApiCalls'),
+  }
+
+  const handleToggleAdvancedData = async () => {
+    if (!showAdvancedData && !expandedData) {
+      setIsLoadingExpanded(true)
+      try {
+        const filters: StatisticsFilters = {
+          timeUnit,
+          startTime: startDate.toISOString(),
+          endTime: endDate.toISOString(),
+        }
+        
+        const actualTenantName = tenantName === 'Total (All Selected Tenants)' ? tenant : (tenantName || tenant)
+        const result = await fetchExpandedApiCallsStatistics(tenant, actualTenantName, token, filters)
+        setExpandedData(result)
+      } catch (error) {
+        console.error('Error fetching expanded API calls data:', error)
+      } finally {
+        setIsLoadingExpanded(false)
+      }
+    }
+    setShowAdvancedData(!showAdvancedData)
   }
 
   return (
@@ -86,6 +117,38 @@ const ApiCallsView: React.FC<ApiCallsViewProps> = ({
           chartLegends={chartLegends}
           isLoading={isLoading}
         />
+
+        <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
+          <Button
+            label={showAdvancedData ? t('hideAdvancedData') : t('showAdvancedData')}
+            icon={showAdvancedData ? 'pi pi-chevron-up' : 'pi pi-chevron-down'}
+            onClick={handleToggleAdvancedData}
+            className="p-button-text p-button-sm"
+            style={{ fontSize: '0.875rem' }}
+          />
+        </div>
+
+        {/* Loading indicator for advanced data */}
+        {isLoadingExpanded && (
+          <div style={{ height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span className="pi pi-spin pi-spinner" style={{ fontSize: '2rem', marginRight: '0.5rem' }} />
+            <span>{t('loadingAdvancedData') || 'Loading advanced data...'}</span>
+          </div>
+        )}
+
+        {showAdvancedData && !isLoadingExpanded && (
+          <Panel 
+            header={t('apiProxyBreakdown')} 
+            toggleable={false}
+            style={{ marginTop: '1rem' }}
+          >
+            <ApiProxyChart
+              data={expandedData}
+              timeUnit={timeUnit}
+              isLoading={isLoadingExpanded}
+            />
+          </Panel>
+        )}
       </div>
     </>
   )

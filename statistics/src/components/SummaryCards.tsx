@@ -5,7 +5,7 @@ import { StatisticsSummary } from '../models/Statistics.model'
 interface SummaryCardsProps {
   summary: StatisticsSummary
   agreementLabel: string
-  unit?: string // Optional unit to append to values (e.g., "GB")
+  unit?: string
 }
 
 const SummaryCards: React.FC<SummaryCardsProps> = ({ summary, agreementLabel, unit }) => {
