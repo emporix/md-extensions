@@ -61,14 +61,18 @@ const ApiCallsView: React.FC<ApiCallsViewProps> = ({
     total: t('totalApiCalls'),
   }
 
+  function toAPIDateISOString(date: Date): string {
+    return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())).toISOString();
+  }
+
   const handleToggleAdvancedData = async () => {
     if (!showAdvancedData && !expandedData) {
       setIsLoadingExpanded(true)
       try {
         const filters: StatisticsFilters = {
           timeUnit,
-          startTime: startDate.toISOString(),
-          endTime: endDate.toISOString(),
+          startTime: toAPIDateISOString(startDate),
+          endTime: toAPIDateISOString(endDate),
         }
         if (tenantName === 'Total (All Selected Tenants)' && selectedTenants.length > 1) {
           // Multi-tenant: fetch all, sum by date/proxy
@@ -100,8 +104,8 @@ const ApiCallsView: React.FC<ApiCallsViewProps> = ({
               summary: { requestsCountLastDay: 0, requestsCountThisWeek: 0, requestsCountThisMonth: 0, requestsCountThisYear: 0 },
               range: {
                 period: timeUnit,
-                startTime: startDate.toISOString().slice(0, 10),
-                endTime: endDate.toISOString().slice(0, 10),
+                startTime: toAPIDateISOString(startDate),
+                endTime: toAPIDateISOString(endDate),
                 values,
               },
             },

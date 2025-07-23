@@ -10,6 +10,10 @@ import MultiTenantStatisticsTab from './components/MultiTenantStatisticsTab'
 import AiStatisticsTab from './components/tabs/AiStatisticsTab'
 import { tabConfigs, DataKey, SummaryKey, AggregatedDataKey, CsvHandlerKey } from './tabs/statisticsTabConfig'
 
+function toAPIDateISOString(date: Date): string {
+  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())).toISOString();
+}
+
 const Statistics: React.FC = () => {
   const { t } = useTranslation()
   const { token, tenant } = useDashboardContext()
@@ -60,8 +64,8 @@ const Statistics: React.FC = () => {
     
     const filters: StatisticsFilters = {
       timeUnit,
-      startTime: startDate.toISOString(),
-      endTime: endDate.toISOString(),
+      startTime: toAPIDateISOString(startDate),
+      endTime: toAPIDateISOString(endDate),
     }
 
     try {
