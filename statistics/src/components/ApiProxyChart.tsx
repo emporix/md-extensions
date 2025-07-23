@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useMemo, useRef, useState, useEffect } from 'react'
 import { Chart } from 'react-chartjs-2'
 import { ApiCallsExpandedStatisticsResponse, TimeUnit } from '../models/Statistics.model'
+import { MultiSelect } from 'primereact/multiselect'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -26,33 +27,50 @@ interface ApiProxyChartProps {
   isLoading: boolean
 }
 
+const proxyNameMap: Record<string, string> = {
+  'cop-bff': 'orchestration-engine',
+  'cxp-bff': 'orchestration-engine',
+  'copb-api': 'orchestration-engine',
+  'caas-product': 'product',
+  'caas-cart': 'cart',
+  'caas-site': 'site',
+  'caas-category': 'category',
+  'caas-indexing-service': 'indexing-service',
+  'caas-customer': 'customer',
+  'caas-order': 'order',
+}
+
 const ApiProxyChart: React.FC<ApiProxyChartProps> = ({ data, timeUnit, isLoading }) => {
+  const chartRef = useRef<any>(null)
+  const [selectedProxies, setSelectedProxies] = useState<string[]>([])
+  const hasInitialized = useRef(false)
+
   const getWeekNumber = (date: Date): number => {
     const firstDayOfYear = new Date(date.getFullYear(), 0, 1)
     const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000
     return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7)
   }
 
-  const createChartData = () => {
+  const { chartData, allProxies } = useMemo(() => {
     if (!data || !data.tenantUsage?.range?.values) {
       return {
-        labels: [],
-        datasets: []
+        chartData: { labels: [], datasets: [] },
+        allProxies: []
       }
     }
 
     const proxyDataByDate = new Map<string, Map<string, number>>()
-    const allProxies = new Set<string>()
+    const proxiesSet = new Set<string>()
 
     data.tenantUsage.range.values.forEach(item => {
       if (item.requestsCount > 0) {
         if (!proxyDataByDate.has(item.date)) {
           proxyDataByDate.set(item.date, new Map())
         }
-        
-        const proxy = item.apiproxy || 'unknown'
-        allProxies.add(proxy)
-        
+        // Apply proxy name mapping
+        const originalProxy = item.apiproxy || 'unknown'
+        const proxy = proxyNameMap[originalProxy] || originalProxy
+        proxiesSet.add(proxy)
         const dateMap = proxyDataByDate.get(item.date)!
         const currentCount = dateMap.get(proxy) || 0
         dateMap.set(proxy, currentCount + item.requestsCount)
@@ -74,7 +92,6 @@ const ApiProxyChart: React.FC<ApiProxyChartProps> = ({ data, timeUnit, isLoading
       }
     })
 
-    // For each date, get proxies sorted by value descending
     const proxiesSortedByValue: string[] = (() => {
       const proxyTotals: Record<string, number> = {}
       sortedDates.forEach(date => {
@@ -83,7 +100,6 @@ const ApiProxyChart: React.FC<ApiProxyChartProps> = ({ data, timeUnit, isLoading
           proxyTotals[proxy] = (proxyTotals[proxy] || 0) + count
         })
       })
-      // Sort proxies by total value descending (for consistent color order)
       return Object.entries(proxyTotals)
         .sort((a, b) => b[1] - a[1])
         .map(([proxy]) => proxy)
@@ -96,23 +112,32 @@ const ApiProxyChart: React.FC<ApiProxyChartProps> = ({ data, timeUnit, isLoading
       '#7c2d12', '#92400e', '#b45309', '#a16207', '#4d7c0f', '#166534', '#064e3b', '#134e4a'
     ]
 
-    // For each date, sort proxies by value descending for stacking order
-    const datasets = proxiesSortedByValue.map((proxy, index) => ({
-      label: proxy,
-      data: sortedDates.map(date => {
-        const dateMap = proxyDataByDate.get(date)
-        return dateMap?.get(proxy) || 0
-      }),
-      backgroundColor: colors[index % colors.length],
-      borderColor: colors[index % colors.length],
-      borderWidth: 1,
-    }))
+    const datasets = proxiesSortedByValue
+      .filter(proxy => selectedProxies.includes(proxy))
+      .map((proxy, index) => ({
+        label: proxy,
+        data: sortedDates.map(date => {
+          const dateMap = proxyDataByDate.get(date)
+          return dateMap?.get(proxy) || 0
+        }),
+        backgroundColor: colors[index % colors.length],
+        borderColor: colors[index % colors.length],
+        borderWidth: 1,
+      }))
 
     return {
-      labels,
-      datasets
+      chartData: { labels, datasets },
+      allProxies: proxiesSortedByValue
     }
-  }
+  }, [data, timeUnit, selectedProxies])
+
+  // Set all proxies as selected by default when data changes
+  useEffect(() => {
+    if (!hasInitialized.current && allProxies.length > 0) {
+      setSelectedProxies(allProxies)
+      hasInitialized.current = true
+    }
+  }, [allProxies])
 
   const chartOptions = {
     responsive: true,
@@ -125,7 +150,7 @@ const ApiProxyChart: React.FC<ApiProxyChartProps> = ({ data, timeUnit, isLoading
           font: {
             size: 11
           }
-        }
+        },
       },
       tooltip: {
         mode: 'index' as const,
@@ -172,7 +197,19 @@ const ApiProxyChart: React.FC<ApiProxyChartProps> = ({ data, timeUnit, isLoading
 
   return (
     <div style={{ height: '400px', marginTop: '1rem' }}>
-      <Chart type="bar" data={createChartData()} options={chartOptions} />
+      <div style={{ marginBottom: '0.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <span style={{ fontSize: '0.95rem', color: '#374151' }}>Proxies:</span>
+        <MultiSelect
+          value={selectedProxies}
+          options={allProxies.map(proxy => ({ label: proxy, value: proxy }))}
+          onChange={e => setSelectedProxies(e.value)}
+          placeholder="Select proxies"
+          display="chip"
+          style={{ minWidth: '220px', fontSize: '0.95rem' }}
+          maxSelectedLabels={3}
+        />
+      </div>
+      <Chart ref={chartRef} type="bar" data={chartData} options={chartOptions} />
     </div>
   )
 }
