@@ -109,6 +109,7 @@ const Statistics: React.FC = () => {
   const createViewRenderer = (ViewComponent: any, downloadHandler: (tenantName: string) => void) => 
     (data: any, summary: any, hideControls: boolean, isLoadingParam: boolean) => {
       const tenantName = data?.tenant === 'aggregated' ? 'Total (All Selected Tenants)' : data?.tenant || 'Unknown'
+      const isTotal = tenantName === 'Total (All Selected Tenants)'
       return (
         <ViewComponent
           data={data}
@@ -123,6 +124,7 @@ const Statistics: React.FC = () => {
           hideControls={hideControls}
           onDownloadCSV={() => downloadHandler(tenantName)}
           tenantName={tenantName}
+          {...(isTotal ? { selectedTenants } : {})}
         />
       )
     }

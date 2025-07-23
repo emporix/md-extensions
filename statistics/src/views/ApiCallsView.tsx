@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'primereact/button'
 import { Panel } from 'primereact/panel'
@@ -24,6 +24,7 @@ interface ApiCallsViewProps {
   hideControls?: boolean
   onDownloadCSV?: () => void
   tenantName?: string
+  selectedTenants?: string[]
 }
 
 const ApiCallsView: React.FC<ApiCallsViewProps> = ({
@@ -38,13 +39,21 @@ const ApiCallsView: React.FC<ApiCallsViewProps> = ({
   onEndDateChange,
   hideControls = false,
   onDownloadCSV,
-  tenantName
+  tenantName,
+  selectedTenants = [],
 }) => {
   const { t } = useTranslation()
   const { token, tenant } = useDashboardContext()
   const [showAdvancedData, setShowAdvancedData] = useState(false)
   const [expandedData, setExpandedData] = useState<ApiCallsExpandedStatisticsResponse | null>(null)
   const [isLoadingExpanded, setIsLoadingExpanded] = useState(false)
+
+  // Reset advanced data and collapse panel on filter change
+  useEffect(() => {
+    setShowAdvancedData(false)
+    setExpandedData(null)
+    setIsLoadingExpanded(false)
+  }, [timeUnit, startDate, endDate])
 
   const chartLegends = {
     agreement: t('agreedAnnualApiCallsLegend'),
@@ -61,10 +70,48 @@ const ApiCallsView: React.FC<ApiCallsViewProps> = ({
           startTime: startDate.toISOString(),
           endTime: endDate.toISOString(),
         }
-        
-        const actualTenantName = tenantName === 'Total (All Selected Tenants)' ? tenant : (tenantName || tenant)
-        const result = await fetchExpandedApiCallsStatistics(tenant, actualTenantName, token, filters)
-        setExpandedData(result)
+        if (tenantName === 'Total (All Selected Tenants)' && selectedTenants.length > 1) {
+          // Multi-tenant: fetch all, sum by date/proxy
+          const promises = selectedTenants.map((t: string) =>
+            fetchExpandedApiCallsStatistics(tenant, t, token, filters)
+          )
+          const results: ApiCallsExpandedStatisticsResponse[] = await Promise.all(promises)
+          // Aggregate by date and proxy
+          const proxyAgg: Record<string, Record<string, number>> = {}
+          results.forEach((res: ApiCallsExpandedStatisticsResponse) => {
+            res.tenantUsage.range.values.forEach((item: any) => {
+              if (!proxyAgg[item.date]) proxyAgg[item.date] = {}
+              const proxy = item.apiproxy || 'unknown'
+              proxyAgg[item.date][proxy] = (proxyAgg[item.date][proxy] || 0) + (item.requestsCount || 0)
+            })
+          })
+          // Flatten to values array
+          const allDates = Object.keys(proxyAgg)
+          const values: any[] = []
+          allDates.forEach(date => {
+            Object.entries(proxyAgg[date]).forEach(([apiproxy, requestsCount]) => {
+              values.push({ date, apiproxy, requestsCount })
+            })
+          })
+          setExpandedData({
+            tenant: 'aggregated',
+            maxAllowedUsage: 0,
+            tenantUsage: {
+              summary: { requestsCountLastDay: 0, requestsCountThisWeek: 0, requestsCountThisMonth: 0, requestsCountThisYear: 0 },
+              range: {
+                period: timeUnit,
+                startTime: startDate.toISOString().slice(0, 10),
+                endTime: endDate.toISOString().slice(0, 10),
+                values,
+              },
+            },
+          })
+        } else {
+          // Single tenant
+          const actualTenantName = tenantName === 'Total (All Selected Tenants)' ? tenant : (tenantName || tenant)
+          const result = await fetchExpandedApiCallsStatistics(tenant, actualTenantName, token, filters)
+          setExpandedData(result)
+        }
       } catch (error) {
         console.error('Error fetching expanded API calls data:', error)
       } finally {
