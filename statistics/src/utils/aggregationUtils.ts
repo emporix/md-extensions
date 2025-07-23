@@ -32,6 +32,7 @@ export const aggregateApiCallsData = (
   const dateValueMap = new Map<string, number>()
   
   validTenantData.forEach(data => {
+    if (!data?.tenantUsage?.range?.values) return;
     data.tenantUsage.range.values.forEach(item => {
       const currentValue = dateValueMap.get(item.date) || 0
       dateValueMap.set(item.date, currentValue + (item.requestsCount || 0))
@@ -40,7 +41,7 @@ export const aggregateApiCallsData = (
 
   const aggregatedData: ApiCallsStatisticsResponse = {
     tenant: 'aggregated',
-    maxAllowedUsage: aggregatedSummary.agreedAnnual,
+    maxAllowedRequests: aggregatedSummary.agreedAnnual,
     tenantUsage: {
       summary: {
         requestsCountLastDay: aggregatedSummary.yesterday,
@@ -96,6 +97,7 @@ export const aggregateMakeData = (
   const dateDataTransferMap = new Map<string, number>()
   
   validTenantData.forEach(data => {
+    if (!data?.tenantUsage?.range?.values) return;
     data.tenantUsage.range.values.forEach(item => {
       const currentOperations = dateOperationsMap.get(item.date) || 0
       const currentDataTransfer = dateDataTransferMap.get(item.date) || 0
@@ -113,7 +115,7 @@ export const aggregateMakeData = (
 
   const aggregatedData: MakeStatisticsResponse = {
     tenant: 'aggregated',
-    maxAllowedUsage: aggregatedSummary.agreedAnnual,
+    maxAllowedOperations: aggregatedSummary.agreedAnnual,
     tenantUsage: {
       summary: {
         operationsLastDay: aggregatedSummary.yesterday,
@@ -173,6 +175,7 @@ export const aggregateDatabaseData = (
   const dateTotalBytesMap = new Map<string, number>()
   
   validTenantData.forEach(data => {
+    if (!data?.tenantUsage?.range?.values) return;
     data.tenantUsage.range.values.forEach(item => {
       const currentValue = dateTotalBytesMap.get(item.date) || 0
       dateTotalBytesMap.set(item.date, currentValue + (item.totalBytes || 0))
@@ -181,7 +184,7 @@ export const aggregateDatabaseData = (
 
   const aggregatedData: DatabaseStatisticsResponse = {
     tenant: 'aggregated',
-    maxAllowedUsage: aggregatedSummary.agreedAnnual,
+    maxAllowedStorageBytes: aggregatedSummary.agreedAnnual,
     tenantUsage: {
       summary: {
         totalBytesLastDay: aggregatedSummary.yesterday,
@@ -237,6 +240,7 @@ export const aggregateCloudinaryData = (
   const dateNumberOfObjectsMap = new Map<string, number>()
   
   validTenantData.forEach(data => {
+    if (!data?.tenantUsage?.range?.values) return;
     data.tenantUsage.range.values.forEach(item => {
       const currentStorageBytes = dateStorageBytesMap.get(item.date) || 0
       const currentNumberOfObjects = dateNumberOfObjectsMap.get(item.date) || 0
@@ -247,13 +251,13 @@ export const aggregateCloudinaryData = (
 
   const aggregatedData: CloudinaryStatisticsResponse = {
     tenant: 'aggregated',
-    maxAllowedUsage: aggregatedSummary.agreedAnnual,
+    maxAllowedStorageBytes: aggregatedSummary.agreedAnnual,
     tenantUsage: {
       summary: {
-        numberOfObjectsLastDay: validTenantData.reduce((sum, data) => sum + (data.tenantUsage.summary.numberOfObjectsLastDay || 0), 0),
-        numberOfObjectsThisWeek: validTenantData.reduce((sum, data) => sum + (data.tenantUsage.summary.numberOfObjectsThisWeek || 0), 0),
-        numberOfObjectsThisMonth: validTenantData.reduce((sum, data) => sum + (data.tenantUsage.summary.numberOfObjectsThisMonth || 0), 0),
-        numberOfObjectsThisYear: validTenantData.reduce((sum, data) => sum + (data.tenantUsage.summary.numberOfObjectsThisYear || 0), 0),
+        numberOfObjectsLastDay: aggregatedSummary.yesterday,
+        numberOfObjectsThisWeek: aggregatedSummary.thisWeek,
+        numberOfObjectsThisMonth: aggregatedSummary.thisMonth,
+        numberOfObjectsThisYear: aggregatedSummary.thisYear,
         storageBytesLastDay: aggregatedSummary.yesterday,
         storageBytesThisWeek: aggregatedSummary.thisWeek,
         storageBytesThisMonth: aggregatedSummary.thisMonth,
@@ -326,6 +330,7 @@ export const aggregateAiData = (
   const dateOutputUsageMap = new Map<string, number>()
   
   validTenantData.forEach(data => {
+    if (!data?.tenantUsage?.range?.values) return;
     data.tenantUsage.range.values.forEach(item => {
       const currentInputUsage = dateInputUsageMap.get(item.date) || 0
       const currentOutputUsage = dateOutputUsageMap.get(item.date) || 0
@@ -336,7 +341,8 @@ export const aggregateAiData = (
 
   const aggregatedData: AiStatisticsResponse = {
     tenant: 'aggregated',
-    maxAllowedUsage: aggregatedInputSummary.agreedAnnual + aggregatedOutputSummary.agreedAnnual,
+    maxAllowedAiInput: aggregatedInputSummary.agreedAnnual,
+    maxAllowedAiOutput: aggregatedOutputSummary.agreedAnnual,
     tenantUsage: {
       summary: {
         inputUsageLastDay: aggregatedInputSummary.yesterday,
@@ -396,6 +402,7 @@ export const aggregateWebhooksData = (
   const dateEmittedEventsMap = new Map<string, number>()
   
   validTenantData.forEach(data => {
+    if (!data?.tenantUsage?.range?.values) return;
     data.tenantUsage.range.values.forEach(item => {
       const currentValue = dateEmittedEventsMap.get(item.date) || 0
       dateEmittedEventsMap.set(item.date, currentValue + (item.emittedEvents || 0))
@@ -404,7 +411,7 @@ export const aggregateWebhooksData = (
 
   const aggregatedData: WebhooksStatisticsResponse = {
     tenant: 'aggregated',
-    maxAllowedUsage: aggregatedSummary.agreedAnnual,
+    maxAllowedEmittedEvents: aggregatedSummary.agreedAnnual,
     tenantUsage: {
       summary: {
         emittedEventsLastDay: aggregatedSummary.yesterday,

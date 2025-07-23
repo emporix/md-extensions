@@ -35,7 +35,7 @@ export const useStatisticsData = (
           thisWeek: apiData?.tenantUsage?.summary?.requestsCountThisWeek || 0,
           thisMonth: apiData?.tenantUsage?.summary?.requestsCountThisMonth || 0,
           thisYear: apiData?.tenantUsage?.summary?.requestsCountThisYear || 0,
-          agreedAnnual: apiData?.maxAllowedUsage || 0,
+          agreedAnnual: apiData?.maxAllowedRequests || 0,
         }
       }
       
@@ -60,7 +60,7 @@ export const useStatisticsData = (
           thisWeek: makeData?.tenantUsage?.summary?.operationsThisWeek || 0,
           thisMonth: makeData?.tenantUsage?.summary?.operationsThisMonth || 0,
           thisYear: makeData?.tenantUsage?.summary?.operationsThisYear || 0,
-          agreedAnnual: makeData?.maxAllowedUsage || 0,
+          agreedAnnual: makeData?.maxAllowedOperations || 0,
         }
       }
       
@@ -85,7 +85,7 @@ export const useStatisticsData = (
            thisWeek: databaseData?.tenantUsage?.summary?.totalBytesThisWeek || 0,
            thisMonth: databaseData?.tenantUsage?.summary?.totalBytesThisMonth || 0,
            thisYear: databaseData?.tenantUsage?.summary?.totalBytesThisYear || 0,
-           agreedAnnual: databaseData?.maxAllowedUsage || 0,
+           agreedAnnual: databaseData?.maxAllowedStorageBytes || 0,
          }
       }
 
@@ -110,7 +110,7 @@ export const useStatisticsData = (
            thisWeek: cloudinaryData?.tenantUsage?.summary?.storageBytesThisWeek || 0,
            thisMonth: cloudinaryData?.tenantUsage?.summary?.storageBytesThisMonth || 0,
            thisYear: cloudinaryData?.tenantUsage?.summary?.storageBytesThisYear || 0,
-           agreedAnnual: cloudinaryData?.maxAllowedUsage || 0,
+           agreedAnnual: cloudinaryData?.maxAllowedStorageBytes || 0,
          }
       }
 
@@ -136,14 +136,14 @@ export const useStatisticsData = (
            thisWeek: aiData?.tenantUsage?.summary?.inputUsageThisWeek || 0,
            thisMonth: aiData?.tenantUsage?.summary?.inputUsageThisMonth || 0,
            thisYear: aiData?.tenantUsage?.summary?.inputUsageThisYear || 0,
-           agreedAnnual: aiData?.maxAllowedUsage || 0,
+           agreedAnnual: aiData?.maxAllowedAiInput || 0,
          }
          newAiOutputSummary[selectedTenant] = {
            yesterday: aiData?.tenantUsage?.summary?.outputUsageLastDay || 0,
            thisWeek: aiData?.tenantUsage?.summary?.outputUsageThisWeek || 0,
            thisMonth: aiData?.tenantUsage?.summary?.outputUsageThisMonth || 0,
            thisYear: aiData?.tenantUsage?.summary?.outputUsageThisYear || 0,
-           agreedAnnual: aiData?.maxAllowedUsage || 0,
+           agreedAnnual: aiData?.maxAllowedAiOutput || 0,
          }
       }
 
@@ -169,7 +169,7 @@ export const useStatisticsData = (
            thisWeek: webhooksData?.tenantUsage?.summary?.emittedEventsThisWeek || 0,
            thisMonth: webhooksData?.tenantUsage?.summary?.emittedEventsThisMonth || 0,
            thisYear: webhooksData?.tenantUsage?.summary?.emittedEventsThisYear || 0,
-           agreedAnnual: webhooksData?.maxAllowedUsage || 0,
+           agreedAnnual: webhooksData?.maxAllowedEmittedEvents || 0,
          }
       }
 

@@ -95,7 +95,7 @@ const ApiCallsView: React.FC<ApiCallsViewProps> = ({
           })
           setExpandedData({
             tenant: 'aggregated',
-            maxAllowedUsage: 0,
+            maxAllowedRequests: 0,
             tenantUsage: {
               summary: { requestsCountLastDay: 0, requestsCountThisWeek: 0, requestsCountThisMonth: 0, requestsCountThisYear: 0 },
               range: {

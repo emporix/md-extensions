@@ -40,105 +40,50 @@ export const fetchUserTenants = async (tenant: string, token: string) => {
   return response
 }
 
-export const fetchStatistics = async (
-  authTenant: string,
-  dataTenant: string,
-  token: string,
-  filters: StatisticsFilters
-) => {
-  const { timeUnit, startTime, endTime } = filters
-  const params = new URLSearchParams({
-    timeunit: timeUnit,
-    startTime,
-    endTime,
-  })
-  
-  const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
-  const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
-  
-  const statistics = await callApi<ApiCallsStatisticsResponse>(
-    `/statistics/${dataTenant}/usages/apicalls?${params.toString()}`,
-    'GET',
-    headerTenant,
-    token
-  )
-  return statistics
+function createStatisticsFetcher<T>(endpointBuilder: (dataTenant: string, params: URLSearchParams) => string) {
+  return async (
+    authTenant: string,
+    dataTenant: string,
+    token: string,
+    filters: StatisticsFilters
+  ) => {
+    const { timeUnit, startTime, endTime } = filters
+    const params = new URLSearchParams({
+      timeunit: timeUnit,
+      startTime,
+      endTime,
+    })
+    const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
+    const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
+    const statistics = await callApi<T>(
+      endpointBuilder(dataTenant, params),
+      'GET',
+      headerTenant,
+      token
+    )
+    return statistics
+  }
 }
 
-export const fetchMakeStatistics = async (
-  authTenant: string,
-  dataTenant: string,
-  token: string,
-  filters: StatisticsFilters
-) => {
-  const { timeUnit, startTime, endTime } = filters
-  const params = new URLSearchParams({
-    timeunit: timeUnit,
-    startTime,
-    endTime,
-  })
-  
-  const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
-  const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
-  
-  const statistics = await callApi<MakeStatisticsResponse>(
-    `/statistics/${dataTenant}/usages/make?${params.toString()}`,
-    'GET',
-    headerTenant,
-    token
-  )
-  return statistics
-}
+export const fetchStatistics = createStatisticsFetcher<ApiCallsStatisticsResponse>(
+  (dataTenant, params) => `/statistics/${dataTenant}/usages/apicalls?${params.toString()}`
+)
 
-export const fetchDatabaseStatistics = async (
-  authTenant: string,
-  dataTenant: string,
-  token: string,
-  filters: StatisticsFilters
-) => {
-  const { timeUnit, startTime, endTime } = filters
-  const params = new URLSearchParams({
-    timeunit: timeUnit,
-    startTime,
-    endTime,
-  })
-  
-  const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
-  const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
-  
-  const statistics = await callApi<DatabaseStatisticsResponse>(
-    `/statistics/${dataTenant}/usages/mongodbStorage?${params.toString()}`,
-    'GET',
-    headerTenant,
-    token
-  )
-  return statistics
-}
+export const fetchMakeStatistics = createStatisticsFetcher<MakeStatisticsResponse>(
+  (dataTenant, params) => `/statistics/${dataTenant}/usages/make?${params.toString()}`
+)
 
-export const fetchCloudinaryStatistics = async (
-  authTenant: string,
-  dataTenant: string,
-  token: string,
-  filters: StatisticsFilters
-) => {
-  const { timeUnit, startTime, endTime } = filters
-  const params = new URLSearchParams({
-    timeunit: timeUnit,
-    startTime,
-    endTime,
-  })
-  
-  const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
-  const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
-  
-  const statistics = await callApi<CloudinaryStatisticsResponse>(
-    `/statistics/${dataTenant}/usages/cloudinary?${params.toString()}`,
-    'GET',
-    headerTenant,
-    token
-  )
-  return statistics
-}
+export const fetchDatabaseStatistics = createStatisticsFetcher<DatabaseStatisticsResponse>(
+  (dataTenant, params) => `/statistics/${dataTenant}/usages/mongodbStorage?${params.toString()}`
+)
+
+export const fetchCloudinaryStatistics = createStatisticsFetcher<CloudinaryStatisticsResponse>(
+  (dataTenant, params) => `/statistics/${dataTenant}/usages/cloudinary?${params.toString()}`
+)
+
+export const fetchWebhooksStatistics = createStatisticsFetcher<WebhooksStatisticsResponse>(
+  (dataTenant, params) => `/statistics/${dataTenant}/usages/webhooks?${params.toString()}`
+)
 
 export const fetchAiStatistics = async (
   authTenant: string,
@@ -158,31 +103,6 @@ export const fetchAiStatistics = async (
   
   const statistics = await callApi<AiStatisticsResponse>(
     `/statistics/${dataTenant}/usages/ai?${params.toString()}`,
-    'GET',
-    headerTenant,
-    token
-  )
-  return statistics
-}
-
-export const fetchWebhooksStatistics = async (
-  authTenant: string,
-  dataTenant: string,
-  token: string,
-  filters: StatisticsFilters
-) => {
-  const { timeUnit, startTime, endTime } = filters
-  const params = new URLSearchParams({
-    timeunit: timeUnit,
-    startTime,
-    endTime,
-  })
-  
-  const specialTenants = ['emporix', 'emporixstage', 'emporixdev']
-  const headerTenant = specialTenants.includes(authTenant) ? authTenant : dataTenant
-  
-  const statistics = await callApi<WebhooksStatisticsResponse>(
-    `/statistics/${dataTenant}/usages/webhooks?${params.toString()}`,
     'GET',
     headerTenant,
     token

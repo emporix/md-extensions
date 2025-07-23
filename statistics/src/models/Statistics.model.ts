@@ -1,6 +1,5 @@
 export interface BaseStatisticsApiResponse {
   tenant: string
-  maxAllowedUsage?: number
   tenantUsage: {
     summary: any
     range: {
@@ -13,6 +12,7 @@ export interface BaseStatisticsApiResponse {
 }
 
 export interface ApiCallsStatisticsResponse extends BaseStatisticsApiResponse {
+  maxAllowedRequests?: number
   tenantUsage: {
     summary: {
       requestsCountLastDay: number
@@ -33,6 +33,7 @@ export interface ApiCallsStatisticsResponse extends BaseStatisticsApiResponse {
 }
 
 export interface ApiCallsExpandedStatisticsResponse extends BaseStatisticsApiResponse {
+  maxAllowedRequests?: number
   tenantUsage: {
     summary: {
       requestsCountLastDay: number
@@ -54,6 +55,8 @@ export interface ApiCallsExpandedStatisticsResponse extends BaseStatisticsApiRes
 }
 
 export interface MakeStatisticsResponse extends BaseStatisticsApiResponse {
+  maxAllowedUsage?: number
+  maxAllowedOperations?: number
   tenantUsage: {
     summary: {
       operationsLastDay: number
@@ -79,6 +82,8 @@ export interface MakeStatisticsResponse extends BaseStatisticsApiResponse {
 }
 
 export interface DatabaseStatisticsResponse extends BaseStatisticsApiResponse {
+  maxAllowedUsage?: number
+  maxAllowedStorageBytes?: number
   tenantUsage: {
     summary: {
       totalBytesLastDay: number
@@ -99,6 +104,8 @@ export interface DatabaseStatisticsResponse extends BaseStatisticsApiResponse {
 }
 
 export interface CloudinaryStatisticsResponse extends BaseStatisticsApiResponse {
+  maxAllowedUsage?: number
+  maxAllowedStorageBytes?: number
   tenantUsage: {
     summary: {
       numberOfObjectsLastDay: number
@@ -124,6 +131,9 @@ export interface CloudinaryStatisticsResponse extends BaseStatisticsApiResponse 
 }
 
 export interface AiStatisticsResponse extends BaseStatisticsApiResponse {
+  maxAllowedUsage?: number
+  maxAllowedAiInput?: number
+  maxAllowedAiOutput?: number
   tenantUsage: {
     summary: {
       inputUsageLastDay: number
@@ -149,6 +159,8 @@ export interface AiStatisticsResponse extends BaseStatisticsApiResponse {
 }
 
 export interface WebhooksStatisticsResponse extends BaseStatisticsApiResponse {
+  maxAllowedUsage?: number
+  maxAllowedEmittedEvents?: number
   tenantUsage: {
     summary: {
       emittedEventsLastDay: number

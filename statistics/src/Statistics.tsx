@@ -8,11 +8,7 @@ import { createCsvDownloadHandlers } from './utils/csvDownloaders'
 import TenantSelector from './components/TenantSelector'
 import MultiTenantStatisticsTab from './components/MultiTenantStatisticsTab'
 import AiStatisticsTab from './components/tabs/AiStatisticsTab'
-import ApiCallsView from './views/ApiCallsView'
-import MakeView from './views/MakeView'
-import DatabaseView from './views/DatabaseView'
-import CloudinaryView from './views/CloudinaryView'
-import WebhooksView from './views/WebhooksView'
+import { tabConfigs, DataKey, SummaryKey, AggregatedDataKey, CsvHandlerKey } from './tabs/statisticsTabConfig'
 
 const Statistics: React.FC = () => {
   const { t } = useTranslation()
@@ -85,10 +81,6 @@ const Statistics: React.FC = () => {
     }
   }, [timeUnit, startDate, endDate, selectedTenants, token])
 
-  useEffect(() => {
-    fetchDataForTab(0)
-  }, [selectedTenants, token])
-
   const handleTimeUnitChange = (unit: TimeUnit) => {
     setTimeUnit(unit)
   }
@@ -144,115 +136,46 @@ const Statistics: React.FC = () => {
 
       <div style={{ padding: '0 1rem' }}>
         <TabView activeIndex={activeTabIndex} onTabChange={handleTabChange}>
-          <TabPanel header={t('apiCalls')}>
-            {activeTabIndex === 0 && (
-              <MultiTenantStatisticsTab
-                selectedTenants={selectedTenants}
-                timeUnit={timeUnit}
-                startDate={startDate}
-                endDate={endDate}
-                isLoading={isLoading}
-                onTimeUnitChange={handleTimeUnitChange}
-                onStartDateChange={handleStartDateChange}
-                onEndDateChange={handleEndDateChange}
-                tenantData={statisticsData.statisticsData}
-                tenantSummaries={statisticsData.summary}
-                getAggregatedData={csvHandlers.getAggregatedApiCallsData}
-                renderTenantView={createViewRenderer(ApiCallsView, csvHandlers.handleDownloadApiCallsCSV)}
-              />
-            )}
-          </TabPanel>
-          <TabPanel header={t('make')}>
-            {activeTabIndex === 1 && (
-              <MultiTenantStatisticsTab
-                selectedTenants={selectedTenants}
-                timeUnit={timeUnit}
-                startDate={startDate}
-                endDate={endDate}
-                isLoading={isLoading}
-                onTimeUnitChange={handleTimeUnitChange}
-                onStartDateChange={handleStartDateChange}
-                onEndDateChange={handleEndDateChange}
-                tenantData={statisticsData.makeStatisticsData}
-                tenantSummaries={statisticsData.makeSummary}
-                getAggregatedData={csvHandlers.getAggregatedMakeData}
-                renderTenantView={createViewRenderer(MakeView, csvHandlers.handleDownloadMakeCSV)}
-              />
-            )}
-          </TabPanel>
-          <TabPanel header={t('database')}>
-            {activeTabIndex === 2 && (
-              <MultiTenantStatisticsTab
-                selectedTenants={selectedTenants}
-                timeUnit={timeUnit}
-                startDate={startDate}
-                endDate={endDate}
-                isLoading={isLoading}
-                onTimeUnitChange={handleTimeUnitChange}
-                onStartDateChange={handleStartDateChange}
-                onEndDateChange={handleEndDateChange}
-                tenantData={statisticsData.databaseStatisticsData}
-                tenantSummaries={statisticsData.databaseSummary}
-                getAggregatedData={csvHandlers.getAggregatedDatabaseData}
-                renderTenantView={createViewRenderer(DatabaseView, csvHandlers.handleDownloadDatabaseCSV)}
-              />
-            )}
-          </TabPanel>
-          <TabPanel header={t('cloudinary')}>
-            {activeTabIndex === 3 && (
-              <MultiTenantStatisticsTab
-                selectedTenants={selectedTenants}
-                timeUnit={timeUnit}
-                startDate={startDate}
-                endDate={endDate}
-                isLoading={isLoading}
-                onTimeUnitChange={handleTimeUnitChange}
-                onStartDateChange={handleStartDateChange}
-                onEndDateChange={handleEndDateChange}
-                tenantData={statisticsData.cloudinaryStatisticsData}
-                tenantSummaries={statisticsData.cloudinarySummary}
-                getAggregatedData={csvHandlers.getAggregatedCloudinaryData}
-                renderTenantView={createViewRenderer(CloudinaryView, csvHandlers.handleDownloadCloudinaryCSV)}
-              />
-            )}
-          </TabPanel>
-          <TabPanel header={t('ai')}>
-            {activeTabIndex === 4 && (
-              <AiStatisticsTab
-                selectedTenants={selectedTenants}
-                timeUnit={timeUnit}
-                startDate={startDate}
-                endDate={endDate}
-                isLoading={isLoading}
-                onTimeUnitChange={handleTimeUnitChange}
-                onStartDateChange={handleStartDateChange}
-                onEndDateChange={handleEndDateChange}
-                aggregatedData={csvHandlers.getAggregatedAiData()}
-                aiStatisticsData={statisticsData.aiStatisticsData}
-                aiInputSummary={statisticsData.aiInputSummary}
-                aiOutputSummary={statisticsData.aiOutputSummary}
-                onDownloadCSV={csvHandlers.handleDownloadAiCSV}
-              />
-            )}
-          </TabPanel>
-          <TabPanel header={t('webhooks')}>
-            {activeTabIndex === 5 && (
-              <MultiTenantStatisticsTab
-                selectedTenants={selectedTenants}
-                timeUnit={timeUnit}
-                startDate={startDate}
-                endDate={endDate}
-                isLoading={isLoading}
-                onTimeUnitChange={handleTimeUnitChange}
-                onStartDateChange={handleStartDateChange}
-                onEndDateChange={handleEndDateChange}
-                tenantData={statisticsData.webhooksStatisticsData}
-                tenantSummaries={statisticsData.webhooksSummary}
-                getAggregatedData={csvHandlers.getAggregatedWebhooksData}
-                renderTenantView={createViewRenderer(WebhooksView, csvHandlers.handleDownloadWebhooksCSV)}
-              />
-            )}
-          </TabPanel>
+          {tabConfigs.map((tab, idx) => (
+            <TabPanel header={t(tab.labelKey)} key={tab.key}>
+              {activeTabIndex === idx && (
+                tab.isAi ? (
+                  <AiStatisticsTab
+                    selectedTenants={selectedTenants}
+                    timeUnit={timeUnit}
+                    startDate={startDate}
+                    endDate={endDate}
+                    isLoading={isLoading}
+                    onTimeUnitChange={handleTimeUnitChange}
+                    onStartDateChange={handleStartDateChange}
+                    onEndDateChange={handleEndDateChange}
+                    aggregatedData={csvHandlers.getAggregatedAiData()}
+                    aiStatisticsData={statisticsData.aiStatisticsData}
+                    aiInputSummary={statisticsData.aiInputSummary}
+                    aiOutputSummary={statisticsData.aiOutputSummary}
+                    onDownloadCSV={csvHandlers.handleDownloadAiCSV}
+                  />
+                ) : (
+                  tab.dataKey && tab.summaryKey && tab.getAggregatedDataKey && tab.csvHandlerKey ? (
+                    <MultiTenantStatisticsTab
+                      selectedTenants={selectedTenants}
+                      timeUnit={timeUnit}
+                      startDate={startDate}
+                      endDate={endDate}
+                      isLoading={isLoading}
+                      onTimeUnitChange={handleTimeUnitChange}
+                      onStartDateChange={handleStartDateChange}
+                      onEndDateChange={handleEndDateChange}
+                      tenantData={statisticsData[tab.dataKey as DataKey]}
+                      tenantSummaries={statisticsData[tab.summaryKey as SummaryKey]}
+                      getAggregatedData={csvHandlers[tab.getAggregatedDataKey as AggregatedDataKey]}
+                      renderTenantView={createViewRenderer(tab.View, csvHandlers[tab.csvHandlerKey as CsvHandlerKey])}
+                    />
+                  ) : null
+                )
+              )}
+            </TabPanel>
+          ))}
         </TabView>
       </div>
     </div>
