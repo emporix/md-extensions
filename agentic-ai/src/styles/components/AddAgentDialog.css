@@ -1,0 +1,281 @@
+/* Add Agent Dialog Styles */
+.add-agent-dialog .p-dialog {
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+
+.add-agent-dialog .p-dialog-header {
+  padding: 0;
+  border-bottom: none;
+}
+
+.add-agent-dialog .p-dialog-content {
+  padding: 0;
+}
+
+.add-agent-dialog .p-dialog-header-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid #d1d5db;
+  color: #6b7280;
+}
+
+.add-agent-dialog .p-dialog-header-close:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* Dialog Header */
+.add-agent-dialog-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 2rem 1rem 2rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.add-agent-dialog-header .agent-icon {
+  width: 64px;
+  height: 64px;
+  background: #f8fafc;
+  border: 1px solid #d1d5db;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.dialog-title-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dialog-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.dialog-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+/* Form Styles */
+.add-agent-form {
+  padding: 0;
+}
+
+.add-agent-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 2rem 1rem 2rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.agent-icon {
+  width: 64px;
+  height: 64px;
+  background: #dbeafe;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  color: #2563eb;
+  margin-bottom: 1rem;
+}
+
+.agent-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.agent-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  max-width: 80%;
+  line-height: 1.5;
+}
+
+.form-fields-section {
+  padding: 2rem;
+  max-width: 100%;
+}
+
+.form-field {
+  margin-bottom: 1.5rem;
+}
+
+.form-field:last-child {
+  margin-bottom: 0;
+}
+
+.field-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.add-agent-form .p-inputtext,
+.add-agent-form .p-inputtextarea {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  background: #ffffff;
+}
+
+.add-agent-form .p-inputtext:focus,
+.add-agent-form .p-inputtextarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.add-agent-form .p-inputtextarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Dialog Actions */
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.discard-button {
+  background: transparent !important;
+  border: 1px solid #d1d5db !important;
+  color: #374151 !important;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  letter-spacing: 0.025em;
+}
+
+.discard-button:hover {
+  background: #f9fafb !important;
+  border-color: #9ca3af !important;
+  color: #1f2937 !important;
+}
+
+.discard-button:disabled {
+  background: #f3f4f6 !important;
+  border-color: #d1d5db !important;
+  color: #9ca3af !important;
+  cursor: not-allowed;
+  opacity: 1 !important;
+}
+
+.save-agent-button {
+  background: #3b82f6 !important;
+  border: 1px solid #3b82f6 !important;
+  color: white !important;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  letter-spacing: 0.025em;
+}
+
+.save-agent-button:hover:not(:disabled) {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+}
+
+.save-agent-button:disabled {
+  background: #d1d5db !important;
+  border-color: #d1d5db !important;
+  color: #9ca3af !important;
+  cursor: not-allowed;
+  opacity: 1 !important;
+}
+
+.add-agent-success-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 340px;
+}
+
+.success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  width: 64px;
+  height: 64px;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  border-radius: 50%;
+  color: #16a34a;
+  font-size: 1.75rem;
+}
+
+.add-agent-success-state .dialog-title {
+  color: #334155;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.add-agent-success-state .dialog-actions {
+  margin-top: 3rem;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.add-agent-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 340px;
+}
+
+.error-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.add-agent-error-state .dialog-title {
+  color: #b91c1c;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.add-agent-error-state .dialog-actions {
+  margin-top: 3rem;
+  justify-content: center;
+} 
