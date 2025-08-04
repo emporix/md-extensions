@@ -14,6 +14,10 @@ export { TagPicker } from './common/TagPicker';
 export { ErrorBoundary } from './common/ErrorBoundary';
 export { ConfirmDialog } from './common/ConfirmDialog';
 export { ToolsManager } from './common/ToolsManager';
+<<<<<<< Updated upstream
+=======
+export { AgentCollaborationManager } from './common/AgentCollaborationManager';
+>>>>>>> Stashed changes
 
 // MCP Server components
 export { McpServerList } from './common/mcp-server/McpServerList';

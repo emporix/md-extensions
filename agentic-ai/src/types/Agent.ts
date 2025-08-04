@@ -14,6 +14,14 @@ export interface NativeTool {
   };
 }
 
+<<<<<<< Updated upstream
+=======
+export interface AgentCollaboration {
+  agentId: string;
+  description: string;
+}
+
+>>>>>>> Stashed changes
 export interface LocalizedString {
   en: string
   [key: string]: string
@@ -70,6 +78,10 @@ export interface CustomAgent {
   llmConfig: LlmConfig
   mcpServers: McpServer[]
   nativeTools: NativeTool[]
+<<<<<<< Updated upstream
+=======
+  agentCollaborations: AgentCollaboration[]
+>>>>>>> Stashed changes
   maxRecursionLimit: number
   enableMemory: boolean
   enabled: boolean

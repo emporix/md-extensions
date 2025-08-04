@@ -27,6 +27,10 @@ interface AgentConfigState {
   selectedIcon: string;
   mcpServers: any[];
   nativeTools: any[];
+<<<<<<< Updated upstream
+=======
+  agentCollaborations: any[];
+>>>>>>> Stashed changes
   tags: string[];
 }
 
@@ -47,6 +51,10 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     selectedIcon: 'robot',
     mcpServers: [],
     nativeTools: [],
+<<<<<<< Updated upstream
+=======
+    agentCollaborations: [],
+>>>>>>> Stashed changes
     tags: []
   });
 
@@ -70,6 +78,10 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
         selectedIcon: agent.icon || 'robot',
         mcpServers: agent.mcpServers || [],
         nativeTools: agent.nativeTools || [],
+<<<<<<< Updated upstream
+=======
+        agentCollaborations: agent.agentCollaborations || [],
+>>>>>>> Stashed changes
         tags: agent.tags || []
       });
     }
@@ -107,6 +119,10 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
       enableMemory: state.enableMemory,
       mcpServers: state.mcpServers || [],
       nativeTools: state.nativeTools || [],
+<<<<<<< Updated upstream
+=======
+      agentCollaborations: state.agentCollaborations || [],
+>>>>>>> Stashed changes
       enabled: agent.enabled || false,
       metadata: agent.metadata || {
         version: 1,
