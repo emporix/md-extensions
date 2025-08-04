@@ -39,10 +39,6 @@ export const cleanAgentForConfig = (agent: CustomAgent, language: string = 'en')
     llmConfig: agent.llmConfig || { model: '', temperature: 0, maxTokens: 0, provider: 'emporix_openai', additionalParams: null },
     mcpServers: agent.mcpServers || [],
     nativeTools: agent.nativeTools || [],
-<<<<<<< Updated upstream
-=======
-    agentCollaborations: agent.agentCollaborations || [],
->>>>>>> Stashed changes
     maxRecursionLimit: agent.maxRecursionLimit || 20,
     enableMemory: agent.enableMemory !== undefined ? agent.enableMemory : true,
     enabled: agent.enabled || false,
@@ -65,10 +61,6 @@ export const createEmptyAgent = (): CustomAgent => ({
   llmConfig: { model: '', temperature: 0, maxTokens: 0, provider: 'emporix_openai', additionalParams: null },
   mcpServers: [],
   nativeTools: [],
-<<<<<<< Updated upstream
-=======
-  agentCollaborations: [],
->>>>>>> Stashed changes
   maxRecursionLimit: 20,
   enableMemory: true,
   enabled: true,

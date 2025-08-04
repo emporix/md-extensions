@@ -191,10 +191,6 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
           onHide={handleConfigClose}
           onSave={handleConfigSave}
           appState={appState}
-<<<<<<< Updated upstream
-=======
-          availableAgents={customAgents}
->>>>>>> Stashed changes
         />
       </ErrorBoundary>
 

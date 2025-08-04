@@ -78,11 +78,6 @@ const TRANSLATIONS_DE = {
   enter_bot_token: 'Bot-Token eingeben',
   teams_not_available: 'Microsoft Teams Integration ist noch nicht verfügbar',
   update: 'Aktualisieren',
-<<<<<<< Updated upstream
-=======
-  agent_collaboration: 'Agent-Kollaboration',
-  add_collaboration: 'Kollaboration hinzufügen',
->>>>>>> Stashed changes
 
   // MCP Servers
   mcp_servers: 'MCP-Server',
