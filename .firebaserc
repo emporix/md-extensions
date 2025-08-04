@@ -12,6 +12,9 @@
         "emporix-statistics": [
           "emporix-statistics"
         ],
+        "emporix-agentic-ai": [
+          "emporix-agentic-ai"
+        ],
         "emporix-site-settings": [
           "emporix-site-settings"
         ]
@@ -28,6 +31,9 @@
         "emporix-statistics-stage": [
           "emporix-statistics-stage"
         ],
+        "emporix-agentic-ai-stage": [
+          "emporix-agentic-ai-stage"
+        ],
         "emporix-site-settings-stage": [
           "emporix-site-settings-stage"
         ]
@@ -43,6 +49,9 @@
         ],
         "emporix-statistics-develop": [
           "emporix-statistics-develop"
+        ],
+        "emporix-agentic-ai-develop": [
+          "emporix-agentic-ai-develop"
         ],
         "emporix-site-settings-develop": [
           "emporix-site-settings-develop"
