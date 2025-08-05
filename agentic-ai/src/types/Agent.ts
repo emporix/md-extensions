@@ -79,6 +79,7 @@ export interface CustomAgent {
   maxRecursionLimit: number
   enableMemory: boolean
   enabled: boolean
+  handOff?: boolean
   metadata: Metadata
   icon?: string
   tags?: string[]

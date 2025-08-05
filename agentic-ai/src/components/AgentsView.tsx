@@ -132,17 +132,19 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
         
         {customAgentsError ? (
           <Message severity="error" text={customAgentsError} />
-        ) : customAgents.length > 0 ? (
+        ) : customAgents.filter(agent => !agent.handOff).length > 0 ? (
           <div className="agents-grid">
-            {customAgents.map(agent => (
-              <CustomAgentCard
-                key={agent.id}
-                agent={agent}
-                onToggleActive={toggleCustomAgentActive}
-                onConfigure={handleConfigure}
-                onRemove={removeCustomAgent}
-              />
-            ))}
+            {customAgents
+              .filter(agent => !agent.handOff)
+              .map(agent => (
+                <CustomAgentCard
+                  key={agent.id}
+                  agent={agent}
+                  onToggleActive={toggleCustomAgentActive}
+                  onConfigure={handleConfigure}
+                  onRemove={removeCustomAgent}
+                />
+              ))}
           </div>
         ) : (
           <div className="no-agents-message">
