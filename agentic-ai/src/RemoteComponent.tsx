@@ -2,6 +2,7 @@ import AgentsView from './components/AgentsView'
 import { useTranslation } from 'react-i18next'
 import { useEffect } from 'react'
 import { AppState } from './types/common'
+import { ToastProvider } from './contexts/ToastContext'
 import './translations/i18n'
 import './styles/agents.css'
 import './styles/components/AddAgentDialog.css'
@@ -26,7 +27,11 @@ const RemoteComponent = ({
     i18n.changeLanguage(language)
   }, [appState.language, i18n])
 
-  return <AgentsView appState={appState} />
+  return (
+    <ToastProvider>
+      <AgentsView appState={appState} />
+    </ToastProvider>
+  )
 }
 
 export default RemoteComponent

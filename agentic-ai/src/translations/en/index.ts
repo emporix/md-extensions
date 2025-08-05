@@ -78,6 +78,8 @@ const TRANSLATIONS_EN = {
   enter_bot_token: 'Enter bot token',
   teams_not_available: 'Microsoft Teams integration is not yet available',
   update: 'Update',
+  agent_collaboration: 'Agent Collaboration',
+  add_collaboration: 'Add Collaboration',
 
   // MCP Servers
   mcp_servers: 'MCP Servers',

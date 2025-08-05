@@ -3,6 +3,7 @@ import { AgentTemplate } from '../types/Agent';
 import { AgentService } from '../services/agentService';
 import { AppState } from '../types/common';
 import { getLocalizedValue } from '../utils/agentHelpers';
+import { useToast } from '../contexts/ToastContext';
 
 type Step = 'form' | 'loading' | 'success' | 'error';
 
@@ -19,6 +20,7 @@ export const useAddAgentDialog = ({
   onSave, 
   onHide 
 }: UseAddAgentDialogProps) => {
+  const { showSuccess, showError } = useToast();
   const [step, setStep] = useState<Step>('form');
   const [agentId, setAgentId] = useState('');
   const [agentName, setAgentName] = useState('');
@@ -65,19 +67,21 @@ export const useAddAgentDialog = ({
       }, 500);
     } catch (error) {
       clearInterval(progressInterval);
-      console.error('Error creating agent:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create agent';
+      showError(`Error creating agent: ${errorMessage}`);
       setStep('error');
     }
   }, [agentId, agentName, description, agentTemplate, appState]);
 
   const handleOk = useCallback(() => {
     if (step === 'success') {
+      showSuccess('Agent created successfully!');
       onSave(agentName, description, agentTemplate?.id || '');
     }
     onHide();
     setStep('form');
     setProgress(0);
-  }, [step, agentName, description, agentTemplate, onSave, onHide]);
+  }, [step, agentName, description, agentTemplate, onSave, onHide, showSuccess]);
 
   const handleDiscard = useCallback(() => {
     onHide();

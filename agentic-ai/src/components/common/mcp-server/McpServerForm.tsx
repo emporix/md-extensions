@@ -10,6 +10,7 @@ import { CustomHeaders } from '../CustomHeaders';
 interface McpServer {
   type: 'predefined' | 'custom';
   name?: McpKey | string;
+  enabled?: boolean;
   tools?: string[];
   url?: string;
   transport?: string;
@@ -59,12 +60,14 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(({
       onAdd({ 
         type: newMcpType, 
         name: newEmporixMcp, 
+        enabled: true,
         tools: newEmporixTools 
       });
     } else if (newMcpType === 'custom' && newCustomName && newCustomUrl) {
       onAdd({ 
         type: 'custom', 
         name: newCustomName, 
+        enabled: true,
         url: newCustomUrl, 
         transport: newCustomTransport, 
         config: {

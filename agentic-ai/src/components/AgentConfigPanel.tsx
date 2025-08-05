@@ -7,6 +7,7 @@ import { IconPicker } from './common/IconPicker';
 import { TagPicker } from './common/TagPicker';
 import { McpServerManager } from './common/McpServerManager';
 import { ToolsManager } from './common/ToolsManager';
+import { AgentCollaborationManager } from './common/AgentCollaborationManager';
 import { AgentHeader } from './agent-config/AgentHeader';
 import { AgentBasicInfo } from './agent-config/AgentBasicInfo';
 import { LlmConfigSection } from './agent-config/LlmConfigSection';
@@ -19,6 +20,7 @@ interface AgentConfigPanelProps {
   onHide: () => void;
   onSave: (agent: CustomAgent) => void;
   appState: AppState;
+  availableAgents: CustomAgent[];
 }
 
 const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({ 
@@ -26,7 +28,8 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
   agent, 
   onHide, 
   onSave, 
-  appState 
+  appState,
+  availableAgents 
 }) => {
   const { t } = useTranslation();
   const [showIconPicker, setShowIconPicker] = React.useState(false);
@@ -82,10 +85,15 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
             onMcpServersChange={(servers) => updateField('mcpServers', servers)}
           />
 
-          <ToolsManager
-            tools={state.nativeTools}
-            onChange={(tools) => updateField('nativeTools', tools)}
-          />
+                          <ToolsManager
+        tools={state.nativeTools}
+        onChange={(tools) => updateField('nativeTools', tools)}
+      />
+      <AgentCollaborationManager
+        collaborations={state.agentCollaborations}
+        onChange={(collaborations) => updateField('agentCollaborations', collaborations)}
+        availableAgents={availableAgents}
+      />
 
           <LlmConfigSection
             model={state.model}

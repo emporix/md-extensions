@@ -14,6 +14,11 @@ export interface NativeTool {
   };
 }
 
+export interface AgentCollaboration {
+  agentId: string;
+  description: string;
+}
+
 export interface LocalizedString {
   en: string
   [key: string]: string
@@ -70,6 +75,7 @@ export interface CustomAgent {
   llmConfig: LlmConfig
   mcpServers: McpServer[]
   nativeTools: NativeTool[]
+  agentCollaborations: AgentCollaboration[]
   maxRecursionLimit: number
   enableMemory: boolean
   enabled: boolean

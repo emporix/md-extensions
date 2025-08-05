@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { AgentService, PatchOperation } from '../services/agentService'
 import { AgentTemplate, CustomAgent } from '../types/Agent'
 import { AppState } from '../types/common'
+import { useToast } from '../contexts/ToastContext'
 
 interface UseAgentsResult {
   agents: AgentTemplate[]
@@ -28,6 +29,7 @@ interface UseAgentsResult {
 }
 
 export const useAgents = (appState: AppState): UseAgentsResult => {
+  const { showSuccess, showError } = useToast();
   const [agents, setAgents] = useState<AgentTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -49,11 +51,13 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
       const templates = await agentService.getAgentTemplates()
       setAgents(templates)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load agent templates')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load agent templates';
+      setError(errorMessage)
+      showError(`Error loading agent templates: ${errorMessage}`)
     } finally {
       setLoading(false)
     }
-  }, [appState])
+  }, [appState, showError])
 
   const loadCustomAgents = useCallback(async () => {
     try {
@@ -64,11 +68,13 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
       const customAgentsList = await agentService.getCustomAgents()
       setCustomAgents(customAgentsList)
     } catch (err) {
-      setCustomAgentsError(err instanceof Error ? err.message : 'Failed to load custom agents')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load custom agents';
+      setCustomAgentsError(errorMessage)
+      showError(`Error loading custom agents: ${errorMessage}`)
     } finally {
       setCustomAgentsLoading(false)
     }
-  }, [appState])
+  }, [appState, showError])
 
   const toggleAgentActive = useCallback((agentId: string, enabled: boolean) => {
     setAgents(prev => 
@@ -104,10 +110,13 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
       ]
       await agentService.patchCustomAgent(agentId, patches)
       
+      showSuccess(`Agent ${enabled ? 'activated' : 'deactivated'} successfully!`);
+      
       // Refresh the list to ensure consistency
       await loadCustomAgents()
     } catch (err) {
-      console.error('Failed to update agent enabled status:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update agent status';
+      showError(`Error updating agent: ${errorMessage}`);
       
       // Revert local state on error
       setCustomAgents(prev => 
@@ -115,22 +124,20 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
           agent.id === agentId ? { ...agent, enabled: !enabled } : agent
         )
       )
-      
-      // You might want to show an error message here
     }
-  }, [appState, loadCustomAgents, customAgents])
+      }, [appState, loadCustomAgents, customAgents, showError])
 
   const removeCustomAgent = useCallback((agentId: string) => {
     // Check if agent is active and prevent deletion
     const agent = customAgents.find(a => a.id === agentId)
     if (agent?.enabled) {
-      console.warn('Cannot delete active agent:', agentId)
+      showError('Cannot delete active agent. Please disable the agent first.');
       return
     }
     
     setAgentToDelete(agentId)
     setDeleteConfirmVisible(true)
-  }, [customAgents])
+  }, [customAgents, showError])
 
   const showDeleteConfirm = useCallback((agentId: string) => {
     setAgentToDelete(agentId)
@@ -152,14 +159,16 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
       // Remove from local state
       setCustomAgents(prev => prev.filter(agent => agent.id !== agentToDelete))
       
+      showSuccess('Agent deleted successfully!');
+      
       // Hide confirmation dialog
       hideDeleteConfirm()
     } catch (err) {
-      console.error('Failed to delete agent:', err)
-      // You might want to show an error message here
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete agent';
+      showError(`Error deleting agent: ${errorMessage}`);
       hideDeleteConfirm()
     }
-  }, [agentToDelete, appState, hideDeleteConfirm])
+  }, [agentToDelete, appState, hideDeleteConfirm, showSuccess, showError])
 
   useEffect(() => {
     loadAgentTemplates()

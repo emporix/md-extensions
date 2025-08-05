@@ -191,6 +191,7 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
           onHide={handleConfigClose}
           onSave={handleConfigSave}
           appState={appState}
+          availableAgents={customAgents}
         />
       </ErrorBoundary>
 

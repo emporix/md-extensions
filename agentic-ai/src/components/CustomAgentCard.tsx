@@ -60,17 +60,25 @@ const CustomAgentCard = memo(({
   const cardFooter = (
     <div className="custom-agent-card-footer">
       <div className="top-row">
-        <button className="text-button configure-button" onClick={() => onConfigure(agent)}>
+        <button 
+          className="text-button configure-button" 
+          onClick={(e) => {
+            e.stopPropagation();
+            onConfigure(agent);
+          }}
+        >
           <i className="pi pi-cog"></i>
           {t('configure')}
         </button>
       </div>
       
       <div className="bottom-row">
-        <div className="status-toggle">
+        <div className="status-toggle" onClick={(e) => e.stopPropagation()}>
           <InputSwitch 
             checked={isActive}
-            onChange={(e) => handleToggleActive(e.value)}
+            onChange={(e) => {
+              handleToggleActive(e.value);
+            }}
             className="agent-switch"
             disabled={isToggling}
           />
@@ -81,7 +89,10 @@ const CustomAgentCard = memo(({
         
         <button 
           className="text-button remove-button" 
-          onClick={() => onRemove(agent.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove(agent.id);
+          }}
           disabled={isActive}
           title={isActive ? t('cannot_delete_active_agent', 'Cannot delete active agent') : undefined}
         >
@@ -97,6 +108,8 @@ const CustomAgentCard = memo(({
       className="custom-agent-card"
       header={cardHeader}
       footer={cardFooter}
+      onClick={() => onConfigure(agent)}
+      style={{ cursor: 'pointer' }}
     >
       <div className="agent-content">
         <h3 className="agent-name">{agentName}</h3>

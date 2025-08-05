@@ -3,6 +3,7 @@ import { CustomAgent } from '../types/Agent';
 import { AgentService } from '../services/agentService';
 import { AppState } from '../types/common';
 import { getLocalizedValue } from '../utils/agentHelpers';
+import { useToast } from '../contexts/ToastContext';
 
 interface UseAgentConfigProps {
   agent: CustomAgent | null;
@@ -27,10 +28,12 @@ interface AgentConfigState {
   selectedIcon: string;
   mcpServers: any[];
   nativeTools: any[];
+  agentCollaborations: any[];
   tags: string[];
 }
 
 export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConfigProps) => {
+  const { showSuccess, showError } = useToast();
   const [state, setState] = useState<AgentConfigState>({
     agentId: '',
     agentName: '',
@@ -47,6 +50,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     selectedIcon: 'robot',
     mcpServers: [],
     nativeTools: [],
+    agentCollaborations: [],
     tags: []
   });
 
@@ -70,6 +74,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
         selectedIcon: agent.icon || 'robot',
         mcpServers: agent.mcpServers || [],
         nativeTools: agent.nativeTools || [],
+        agentCollaborations: agent.agentCollaborations || [],
         tags: agent.tags || []
       });
     }
@@ -107,6 +112,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
       enableMemory: state.enableMemory,
       mcpServers: state.mcpServers || [],
       nativeTools: state.nativeTools || [],
+      agentCollaborations: state.agentCollaborations || [],
       enabled: agent.enabled || false,
       metadata: agent.metadata || {
         version: 1,
@@ -123,11 +129,13 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
       const agentService = new AgentService(appState);
       const savedAgent = await agentService.upsertCustomAgent(updatedAgent);
       setSaving(false);
+      showSuccess(agent.id ? 'Agent updated successfully!' : 'Agent created successfully!');
       onSave(savedAgent);
       onHide();
-    } catch (e) {
-      console.error('Error saving agent:', e);
+    } catch (error) {
       setSaving(false);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save agent';
+      showError(`Error saving agent: ${errorMessage}`);
     }
   }, [agent, state, appState, onSave, onHide]);
 

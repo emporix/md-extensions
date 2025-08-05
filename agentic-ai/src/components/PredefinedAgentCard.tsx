@@ -47,10 +47,12 @@ const PredefinedAgentCard = memo(({
 
   const cardFooter = (
     <div className="predefined-agent-card-footer">
-      <div className="status-toggle">
+      <div className="status-toggle" onClick={(e) => e.stopPropagation()}>
         <InputSwitch 
           checked={isActive}
-          onChange={(e) => handleToggleActive(e.value)}
+          onChange={(e) => {
+            handleToggleActive(e.value);
+          }}
           className="agent-switch"
           disabled
         />
@@ -61,7 +63,10 @@ const PredefinedAgentCard = memo(({
       
       <button
         className="add-agent-button"
-        onClick={() => onAddAgent(agent.id)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onAddAgent(agent.id);
+        }}
         disabled={!agent.enabled}
         title={!agent.enabled ? t('template_not_enabled', 'This template is not enabled') : undefined}
       >
@@ -76,6 +81,8 @@ const PredefinedAgentCard = memo(({
       className="predefined-agent-card"
       header={cardHeader}
       footer={cardFooter}
+      onClick={() => onAddAgent(agent.id)}
+      style={{ cursor: 'pointer' }}
     >
       <div className="agent-content">
         <h3 className="agent-name">{agentName}</h3>

@@ -109,6 +109,7 @@ export class AgentService {
       },
       mcpServers: agent.mcpServers,
       nativeTools: agent.nativeTools,
+      agentCollaborations: agent.agentCollaborations || [],
       maxRecursionLimit: agent.maxRecursionLimit,
       enableMemory: agent.enableMemory,
       enabled: agent.enabled,
