@@ -122,7 +122,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(({
             />
           </div>
           <div className="form-field">
-            <label className="field-label">{t('tools', 'Tools')}</label>
+            <label className="field-label">{t('mcp_tools', 'Tools')}</label>
             <MultiSelect 
               value={newEmporixTools} 
               options={MCP_SERVERS[newEmporixMcp]?.tools?.map((tool: string) => ({ 

@@ -46,7 +46,7 @@ export const ToolsManager: React.FC<ToolsManagerProps> = ({ tools, onChange }) =
   return (
     <div className="tools-section">
       <div className="tools-header">
-        <h3 className="tools-title">{t('tools', 'Tools')}</h3>
+        <h3 className="tools-title">{t('mcp_tools', 'Tools')}</h3>
         <button
           className="tools-add-btn"
           onClick={() => setShowAddForm(true)}

@@ -1,0 +1,66 @@
+/* Tool-specific styles - reusing agent card styles for consistency */
+
+.add-new-tool-button {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: white !important;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+}
+
+.add-new-tool-button:hover {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+}
+
+.add-new-token-button {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: white !important;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+}
+
+.add-new-token-button:hover {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+}
+
+.add-new-mcp-server-button {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: white !important;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+}
+
+.add-new-mcp-server-button:hover {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+}
+
+.tool-type-badge {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.config-json {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875rem;
+  color: #374151;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}

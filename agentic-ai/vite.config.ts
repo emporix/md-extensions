@@ -25,6 +25,7 @@ export default defineConfig({
         'https://admin.emporix.io',
         'https://dev-admin.emporix.io',
         'https://stage-admin.emporix.io',
+        'http://localhost:4200',
         
       ],
       credentials: true,
@@ -36,6 +37,7 @@ export default defineConfig({
         'https://admin.emporix.io',
         'https://dev-admin.emporix.io',
         'https://stage-admin.emporix.io',
+        'http://localhost:4200',
       ],
       credentials: true,
     },
