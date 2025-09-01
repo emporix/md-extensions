@@ -1,7 +1,10 @@
 export interface McpServer {
-  type: string
-  domain: string
-  tools: string[]
+  type: 'predefined' | 'custom'
+  domain?: string    // For predefined servers
+  tools?: string[]   // For predefined servers
+  mcpServer?: {      // For custom servers (references MCP management)
+    id: string
+  }
 }
 
 export interface NativeTool {

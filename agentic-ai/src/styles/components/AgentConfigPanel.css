@@ -292,6 +292,102 @@
 .mcp-servers-add-btn:hover {
   background: #f1f5f9;
   color: #2563eb;
+}
+
+.mcp-servers-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* MCP Server Selector Styles (similar to Native Tools) */
+.mcp-server-icon {
+  font-size: 1.25rem;
+  color: #6b7280;
+}
+
+.mcp-server-name {
+  font-weight: 600;
+  color: #334155;
+  margin-right: auto;
+  min-width: 120px;
+}
+
+.mcp-server-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mcp-server-agent {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mcp-server-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.mcp-server-delete-btn {
+  background: transparent;
+  border: none;
+  color: #dc2626;
+  font-size: 1.1rem;
+  cursor: pointer;
+  align-self: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.mcp-server-delete-btn:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.mcp-server-config {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.mcp-server-type-badge {
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 16px;
+  border: 1px solid #bae6fd;
+}
+
+.mcp-server-details-text {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.mcp-server-form {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.mcp-server-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mcp-server-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
 } 
 
 .mcp-servers-list {

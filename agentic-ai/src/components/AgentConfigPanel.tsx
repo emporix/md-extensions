@@ -5,7 +5,7 @@ import { CustomAgent } from '../types/Agent';
 import { AppState } from '../types/common';
 import { IconPicker } from './common/IconPicker';
 import { TagPicker } from './common/TagPicker';
-import { McpServerManager } from './common/McpServerManager';
+import { McpServersSelector } from './common/McpServersSelector';
 import { NativeToolsSelector } from './common/NativeToolsSelector';
 import { AgentCollaborationManager } from './common/AgentCollaborationManager';
 import { AgentHeader } from './agent-config/AgentHeader';
@@ -80,9 +80,10 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
             onFieldChange={handleFieldChange}
           />
 
-          <McpServerManager 
+          <McpServersSelector
             mcpServers={state.mcpServers}
-            onMcpServersChange={(servers) => updateField('mcpServers', servers)}
+            onChange={(servers) => updateField('mcpServers', servers)}
+            appState={appState}
           />
 
           <NativeToolsSelector
