@@ -13,7 +13,7 @@ export { McpServerManager } from './common/McpServerManager';
 export { TagPicker } from './common/TagPicker';
 export { ErrorBoundary } from './common/ErrorBoundary';
 export { ConfirmDialog } from './common/ConfirmDialog';
-export { ToolsManager } from './common/ToolsManager';
+
 export { AgentCollaborationManager } from './common/AgentCollaborationManager';
 
 // MCP Server components

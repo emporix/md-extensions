@@ -1,17 +1,11 @@
 export interface McpServer {
   type: string
-  name: string
-  enabled: boolean
+  domain: string
   tools: string[]
 }
 
 export interface NativeTool {
-  type: 'slack' | 'teams';
-  enabled: boolean;
-  config?: {
-    teamId?: string;
-    botToken?: string;
-  };
+  id: string;
 }
 
 export interface AgentCollaboration {
@@ -50,7 +44,9 @@ export interface LlmConfig {
   maxTokens: number;
   provider: string;
   additionalParams: Record<string, unknown> | null;
-  apiKey?: string;
+  token?: {
+    id: string;
+  };
 }
 
 export interface Trigger {

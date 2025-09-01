@@ -22,7 +22,7 @@ interface AgentConfigState {
   temperature: string;
   maxTokens: string;
   provider: string;
-  apiKey: string;
+  tokenId: string;
   recursionLimit: string;
   enableMemory: boolean;
   selectedIcon: string;
@@ -44,7 +44,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     temperature: '0',
     maxTokens: '0',
     provider: 'emporix_openai',
-    apiKey: '',
+    tokenId: '',
     recursionLimit: '20',
     enableMemory: true,
     selectedIcon: 'robot',
@@ -68,7 +68,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
         temperature: agent.llmConfig?.temperature?.toString() || '0',
         maxTokens: agent.llmConfig?.maxTokens?.toString() || '0',
         provider: agent.llmConfig?.provider || 'emporix_openai',
-        apiKey: agent.llmConfig?.apiKey || '',
+        tokenId: agent.llmConfig?.token?.id || '',
         recursionLimit: agent.maxRecursionLimit?.toString() || '20',
         enableMemory: agent.enableMemory !== undefined ? !!agent.enableMemory : true,
         selectedIcon: agent.icon || 'robot',
@@ -106,7 +106,9 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
         maxTokens: parseInt(state.maxTokens, 10) || 0,
         provider: state.provider,
         additionalParams: agent.llmConfig?.additionalParams || null,
-        ...(state.provider !== 'emporix_openai' && { apiKey: state.apiKey || '' })
+        ...(state.provider !== 'emporix_openai' && state.tokenId && { 
+          token: { id: state.tokenId } 
+        })
       },
       maxRecursionLimit: parseInt(state.recursionLimit, 10) || 20,
       enableMemory: state.enableMemory,
@@ -150,12 +152,12 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
       state.model.trim()
     );
 
-    // API key validation:
+    // Token validation:
     // - Never required for emporix_openai
     // - Only required when creating (not updating) for other providers
-    const apiKeyValidation = isEmporixProvider || !isCreating || state.apiKey.trim();
+    const tokenValidation = isEmporixProvider || !isCreating || state.tokenId.trim();
 
-    return basicValidation && apiKeyValidation;
+    return basicValidation && tokenValidation;
   }, [state, agent?.id]);
 
   return {

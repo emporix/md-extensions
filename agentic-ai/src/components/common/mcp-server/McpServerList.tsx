@@ -5,7 +5,8 @@ import { McpServerForm } from './McpServerForm';
 
 interface McpServer {
   type: 'predefined' | 'custom';
-  name?: McpKey | string;
+  domain?: McpKey;
+  name?: string; // Only for custom servers
   tools?: string[];
   url?: string;
   transport?: string;
@@ -53,8 +54,8 @@ export const McpServerList: React.FC<McpServerListProps> = React.memo(({
                 <span className="mcp-server-type">
                   {server.type === 'predefined' ? t('emporix', 'Emporix') : t('custom', 'Custom')}
                 </span>
-                {server.type === 'predefined' && (
-                  <span className="mcp-server-mcp">{MCP_SERVERS[server.name as McpKey]?.name}</span>
+                {server.type === 'predefined' && server.domain && (
+                  <span className="mcp-server-mcp">{MCP_SERVERS[server.domain]?.name}</span>
                 )}
                 {server.type === 'custom' && (
                   <span className="mcp-server-custom-name">{server.name}</span>

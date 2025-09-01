@@ -6,7 +6,7 @@ import { AppState } from '../types/common';
 import { IconPicker } from './common/IconPicker';
 import { TagPicker } from './common/TagPicker';
 import { McpServerManager } from './common/McpServerManager';
-import { ToolsManager } from './common/ToolsManager';
+import { NativeToolsSelector } from './common/NativeToolsSelector';
 import { AgentCollaborationManager } from './common/AgentCollaborationManager';
 import { AgentHeader } from './agent-config/AgentHeader';
 import { AgentBasicInfo } from './agent-config/AgentBasicInfo';
@@ -85,10 +85,11 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
             onMcpServersChange={(servers) => updateField('mcpServers', servers)}
           />
 
-                          <ToolsManager
-        tools={state.nativeTools}
-        onChange={(tools) => updateField('nativeTools', tools)}
-      />
+          <NativeToolsSelector
+            nativeTools={state.nativeTools}
+            onChange={(tools) => updateField('nativeTools', tools)}
+            appState={appState}
+          />
       <AgentCollaborationManager
         collaborations={state.agentCollaborations}
         onChange={(collaborations) => updateField('agentCollaborations', collaborations)}
@@ -100,10 +101,11 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
             temperature={state.temperature}
             maxTokens={state.maxTokens}
             provider={state.provider}
-            apiKey={state.apiKey}
+            tokenId={state.tokenId}
             recursionLimit={state.recursionLimit}
             enableMemory={state.enableMemory}
             isEditing={!!agent?.id}
+            appState={appState}
             onFieldChange={handleFieldChange}
           />
 

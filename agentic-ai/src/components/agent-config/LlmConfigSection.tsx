@@ -1,19 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { InputSwitch } from 'primereact/inputswitch';
 import { LLM_PROVIDERS } from '../../utils/constants';
+import { TokensService } from '../../services/tokensService';
+import { Token } from '../../types/Token';
+import { AppState } from '../../types/common';
 
 interface LlmConfigSectionProps {
   model: string;
   temperature: string;
   maxTokens: string;
   provider: string;
-  apiKey: string;
+  tokenId: string;
   recursionLimit: string;
   enableMemory: boolean;
   isEditing: boolean;
+  appState: AppState;
   onFieldChange: (field: string, value: string | boolean) => void;
 }
 
@@ -22,13 +26,41 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
   temperature,
   maxTokens,
   provider,
-  apiKey,
+  tokenId,
   recursionLimit,
   enableMemory,
   isEditing,
+  appState,
   onFieldChange
 }) => {
   const { t } = useTranslation();
+  const [tokens, setTokens] = useState<Token[]>([]);
+  const [tokensLoading, setTokensLoading] = useState(false);
+
+  useEffect(() => {
+    const loadTokens = async () => {
+      if (provider !== 'emporix_openai') {
+        setTokensLoading(true);
+        try {
+          const tokensService = new TokensService(appState);
+          const fetchedTokens = await tokensService.getTokens();
+          setTokens(fetchedTokens);
+        } catch (error) {
+          console.error('Error loading tokens:', error);
+          setTokens([]);
+        } finally {
+          setTokensLoading(false);
+        }
+      }
+    };
+
+    loadTokens();
+  }, [provider, appState]);
+
+  const tokenOptions = tokens.map(token => ({
+    label: token.name,
+    value: token.id
+  }));
 
   return (
     <div className="llm-config-section">
@@ -74,17 +106,19 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
         {provider !== 'emporix_openai' && (
           <div className="form-field">
             <label className="field-label">
-              {t('api_key', 'API Key')} 
+              {t('token', 'Token')} 
               {!isEditing && <span style={{ color: 'red' }}> *</span>}
             </label>
-            <InputText 
-              value={apiKey} 
-              onChange={e => onFieldChange('apiKey', e.target.value)} 
-              className={`w-full ${!isEditing && !apiKey.trim() ? 'p-invalid' : ''}`}
-              placeholder={t('enter_api_key', 'Enter API key')}
+            <Dropdown 
+              value={tokenId} 
+              options={tokenOptions} 
+              onChange={e => onFieldChange('tokenId', e.value)} 
+              className={`w-full ${!isEditing && !tokenId.trim() ? 'p-invalid' : ''}`}
+              placeholder={tokensLoading ? t('loading_tokens', 'Loading tokens...') : t('select_token', 'Select token')}
+              disabled={tokensLoading}
             />
-            {!isEditing && !apiKey.trim() && (
-              <small className="p-error">{t('api_key_required', 'API key is required')}</small>
+            {!isEditing && !tokenId.trim() && (
+              <small className="p-error">{t('token_required', 'Token is required')}</small>
             )}
           </div>
         )}

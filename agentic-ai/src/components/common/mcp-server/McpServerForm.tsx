@@ -9,8 +9,8 @@ import { CustomHeaders } from '../CustomHeaders';
 
 interface McpServer {
   type: 'predefined' | 'custom';
-  name?: McpKey | string;
-  enabled?: boolean;
+  domain?: McpKey;
+  name?: string; // Only for custom servers
   tools?: string[];
   url?: string;
   transport?: string;
@@ -37,13 +37,13 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(({
     editingServer?.type || 'predefined'
   );
   const [newEmporixMcp, setNewEmporixMcp] = useState<McpKey>(
-    editingServer?.type === 'predefined' ? (editingServer.name as McpKey) : 'order'
+    editingServer?.type === 'predefined' && editingServer.domain ? editingServer.domain : 'order'
   );
   const [newEmporixTools, setNewEmporixTools] = useState<string[]>(
     editingServer?.tools || []
   );
   const [newCustomName, setNewCustomName] = useState(
-    editingServer?.type === 'custom' ? (editingServer.name as string) : ''
+    editingServer?.type === 'custom' && editingServer.name ? editingServer.name : ''
   );
   const [newCustomUrl, setNewCustomUrl] = useState(
     editingServer?.url || ''
@@ -59,15 +59,13 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(({
     if (newMcpType === 'predefined' && newEmporixTools.length > 0) {
       onAdd({ 
         type: newMcpType, 
-        name: newEmporixMcp, 
-        enabled: true,
+        domain: newEmporixMcp,
         tools: newEmporixTools 
       });
     } else if (newMcpType === 'custom' && newCustomName && newCustomUrl) {
       onAdd({ 
         type: 'custom', 
-        name: newCustomName, 
-        enabled: true,
+        name: newCustomName,
         url: newCustomUrl, 
         transport: newCustomTransport, 
         config: {
