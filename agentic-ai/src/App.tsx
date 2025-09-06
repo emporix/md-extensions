@@ -7,7 +7,7 @@ import { InputText } from 'primereact/inputtext';
 import 'primereact/resources/themes/lara-light-indigo/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
-import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { ErrorBoundary } from './components/shared/ErrorBoundary';
 
 function App() {
   const [tenant, setTenant] = useState(localStorage.getItem('tenant') || '')

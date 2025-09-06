@@ -1,18 +1,18 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'primereact/button';
-import { CustomAgent } from '../types/Agent';
-import { AppState } from '../types/common';
-import { IconPicker } from './common/IconPicker';
-import { TagPicker } from './common/TagPicker';
-import { McpServersSelector } from './common/McpServersSelector';
-import { NativeToolsSelector } from './common/NativeToolsSelector';
-import { AgentCollaborationManager } from './common/AgentCollaborationManager';
+import { CustomAgent } from '../../types/Agent';
+import { AppState } from '../../types/common';
+import { IconPicker } from '../shared/IconPicker';
+import { TagPicker } from '../shared/TagPicker';
+import { McpServersSelector } from '../shared/McpServersSelector';
+import { NativeToolsSelector } from '../shared/NativeToolsSelector';
+import { AgentCollaborationManager } from '../shared/AgentCollaborationManager';
 import { AgentHeader } from './agent-config/AgentHeader';
 import { AgentBasicInfo } from './agent-config/AgentBasicInfo';
 import { LlmConfigSection } from './agent-config/LlmConfigSection';
-import { useAgentConfig } from '../hooks/useAgentConfig';
-import { usePanelAnimation } from '../hooks/usePanelAnimation';
+import { useAgentConfig } from '../../hooks/useAgentConfig';
+import { usePanelAnimation } from '../../hooks/usePanelAnimation';
 
 interface AgentConfigPanelProps {
   visible: boolean;

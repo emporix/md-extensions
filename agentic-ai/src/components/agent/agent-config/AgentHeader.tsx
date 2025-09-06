@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRobot } from '@fortawesome/free-solid-svg-icons';
-import { iconMap } from '../../utils/agentHelpers';
+import { iconMap } from '../../../utils/agentHelpers';
 
 interface AgentHeaderProps {
   agentName: string;

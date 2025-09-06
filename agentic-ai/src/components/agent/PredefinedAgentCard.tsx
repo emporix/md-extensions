@@ -1,11 +1,11 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AgentTemplate } from '../types/Agent';
-import { AgentCardBaseProps } from '../types/common';
-import { getLocalizedValue, iconMap } from '../utils/agentHelpers';
+import { AgentTemplate } from '../../types/Agent';
+import { AgentCardBaseProps } from '../../types/common';
+import { getLocalizedValue, iconMap } from '../../utils/agentHelpers';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRobot } from '@fortawesome/free-solid-svg-icons';
-import AgentCard from './common/AgentCard';
+import AgentCard from '../shared/AgentCard';
 
 interface PredefinedAgentCardProps extends AgentCardBaseProps {
   agent: AgentTemplate

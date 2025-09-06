@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { InputSwitch } from 'primereact/inputswitch';
-import { LLM_PROVIDERS } from '../../utils/constants';
-import { TokensService } from '../../services/tokensService';
-import { Token } from '../../types/Token';
-import { AppState } from '../../types/common';
+import { LLM_PROVIDERS } from '../../../utils/constants';
+import { TokensService } from '../../../services/tokensService';
+import { Token } from '../../../types/Token';
+import { AppState } from '../../../types/common';
 
 interface LlmConfigSectionProps {
   model: string;

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
-import { Tool, ToolConfigPanelProps } from '../types/Tool';
-import { ToolsService } from '../services/toolsService';
-import { usePanelAnimation } from '../hooks/usePanelAnimation';
-import { useToast } from '../contexts/ToastContext';
+import { Tool, ToolConfigPanelProps } from '../../types/Tool';
+import { ToolsService } from '../../services/toolsService';
+import { useToast } from '../../contexts/ToastContext';
+import { BaseConfigPanel } from '../shared/BaseConfigPanel';
+import { faTools } from '@fortawesome/free-solid-svg-icons';
 
 const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({ 
   visible, 
@@ -20,11 +20,6 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   const [toolName, setToolName] = useState('');
   const [config, setConfig] = useState<Record<string, any>>({});
   const [saving, setSaving] = useState(false);
-
-  const { isVisible, isClosing, handleClose, handleBackdropClick } = usePanelAnimation({
-    visible,
-    onHide
-  });
 
   useEffect(() => {
     if (tool) {
@@ -51,7 +46,6 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       
       showSuccess(t('tool_updated_successfully', 'Tool updated successfully!'));
       onSave(savedTool);
-      handleClose();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to save tool';
       showError(`${t('error_saving_tool', 'Error saving tool')}: ${errorMessage}`);
@@ -134,76 +128,52 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     }
   };
 
-  if (!isVisible) return null;
+  const canSave = !saving && !!toolName.trim() && (!!tool?.id || !!toolId.trim());
 
   return (
-    <>
-      <div 
-        className={`agent-config-backdrop ${!isClosing ? 'backdrop-visible' : ''}`}
-        onClick={handleBackdropClick} 
-      />
-      
-      <div className="agent-config-panel tool-config-panel">
-        <div className="agent-config-header">
-          <h2 className="panel-title">{t('tool_configuration', 'Tool Configuration')}</h2>
-        </div>
-        
-        <div className="agent-config-content">
-          <div className="agent-config-icon-row">
-            <div className="agent-icon">🔧</div>
-            <div className="agent-config-name-block">
-              <h3 className="agent-config-name">{toolName}</h3>
-            </div>
-          </div>
-
-          <div className="form-field">
-            <label className="field-label">{t('tool_id', 'Tool ID')}</label>
-            <InputText
-              value={toolId}
-              onChange={(e) => setToolId(e.target.value)}
-              className="w-full"
-              disabled={!!tool?.id}
-              placeholder={t('enter_tool_id', 'Enter tool ID')}
-            />
-          </div>
-
-          <div className="form-field">
-            <label className="field-label">{t('tool_name', 'Tool Name')}</label>
-            <InputText
-              value={toolName}
-              onChange={(e) => setToolName(e.target.value)}
-              className="w-full"
-              placeholder={t('enter_tool_name', 'Enter tool name')}
-            />
-          </div>
-
-          <div className="form-field">
-            <label className="field-label">{t('tool_type', 'Tool Type')}</label>
-            <InputText
-              value={tool?.type || ''}
-              className="w-full"
-              disabled
-            />
-          </div>
-
-          {renderConfigFields()}
-
-          <div className="panel-actions">
-            <Button 
-              label={t('cancel', 'Cancel')} 
-              className="discard-button" 
-              onClick={handleClose} 
-            />
-                         <Button 
-               label={t('save', 'Save')} 
-               className="save-agent-button" 
-               onClick={handleSave} 
-               disabled={saving || !toolName.trim() || (!tool?.id && !toolId.trim())} 
-             />
-          </div>
-        </div>
+    <BaseConfigPanel
+      visible={visible}
+      onHide={onHide}
+      title={t('tool_configuration', 'Tool Configuration')}
+      icon={faTools}
+      iconName={toolName}
+      onSave={handleSave}
+      saving={saving}
+      canSave={canSave}
+      className="tool-config-panel"
+    >
+      <div className="form-field">
+        <label className="field-label">{t('tool_id', 'Tool ID')}</label>
+        <InputText
+          value={toolId}
+          onChange={(e) => setToolId(e.target.value)}
+          className="w-full"
+          disabled={!!tool?.id}
+          placeholder={t('enter_tool_id', 'Enter tool ID')}
+        />
       </div>
-    </>
+
+      <div className="form-field">
+        <label className="field-label">{t('tool_name', 'Tool Name')}</label>
+        <InputText
+          value={toolName}
+          onChange={(e) => setToolName(e.target.value)}
+          className="w-full"
+          placeholder={t('enter_tool_name', 'Enter tool name')}
+        />
+      </div>
+
+      <div className="form-field">
+        <label className="field-label">{t('tool_type', 'Tool Type')}</label>
+        <InputText
+          value={tool?.type || ''}
+          className="w-full"
+          disabled
+        />
+      </div>
+
+      {renderConfigFields()}
+    </BaseConfigPanel>
   );
 };
 

@@ -5,12 +5,12 @@ import { Message } from 'primereact/message';
 import { Button } from 'primereact/button';
 import McpCard from './McpCard';
 import McpConfigPanel from './McpConfigPanel';
-import { ConfirmDialog } from './common/ConfirmDialog';
-import { McpServer } from '../types/Mcp';
-import { useMcp } from '../hooks/useMcp';
-import { AppState } from '../types/common';
-import { createEmptyMcpServer } from '../utils/mcpHelpers';
-import { useToast } from '../contexts/ToastContext';
+import { ConfirmDialog } from '../shared/ConfirmDialog';
+import { McpServer } from '../../types/Mcp';
+import { useMcp } from '../../hooks/useMcp';
+import { AppState } from '../../types/common';
+import { createEmptyMcpServer } from '../../utils/mcpHelpers';
+import { useToast } from '../../contexts/ToastContext';
 
 interface McpPageProps {
   appState?: AppState;

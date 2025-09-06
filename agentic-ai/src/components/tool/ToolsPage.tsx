@@ -5,11 +5,11 @@ import { Message } from 'primereact/message';
 import { Button } from 'primereact/button';
 import ToolCard from './ToolCard';
 import ToolConfigPanel from './ToolConfigPanel';
-import { ConfirmDialog } from './common/ConfirmDialog';
-import { Tool } from '../types/Tool';
-import { useTools } from '../hooks/useTools';
-import { AppState } from '../types/common';
-import { createEmptyTool } from '../utils/toolHelpers';
+import { ConfirmDialog } from '../shared/ConfirmDialog';
+import { Tool } from '../../types/Tool';
+import { useTools } from '../../hooks/useTools';
+import { AppState } from '../../types/common';
+import { createEmptyTool } from '../../utils/toolHelpers';
 
 interface ToolsPageProps {
   appState?: AppState;

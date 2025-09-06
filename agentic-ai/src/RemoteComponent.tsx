@@ -1,7 +1,4 @@
-import AgentsView from './components/AgentsView'
-import ToolsPage from './components/ToolsPage'
-import TokensPage from './components/TokensPage'
-import McpPage from './components/McpPage'
+import { AgentsView, ToolsPage, TokensPage, McpPage } from './components'
 import { useTranslation } from 'react-i18next'
 import { useEffect } from 'react'
 import { HashRouter, Routes, Route, Navigate } from 'react-router'

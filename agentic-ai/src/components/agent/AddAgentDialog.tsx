@@ -1,13 +1,13 @@
 import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog } from 'primereact/dialog';
-import { AgentTemplate } from '../types/Agent';
-import { AppState } from '../types/common';
+import { AgentTemplate } from '../../types/Agent';
+import { AppState } from '../../types/common';
 import { FormStep } from './add-agent/FormStep';
 import { LoadingStep } from './add-agent/LoadingStep';
 import { SuccessStep } from './add-agent/SuccessStep';
 import { ErrorStep } from './add-agent/ErrorStep';
-import { useAddAgentDialog } from '../hooks/useAddAgentDialog';
+import { useAddAgentDialog } from '../../hooks/useAddAgentDialog';
 
 interface AddAgentDialogProps {
   visible: boolean;

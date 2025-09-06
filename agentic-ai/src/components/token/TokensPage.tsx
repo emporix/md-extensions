@@ -5,12 +5,12 @@ import { Message } from 'primereact/message';
 import { Button } from 'primereact/button';
 import TokenCard from './TokenCard';
 import TokenConfigPanel from './TokenConfigPanel';
-import { ConfirmDialog } from './common/ConfirmDialog';
-import { Token } from '../types/Token';
-import { useTokens } from '../hooks/useTokens';
-import { AppState } from '../types/common';
-import { createEmptyToken } from '../utils/tokenHelpers';
-import { useToast } from '../contexts/ToastContext';
+import { ConfirmDialog } from '../shared/ConfirmDialog';
+import { Token } from '../../types/Token';
+import { useTokens } from '../../hooks/useTokens';
+import { AppState } from '../../types/common';
+import { createEmptyToken } from '../../utils/tokenHelpers';
+import { useToast } from '../../contexts/ToastContext';
 
 interface TokensPageProps {
   appState?: AppState;

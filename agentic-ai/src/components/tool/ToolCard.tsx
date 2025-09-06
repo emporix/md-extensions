@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ToolCardProps } from '../types/Tool';
+import { ToolCardProps } from '../../types/Tool';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSlack, faMicrosoft } from '@fortawesome/free-brands-svg-icons';
 import { faTools } from '@fortawesome/free-solid-svg-icons';
-import BaseCard from './common/BaseCard';
+import BaseCard from '../shared/BaseCard';
 
 const ToolCard: React.FC<ToolCardProps> = ({ tool, onConfigure, onRemove }) => {
   const { t } = useTranslation();

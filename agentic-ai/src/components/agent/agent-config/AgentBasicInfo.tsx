@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Dropdown } from 'primereact/dropdown';
-import { TRIGGER_TYPES } from '../../utils/constants';
+import { TRIGGER_TYPES } from '../../../utils/constants';
 
 interface AgentBasicInfoProps {
   agentId: string;

@@ -1,9 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { McpCardProps } from '../types/Mcp';
+import { McpCardProps } from '../../types/Mcp';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faServer } from '@fortawesome/free-solid-svg-icons';
-import BaseCard from './common/BaseCard';
+import BaseCard from '../shared/BaseCard';
 
 const McpCard: React.FC<McpCardProps> = ({ mcpServer, onConfigure, onRemove }) => {
   const { t } = useTranslation();

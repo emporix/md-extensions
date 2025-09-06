@@ -1,9 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { TokenCardProps } from '../types/Token';
+import { TokenCardProps } from '../../types/Token';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faKey } from '@fortawesome/free-solid-svg-icons';
-import BaseCard from './common/BaseCard';
+import BaseCard from '../shared/BaseCard';
 
 const TokenCard: React.FC<TokenCardProps> = ({ token, onConfigure, onRemove }) => {
   const { t } = useTranslation();
