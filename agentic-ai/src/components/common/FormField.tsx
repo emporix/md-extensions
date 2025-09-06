@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 interface FormFieldProps {
   label: string;
@@ -8,7 +8,7 @@ interface FormFieldProps {
   className?: string;
 }
 
-export const FormField: React.FC<FormFieldProps> = ({ 
+export const FormField: React.FC<FormFieldProps> = memo(({ 
   label, 
   required = false, 
   error, 
@@ -26,4 +26,6 @@ export const FormField: React.FC<FormFieldProps> = ({
       )}
     </div>
   );
-}; 
+});
+
+FormField.displayName = 'FormField'; 

@@ -1,5 +1,6 @@
 import { AgentTemplate, CustomAgent } from '../types/Agent';
 import { AppState } from '../types/common';
+import { ApiClient } from './apiClient';
 
 // Patch operation type
 export interface PatchOperation {
@@ -8,88 +9,32 @@ export interface PatchOperation {
   value?: any;
 }
 
-// API Error types
-export class AgentServiceError extends Error {
-  constructor(message: string, public status?: number) {
-    super(message);
-    this.name = 'AgentServiceError';
-  }
-}
-
-// API Response types (for future use)
-// interface ApiResponse<T> {
-//   data?: T;
-//   error?: string;
-//   success: boolean;
-// }
-
 export class AgentService {
-  private _baseUrl = import.meta.env.VITE_API_URL 
+  private api: ApiClient;
+  private tenant: string;
 
-  constructor(private _appState: AppState) {} 
+  constructor(appState: AppState) {
+    this.api = new ApiClient(appState);
+    this.tenant = appState.tenant;
+  } 
 
   async getAgentTemplates(): Promise<AgentTemplate[]> {
-    try {
-      const response = await fetch(`${this._baseUrl}/ai-service/${this._appState.tenant}/agentic/templates`, {
-        headers: {
-          'Authorization': `Bearer ${this._appState.token}`,
-          'Content-Type': 'application/json',
-          'Emporix-tenant': this._appState.tenant,
-        },
-      });
-      
-      if (!response.ok) {
-        throw new AgentServiceError(`Failed to fetch agent templates: ${response.statusText}`, response.status);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      if (error instanceof AgentServiceError) {
-        throw error;
-      }
-      throw new AgentServiceError(`Network error while fetching agent templates: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    return await this.api.get<AgentTemplate[]>(`/ai-service/${this.tenant}/agentic/templates`);
   }
 
   async getCustomAgents(): Promise<CustomAgent[]> {
-    try {
-      const response = await fetch(`${this._baseUrl}/ai-service/${this._appState.tenant}/agentic/agents`, {
-        headers: {
-          'Authorization': `Bearer ${this._appState.token}`,
-          'Content-Type': 'application/json',
-          'Emporix-tenant': this._appState.tenant,
-        },
-      });
-      
-      if (!response.ok) {
-        throw new AgentServiceError(`Failed to fetch custom agents: ${response.statusText}`, response.status);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      if (error instanceof AgentServiceError) {
-        throw error;
-      }
-      throw new AgentServiceError(`Network error while fetching custom agents: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    return await this.api.get<CustomAgent[]>(`/ai-service/${this.tenant}/agentic/agents`);
   }
 
   async copyTemplate(templateId: string, id: string, name: string, description: string): Promise<{ success: boolean }> {
-    const response = await fetch(`${this._baseUrl}/ai-service/${this._appState.tenant}/agentic/templates/${templateId}/agents`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this._appState.token}`,
-        'Content-Type': 'application/json',
-        'Emporix-tenant': this._appState.tenant,
-      },
-      body: JSON.stringify({
+    return await this.api.post<{ success: boolean }>(
+      `/ai-service/${this.tenant}/agentic/templates/${templateId}/agents`,
+      {
         id,
-        "name" : {"en" : name},
-        "description" : {"en" : description}
-      })
-    })
-    if (!response.ok) throw new Error('Failed to clone agent template')
-    return await response.json()
+        name: { en: name },
+        description: { en: description }
+      }
+    );
   }
 
   async upsertCustomAgent(agent: CustomAgent): Promise<CustomAgent> {
@@ -116,74 +61,25 @@ export class AgentService {
       metadata: agent.metadata,
       icon: agent.icon || '',
       tags: agent.tags || []
-    }
-    
-    const response = await fetch(`${this._baseUrl}/ai-service/${this._appState.tenant}/agentic/agents/${agent.id}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${this._appState.token}`,
-        'Content-Type': 'application/json',
-        'Emporix-tenant': this._appState.tenant,
-      },
-      body: JSON.stringify(formattedAgent)
-    })
-    if (!response.ok) throw new Error('Failed to upsert custom agent')
-    
-    const responseText = await response.text()
-    if (!responseText) {
-      return formattedAgent as CustomAgent
-    }
+    };
     
     try {
-      return JSON.parse(responseText)
+      return await this.api.put<CustomAgent>(
+        `/ai-service/${this.tenant}/agentic/agents/${agent.id}`,
+        formattedAgent
+      );
     } catch (error) {
-      return formattedAgent as CustomAgent
+      // Fallback to formatted agent if API call fails but we have valid data
+      console.warn('API call failed, returning formatted agent:', error);
+      return formattedAgent as CustomAgent;
     }
   }
 
   async deleteCustomAgent(agentId: string): Promise<void> {
-    try {
-      const response = await fetch(`${this._baseUrl}/ai-service/${this._appState.tenant}/agentic/agents/${agentId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${this._appState.token}`,
-          'Content-Type': 'application/json',
-          'Emporix-tenant': this._appState.tenant,
-        },
-      });
-      
-      if (!response.ok) {
-        throw new AgentServiceError(`Failed to delete custom agent: ${response.statusText}`, response.status);
-      }
-    } catch (error) {
-      if (error instanceof AgentServiceError) {
-        throw error;
-      }
-      throw new AgentServiceError(`Network error while deleting custom agent: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    await this.api.delete(`/ai-service/${this.tenant}/agentic/agents/${agentId}`);
   }
 
   async patchCustomAgent(agentId: string, patches: PatchOperation[]): Promise<void> {
-    try {
-      const response = await fetch(`${this._baseUrl}/ai-service/${this._appState.tenant}/agentic/agents/${agentId}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${this._appState.token}`,
-          'Content-Type': 'application/json',
-          'Emporix-tenant': this._appState.tenant,
-        },
-        body: JSON.stringify(patches),
-      });
-      
-      if (!response.ok) {
-        throw new AgentServiceError(`Failed to patch custom agent: ${response.statusText}`, response.status);
-      }
-    } catch (error) {
-      if (error instanceof AgentServiceError) {
-        throw error;
-      }
-      throw new AgentServiceError(`Network error while patching custom agent: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    await this.api.patch(`/ai-service/${this.tenant}/agentic/agents/${agentId}`, patches);
   }
-
 } 

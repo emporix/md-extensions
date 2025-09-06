@@ -7,7 +7,6 @@ export { default as PredefinedAgentCard } from './PredefinedAgentCard';
 
 // Common components
 export { FormField } from './common/FormField';
-export { MemoizedFormField } from './common/MemoizedFormField';
 export { IconPicker } from './common/IconPicker';
 export { McpServerManager } from './common/McpServerManager';
 export { TagPicker } from './common/TagPicker';

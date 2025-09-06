@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Token } from '../types/Token';
-import { TokensService } from '../services/tokensService';
 import { AppState } from '../types/common';
 import { useToast } from '../contexts/ToastContext';
+import { formatApiError } from '../utils/errorHelpers';
+import { ServiceFactory } from '../services/serviceFactory';
 
 export const useTokens = (appState: AppState) => {
   const [tokens, setTokens] = useState<Token[]>([]);
@@ -14,7 +15,7 @@ export const useTokens = (appState: AppState) => {
   const { showSuccess, showError } = useToast();
   const { t } = useTranslation();
 
-  const tokensService = new TokensService(appState);
+  const tokensService = useMemo(() => ServiceFactory.getTokensService(appState), [appState]);
 
   const loadTokens = useCallback(async () => {
     try {
@@ -23,12 +24,13 @@ export const useTokens = (appState: AppState) => {
       const fetchedTokens = await tokensService.getTokens();
       setTokens(fetchedTokens);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load tokens');
+      const message = formatApiError(err, 'Failed to load tokens');
+      setError(message);
       console.error('Error loading tokens:', err);
     } finally {
       setLoading(false);
     }
-  }, [appState.tenant, appState.token]);
+  }, [tokensService]);
 
   const upsertToken = useCallback(async (updatedToken: Token) => {
     try {
@@ -47,10 +49,11 @@ export const useTokens = (appState: AppState) => {
       });
       return savedToken;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upsert token');
+      const message = formatApiError(err, 'Failed to upsert token');
+      setError(message);
       throw err;
     }
-  }, []);
+  }, [tokensService]);
 
   const removeToken = useCallback((tokenId: string) => {
     setTokenToDelete(tokenId);
@@ -76,11 +79,11 @@ export const useTokens = (appState: AppState) => {
       // Hide confirmation dialog
       hideDeleteConfirm();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete token';
+      const errorMessage = formatApiError(err, 'Failed to delete token');
       showError(`Error deleting token: ${errorMessage}`);
       hideDeleteConfirm();
     }
-  }, [tokenToDelete, tokensService, showSuccess, showError, hideDeleteConfirm]);
+  }, [tokenToDelete, tokensService, showSuccess, showError, hideDeleteConfirm, t]);
 
   const refreshTokens = useCallback(() => {
     loadTokens();

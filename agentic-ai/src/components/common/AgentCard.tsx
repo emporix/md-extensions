@@ -1,0 +1,166 @@
+import React, { useState, useCallback } from 'react';
+import { Card } from 'primereact/card';
+import { InputSwitch } from 'primereact/inputswitch';
+import { Badge } from 'primereact/badge';
+import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRobot } from '@fortawesome/free-solid-svg-icons';
+
+export interface AgentCardAction {
+  icon?: string;
+  label: string;
+  onClick: (e: React.MouseEvent) => void;
+  disabled?: boolean;
+  title?: string;
+  className?: string;
+}
+
+export interface AgentCardProps {
+  id: string;
+  name: string;
+  description: string;
+  icon?: React.ReactNode;
+  tags?: string[];
+  enabled: boolean;
+  className?: string;
+  primaryActions?: AgentCardAction[];
+  secondaryActions?: AgentCardAction[];
+  onToggleActive?: (id: string, enabled: boolean) => void | Promise<void>;
+  onClick?: () => void;
+  switchDisabled?: boolean;
+  children?: React.ReactNode;
+}
+
+const AgentCard: React.FC<AgentCardProps> = ({
+  id,
+  name,
+  description,
+  icon,
+  tags = [],
+  enabled,
+  className = 'custom-agent-card',
+  primaryActions = [],
+  secondaryActions = [],
+  onToggleActive,
+  onClick,
+  switchDisabled = false,
+  children
+}) => {
+  const { t } = useTranslation();
+  const [isActive, setIsActive] = useState(enabled);
+  const [isToggling, setIsToggling] = useState(false);
+
+  const handleToggleActive = useCallback(async (newEnabled: boolean) => {
+    if (!onToggleActive) return;
+    
+    setIsToggling(true);
+    try {
+      setIsActive(newEnabled);
+      await onToggleActive(id, newEnabled);
+    } catch (error) {
+      // Revert the local state if the API call fails
+      setIsActive(!newEnabled);
+      console.error('Failed to toggle agent status:', error);
+    } finally {
+      setIsToggling(false);
+    }
+  }, [id, onToggleActive]);
+
+  const getAgentStatusLabel = (active: boolean) => {
+    return active ? t('active', 'Active') : t('inactive', 'Inactive');
+  };
+
+  const cardHeader = (
+    <div className="custom-agent-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="agent-icon">
+        {icon || <FontAwesomeIcon icon={faRobot} />}
+      </div>
+      <div className="agent-tags">
+        {tags.map(tag => (
+          <Badge value={tag} key={tag} className="agent-tag-badge" />
+        ))}
+      </div>
+    </div>
+  );
+
+  const cardFooter = (
+    <div className="custom-agent-card-footer">
+      {primaryActions.length > 0 && (
+        <div className="top-row">
+          {primaryActions.map((action, index) => (
+            <button
+              key={index}
+              className={`text-button ${action.className || 'configure-button'}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                action.onClick(e);
+              }}
+              disabled={action.disabled}
+              title={action.title}
+            >
+              {action.icon && <i className={action.icon}></i>}
+              {action.label}
+            </button>
+          ))}
+        </div>
+      )}
+      
+      <div className="bottom-row">
+        {onToggleActive && (
+          <div className="status-toggle" onClick={(e) => e.stopPropagation()}>
+            <InputSwitch 
+              checked={isActive}
+              onChange={(e) => handleToggleActive(e.value)}
+              className="agent-switch"
+              disabled={isToggling || switchDisabled}
+            />
+            <span className="status-label">
+              {isToggling ? t('updating', 'Updating...') : getAgentStatusLabel(isActive)}
+            </span>
+          </div>
+        )}
+        
+        {children && (
+          <div style={{ flex: 1 }}>
+            {children}
+          </div>
+        )}
+        
+        {!onToggleActive && !children && <div style={{ flex: 1 }}></div>}
+        
+        {secondaryActions.map((action, index) => (
+          <button
+            key={index}
+            className={`text-button ${action.className || 'remove-button'}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              action.onClick(e);
+            }}
+            disabled={action.disabled}
+            title={action.title}
+          >
+            {action.icon && <i className={action.icon}></i>}
+            {action.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <Card
+      className={className}
+      header={cardHeader}
+      footer={cardFooter}
+      onClick={onClick}
+      style={{ cursor: onClick ? 'pointer' : 'default' }}
+    >
+      <div className="agent-content">
+        <h3 className="agent-name">{name}</h3>
+        <p className="agent-description">{description}</p>
+      </div>
+    </Card>
+  );
+};
+
+export default AgentCard;
