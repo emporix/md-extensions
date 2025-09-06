@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { TokenCardProps } from '../../types/Token';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faKey } from '@fortawesome/free-solid-svg-icons';
-import BaseCard from '../shared/BaseCard';
+import AgentCard from '../shared/AgentCard';
 
 const TokenCard: React.FC<TokenCardProps> = ({ token, onConfigure, onRemove }) => {
   const { t } = useTranslation();
@@ -20,11 +20,13 @@ const TokenCard: React.FC<TokenCardProps> = ({ token, onConfigure, onRemove }) =
   };
 
   return (
-    <BaseCard
-      icon={<FontAwesomeIcon icon={faKey} />}
-      badge={getTokenTypeLabel()}
-      title={token.name}
+    <AgentCard
+      id={token.id}
+      name={token.name}
       description={token.value ? `Value: ${'•'.repeat(12)}` : 'No value configured'}
+      icon={<FontAwesomeIcon icon={faKey} />}
+      tags={[getTokenTypeLabel()]}
+      enabled={true}
       primaryActions={[
         {
           icon: 'pi pi-cog',
@@ -40,6 +42,7 @@ const TokenCard: React.FC<TokenCardProps> = ({ token, onConfigure, onRemove }) =
         }
       ]}
       onClick={() => onConfigure(token)}
+      switchDisabled={true}
     />
   );
 };

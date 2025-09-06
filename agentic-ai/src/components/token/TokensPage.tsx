@@ -1,11 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ProgressSpinner } from 'primereact/progressspinner';
-import { Message } from 'primereact/message';
-import { Button } from 'primereact/button';
 import TokenCard from './TokenCard';
 import TokenConfigPanel from './TokenConfigPanel';
-import { ConfirmDialog } from '../shared/ConfirmDialog';
+import { BasePage } from '../shared/BasePage';
 import { Token } from '../../types/Token';
 import { useTokens } from '../../hooks/useTokens';
 import { AppState } from '../../types/common';
@@ -70,49 +67,20 @@ const TokensPage: React.FC<TokensPageProps> = ({
     setSelectedToken(null);
   };
 
-  if (loading) {
-    return (
-      <div className="tokens-page" style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
-          <ProgressSpinner />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="tokens-page" style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-        <Message severity="error" text={error} />
-      </div>
-    );
-  }
-
   return (
-    <div className="tokens-page" style={{ padding: '24px'}}>
-      <div className="tokens-header" style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        marginBottom: '32px' 
-      }}>
-        <div>
-          <h1 style={{ 
-            fontSize: '2rem', 
-            fontWeight: 600, 
-            color: '#111827', 
-            margin: '0 0 8px 0' 
-          }}>
-            {t('tokens', 'Tokens')}
-          </h1>
-        </div>
-        <Button
-          label={t('add_new_token', 'ADD NEW TOKEN')}
-          className="add-new-token-button"
-          onClick={handleAddNewToken}
-        />
-      </div>
-
+    <BasePage
+      loading={loading}
+      error={error}
+      title={t('tokens', 'Tokens')}
+      addButtonLabel={t('add_new_token', 'ADD NEW TOKEN')}
+      onAdd={handleAddNewToken}
+      deleteConfirmVisible={deleteConfirmVisible}
+      deleteConfirmTitle={t('delete_token', 'Delete Token')}
+      deleteConfirmMessage={t('delete_token_confirmation', 'Are you sure you want to delete this token? This action cannot be undone.')}
+      onDeleteConfirm={confirmDelete}
+      onDeleteCancel={hideDeleteConfirm}
+      className="tokens"
+    >
       {tokens.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px', color: '#6b7280' }}>
           <p>{t('no_tokens', 'No tokens available')}</p>
@@ -136,18 +104,7 @@ const TokensPage: React.FC<TokensPageProps> = ({
         onHide={handleConfigClose}
         onSave={handleConfigSave}
       />
-
-      <ConfirmDialog
-        visible={deleteConfirmVisible}
-        onHide={hideDeleteConfirm}
-        onConfirm={confirmDelete}
-        title={t('delete_token', 'Delete Token')}
-        message={t('delete_token_confirmation', 'Are you sure you want to delete this token? This action cannot be undone.')}
-        confirmLabel={t('delete', 'Delete')}
-        cancelLabel={t('cancel', 'Cancel')}
-        severity="danger"
-      />
-    </div>
+    </BasePage>
   );
 };
 

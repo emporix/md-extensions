@@ -12,14 +12,14 @@ interface BasePageProps {
   addButtonLabel?: string;
   onAdd?: () => void;
   children: React.ReactNode;
-  
+
   // Delete confirmation props
   deleteConfirmVisible?: boolean;
   deleteConfirmTitle?: string;
   deleteConfirmMessage?: string;
   onDeleteConfirm?: () => void;
   onDeleteCancel?: () => void;
-  
+
   className?: string;
   maxWidth?: string;
 }
@@ -36,16 +36,15 @@ export const BasePage: React.FC<BasePageProps> = ({
   deleteConfirmMessage,
   onDeleteConfirm,
   onDeleteCancel,
-  className = '',
-  maxWidth = '1200px'
+  className = ''
 }) => {
   const { t } = useTranslation();
 
   if (loading) {
     return (
-      <div 
-        className={`${className}-page`} 
-        style={{ padding: '24px', maxWidth, margin: '0 auto' }}
+      <div
+        className={`${className}-page`}
+        style={{ padding: '24px' }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
           <ProgressSpinner />
@@ -56,9 +55,9 @@ export const BasePage: React.FC<BasePageProps> = ({
 
   if (error) {
     return (
-      <div 
-        className={`${className}-page`} 
-        style={{ padding: '24px', maxWidth, margin: '0 auto' }}
+      <div
+        className={`${className}-page`}
+        style={{ padding: '24px' }}
       >
         <Message severity="error" text={error} />
       </div>
@@ -66,7 +65,7 @@ export const BasePage: React.FC<BasePageProps> = ({
   }
 
   return (
-    <div className={`${className}-page`} style={{ padding: '24px', maxWidth, margin: '0 auto' }}>
+    <div className={`${className}-page`} style={{ padding: '24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <h1>{title}</h1>
         {onAdd && addButtonLabel && (

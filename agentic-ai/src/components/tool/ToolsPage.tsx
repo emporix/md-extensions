@@ -1,11 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ProgressSpinner } from 'primereact/progressspinner';
-import { Message } from 'primereact/message';
-import { Button } from 'primereact/button';
 import ToolCard from './ToolCard';
 import ToolConfigPanel from './ToolConfigPanel';
-import { ConfirmDialog } from '../shared/ConfirmDialog';
+import { BasePage } from '../shared/BasePage';
 import { Tool } from '../../types/Tool';
 import { useTools } from '../../hooks/useTools';
 import { AppState } from '../../types/common';
@@ -66,55 +63,26 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
     setSelectedTool(null);
   };
 
-  if (loading) {
-    return (
-      <div className="tools-page" style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
-          <ProgressSpinner />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="tools-page" style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-        <Message severity="error" text={error} />
-      </div>
-    );
-  }
-
   return (
-    <div className="tools-page" style={{ padding: '24px'}}>
-      <div className="tools-header" style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        marginBottom: '32px' 
-      }}>
-        <div>
-          <h1 style={{ 
-            fontSize: '2rem', 
-            fontWeight: 600, 
-            color: '#111827', 
-            margin: '0 0 8px 0' 
-          }}>
-            {t('tools', 'Tools')}
-          </h1>
-        </div>
-        <Button
-          label={t('add_new_tool', 'ADD NEW TOOL')}
-          className="add-new-tool-button"
-          onClick={handleAddNewTool}
-        />
-      </div>
-
+    <BasePage
+      loading={loading}
+      error={error}
+      title={t('tools', 'Tools')}
+      addButtonLabel={t('add_new_tool', 'ADD NEW TOOL')}
+      onAdd={handleAddNewTool}
+      deleteConfirmVisible={deleteConfirmVisible}
+      deleteConfirmTitle={t('delete_tool', 'Delete Tool')}
+      deleteConfirmMessage={t('delete_tool_confirmation', 'Are you sure you want to delete this tool? This action cannot be undone.')}
+      onDeleteConfirm={confirmDelete}
+      onDeleteCancel={hideDeleteConfirm}
+      className="tools"
+    >
       {tools.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '48px', color: '#6b7280' }}>
           <p>{t('no_tools', 'No tools available')}</p>
         </div>
       ) : (
-                <div className="agents-grid">
+        <div className="agents-grid">
           {tools.map((tool) => (
             <ToolCard 
               key={tool.id} 
@@ -133,18 +101,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
         onSave={handleConfigSave}
         appState={appState}
       />
-
-      <ConfirmDialog
-        visible={deleteConfirmVisible}
-        onHide={hideDeleteConfirm}
-        onConfirm={confirmDelete}
-        title={t('delete_tool', 'Delete Tool')}
-        message={t('delete_tool_confirmation', 'Are you sure you want to delete this tool? This action cannot be undone.')}
-        confirmLabel={t('delete', 'Delete')}
-        cancelLabel={t('cancel', 'Cancel')}
-        severity="danger"
-      />
-    </div>
+    </BasePage>
   );
 };
 

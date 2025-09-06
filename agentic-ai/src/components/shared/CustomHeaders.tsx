@@ -68,10 +68,6 @@ export const CustomHeaders: React.FC<CustomHeadersProps> = ({ value, onChange })
     onChange(headersObject);
   };
 
-
-
-
-
   return (
     <div className="custom-headers">
       <div className="headers-list">

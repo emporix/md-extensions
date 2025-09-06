@@ -1,14 +1,12 @@
 import { useState, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ProgressSpinner } from 'primereact/progressspinner'
 import { Message } from 'primereact/message'
-import { Button } from 'primereact/button'
 import CustomAgentCard from './CustomAgentCard'
 import PredefinedAgentCard from './PredefinedAgentCard'
 import AddAgentDialog from './AddAgentDialog'
 import AgentConfigPanel from './AgentConfigPanel'
 import { ErrorBoundary } from '../shared/ErrorBoundary'
-import { ConfirmDialog } from '../shared/ConfirmDialog'
+import { BasePage } from '../shared/BasePage'
 import { AppState } from '../../types/common'
 import { useAgents } from '../../hooks/useAgents'
 import { AgentTemplate } from '../../types/Agent'
@@ -97,35 +95,20 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
     setSelectedCustomAgent(null)
   }, [])
 
-  if (loading || customAgentsLoading) {
-    return (
-      <div className="agents-loading">
-        <ProgressSpinner />
-        <p>{t('loading', 'Loading agents...')}</p>
-      </div>
-    )
-  }
-
-  if (error && customAgentsError) {
-    return (
-      <div className="agents-error">
-        <Message severity="error" text={`${error} | ${customAgentsError}`} />
-      </div>
-    )
-  }
-
   return (
-    <div className="agents-view">
-      {/* Header */}
-      <div className="agents-header">
-        <h1 className="agents-title">{t('custom_ai_agents', 'Agentic AI')}</h1>
-        <Button
-          label={t('add_new_agent', 'ADD NEW AGENT')}
-          className="add-new-agent-button"
-          onClick={handleAddNewAgent}
-        />
-      </div>
-
+    <BasePage
+      loading={loading || customAgentsLoading}
+      error={error && customAgentsError ? `${error} | ${customAgentsError}` : error || customAgentsError}
+      title={t('custom_ai_agents', 'Agentic AI')}
+      addButtonLabel={t('add_new_agent', 'ADD NEW AGENT')}
+      onAdd={handleAddNewAgent}
+      deleteConfirmVisible={deleteConfirmVisible}
+      deleteConfirmTitle={t('delete_agent', 'Delete Agent')}
+      deleteConfirmMessage={t('delete_agent_confirmation', 'Are you sure you want to delete this agent? This action cannot be undone.')}
+      onDeleteConfirm={confirmDelete}
+      onDeleteCancel={hideDeleteConfirm}
+      className="agents"
+    >
       {/* My Agents Section */}
       <div className="my-agents-section">
         <h2 className="section-title">{t('my_agents', 'My Agents')}</h2>
@@ -196,18 +179,7 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
           availableAgents={customAgents}
         />
       </ErrorBoundary>
-
-      <ConfirmDialog
-        visible={deleteConfirmVisible}
-        onHide={hideDeleteConfirm}
-        onConfirm={confirmDelete}
-        title={t('delete_agent', 'Delete Agent')}
-        message={t('delete_agent_confirmation', 'Are you sure you want to delete this agent? This action cannot be undone.')}
-        confirmLabel={t('delete', 'Delete')}
-        cancelLabel={t('cancel', 'Cancel')}
-        severity="danger"
-      />
-    </div>
+    </BasePage>
   )
 });
 
