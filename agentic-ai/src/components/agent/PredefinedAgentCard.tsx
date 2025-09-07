@@ -5,7 +5,7 @@ import { AgentCardBaseProps } from '../../types/common';
 import { getLocalizedValue, iconMap } from '../../utils/agentHelpers';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRobot } from '@fortawesome/free-solid-svg-icons';
-import AgentCard from '../shared/AgentCard';
+import AgentCard from './AgentCard';
 
 interface PredefinedAgentCardProps extends AgentCardBaseProps {
   agent: AgentTemplate

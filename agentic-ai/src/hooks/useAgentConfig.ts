@@ -30,6 +30,10 @@ interface AgentConfigState {
   nativeTools: any[];
   agentCollaborations: any[];
   tags: string[];
+  // Self-hosted LLM parameters
+  selfHostedUrl: string;
+  selfHostedAuthHeaderName: string;
+  selfHostedTokenId: string;
 }
 
 export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConfigProps) => {
@@ -51,7 +55,11 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     mcpServers: [],
     nativeTools: [],
     agentCollaborations: [],
-    tags: []
+    tags: [],
+    // Self-hosted LLM parameters
+    selfHostedUrl: '',
+    selfHostedAuthHeaderName: '',
+    selfHostedTokenId: ''
   });
 
   const [saving, setSaving] = useState(false);
@@ -75,7 +83,15 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
         mcpServers: agent.mcpServers || [],
         nativeTools: agent.nativeTools || [],
         agentCollaborations: agent.agentCollaborations || [],
-        tags: agent.tags || []
+        tags: agent.tags || [],
+        // Self-hosted LLM parameters
+        selfHostedUrl: agent.llmConfig?.selfHostedParams?.url || '',
+        selfHostedAuthHeaderName: agent.llmConfig?.selfHostedParams?.authorizationHeaderName || '',
+        selfHostedTokenId: (
+          typeof agent.llmConfig?.selfHostedParams?.authorizationHeaderToken === 'object' 
+            ? agent.llmConfig.selfHostedParams.authorizationHeaderToken.id 
+            : agent.llmConfig?.selfHostedParams?.authorizationHeaderToken
+        ) || ''
       });
     }
   }, [agent]);
@@ -100,16 +116,37 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
         config: agent.trigger?.config || null
       },
       userPrompt: state.prompt || '',
-      llmConfig: {
-        model: state.model || '',
-        temperature: parseFloat(state.temperature) || 0,
-        maxTokens: parseInt(state.maxTokens, 10) || 0,
-        provider: state.provider,
-        additionalParams: agent.llmConfig?.additionalParams || null,
-        ...(state.provider !== 'emporix_openai' && state.tokenId && { 
-          token: { id: state.tokenId } 
-        })
-      },
+      llmConfig: (() => {
+        const baseConfig: any = {
+          model: state.model || '',
+          temperature: parseFloat(state.temperature) || 0,
+          maxTokens: parseInt(state.maxTokens, 10) || 0,
+          provider: state.provider,
+          additionalParams: agent.llmConfig?.additionalParams || null,
+        };
+
+        // Add regular token for non-emporix and non-self-hosted providers
+        if (state.provider !== 'emporix_openai' && state.provider !== 'self_hosted_ollama' && state.tokenId) {
+          baseConfig.token = { id: state.tokenId };
+        }
+
+        // Add selfHostedParams for self-hosted providers
+        if (state.provider === 'self_hosted_ollama') {
+          baseConfig.selfHostedParams = {
+            url: state.selfHostedUrl || '',
+          };
+          
+          if (state.selfHostedAuthHeaderName) {
+            baseConfig.selfHostedParams.authorizationHeaderName = state.selfHostedAuthHeaderName;
+          }
+          
+          if (state.selfHostedTokenId) {
+            baseConfig.selfHostedParams.authorizationHeaderToken = { id: state.selfHostedTokenId };
+          }
+        }
+
+        return baseConfig;
+      })(),
       maxRecursionLimit: parseInt(state.recursionLimit, 10) || 20,
       enableMemory: state.enableMemory,
       mcpServers: state.mcpServers || [],
@@ -144,6 +181,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
   const isFormValid = useCallback(() => {
     const isCreating = !agent?.id;
     const isEmporixProvider = state.provider === 'emporix_openai';
+    const isSelfHosted = state.provider === 'self_hosted_ollama';
     
     const basicValidation = (
       state.agentName.trim() &&
@@ -153,11 +191,15 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     );
 
     // Token validation:
-    // - Never required for emporix_openai
+    // - Never required for emporix_openai or self_hosted_ollama
     // - Only required when creating (not updating) for other providers
-    const tokenValidation = isEmporixProvider || !isCreating || state.tokenId.trim();
+    const tokenValidation = isEmporixProvider || isSelfHosted || !isCreating || state.tokenId.trim();
 
-    return basicValidation && tokenValidation;
+    // Self-hosted validation:
+    // - URL is always required for self-hosted
+    const selfHostedValidation = !isSelfHosted || state.selfHostedUrl.trim();
+
+    return basicValidation && tokenValidation && selfHostedValidation;
   }, [state, agent?.id]);
 
   return {

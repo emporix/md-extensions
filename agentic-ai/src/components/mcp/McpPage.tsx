@@ -103,6 +103,7 @@ const McpPage: React.FC<McpPageProps> = ({
         mcpServer={selectedMcpServer}
         onHide={handleConfigClose}
         onSave={handleConfigSave}
+        appState={appState}
       />
     </BasePage>
   );

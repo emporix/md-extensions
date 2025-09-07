@@ -5,9 +5,9 @@ import { CustomAgent } from '../../types/Agent';
 import { AppState } from '../../types/common';
 import { IconPicker } from '../shared/IconPicker';
 import { TagPicker } from '../shared/TagPicker';
-import { McpServersSelector } from '../shared/McpServersSelector';
-import { NativeToolsSelector } from '../shared/NativeToolsSelector';
-import { AgentCollaborationManager } from '../shared/AgentCollaborationManager';
+import { McpServersSelector } from './McpServersSelector';
+import { NativeToolsSelector } from './NativeToolsSelector';
+import { AgentCollaborationManager } from './AgentCollaborationManager';
 import { AgentHeader } from './agent-config/AgentHeader';
 import { AgentBasicInfo } from './agent-config/AgentBasicInfo';
 import { LlmConfigSection } from './agent-config/LlmConfigSection';
@@ -108,6 +108,9 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
             isEditing={!!agent?.id}
             appState={appState}
             onFieldChange={handleFieldChange}
+            selfHostedUrl={state.selfHostedUrl}
+            selfHostedAuthHeaderName={state.selfHostedAuthHeaderName}
+            selfHostedTokenId={state.selfHostedTokenId}
           />
 
           <div className="panel-actions">

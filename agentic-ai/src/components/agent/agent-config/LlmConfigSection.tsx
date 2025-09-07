@@ -19,6 +19,10 @@ interface LlmConfigSectionProps {
   isEditing: boolean;
   appState: AppState;
   onFieldChange: (field: string, value: string | boolean) => void;
+  // Self-hosted LLM parameters
+  selfHostedUrl?: string;
+  selfHostedAuthHeaderName?: string;
+  selfHostedTokenId?: string;
 }
 
 export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
@@ -31,7 +35,10 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
   enableMemory,
   isEditing,
   appState,
-  onFieldChange
+  onFieldChange,
+  selfHostedUrl = '',
+  selfHostedAuthHeaderName = '',
+  selfHostedTokenId = ''
 }) => {
   const { t } = useTranslation();
   const [tokens, setTokens] = useState<Token[]>([]);
@@ -39,6 +46,9 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
 
   useEffect(() => {
     const loadTokens = async () => {
+      // Load tokens for:
+      // 1. Regular providers (openai, google, anthropic) - for main token field
+      // 2. Self-hosted providers - for optional authorization token
       if (provider !== 'emporix_openai') {
         setTokensLoading(true);
         try {
@@ -103,7 +113,7 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
             className="w-full" 
           />
         </div>
-        {provider !== 'emporix_openai' && (
+        {provider !== 'emporix_openai' && provider !== 'self_hosted_ollama' && (
           <div className="form-field">
             <label className="field-label">
               {t('token', 'Token')} 
@@ -121,6 +131,53 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
               <small className="p-error">{t('token_required', 'Token is required')}</small>
             )}
           </div>
+        )}
+        
+        {provider === 'self_hosted_ollama' && (
+          <>
+            <div className="form-field">
+              <label className="field-label">
+                {t('self_hosted_url', 'Self-hosted URL')}
+                {!isEditing && <span style={{ color: 'red' }}> *</span>}
+              </label>
+              <InputText
+                value={selfHostedUrl}
+                onChange={e => onFieldChange('selfHostedUrl', e.target.value)}
+                className={`w-full ${!isEditing && !selfHostedUrl.trim() ? 'p-invalid' : ''}`}
+                placeholder={t('enter_self_hosted_url', 'Enter self-hosted URL')}
+              />
+              {!isEditing && !selfHostedUrl.trim() && (
+                <small className="p-error">{t('self_hosted_url_required', 'Self-hosted URL is required')}</small>
+              )}
+            </div>
+            
+            <div className="form-field">
+              <label className="field-label">
+                {t('authorization_header_name', 'Authorization Header Name')} ({t('optional', 'Optional')})
+              </label>
+              <InputText
+                value={selfHostedAuthHeaderName}
+                onChange={e => onFieldChange('selfHostedAuthHeaderName', e.target.value)}
+                className="w-full"
+                placeholder={t('enter_authorization_header_name', 'Enter authorization header name')}
+              />
+            </div>
+            
+            <div className="form-field">
+              <label className="field-label">
+                {t('authorization_token', 'Authorization Token')} ({t('optional', 'Optional')})
+              </label>
+              <Dropdown
+                value={selfHostedTokenId}
+                options={tokenOptions}
+                onChange={e => onFieldChange('selfHostedTokenId', e.value)}
+                className="w-full"
+                placeholder={tokensLoading ? t('loading_tokens', 'Loading tokens...') : t('select_token', 'Select token')}
+                disabled={tokensLoading}
+                showClear
+              />
+            </div>
+          </>
         )}
       </div>
       <div className="llm-config-row">

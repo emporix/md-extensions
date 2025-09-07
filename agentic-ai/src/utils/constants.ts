@@ -52,7 +52,8 @@ export const LLM_PROVIDERS = [
   { label: 'Emporix OpenAI', value: 'emporix_openai' },
   { label: 'OpenAI', value: 'openai' },
   { label: 'Gemini', value: 'google' },
-  { label: 'Claude', value: 'anthropic' }
+  { label: 'Claude', value: 'anthropic' },
+  { label: 'Self-hosted Ollama', value: 'self_hosted_ollama' }
 ];
 
 // API Constants

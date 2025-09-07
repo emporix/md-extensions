@@ -50,6 +50,13 @@ export interface LlmConfig {
   token?: {
     id: string;
   };
+  selfHostedParams?: {
+    url: string;
+    authorizationHeaderName?: string;
+    authorizationHeaderToken?: {
+      id: string;
+    };
+  };
 }
 
 export interface Trigger {

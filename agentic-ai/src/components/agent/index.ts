@@ -1,8 +1,12 @@
 // Agent components
 export { default as AddAgentDialog } from './AddAgentDialog';
+export { default as AgentCard } from './AgentCard';
+export { AgentCollaborationManager } from './AgentCollaborationManager';
 export { default as AgentConfigPanel } from './AgentConfigPanel';
 export { default as AgentsView } from './AgentsView';
 export { default as CustomAgentCard } from './CustomAgentCard';
+export { McpServersSelector } from './McpServersSelector';
+export { NativeToolsSelector } from './NativeToolsSelector';
 export { default as PredefinedAgentCard } from './PredefinedAgentCard';
 
 // Agent sub-components

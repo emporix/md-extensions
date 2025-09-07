@@ -50,7 +50,8 @@ export class AgentService {
         maxTokens: agent.llmConfig.maxTokens,
         provider: agent.llmConfig.provider,
         additionalParams: agent.llmConfig.additionalParams,
-        ...(agent.llmConfig.token && { token: agent.llmConfig.token })
+        ...(agent.llmConfig.token && { token: agent.llmConfig.token }),
+        ...(agent.llmConfig.selfHostedParams && { selfHostedParams: agent.llmConfig.selfHostedParams })
       },
       mcpServers: agent.mcpServers,
       nativeTools: agent.nativeTools,

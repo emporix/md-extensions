@@ -5,7 +5,7 @@ import { MultiSelect } from 'primereact/multiselect';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { MCP_SERVERS, McpKey } from '../../../utils/constants';
-import { CustomHeaders } from '../CustomHeaders';
+import { CustomHeaders } from '../../shared/CustomHeaders';
 
 interface McpServer {
   type: 'predefined' | 'custom';

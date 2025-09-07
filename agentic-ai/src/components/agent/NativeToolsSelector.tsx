@@ -4,8 +4,8 @@ import { NativeTool } from '../../types/Agent';
 import { Tool } from '../../types/Tool';
 import { ToolsService } from '../../services/toolsService';
 import { AppState } from '../../types/common';
-import { NativeToolsList } from './native-tools/NativeToolsList';
-import { NativeToolForm } from './native-tools/NativeToolForm';
+import { NativeToolsList } from '../shared/native-tools/NativeToolsList';
+import { NativeToolForm } from '../shared/native-tools/NativeToolForm';
 
 interface NativeToolsSelectorProps {
   nativeTools: NativeTool[];

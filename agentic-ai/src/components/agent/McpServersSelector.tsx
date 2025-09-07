@@ -4,8 +4,8 @@ import { McpServer } from '../../types/Agent';
 import { McpServer as ManagedMcpServer } from '../../types/Mcp';
 import { McpService } from '../../services/mcpService';
 import { AppState } from '../../types/common';
-import { McpServersList } from './mcp-servers/McpServersList';
-import { McpServerForm } from './mcp-servers/McpServerForm';
+import { McpServersList } from '../mcp/mcp-servers/McpServersList';
+import { McpServerForm } from '../mcp/mcp-servers/McpServerForm';
 
 interface McpServersSelectorProps {
   mcpServers: McpServer[];

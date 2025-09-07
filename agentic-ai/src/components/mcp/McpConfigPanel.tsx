@@ -5,12 +5,15 @@ import { Dropdown } from 'primereact/dropdown';
 import { McpConfigPanelProps, McpServer } from '../../types/Mcp';
 import { BaseConfigPanel } from '../shared/BaseConfigPanel';
 import { faServer } from '@fortawesome/free-solid-svg-icons';
+import { Token } from '../../types/Token';
+import { TokensService } from '../../services/tokensService';
 
 const McpConfigPanel: React.FC<McpConfigPanelProps> = ({ 
   visible, 
   mcpServer, 
   onHide, 
-  onSave 
+  onSave,
+  appState
 }) => {
   const { t } = useTranslation();
   const [mcpServerId, setMcpServerId] = useState('');
@@ -19,11 +22,34 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
   const [url, setUrl] = useState('');
   const [authorizationHeaderName, setAuthorizationHeaderName] = useState('');
   const [authorizationHeaderTokenId, setAuthorizationHeaderTokenId] = useState('');
+  const [tokens, setTokens] = useState<Token[]>([]);
+  const [tokensLoading, setTokensLoading] = useState(false);
 
 
   const transportOptions = [
     { label: 'Server-Sent Events (SSE)', value: 'sse' }
   ];
+
+  // Load tokens when component mounts or appState changes
+  useEffect(() => {
+    const loadTokens = async () => {
+      if (!appState) return;
+      
+      setTokensLoading(true);
+      try {
+        const tokensService = new TokensService(appState);
+        const fetchedTokens = await tokensService.getTokens();
+        setTokens(fetchedTokens);
+      } catch (error) {
+        console.error('Error loading tokens:', error);
+        setTokens([]);
+      } finally {
+        setTokensLoading(false);
+      }
+    };
+
+    loadTokens();
+  }, [appState]);
 
   useEffect(() => {
     if (mcpServer) {
@@ -35,6 +61,12 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
       setAuthorizationHeaderTokenId(mcpServer.config.authorizationHeaderTokenId || '');
     }
   }, [mcpServer]);
+
+  // Create token options for dropdown
+  const tokenOptions = tokens.map(token => ({
+    label: token.name,
+    value: token.id
+  }));
 
   const handleSave = async () => {
     if (!mcpServer) return;
@@ -122,11 +154,14 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
 
       <div className="form-field">
         <label className="field-label">{t('authorization_header_token_id', 'Authorization Header Token ID')} ({t('optional', 'Optional')})</label>
-        <InputText
+        <Dropdown
           value={authorizationHeaderTokenId}
-          onChange={(e) => setAuthorizationHeaderTokenId(e.target.value)}
+          options={tokenOptions}
+          onChange={(e) => setAuthorizationHeaderTokenId(e.value)}
           className="w-full"
-          placeholder={t('enter_authorization_header_token_id', 'Enter authorization header token ID')}
+          placeholder={tokensLoading ? t('loading_tokens', 'Loading tokens...') : t('select_token', 'Select token')}
+          disabled={tokensLoading}
+          showClear
         />
       </div>
     </BaseConfigPanel>

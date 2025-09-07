@@ -1,3 +1,5 @@
+import { AppState } from './common';
+
 export interface McpConfig {
   url: string;
   authorizationHeaderName?: string;
@@ -22,4 +24,5 @@ export interface McpConfigPanelProps {
   mcpServer: McpServer | null;
   onHide: () => void;
   onSave: (mcpServer: McpServer) => void;
+  appState?: AppState;
 }

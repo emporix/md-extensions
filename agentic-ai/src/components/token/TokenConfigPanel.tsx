@@ -33,14 +33,18 @@ const TokenConfigPanel: React.FC<TokenConfigPanelProps> = ({
       ...token,
       id: tokenId,
       name: tokenName,
-      value: tokenValue,
+      // Only include value for new tokens (existing tokens can't update their value)
+      ...(isExistingToken ? {} : { value: tokenValue }),
     };
 
     // Let the parent handle the save operation
     onSave(updatedToken);
   };
 
-  const canSave = !!tokenName.trim() && !!tokenValue.trim() && (!!token?.id || !!tokenId.trim());
+  // For existing tokens (with ID), we don't need token value to save (just name)
+  // For new tokens (without ID), we need both token value and token ID
+  const isExistingToken = !!token?.id;
+  const canSave = !!tokenName.trim() && (isExistingToken || (!!tokenValue.trim() && !!tokenId.trim()));
 
   return (
     <BaseConfigPanel
@@ -74,17 +78,19 @@ const TokenConfigPanel: React.FC<TokenConfigPanelProps> = ({
         />
       </div>
 
-      <div className="form-field">
-        <label className="field-label">{t('token_value', 'Token Value')}</label>
-        <Password
-          value={tokenValue}
-          onChange={(e) => setTokenValue(e.target.value)}
-          className="w-full"
-          placeholder={t('enter_token_value', 'Enter token value')}
-          feedback={false}
-          toggleMask
-        />
-      </div>
+      {!isExistingToken && (
+        <div className="form-field">
+          <label className="field-label">{t('token_value', 'Token Value')}</label>
+          <Password
+            value={tokenValue}
+            onChange={(e) => setTokenValue(e.target.value)}
+            className="w-full"
+            placeholder={t('enter_token_value', 'Enter token value')}
+            feedback={false}
+            toggleMask
+          />
+        </div>
+      )}
     </BaseConfigPanel>
   );
 };

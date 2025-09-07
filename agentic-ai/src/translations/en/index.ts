@@ -176,6 +176,12 @@ const TRANSLATIONS_EN = {
   select_tag: 'Select Tag',
   no_tag: 'No Tag',
 
+  // Self-hosted LLM translations
+  self_hosted_url: 'Self-hosted URL',
+  self_hosted_url_required: 'Self-hosted URL is required',
+  enter_self_hosted_url: 'Enter self-hosted URL',
+  authorization_token: 'Authorization Token',
+
   // Template fallbacks (for backward compatibility if needed)
   get_started: 'Get Started',
 }
