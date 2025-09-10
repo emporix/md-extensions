@@ -42,4 +42,15 @@ export class ToolsService {
       return Promise.resolve();
     }
   }
+
+  async getSlackInstallationData(): Promise<{id: string, clientId: string}> {
+    try {
+      return await this.api.get<{id: string, clientId: string}>(
+        `/ai-service/${this.tenant}/agentic/oauth/installations/slack`
+      );
+    } catch (error) {
+      console.error('Error getting Slack installation data:', error);
+      throw error;
+    }
+  }
 }

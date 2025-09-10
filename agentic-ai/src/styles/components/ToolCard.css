@@ -54,13 +54,144 @@
 }
 
 .config-json {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 12px;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
   font-size: 0.875rem;
   color: #374151;
   white-space: pre-wrap;
   overflow-x: auto;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
+
+
+/* Modern Slack Installation Styles */
+.slack-install-section {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.slack-install-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #4a154b 0%, #611f69 50%, #4a154b 100%);
+  border-radius: 16px 16px 0 0;
+}
+
+.slack-install-section .section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.slack-install-section .section-subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.slack-install-button-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.slack-install-button-container .slack-install-button {
+  display: inline-block;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.slack-install-button-container .slack-install-button:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.slack-install-button-container .slack-install-button:disabled {
+  cursor: not-allowed;
+  transform: none;
+}
+
+.slack-install-button-container img {
+  border-radius: 12px;
+}
+
+/* Modern Form Separator Styles */
+.form-separator {
+  display: flex;
+  align-items: center;
+  margin: 2.5rem 0;
+  position: relative;
+}
+
+.separator-line {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #e2e8f0 20%, #e2e8f0 80%, transparent 100%);
+  border-radius: 1px;
+}
+
+.separator-text {
+  padding: 0 1.5rem;
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Modern Manual Configuration Section */
+.manual-config-section {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.manual-config-section .section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+
+.manual-config-section .section-subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+

@@ -182,6 +182,15 @@ const TRANSLATIONS_EN = {
   enter_self_hosted_url: 'Enter self-hosted URL',
   authorization_token: 'Authorization Token',
 
+  // Slack tool installation
+  install_emporix_slack_ai: 'Install Emporix Slack AI',
+  slack_install_description: 'Quick setup with one click. Automatically configure your Slack workspace with the necessary permissions.',
+  provide_values_manually: 'Provide the values manually',
+  manual_config_description: 'Enter your Slack workspace details manually if you prefer custom configuration.',
+  or: 'or',
+  error_app_state_missing: 'Application state is missing',
+  error_slack_installation: 'Error initiating Slack installation',
+
   // Template fallbacks (for backward compatibility if needed)
   get_started: 'Get Started',
 }

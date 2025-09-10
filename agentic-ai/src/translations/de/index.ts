@@ -185,6 +185,15 @@ const TRANSLATIONS_DE = {
   enter_self_hosted_url: 'Self-hosted URL eingeben',
   authorization_token: 'Autorisierungs-Token',
 
+  // Slack tool installation
+  install_emporix_slack_ai: 'Emporix Slack AI installieren',
+  slack_install_description: 'Schnelle Einrichtung mit einem Klick. Konfiguriert automatisch Ihren Slack-Arbeitsbereich mit den erforderlichen Berechtigungen.',
+  provide_values_manually: 'Werte manuell eingeben',
+  manual_config_description: 'Geben Sie Ihre Slack-Arbeitsbereich-Details manuell ein, wenn Sie eine benutzerdefinierte Konfiguration bevorzugen.',
+  or: 'oder',
+  error_app_state_missing: 'Anwendungsstatus fehlt',
+  error_slack_installation: 'Fehler beim Initiieren der Slack-Installation',
+
   // Template fallbacks (for backward compatibility if needed)
   get_started: 'Loslegen',
 }
