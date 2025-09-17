@@ -29,6 +29,8 @@ const TRANSLATIONS_DE = {
   enter_agent_name: 'Agent Namen eingeben',
   description: 'Beschreibung',
   enter_description: 'Beschreibung eingeben',
+  required_scopes: 'Erforderliche Bereiche',
+  select_required_scopes: 'Erforderliche Bereiche auswählen',
   discard: 'VERWERFEN',
   save_agent: 'AGENT SPEICHERN',
   agent_id: 'ID',

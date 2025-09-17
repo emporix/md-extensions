@@ -30,6 +30,7 @@ interface AgentConfigState {
   nativeTools: any[];
   agentCollaborations: any[];
   tags: string[];
+  requiredScopes: string[];
   // Self-hosted LLM parameters
   selfHostedUrl: string;
   selfHostedAuthHeaderName: string;
@@ -56,6 +57,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     nativeTools: [],
     agentCollaborations: [],
     tags: [],
+    requiredScopes: [],
     // Self-hosted LLM parameters
     selfHostedUrl: '',
     selfHostedAuthHeaderName: '',
@@ -84,6 +86,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
         nativeTools: agent.nativeTools || [],
         agentCollaborations: agent.agentCollaborations || [],
         tags: agent.tags || [],
+        requiredScopes: agent.requiredScopes || [],
         // Self-hosted LLM parameters
         selfHostedUrl: agent.llmConfig?.selfHostedParams?.url || '',
         selfHostedAuthHeaderName: agent.llmConfig?.selfHostedParams?.authorizationHeaderName || '',
@@ -161,7 +164,8 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
         mixins: {}
       },
       icon: state.selectedIcon,
-      tags: state.tags || []
+      tags: state.tags || [],
+      requiredScopes: state.requiredScopes || []
     };
 
     try {

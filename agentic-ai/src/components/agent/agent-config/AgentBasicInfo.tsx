@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Dropdown } from 'primereact/dropdown';
+import { MultiSelect } from 'primereact/multiselect';
 import { TRIGGER_TYPES } from '../../../utils/constants';
 
 interface AgentBasicInfoProps {
@@ -11,8 +12,9 @@ interface AgentBasicInfoProps {
   description: string;
   triggerType: string;
   prompt: string;
+  requiredScopes: string[];
   isEditing: boolean;
-  onFieldChange: (field: string, value: string) => void;
+  onFieldChange: (field: string, value: string | string[]) => void;
 }
 
 export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
@@ -21,10 +23,18 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   description,
   triggerType,
   prompt,
+  requiredScopes,
   isEditing,
   onFieldChange
 }) => {
   const { t } = useTranslation();
+
+  const scopeOptions = [
+    { label: 'Anonymous', value: 'anonymous' },
+    { label: 'Customer', value: 'customer' },
+    { label: 'Employee', value: 'employee' },
+    { label: 'Integration', value: 'integration' }
+  ];
 
   return (
     <>
@@ -63,6 +73,18 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
         {!description.trim() && (
           <small className="p-error">{t('description_required', 'Description is required')}</small>
         )}
+      </div>
+      
+      <div className="form-field">
+        <label className="field-label">{t('required_scopes', 'Required Scopes')}</label>
+        <MultiSelect 
+          value={requiredScopes} 
+          options={scopeOptions}
+          onChange={e => onFieldChange('requiredScopes', e.value)} 
+          className="w-full" 
+          display="chip"
+          placeholder={t('select_required_scopes', 'Select required scopes')}
+        />
       </div>
       
       <div className="form-field">
