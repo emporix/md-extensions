@@ -44,8 +44,8 @@ export type McpKey = keyof typeof MCP_SERVERS;
 
 export const TRIGGER_TYPES = [
   { label: 'API', value: 'endpoint', disabled: false },
+  { label: 'Commerce Event', value: 'commerce_events', disabled: false },
   { label: 'Time trigger', value: 'time', disabled: true },
-  { label: 'Commerce Event', value: 'commerce', disabled: true },
 ];
 
 export const LLM_PROVIDERS = [

@@ -64,16 +64,10 @@ export class AgentService {
       tags: agent.tags || []
     };
     
-    try {
-      return await this.api.put<CustomAgent>(
-        `/ai-service/${this.tenant}/agentic/agents/${agent.id}`,
-        formattedAgent
-      );
-    } catch (error) {
-      // Fallback to formatted agent if API call fails but we have valid data
-      console.warn('API call failed, returning formatted agent:', error);
-      return formattedAgent as CustomAgent;
-    }
+    return await this.api.put<CustomAgent>(
+      `/ai-service/${this.tenant}/agentic/agents/${agent.id}`,
+      formattedAgent
+    );
   }
 
   async deleteCustomAgent(agentId: string): Promise<void> {
@@ -82,5 +76,9 @@ export class AgentService {
 
   async patchCustomAgent(agentId: string, patches: PatchOperation[]): Promise<void> {
     await this.api.patch(`/ai-service/${this.tenant}/agentic/agents/${agentId}`, patches);
+  }
+
+  async getCommerceEvents(): Promise<{ events: string[] }> {
+    return await this.api.get<{ events: string[] }>(`/ai-service/${this.tenant}/agentic/commerce-events`);
   }
 } 
