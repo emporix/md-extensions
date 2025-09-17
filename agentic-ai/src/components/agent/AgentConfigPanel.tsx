@@ -49,7 +49,7 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
 
   if (!isVisible) return null;
 
-  const handleFieldChange = (field: string, value: string | boolean) => {
+  const handleFieldChange = (field: string, value: string | boolean | string[]) => {
     updateField(field as any, value);
   };
 
