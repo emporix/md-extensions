@@ -13,6 +13,7 @@ interface AgentBasicInfoProps {
   agentType: string;
   triggerType: string;
   prompt: string;
+  templatePrompt: string;
   requiredScopes: string[];
   isEditing: boolean;
   onFieldChange: (field: string, value: string | string[]) => void;
@@ -25,6 +26,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   agentType,
   triggerType,
   prompt,
+  templatePrompt,
   requiredScopes,
   isEditing,
   onFieldChange
@@ -108,12 +110,25 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
         />
       </div>
       
+      {templatePrompt && (
+        <div className="form-field">
+          <label className="field-label">{t('template_prompt', 'Template Prompt')}</label>
+          <InputTextarea 
+            value={templatePrompt} 
+            rows={15} 
+            className="w-full readonly-textarea"
+            readOnly
+            placeholder={t('template_prompt_placeholder', 'Template prompt from agent template')}
+          />
+        </div>
+      )}
+      
       <div className="form-field">
         <label className="field-label">{t('prompt', 'Prompt')} *</label>
         <InputTextarea 
           value={prompt} 
           onChange={e => onFieldChange('prompt', e.target.value)} 
-          rows={3} 
+          rows={15} 
           className={`w-full ${!prompt.trim() ? 'p-invalid' : ''}`}
           placeholder={t('enter_prompt', 'Enter prompt')}
         />

@@ -77,6 +77,7 @@ export interface CustomAgent {
   name: LocalizedString | string
   description: LocalizedString | string
   userPrompt: string
+  templatePrompt?: string
   trigger: Trigger
   llmConfig: LlmConfig
   mcpServers: McpServer[]

@@ -19,6 +19,7 @@ interface AgentConfigState {
   agentType: string;
   triggerType: string;
   prompt: string;
+  templatePrompt: string;
   model: string;
   temperature: string;
   maxTokens: string;
@@ -47,6 +48,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     agentType: 'custom',
     triggerType: 'endpoint',
     prompt: '',
+    templatePrompt: '',
     model: '',
     temperature: '0',
     maxTokens: '0',
@@ -80,6 +82,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
         agentType: agentType,
         triggerType: agentType === 'support' ? 'slack' : triggerType,
         prompt: agent.userPrompt || '',
+        templatePrompt: agent.templatePrompt || '',
         model: agent.llmConfig?.model || '',
         temperature: agent.llmConfig?.temperature?.toString() || '0',
         maxTokens: agent.llmConfig?.maxTokens?.toString() || '0',
@@ -125,6 +128,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
         config: agent.trigger?.config || null
       },
       userPrompt: state.prompt || '',
+      templatePrompt: state.templatePrompt || undefined,
       llmConfig: (() => {
         const baseConfig: any = {
           model: state.model || '',
