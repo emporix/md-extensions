@@ -16,8 +16,10 @@ interface AgentConfigState {
   agentId: string;
   agentName: string;
   description: string;
+  agentType: string;
   triggerType: string;
   prompt: string;
+  templatePrompt: string;
   model: string;
   temperature: string;
   maxTokens: string;
@@ -30,6 +32,7 @@ interface AgentConfigState {
   nativeTools: any[];
   agentCollaborations: any[];
   tags: string[];
+  requiredScopes: string[];
   // Self-hosted LLM parameters
   selfHostedUrl: string;
   selfHostedAuthHeaderName: string;
@@ -42,8 +45,10 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     agentId: '',
     agentName: '',
     description: '',
+    agentType: 'custom',
     triggerType: 'endpoint',
     prompt: '',
+    templatePrompt: '',
     model: '',
     temperature: '0',
     maxTokens: '0',
@@ -56,6 +61,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     nativeTools: [],
     agentCollaborations: [],
     tags: [],
+    requiredScopes: [],
     // Self-hosted LLM parameters
     selfHostedUrl: '',
     selfHostedAuthHeaderName: '',
@@ -66,12 +72,17 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
 
   useEffect(() => {
     if (agent) {
+      const agentType = agent.type || 'custom';
+      const triggerType = (agent.trigger?.type as string)?.toLowerCase() || 'endpoint';
+      
       setState({
         agentId: agent.id,
         agentName: getLocalizedValue(agent.name, 'en'),
         description: getLocalizedValue(agent.description, 'en'),
-        triggerType: (agent.trigger?.type as string)?.toLowerCase() || 'endpoint',
+        agentType: agentType,
+        triggerType: agentType === 'support' ? 'slack' : triggerType,
         prompt: agent.userPrompt || '',
+        templatePrompt: agent.templatePrompt || '',
         model: agent.llmConfig?.model || '',
         temperature: agent.llmConfig?.temperature?.toString() || '0',
         maxTokens: agent.llmConfig?.maxTokens?.toString() || '0',
@@ -84,6 +95,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
         nativeTools: agent.nativeTools || [],
         agentCollaborations: agent.agentCollaborations || [],
         tags: agent.tags || [],
+        requiredScopes: agent.requiredScopes || [],
         // Self-hosted LLM parameters
         selfHostedUrl: agent.llmConfig?.selfHostedParams?.url || '',
         selfHostedAuthHeaderName: agent.llmConfig?.selfHostedParams?.authorizationHeaderName || '',
@@ -112,10 +124,11 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
       description: { en: state.description || '' },
       trigger: { 
         ...agent.trigger, 
-        type: state.triggerType || 'endpoint',
+        type: state.agentType === 'support' ? 'slack' : (state.triggerType || 'endpoint'),
         config: agent.trigger?.config || null
       },
       userPrompt: state.prompt || '',
+      templatePrompt: state.templatePrompt || undefined,
       llmConfig: (() => {
         const baseConfig: any = {
           model: state.model || '',
@@ -153,6 +166,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
       nativeTools: state.nativeTools || [],
       agentCollaborations: state.agentCollaborations || [],
       enabled: agent.enabled || false,
+      type: agent.type,
       metadata: agent.metadata || {
         version: 1,
         createdAt: new Date().toISOString(),
@@ -161,7 +175,8 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
         mixins: {}
       },
       icon: state.selectedIcon,
-      tags: state.tags || []
+      tags: state.tags || [],
+      requiredScopes: state.requiredScopes || []
     };
 
     try {

@@ -49,7 +49,7 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
 
   if (!isVisible) return null;
 
-  const handleFieldChange = (field: string, value: string | boolean) => {
+  const handleFieldChange = (field: string, value: string | boolean | string[]) => {
     updateField(field as any, value);
   };
 
@@ -74,8 +74,11 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
             agentId={state.agentId}
             agentName={state.agentName}
             description={state.description}
+            agentType={state.agentType}
             triggerType={state.triggerType}
             prompt={state.prompt}
+            templatePrompt={state.templatePrompt}
+            requiredScopes={state.requiredScopes}
             isEditing={!!agent?.id}
             onFieldChange={handleFieldChange}
           />

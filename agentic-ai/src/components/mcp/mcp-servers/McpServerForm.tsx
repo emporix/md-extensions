@@ -86,6 +86,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
               setSelectedCustomServerId('');
             }}
             className="w-full"
+            appendTo="self"
           />
         </div>
 
@@ -101,6 +102,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
                   setSelectedTools([]); // Reset tools when domain changes
                 }}
                 className="w-full"
+                appendTo="self"
               />
             </div>
             <div className="form-field">
@@ -112,6 +114,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
                 placeholder={t('select_tools_placeholder', 'Select tools')}
                 className="w-full"
                 display="chip"
+                appendTo="self"
               />
             </div>
           </>
@@ -126,6 +129,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
               onChange={(e) => setSelectedCustomServerId(e.value)}
               placeholder={t('select_mcp_server_placeholder', 'Choose an MCP server')}
               className="w-full"
+              appendTo="self"
             />
           </div>
         )}

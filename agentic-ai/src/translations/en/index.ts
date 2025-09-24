@@ -25,6 +25,8 @@ const TRANSLATIONS_EN = {
   enter_agent_name: 'Enter agent name',
   description: 'Description',
   enter_description: 'Enter description',
+  required_scopes: 'Required Scopes',
+  select_required_scopes: 'Select required scopes',
   discard: 'DISCARD',
   save_agent: 'SAVE AGENT',
   agent_saved_success: 'Agent Saved to Your List!',

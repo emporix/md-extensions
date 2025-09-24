@@ -36,6 +36,7 @@ export const TagSelector: React.FC<TagSelectorProps> = memo(({
         className="w-full"
         placeholder={t('select_tags', 'Select tags')}
         showClear
+        appendTo="self"
       />
     </div>
   );
