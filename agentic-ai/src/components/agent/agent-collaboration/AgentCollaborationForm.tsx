@@ -68,6 +68,7 @@ export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({
           onChange={(e) => setSelectedAgentId(e.value)}
           placeholder={t('select_agent', 'Select agent')}
           className="w-full"
+          appendTo="self"
         />
       </div>
 

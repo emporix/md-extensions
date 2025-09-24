@@ -84,6 +84,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
           className="w-full" 
           display="chip"
           placeholder={t('select_required_scopes', 'Select required scopes')}
+          appendTo="self"
         />
       </div>
       
@@ -95,6 +96,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
           onChange={e => onFieldChange('triggerType', e.value)} 
           className="w-full" 
           optionDisabled="disabled"
+          appendTo="self"
         />
       </div>
       

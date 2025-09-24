@@ -129,6 +129,7 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
           onChange={(e) => setTransport(e.value)}
           className="w-full"
           placeholder={t('select_transport', 'Select transport')}
+          appendTo="self"
         />
       </div>
 
@@ -162,6 +163,7 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
           placeholder={tokensLoading ? t('loading_tokens', 'Loading tokens...') : t('select_token', 'Select token')}
           disabled={tokensLoading}
           showClear
+          appendTo="self"
         />
       </div>
     </BaseConfigPanel>
