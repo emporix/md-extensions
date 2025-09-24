@@ -69,6 +69,7 @@ export const createEmptyAgent = (): CustomAgent => ({
   metadata: { version: 1, createdAt: '', modifiedAt: '', schema: null, mixins: {} },
   icon: '',
   tags: [],
+  type: 'custom'
 });
 
 export const iconMap: Record<string, any> = {

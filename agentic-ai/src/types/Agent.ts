@@ -89,5 +89,6 @@ export interface CustomAgent {
   metadata: Metadata
   icon?: string
   tags?: string[]
+  type: string
   requiredScopes?: string[]
 } 

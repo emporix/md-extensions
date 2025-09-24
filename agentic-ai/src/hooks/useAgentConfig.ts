@@ -16,6 +16,7 @@ interface AgentConfigState {
   agentId: string;
   agentName: string;
   description: string;
+  agentType: string;
   triggerType: string;
   prompt: string;
   model: string;
@@ -43,6 +44,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     agentId: '',
     agentName: '',
     description: '',
+    agentType: 'custom',
     triggerType: 'endpoint',
     prompt: '',
     model: '',
@@ -68,11 +70,15 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
 
   useEffect(() => {
     if (agent) {
+      const agentType = agent.type || 'custom';
+      const triggerType = (agent.trigger?.type as string)?.toLowerCase() || 'endpoint';
+      
       setState({
         agentId: agent.id,
         agentName: getLocalizedValue(agent.name, 'en'),
         description: getLocalizedValue(agent.description, 'en'),
-        triggerType: (agent.trigger?.type as string)?.toLowerCase() || 'endpoint',
+        agentType: agentType,
+        triggerType: agentType === 'support' ? 'slack' : triggerType,
         prompt: agent.userPrompt || '',
         model: agent.llmConfig?.model || '',
         temperature: agent.llmConfig?.temperature?.toString() || '0',
@@ -115,7 +121,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
       description: { en: state.description || '' },
       trigger: { 
         ...agent.trigger, 
-        type: state.triggerType || 'endpoint',
+        type: state.agentType === 'support' ? 'slack' : (state.triggerType || 'endpoint'),
         config: agent.trigger?.config || null
       },
       userPrompt: state.prompt || '',
@@ -156,6 +162,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
       nativeTools: state.nativeTools || [],
       agentCollaborations: state.agentCollaborations || [],
       enabled: agent.enabled || false,
+      type: agent.type,
       metadata: agent.metadata || {
         version: 1,
         createdAt: new Date().toISOString(),

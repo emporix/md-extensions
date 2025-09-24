@@ -10,6 +10,7 @@ interface AgentBasicInfoProps {
   agentId: string;
   agentName: string;
   description: string;
+  agentType: string;
   triggerType: string;
   prompt: string;
   requiredScopes: string[];
@@ -21,6 +22,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   agentId,
   agentName,
   description,
+  agentType,
   triggerType,
   prompt,
   requiredScopes,
@@ -35,6 +37,11 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
     { label: 'Employee', value: 'employee' },
     { label: 'Integration', value: 'integration' }
   ];
+
+  // Filter trigger types based on agent type
+  const availableTriggerTypes = agentType === 'support' 
+    ? TRIGGER_TYPES.filter(option => option.value === 'slack')
+    : TRIGGER_TYPES.filter(option => option.value !== 'slack');
 
   return (
     <>
@@ -92,11 +99,12 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
         <label className="field-label">{t('trigger_type', 'Trigger Type')}</label>
         <Dropdown 
           value={triggerType} 
-          options={TRIGGER_TYPES} 
+          options={availableTriggerTypes} 
           onChange={e => onFieldChange('triggerType', e.value)} 
           className="w-full" 
           optionDisabled="disabled"
           appendTo="self"
+          disabled={agentType === 'support'}
         />
       </div>
       

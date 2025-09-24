@@ -74,6 +74,7 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
             agentId={state.agentId}
             agentName={state.agentName}
             description={state.description}
+            agentType={state.agentType}
             triggerType={state.triggerType}
             prompt={state.prompt}
             requiredScopes={state.requiredScopes}
