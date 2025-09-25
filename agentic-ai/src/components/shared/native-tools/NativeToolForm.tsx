@@ -46,6 +46,7 @@ export const NativeToolForm: React.FC<NativeToolFormProps> = ({
             onChange={(e) => setSelectedToolId(e.value)}
             placeholder={t('select_tool_placeholder', 'Choose a tool to add')}
             className="w-full"
+            appendTo="self"
           />
         </div>
         

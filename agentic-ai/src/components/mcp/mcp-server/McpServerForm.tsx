@@ -88,6 +88,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(({
         <label className="field-label">{t('type', 'Type')}</label>
         <Dropdown 
           value={newMcpType} 
+          appendTo="self"
           options={[
             { label: t('emporix', 'Emporix'), value: 'predefined' },
             { label: t('custom', 'Custom'), value: 'custom' }
@@ -108,6 +109,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(({
             <label className="field-label">{t('mcp', 'MCP')}</label>
             <Dropdown 
               value={newEmporixMcp} 
+              appendTo="self"
               options={Object.entries(MCP_SERVERS).map(([key, val]) => ({ 
                 label: val.name, 
                 value: key 
@@ -130,6 +132,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(({
               onChange={e => setNewEmporixTools(e.value)} 
               className="w-full" 
               display="chip" 
+              appendTo="self"
             />
           </div>
         </>
@@ -165,6 +168,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(({
               onChange={e => setNewCustomTransport(e.value)} 
               className="w-full" 
               optionDisabled="disabled" 
+              appendTo="self"
             />
           </div>
           <div className="form-field">

@@ -12,21 +12,27 @@ interface AgentBasicInfoProps {
   agentId: string;
   agentName: string;
   description: string;
+  agentType: string;
   triggerType: string;
   prompt: string;
   commerceEvents: string[];
   isEditing: boolean;
   onFieldChange: (field: string, value: string | string[]) => void;
   appState: AppState;
+  templatePrompt: string;
+  requiredScopes: string[];
 }
 
 export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   agentId,
   agentName,
   description,
+  agentType,
   triggerType,
   prompt,
   commerceEvents,
+  templatePrompt,
+  requiredScopes,
   isEditing,
   onFieldChange,
   appState
@@ -36,6 +42,18 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
 
   // Transform events for MultiSelect options
   const eventOptions = availableEvents.map(event => ({ label: event, value: event }));
+
+  const scopeOptions = [
+    { label: 'Anonymous', value: 'anonymous' },
+    { label: 'Customer', value: 'customer' },
+    { label: 'Employee', value: 'employee' },
+    { label: 'Integration', value: 'integration' }
+  ];
+
+  // Filter trigger types based on agent type
+  const availableTriggerTypes = agentType === 'support' 
+    ? TRIGGER_TYPES.filter(option => option.value === 'slack')
+    : TRIGGER_TYPES.filter(option => option.value !== 'slack');
 
   return (
     <>
@@ -77,15 +95,31 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       </div>
       
       <div className="form-field">
+        <label className="field-label">{t('required_scopes', 'Required Scopes')}</label>
+        <MultiSelect 
+          value={requiredScopes} 
+          options={scopeOptions}
+          onChange={e => onFieldChange('requiredScopes', e.value)} 
+          className="w-full" 
+          display="chip"
+          placeholder={t('select_required_scopes', 'Select required scopes')}
+          appendTo="self"
+        />
+      </div>
+      
+      <div className="form-field">
         <label className="field-label">{t('trigger_type', 'Trigger Type')}</label>
         <Dropdown 
           value={triggerType} 
-          options={TRIGGER_TYPES} 
+          options={availableTriggerTypes} 
           onChange={e => onFieldChange('triggerType', e.value)} 
           className="w-full" 
           optionDisabled="disabled"
+          appendTo="self"
+          disabled={agentType === 'support'}
         />
       </div>
+
       {triggerType === 'commerce_events' && (
         <div className="form-field">
           <label className="field-label">
@@ -110,12 +144,26 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
           )}
         </div>
       )}
+      
+      {templatePrompt && (
+        <div className="form-field">
+          <label className="field-label">{t('template_prompt', 'Template Prompt')}</label>
+          <InputTextarea 
+            value={templatePrompt} 
+            rows={15} 
+            className="w-full readonly-textarea"
+            readOnly
+            placeholder={t('template_prompt_placeholder', 'Template prompt from agent template')}
+          />
+        </div>
+      )}
+      
       <div className="form-field">
         <label className="field-label">{t('prompt', 'Prompt')} *</label>
         <InputTextarea 
           value={prompt} 
           onChange={e => onFieldChange('prompt', e.target.value)} 
-          rows={3} 
+          rows={15} 
           className={`w-full ${!prompt.trim() ? 'p-invalid' : ''}`}
           placeholder={t('enter_prompt', 'Enter prompt')}
         />

@@ -83,6 +83,7 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
             options={LLM_PROVIDERS} 
             onChange={e => onFieldChange('provider', e.value)} 
             className="w-full" 
+            appendTo="self"
           />
         </div>
         <div className="form-field">
@@ -126,6 +127,7 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
               className={`w-full ${!isEditing && !tokenId.trim() ? 'p-invalid' : ''}`}
               placeholder={tokensLoading ? t('loading_tokens', 'Loading tokens...') : t('select_token', 'Select token')}
               disabled={tokensLoading}
+              appendTo="self"
             />
             {!isEditing && !tokenId.trim() && (
               <small className="p-error">{t('token_required', 'Token is required')}</small>
@@ -175,6 +177,7 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
                 placeholder={tokensLoading ? t('loading_tokens', 'Loading tokens...') : t('select_token', 'Select token')}
                 disabled={tokensLoading}
                 showClear
+                appendTo="self"
               />
             </div>
           </>

@@ -158,3 +158,9 @@
     font-size: 0.875rem;
   }
 }
+
+.readonly-textarea {
+  background-color: #f5f5f5 !important; 
+  color: #555 !important;             
+  cursor: default !important;        
+}
