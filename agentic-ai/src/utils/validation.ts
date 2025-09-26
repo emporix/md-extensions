@@ -43,7 +43,7 @@ export const validateEmail = (email: string | undefined | null, fieldName: strin
 // Validation helpers for specific entities
 export const validateToken = (token: { id?: string; name?: string; value?: string }) => {
   validateId(token.id, 'Token');
-  validateRequired(token.value, 'Token value');
+  validateName(token.name, 'Token');
 };
 
 export const validateTool = (tool: { id?: string; name?: string }) => {
