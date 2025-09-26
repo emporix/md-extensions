@@ -193,6 +193,14 @@ const TRANSLATIONS_EN = {
   error_app_state_missing: 'Application state is missing',
   error_slack_installation: 'Error initiating Slack installation',
 
+  // Commerce Events
+  commerce_events: 'Commerce Events',
+  select_events: 'Select Events',
+  select_events_placeholder: 'Choose events to trigger this agent',
+  loading_events: 'Loading events...',
+  no_events_available: 'No events available',
+  commerce_events_required: 'At least one commerce event is required',
+
   // Template fallbacks (for backward compatibility if needed)
   get_started: 'Get Started',
 }

@@ -5,6 +5,8 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { Dropdown } from 'primereact/dropdown';
 import { MultiSelect } from 'primereact/multiselect';
 import { TRIGGER_TYPES } from '../../../utils/constants';
+import { AppState } from '../../../types/common';
+import { useCommerceEvents } from '../../../hooks/useCommerceEvents';
 
 interface AgentBasicInfoProps {
   agentId: string;
@@ -13,10 +15,12 @@ interface AgentBasicInfoProps {
   agentType: string;
   triggerType: string;
   prompt: string;
-  templatePrompt: string;
-  requiredScopes: string[];
+  commerceEvents: string[];
   isEditing: boolean;
   onFieldChange: (field: string, value: string | string[]) => void;
+  appState: AppState;
+  templatePrompt: string;
+  requiredScopes: string[];
 }
 
 export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
@@ -26,12 +30,18 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   agentType,
   triggerType,
   prompt,
+  commerceEvents,
   templatePrompt,
   requiredScopes,
   isEditing,
-  onFieldChange
+  onFieldChange,
+  appState
 }) => {
   const { t } = useTranslation();
+  const { events: availableEvents, loading: eventsLoading, error: eventsError } = useCommerceEvents(appState);
+
+  // Transform events for MultiSelect options
+  const eventOptions = availableEvents.map(event => ({ label: event, value: event }));
 
   const scopeOptions = [
     { label: 'Anonymous', value: 'anonymous' },
@@ -109,6 +119,31 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
           disabled={agentType === 'support'}
         />
       </div>
+
+      {triggerType === 'commerce_events' && (
+        <div className="form-field">
+          <label className="field-label">
+            {t('commerce_events', 'Commerce Events')} *
+          </label>
+          <MultiSelect
+            value={commerceEvents}
+            options={eventOptions}
+            onChange={e => onFieldChange('commerceEvents', e.value)}
+            className={`w-full ${!commerceEvents || commerceEvents.length === 0 ? 'p-invalid' : ''}`}
+            placeholder={eventsLoading ? t('loading_events', 'Loading events...') : t('select_events_placeholder', 'Choose events to trigger this agent')}
+            disabled={eventsLoading}
+            showClear
+            display="chip"
+            maxSelectedLabels={3}
+          />
+          {eventsError && (
+            <small className="p-error">{eventsError}</small>
+          )}
+          {(!commerceEvents || commerceEvents.length === 0) && !eventsLoading && !eventsError && (
+            <small className="p-error">{t('commerce_events_required', 'At least one commerce event is required')}</small>
+          )}
+        </div>
+      )}
       
       {templatePrompt && (
         <div className="form-field">

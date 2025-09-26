@@ -37,6 +37,8 @@ interface AgentConfigState {
   selfHostedUrl: string;
   selfHostedAuthHeaderName: string;
   selfHostedTokenId: string;
+  // Commerce events
+  commerceEvents: string[];
 }
 
 export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConfigProps) => {
@@ -65,7 +67,9 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     // Self-hosted LLM parameters
     selfHostedUrl: '',
     selfHostedAuthHeaderName: '',
-    selfHostedTokenId: ''
+    selfHostedTokenId: '',
+    // Commerce events
+    commerceEvents: []
   });
 
   const [saving, setSaving] = useState(false);
@@ -103,7 +107,9 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
           typeof agent.llmConfig?.selfHostedParams?.authorizationHeaderToken === 'object' 
             ? agent.llmConfig.selfHostedParams.authorizationHeaderToken.id 
             : agent.llmConfig?.selfHostedParams?.authorizationHeaderToken
-        ) || ''
+        ) || '',
+        // Commerce events
+        commerceEvents: (agent.trigger?.config?.events as string[]) || []
       });
     }
   }, [agent]);
@@ -125,7 +131,9 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
       trigger: { 
         ...agent.trigger, 
         type: state.agentType === 'support' ? 'slack' : (state.triggerType || 'endpoint'),
-        config: agent.trigger?.config || null
+        config: state.triggerType === 'commerce_events' 
+          ? { events: state.commerceEvents } 
+          : null
       },
       userPrompt: state.prompt || '',
       templatePrompt: state.templatePrompt || undefined,
@@ -214,7 +222,11 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     // - URL is always required for self-hosted
     const selfHostedValidation = !isSelfHosted || state.selfHostedUrl.trim();
 
-    return basicValidation && tokenValidation && selfHostedValidation;
+    // Commerce events validation:
+    // - Events are required when trigger type is commerce_events
+    const commerceEventsValidation = state.triggerType !== 'commerce_events' || (state.commerceEvents && state.commerceEvents.length > 0);
+
+    return basicValidation && tokenValidation && selfHostedValidation && commerceEventsValidation;
   }, [state, agent?.id]);
 
   return {
