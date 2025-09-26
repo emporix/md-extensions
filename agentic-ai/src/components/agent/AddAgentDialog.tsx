@@ -32,6 +32,7 @@ const AddAgentDialog: React.FC<AddAgentDialogProps> = memo(({
     agentName,
     description,
     progress,
+    errorMessage,
     setAgentId,
     setAgentName,
     setDescription,
@@ -72,7 +73,7 @@ const AddAgentDialog: React.FC<AddAgentDialogProps> = memo(({
       case 'success':
         return <SuccessStep onOk={handleOk} />;
       case 'error':
-        return <ErrorStep onOk={handleOk} />;
+        return <ErrorStep onOk={handleOk} errorMessage={errorMessage} />;
       default:
         return null;
     }

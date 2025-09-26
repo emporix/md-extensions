@@ -26,6 +26,7 @@ export const useAddAgentDialog = ({
   const [agentName, setAgentName] = useState('');
   const [description, setDescription] = useState('');
   const [progress, setProgress] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
     if (agentTemplate) {
@@ -68,6 +69,7 @@ export const useAddAgentDialog = ({
     } catch (error) {
       clearInterval(progressInterval);
       const errorMessage = error instanceof Error ? error.message : 'Failed to create agent';
+      setErrorMessage(errorMessage);
       showError(`Error creating agent: ${errorMessage}`);
       setStep('error');
     }
@@ -96,6 +98,7 @@ export const useAddAgentDialog = ({
     setStep('form');
     setProgress(0);
     setAgentId('');
+    setErrorMessage('');
     if (agentTemplate) {
       setAgentName(getLocalizedValue(agentTemplate.name, 'en'));
       setDescription(getLocalizedValue(agentTemplate.description, 'en'));
@@ -108,6 +111,7 @@ export const useAddAgentDialog = ({
     agentName,
     description,
     progress,
+    errorMessage,
     setAgentId,
     setAgentName,
     setDescription,

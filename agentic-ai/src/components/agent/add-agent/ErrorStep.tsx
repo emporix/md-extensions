@@ -4,9 +4,10 @@ import { Button } from 'primereact/button';
 
 interface ErrorStepProps {
   onOk: () => void;
+  errorMessage?: string;
 }
 
-export const ErrorStep: React.FC<ErrorStepProps> = ({ onOk }) => {
+export const ErrorStep: React.FC<ErrorStepProps> = ({ onOk, errorMessage }) => {
   const { t } = useTranslation();
 
   return (
@@ -16,7 +17,7 @@ export const ErrorStep: React.FC<ErrorStepProps> = ({ onOk }) => {
         {t('error_creating_agent', 'Error Creating Agent')}
       </h2>
       <p style={{ textAlign: 'center', color: '#666', marginBottom: '2rem' }}>
-        {t('agent_creation_failed', 'There was an error creating your agent. Please try again.')}
+        {errorMessage || t('agent_creation_failed', 'There was an error creating your agent. Please try again.')}
       </p>
       <div style={{ textAlign: 'center' }}>
         <Button
