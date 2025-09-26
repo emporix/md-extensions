@@ -34,8 +34,7 @@ export class TokensService {
       );
     } catch (error) {
       console.error('Error upserting token:', error);
-      console.log('Mock upsert token:', token);
-      return token;
+      throw error;
     }
   }
 

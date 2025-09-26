@@ -56,9 +56,6 @@ const TokensPage: React.FC<TokensPageProps> = ({
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to save token';
       showError(`${t('error_saving_token', 'Error saving token')}: ${errorMessage}`);
-      console.error('Error saving token:', error);
-      setShowConfigPanel(false);
-      setSelectedToken(null);
     }
   };
 

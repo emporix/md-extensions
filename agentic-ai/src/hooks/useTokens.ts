@@ -34,7 +34,7 @@ export const useTokens = (appState: AppState) => {
   const upsertToken = useUpsertItem({
     onUpsert: (token: Token) => tokensService.upsertToken(token),
     updateItems: setTokens,
-    setError,
+    setError: undefined,
     getId: (token: Token) => token.id
   });
 
