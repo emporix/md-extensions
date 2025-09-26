@@ -23,7 +23,7 @@ const TokenCard: React.FC<TokenCardProps> = ({ token, onConfigure, onRemove }) =
     <AgentCard
       id={token.id}
       name={token.name}
-      description={token.value ? `Value: ${'•'.repeat(12)}` : 'No value configured'}
+      description=''
       icon={<FontAwesomeIcon icon={faKey} />}
       tags={[getTokenTypeLabel()]}
       enabled={true}
