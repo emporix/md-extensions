@@ -44,7 +44,22 @@ export class ApiClient {
     const payload = isJson ? await response.json().catch(() => undefined) : await response.text().catch(() => undefined)
 
     if (!response.ok) {
-      const message = typeof payload === 'string' && payload ? payload : (payload && (payload as any).message) || `Request failed with status ${response.status}`
+      let message = `Request failed with status ${response.status}`
+      
+      if (typeof payload === 'string' && payload) {
+        message = payload
+      } else if (payload && typeof payload === 'object') {
+        const errorPayload = payload as any
+        
+        // Handle validation errors with details
+        if (errorPayload.details && Array.isArray(errorPayload.details) && errorPayload.details.length > 0) {
+          const validationMessages = errorPayload.details.map((detail: any) => detail.message).join('; ')
+          message = validationMessages
+        } else if (errorPayload.message) {
+          message = errorPayload.message
+        }
+      }
+      
       throw new ApiClientError(message, response.status, payload)
     }
 
