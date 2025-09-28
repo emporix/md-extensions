@@ -77,10 +77,12 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
             agentType={state.agentType}
             triggerType={state.triggerType}
             prompt={state.prompt}
+            commerceEvents={state.commerceEvents}
             templatePrompt={state.templatePrompt}
             requiredScopes={state.requiredScopes}
             isEditing={!!agent?.id}
             onFieldChange={handleFieldChange}
+            appState={appState}
           />
 
           <McpServersSelector

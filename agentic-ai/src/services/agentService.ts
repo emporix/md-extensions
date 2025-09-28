@@ -81,4 +81,8 @@ export class AgentService {
   async patchCustomAgent(agentId: string, patches: PatchOperation[]): Promise<void> {
     await this.api.patch(`/ai-service/${this.tenant}/agentic/agents/${agentId}`, patches);
   }
+
+  async getCommerceEvents(): Promise<{ events: string[] }> {
+    return await this.api.get<{ events: string[] }>(`/ai-service/${this.tenant}/agentic/commerce-events`);
+  }
 } 
