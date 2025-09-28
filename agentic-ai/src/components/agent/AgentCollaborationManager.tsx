@@ -4,21 +4,33 @@ import { AgentCollaborationList } from './agent-collaboration/AgentCollaboration
 import { AgentCollaborationForm } from './agent-collaboration/AgentCollaborationForm';
 import { AgentCollaboration } from '../../types/Agent';
 import { CustomAgent } from '../../types/Agent';
+import { getLocalizedValue } from '../../utils/agentHelpers';
 
 interface AgentCollaborationManagerProps {
   collaborations: AgentCollaboration[];
   onChange: (collaborations: AgentCollaboration[]) => void;
   availableAgents: CustomAgent[];
+  currentAgentId?: string;
 }
 
 export const AgentCollaborationManager: React.FC<AgentCollaborationManagerProps> = ({ 
   collaborations, 
   onChange, 
-  availableAgents 
+  availableAgents,
+  currentAgentId 
 }) => {
   const { t } = useTranslation();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | undefined>(undefined);
+
+  const filteredAgents = (currentAgentId 
+    ? availableAgents.filter(agent => agent.id !== currentAgentId)
+    : availableAgents
+  ).sort((a, b) => {
+    const nameA = getLocalizedValue(a.name).toLowerCase();
+    const nameB = getLocalizedValue(b.name).toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
 
   const handleAddCollaboration = useCallback((collaboration: AgentCollaboration) => {
     onChange([...collaborations, collaboration]);
@@ -70,14 +82,14 @@ export const AgentCollaborationManager: React.FC<AgentCollaborationManagerProps>
         onUpdate={handleUpdateCollaboration}
         onCancelEdit={handleCancelEdit}
         editingIndex={editingIndex}
-        availableAgents={availableAgents}
+        availableAgents={filteredAgents}
       />
 
       {showAddForm && (
         <AgentCollaborationForm
           onAdd={handleAddCollaboration}
           onCancel={handleCancelAdd}
-          availableAgents={availableAgents}
+          availableAgents={filteredAgents}
         />
       )}
     </div>
