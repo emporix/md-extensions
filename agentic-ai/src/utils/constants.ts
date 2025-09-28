@@ -3,7 +3,7 @@ export const MCP_SERVERS = {
     name: 'Order MCP',
     tools: [
       'get-returns', 'get-return', 'create-return', 'update-return', 'partial-update-return',
-      'delete-return', 'change-returns-status', 'get-orders', 'get-order', 'get-customer-orders',
+      'delete-return', 'change-return-status', 'get-orders', 'get-order', 'get-customer-orders',
       'update-order-billing-data', 'send-invoice'
     ]
   },
