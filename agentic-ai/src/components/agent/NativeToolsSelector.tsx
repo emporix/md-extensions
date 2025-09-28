@@ -31,7 +31,6 @@ export const NativeToolsSelector: React.FC<NativeToolsSelectorProps> = ({
         const fetchedTools = await toolsService.getTools();
         setAvailableTools(fetchedTools);
       } catch (error) {
-        console.error('Error loading tools:', error);
         setAvailableTools([]);
       } finally {
         setToolsLoading(false);

@@ -31,7 +31,6 @@ export const McpServersSelector: React.FC<McpServersSelectorProps> = ({
         const fetchedServers = await mcpService.getMcpServers();
         setAvailableMcpServers(fetchedServers);
       } catch (error) {
-        console.error('Error loading MCP servers:', error);
         setAvailableMcpServers([]);
       } finally {
         setMcpServersLoading(false);

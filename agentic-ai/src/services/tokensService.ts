@@ -16,7 +16,6 @@ export class TokensService {
     try {
       return await this.api.get<Token[]>(`/ai-service/${this.tenant}/agentic/tokens`);
     } catch (error) {
-      console.error('Error fetching tokens:', error);
       throw error;
     }
   }
@@ -33,7 +32,6 @@ export class TokensService {
         }
       );
     } catch (error) {
-      console.error('Error upserting token:', error);
       throw error;
     }
   }
@@ -42,8 +40,6 @@ export class TokensService {
     try {
       await this.api.delete(`/ai-service/${this.tenant}/agentic/tokens/${tokenId}`);
     } catch (error) {
-      console.error('Error deleting token:', error);
-      console.log('Mock delete token:', tokenId);
       return Promise.resolve();
     }
   }

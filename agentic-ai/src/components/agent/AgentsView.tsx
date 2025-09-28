@@ -82,7 +82,6 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
       setShowConfigPanel(false)
       setSelectedCustomAgent(null)
     } catch (error) {
-      console.error('Failed to refresh agents after save:', error)
       const cleanAgent = cleanAgentForConfig(updatedAgent, i18n.language)
       setCustomAgents((prev: CustomAgent[]) => prev.map((a: CustomAgent) => a.id === cleanAgent.id ? cleanAgent : a))
       setShowConfigPanel(false)

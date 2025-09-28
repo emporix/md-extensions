@@ -56,7 +56,6 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
           const fetchedTokens = await tokensService.getTokens();
           setTokens(fetchedTokens);
         } catch (error) {
-          console.error('Error loading tokens:', error);
           setTokens([]);
         } finally {
           setTokensLoading(false);

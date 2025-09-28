@@ -41,7 +41,6 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
         const fetchedTokens = await tokensService.getTokens();
         setTokens(fetchedTokens);
       } catch (error) {
-        console.error('Error loading tokens:', error);
         setTokens([]);
       } finally {
         setTokensLoading(false);

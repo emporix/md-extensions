@@ -47,7 +47,6 @@ export const useTokens = (appState: AppState) => {
     } catch (err) {
       const message = formatApiError(err, 'Failed to load tokens');
       setError(message);
-      console.error('Error loading tokens:', err);
     } finally {
       setLoading(false);
     }

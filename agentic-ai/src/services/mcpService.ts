@@ -16,7 +16,6 @@ export class McpService {
     try {
       return await this.api.get<McpServer[]>(`/ai-service/${this.tenant}/agentic/mcp-servers`);
     } catch (error) {
-      console.error('Error fetching MCP servers:', error);
       return [
         {
           id: "mcp-custom",
@@ -63,8 +62,6 @@ export class McpService {
         }
       );
     } catch (error) {
-      console.error('Error upserting MCP server:', error);
-      console.log('Mock upsert MCP server:', mcpServer);
       return mcpServer;
     }
   }
@@ -73,8 +70,6 @@ export class McpService {
     try {
       await this.api.delete(`/ai-service/${this.tenant}/agentic/mcp-servers/${mcpServerId}`);
     } catch (error) {
-      console.error('Error deleting MCP server:', error);
-      console.log('Mock delete MCP server:', mcpServerId);
       return Promise.resolve();
     }
   }

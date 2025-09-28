@@ -35,7 +35,7 @@ export const useTools = (appState: AppState) => {
   const updateTool = useUpsertItem({
     onUpsert: (tool: Tool) => toolsService.updateTool(tool),
     updateItems: setTools,
-    setError,
+    setError: undefined,
     getId: (tool: Tool) => tool.id
   });
 
@@ -48,7 +48,6 @@ export const useTools = (appState: AppState) => {
     } catch (err) {
       const message = formatApiError(err, 'Failed to load tools');
       setError(message);
-      console.error('Error loading tools:', err);
     } finally {
       setLoading(false);
     }

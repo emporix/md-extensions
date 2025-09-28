@@ -70,8 +70,6 @@ export class AgentService {
         formattedAgent
       );
     } catch (error) {
-      // Fallback to formatted agent if API call fails but we have valid data
-      console.warn('API call failed, returning formatted agent:', error);
       return formattedAgent as CustomAgent;
     }
   }

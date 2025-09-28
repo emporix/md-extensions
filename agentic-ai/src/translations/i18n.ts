@@ -18,8 +18,7 @@ i18n.use(initReactI18next).init({
   interpolation: {
     escapeValue: false,
   },
-  missingKeyHandler: (lng, _ns, key, _res) => {
-    console.warn(`Missing translation key: ${key} for language: ${lng}`)
+  missingKeyHandler: (_lng, _ns, key, _res) => {
     return key
   },
   returnEmptyString: false,

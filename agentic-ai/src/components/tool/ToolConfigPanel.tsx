@@ -16,7 +16,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   appState 
 }) => {
   const { t } = useTranslation();
-  const { showSuccess, showError } = useToast();
+  const { showError } = useToast();
   const [toolId, setToolId] = useState('');
   const [toolName, setToolName] = useState('');
   const [config, setConfig] = useState<Record<string, any>>({});
@@ -43,15 +43,10 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         config,
       };
 
-      const toolsService = new ToolsService(appState);
-      const savedTool = await toolsService.updateTool(updatedTool);
-      
-      showSuccess(t('tool_updated_successfully', 'Tool updated successfully!'));
-      onSave(savedTool);
+      onSave(updatedTool);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to save tool';
       showError(`${t('error_saving_tool', 'Error saving tool')}: ${errorMessage}`);
-      console.error('Error saving tool:', error);
     } finally {
       setSaving(false);
     }
@@ -79,7 +74,6 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to initiate Slack installation';
       showError(`${t('error_slack_installation', 'Error initiating Slack installation')}: ${errorMessage}`);
-      console.error('Error initiating Slack installation:', error);
     } finally {
       setSlackInstallLoading(false);
     }
@@ -139,45 +133,71 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
        
         {/* Tool ID and Name fields */}
         <div className="form-field">
-          <label className="field-label">{t('tool_id', 'Tool ID')}</label>
+          <label className="field-label">
+            {t('tool_id', 'Tool ID')} 
+            {!tool?.id && <span style={{ color: 'red' }}> *</span>}
+          </label>
           <InputText
             value={toolId}
             onChange={(e) => setToolId(e.target.value)}
-            className="w-full"
+            className={`w-full ${!tool?.id && !toolId.trim() ? 'p-invalid' : ''}`}
             disabled={!!tool?.id}
             placeholder={t('enter_tool_id', 'Enter tool ID')}
           />
+          {!tool?.id && !toolId.trim() && (
+            <small className="p-error">{t('tool_id_required', 'Tool ID is required')}</small>
+          )}
         </div>
         <div className="form-field">
-          <label className="field-label">{t('tool_name', 'Tool Name')}</label>
+          <label className="field-label">
+            {t('tool_name', 'Tool Name')} 
+            <span style={{ color: 'red' }}> *</span>
+          </label>
           <InputText
             value={toolName}
             onChange={(e) => setToolName(e.target.value)}
-            className="w-full"
+            className={`w-full ${!toolName.trim() ? 'p-invalid' : ''}`}
             placeholder={t('enter_tool_name', 'Enter tool name')}
           />
+          {!toolName.trim() && (
+            <small className="p-error">{t('tool_name_required', 'Tool name is required')}</small>
+          )}
         </div>
         
         {/* Slack-specific configuration fields */}
         <div className="form-field">
-          <label className="field-label">{t('team_id', 'Team ID')}</label>
+          <label className="field-label">
+            {t('team_id', 'Team ID')} 
+            <span style={{ color: 'red' }}> *</span>
+          </label>
           <InputText
             value={config.teamId || ''}
             onChange={(e) => updateConfig('teamId', e.target.value)}
-            className="w-full"
+            className={`w-full ${!config.teamId?.trim() ? 'p-invalid' : ''}`}
             placeholder={t('enter_team_id', 'Enter team ID')}
           />
+          {!config.teamId?.trim() && (
+            <small className="p-error">{t('team_id_required', 'Team ID is required')}</small>
+          )}
         </div>
-        <div className="form-field">
-          <label className="field-label">{t('bot_token', 'Bot Token')}</label>
-          <InputText
-            value={config.botToken || ''}
-            onChange={(e) => updateConfig('botToken', e.target.value)}
-            className="w-full"
-            placeholder={t('enter_bot_token', 'Enter bot token')}
-            type="password"
-          />
-        </div>
+        {!tool?.id && (
+          <div className="form-field">
+            <label className="field-label">
+              {t('bot_token', 'Bot Token')} 
+              <span style={{ color: 'red' }}> *</span>
+            </label>
+            <InputText
+              value={config.botToken || ''}
+              onChange={(e) => updateConfig('botToken', e.target.value)}
+              className={`w-full ${!config.botToken?.trim() ? 'p-invalid' : ''}`}
+              placeholder={t('enter_bot_token', 'Enter bot token')}
+              type="password"
+            />
+            {!config.botToken?.trim() && (
+              <small className="p-error">{t('bot_token_required', 'Bot token is required')}</small>
+            )}
+          </div>
+        )}
       </>
     );
   };
@@ -226,7 +246,11 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     }
   };
 
-  const canSave = !saving && !!toolName.trim() && (!!tool?.id || !!toolId.trim());
+  const canSave = !saving && 
+    !!toolName.trim() && 
+    (!!tool?.id || !!toolId.trim()) && 
+    !!config.teamId?.trim() && 
+    (!!tool?.id || !!config.botToken?.trim());
 
   return (
     <BaseConfigPanel

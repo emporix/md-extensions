@@ -50,11 +50,10 @@ export const useDataFetching = <T>(
     } catch (err) {
       const message = formatApiError(err, fallbackErrorMessage);
       setError(message);
-      console.error(`Error fetching data: ${fallbackErrorMessage}`, err);
     } finally {
       setLoading(false);
     }
-  }, [fallbackErrorMessage]); // Remove fetchFunction from dependencies
+  }, [fallbackErrorMessage]); 
 
   const showDeleteConfirm = useCallback((itemId: string) => {
     setItemToDelete(itemId);

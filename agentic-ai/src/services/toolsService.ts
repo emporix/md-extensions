@@ -15,7 +15,6 @@ export class ToolsService {
     try {
       return await this.api.get<Tool[]>(`/ai-service/${this.tenant}/agentic/tools`);
     } catch (error) {
-      console.error('Error fetching tools:', error);
       throw error;
     }
   }
@@ -27,9 +26,7 @@ export class ToolsService {
         tool
       );
     } catch (error) {
-      console.error('Error updating tool:', error);
-      console.log('Mock update tool:', tool);
-      return tool;
+      throw error;
     }
   }
 
@@ -37,8 +34,6 @@ export class ToolsService {
     try {
       await this.api.delete(`/ai-service/${this.tenant}/agentic/tools/${toolId}`);
     } catch (error) {
-      console.error('Error deleting tool:', error);
-      console.log('Mock delete tool:', toolId);
       return Promise.resolve();
     }
   }
@@ -49,7 +44,6 @@ export class ToolsService {
         `/ai-service/${this.tenant}/agentic/oauth/installations/slack`
       );
     } catch (error) {
-      console.error('Error getting Slack installation data:', error);
       throw error;
     }
   }

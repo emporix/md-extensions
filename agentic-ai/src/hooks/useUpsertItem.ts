@@ -26,7 +26,6 @@ export const useUpsertItem = <T>({
             getId(existingItem) === getId(savedItem) ? savedItem : existingItem
           );
         } else {
-          // Add new item
           return [...prevItems, savedItem];
         }
       });

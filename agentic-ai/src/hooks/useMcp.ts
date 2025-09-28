@@ -48,7 +48,6 @@ export const useMcp = (appState: AppState) => {
     } catch (err) {
       const message = formatApiError(err, 'Failed to load MCP servers');
       setError(message);
-      console.error('Error loading MCP servers:', err);
     } finally {
       setLoading(false);
     }

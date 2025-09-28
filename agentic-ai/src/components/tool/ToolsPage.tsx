@@ -7,6 +7,7 @@ import { Tool } from '../../types/Tool';
 import { useTools } from '../../hooks/useTools';
 import { AppState } from '../../types/common';
 import { createEmptyTool } from '../../utils/toolHelpers';
+import { useToast } from '../../contexts/ToastContext';
 
 interface ToolsPageProps {
   appState?: AppState;
@@ -20,12 +21,13 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
   }
 }) => {
   const { t } = useTranslation();
+  const { showSuccess } = useToast();
   const { 
     tools, 
     loading, 
     error, 
     updateTool, 
-    refreshTools, 
+    refreshTools,
     removeTool, 
     deleteConfirmVisible, 
     hideDeleteConfirm, 
@@ -48,11 +50,10 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
     try {
       await updateTool(updatedTool);
       await refreshTools();
+      showSuccess(t('tool_updated_successfully', 'Tool updated successfully!'));
       setShowConfigPanel(false);
       setSelectedTool(null);
     } catch (error) {
-      // Error is already handled in ToolConfigPanel with toast notifications
-      console.error('Failed to refresh tools after save:', error);
       setShowConfigPanel(false);
       setSelectedTool(null);
     }

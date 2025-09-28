@@ -58,9 +58,7 @@ const AgentCard: React.FC<AgentCardProps> = ({
       setIsActive(newEnabled);
       await onToggleActive(id, newEnabled);
     } catch (error) {
-      // Revert the local state if the API call fails
       setIsActive(!newEnabled);
-      console.error('Failed to toggle agent status:', error);
     } finally {
       setIsToggling(false);
     }
