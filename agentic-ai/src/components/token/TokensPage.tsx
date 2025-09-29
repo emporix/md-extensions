@@ -27,6 +27,7 @@ const TokensPage: React.FC<TokensPageProps> = ({
     loading, 
     error, 
     upsertToken, 
+    refreshTokens,
     removeToken, 
     deleteConfirmVisible, 
     hideDeleteConfirm, 
@@ -48,6 +49,7 @@ const TokensPage: React.FC<TokensPageProps> = ({
   const handleConfigSave = async (updatedToken: Token) => {
     try {
       await upsertToken(updatedToken);
+      await refreshTokens();
       showSuccess(t('token_updated_successfully', 'Token updated successfully!'));
       setShowConfigPanel(false);
       setSelectedToken(null);

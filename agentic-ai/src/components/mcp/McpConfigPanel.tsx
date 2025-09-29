@@ -100,24 +100,36 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
       className="mcp-config-panel"
     >
       <div className="form-field">
-        <label className="field-label">{t('mcp_server_id', 'MCP Server ID')}</label>
+        <label className="field-label">
+          {t('mcp_server_id', 'MCP Server ID')} 
+          {!mcpServer?.id && <span style={{ color: 'red' }}> *</span>}
+        </label>
         <InputText
           value={mcpServerId}
           onChange={(e) => setMcpServerId(e.target.value)}
-          className="w-full"
+          className={`w-full ${!mcpServer?.id && !mcpServerId.trim() ? 'p-invalid' : ''}`}
           disabled={!!mcpServer?.id}
           placeholder={t('enter_mcp_server_id', 'Enter MCP server ID')}
         />
+        {!mcpServer?.id && !mcpServerId.trim() && (
+          <small className="p-error">{t('mcp_server_id_required', 'MCP Server ID is required')}</small>
+        )}
       </div>
 
       <div className="form-field">
-        <label className="field-label">{t('mcp_server_name', 'MCP Server Name')}</label>
+        <label className="field-label">
+          {t('mcp_server_name', 'MCP Server Name')} 
+          <span style={{ color: 'red' }}> *</span>
+        </label>
         <InputText
           value={mcpServerName}
           onChange={(e) => setMcpServerName(e.target.value)}
-          className="w-full"
+          className={`w-full ${!mcpServerName.trim() ? 'p-invalid' : ''}`}
           placeholder={t('enter_mcp_server_name', 'Enter MCP server name')}
         />
+        {!mcpServerName.trim() && (
+          <small className="p-error">{t('mcp_server_name_required', 'MCP Server name is required')}</small>
+        )}
       </div>
 
       <div className="form-field">
@@ -133,13 +145,19 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
       </div>
 
       <div className="form-field">
-        <label className="field-label">{t('url', 'URL')}</label>
+        <label className="field-label">
+          {t('url', 'URL')} 
+          <span style={{ color: 'red' }}> *</span>
+        </label>
         <InputText
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          className="w-full"
+          className={`w-full ${!url.trim() ? 'p-invalid' : ''}`}
           placeholder={t('enter_url', 'Enter URL')}
         />
+        {!url.trim() && (
+          <small className="p-error">{t('url_required', 'URL is required')}</small>
+        )}
       </div>
 
       <div className="form-field">

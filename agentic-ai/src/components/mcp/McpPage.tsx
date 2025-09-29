@@ -56,8 +56,7 @@ const McpPage: React.FC<McpPageProps> = ({
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to save MCP server';
       showError(`${t('error_saving_mcp_server', 'Error saving MCP server')}: ${errorMessage}`);
-      setShowConfigPanel(false);
-      setSelectedMcpServer(null);
+      // Don't close the panel on error - let user fix the issue
     }
   };
 

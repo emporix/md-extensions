@@ -218,7 +218,8 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
       state.agentName.trim() &&
       state.description.trim() &&
       state.prompt.trim() &&
-      state.model.trim()
+      state.model.trim() &&
+      (isCreating ? state.agentId.trim() : true)
     );
 
     // Token validation:

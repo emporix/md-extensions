@@ -58,37 +58,55 @@ const TokenConfigPanel: React.FC<TokenConfigPanelProps> = ({
       className="token-config-panel"
     >
       <div className="form-field">
-        <label className="field-label">{t('token_id', 'Token ID')}</label>
+        <label className="field-label">
+          {t('token_id', 'Token ID')} 
+          {!isExistingToken && <span style={{ color: 'red' }}> *</span>}
+        </label>
         <InputText
           value={tokenId}
           onChange={(e) => setTokenId(e.target.value)}
-          className="w-full"
+          className={`w-full ${!isExistingToken && !tokenId.trim() ? 'p-invalid' : ''}`}
           disabled={!!token?.id}
           placeholder={t('enter_token_id', 'Enter token ID')}
         />
+        {!isExistingToken && !tokenId.trim() && (
+          <small className="p-error">{t('token_id_required', 'Token ID is required')}</small>
+        )}
       </div>
 
       <div className="form-field">
-        <label className="field-label">{t('token_name', 'Token Name')}</label>
+        <label className="field-label">
+          {t('token_name', 'Token Name')} 
+          <span style={{ color: 'red' }}> *</span>
+        </label>
         <InputText
           value={tokenName}
           onChange={(e) => setTokenName(e.target.value)}
-          className="w-full"
+          className={`w-full ${!tokenName.trim() ? 'p-invalid' : ''}`}
           placeholder={t('enter_token_name', 'Enter token name')}
         />
+        {!tokenName.trim() && (
+          <small className="p-error">{t('token_name_required', 'Token name is required')}</small>
+        )}
       </div>
 
       {!isExistingToken && (
         <div className="form-field">
-          <label className="field-label">{t('token_value', 'Token Value')}</label>
+          <label className="field-label">
+            {t('token_value', 'Token Value')} 
+            <span style={{ color: 'red' }}> *</span>
+          </label>
           <Password
             value={tokenValue}
             onChange={(e) => setTokenValue(e.target.value)}
-            className="w-full"
+            className={`w-full ${!tokenValue.trim() ? 'p-invalid' : ''}`}
             placeholder={t('enter_token_value', 'Enter token value')}
             feedback={false}
             toggleMask
           />
+          {!tokenValue.trim() && (
+            <small className="p-error">{t('token_value_required', 'Token value is required')}</small>
+          )}
         </div>
       )}
     </BaseConfigPanel>

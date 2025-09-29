@@ -35,7 +35,7 @@ export const useMcp = (appState: AppState) => {
   const upsertMcpServer = useUpsertItem({
     onUpsert: (server: McpServer) => mcpService.upsertMcpServer(server),
     updateItems: setMcpServers,
-    setError,
+    setError: undefined,
     getId: (server: McpServer) => server.id
   });
 

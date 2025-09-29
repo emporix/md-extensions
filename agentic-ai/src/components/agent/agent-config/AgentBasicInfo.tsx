@@ -58,13 +58,20 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   return (
     <>
       <div className="form-field">
-        <label className="field-label">{t('agent_id', 'ID')}</label>
+        <label className="field-label">
+          {t('agent_id', 'ID')} 
+          {!isEditing && <span style={{ color: 'red' }}> *</span>}
+        </label>
         <InputText 
           value={agentId} 
           onChange={e => onFieldChange('agentId', e.target.value)} 
-          className="w-full" 
+          className={`w-full ${!isEditing && !agentId.trim() ? 'p-invalid' : ''}`}
           disabled={isEditing}
+          placeholder={!isEditing ? t('enter_agent_id', 'Enter agent ID') : undefined}
         />
+        {!isEditing && !agentId.trim() && (
+          <small className="p-error">{t('agent_id_required', 'Agent ID is required')}</small>
+        )}
       </div>
       
       <div className="form-field">

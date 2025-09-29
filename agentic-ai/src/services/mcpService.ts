@@ -1,7 +1,6 @@
 import { McpServer } from '../types/Mcp';
 import { AppState } from '../types/common';
 import { ApiClient } from './apiClient';
-import { validateMcpServer } from '../utils/validation';
 
 export class McpService {
   private api: ApiClient;
@@ -50,8 +49,6 @@ export class McpService {
   }
 
   async upsertMcpServer(mcpServer: McpServer): Promise<McpServer> {
-    validateMcpServer(mcpServer);
-
     try {
       return await this.api.put<McpServer>(
         `/ai-service/${this.tenant}/agentic/mcp-servers/${mcpServer.id}`,
@@ -62,7 +59,8 @@ export class McpService {
         }
       );
     } catch (error) {
-      return mcpServer;
+      console.error('Error upserting MCP server:', error);
+      throw error;
     }
   }
 

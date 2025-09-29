@@ -48,40 +48,49 @@ export const FormStep: React.FC<FormStepProps> = ({
       <div className="form-fields-section">
         <div className="form-field">
           <label htmlFor="agent-id" className="field-label">
-            {t('agent_id', 'ID')}
+            {t('agent_id', 'ID')} <span style={{ color: 'red' }}>*</span>
           </label>
           <InputText
             id="agent-id"
             value={agentId}
             onChange={(e) => setAgentId(e.target.value)}
-            className="w-full"
+            className={`w-full ${!agentId.trim() ? 'p-invalid' : ''}`}
             placeholder={t('enter_agent_id', 'Enter agent id')}
           />
+          {!agentId.trim() && (
+            <small className="p-error">{t('agent_id_required', 'Agent ID is required')}</small>
+          )}
         </div>
         <div className="form-field">
           <label htmlFor="agent-name" className="field-label">
-            {t('agent_name', 'Agent Name')}
+            {t('agent_name', 'Agent Name')} <span style={{ color: 'red' }}>*</span>
           </label>
           <InputText
             id="agent-name"
             value={agentName}
             onChange={(e) => setAgentName(e.target.value)}
-            className="w-full"
+            className={`w-full ${!agentName.trim() ? 'p-invalid' : ''}`}
             placeholder={t('enter_agent_name', 'Enter agent name')}
           />
+          {!agentName.trim() && (
+            <small className="p-error">{t('agent_name_required', 'Agent name is required')}</small>
+          )}
         </div>
         <div className="form-field">
           <label htmlFor="agent-description" className="field-label">
-            {t('description', 'Description')}
+            {t('description', 'Description')} <span style={{ color: 'red' }}>*</span>
           </label>
           <InputTextarea
             id="agent-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
-            className="w-full"
+            className={`w-full ${!description.trim() ? 'p-invalid' : ''}`}
             placeholder={t('enter_description', 'Enter description')}
           />
+          {!description.trim() && (
+            <small className="p-error">{t('description_required', 'Description is required')}</small>
+          )}
         </div>
       </div>
 

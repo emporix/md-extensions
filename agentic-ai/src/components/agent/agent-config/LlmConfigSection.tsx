@@ -100,18 +100,24 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
         <div className="form-field">
           <label className="field-label">{t('temperature', 'Temperature')}</label>
           <div className="temperature-slider">
-            <input
-              type="range"
-              min="0"
-              max="10"
-              step="1"
-              value={Math.round(parseFloat(temperature || '0.5') * 10)}
-              onChange={e => {
-                const sliderValue = parseInt(e.target.value) / 10;
-                onFieldChange('temperature', sliderValue.toString());
-              }}
-              className="w-full"
-            />
+            <div className="slider-container">
+              <input
+                type="range"
+                min="0"
+                max="10"
+                step="1"
+                value={Math.round(parseFloat(temperature || '0.5') * 10)}
+                onChange={e => {
+                  const sliderValue = parseInt(e.target.value) / 10;
+                  onFieldChange('temperature', sliderValue.toString());
+                }}
+                className="w-full"
+                title={temperature}
+              />
+              <div className="slider-tooltip" style={{ left: `calc(${(parseFloat(temperature || '0.5') * 10) / 10 * 100}% - 15px)` }}>
+                {temperature}
+              </div>
+            </div>
             <div className="temperature-labels">
               <span>0.0</span>
               <span>0.5</span>
@@ -199,11 +205,28 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
       <div className="llm-config-row">
         <div className="form-field" style={{ flex: 1 }}>
           <label className="field-label">{t('recursion_limit', 'Recursion Limit')}</label>
-          <InputText 
-            value={recursionLimit} 
-            onChange={e => onFieldChange('recursionLimit', e.target.value)} 
-            className="w-full" 
-          />
+          <div className="recursion-limit-slider">
+            <div className="slider-container">
+              <input
+                type="range"
+                min="1"
+                max="100"
+                step="1"
+                value={recursionLimit}
+                onChange={e => onFieldChange('recursionLimit', e.target.value)}
+                className="w-full"
+                title={recursionLimit}
+              />
+              <div className="slider-tooltip" style={{ left: `calc(${((parseInt(recursionLimit) - 1) / 99) * 100}% - 15px)` }}>
+                {recursionLimit}
+              </div>
+            </div>
+            <div className="recursion-limit-labels">
+              <span>1</span>
+              <span>50</span>
+              <span>100</span>
+            </div>
+          </div>
         </div>
         <div className="form-field" style={{ display: 'flex', alignItems: 'center', marginLeft: '2rem', marginTop: '2rem' }}>
           <InputSwitch 

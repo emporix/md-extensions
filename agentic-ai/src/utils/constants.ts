@@ -1,41 +1,41 @@
 export const MCP_SERVERS = {
-  order: {
-    name: 'Order MCP',
-    tools: [
-      'get-returns', 'get-return', 'create-return', 'update-return', 'partial-update-return',
-      'delete-return', 'change-return-status', 'get-orders', 'get-order', 'get-customer-orders',
-      'update-order-billing-data', 'send-invoice'
-    ]
-  },
   customer: {
     name: 'Customer MCP',
     tools: [
-      'get-customers', 'get-customer', 'upsert-customer', 'partial-update-customer', 'delete-customer',
-      'get-legal-entities', 'get-legal-entity', 'upsert-legal-entity', 'delete-legal-entity',
-      'get-locations', 'get-location', 'upsert-location', 'delete-location',
-      'get-contact-assignments', 'get-contact-assignment', 'upsert-contact-assignment', 'delete-contact-assignment'
-    ]
-  },
-  product: {
-    name: 'Product MCP',
-    tools: [
-      'get-products', 'get-product', 'upsert-product', 'partial-update-product', 'delete-product',
-      'upsert-price', 'get-price', 'delete-price', 'get-prices', 'get-price-model', 'match-prices',
-      'get-availabilities-by-site', 'get-availabilities-by-product-ids', 'upsert-availability', 'delete-availability',
-      'upsert-catalog', 'partial-update-catalog', 'get-catalog', 'delete-catalog', 'get-catalogs',
-      'get-category-catalogs', 'upsert-category', 'get-category', 'get-categories', 'delete-category',
-      'partial-update-category', 'upsert-category-assignment', 'get-category-assignments',
-      'delete-category-assignments', 'delete-category-assignment-by-id', 'delete-category-assignment-by-product',
-      'get-categories-by-product-assignment', 'delete-category-assignments-by-product', 'create-brand',
-      'partial-update-brand', 'get-brand', 'delete-brand', 'get-brands', 'get-labels', 'get-label',
-      'create-label', 'partial-update-label', 'update-label', 'delete-label'
+      'delete-contact-assignment', 'delete-customer', 'delete-legal-entity', 'delete-location',
+      'get-contact-assignment', 'get-contact-assignments', 'get-customer', 'get-customers',
+      'get-legal-entity', 'get-legal-entities', 'get-location', 'get-locations',
+      'partial-update-customer', 'upsert-contact-assignment', 'upsert-customer', 'upsert-legal-entity', 'upsert-location'
     ]
   },
   extensibility: {
     name: 'Extensibility MCP',
     tools: [
-      'get-custom-types', 'get-custom-type-schema', 'get-custom-type-instance', 'get-custom-type-instances',
-      'upsert-custom-type-instance', 'partial-update-custom-type-instance'
+      'get-custom-type-instance', 'get-custom-type-instances', 'get-custom-type-schema', 'get-custom-types',
+      'partial-update-custom-type-instance', 'upsert-custom-type-instance'
+    ]
+  },
+  order: {
+    name: 'Order MCP',
+    tools: [
+      'change-return-status', 'create-return', 'delete-return', 'get-customer-orders',
+      'get-order', 'get-orders', 'get-return', 'get-returns',
+      'partial-update-return', 'send-invoice', 'update-order-billing-data', 'update-return'
+    ]
+  },
+  product: {
+    name: 'Product MCP',
+    tools: [
+      'create-brand', 'create-label', 'delete-availability', 'delete-brand', 'delete-catalog',
+      'delete-category', 'delete-category-assignment-by-id', 'delete-category-assignment-by-product',
+      'delete-category-assignments', 'delete-category-assignments-by-product', 'delete-label', 'delete-price', 'delete-product',
+      'get-availabilities-by-product-ids', 'get-availabilities-by-site', 'get-brand', 'get-brands',
+      'get-catalog', 'get-catalogs', 'get-category', 'get-categories', 'get-categories-by-product-assignment',
+      'get-category-assignments', 'get-category-catalogs', 'get-label', 'get-labels', 'get-price',
+      'get-price-model', 'get-prices', 'get-product', 'get-products', 'match-prices',
+      'partial-update-brand', 'partial-update-catalog', 'partial-update-category', 'partial-update-label',
+      'partial-update-product', 'update-label', 'upsert-availability', 'upsert-catalog',
+      'upsert-category', 'upsert-category-assignment', 'upsert-price', 'upsert-product'
     ]
   }
 } as const;
