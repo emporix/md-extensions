@@ -70,7 +70,8 @@ export class AgentService {
         formattedAgent
       );
     } catch (error) {
-      return formattedAgent as CustomAgent;
+      console.error('Error upserting agent:', error);
+      throw error;
     }
   }
 

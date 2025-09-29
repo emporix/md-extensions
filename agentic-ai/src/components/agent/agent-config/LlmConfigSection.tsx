@@ -99,11 +99,25 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
         </div>
         <div className="form-field">
           <label className="field-label">{t('temperature', 'Temperature')}</label>
-          <InputText 
-            value={temperature} 
-            onChange={e => onFieldChange('temperature', e.target.value)} 
-            className="w-full" 
-          />
+          <div className="temperature-slider">
+            <input
+              type="range"
+              min="0"
+              max="10"
+              step="1"
+              value={Math.round(parseFloat(temperature || '0.5') * 10)}
+              onChange={e => {
+                const sliderValue = parseInt(e.target.value) / 10;
+                onFieldChange('temperature', sliderValue.toString());
+              }}
+              className="w-full"
+            />
+            <div className="temperature-labels">
+              <span>0.0</span>
+              <span>0.5</span>
+              <span>1.0</span>
+            </div>
+          </div>
         </div>
         <div className="form-field">
           <label className="field-label">{t('max_tokens', 'Max Tokens')}</label>

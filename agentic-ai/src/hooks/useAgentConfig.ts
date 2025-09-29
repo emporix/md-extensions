@@ -176,7 +176,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
       enabled: agent.enabled || false,
       type: agent.type,
       metadata: agent.metadata || {
-        version: 1,
+        version: 0,
         createdAt: new Date().toISOString(),
         modifiedAt: new Date().toISOString(),
         schema: null,
@@ -190,6 +190,8 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     try {
       const agentService = new AgentService(appState);
       const savedAgent = await agentService.upsertCustomAgent(updatedAgent);
+      
+      // Only proceed with success flow if no error was thrown
       setSaving(false);
       showSuccess(agent.id ? 'Agent updated successfully!' : 'Agent created successfully!');
       onSave(savedAgent);
@@ -197,6 +199,12 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     } catch (error) {
       setSaving(false);
       const errorMessage = error instanceof Error ? error.message : 'Failed to save agent';
+      
+      if (error && typeof error === 'object' && 'status' in error && error.status === 409) {
+        showError('Agent with this ID already exists. Please choose a different ID.');
+        return;
+      }
+      
       showError(`Error saving agent: ${errorMessage}`);
     }
   }, [agent, state, appState, onSave, onHide]);

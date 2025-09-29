@@ -66,7 +66,7 @@ export const createEmptyAgent = (): CustomAgent => ({
   maxRecursionLimit: 20,
   enableMemory: true,
   enabled: true,
-  metadata: { version: 1, createdAt: '', modifiedAt: '', schema: null, mixins: {} },
+  metadata: { version: 0, createdAt: '', modifiedAt: '', schema: null, mixins: {} },
   icon: '',
   tags: [],
   type: 'custom'
