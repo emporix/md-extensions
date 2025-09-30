@@ -50,10 +50,10 @@ export const TRIGGER_TYPES = [
 ];
 
 export const LLM_PROVIDERS = [
-  { label: 'Emporix OpenAI', value: 'emporix_openai' },
-  { label: 'OpenAI', value: 'openai' },
-  { label: 'Gemini', value: 'google' },
   { label: 'Claude', value: 'anthropic' },
+  { label: 'Emporix OpenAI', value: 'emporix_openai' },
+  { label: 'Gemini', value: 'google' },
+  { label: 'OpenAI', value: 'openai' },
   { label: 'Self-hosted Ollama', value: 'self_hosted_ollama' }
 ];
 
