@@ -14,13 +14,15 @@ interface AgentCollaborationFormProps {
   onCancel: () => void;
   availableAgents: CustomAgent[];
   editingCollaboration?: AgentCollaboration;
+  currentAgentType?: string;
 }
 
 export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({ 
   onAdd, 
   onCancel, 
   availableAgents,
-  editingCollaboration 
+  editingCollaboration,
+  currentAgentType 
 }) => {
   const { t } = useTranslation();
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(
@@ -30,18 +32,29 @@ export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({
     editingCollaboration?.description || ''
   );
 
-  const agentOptions = availableAgents.map(agent => ({
-    label: (
-      <div className="agent-option">
-        <FontAwesomeIcon 
-          icon={iconMap[agent.icon || 'robot'] || iconMap.robot} 
-          className="agent-option-icon" 
-        />
-        <span>{getLocalizedValue(agent.name)}</span>
-      </div>
-    ),
-    value: agent.id
-  }));
+  const agentOptions = availableAgents
+    .filter(agent => {
+      // Show emporix--collaboration agent only if current agent type is complaint or anti_fraud
+      if (agent.id === 'emporix--collaboration') {
+        return currentAgentType === 'complaint' || currentAgentType === 'anti_fraud';
+      }
+      // Show all other agents normally
+      return true;
+    })
+    .map(agent => ({
+      label: (
+        <div className="agent-option">
+          <FontAwesomeIcon 
+            icon={iconMap[agent.icon || 'robot'] || iconMap.robot} 
+            className="agent-option-icon" 
+          />
+          <span>{getLocalizedValue(agent.name)}</span>
+        </div>
+      ),
+      value: agent.id,
+      sortName: getLocalizedValue(agent.name)
+    }))
+    .sort((a, b) => a.sortName.localeCompare(b.sortName));
 
   const isFormValid = () => {
     return selectedAgentId && description.trim();

@@ -27,7 +27,8 @@ export const NativeToolForm: React.FC<NativeToolFormProps> = ({
     .map(tool => ({
       label: tool.name,
       value: tool.id
-    }));
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   const handleAdd = () => {
     if (selectedToolId) {

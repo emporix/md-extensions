@@ -26,9 +26,10 @@ export const useCommerceEvents = (appState: AppState) => {
     try {
       const agentService = new AgentService(appState);
       const response = await agentService.getCommerceEvents();
+      const sortedEvents = (response.events || []).sort((a, b) => a.localeCompare(b));
       setState(prev => ({ 
         ...prev, 
-        events: response.events || [], 
+        events: sortedEvents, 
         loading: false 
       }));
     } catch (error) {

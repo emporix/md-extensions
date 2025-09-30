@@ -34,15 +34,18 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
       value: server.id
     }));
 
-  const predefinedOptions = Object.entries(MCP_SERVERS).map(([key, val]) => ({ 
-    label: val.name, 
-    value: key as McpKey
-  }));
+  const predefinedOptions = Object.entries(MCP_SERVERS)
+    .map(([key, val]) => ({ 
+      label: val.name, 
+      value: key as McpKey
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
 
-  const toolOptions = MCP_SERVERS[selectedDomain]?.tools?.map((tool: string) => ({ 
+  const toolOptions = (MCP_SERVERS[selectedDomain]?.tools?.map((tool: string) => ({ 
     label: tool, 
     value: tool 
-  })) || [];
+  })) || [])
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   const handleAdd = () => {
     if (serverType === 'predefined' && selectedTools.length > 0) {

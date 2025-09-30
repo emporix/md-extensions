@@ -101,6 +101,7 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
         onChange={(collaborations) => updateField('agentCollaborations', collaborations)}
         availableAgents={availableAgents}
         currentAgentId={agent?.id}
+        currentAgentType={state.agentType}
       />
 
           <LlmConfigSection

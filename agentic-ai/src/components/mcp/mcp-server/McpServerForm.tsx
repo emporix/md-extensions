@@ -110,10 +110,12 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(({
             <Dropdown 
               value={newEmporixMcp} 
               appendTo="self"
-              options={Object.entries(MCP_SERVERS).map(([key, val]) => ({ 
-                label: val.name, 
-                value: key 
-              }))} 
+              options={Object.entries(MCP_SERVERS)
+                .map(([key, val]) => ({ 
+                  label: val.name, 
+                  value: key 
+                }))
+                .sort((a, b) => a.label.localeCompare(b.label))} 
               onChange={e => { 
                 setNewEmporixMcp(e.value); 
                 setNewEmporixTools([]); 
@@ -125,10 +127,11 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(({
             <label className="field-label">{t('mcp_tools', 'Tools')}</label>
             <MultiSelect 
               value={newEmporixTools} 
-              options={MCP_SERVERS[newEmporixMcp]?.tools?.map((tool: string) => ({ 
+              options={(MCP_SERVERS[newEmporixMcp]?.tools?.map((tool: string) => ({ 
                 label: tool, 
                 value: tool 
-              })) || []} 
+              })) || [])
+                .sort((a, b) => a.label.localeCompare(b.label))} 
               onChange={e => setNewEmporixTools(e.value)} 
               className="w-full" 
               display="chip" 

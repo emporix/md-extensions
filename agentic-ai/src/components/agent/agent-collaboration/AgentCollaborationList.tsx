@@ -15,6 +15,7 @@ interface AgentCollaborationListProps {
   onCancelEdit: () => void;
   editingIndex?: number;
   availableAgents: CustomAgent[];
+  currentAgentType?: string;
 }
 
 export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({ 
@@ -24,7 +25,8 @@ export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({
   onUpdate, 
   onCancelEdit, 
   editingIndex,
-  availableAgents 
+  availableAgents,
+  currentAgentType 
 }) => {
   const { t } = useTranslation();
 
@@ -53,6 +55,7 @@ export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({
               onCancel={onCancelEdit}
               availableAgents={availableAgents}
               editingCollaboration={collaboration}
+              currentAgentType={currentAgentType}
             />
           ) : (
             <>

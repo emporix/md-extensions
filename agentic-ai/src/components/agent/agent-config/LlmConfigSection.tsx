@@ -66,10 +66,12 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
     loadTokens();
   }, [provider, appState]);
 
-  const tokenOptions = tokens.map(token => ({
-    label: token.name,
-    value: token.id
-  }));
+  const tokenOptions = tokens
+    .map(token => ({
+      label: token.name,
+      value: token.id
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   return (
     <div className="llm-config-section">

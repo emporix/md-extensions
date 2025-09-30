@@ -11,13 +11,15 @@ interface AgentCollaborationManagerProps {
   onChange: (collaborations: AgentCollaboration[]) => void;
   availableAgents: CustomAgent[];
   currentAgentId?: string;
+  currentAgentType?: string;
 }
 
 export const AgentCollaborationManager: React.FC<AgentCollaborationManagerProps> = ({ 
   collaborations, 
   onChange, 
   availableAgents,
-  currentAgentId 
+  currentAgentId,
+  currentAgentType 
 }) => {
   const { t } = useTranslation();
   const [showAddForm, setShowAddForm] = useState(false);
@@ -83,6 +85,7 @@ export const AgentCollaborationManager: React.FC<AgentCollaborationManagerProps>
         onCancelEdit={handleCancelEdit}
         editingIndex={editingIndex}
         availableAgents={filteredAgents}
+        currentAgentType={currentAgentType}
       />
 
       {showAddForm && (
@@ -90,6 +93,7 @@ export const AgentCollaborationManager: React.FC<AgentCollaborationManagerProps>
           onAdd={handleAddCollaboration}
           onCancel={handleCancelAdd}
           availableAgents={filteredAgents}
+          currentAgentType={currentAgentType}
         />
       )}
     </div>
