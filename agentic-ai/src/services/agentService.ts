@@ -26,13 +26,14 @@ export class AgentService {
     return await this.api.get<CustomAgent[]>(`/ai-service/${this.tenant}/agentic/agents`);
   }
 
-  async copyTemplate(templateId: string, id: string, name: string, description: string): Promise<{ success: boolean }> {
+  async copyTemplate(templateId: string, id: string, name: string, description: string, userPrompt: string): Promise<{ success: boolean }> {
     return await this.api.post<{ success: boolean }>(
       `/ai-service/${this.tenant}/agentic/templates/${templateId}/agents`,
       {
         id,
         name: { en: name },
-        description: { en: description }
+        description: { en: description },
+        userPrompt: userPrompt
       }
     );
   }

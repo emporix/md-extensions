@@ -31,11 +31,14 @@ const AddAgentDialog: React.FC<AddAgentDialogProps> = memo(({
     agentId,
     agentName,
     description,
+    userPrompt,
+    templatePrompt,
     progress,
     errorMessage,
     setAgentId,
     setAgentName,
     setDescription,
+    setUserPrompt,
     handleSave,
     handleOk,
     handleDiscard,
@@ -55,8 +58,11 @@ const AddAgentDialog: React.FC<AddAgentDialogProps> = memo(({
             agentId={agentId}
             setAgentId={setAgentId}
             agentName={agentName}
+            setUserPrompt={setUserPrompt}
             setAgentName={setAgentName}
             description={description}
+            userPrompt={userPrompt}
+            templatePrompt={templatePrompt}
             setDescription={setDescription}
             onDiscard={handleDiscard}
             onSave={handleSave}

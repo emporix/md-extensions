@@ -27,11 +27,15 @@ export const useAddAgentDialog = ({
   const [description, setDescription] = useState('');
   const [progress, setProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [userPrompt, setUserPrompt] = useState('');
+  const [templatePrompt, setTemplatePrompt] = useState('');
 
   useEffect(() => {
     if (agentTemplate) {
       setAgentName(getLocalizedValue(agentTemplate.name, 'en'));
       setDescription(getLocalizedValue(agentTemplate.description, 'en'));
+      setUserPrompt(agentTemplate.userPrompt || '');
+      setTemplatePrompt(agentTemplate.templatePrompt);
     }
   }, [agentTemplate]);
 
@@ -57,7 +61,8 @@ export const useAddAgentDialog = ({
         agentTemplate.id,
         agentId,
         agentName,
-        description
+        description,
+        userPrompt
       );
 
       clearInterval(progressInterval);
@@ -73,7 +78,7 @@ export const useAddAgentDialog = ({
       showError(`Error creating agent: ${errorMessage}`);
       setStep('error');
     }
-  }, [agentId, agentName, description, agentTemplate, appState]);
+  }, [agentId, agentName, description, userPrompt, agentTemplate, appState]);
 
   const handleOk = useCallback(() => {
     if (step === 'success') {
@@ -102,6 +107,8 @@ export const useAddAgentDialog = ({
     if (agentTemplate) {
       setAgentName(getLocalizedValue(agentTemplate.name, 'en'));
       setDescription(getLocalizedValue(agentTemplate.description, 'en'));
+      setUserPrompt(agentTemplate.userPrompt || '');
+      setTemplatePrompt(agentTemplate.templatePrompt || '');
     }
   }, [agentTemplate]);
 
@@ -110,11 +117,15 @@ export const useAddAgentDialog = ({
     agentId,
     agentName,
     description,
+    userPrompt,
+    templatePrompt,
     progress,
     errorMessage,
     setAgentId,
     setAgentName,
     setDescription,
+    setUserPrompt,
+    setTemplatePrompt,
     handleSave,
     handleOk,
     handleDiscard,
