@@ -2,7 +2,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { Dropdown } from 'primereact/dropdown';
 import { MultiSelect } from 'primereact/multiselect';
 import { TRIGGER_TYPES } from '../../../utils/constants';
 import { AppState } from '../../../types/common';
@@ -13,7 +12,7 @@ interface AgentBasicInfoProps {
   agentName: string;
   description: string;
   agentType: string;
-  triggerType: string;
+  triggerTypes: string[];
   prompt: string;
   commerceEvents: string[];
   isEditing: boolean;
@@ -28,7 +27,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   agentName,
   description,
   agentType,
-  triggerType,
+  triggerTypes,
   prompt,
   commerceEvents,
   templatePrompt,
@@ -115,19 +114,20 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       </div>
       
       <div className="form-field">
-        <label className="field-label">{t('trigger_type', 'Trigger Type')}</label>
-        <Dropdown 
-          value={triggerType} 
+        <label className="field-label">{t('trigger_types', 'Trigger Types')}</label>
+        <MultiSelect 
+          value={triggerTypes} 
           options={availableTriggerTypes} 
-          onChange={e => onFieldChange('triggerType', e.value)} 
+          onChange={e => onFieldChange('triggerTypes', e.value)} 
           className="w-full" 
-          optionDisabled="disabled"
+          display="chip"
+          placeholder={t('select_trigger_types', 'Select trigger types')}
           appendTo="self"
           disabled={agentType === 'support'}
         />
       </div>
 
-      {triggerType === 'commerce_events' && (
+      {triggerTypes.includes('commerce_events') && (
         <div className="form-field">
           <label className="field-label">
             {t('commerce_events', 'Commerce Events')} *

@@ -17,7 +17,7 @@ interface AgentConfigState {
   agentName: string;
   description: string;
   agentType: string;
-  triggerType: string;
+  triggerTypes: string[];
   prompt: string;
   templatePrompt: string;
   model: string;
@@ -48,7 +48,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     agentName: '',
     description: '',
     agentType: 'custom',
-    triggerType: 'endpoint',
+    triggerTypes: ['endpoint'],
     prompt: '',
     templatePrompt: '',
     model: '',
@@ -77,14 +77,14 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
   useEffect(() => {
     if (agent) {
       const agentType = agent.type || 'custom';
-      const triggerType = (agent.trigger?.type as string)?.toLowerCase() || 'endpoint';
+      const triggerTypes = agent.triggers?.map(trigger => trigger.type) || ['endpoint'];
       
       setState({
         agentId: agent.id,
         agentName: getLocalizedValue(agent.name, 'en'),
         description: getLocalizedValue(agent.description, 'en'),
         agentType: agentType,
-        triggerType: agentType === 'support' ? 'slack' : triggerType,
+        triggerTypes: agentType === 'support' ? ['slack'] : triggerTypes,
         prompt: agent.userPrompt || '',
         templatePrompt: agent.templatePrompt || '',
         model: agent.llmConfig?.model || '',
@@ -109,7 +109,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
             : agent.llmConfig?.selfHostedParams?.authorizationHeaderToken
         ) || '',
         // Commerce events
-        commerceEvents: (agent.trigger?.config?.events as string[]) || []
+        commerceEvents: (agent.triggers?.find(trigger => trigger.type === 'commerce_events')?.config?.events as string[]) || []
       });
     }
   }, [agent]);
@@ -123,18 +123,20 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
 
     setSaving(true);
     
+    // Create triggers array from selected trigger types
+    const triggers = state.triggerTypes.map(triggerType => ({
+      type: triggerType,
+      config: triggerType === 'commerce_events' 
+        ? { events: state.commerceEvents } 
+        : null
+    }));
+
     const updatedAgent: CustomAgent = {
       ...agent,
       id: state.agentId || '',
       name: { en: state.agentName || '' },
       description: { en: state.description || '' },
-      trigger: { 
-        ...agent.trigger, 
-        type: state.agentType === 'support' ? 'slack' : (state.triggerType || 'endpoint'),
-        config: state.triggerType === 'commerce_events' 
-          ? { events: state.commerceEvents } 
-          : null
-      },
+      triggers: triggers,
       userPrompt: state.prompt || '',
       templatePrompt: state.templatePrompt || undefined,
       llmConfig: (() => {
@@ -233,7 +235,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
 
     // Commerce events validation:
     // - Events are required when trigger type is commerce_events
-    const commerceEventsValidation = state.triggerType !== 'commerce_events' || (state.commerceEvents && state.commerceEvents.length > 0);
+    const commerceEventsValidation = !state.triggerTypes.includes('commerce_events') || (state.commerceEvents && state.commerceEvents.length > 0);
 
     return basicValidation && tokenValidation && selfHostedValidation && commerceEventsValidation;
   }, [state, agent?.id]);

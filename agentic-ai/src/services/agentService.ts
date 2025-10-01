@@ -43,7 +43,7 @@ export class AgentService {
       name: typeof agent.name === 'string' ? { en: agent.name } : agent.name,
       description: typeof agent.description === 'string' ? { en: agent.description } : agent.description,
       userPrompt: agent.userPrompt,
-      trigger: agent.trigger,
+      triggers: agent.triggers,
       llmConfig: {
         model: agent.llmConfig.model,
         temperature: agent.llmConfig.temperature,
