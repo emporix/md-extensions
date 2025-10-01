@@ -25,6 +25,8 @@ export interface AgentTemplate {
   id: string
   name: LocalizedString
   description: LocalizedString
+  userPrompt: string
+  templatePrompt: string
   type: string
   mcpServers: McpServer[]
   nativeTools: NativeTool[]

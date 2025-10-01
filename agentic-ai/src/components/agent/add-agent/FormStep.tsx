@@ -13,6 +13,9 @@ interface FormStepProps {
   setAgentName: (value: string) => void;
   description: string;
   setDescription: (value: string) => void;
+  setUserPrompt: (value: string) => void;
+  userPrompt: string;
+  templatePrompt: string;
   onDiscard: () => void;
   onSave: () => void;
 }
@@ -24,12 +27,15 @@ export const FormStep: React.FC<FormStepProps> = ({
   setAgentName,
   description,
   setDescription,
+  setUserPrompt,
+  userPrompt,
+  templatePrompt,
   onDiscard,
   onSave
 }) => {
   const { t } = useTranslation();
 
-  const isFormValid = agentId.trim() && agentName.trim() && description.trim();
+  const isFormValid = agentId.trim() && agentName.trim() && description.trim() && userPrompt.trim();
 
   return (
     <div className="add-agent-form">
@@ -92,6 +98,37 @@ export const FormStep: React.FC<FormStepProps> = ({
             <small className="p-error">{t('description_required', 'Description is required')}</small>
           )}
         </div>
+        <div className="form-field">
+          <label htmlFor="user-prompt" className="field-label">
+            {t('user_prompt', 'User Prompt')} <span style={{ color: 'red' }}>*</span>
+          </label>
+          <InputTextarea
+            id="user-prompt"
+            value={userPrompt}
+            rows={4}
+            onChange={(e) => setUserPrompt(e.target.value)}
+            className={`w-full ${!userPrompt.trim() ? 'p-invalid' : ''}`}
+            placeholder={t('user_prompt_placeholder', 'User prompt will appear here')}
+          />
+          {!userPrompt.trim() && (
+            <small className="p-error">{t('user_prompt_required', 'User prompt is required')}</small>
+          )}
+        </div>
+        {templatePrompt && (
+          <div className="form-field">
+            <label htmlFor="template-prompt" className="field-label">
+              {t('template_prompt', 'Template Prompt')}
+            </label>
+            <InputTextarea
+              id="template-prompt"
+              value={templatePrompt}
+              readOnly
+              rows={4}
+              className="w-full readonly-textarea"
+              placeholder={t('template_prompt_placeholder', 'Template prompt will appear here')}
+            />
+          </div>
+        )}
       </div>
 
       {/* Action Buttons */}
