@@ -61,7 +61,8 @@ export class AgentService {
       enabled: agent.enabled,
       metadata: agent.metadata,
       icon: agent.icon || '',
-      tags: agent.tags || []
+      tags: agent.tags || [],
+      requiredScopes: agent.requiredScopes || []
     };
     
     try {
