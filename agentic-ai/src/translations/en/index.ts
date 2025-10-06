@@ -35,6 +35,11 @@ const TRANSLATIONS_EN = {
   agent_saved_error_subtitle: 'Please try to add the agent again.',
   agent_id: 'ID',
   enter_agent_id: 'Enter agent id',
+  user_prompt: 'User Prompt',
+  user_prompt_required: 'User prompt is required',
+  user_prompt_placeholder: 'User prompt will appear here',
+  template_prompt: 'Template Prompt',
+  template_prompt_placeholder: 'Template prompt will appear here',
 
   // Agent Configuration Panel
   'agent_config_panel.title': 'Agent Configuration',
