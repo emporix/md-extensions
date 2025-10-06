@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Card } from 'primereact/card';
 import { InputSwitch } from 'primereact/inputswitch';
 import { Badge } from 'primereact/badge';
@@ -49,6 +49,10 @@ const AgentCard: React.FC<AgentCardProps> = ({
   const { t } = useTranslation();
   const [isActive, setIsActive] = useState(enabled);
   const [isToggling, setIsToggling] = useState(false);
+
+  useEffect(() => {
+    setIsActive(enabled);
+  }, [enabled]);
 
   const handleToggleActive = useCallback(async (newEnabled: boolean) => {
     if (!onToggleActive) return;
