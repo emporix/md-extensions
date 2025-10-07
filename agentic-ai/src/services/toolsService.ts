@@ -15,7 +15,8 @@ export class ToolsService {
     try {
       return await this.api.get<Tool[]>(`/ai-service/${this.tenant}/agentic/tools`);
     } catch (error) {
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch tools';
+      throw new Error(errorMessage);
     }
   }
 
@@ -26,7 +27,8 @@ export class ToolsService {
         tool
       );
     } catch (error) {
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update tool';
+      throw new Error(errorMessage);
     }
   }
 
@@ -34,7 +36,8 @@ export class ToolsService {
     try {
       await this.api.delete(`/ai-service/${this.tenant}/agentic/tools/${toolId}`);
     } catch (error) {
-      return Promise.resolve();
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete tool';
+      throw new Error(errorMessage);
     }
   }
 
@@ -44,7 +47,8 @@ export class ToolsService {
         `/ai-service/${this.tenant}/agentic/oauth/installations/slack`
       );
     } catch (error) {
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch Slack installation data';
+      throw new Error(errorMessage);
     }
   }
 }
