@@ -166,7 +166,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       )}
       
       <div className="form-field">
-        <label className="field-label">{t('prompt', 'Prompt')} *</label>
+        <label className="field-label">{t('user_prompt', 'User Prompt')} *</label>
         <InputTextarea 
           value={prompt} 
           onChange={e => onFieldChange('prompt', e.target.value)} 

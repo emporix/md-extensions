@@ -59,8 +59,8 @@ export class McpService {
         }
       );
     } catch (error) {
-      console.error('Error upserting MCP server:', error);
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save MCP server';
+      throw new Error(errorMessage);
     }
   }
 
@@ -68,7 +68,8 @@ export class McpService {
     try {
       await this.api.delete(`/ai-service/${this.tenant}/agentic/mcp-servers/${mcpServerId}`);
     } catch (error) {
-      return Promise.resolve();
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete MCP server';
+      throw new Error(errorMessage);
     }
   }
 }
