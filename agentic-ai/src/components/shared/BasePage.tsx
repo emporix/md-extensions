@@ -8,7 +8,7 @@ import { ConfirmDialog } from './ConfirmDialog';
 interface BasePageProps {
   loading: boolean;
   error: string | null;
-  title: string;
+  title: React.ReactNode;
   addButtonLabel?: string;
   onAdd?: () => void;
   children: React.ReactNode;
@@ -43,10 +43,9 @@ export const BasePage: React.FC<BasePageProps> = ({
   if (loading) {
     return (
       <div
-        className={`${className}-page`}
-        style={{ padding: '24px' }}
+        className={`${className}-page p-6`}
       >
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+        <div className="flex justify-center items-center min-h-[200px]">
           <ProgressSpinner />
         </div>
       </div>
@@ -56,8 +55,7 @@ export const BasePage: React.FC<BasePageProps> = ({
   if (error) {
     return (
       <div
-        className={`${className}-page`}
-        style={{ padding: '24px' }}
+        className={`${className}-page p-6`}
       >
         <Message severity="error" text={error} />
       </div>
