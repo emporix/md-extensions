@@ -7,6 +7,8 @@ export { CustomHeaders } from './CustomHeaders';
 export { ErrorBoundary } from './ErrorBoundary';
 export { FormField } from './FormField';
 export { IconPicker } from './IconPicker';
+export { default as UnifiedLogsTable } from './UnifiedLogsTable';
+export { default as UnifiedDetailsView } from './UnifiedDetailsView';
 export { TagPicker } from './TagPicker';
 export { TagSelector } from './TagSelector';
 

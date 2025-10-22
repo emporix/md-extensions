@@ -75,6 +75,17 @@ export class ApiClient {
     return this.handleResponse<T>(response)
   }
 
+  async getWithHeaders<T>(path: string, init?: RequestInit): Promise<{ data: T, headers: Headers }> {
+    const { headers: extraHeaders, ...restInit } = init || {};
+    const response = await fetch(this.buildUrl(path), {
+      method: 'GET',
+      headers: this.buildHeaders(extraHeaders as Record<string, string> | undefined),
+      ...restInit,
+    })
+    const data = await this.handleResponse<T>(response)
+    return { data, headers: response.headers }
+  }
+
   async post<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
     const response = await fetch(this.buildUrl(path), {
       method: 'POST',
