@@ -6,7 +6,6 @@ import { useToast } from '../contexts/ToastContext'
 import { formatApiError } from '../utils/errorHelpers'
 import { ServiceFactory } from '../services/serviceFactory'
 import { useDeleteConfirmation } from './useDeleteConfirmation'
-import { ApiClientError } from '../services/apiClient'
 
 interface UseAgentsResult {
   agents: AgentTemplate[]
