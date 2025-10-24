@@ -829,6 +829,10 @@
 }
 
 /* Confirm Dialog Styles */
+.confirm-dialog {
+  max-width: 35%;
+}
+
 .confirm-dialog .p-dialog-header {
   border-bottom: 1px solid #e5e7eb;
   padding: 1.5rem;

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
+import { formatMessageWithLineBreaks } from '../../utils/formatHelpers.tsx';
 
 interface ConfirmDialogProps {
   visible: boolean;
@@ -26,7 +27,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  const getConfirmButtonClass = () => {
+  const confirmButtonClass = useMemo(() => {
     switch (severity) {
       case 'danger':
         return 'p-button-danger';
@@ -35,7 +36,15 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       default:
         return 'p-button-primary';
     }
-  };
+  }, [severity]);
+
+  const formattedMessage = useMemo(() => {
+    const formatted = formatMessageWithLineBreaks(message);
+    if (typeof formatted === 'string') {
+      return <p>{formatted}</p>;
+    }
+    return formatted;
+  }, [message]);
 
   const footer = (
     <div className="dialog-actions">
@@ -47,7 +56,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       <Button
         label={confirmLabel || t('delete', 'Delete')}
         onClick={onConfirm}
-        className={`save-agent-button ${getConfirmButtonClass()}`}
+        className={`save-agent-button ${confirmButtonClass}`}
       />
     </div>
   );
@@ -63,7 +72,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       closeOnEscape
       closable
     >
-      <p>{message}</p>
+      {formattedMessage}
     </Dialog>
   );
 }; 
