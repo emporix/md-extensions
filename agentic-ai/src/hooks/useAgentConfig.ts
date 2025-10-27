@@ -4,6 +4,8 @@ import { AgentService } from '../services/agentService';
 import { AppState } from '../types/common';
 import { getLocalizedValue } from '../utils/agentHelpers';
 import { useToast } from '../contexts/ToastContext';
+import { ApiClientError } from '../services/apiClient';
+import { formatApiError } from '../utils/errorHelpers';
 
 interface UseAgentConfigProps {
   agent: CustomAgent | null;
@@ -43,6 +45,10 @@ interface AgentConfigState {
 
 export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConfigProps) => {
   const { showSuccess, showError } = useToast();
+  const [showDisableConfirm, setShowDisableConfirm] = useState(false);
+  const [disableConfirmMessage, setDisableConfirmMessage] = useState('');
+  const [pendingAgent, setPendingAgent] = useState<CustomAgent | null>(null);
+  
   const [state, setState] = useState<AgentConfigState>({
     agentId: '',
     agentName: '',
@@ -118,11 +124,9 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     setState(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const handleSave = useCallback(async () => {
-    if (!agent) return;
+  const buildAgentFromState = useCallback(() => {
+    if (!agent) return null;
 
-    setSaving(true);
-    
     // Create triggers array from selected trigger types
     const triggers = state.triggerTypes.map(triggerType => ({
       type: triggerType,
@@ -131,7 +135,7 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
         : null
     }));
 
-    const updatedAgent: CustomAgent = {
+    return {
       ...agent,
       id: state.agentId || '',
       name: { en: state.agentName || '' },
@@ -187,29 +191,90 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
       icon: state.selectedIcon,
       tags: state.tags || [],
       requiredScopes: state.requiredScopes || []
-    };
+    } as CustomAgent;
+  }, [agent, state]);
+
+  const handleSave = useCallback(async () => {
+    if (!agent) return;
+
+    setSaving(true);
+    
+    const updatedAgent = buildAgentFromState();
+    if (!updatedAgent) {
+      setSaving(false);
+      return;
+    }
 
     try {
       const agentService = new AgentService(appState);
       const savedAgent = await agentService.upsertCustomAgent(updatedAgent);
       
-      // Only proceed with success flow if no error was thrown
       setSaving(false);
-      showSuccess(agent.id ? 'Agent updated successfully!' : 'Agent created successfully!');
+      const isUpdate = !!agent.id;
+      showSuccess(isUpdate ? 'Agent updated successfully!' : 'Agent created successfully!');
       onSave(savedAgent);
       onHide();
+      
+      setPendingAgent(null);
+      setShowDisableConfirm(false);
     } catch (error) {
       setSaving(false);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to save agent';
       
-      if (error && typeof error === 'object' && 'status' in error && error.status === 409) {
+      if (error instanceof ApiClientError && error.disableable) {
+        setPendingAgent(updatedAgent);
+        setDisableConfirmMessage(error.message);
+        setShowDisableConfirm(true);
+        return;
+      }
+      
+      if (error instanceof ApiClientError && error.status === 409) {
         showError('Agent with this ID already exists. Please choose a different ID.');
         return;
       }
       
+      const errorMessage = formatApiError(error, 'Failed to save agent');
       showError(`Error saving agent: ${errorMessage}`);
     }
-  }, [agent, state, appState, onSave, onHide]);
+  }, [agent, appState, buildAgentFromState, onSave, onHide, showSuccess, showError]);
+
+  const handleConfirmDisable = useCallback(async () => {
+    if (!pendingAgent) return;
+
+    setSaving(true);
+    setShowDisableConfirm(false);
+
+    try {
+      const disabledAgent: CustomAgent = {
+        ...pendingAgent,
+        enabled: false
+      };
+      
+      const agentService = new AgentService(appState);
+      const savedAgent = await agentService.upsertCustomAgent(disabledAgent);
+      
+      setSaving(false);
+      const isUpdate = !!pendingAgent.id;
+      const successMessage = isUpdate 
+        ? 'Agent updated and deactivated successfully!' 
+        : 'Agent created and deactivated successfully!';
+      showSuccess(successMessage);
+      onSave(savedAgent);
+      onHide();
+      
+      setPendingAgent(null);
+    } catch (error) {
+      setSaving(false);
+      const errorMessage = formatApiError(error, 'Failed to save agent');
+      showError(`Error saving agent: ${errorMessage}`);
+      setPendingAgent(null);
+    }
+  }, [pendingAgent, appState, onSave, onHide, showSuccess, showError]);
+
+  const handleCancelDisable = useCallback(() => {
+    setShowDisableConfirm(false);
+    setPendingAgent(null);
+    setSaving(false);
+  }, []);
 
   const isFormValid = useCallback(() => {
     const isCreating = !agent?.id;
@@ -245,6 +310,10 @@ export const useAgentConfig = ({ agent, appState, onSave, onHide }: UseAgentConf
     saving,
     updateField,
     handleSave,
-    isFormValid: isFormValid()
+    isFormValid: isFormValid(),
+    showDisableConfirm,
+    disableConfirmMessage,
+    handleConfirmDisable,
+    handleCancelDisable
   };
 }; 
