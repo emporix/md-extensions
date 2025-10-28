@@ -4,5 +4,6 @@ export const createEmptyTool = (): Tool => ({
   id: '',
   name: '',
   type: 'slack',
-  config: {}
+  config: {},
+  enabled: true
 });

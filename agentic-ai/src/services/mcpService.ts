@@ -15,48 +15,21 @@ export class McpService {
     try {
       return await this.api.get<McpServer[]>(`/ai-service/${this.tenant}/agentic/mcp-servers`);
     } catch (error) {
-      return [
-        {
-          id: "mcp-custom",
-          name: "Custom MCP Server",
-          transport: "sse",
-          config: {
-            url: "http://localhost:7900",
-            authorizationHeaderName: "Authorization",
-            authorizationHeaderTokenId: "token-id"
-          }
-        },
-        {
-          id: "mcp-filesystem",
-          name: "Filesystem MCP Server",
-          transport: "stdio",
-          config: {
-            url: "http://localhost:8000"
-          }
-        },
-        {
-          id: "mcp-database",
-          name: "Database MCP Server", 
-          transport: "sse",
-          config: {
-            url: "http://localhost:9000",
-            authorizationHeaderName: "X-API-Key",
-            authorizationHeaderTokenId: "db-token"
-          }
-        }
-      ];
+      throw error;
     }
   }
 
   async upsertMcpServer(mcpServer: McpServer): Promise<McpServer> {
     try {
+      const payload = {
+        name: mcpServer.name,
+        transport: mcpServer.transport,
+        config: mcpServer.config,
+        enabled: mcpServer.enabled
+      };
       return await this.api.put<McpServer>(
         `/ai-service/${this.tenant}/agentic/mcp-servers/${mcpServer.id}`,
-        {
-          name: mcpServer.name,
-          transport: mcpServer.transport,
-          config: mcpServer.config
-        }
+        payload
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to save MCP server';
@@ -64,12 +37,21 @@ export class McpService {
     }
   }
 
-  async deleteMcpServer(mcpServerId: string): Promise<void> {
+  async patchMcpServer(mcpServerId: string, patches: Array<{op: string, path: string, value: any}>, force?: boolean): Promise<McpServer> {
     try {
-      await this.api.delete(`/ai-service/${this.tenant}/agentic/mcp-servers/${mcpServerId}`);
+      const url = `/ai-service/${this.tenant}/agentic/mcp-servers/${mcpServerId}${force ? '?force=true' : ''}`;
+      return await this.api.patch<McpServer>(url, patches);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete MCP server';
-      throw new Error(errorMessage);
+      throw error;
+    }
+  }
+
+  async deleteMcpServer(mcpServerId: string, force?: boolean): Promise<void> {
+    try {
+      const url = `/ai-service/${this.tenant}/agentic/mcp-servers/${mcpServerId}${force ? '?force=true' : ''}`;
+      await this.api.delete(url);
+    } catch (error) {
+      throw error;
     }
   }
 }

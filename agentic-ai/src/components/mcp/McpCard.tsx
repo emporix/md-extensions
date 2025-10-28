@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faServer } from '@fortawesome/free-solid-svg-icons';
 import BaseCard from '../shared/BaseCard';
 
-const McpCard: React.FC<McpCardProps> = ({ mcpServer, onConfigure, onRemove }) => {
+const McpCard: React.FC<McpCardProps> = ({ mcpServer, onToggleActive, onConfigure, onRemove }) => {
   const { t } = useTranslation();
 
   const getTransportLabel = () => {
@@ -35,10 +35,13 @@ const McpCard: React.FC<McpCardProps> = ({ mcpServer, onConfigure, onRemove }) =
 
   return (
     <BaseCard
+      id={mcpServer.id}
       icon={<FontAwesomeIcon icon={faServer} />}
       badge={getTransportLabel()}
       title={mcpServer.name}
       description={getDescription()}
+      enabled={mcpServer.enabled}
+      onToggleActive={onToggleActive}
       primaryActions={[
         {
           icon: 'pi pi-cog',
@@ -50,7 +53,9 @@ const McpCard: React.FC<McpCardProps> = ({ mcpServer, onConfigure, onRemove }) =
         {
           icon: 'pi pi-trash',
           label: t('remove', 'Remove'),
-          onClick: () => onRemove(mcpServer.id)
+          onClick: () => onRemove(mcpServer.id),
+          disabled: mcpServer.enabled,
+          title: mcpServer.enabled ? t('cannot_delete_active_mcp', 'Cannot delete active MCP server') : undefined
         }
       ]}
       onClick={() => onConfigure(mcpServer)}

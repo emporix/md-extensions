@@ -140,7 +140,7 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
         )
       )
     }
-      }, [appState, loadCustomAgents, customAgents, showError])
+  }, [appState, loadCustomAgents, customAgents, showError, showSuccess, agentService])
 
   const removeCustomAgent = useCallback((agentId: string) => {
     // Check if agent is active and prevent deletion

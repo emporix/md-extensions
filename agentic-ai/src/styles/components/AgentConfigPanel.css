@@ -408,6 +408,12 @@
   gap: 0.5rem;
   position: relative;
   min-height: 48px;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.mcp-server-row.mcp-server-disabled {
+  opacity: 0.5;
+  filter: grayscale(50%);
 }
 
 .mcp-server-row-top {
@@ -1186,6 +1192,12 @@
   gap: 0.5rem;
   position: relative;
   min-height: 48px;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.native-tool-row.native-tool-disabled {
+  opacity: 0.5;
+  filter: grayscale(50%);
 }
 
 .native-tool-row-top {

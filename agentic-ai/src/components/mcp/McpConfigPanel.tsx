@@ -82,7 +82,6 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
       },
     };
 
-    // Let the parent handle the save operation
     onSave(updatedMcpServer);
   };
 

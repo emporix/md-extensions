@@ -37,10 +37,11 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     setSaving(true);
     try {
       const updatedTool: Tool = {
-        ...tool,
         id: toolId,
         name: toolName,
+        type: tool.type,
         config,
+        enabled: tool.enabled ?? true,
       };
 
       onSave(updatedTool);
