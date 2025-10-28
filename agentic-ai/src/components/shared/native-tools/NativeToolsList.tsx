@@ -26,7 +26,7 @@ export const NativeToolsList: React.FC<NativeToolsListProps> = ({
   const getToolDisplayInfo = (toolId: string) => {
     const tool = availableTools.find(t => t.id === toolId);
     if (!tool) {
-      return { name: toolId, icon: faCog, type: 'unknown' };
+      return { name: toolId, icon: faCog, type: 'unknown', config: undefined, enabled: false };
     }
 
     const icon = tool.type === 'slack' ? faSlack : faCog;
@@ -35,7 +35,8 @@ export const NativeToolsList: React.FC<NativeToolsListProps> = ({
       name: tool.name,
       icon: icon,
       type: tool.type,
-      config: tool.config
+      config: tool.config,
+      enabled: tool.enabled !== false
     };
   };
 
@@ -43,9 +44,14 @@ export const NativeToolsList: React.FC<NativeToolsListProps> = ({
     <div className="native-tools-list">
       {nativeTools.map((nativeTool, idx) => {
         const toolInfo = getToolDisplayInfo(nativeTool.id);
+        const isDisabled = !toolInfo.enabled;
         
         return (
-          <div className="native-tool-row" key={idx}>
+          <div 
+            className={`native-tool-row ${isDisabled ? 'native-tool-disabled' : ''}`}
+            key={idx}
+            title={isDisabled ? t('tool_disabled', 'This tool is currently disabled') : undefined}
+          >
             <div className="native-tool-row-top">
               <div className="native-tool-info">
                 <div className="native-tool-agent">
@@ -55,6 +61,7 @@ export const NativeToolsList: React.FC<NativeToolsListProps> = ({
                   />
                   <span className="native-tool-name">
                     {toolInfo.name}
+                    {isDisabled && <span style={{ marginLeft: '8px', fontSize: '0.85em', color: '#f44336' }}>(Disabled)</span>}
                   </span>
                 </div>
               </div>

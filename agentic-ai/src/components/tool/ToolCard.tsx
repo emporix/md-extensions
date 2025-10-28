@@ -6,7 +6,7 @@ import { faSlack, faMicrosoft } from '@fortawesome/free-brands-svg-icons';
 import { faTools } from '@fortawesome/free-solid-svg-icons';
 import BaseCard from '../shared/BaseCard';
 
-const ToolCard: React.FC<ToolCardProps> = ({ tool, onConfigure, onRemove }) => {
+const ToolCard: React.FC<ToolCardProps> = ({ tool, onToggleActive, onConfigure, onRemove }) => {
   const { t } = useTranslation();
 
   const getToolIcon = () => {
@@ -47,10 +47,13 @@ const ToolCard: React.FC<ToolCardProps> = ({ tool, onConfigure, onRemove }) => {
 
   return (
     <BaseCard
+      id={tool.id}
       icon={<FontAwesomeIcon icon={getToolIcon()} />}
       badge={getToolTypeLabel()}
       title={tool.name}
       description={getDescription()}
+      enabled={tool.enabled}
+      onToggleActive={onToggleActive}
       primaryActions={[
         {
           icon: 'pi pi-cog',
@@ -62,7 +65,9 @@ const ToolCard: React.FC<ToolCardProps> = ({ tool, onConfigure, onRemove }) => {
         {
           icon: 'pi pi-trash',
           label: t('remove', 'Remove'),
-          onClick: () => onRemove(tool.id)
+          onClick: () => onRemove(tool.id),
+          disabled: tool.enabled,
+          title: tool.enabled ? t('cannot_delete_active_tool', 'Cannot delete active tool') : undefined
         }
       ]}
       onClick={() => onConfigure(tool)}
