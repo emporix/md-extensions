@@ -230,14 +230,14 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
             </div>
           </div>
         </div>
-        <div className="form-field" style={{ display: 'flex', alignItems: 'center', marginLeft: '2rem', marginTop: '2rem' }}>
-          <InputSwitch 
-            checked={enableMemory} 
-            onChange={e => onFieldChange('enableMemory', e.value)} 
-          />
-          <span style={{ marginLeft: '0.75rem', fontWeight: 500, color: '#374151' }}>
-            {t('enable_memory', 'Enable Memory')}
-          </span>
+        <div className="form-field" style={{ flex: 1 }}>
+          <label className="field-label">{t('enable_memory', 'Enable Memory')}</label>
+          <div style={{ marginTop: '0.5rem' }}>
+            <InputSwitch 
+              checked={enableMemory} 
+              onChange={e => onFieldChange('enableMemory', e.value)} 
+            />
+          </div>
         </div>
       </div>
     </div>

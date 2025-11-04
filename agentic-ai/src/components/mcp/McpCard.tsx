@@ -21,41 +21,37 @@ const McpCard: React.FC<McpCardProps> = ({ mcpServer, onToggleActive, onConfigur
     }
   };
 
-  const getDescription = () => (
-    <>
-      URL: {mcpServer.config.url}
-      {mcpServer.config.authorizationHeaderName && (
-        <>
-          <br />
-          Auth: {mcpServer.config.authorizationHeaderName}
-        </>
-      )}
-    </>
-  );
+  const getDescription = () => {
+    const parts: string[] = [`URL: ${mcpServer.config.url}`];
+    if (mcpServer.config.authorizationHeaderName) {
+      parts.push(`Auth: ${mcpServer.config.authorizationHeaderName}`);
+    }
+    return parts.join('\n');
+  };
 
   return (
     <BaseCard
       id={mcpServer.id}
-      icon={<FontAwesomeIcon icon={faServer} />}
-      badge={getTransportLabel()}
       title={mcpServer.name}
       description={getDescription()}
+      icon={<FontAwesomeIcon icon={faServer} />}
+      badge={getTransportLabel()}
       enabled={mcpServer.enabled}
       onToggleActive={onToggleActive}
-      primaryActions={[
+      actions={[
         {
           icon: 'pi pi-cog',
           label: t('configure'),
-          onClick: () => onConfigure(mcpServer)
-        }
-      ]}
-      secondaryActions={[
+          onClick: () => onConfigure(mcpServer),
+          className: 'configure-button'
+        },
         {
           icon: 'pi pi-trash',
           label: t('remove', 'Remove'),
           onClick: () => onRemove(mcpServer.id),
           disabled: mcpServer.enabled,
-          title: mcpServer.enabled ? t('cannot_delete_active_mcp', 'Cannot delete active MCP server') : undefined
+          title: mcpServer.enabled ? t('cannot_delete_active_mcp', 'Cannot delete active MCP server') : undefined,
+          className: 'remove-button'
         }
       ]}
       onClick={() => onConfigure(mcpServer)}

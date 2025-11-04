@@ -78,6 +78,12 @@
   color: #334155 !important;
 }
 
+.agent-config-icon-section {
+  padding: 2rem;
+  flex-shrink: 0;
+  background: #FAFAFA;
+}
+
 .agent-config-content {
   padding: 2rem;
   flex: 1 1 auto;
@@ -89,7 +95,6 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  margin-bottom: 2rem;
 }
 
 .agent-tag-selector {
@@ -126,17 +131,18 @@
   line-height: 1.2;
 }
 
-.agent-icon {
-  width: 56px;
-  height: 56px;
-  background: #f8fafc;
-  border: 1px solid #d1d5db;
+.agent-config-panel .agent-icon,
+.base-config-panel .agent-icon {
+  width: 64px;
+  height: 64px;
+  background: #dbeafe;
+  border: 1px solid #bfdbfe;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2rem;
-  color: #64748b;
+  color: #2563eb;
 }
 
 .agent-config-name-block {
@@ -207,8 +213,12 @@
 
 .llm-config-row {
   display: flex;
-  align-items: end;
+  align-items: flex-start;
   gap: 1rem;
+}
+
+.llm-config-row .form-field {
+  margin-bottom: 0;
 }
 
 .panel-actions {
@@ -225,6 +235,8 @@
   background: #fff !important;
   border: 1px solid #d1d5db !important;
   color: #374151 !important;
+  font-family: 'Lato', sans-serif !important;
+  font-size: 0.875rem !important;
   font-weight: 600;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
@@ -242,6 +254,8 @@
   background: #2563eb !important;
   border: 1px solid #2563eb !important;
   color: white !important;
+  font-family: 'Lato', sans-serif !important;
+  font-size: 0.875rem !important;
   font-weight: 600;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
@@ -462,22 +476,6 @@
   color: #1d4ed8;
 }
 
-.mcp-server-delete-btn {
-  background: transparent;
-  border: none;
-  color: #b91c1c;
-  font-size: 1.1rem;
-  cursor: pointer;
-  align-self: center;
-  padding: 0.25rem 0.5rem;
-  border-radius: 6px;
-  transition: background 0.2s, color 0.2s;
-}
-
-.mcp-server-delete-btn:hover {
-  background: #fee2e2;
-  color: #dc2626;
-}
 
 .mcp-server-divider {
   width: 100%;
@@ -538,7 +536,6 @@
 .mcp-server-custom-headers {
   background: #f1f5f9;
   color: #334155;
-  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
   font-size: 0.92rem;
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
@@ -1416,7 +1413,7 @@
 .agent-collaboration-delete-btn {
   background: transparent;
   border: none;
-  color: #ef4444;
+  color: #dc2626;
   font-size: 1.1rem;
   cursor: pointer;
   align-self: center;
@@ -1427,7 +1424,7 @@
 
 .agent-collaboration-delete-btn:hover {
   background: #fef2f2;
-  color: #dc2626;
+  color: #b91c1c;
 }
 
 .agent-collaboration-divider {

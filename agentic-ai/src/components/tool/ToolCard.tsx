@@ -33,14 +33,14 @@ const ToolCard: React.FC<ToolCardProps> = ({ tool, onToggleActive, onConfigure, 
 
   const getDescription = () => {
     if (tool.type === 'slack' || tool.type === 'teams') {
-      return (
-        <>
-          {tool.config.teamId && `Team ID: ${tool.config.teamId}`}
-          {tool.config.teamId && tool.config.botToken && <br />}
-          {tool.config.botToken && `Bot Token: ${'•'.repeat(8)}`}
-          {!tool.config.teamId && !tool.config.botToken && `${getToolTypeLabel()} Tool`}
-        </>
-      );
+      const parts: string[] = [];
+      if (tool.config.teamId) {
+        parts.push(`Team ID: ${tool.config.teamId}`);
+      }
+      if (tool.config.botToken) {
+        parts.push(`Bot Token: ${'•'.repeat(8)}`);
+      }
+      return parts.length > 0 ? parts.join('\n') : `${getToolTypeLabel()} Tool`;
     }
     return `${getToolTypeLabel()} Tool`;
   };
@@ -48,26 +48,26 @@ const ToolCard: React.FC<ToolCardProps> = ({ tool, onToggleActive, onConfigure, 
   return (
     <BaseCard
       id={tool.id}
-      icon={<FontAwesomeIcon icon={getToolIcon()} />}
-      badge={getToolTypeLabel()}
       title={tool.name}
       description={getDescription()}
-      enabled={tool.enabled}
+      icon={<FontAwesomeIcon icon={getToolIcon()} />}
+      badge={getToolTypeLabel()}
+      enabled={tool.enabled ?? true}
       onToggleActive={onToggleActive}
-      primaryActions={[
+      actions={[
         {
           icon: 'pi pi-cog',
           label: t('configure'),
-          onClick: () => onConfigure(tool)
-        }
-      ]}
-      secondaryActions={[
+          onClick: () => onConfigure(tool),
+          className: 'configure-button'
+        },
         {
           icon: 'pi pi-trash',
           label: t('remove', 'Remove'),
           onClick: () => onRemove(tool.id),
           disabled: tool.enabled,
-          title: tool.enabled ? t('cannot_delete_active_tool', 'Cannot delete active tool') : undefined
+          title: tool.enabled ? t('cannot_delete_active_tool', 'Cannot delete active tool') : undefined,
+          className: 'remove-button'
         }
       ]}
       onClick={() => onConfigure(tool)}

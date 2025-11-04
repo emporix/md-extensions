@@ -41,7 +41,7 @@ const PredefinedAgentCard = memo(({
       onToggleActive={onToggleActive}
       onClick={() => onAddAgent(agent.id)}
       switchDisabled={true}
-      secondaryActions={[
+      actions={[
         {
           icon: 'pi pi-plus',
           label: t('add_agent', 'Add Agent'),

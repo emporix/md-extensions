@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Card } from 'primereact/card';
 import { InputSwitch } from 'primereact/inputswitch';
-import { useTranslation } from 'react-i18next';
+import { Badge } from 'primereact/badge';
 
 export interface CardAction {
   icon?: string;
@@ -16,15 +16,17 @@ export interface BaseCardProps {
   id?: string;
   className?: string;
   icon: React.ReactNode;
-  badge?: string;
+  badge?: string | string[];
   title: string;
   description: string | React.ReactNode;
   enabled?: boolean;
-  primaryActions?: CardAction[];
-  secondaryActions?: CardAction[];
+  actions?: CardAction[];
   onToggleActive?: (id: string, enabled: boolean) => void | Promise<void>;
   onClick?: () => void;
+  switchDisabled?: boolean;
   children?: React.ReactNode;
+  headerContent?: React.ReactNode;
+  contentBadges?: React.ReactNode;
 }
 
 const BaseCard: React.FC<BaseCardProps> = ({
@@ -35,13 +37,14 @@ const BaseCard: React.FC<BaseCardProps> = ({
   title,
   description,
   enabled = false,
-  primaryActions = [],
-  secondaryActions = [],
+  actions = [],
   onToggleActive,
   onClick,
-  children
+  switchDisabled = false,
+  children,
+  headerContent,
+  contentBadges
 }) => {
-  const { t } = useTranslation();
   const [isActive, setIsActive] = useState(enabled);
   const [isToggling, setIsToggling] = useState(false);
 
@@ -63,70 +66,55 @@ const BaseCard: React.FC<BaseCardProps> = ({
     }
   }, [id, onToggleActive]);
 
-  const getStatusLabel = (active: boolean) => {
-    return active ? t('active', 'Active') : t('inactive', 'Inactive');
+  const renderBadge = () => {
+    if (!badge) return null;
+    
+    if (Array.isArray(badge)) {
+      return badge.map((b, idx) => (
+        <Badge value={b} key={idx} className="agent-tag-badge" />
+      ));
+    }
+    
+    return <Badge value={badge} className="agent-tag-badge" />;
   };
 
   const cardHeader = (
-    <div className="custom-agent-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <div className="agent-icon">
-        {icon}
+    <div className="custom-agent-card-header">
+      <div className="card-header-left">
+        <div className="agent-icon">
+          {icon}
+        </div>
+        {headerContent && <div className="header-content-wrapper">{headerContent}</div>}
       </div>
-      <div className="agent-tags">
-        {badge && <span className="tool-type-badge">{badge}</span>}
-      </div>
+      {onToggleActive && (
+        <div className="card-header-right" onClick={(e) => e.stopPropagation()}>
+          <div className="switch-with-label">
+            <InputSwitch 
+              checked={isActive}
+              onChange={(e) => handleToggleActive(e.value)}
+              className="agent-switch"
+              disabled={isToggling || switchDisabled}
+            />
+            <span className="switch-label">{isActive ? 'Active' : 'Inactive'}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 
   const cardFooter = (
     <div className="custom-agent-card-footer">
-      {primaryActions.length > 0 && (
-        <div className="top-row">
-          {primaryActions.map((action, index) => (
-            <button
-              key={index}
-              className={`text-button ${action.className || 'configure-button'}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                action.onClick(e);
-              }}
-              disabled={action.disabled}
-              title={action.title}
-            >
-              {action.icon && <i className={action.icon}></i>}
-              {action.label}
-            </button>
-          ))}
+      {children && (
+        <div className="card-children-wrapper">
+          {children}
         </div>
       )}
       
-      <div className="bottom-row">
-        {onToggleActive && (
-          <div className="status-toggle" onClick={(e) => e.stopPropagation()}>
-            <InputSwitch 
-              checked={isActive}
-              onChange={(e) => handleToggleActive(e.value)}
-              className="agent-switch"
-              disabled={isToggling}
-            />
-            <span className="status-label">
-              {isToggling ? t('updating', 'Updating...') : getStatusLabel(isActive)}
-            </span>
-          </div>
-        )}
-        
-        {children && (
-          <div style={{ flex: 1 }}>
-            {children}
-          </div>
-        )}
-        
-        {!onToggleActive && !children && <div style={{ flex: 1 }}></div>}
-        
-        {secondaryActions.map((action, index) => (
+      <div className="card-actions-row">
+        {actions.map((action, index) => (
           <button
             key={index}
-            className={`text-button ${action.className || 'remove-button'}`}
+            className={`text-button ${action.className || ''}`}
             onClick={(e) => {
               e.stopPropagation();
               action.onClick(e);
@@ -144,15 +132,17 @@ const BaseCard: React.FC<BaseCardProps> = ({
 
   return (
     <Card
-      className={className}
+      className={`${className} ${onClick ? 'clickable-card' : ''}`}
       header={cardHeader}
       footer={cardFooter}
       onClick={onClick}
-      style={{ cursor: onClick ? 'pointer' : 'default' }}
     >
       <div className="agent-content">
         <h3 className="agent-name">{title}</h3>
         <p className="agent-description">{description}</p>
+        <div className="agent-tags">
+          {contentBadges || renderBadge()}
+        </div>
       </div>
     </Card>
   );

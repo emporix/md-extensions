@@ -66,15 +66,10 @@ export class AgentService {
       requiredScopes: agent.requiredScopes || []
     };
     
-    try {
-      return await this.api.put<CustomAgent>(
-        `/ai-service/${this.tenant}/agentic/agents/${agent.id}`,
-        formattedAgent
-      );
-    } catch (error) {
-      console.error('Error upserting agent:', error);
-      throw error;
-    }
+    return await this.api.put<CustomAgent>(
+      `/ai-service/${this.tenant}/agentic/agents/${agent.id}`,
+      formattedAgent
+    );
   }
 
   async deleteCustomAgent(agentId: string): Promise<void> {
@@ -87,5 +82,35 @@ export class AgentService {
 
   async getCommerceEvents(): Promise<{ events: string[] }> {
     return await this.api.get<{ events: string[] }>(`/ai-service/${this.tenant}/agentic/commerce-events`);
+  }
+
+  async exportAgents(agentIds: string[]): Promise<{ exportedAt: string; data: string; checksum: string }> {
+    return await this.api.post<{ exportedAt: string; data: string; checksum: string }>(
+      `/ai-service/${this.tenant}/agentic/agents/export`,
+      { agentIds }
+    );
+  }
+
+  async importAgents(jsonBody: unknown): Promise<{
+    importedAt: string;
+    summary: {
+      agents: Array<{ id: string; name: string; state: 'ENABLED' | 'DISABLED' | 'TO_CREATE' }>;
+      tools: Array<{ id: string; name: string; state: 'ENABLED' | 'DISABLED' | 'TO_CREATE' }>;
+      mcpServers: Array<{ id: string; name: string; state: 'ENABLED' | 'DISABLED' | 'TO_CREATE' }>;
+    };
+    message: string;
+  }> {
+    return await this.api.post<{
+      importedAt: string;
+      summary: {
+        agents: Array<{ id: string; name: string; state: 'ENABLED' | 'DISABLED' | 'TO_CREATE' }>;
+        tools: Array<{ id: string; name: string; state: 'ENABLED' | 'DISABLED' | 'TO_CREATE' }>;
+        mcpServers: Array<{ id: string; name: string; state: 'ENABLED' | 'DISABLED' | 'TO_CREATE' }>;
+      };
+      message: string;
+    }>(
+      `/ai-service/${this.tenant}/agentic/agents/import`,
+      jsonBody
+    );
   }
 } 
