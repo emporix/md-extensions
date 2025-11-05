@@ -1,5 +1,5 @@
 import { AgentTemplate, CustomAgent } from '../types/Agent';
-import { AppState } from '../types/common';
+import { AppState, ImportSummaryState } from '../types/common';
 import { ApiClient } from './apiClient';
 
 // Patch operation type
@@ -94,18 +94,18 @@ export class AgentService {
   async importAgents(jsonBody: unknown): Promise<{
     importedAt: string;
     summary: {
-      agents: Array<{ id: string; name: string; state: 'ENABLED' | 'DISABLED' | 'TO_CREATE' }>;
-      tools: Array<{ id: string; name: string; state: 'ENABLED' | 'DISABLED' | 'TO_CREATE' }>;
-      mcpServers: Array<{ id: string; name: string; state: 'ENABLED' | 'DISABLED' | 'TO_CREATE' }>;
+      agents: Array<{ id: string; name: string; state: ImportSummaryState }>;
+      tools: Array<{ id: string; name: string; state: ImportSummaryState }>;
+      mcpServers: Array<{ id: string; name: string; state: ImportSummaryState }>;
     };
     message: string;
   }> {
     return await this.api.post<{
       importedAt: string;
       summary: {
-        agents: Array<{ id: string; name: string; state: 'ENABLED' | 'DISABLED' | 'TO_CREATE' }>;
-        tools: Array<{ id: string; name: string; state: 'ENABLED' | 'DISABLED' | 'TO_CREATE' }>;
-        mcpServers: Array<{ id: string; name: string; state: 'ENABLED' | 'DISABLED' | 'TO_CREATE' }>;
+        agents: Array<{ id: string; name: string; state: ImportSummaryState }>;
+        tools: Array<{ id: string; name: string; state: ImportSummaryState }>;
+        mcpServers: Array<{ id: string; name: string; state: ImportSummaryState }>;
       };
       message: string;
     }>(

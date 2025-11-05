@@ -7,7 +7,7 @@ import { Badge } from 'primereact/badge';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck } from '@fortawesome/free-solid-svg-icons';
 import { AgentService } from '../../services/agentService';
-import { AppState } from '../../types/common';
+import { AppState, ImportSummaryState } from '../../types/common';
 import { useToast } from '../../contexts/ToastContext';
 
 interface ImportAgentDialogProps {
@@ -30,9 +30,9 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
   const [importResult, setImportResult] = useState<{
     importedAt: string;
     summary: {
-      agents: Array<{ id: string; name: string; state: 'ENABLED' | 'DISABLED' | 'TO_CREATE' }>;
-      tools: Array<{ id: string; name: string; state: 'ENABLED' | 'DISABLED' | 'TO_CREATE' }>;
-      mcpServers: Array<{ id: string; name: string; state: 'ENABLED' | 'DISABLED' | 'TO_CREATE' }>;
+      agents: Array<{ id: string; name: string; state: ImportSummaryState }>;
+      tools: Array<{ id: string; name: string; state: ImportSummaryState }>;
+      mcpServers: Array<{ id: string; name: string; state: ImportSummaryState }>;
     };
     message: string;
   } | null>(null);
@@ -112,7 +112,7 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
     handleHide();
   }, [onImport, handleHide]);
 
-  const getStateLabel = (state: 'ENABLED' | 'DISABLED' | 'TO_CREATE') => {
+  const getStateLabel = (state: ImportSummaryState) => {
     switch (state) {
       case 'ENABLED':
         return t('enabled', 'Enabled');
@@ -120,12 +120,14 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
         return t('disabled', 'Disabled');
       case 'TO_CREATE':
         return t('TO_CREATE', 'To Import');
+      case 'EXISTS':
+        return t('exists', 'Exists');
       default:
         return state;
     }
   };
 
-  const getStateSeverity = (state: 'ENABLED' | 'DISABLED' | 'TO_CREATE') => {
+  const getStateSeverity = (state: ImportSummaryState) => {
     switch (state) {
       case 'ENABLED':
         return 'success';
@@ -133,6 +135,8 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
         return 'warning';
       case 'TO_CREATE':
         return 'info';
+      case 'EXISTS':
+        return 'success';
       default:
         return undefined;
     }
