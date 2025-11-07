@@ -34,10 +34,10 @@ const ToolCard: React.FC<ToolCardProps> = ({ tool, onToggleActive, onConfigure, 
   const getDescription = () => {
     if (tool.type === 'slack' || tool.type === 'teams') {
       const parts: string[] = [];
-      if (tool.config.teamId) {
-        parts.push(`Team ID: ${tool.config.teamId}`);
+      if (tool.config?.teamId) {
+        parts.push(`Team ID: ${tool.config?.teamId}`);
       }
-      if (tool.config.botToken) {
+      if (tool.config?.botToken) {
         parts.push(`Bot Token: ${'•'.repeat(8)}`);
       }
       return parts.length > 0 ? parts.join('\n') : `${getToolTypeLabel()} Tool`;
