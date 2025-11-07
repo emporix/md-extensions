@@ -3,12 +3,19 @@ import { AppState } from '../types/common'
 export class ApiClientError extends Error {
   status?: number
   body?: unknown
+  disableable?: boolean
 
-  constructor(message: string, status?: number, body?: unknown) {
+  constructor(
+    message: string,
+    status?: number,
+    body?: unknown,
+    disableable?: boolean
+  ) {
     super(message)
     this.name = 'ApiClientError'
     this.status = status
     this.body = body
+    this.disableable = disableable
   }
 }
 
@@ -25,8 +32,8 @@ export class ApiClient {
     return {
       'Content-Type': 'application/json',
       'Emporix-tenant': this.appState.tenant,
-      'Authorization': `Bearer ${this.appState.token}`,
-      ...(extraHeaders || {})
+      Authorization: `Bearer ${this.appState.token}`,
+      ...(extraHeaders || {}),
     }
   }
 
@@ -41,35 +48,52 @@ export class ApiClient {
   private async handleResponse<T>(response: Response): Promise<T> {
     const contentType = response.headers.get('content-type') || ''
     const isJson = contentType.includes('application/json')
-    const payload = isJson ? await response.json().catch(() => undefined) : await response.text().catch(() => undefined)
+    const payload = isJson
+      ? await response.json().catch(() => undefined)
+      : await response.text().catch(() => undefined)
 
     if (!response.ok) {
       let message = `Request failed with status ${response.status}`
-      
+      let disableable = false
       if (typeof payload === 'string' && payload) {
         message = payload
       } else if (payload && typeof payload === 'object') {
         const errorPayload = payload as any
-        
+
         // Handle validation errors with details
-        if (errorPayload.details && Array.isArray(errorPayload.details) && errorPayload.details.length > 0) {
-          const validationMessages = errorPayload.details.map((detail: any) => detail.message).join('; ')
-          message = validationMessages
-        } else if (errorPayload.message) {
+        if (errorPayload.message) {
           message = errorPayload.message
         }
+        if (
+          errorPayload.details &&
+          Array.isArray(errorPayload.details) &&
+          errorPayload.details.length > 0
+        ) {
+          const validationMessages = errorPayload.details
+            .filter((detail: any) => detail.type !== 'disableable')
+            .map((detail: any) => detail.message)
+            .join('\n')
+          if (validationMessages) {
+            message += `\n${validationMessages}`
+          }
+          disableable = errorPayload.details.some(
+            (detail: any) => detail.type === 'disableable'
+          )
+        }
       }
-      
-      throw new ApiClientError(message, response.status, payload)
+
+      throw new ApiClientError(message, response.status, payload, disableable)
     }
 
-    return (payload as T) as T
+    return payload as T as T
   }
 
   async get<T>(path: string, init?: RequestInit): Promise<T> {
     const response = await fetch(this.buildUrl(path), {
       method: 'GET',
-      headers: this.buildHeaders(init?.headers as Record<string, string> | undefined),
+      headers: this.buildHeaders(
+        init?.headers as Record<string, string> | undefined
+      ),
       ...init,
     })
     return this.handleResponse<T>(response)
@@ -89,7 +113,9 @@ export class ApiClient {
   async post<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
     const response = await fetch(this.buildUrl(path), {
       method: 'POST',
-      headers: this.buildHeaders(init?.headers as Record<string, string> | undefined),
+      headers: this.buildHeaders(
+        init?.headers as Record<string, string> | undefined
+      ),
       body: body !== undefined ? JSON.stringify(body) : undefined,
       ...init,
     })
@@ -99,7 +125,9 @@ export class ApiClient {
   async put<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
     const response = await fetch(this.buildUrl(path), {
       method: 'PUT',
-      headers: this.buildHeaders(init?.headers as Record<string, string> | undefined),
+      headers: this.buildHeaders(
+        init?.headers as Record<string, string> | undefined
+      ),
       body: body !== undefined ? JSON.stringify(body) : undefined,
       ...init,
     })
@@ -109,7 +137,9 @@ export class ApiClient {
   async patch<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
     const response = await fetch(this.buildUrl(path), {
       method: 'PATCH',
-      headers: this.buildHeaders(init?.headers as Record<string, string> | undefined),
+      headers: this.buildHeaders(
+        init?.headers as Record<string, string> | undefined
+      ),
       body: body !== undefined ? JSON.stringify(body) : undefined,
       ...init,
     })
@@ -119,11 +149,11 @@ export class ApiClient {
   async delete(path: string, init?: RequestInit): Promise<void> {
     const response = await fetch(this.buildUrl(path), {
       method: 'DELETE',
-      headers: this.buildHeaders(init?.headers as Record<string, string> | undefined),
+      headers: this.buildHeaders(
+        init?.headers as Record<string, string> | undefined
+      ),
       ...init,
     })
     await this.handleResponse<void>(response)
   }
 }
-
-

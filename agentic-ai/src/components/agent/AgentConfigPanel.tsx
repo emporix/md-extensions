@@ -5,6 +5,7 @@ import { CustomAgent } from '../../types/Agent';
 import { AppState } from '../../types/common';
 import { IconPicker } from '../shared/IconPicker';
 import { TagPicker } from '../shared/TagPicker';
+import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { McpServersSelector } from './McpServersSelector';
 import { NativeToolsSelector } from './NativeToolsSelector';
 import { AgentCollaborationManager } from './AgentCollaborationManager';
@@ -35,7 +36,17 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
   const [showIconPicker, setShowIconPicker] = React.useState(false);
   const [showTagPicker, setShowTagPicker] = React.useState(false);
 
-  const { state, saving, updateField, handleSave, isFormValid } = useAgentConfig({
+  const { 
+    state, 
+    saving, 
+    updateField, 
+    handleSave, 
+    isFormValid,
+    showDisableConfirm,
+    disableConfirmMessage,
+    handleConfirmDisable,
+    handleCancelDisable
+  } = useAgentConfig({
     agent,
     appState,
     onSave,
@@ -129,28 +140,39 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
             <Button 
               label={t('save', 'Save')} 
               className="save-agent-button" 
-              onClick={handleSave} 
+              onClick={() => handleSave()} 
               disabled={saving || !isFormValid} 
             />
           </div>
         </div>
       </div>
 
-              <IconPicker
-          visible={showIconPicker}
-          selectedIcon={state.selectedIcon}
-          onIconSelect={(icon) => updateField('selectedIcon', icon)}
-          onClose={() => setShowIconPicker(false)}
-        />
-        
-        <TagPicker
-          visible={showTagPicker}
-          selectedTag={state.tags.length > 0 ? state.tags[0] : null}
-          onTagSelect={(tag) => updateField('tags', tag ? [tag] : [])}
-          onClose={() => setShowTagPicker(false)}
-        />
-      </>
-    );
-  };
+      <IconPicker
+        visible={showIconPicker}
+        selectedIcon={state.selectedIcon}
+        onIconSelect={(icon) => updateField('selectedIcon', icon)}
+        onClose={() => setShowIconPicker(false)}
+      />
+      
+      <TagPicker
+        visible={showTagPicker}
+        selectedTag={state.tags.length > 0 ? state.tags[0] : null}
+        onTagSelect={(tag) => updateField('tags', tag ? [tag] : [])}
+        onClose={() => setShowTagPicker(false)}
+      />
+
+      <ConfirmDialog
+        visible={showDisableConfirm}
+        title={t('confirm_save_agent', 'Save and Deactivate Agent')}
+        message={"You can not save the enabled agent with the errors. You can save the agent by disabling it first.\n\n" + disableConfirmMessage}
+        confirmLabel={t('save_and_deactivate', 'Save and Deactivate')}
+        cancelLabel={t('cancel', 'Cancel')}
+        onConfirm={handleConfirmDisable}
+        onHide={handleCancelDisable}
+        severity="warning"
+      />
+    </>
+  );
+};
 
 export default AgentConfigPanel; 

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useRef } from 'react';
 import { Toast } from 'primereact/toast';
+import { formatMessageWithLineBreaks } from '../utils/formatHelpers.tsx';
 
 interface ToastContextType {
   showSuccess: (message: string) => void;
@@ -25,38 +26,38 @@ interface ToastProviderProps {
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const toast = useRef<Toast>(null);
 
-  const showSuccess = (message: string) => {
+  const showSuccess = (message: string): void => {
     toast.current?.show({
       severity: 'success',
       summary: 'Success',
-      detail: message,
+      detail: formatMessageWithLineBreaks(message),
       life: 3000
     });
   };
 
-  const showError = (message: string) => {
+  const showError = (message: string): void => {
     toast.current?.show({
       severity: 'error',
       summary: 'Error',
-      detail: message,
+      detail: formatMessageWithLineBreaks(message),
       life: 5000
     });
   };
 
-  const showInfo = (message: string) => {
+  const showInfo = (message: string): void => {
     toast.current?.show({
       severity: 'info',
       summary: 'Info',
-      detail: message,
+      detail: formatMessageWithLineBreaks(message),
       life: 3000
     });
   };
 
-  const showWarning = (message: string) => {
+  const showWarning = (message: string): void => {
     toast.current?.show({
       severity: 'warn',
       summary: 'Warning',
-      detail: message,
+      detail: formatMessageWithLineBreaks(message),
       life: 4000
     });
   };
