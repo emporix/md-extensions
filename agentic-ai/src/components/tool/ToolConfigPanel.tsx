@@ -83,6 +83,16 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     }
   }, [toolType, appState, loadAvailableFields])
 
+  useEffect(() => {
+    // Initialize default values for rag_emporix tool type
+    if (toolType === 'rag_emporix' && !config.entityType) {
+      setConfig((prev) => ({
+        ...prev,
+        entityType: 'product',
+      }))
+    }
+  }, [toolType, config.entityType])
+
   const handleSave = async () => {
     if (!tool) return
 
