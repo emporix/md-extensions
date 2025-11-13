@@ -11,6 +11,8 @@ interface BasePageProps {
   title: React.ReactNode;
   addButtonLabel?: string;
   onAdd?: () => void;
+  backButtonLabel?: string;
+  onBack?: () => void;
   children: React.ReactNode;
 
   // Delete confirmation props
@@ -30,6 +32,8 @@ export const BasePage: React.FC<BasePageProps> = ({
   title,
   addButtonLabel,
   onAdd,
+  backButtonLabel,
+  onBack,
   children,
   deleteConfirmVisible = false,
   deleteConfirmTitle,
@@ -65,7 +69,18 @@ export const BasePage: React.FC<BasePageProps> = ({
   return (
     <div className={`${className}-page`} style={{ padding: '24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <h1>{title}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="details-back-button"
+              aria-label={backButtonLabel || 'Back'}
+            >
+              <i className="pi pi-arrow-left" />
+            </button>
+          )}
+          <h1>{title}</h1>
+        </div>
         {onAdd && addButtonLabel && (
           <Button
             label={addButtonLabel}

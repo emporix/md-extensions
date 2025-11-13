@@ -117,11 +117,70 @@
 .unified-logs-datatable {
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  height: 400px;
 }
 
-.log-messages-datatable .p-datatable-scrollable-body {
-  max-height: 350px;
+.log-messages-datatable table,
+.unified-logs-datatable table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.log-messages-datatable .p-datatable-tbody,
+.unified-logs-datatable .p-datatable-tbody {
+  border-collapse: collapse;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body,
+.unified-logs-datatable .p-datatable-scrollable-body {
+  overflow-y: auto !important;
+  overflow-x: hidden;
+}
+
+.log-messages-datatable .p-datatable-scrollable-wrapper,
+.unified-logs-datatable .p-datatable-scrollable-wrapper {
+  position: relative;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body::-webkit-scrollbar,
+.unified-logs-datatable .p-datatable-scrollable-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body::-webkit-scrollbar-track,
+.unified-logs-datatable .p-datatable-scrollable-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body::-webkit-scrollbar-thumb,
+.unified-logs-datatable .p-datatable-scrollable-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body::-webkit-scrollbar-thumb:hover,
+.unified-logs-datatable .p-datatable-scrollable-body::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body table,
+.unified-logs-datatable .p-datatable-scrollable-body table {
+  border-collapse: collapse;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body table tbody tr,
+.unified-logs-datatable .p-datatable-scrollable-body table tbody tr {
+  border-bottom: 1px solid var(--border-default) !important;
+}
+
+.log-messages-datatable .p-datatable-scrollable-wrapper .p-datatable-scrollable-body table tbody tr,
+.unified-logs-datatable .p-datatable-scrollable-wrapper .p-datatable-scrollable-body table tbody tr {
+  border-bottom: 1px solid var(--border-default) !important;
+}
+
+.log-messages-datatable table.p-datatable-table tbody tr,
+.unified-logs-datatable table.p-datatable-table tbody tr {
+  border-bottom: 1px solid var(--border-default) !important;
 }
 
 .log-messages-datatable .p-datatable-header,
@@ -132,7 +191,32 @@
 
 .log-messages-datatable .p-datatable-tbody > tr,
 .unified-logs-datatable .p-datatable-tbody > tr {
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default) !important;
+  display: table-row;
+  position: relative;
+}
+
+.log-messages-datatable .p-datatable-tbody > tr:last-child,
+.unified-logs-datatable .p-datatable-tbody > tr:last-child {
+  border-bottom: 1px solid var(--border-default) !important;
+}
+
+.log-messages-datatable .p-datatable-tbody > tr:not(:last-child),
+.unified-logs-datatable .p-datatable-tbody > tr:not(:last-child) {
+  border-bottom: 1px solid var(--border-default) !important;
+}
+
+.log-messages-datatable .p-datatable-tbody > tr td,
+.unified-logs-datatable .p-datatable-tbody > tr td {
+  border-bottom: none;
+  border-top: none;
+  vertical-align: top;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body table tbody tr td,
+.unified-logs-datatable .p-datatable-scrollable-body table tbody tr td {
+  border-bottom: none;
+  border-top: none;
 }
 
 .log-messages-datatable .p-datatable-tbody > tr:hover,
@@ -179,6 +263,26 @@
 .logs-datatable .p-datatable-tbody > tr:hover,
 .logs-datatable .p-datatable-tbody > tr.p-selectable-row:hover {
   background: var(--bg-hover);
+}
+
+/* Pagination alignment - align to left and add border */
+.logs-table-container .p-paginator,
+.sessions-table-container .p-paginator {
+  justify-content: flex-start !important;
+  text-align: left;
+  border: 1px solid var(--border-light);
+  border-top: none;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.logs-table-container .p-paginator .p-paginator-left-content,
+.sessions-table-container .p-paginator .p-paginator-left-content {
+  margin-right: auto;
+}
+
+.logs-table-container .p-paginator .p-paginator-right-content,
+.sessions-table-container .p-paginator .p-paginator-right-content {
+  margin-left: 0;
 }
 
 

@@ -28,6 +28,7 @@ export class JobService {
     pageSize?: number
     pageNumber?: number
     agentId?: string
+    filters?: Record<string, string>
   }): string {
     const queryParams = new URLSearchParams()
 
@@ -40,8 +41,27 @@ export class JobService {
     if (params.pageNumber) {
       queryParams.append('pageNumber', params.pageNumber.toString())
     }
+    
+    // Build q parameter with filters using regex pattern for flexible matching
+    const qParts: string[] = []
+    
+    // Add agentId filter if provided (for backward compatibility)
     if (params.agentId) {
-      queryParams.append('q', `agentId:${params.agentId}`)
+      qParts.push(`agentId:${params.agentId}`)
+    }
+    
+    // Add column filters with regex pattern: field:~(value)
+    if (params.filters) {
+      Object.entries(params.filters).forEach(([field, value]) => {
+        if (value && value.trim()) {
+          qParts.push(`${field}:~(${value.trim()})`)
+        }
+      })
+    }
+    
+    // Combine all q parts with space separator
+    if (qParts.length > 0) {
+      queryParams.append('q', qParts.join(' '))
     }
 
     const queryString = queryParams.toString()
@@ -59,9 +79,11 @@ export class JobService {
       sessionId: job.sessionId,
       agentType: job.agentType,
       agentId: job.agentId,
-      commerceEvent: job.commerceEvent,
       message: job.message,
       response: job.response,
+      type: job.type,
+      importResult: job.importResult,
+      exportResult: job.exportResult,
       createdAt: job.metadata.createdAt,
     }
   }
@@ -71,7 +93,8 @@ export class JobService {
     sortOrder?: 'ASC' | 'DESC',
     pageSize?: number,
     pageNumber?: number,
-    agentId?: string
+    agentId?: string,
+    filters?: Record<string, string>
   ): Promise<{ data: JobSummary[]; totalCount: number }> {
     const queryString = this.buildQueryParams({
       sortBy,
@@ -79,6 +102,7 @@ export class JobService {
       pageSize,
       pageNumber,
       agentId,
+      filters,
     })
     const url = `/ai-service/${this.tenant}/jobs${queryString}`
     const headers = this.getHeaders(true)

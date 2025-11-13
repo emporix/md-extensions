@@ -99,6 +99,15 @@
   --space-2xl: 2rem;     /* 32px */
   --space-3xl: 3rem;     /* 48px */
 
+  /* Spacing Scale (alias for consistency) */
+  --spacing-xs: var(--space-xs);
+  --spacing-sm: var(--space-sm);
+  --spacing-md: var(--space-md);
+  --spacing-lg: var(--space-lg);
+  --spacing-xl: var(--space-xl);
+  --spacing-2xl: var(--space-2xl);
+  --spacing-3xl: var(--space-3xl);
+
   /* Border Radius */
   --radius-sm: 4px;
   --radius-md: 6px;

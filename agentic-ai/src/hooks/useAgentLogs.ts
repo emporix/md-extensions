@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router';
 import { LogSummary, RequestLogs } from '../types/Log';
 import { AppState } from '../types/common';
@@ -15,16 +15,18 @@ export const useAgentLogs = (appState: AppState) => {
   const [pageSize, setPageSize] = useState<number>(10);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [totalRecords, setTotalRecords] = useState<number>(0);
+  const [filters, setFilters] = useState<Record<string, string>>({});
 
   const logService = new LogService(appState);
 
-  const fetchLogs = useCallback(async (sortBy?: string, sortOrder?: 'ASC' | 'DESC', newPageSize?: number, newPageNumber?: number, agentId?: string) => {
+  const fetchLogs = useCallback(async (sortBy?: string, sortOrder?: 'ASC' | 'DESC', newPageSize?: number, newPageNumber?: number, agentId?: string, newFilters?: Record<string, string>) => {
     try {
       setLoading(true);
       setError(null);
       const currentPageSize = newPageSize || pageSize;
       const currentPageNumber = newPageNumber || pageNumber;
-      const response = await logService.getAgentLogs(sortBy, sortOrder, currentPageSize, currentPageNumber, agentId);
+      const currentFilters = newFilters !== undefined ? newFilters : filters;
+      const response = await logService.getAgentLogs(sortBy, sortOrder, currentPageSize, currentPageNumber, agentId, currentFilters);
       setLogs(response.data);
       setTotalRecords(response.totalCount);
     } catch (err) {
@@ -32,7 +34,7 @@ export const useAgentLogs = (appState: AppState) => {
     } finally {
       setLoading(false);
     }
-  }, [appState.tenant, appState.token, pageSize, pageNumber]);
+  }, [appState.tenant, appState.token, pageSize, pageNumber, filters]);
 
   const fetchLogDetails = useCallback(async (logId: string) => {
     try {
@@ -67,12 +69,17 @@ export const useAgentLogs = (appState: AppState) => {
   }, []);
 
   const refreshLogs = useCallback((agentId?: string) => {
-    return fetchLogs('metadata.createdAt', 'DESC', undefined, undefined, agentId);
-  }, [fetchLogs]);
+    return fetchLogs('metadata.createdAt', 'DESC', undefined, undefined, agentId, filters);
+  }, [fetchLogs, filters]);
 
   const sortLogs = useCallback((sortBy: string, sortOrder: 'ASC' | 'DESC', agentId?: string) => {
-    return fetchLogs(sortBy, sortOrder, undefined, undefined, agentId);
-  }, [fetchLogs]);
+    return fetchLogs(sortBy, sortOrder, undefined, undefined, agentId, filters);
+  }, [fetchLogs, filters]);
+
+  const updateFilters = useCallback((newFilters: Record<string, string>) => {
+    setFilters(newFilters);
+    setPageNumber(1); // Reset to first page when filters change
+  }, []);
 
   const changePage = useCallback((newPageNumber: number) => {
     setPageNumber(newPageNumber);
@@ -85,14 +92,16 @@ export const useAgentLogs = (appState: AppState) => {
     // The fetchLogs will be called by useEffect when pageSize changes
   }, []);
 
-  // Single useEffect to handle both initial load and pagination changes
+  // Create stable reference for filters to prevent unnecessary re-renders
+  const filtersString = useMemo(() => JSON.stringify(filters), [filters]);
+
+  // Fetch logs when dependencies change
   useEffect(() => {
-    // Get current agentId from URL for filtering
     const urlParams = new URLSearchParams(location.search);
     const agentIdParam = urlParams.get('agentId');
-    fetchLogs('metadata.createdAt', 'DESC', pageSize, pageNumber, agentIdParam || undefined);
+    fetchLogs('metadata.createdAt', 'DESC', pageSize, pageNumber, agentIdParam || undefined, filters);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageSize, pageNumber, appState.tenant, appState.token, location.search]);
+  }, [pageSize, pageNumber, appState.tenant, appState.token, location.search, filtersString]);
 
   return {
     logs,
@@ -104,12 +113,14 @@ export const useAgentLogs = (appState: AppState) => {
     pageSize,
     pageNumber,
     totalRecords,
+    filters,
     fetchLogDetails,
     fetchLogsByAgent,
     clearSelectedLog,
     refreshLogs,
     sortLogs,
     changePage,
-    changePageSize
+    changePageSize,
+    updateFilters
   };
 };

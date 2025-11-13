@@ -1,12 +1,11 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
-import { Button } from 'primereact/button';
-import { DataTable } from 'primereact/datatable';
+import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Tag } from 'primereact/tag';
-import { ToggleButton } from 'primereact/togglebutton';
 import { Paginator } from 'primereact/paginator';
+import { FilterMatchMode } from 'primereact/api';
 import SessionsTab from './SessionsTab';
 import { BasePage } from '../shared/BasePage';
 import { LogSummary } from '../../types/Log';
@@ -14,6 +13,7 @@ import { JobSummary } from '../../types/Job';
 import { useAgentLogs } from '../../hooks/useAgentLogs';
 import { useJobs } from '../../hooks/useJobs';
 import { AppState } from '../../types/common';
+import { convertFiltersToApiFormat } from '../../utils/filterHelpers';
 
 interface LogsPageProps {
   appState: AppState;
@@ -48,7 +48,8 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     totalRecords: logsTotalRecords,
     refreshLogs,
     sortLogs,
-    changePage: changeLogsPage
+    changePage: changeLogsPage,
+    updateFilters: updateLogFilters
   } = useAgentLogs(appState);
 
   const {
@@ -60,8 +61,27 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     totalRecords: jobsTotalRecords,
     refreshJobs,
     sortJobs,
-    changePage: changeJobsPage
+    changePage: changeJobsPage,
+    updateFilters: updateJobFilters
   } = useJobs(appState);
+
+  // PrimeReact filter state for logs
+  const [logFilters, setLogFilters] = useState<DataTableFilterMeta>({
+    agentId: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    requestId: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    sessionId: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    lastActivity: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    errorCount: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
+
+  // PrimeReact filter state for jobs
+  const [jobFilters, setJobFilters] = useState<DataTableFilterMeta>({
+    id: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    agentId: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    type: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    status: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    createdAt: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  });
 
 
   const handleLogClick = useCallback((log: LogSummary) => {
@@ -104,7 +124,8 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
       'agentId': 'agentId',
       'requestId': 'requestId', 
       'sessionId': 'sessionId',
-      'lastActivity': 'metadata.createdAt'
+      'lastActivity': 'metadata.createdAt',
+      'createdAt': 'metadata.createdAt'
     };
     
     const apiField = fieldMapping[newSortField] || newSortField;
@@ -145,6 +166,24 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
   const handleJobsPageChange = useCallback((event: any) => {
     changeJobsPage(event.page + 1); // PrimeReact uses 0-based indexing
   }, [changeJobsPage]);
+
+  // Handle log filter changes
+  useEffect(() => {
+    const apiFilters = convertFiltersToApiFormat(logFilters, {
+      errorCount: 'severity', 
+      agentId: 'triggerAgentId',
+    });
+    updateLogFilters(apiFilters);
+  }, [logFilters, updateLogFilters]);
+
+  // Handle job filter changes
+  useEffect(() => {
+    const apiFilters = convertFiltersToApiFormat(jobFilters, {
+      agentId: 'agentId', 
+    });
+    updateJobFilters(apiFilters);
+  }, [jobFilters, updateJobFilters]);
+
 
   const formatTimestamp = (timestamp: string) => {
     try {
@@ -199,32 +238,36 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     return <Tag value={getDisplayValue(rowData.status)} severity={getSeverity(rowData.status)} />;
   };
 
+  const jobTypeBodyTemplate = (rowData: JobSummary) => {
+    const jobType = rowData.type || 'N/A';
+    
+    const getDisplayValue = (type: string) => {
+      switch (type) {
+        case 'import':
+          return 'IMPORT';
+        case 'export':
+          return 'EXPORT';
+        case 'agent_chat':
+          return 'AGENT CHAT';
+        default:
+          return type.toUpperCase();
+      }
+    };
+
+    return <span>{getDisplayValue(jobType)}</span>;
+  };
+
   const jobTimestampBodyTemplate = (rowData: JobSummary) => {
     return formatTimestamp(rowData.createdAt);
   };
 
   const renderLogsTable = () => {
-    if (logs.length === 0) {
-      return (
-        <div className="empty-state">
-          <i className="pi pi-file empty-state-icon" />
-          <p>{t('no_logs_available', 'No logs available')}</p>
-          <Button
-            label={t('refresh', 'Refresh')}
-            icon="pi pi-refresh"
-            className="p-button-text"
-            onClick={handleRefresh}
-          />
-        </div>
-      );
-    }
-
     return (
       <div className="logs-table-container">
         <DataTable 
           value={logs} 
           className="logs-datatable"
-          emptyMessage={t('no_logs_available', 'No logs available')}
+          emptyMessage={t('no_logs_found_with_filters', 'No logs found matching the filters')}
           onRowClick={(e) => handleLogClick(e.data)}
           selectionMode="single"
           metaKeySelection={false}
@@ -232,6 +275,9 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
           sortField={sortField}
           sortOrder={sortOrder}
           onSort={handleSort}
+          filters={logFilters}
+          onFilter={(e) => setLogFilters(e.filters as DataTableFilterMeta)}
+          filterDisplay="row"
         >
           <Column 
             field="agentId" 
@@ -239,6 +285,9 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             headerClassName="col-md"
             bodyClassName="col-md"
             sortable
+            filter
+            filterPlaceholder={t('filter_by_agent_id', 'Filter by Agent ID')}
+            showFilterMenu={false}
           />
           <Column 
             field="requestId" 
@@ -246,6 +295,9 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             headerClassName="col-lg"
             bodyClassName="col-lg"
             sortable
+            filter
+            filterPlaceholder={t('filter_by_request_id', 'Filter by Request ID')}
+            showFilterMenu={false}
           />
           <Column 
             field="sessionId" 
@@ -253,6 +305,9 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             headerClassName="col-lg"
             bodyClassName="col-lg"
             sortable
+            filter
+            filterPlaceholder={t('filter_by_session_id', 'Filter by Session ID')}
+            showFilterMenu={false}
           />
           <Column 
             field="lastActivity" 
@@ -261,6 +316,9 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             headerClassName="col-datetime"
             bodyClassName="col-datetime"
             sortable
+            filter
+            filterPlaceholder={t('filter_by_timestamp', 'Filter by Timestamp')}
+            showFilterMenu={false}
           />
           <Column 
             field="errorCount" 
@@ -268,6 +326,9 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             body={resultBodyTemplate}
             headerClassName="col-result"
             bodyClassName="col-result"
+            filter
+            filterPlaceholder={t('filter_by_error_count', 'Filter by Error Count')}
+            showFilterMenu={false}
           />
         </DataTable>
         <Paginator
@@ -282,27 +343,12 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
   };
 
   const renderJobsTable = () => {
-    if (jobs.length === 0) {
-      return (
-        <div className="empty-state">
-          <i className="pi pi-briefcase empty-state-icon" />
-          <p>{t('no_jobs_available', 'No jobs available')}</p>
-          <Button
-            label={t('refresh', 'Refresh')}
-            icon="pi pi-refresh"
-            className="p-button-text"
-            onClick={handleRefresh}
-          />
-        </div>
-      );
-    }
-
     return (
       <div className="logs-table-container">
         <DataTable 
           value={jobs} 
           className="logs-datatable"
-          emptyMessage={t('no_jobs_available', 'No jobs available')}
+          emptyMessage={t('no_jobs_found_with_filters', 'No jobs found matching the filters')}
           onRowClick={(e) => handleJobClick(e.data)}
           selectionMode="single"
           metaKeySelection={false}
@@ -310,6 +356,9 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
           sortField={sortField}
           sortOrder={sortOrder}
           onSort={handleSort}
+          filters={jobFilters}
+          onFilter={(e) => setJobFilters(e.filters as DataTableFilterMeta)}
+          filterDisplay="row"
         >
           <Column 
             field="id" 
@@ -317,6 +366,9 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             headerClassName="col-lg"
             bodyClassName="col-lg"
             sortable
+            filter
+            filterPlaceholder={t('filter_by_job_id', 'Filter by Job ID')}
+            showFilterMenu={false}
           />
           <Column 
             field="agentId" 
@@ -324,20 +376,20 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             headerClassName="col-md"
             bodyClassName="col-md"
             sortable
+            filter
+            filterPlaceholder={t('filter_by_agent_id', 'Filter by Agent ID')}
+            showFilterMenu={false}
           />
           <Column 
-            field="agentType" 
-            header={t('agent_type', 'Agent Type')} 
+            field="type" 
+            header={t('job_type', 'Job Type')} 
+            body={jobTypeBodyTemplate}
             headerClassName="col-md"
             bodyClassName="col-md"
             sortable
-          />
-          <Column 
-            field="commerceEvent" 
-            header={t('commerce_event', 'Commerce Event')} 
-            headerClassName="col-lg"
-            bodyClassName="col-lg"
-            sortable
+            filter
+            filterPlaceholder={t('filter_by_type', 'Filter by Type')}
+            showFilterMenu={false}
           />
           <Column 
             field="createdAt" 
@@ -346,14 +398,20 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             headerClassName="col-datetime"
             bodyClassName="col-datetime"
             sortable
+            filter
+            filterPlaceholder={t('filter_by_created_at', 'Filter by Created At')}
+            showFilterMenu={false}
           />
           <Column 
             field="status" 
             header={t('status', 'Status')} 
             body={jobStatusBodyTemplate}
-            headerClassName="col-result"
-            bodyClassName="col-result"
+            headerClassName="col-status-wide"
+            bodyClassName="col-status-wide"
             sortable
+            filter
+            filterPlaceholder={t('filter_by_status', 'Filter by Status')}
+            showFilterMenu={false}
           />
         </DataTable>
         <Paginator
@@ -370,32 +428,47 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
   const renderViewSwitcher = () => {
     return (
       <div className="view-switcher">
-        <ToggleButton
-          checked={viewMode === 'requests'}
-          onChange={() => handleViewModeChange('requests')}
-          onLabel={t('requests', 'Requests')}
-          offLabel={t('requests', 'Requests')}
-          className="p-button-outlined"
-        />
-        <ToggleButton
-          checked={viewMode === 'jobs'}
-          onChange={() => handleViewModeChange('jobs')}
-          onLabel={t('jobs', 'Jobs')}
-          offLabel={t('jobs', 'Jobs')}
-          className="p-button-outlined"
-        />
-        <ToggleButton
-          checked={viewMode === 'sessions'}
-          onChange={() => handleViewModeChange('sessions')}
-          onLabel={t('sessions', 'Sessions')}
-          offLabel={t('sessions', 'Sessions')}
-          className="p-button-outlined"
-        />
+        <button
+          className={`view-tab ${viewMode === 'requests' ? 'view-tab-active' : ''}`}
+          onClick={() => handleViewModeChange('requests')}
+        >
+          <i className="pi pi-list" />
+          <span>{t('requests', 'Requests')}</span>
+        </button>
+        <button
+          className={`view-tab ${viewMode === 'jobs' ? 'view-tab-active' : ''}`}
+          onClick={() => handleViewModeChange('jobs')}
+        >
+          <i className="pi pi-briefcase" />
+          <span>{t('jobs', 'Jobs')}</span>
+        </button>
+        <button
+          className={`view-tab ${viewMode === 'sessions' ? 'view-tab-active' : ''}`}
+          onClick={() => handleViewModeChange('sessions')}
+        >
+          <i className="pi pi-users" />
+          <span>{t('sessions', 'Sessions')}</span>
+        </button>
       </div>
     );
   };
 
-  const currentLoading = viewMode === 'requests' ? loading : jobsLoading;
+  // Track initial load to prevent loading overlay on filter changes
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+  
+  useEffect(() => {
+    const isCurrentViewLoaded = viewMode === 'requests' ? !loading : !jobsLoading;
+    if (isCurrentViewLoaded) {
+      setHasLoadedOnce(true);
+    }
+  }, [loading, jobsLoading, viewMode]);
+
+  // Reset hasLoadedOnce when view mode changes
+  useEffect(() => {
+    setHasLoadedOnce(false);
+  }, [viewMode]);
+
+  const currentLoading = !hasLoadedOnce && (viewMode === 'requests' ? loading : jobsLoading);
   const currentError = viewMode === 'requests' ? error : jobsError;
 
   return (

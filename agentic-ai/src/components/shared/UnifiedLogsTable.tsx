@@ -103,6 +103,7 @@ const UnifiedLogsTable = forwardRef<any, UnifiedLogsTableProps>(({
           ref={ref}
           value={tableData} 
           scrollable 
+          scrollHeight="600px"
           className={className}
           emptyMessage={t('no_logs_found', emptyMessage)}
           style={style}

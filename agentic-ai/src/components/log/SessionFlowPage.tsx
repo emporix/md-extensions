@@ -122,25 +122,10 @@ const SessionFlowPage: React.FC<SessionFlowPageProps> = ({ appState }) => {
       loading={loading}
       error={error}
       title={`${t('flow', 'Flow')} - ${sessionId}`}
+      backButtonLabel={t('back_to_sessions', 'Back to Sessions')}
+      onBack={handleBackToLogs}
       className="session-flow"
     >
-      <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1rem' }}>
-        <button 
-          onClick={handleBackToLogs}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: '#f3f4f6',
-            border: '1px solid #d1d5db',
-            borderRadius: '0.375rem',
-            cursor: 'pointer',
-            fontSize: '0.875rem',
-            color: '#374151'
-          }}
-        >
-          ← {t('back_to_sessions', 'Back to Sessions')}
-        </button>
-      </div>
-
       <div className="session-flow-tab flex flex-col items-start justify-center min-h-[60vh] p-8">
         <div className="w-full max-w-4xl">
           {loading ? (

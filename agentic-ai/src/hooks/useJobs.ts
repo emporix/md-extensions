@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router';
 import { JobSummary, Job } from '../types/Job';
 import { AppState } from '../types/common';
@@ -15,16 +15,18 @@ export const useJobs = (appState: AppState) => {
   const [pageSize, setPageSize] = useState<number>(10);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [totalRecords, setTotalRecords] = useState<number>(0);
+  const [filters, setFilters] = useState<Record<string, string>>({});
 
   const jobService = new JobService(appState);
 
-  const fetchJobs = useCallback(async (sortBy?: string, sortOrder?: 'ASC' | 'DESC', newPageSize?: number, newPageNumber?: number, agentId?: string) => {
+  const fetchJobs = useCallback(async (sortBy?: string, sortOrder?: 'ASC' | 'DESC', newPageSize?: number, newPageNumber?: number, agentId?: string, newFilters?: Record<string, string>) => {
     try {
       setLoading(true);
       setError(null);
       const currentPageSize = newPageSize || pageSize;
       const currentPageNumber = newPageNumber || pageNumber;
-      const response = await jobService.getJobs(sortBy, sortOrder, currentPageSize, currentPageNumber, agentId);
+      const currentFilters = newFilters !== undefined ? newFilters : filters;
+      const response = await jobService.getJobs(sortBy, sortOrder, currentPageSize, currentPageNumber, agentId, currentFilters);
       setJobs(response.data);
       setTotalRecords(response.totalCount);
     } catch (err) {
@@ -32,7 +34,7 @@ export const useJobs = (appState: AppState) => {
     } finally {
       setLoading(false);
     }
-  }, [appState.tenant, appState.token, pageSize, pageNumber]);
+  }, [appState.tenant, appState.token, pageSize, pageNumber, filters]);
 
   const fetchJobDetails = useCallback(async (jobId: string) => {
     try {
@@ -53,12 +55,17 @@ export const useJobs = (appState: AppState) => {
   }, []);
 
   const refreshJobs = useCallback((agentId?: string) => {
-    return fetchJobs('metadata.createdAt', 'DESC', undefined, undefined, agentId);
-  }, [fetchJobs]);
+    return fetchJobs('metadata.createdAt', 'DESC', undefined, undefined, agentId, filters);
+  }, [fetchJobs, filters]);
 
   const sortJobs = useCallback((sortBy: string, sortOrder: 'ASC' | 'DESC', agentId?: string) => {
-    return fetchJobs(sortBy, sortOrder, undefined, undefined, agentId);
-  }, [fetchJobs]);
+    return fetchJobs(sortBy, sortOrder, undefined, undefined, agentId, filters);
+  }, [fetchJobs, filters]);
+
+  const updateFilters = useCallback((newFilters: Record<string, string>) => {
+    setFilters(newFilters);
+    setPageNumber(1); // Reset to first page when filters change
+  }, []);
 
   const changePage = useCallback((newPageNumber: number) => {
     setPageNumber(newPageNumber);
@@ -71,14 +78,16 @@ export const useJobs = (appState: AppState) => {
     // The fetchJobs will be called by useEffect when pageSize changes
   }, []);
 
-  // Single useEffect to handle both initial load and pagination changes
+  // Create stable reference for filters to prevent unnecessary re-renders
+  const filtersString = useMemo(() => JSON.stringify(filters), [filters]);
+
+  // Fetch jobs when dependencies change
   useEffect(() => {
-    // Get current agentId from URL for filtering
     const urlParams = new URLSearchParams(location.search);
     const agentIdParam = urlParams.get('agentId');
-    fetchJobs('metadata.createdAt', 'DESC', pageSize, pageNumber, agentIdParam || undefined);
+    fetchJobs('metadata.createdAt', 'DESC', pageSize, pageNumber, agentIdParam || undefined, filters);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageSize, pageNumber, appState.tenant, appState.token, location.search]);
+  }, [pageSize, pageNumber, appState.tenant, appState.token, location.search, filtersString]);
 
   return {
     jobs,
@@ -90,11 +99,13 @@ export const useJobs = (appState: AppState) => {
     pageSize,
     pageNumber,
     totalRecords,
+    filters,
     fetchJobDetails,
     clearSelectedJob,
     refreshJobs,
     sortJobs,
     changePage,
-    changePageSize
+    changePageSize,
+    updateFilters
   };
 };

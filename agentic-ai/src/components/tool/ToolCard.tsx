@@ -35,10 +35,10 @@ const ToolCard: React.FC<ToolCardProps> = ({ tool, onConfigure, onRemove }) => {
     if (tool.type === 'slack' || tool.type === 'teams') {
       return (
         <>
-          {tool.config.teamId && `Team ID: ${tool.config.teamId}`}
-          {tool.config.teamId && tool.config.botToken && <br />}
-          {tool.config.botToken && `Bot Token: ${'•'.repeat(8)}`}
-          {!tool.config.teamId && !tool.config.botToken && `${getToolTypeLabel()} Tool`}
+          {tool.config?.teamId && `Team ID: ${tool.config?.teamId}`}
+          {tool.config?.teamId && tool.config?.botToken && <br />}
+          {tool.config?.botToken && `Bot Token: ${'•'.repeat(8)}`}
+          {!tool.config?.teamId && !tool.config?.botToken && `${getToolTypeLabel()} Tool`}
         </>
       );
     }

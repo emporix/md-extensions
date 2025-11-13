@@ -74,9 +74,11 @@ const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ appState }) => {
       agentId={selectedJob?.agentId}
       sessionId={selectedJob?.sessionId}
       requestId={selectedJob?.requestId}
-      commerceEvent={selectedJob?.commerceEvent}
       createdAt={selectedJob?.metadata?.createdAt}
       status={selectedJob?.status}
+      jobType={selectedJob?.type}
+      importResult={selectedJob?.importResult}
+      exportResult={selectedJob?.exportResult}
       message={selectedJob?.message}
       response={selectedJob?.response}
       messages={log?.messages}

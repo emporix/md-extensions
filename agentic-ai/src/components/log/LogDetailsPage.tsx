@@ -45,6 +45,15 @@ const LogDetailsPage: React.FC<LogDetailsPageProps> = ({ appState }) => {
   // Get scrollToMessage from session storage
   const scrollToMessage = sessionStorage.getItem('scrollToMessage');
 
+  // Extract message and response from log messages
+  const extractedMessage = selectedLog?.messages?.find(
+    msg => msg.message.includes('Agent receive request:')
+  )?.message.replace('Agent receive request:', '').trim();
+
+  const extractedResponse = selectedLog?.messages?.find(
+    msg => msg.message.includes('Agent final response:')
+  )?.message.replace('Agent final response:', '').trim();
+
   return (
     <UnifiedDetailsView
       title={`${t('log_details', 'Log Details')} - ${logId}`}
@@ -56,6 +65,8 @@ const LogDetailsPage: React.FC<LogDetailsPageProps> = ({ appState }) => {
       agentId={selectedLog?.triggerAgentId}
       sessionId={selectedLog?.sessionId}
       requestId={selectedLog?.requestId}
+      message={extractedMessage}
+      response={extractedResponse}
       messages={selectedLog?.messages}
       createdAt={selectedLog?.metadata?.createdAt ? String(selectedLog.metadata.createdAt) : null}
       scrollToMessage={scrollToMessage || undefined}

@@ -43,13 +43,27 @@ export class LogService {
     if (params.pageNumber) {
       queryParams.append('pageNumber', params.pageNumber.toString())
     }
+
+    // Build q parameter with filters using regex pattern for flexible matching
+    const qParts: string[] = []
+    
+    // Add agentId filter if provided (for backward compatibility)
     if (params.agentId) {
-      queryParams.append('q', `triggerAgentId:${params.agentId}`)
+      qParts.push(`triggerAgentId:${params.agentId}`)
     }
+    
+    // Add column filters with regex pattern: field:~(value)
     if (params.filters) {
-      Object.entries(params.filters).forEach(([key, value]) => {
-        queryParams.append(key, value)
+      Object.entries(params.filters).forEach(([field, value]) => {
+        if (value && value.trim()) {
+          qParts.push(`${field}:~(${value.trim()})`)
+        }
       })
+    }
+    
+    // Combine all q parts with space separator
+    if (qParts.length > 0) {
+      queryParams.append('q', qParts.join(' '))
     }
 
     const queryString = queryParams.toString()
@@ -78,7 +92,8 @@ export class LogService {
     sortOrder?: 'ASC' | 'DESC',
     pageSize?: number,
     pageNumber?: number,
-    agentId?: string
+    agentId?: string,
+    filters?: Record<string, string>
   ): Promise<{ data: LogSummary[]; totalCount: number }> {
     const queryString = this.buildQueryParams({
       sortBy,
@@ -86,6 +101,7 @@ export class LogService {
       pageSize,
       pageNumber,
       agentId,
+      filters,
     })
     const url = `/ai-service/${this.tenant}/agentic/log/logs${queryString}`
     const headers = this.getHeaders(true)
@@ -139,7 +155,7 @@ export class LogService {
       response.headers.get('x-total-count') || '0',
       10
     )
-    const data = logs.map((log) => this.transformToSummary(log))
+    const data = logs?.map((log) => this.transformToSummary(log))
 
     return { data, totalCount }
   }
@@ -164,13 +180,16 @@ export class LogService {
   async getSessions(
     agentId?: string,
     pageSize?: number,
-    pageNumber?: number
+    pageNumber?: number,
+    filters?: Record<string, string>
   ): Promise<{ data: SessionLogs[]; totalCount: number }> {
     const queryString = this.buildQueryParams({
+      sortBy: 'metadata.modifiedAt',
+      sortOrder: 'DESC',
       pageSize,
       pageNumber,
       agentId,
-      filters: { sort: 'metadata.modifiedAt:DESC' },
+      filters,
     })
 
     const url = `/ai-service/${this.tenant}/agentic/log/sessions${queryString}`
