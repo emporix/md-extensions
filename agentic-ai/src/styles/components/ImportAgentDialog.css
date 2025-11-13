@@ -122,13 +122,14 @@
 .add-agent-loading-state .loading-icon {
   width: 64px;
   height: 64px;
-  background: #dbeafe;
-  border: 1px solid #bfdbfe;
-  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.75rem;
+  color: #64748b;
   margin: 0 auto 1.5rem auto;
 }
 

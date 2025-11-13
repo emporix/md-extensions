@@ -2,7 +2,7 @@
 .custom-agent-card,
 .predefined-agent-card {
   max-width: 400px;
-  border: 1px solid #e0e7ff;
+  border: 1px solid #A1BDDC;
   border-radius: 12px;
   transition: all 0.2s ease-in-out;
   margin: 0;
@@ -49,15 +49,15 @@
 
 /* Agent Icon */
 .agent-icon {
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
   background: #f8fafc;
-  border: 1px solid #d1d5db;
+  border: 1px solid #A1BDDC;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  font-size: 1.75rem;
   color: #64748b;
 }
 
@@ -103,7 +103,7 @@
 .agent-tag-badge.p-badge,
 .tool-type-badge {
   background: #f3f4f6 !important;
-  color: #6b7280 !important;
+  color: #3B64A0 !important;
   padding: 0.25rem 0.5rem !important;
   border-radius: 4px !important;
   font-size: 0.75rem !important;
@@ -145,6 +145,36 @@
   flex-shrink: 0;
 }
 
+/* Status Dot Indicator */
+.status-dot-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: 1rem;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.status-dot-active {
+  background-color: #2FBEA9;
+}
+
+.status-dot-inactive {
+  background-color: #9ca3af;
+}
+
+.status-label {
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
 /* Custom Agent Card Footer */
 .custom-agent-card-footer {
   display: flex;
@@ -157,6 +187,8 @@
   align-items: center;
   justify-content: flex-start;
   flex-wrap: wrap;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1rem;
 }
 
 /* Text Buttons */
@@ -176,16 +208,28 @@
   font-size: 0.75rem;
 }
 
-.edit-button,
-.configure-button,
-.export-button {
+.configure-button .pi,
+.export-button .pi,
+.remove-button .pi {
+  font-size: 1rem;
+}
+
+.edit-button {
   color: #6b7280;
 }
 
-.edit-button:hover,
+.configure-button,
+.export-button {
+  color: #3B64A0;
+}
+
+.edit-button:hover {
+  color: #374151;
+}
+
 .configure-button:hover,
 .export-button:hover:not(:disabled) {
-  color: #374151;
+  color: #2d4d7a;
 }
 
 .export-button:disabled {
@@ -196,6 +240,7 @@
 
 .add-agent-button {
   color: #16a34a;
+  margin-left: auto;
 }
 
 .add-agent-button:hover:not(:disabled) {
@@ -209,12 +254,12 @@
 }
 
 .remove-button {
-  color: #dc2626;
+  color: #FD392B;
   margin-left: auto;
 }
 
 .remove-button:hover:not(:disabled) {
-  color: #b91c1c;
+  color: #d42a1f;
 }
 
 .remove-button:disabled {

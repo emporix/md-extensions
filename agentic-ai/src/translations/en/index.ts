@@ -15,7 +15,7 @@ const TRANSLATIONS_EN = {
   'predefined_agents_description': 'We have number of available Agents in our system. Add any to your list, rename it, to make the desired achievement.',
   'no_custom_agents': 'No custom agents created yet.',
   edit: 'edit',
-  configure: 'configure',
+  configure: 'Configure',
   remove: 'Remove',
   export: 'Export',
   export_agent: 'Export agent',

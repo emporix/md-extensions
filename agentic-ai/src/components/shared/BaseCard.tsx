@@ -27,6 +27,7 @@ export interface BaseCardProps {
   children?: React.ReactNode;
   headerContent?: React.ReactNode;
   contentBadges?: React.ReactNode;
+  showStatusDot?: boolean;
 }
 
 const BaseCard: React.FC<BaseCardProps> = ({
@@ -43,7 +44,8 @@ const BaseCard: React.FC<BaseCardProps> = ({
   switchDisabled = false,
   children,
   headerContent,
-  contentBadges
+  contentBadges,
+  showStatusDot = false
 }) => {
   const [isActive, setIsActive] = useState(enabled);
   const [isToggling, setIsToggling] = useState(false);
@@ -86,17 +88,24 @@ const BaseCard: React.FC<BaseCardProps> = ({
         </div>
         {headerContent && <div className="header-content-wrapper">{headerContent}</div>}
       </div>
-      {onToggleActive && (
+      {(onToggleActive || showStatusDot) && (
         <div className="card-header-right" onClick={(e) => e.stopPropagation()}>
-          <div className="switch-with-label">
-            <InputSwitch 
-              checked={isActive}
-              onChange={(e) => handleToggleActive(e.value)}
-              className="agent-switch"
-              disabled={isToggling || switchDisabled}
-            />
-            <span className="switch-label">{isActive ? 'Active' : 'Inactive'}</span>
-          </div>
+          {showStatusDot ? (
+            <div className="status-dot-indicator">
+              <span className={`status-dot ${isActive ? 'status-dot-active' : 'status-dot-inactive'}`}></span>
+              <span className="status-label">{isActive ? 'Active' : 'Inactive'}</span>
+            </div>
+          ) : (
+            <div className="switch-with-label">
+              <InputSwitch 
+                checked={isActive}
+                onChange={(e) => handleToggleActive(e.value)}
+                className="agent-switch"
+                disabled={isToggling || switchDisabled}
+              />
+              <span className="switch-label">{isActive ? 'Active' : 'Inactive'}</span>
+            </div>
+          )}
         </div>
       )}
     </div>

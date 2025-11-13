@@ -17,6 +17,7 @@ export interface AgentCardProps {
   onClick?: () => void;
   switchDisabled?: boolean;
   children?: React.ReactNode;
+  showStatusDot?: boolean;
 }
 
 const AgentCard: React.FC<AgentCardProps> = ({
@@ -31,7 +32,8 @@ const AgentCard: React.FC<AgentCardProps> = ({
   onToggleActive,
   onClick,
   switchDisabled = false,
-  children
+  children,
+  showStatusDot = false
 }) => {
   // Render tags as Badges for agent-specific styling
   const renderTagBadges = () => {
@@ -59,6 +61,7 @@ const AgentCard: React.FC<AgentCardProps> = ({
       onClick={onClick}
       switchDisabled={switchDisabled}
       contentBadges={renderTagBadges()}
+      showStatusDot={showStatusDot}
     >
       {children}
     </BaseCard>
