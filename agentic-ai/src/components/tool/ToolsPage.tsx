@@ -1,68 +1,110 @@
-import React, { useState, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import ToolCard from './ToolCard';
-import ToolConfigPanel from './ToolConfigPanel';
-import { BasePage } from '../shared/BasePage';
-import { Tool } from '../../types/Tool';
-import { useTools } from '../../hooks/useTools';
-import { AppState } from '../../types/common';
-import { createEmptyTool } from '../../utils/toolHelpers';
-import { useToast } from '../../contexts/ToastContext';
+import React, { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
+import ToolCard from './ToolCard'
+import ToolConfigPanel from './ToolConfigPanel'
+import { BasePage } from '../shared/BasePage'
+import { ConfirmDialog } from '../shared/ConfirmDialog'
+import { Tool } from '../../types/Tool'
+import { useTools } from '../../hooks/useTools'
+import { AppState } from '../../types/common'
+import { createEmptyTool } from '../../utils/toolHelpers'
+import { useToast } from '../../contexts/ToastContext'
+import { AiRagIndexerService } from '../../services/aiRagIndexerService'
 
 interface ToolsPageProps {
-  appState?: AppState;
+  appState?: AppState
 }
 
-const ToolsPage: React.FC<ToolsPageProps> = ({ 
+const ToolsPage: React.FC<ToolsPageProps> = ({
   appState = {
     tenant: 'default',
     language: 'default',
     token: 'default',
-  }
+  },
 }) => {
-  const { t } = useTranslation();
-  const { showSuccess } = useToast();
-  const { 
-    tools, 
-    loading, 
-    error, 
-    updateTool, 
+  const { t } = useTranslation()
+  const { showSuccess, showError } = useToast()
+  const {
+    tools,
+    loading,
+    error,
+    updateTool,
     refreshTools,
-    removeTool, 
-    deleteConfirmVisible, 
-    hideDeleteConfirm, 
-    confirmDelete 
-  } = useTools(appState);
-  const [showConfigPanel, setShowConfigPanel] = useState(false);
-  const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
+    removeTool,
+    deleteConfirmVisible,
+    hideDeleteConfirm,
+    confirmDelete,
+  } = useTools(appState)
+  const [showConfigPanel, setShowConfigPanel] = useState(false)
+  const [selectedTool, setSelectedTool] = useState<Tool | null>(null)
+  const [reindexConfirmVisible, setReindexConfirmVisible] = useState(false)
+  const [toolToReindex, setToolToReindex] = useState<Tool | null>(null)
 
   const handleConfigure = (tool: Tool) => {
-    setSelectedTool(tool);
-    setShowConfigPanel(true);
-  };
+    setSelectedTool(tool)
+    setShowConfigPanel(true)
+  }
 
   const handleAddNewTool = useCallback(() => {
-    setSelectedTool(createEmptyTool());
-    setShowConfigPanel(true);
-  }, []);
+    setSelectedTool(createEmptyTool())
+    setShowConfigPanel(true)
+  }, [])
 
   const handleConfigSave = async (updatedTool: Tool) => {
     try {
-      await updateTool(updatedTool);
-      await refreshTools();
-      showSuccess(t('tool_updated_successfully', 'Tool updated successfully!'));
-      setShowConfigPanel(false);
-      setSelectedTool(null);
-    } catch (error) {
-      setShowConfigPanel(false);
-      setSelectedTool(null);
+      await updateTool(updatedTool)
+      await refreshTools()
+      showSuccess(t('tool_updated_successfully', 'Tool updated successfully!'))
+      setShowConfigPanel(false)
+      setSelectedTool(null)
+    } catch {
+      setShowConfigPanel(false)
+      setSelectedTool(null)
     }
-  };
+  }
 
   const handleConfigClose = () => {
-    setShowConfigPanel(false);
-    setSelectedTool(null);
-  };
+    setShowConfigPanel(false)
+    setSelectedTool(null)
+  }
+
+  const handleReindex = (tool: Tool) => {
+    setToolToReindex(tool)
+    setReindexConfirmVisible(true)
+  }
+
+  const hideReindexConfirm = () => {
+    setReindexConfirmVisible(false)
+    setToolToReindex(null)
+  }
+
+  const confirmReindex = async () => {
+    if (!toolToReindex) return
+
+    if (!toolToReindex.config.entityType) {
+      showError(
+        t('entity_type_missing', 'Entity type is missing in tool configuration')
+      )
+      hideReindexConfirm()
+      return
+    }
+
+    hideReindexConfirm()
+
+    try {
+      const aiRagIndexerService = new AiRagIndexerService(appState)
+      await aiRagIndexerService.reindex(toolToReindex.config.entityType)
+      showSuccess(
+        t('reindex_triggered_successfully', 'Reindex triggered successfully!')
+      )
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to trigger reindex'
+      showError(
+        `${t('error_triggering_reindex', 'Error triggering reindex')}: ${errorMessage}`
+      )
+    }
+  }
 
   return (
     <BasePage
@@ -73,7 +115,10 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
       onAdd={handleAddNewTool}
       deleteConfirmVisible={deleteConfirmVisible}
       deleteConfirmTitle={t('delete_tool', 'Delete Tool')}
-      deleteConfirmMessage={t('delete_tool_confirmation', 'Are you sure you want to delete this tool? This action cannot be undone.')}
+      deleteConfirmMessage={t(
+        'delete_tool_confirmation',
+        'Are you sure you want to delete this tool? This action cannot be undone.'
+      )}
       onDeleteConfirm={confirmDelete}
       onDeleteCancel={hideDeleteConfirm}
       className="tools"
@@ -85,11 +130,12 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
       ) : (
         <div className="agents-grid">
           {tools.map((tool) => (
-            <ToolCard 
-              key={tool.id} 
-              tool={tool} 
+            <ToolCard
+              key={tool.id}
+              tool={tool}
               onConfigure={handleConfigure}
               onRemove={removeTool}
+              onReindex={handleReindex}
             />
           ))}
         </div>
@@ -102,8 +148,21 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
         onSave={handleConfigSave}
         appState={appState}
       />
-    </BasePage>
-  );
-};
 
-export default ToolsPage;
+      <ConfirmDialog
+        visible={reindexConfirmVisible}
+        onHide={hideReindexConfirm}
+        onConfirm={confirmReindex}
+        title={t('reindex_tool', 'Reindex Tool')}
+        message={t(
+          'reindex_confirmation',
+          'This is a time-consuming operation that will regenerate all embeddings. Please proceed with caution. Are you sure you want to continue?'
+        )}
+        confirmLabel={t('reindex', 'Reindex')}
+        severity="warning"
+      />
+    </BasePage>
+  )
+}
+
+export default ToolsPage

@@ -21,5 +21,17 @@ export class AiRagIndexerService {
       throw new Error(errorMessage)
     }
   }
-}
 
+  async reindex(ragEntityType: string): Promise<void> {
+    try {
+      await this.api.post<void>(
+        `/ai-rag-indexer/${this.tenant}/${ragEntityType}/reindex`,
+        {}
+      )
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to trigger reindex'
+      throw new Error(errorMessage)
+    }
+  }
+}

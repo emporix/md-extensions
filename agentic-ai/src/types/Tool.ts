@@ -9,6 +9,7 @@ export interface ToolCardProps {
   tool: Tool;
   onConfigure: (tool: Tool) => void;
   onRemove: (toolId: string) => void;
+  onReindex?: (tool: Tool) => void;
 }
 
 export interface ToolConfigPanelProps {
