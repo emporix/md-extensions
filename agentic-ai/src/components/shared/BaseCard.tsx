@@ -132,7 +132,7 @@ const BaseCard: React.FC<BaseCardProps> = ({
             title={action.title}
           >
             {action.icon && <i className={action.icon}></i>}
-            {action.label}
+            {action.className !== 'remove-button' && action.className !== 'export-button' && action.label}
           </button>
         ))}
       </div>

@@ -232,6 +232,10 @@
   color: #2d4d7a;
 }
 
+.export-button {
+  margin-left: auto;
+}
+
 .export-button:disabled {
   color: #9ca3af;
   cursor: not-allowed;
@@ -254,12 +258,17 @@
 }
 
 .remove-button {
-  color: #FD392B;
+  color: #3B64A0;
   margin-left: auto;
 }
 
+/* When export button exists, remove button should follow it without auto margin */
+.export-button ~ .remove-button {
+  margin-left: 0;
+}
+
 .remove-button:hover:not(:disabled) {
-  color: #d42a1f;
+  color: #2d4d7a;
 }
 
 .remove-button:disabled {
