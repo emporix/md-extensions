@@ -50,7 +50,7 @@ const McpCard: React.FC<McpCardProps> = ({ mcpServer, onToggleActive, onConfigur
           label: t('remove', 'Remove'),
           onClick: () => onRemove(mcpServer.id),
           disabled: mcpServer.enabled,
-          title: mcpServer.enabled ? t('cannot_delete_active_mcp', 'Cannot delete active MCP server') : undefined,
+          title: mcpServer.enabled ? t('cannot_delete_active_mcp', 'Cannot delete active MCP server') : t('remove_mcp', 'Remove MCP server'),
           className: 'remove-button'
         }
       ]}

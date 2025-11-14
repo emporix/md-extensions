@@ -71,42 +71,40 @@ const CustomAgentCard = memo(({
   };
 
   return (
-    <div title={`id: ${agent.id}`}>
-      <AgentCard
-        id={agent.id}
-        name={agentName}
-        description={agentDescription}
-        icon={getAgentIcon()}
-        tags={agent.tags}
-        enabled={agent.enabled}
-        onToggleActive={onToggleActive}
-        onClick={() => onConfigure(agent)}
-        actions={[
-          {
-            icon: 'pi pi-cog',
-            label: t('configure'),
-            onClick: () => onConfigure(agent),
-            className: 'configure-button'
-          },
-          {
-            icon: 'pi pi-upload',
-            label: t('export', 'Export'),
-            onClick: handleExport,
-            disabled: isExporting,
-            title: isExporting ? t('exporting', 'Exporting...') : t('export_agent', 'Export agent'),
-            className: 'export-button'
-          },
-          {
-            icon: 'pi pi-trash',
-            label: t('remove', 'Remove'),
-            onClick: () => onRemove(agent.id),
-            disabled: agent.enabled,
-            title: agent.enabled ? t('cannot_delete_active_agent', 'Cannot delete active agent') : undefined,
-            className: 'remove-button'
-          }
-        ]}
-      />
-    </div>
+    <AgentCard
+      id={agent.id}
+      name={agentName}
+      description={agentDescription}
+      icon={getAgentIcon()}
+      tags={agent.tags}
+      enabled={agent.enabled}
+      onToggleActive={onToggleActive}
+      onClick={() => onConfigure(agent)}
+      actions={[
+        {
+          icon: 'pi pi-cog',
+          label: t('configure'),
+          onClick: () => onConfigure(agent),
+          className: 'configure-button'
+        },
+        {
+          icon: 'pi pi-upload',
+          label: t('export', 'Export'),
+          onClick: handleExport,
+          disabled: isExporting,
+          title: isExporting ? t('exporting', 'Exporting...') : t('export_agent', 'Export agent'),
+          className: 'export-button'
+        },
+        {
+          icon: 'pi pi-trash',
+          label: t('remove', 'Remove'),
+          onClick: () => onRemove(agent.id),
+          disabled: agent.enabled,
+          title: agent.enabled ? t('cannot_delete_active_agent', 'Cannot delete active agent') : t('remove_agent', 'Remove agent'),
+          className: 'remove-button'
+        }
+      ]}
+    />
   );
 });
 

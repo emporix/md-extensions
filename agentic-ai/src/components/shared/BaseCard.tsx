@@ -140,20 +140,22 @@ const BaseCard: React.FC<BaseCardProps> = ({
   );
 
   return (
-    <Card
-      className={`${className} ${onClick ? 'clickable-card' : ''}`}
-      header={cardHeader}
-      footer={cardFooter}
-      onClick={onClick}
-    >
-      <div className="agent-content">
-        <h3 className="agent-name">{title}</h3>
-        <p className="agent-description">{description}</p>
-        <div className="agent-tags">
-          {contentBadges || renderBadge()}
+    <div title={id ? `ID: ${id}` : undefined}>
+      <Card
+        className={`${className} ${onClick ? 'clickable-card' : ''}`}
+        header={cardHeader}
+        footer={cardFooter}
+        onClick={onClick}
+      >
+        <div className="agent-content">
+          <h3 className="agent-name">{title}</h3>
+          <p className="agent-description">{description}</p>
+          <div className="agent-tags">
+            {contentBadges || renderBadge()}
+          </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 };
 
