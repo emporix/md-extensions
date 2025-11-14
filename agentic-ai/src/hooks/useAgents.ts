@@ -29,6 +29,9 @@ interface UseAgentsResult {
   showDeleteConfirm: (agentId: string) => void
   hideDeleteConfirm: () => void
   confirmDelete: () => Promise<void>
+  forceDeleteConfirmVisible: boolean
+  hideForceDeleteConfirm: () => void
+  confirmForceDelete: () => Promise<void>
 }
 
 export const useAgents = (appState: AppState): UseAgentsResult => {
@@ -42,23 +45,6 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
   const [customAgentsError, setCustomAgentsError] = useState<string | null>(null)
 
   const agentService = useMemo(() => ServiceFactory.getAgentService(appState), [appState])
-
-  const {
-    deleteConfirmVisible,
-    itemToDelete: agentToDelete,
-    showDeleteConfirm,
-    hideDeleteConfirm,
-    confirmDelete
-  } = useDeleteConfirmation({
-    onDelete: async (agentId: string) => {
-      await agentService.deleteCustomAgent(agentId)
-    },
-    onSuccess: (agentId: string) => {
-      setCustomAgents(prev => prev.filter(agent => agent.id !== agentId))
-    },
-    successMessage: 'Agent deleted successfully!',
-    errorMessage: 'Failed to delete agent'
-  })
 
   const loadAgentTemplates = useCallback(async () => {
     try {
@@ -91,6 +77,27 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
       setCustomAgentsLoading(false)
     }
   }, [agentService, showError])
+
+  const {
+    deleteConfirmVisible,
+    itemToDelete: agentToDelete,
+    showDeleteConfirm,
+    hideDeleteConfirm,
+    confirmDelete,
+    forceDeleteConfirmVisible,
+    hideForceDeleteConfirm,
+    confirmForceDelete
+  } = useDeleteConfirmation({
+    onDelete: async (agentId: string, force?: boolean) => {
+      await agentService.deleteCustomAgent(agentId, force)
+    },
+    onSuccess: async (agentId: string) => {
+      setCustomAgents(prev => prev.filter(agent => agent.id !== agentId))
+      await loadCustomAgents()
+    },
+    successMessage: 'Agent deleted successfully!',
+    errorMessage: 'Failed to delete agent'
+  })
 
   const toggleAgentActive = useCallback((agentId: string, enabled: boolean) => {
     setAgents(prev => 
@@ -176,5 +183,8 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
     showDeleteConfirm,
     hideDeleteConfirm,
     confirmDelete,
+    forceDeleteConfirmVisible,
+    hideForceDeleteConfirm,
+    confirmForceDelete,
   }
 } 

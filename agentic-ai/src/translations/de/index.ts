@@ -148,6 +148,8 @@ const TRANSLATIONS_DE = {
   select_mcp_server_placeholder: 'MCP-Server auswählen',
   delete_agent: 'Agent löschen',
   delete_agent_confirmation: 'Sind Sie sicher, dass Sie diesen Agenten löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+  force_delete_agent: 'Agent erzwungen löschen',
+  force_delete_agent_message: 'Agent wird von anderen Agenten als Agent-Kollaboration verwendet.\nDurch das Löschen wird der Agent aus Kollaborationen entfernt und verwandte Agenten können deaktiviert werden.',
   updating: 'Aktualisiere...',
   cannot_delete_active_agent: 'Aktiver Agent kann nicht gelöscht werden',
   add_tool: 'Tool hinzufügen',
