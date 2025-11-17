@@ -8,6 +8,7 @@ import { useMcp } from '../../hooks/useMcp';
 import { AppState } from '../../types/common';
 import { createEmptyMcpServer } from '../../utils/mcpHelpers';
 import { useToast } from '../../contexts/ToastContext';
+import { ConfirmDialog } from '../shared/ConfirmDialog';
 
 interface McpPageProps {
   appState?: AppState;
@@ -28,10 +29,17 @@ const McpPage: React.FC<McpPageProps> = ({
     error, 
     upsertMcpServer, 
     refreshMcpServers, 
-    removeMcpServer, 
+    removeMcpServer,
+    toggleMcpServerActive,
     deleteConfirmVisible, 
     hideDeleteConfirm, 
-    confirmDelete 
+    confirmDelete,
+    forceDeleteConfirmVisible,
+    hideForceDeleteConfirm,
+    confirmForceDelete,
+    forceToggleConfirmVisible,
+    hideForceToggleConfirm,
+    confirmForceToggle
   } = useMcp(appState);
   const [showConfigPanel, setShowConfigPanel] = useState(false);
   const [selectedMcpServer, setSelectedMcpServer] = useState<McpServer | null>(null);
@@ -88,7 +96,8 @@ const McpPage: React.FC<McpPageProps> = ({
           {mcpServers.map((mcpServer) => (
             <McpCard 
               key={mcpServer.id} 
-              mcpServer={mcpServer} 
+              mcpServer={mcpServer}
+              onToggleActive={toggleMcpServerActive}
               onConfigure={handleConfigure}
               onRemove={removeMcpServer}
             />
@@ -102,6 +111,26 @@ const McpPage: React.FC<McpPageProps> = ({
         onHide={handleConfigClose}
         onSave={handleConfigSave}
         appState={appState}
+      />
+
+      <ConfirmDialog
+        visible={forceDeleteConfirmVisible}
+        title={t('force_delete_mcp', 'Force Delete MCP Server')}
+        message={t('force_delete_mcp_message', 'MCP server is used by agents.\nBy deleting it, the MCP server will be removed from the agents and agents will be disabled.')}
+        onConfirm={confirmForceDelete}
+        onHide={hideForceDeleteConfirm}
+        confirmLabel={t('force_delete', 'Force Delete')}
+        severity="warning"
+      />
+
+      <ConfirmDialog
+        visible={forceToggleConfirmVisible}
+        title={t('force_disable_mcp', 'Force Disable MCP Server')}
+        message={t('force_disable_mcp_message', 'MCP server is used by agents. By disabling it, the agents will be disabled as well.')}
+        onConfirm={confirmForceToggle}
+        onHide={hideForceToggleConfirm}
+        confirmLabel={t('force_disable', 'Force Disable')}
+        severity="warning"
       />
     </BasePage>
   );

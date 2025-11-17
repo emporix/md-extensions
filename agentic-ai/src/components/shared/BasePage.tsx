@@ -13,6 +13,11 @@ interface BasePageProps {
   onAdd?: () => void;
   children: React.ReactNode;
 
+  // Import button props
+  importButtonIcon?: string;
+  onImport?: () => void;
+  importButtonTitle?: string;
+
   // Delete confirmation props
   deleteConfirmVisible?: boolean;
   deleteConfirmTitle?: string;
@@ -31,6 +36,9 @@ export const BasePage: React.FC<BasePageProps> = ({
   addButtonLabel,
   onAdd,
   children,
+  importButtonIcon,
+  onImport,
+  importButtonTitle,
   deleteConfirmVisible = false,
   deleteConfirmTitle,
   deleteConfirmMessage,
@@ -68,14 +76,26 @@ export const BasePage: React.FC<BasePageProps> = ({
     <div className={`${className}-page`} style={{ padding: '24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <h1>{title}</h1>
-        {onAdd && addButtonLabel && (
-          <Button
-            label={addButtonLabel}
-            icon="pi pi-plus"
-            className="p-button-primary"
-            onClick={onAdd}
-          />
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {onImport && importButtonIcon && (
+            <button
+              className="import-action-button"
+              onClick={onImport}
+              title={importButtonTitle}
+              aria-label={importButtonTitle}
+            >
+              <i className={importButtonIcon}></i>
+            </button>
+          )}
+          {onAdd && addButtonLabel && (
+            <Button
+              label={addButtonLabel}
+              icon="pi pi-plus"
+              className="p-button-primary add-new-agent-button"
+              onClick={onAdd}
+            />
+          )}
+        </div>
       </div>
 
       {children}

@@ -1,0 +1,5 @@
+/* Toast Component Styles - Ensure it appears above all other elements when embedded */
+.p-toast {
+  z-index: 99999 !important;
+}
+

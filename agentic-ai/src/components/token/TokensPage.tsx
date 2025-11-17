@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import TokenCard from './TokenCard';
 import TokenConfigPanel from './TokenConfigPanel';
 import { BasePage } from '../shared/BasePage';
+import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { Token } from '../../types/Token';
 import { useTokens } from '../../hooks/useTokens';
 import { AppState } from '../../types/common';
@@ -31,7 +32,10 @@ const TokensPage: React.FC<TokensPageProps> = ({
     removeToken, 
     deleteConfirmVisible, 
     hideDeleteConfirm, 
-    confirmDelete 
+    confirmDelete,
+    forceDeleteConfirmVisible,
+    hideForceDeleteConfirm,
+    confirmForceDelete
   } = useTokens(appState);
   const [showConfigPanel, setShowConfigPanel] = useState(false);
   const [selectedToken, setSelectedToken] = useState<Token | null>(null);
@@ -100,6 +104,16 @@ const TokensPage: React.FC<TokensPageProps> = ({
         token={selectedToken}
         onHide={handleConfigClose}
         onSave={handleConfigSave}
+      />
+
+      <ConfirmDialog
+        visible={forceDeleteConfirmVisible}
+        title={t('force_delete_token', 'Force Delete Token')}
+        message={t('force_delete_token_message', 'Token is used by agents or MCP servers.\nBy deleting it, the token will be removed from the agents and MCP servers, and agents will be disabled.')}
+        onConfirm={confirmForceDelete}
+        onHide={hideForceDeleteConfirm}
+        confirmLabel={t('force_delete', 'Force Delete')}
+        severity="warning"
       />
     </BasePage>
   );

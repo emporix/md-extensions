@@ -3,10 +3,12 @@ export interface Tool {
   name: string;
   type: string;
   config: Record<string, any>;
+  enabled?: boolean;
 }
 
 export interface ToolCardProps {
   tool: Tool;
+  onToggleActive?: (toolId: string, enabled: boolean) => void | Promise<void>;
   onConfigure: (tool: Tool) => void;
   onRemove: (toolId: string) => void;
 }

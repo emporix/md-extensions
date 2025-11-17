@@ -32,12 +32,21 @@ export class ToolsService {
     }
   }
 
-  async deleteTool(toolId: string): Promise<void> {
+  async patchTool(toolId: string, patches: Array<{op: string, path: string, value: any}>, force?: boolean): Promise<Tool> {
     try {
-      await this.api.delete(`/ai-service/${this.tenant}/agentic/tools/${toolId}`);
+      const url = `/ai-service/${this.tenant}/agentic/tools/${toolId}${force ? '?force=true' : ''}`;
+      return await this.api.patch<Tool>(url, patches);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete tool';
-      throw new Error(errorMessage);
+      throw error;
+    }
+  }
+
+  async deleteTool(toolId: string, force?: boolean): Promise<void> {
+    try {
+      const url = `/ai-service/${this.tenant}/agentic/tools/${toolId}${force ? '?force=true' : ''}`;
+      await this.api.delete(url);
+    } catch (error) {
+      throw error;
     }
   }
 

@@ -19,10 +19,13 @@ export const useTokens = (appState: AppState) => {
     deleteConfirmVisible,
     showDeleteConfirm: removeToken,
     hideDeleteConfirm,
-    confirmDelete
+    confirmDelete,
+    forceDeleteConfirmVisible,
+    hideForceDeleteConfirm,
+    confirmForceDelete
   } = useDeleteConfirmation({
-    onDelete: async (tokenId: string) => {
-      await tokensService.deleteToken(tokenId);
+    onDelete: async (tokenId: string, force?: boolean) => {
+      await tokensService.deleteToken(tokenId, force);
     },
     onSuccess: (tokenId: string) => {
       setTokens(prev => prev.filter(token => token.id !== tokenId));
@@ -71,5 +74,8 @@ export const useTokens = (appState: AppState) => {
     deleteConfirmVisible,
     hideDeleteConfirm,
     confirmDelete,
+    forceDeleteConfirmVisible,
+    hideForceDeleteConfirm,
+    confirmForceDelete,
   };
 };

@@ -8,6 +8,7 @@ import './translations/i18n'
 import './styles/agents.css'
 import './styles/components/AddAgentDialog.css'
 import './styles/components/ToolCard.css'
+import './styles/components/InputSwitch.css'
 import '/node_modules/primeflex/primeflex.css'
 import 'primeicons/primeicons.css'
 
