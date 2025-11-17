@@ -38,6 +38,7 @@ const TokenCard: React.FC<TokenCardProps> = ({ token, onConfigure, onRemove }) =
           icon: 'pi pi-trash',
           label: t('remove', 'Remove'),
           onClick: () => onRemove(token.id),
+          title: t('remove_token', 'Remove token'),
           className: 'remove-button'
         }
       ]}
