@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useRef } from 'react';
+import React, { createContext, useContext, useRef, useEffect, useState } from 'react';
 import { Toast } from 'primereact/toast';
 import { formatMessageWithLineBreaks } from '../utils/formatHelpers.tsx';
+import '../styles/components/Toast.css';
 
 interface ToastContextType {
   showSuccess: (message: string) => void;
@@ -25,6 +26,14 @@ interface ToastProviderProps {
 
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const toast = useRef<Toast>(null);
+  const [appendTo, setAppendTo] = useState<HTMLElement | undefined>(undefined);
+
+  useEffect(() => {
+    // Append to document.body to escape stacking contexts when embedded
+    if (typeof document !== 'undefined') {
+      setAppendTo(document.body);
+    }
+  }, []);
 
   const showSuccess = (message: string): void => {
     toast.current?.show({
@@ -64,7 +73,10 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
 
   return (
     <ToastContext.Provider value={{ showSuccess, showError, showInfo, showWarning }}>
-      <Toast ref={toast} />
+      <Toast 
+        ref={toast} 
+        appendTo={appendTo}
+      />
       {children}
     </ToastContext.Provider>
   );

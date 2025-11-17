@@ -1,5 +1,5 @@
 import { AgentTemplate, CustomAgent } from '../types/Agent';
-import { AppState } from '../types/common';
+import { AppState, ImportSummaryState } from '../types/common';
 import { ApiClient } from './apiClient';
 
 // Patch operation type
@@ -66,15 +66,10 @@ export class AgentService {
       requiredScopes: agent.requiredScopes || []
     };
     
-    try {
-      return await this.api.put<CustomAgent>(
-        `/ai-service/${this.tenant}/agentic/agents/${agent.id}`,
-        formattedAgent
-      );
-    } catch (error) {
-      console.error('Error upserting agent:', error);
-      throw error;
-    }
+    return await this.api.put<CustomAgent>(
+      `/ai-service/${this.tenant}/agentic/agents/${agent.id}`,
+      formattedAgent
+    );
   }
 
   async deleteCustomAgent(agentId: string): Promise<void> {
@@ -87,5 +82,35 @@ export class AgentService {
 
   async getCommerceEvents(): Promise<{ events: string[] }> {
     return await this.api.get<{ events: string[] }>(`/ai-service/${this.tenant}/agentic/commerce-events`);
+  }
+
+  async exportAgents(agentIds: string[]): Promise<{ exportedAt: string; data: string; checksum: string }> {
+    return await this.api.post<{ exportedAt: string; data: string; checksum: string }>(
+      `/ai-service/${this.tenant}/agentic/agents/export`,
+      { agentIds }
+    );
+  }
+
+  async importAgents(jsonBody: unknown): Promise<{
+    importedAt: string;
+    summary: {
+      agents: Array<{ id: string; name: string; state: ImportSummaryState }>;
+      tools: Array<{ id: string; name: string; state: ImportSummaryState }>;
+      mcpServers: Array<{ id: string; name: string; state: ImportSummaryState }>;
+    };
+    message: string;
+  }> {
+    return await this.api.post<{
+      importedAt: string;
+      summary: {
+        agents: Array<{ id: string; name: string; state: ImportSummaryState }>;
+        tools: Array<{ id: string; name: string; state: ImportSummaryState }>;
+        mcpServers: Array<{ id: string; name: string; state: ImportSummaryState }>;
+      };
+      message: string;
+    }>(
+      `/ai-service/${this.tenant}/agentic/agents/import`,
+      jsonBody
+    );
   }
 } 

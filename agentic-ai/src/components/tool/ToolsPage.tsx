@@ -8,6 +8,7 @@ import { useTools } from '../../hooks/useTools';
 import { AppState } from '../../types/common';
 import { createEmptyTool } from '../../utils/toolHelpers';
 import { useToast } from '../../contexts/ToastContext';
+import { ConfirmDialog } from '../shared/ConfirmDialog';
 
 interface ToolsPageProps {
   appState?: AppState;
@@ -28,10 +29,17 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
     error, 
     updateTool, 
     refreshTools,
-    removeTool, 
+    removeTool,
+    toggleToolActive,
     deleteConfirmVisible, 
     hideDeleteConfirm, 
-    confirmDelete 
+    confirmDelete,
+    forceDeleteConfirmVisible,
+    hideForceDeleteConfirm,
+    confirmForceDelete,
+    forceToggleConfirmVisible,
+    hideForceToggleConfirm,
+    confirmForceToggle
   } = useTools(appState);
   const [showConfigPanel, setShowConfigPanel] = useState(false);
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
@@ -87,7 +95,8 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
           {tools.map((tool) => (
             <ToolCard 
               key={tool.id} 
-              tool={tool} 
+              tool={tool}
+              onToggleActive={toggleToolActive}
               onConfigure={handleConfigure}
               onRemove={removeTool}
             />
@@ -101,6 +110,26 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
         onHide={handleConfigClose}
         onSave={handleConfigSave}
         appState={appState}
+      />
+
+      <ConfirmDialog
+        visible={forceDeleteConfirmVisible}
+        title={t('force_delete_tool', 'Force Delete Tool')}
+        message={t('force_delete_tool_message', 'Tool is used by agents.\nBy deleting it, the tool will be removed from the agents and agents will be disabled.')}
+        onConfirm={confirmForceDelete}
+        onHide={hideForceDeleteConfirm}
+        confirmLabel={t('force_delete', 'Force Delete')}
+        severity="warning"
+      />
+
+      <ConfirmDialog
+        visible={forceToggleConfirmVisible}
+        title={t('force_disable_tool', 'Force Disable Tool')}
+        message={t('force_disable_tool_message', 'Tool is used by agents. By disabling it, the agents will be disabled as well.')}
+        onConfirm={confirmForceToggle}
+        onHide={hideForceToggleConfirm}
+        confirmLabel={t('force_disable', 'Force Disable')}
+        severity="warning"
       />
     </BasePage>
   );

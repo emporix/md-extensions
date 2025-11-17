@@ -27,7 +27,7 @@ export const AgentHeader: React.FC<AgentHeaderProps> = ({
         <h2 className="panel-title">{t('agent_config_panel.title', 'Agent Configuration')}</h2>
       </div>
       
-      <div className="agent-config-content" style={{ overflow: 'hidden' }}>
+      <div className="agent-config-icon-section">
         <div className="agent-config-icon-row">
           <div 
             className="agent-icon" 

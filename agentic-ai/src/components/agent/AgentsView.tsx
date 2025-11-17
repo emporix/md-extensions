@@ -4,6 +4,7 @@ import { Message } from 'primereact/message'
 import CustomAgentCard from './CustomAgentCard'
 import PredefinedAgentCard from './PredefinedAgentCard'
 import AddAgentDialog from './AddAgentDialog'
+import ImportAgentDialog from './ImportAgentDialog'
 import AgentConfigPanel from './AgentConfigPanel'
 import { ErrorBoundary } from '../shared/ErrorBoundary'
 import { BasePage } from '../shared/BasePage'
@@ -24,6 +25,7 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
   const [selectedAgentTemplate, setSelectedAgentTemplate] = useState<AgentTemplate | null>(null)
   const [showConfigPanel, setShowConfigPanel] = useState(false)
   const [selectedCustomAgent, setSelectedCustomAgent] = useState<CustomAgent | null>(null)
+  const [showImportDialog, setShowImportDialog] = useState(false)
   
   const {
     agents,
@@ -94,6 +96,10 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
     setSelectedCustomAgent(null)
   }, [])
 
+  const handleImportSuccess = useCallback(async () => {
+    await refreshCustomAgents()
+  }, [refreshCustomAgents])
+
   return (
     <BasePage
       loading={loading || customAgentsLoading}
@@ -110,7 +116,17 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
     >
       {/* My Agents Section */}
       <div className="my-agents-section">
-        <h2 className="section-title">{t('my_agents', 'My Agents')}</h2>
+        <div className="section-title-with-actions">
+          <h2 className="section-title">{t('my_agents', 'My Agents')}</h2>
+          <button
+            className="import-action-button"
+            onClick={() => setShowImportDialog(true)}
+            title={t('import_agent', 'Import Agent')}
+            aria-label={t('import_agent', 'Import Agent')}
+          >
+            <i className="pi pi-download"></i>
+          </button>
+        </div>
         
         {customAgentsError ? (
           <Message severity="error" text={customAgentsError} />
@@ -122,6 +138,7 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
                 <CustomAgentCard
                   key={agent.id}
                   agent={agent}
+                  appState={appState}
                   onToggleActive={toggleCustomAgentActive}
                   onConfigure={handleConfigure}
                   onRemove={removeCustomAgent}
@@ -165,6 +182,13 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
         agentTemplate={selectedAgentTemplate}
         onHide={handleCloseDialog}
         onSave={handleSaveAgent}
+        appState={appState}
+      />
+
+      <ImportAgentDialog
+        visible={showImportDialog}
+        onHide={() => setShowImportDialog(false)}
+        onImport={handleImportSuccess}
         appState={appState}
       />
 
