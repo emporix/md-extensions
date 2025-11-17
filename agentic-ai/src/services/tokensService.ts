@@ -13,37 +13,23 @@ export class TokensService {
   }
 
   async getTokens(): Promise<Token[]> {
-    try {
-      return await this.api.get<Token[]>(`/ai-service/${this.tenant}/agentic/tokens`);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch tokens';
-      throw new Error(errorMessage);
-    }
+    return await this.api.get<Token[]>(`/ai-service/${this.tenant}/agentic/tokens`);
   }
 
   async upsertToken(token: Token): Promise<Token> {
     validateToken(token);
-
-    try {
-      return await this.api.put<Token>(
-        `/ai-service/${this.tenant}/agentic/tokens/${token.id}`,
-        {
-          name: token.name,
-          value: token.value,
-        }
-      );
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to save token';
-      throw new Error(errorMessage);
-    }
+    
+    return await this.api.put<Token>(
+      `/ai-service/${this.tenant}/agentic/tokens/${token.id}`,
+      {
+        name: token.name,
+        value: token.value,
+      }
+    );
   }
 
-  async deleteToken(tokenId: string): Promise<void> {
-    try {
-      await this.api.delete(`/ai-service/${this.tenant}/agentic/tokens/${tokenId}`);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to delete token';
-      throw new Error(errorMessage);
-    }
+  async deleteToken(tokenId: string, force?: boolean): Promise<void> {
+    const url = `/ai-service/${this.tenant}/agentic/tokens/${tokenId}${force ? '?force=true' : ''}`;
+    await this.api.delete(url);
   }
 }

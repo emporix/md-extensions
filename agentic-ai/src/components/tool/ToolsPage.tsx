@@ -31,9 +31,16 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
     updateTool,
     refreshTools,
     removeTool,
+    toggleToolActive,
     deleteConfirmVisible,
     hideDeleteConfirm,
     confirmDelete,
+    forceDeleteConfirmVisible,
+    hideForceDeleteConfirm,
+    confirmForceDelete,
+    forceToggleConfirmVisible,
+    hideForceToggleConfirm,
+    confirmForceToggle
   } = useTools(appState)
   const [showConfigPanel, setShowConfigPanel] = useState(false)
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null)
@@ -133,6 +140,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
             <ToolCard
               key={tool.id}
               tool={tool}
+              onToggleActive={toggleToolActive}
               onConfigure={handleConfigure}
               onRemove={removeTool}
               onReindex={handleReindex}
@@ -159,6 +167,26 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
           'This is a time-consuming operation that will regenerate all embeddings. Please proceed with caution. Are you sure you want to continue?'
         )}
         confirmLabel={t('reindex', 'Reindex')}
+        severity="warning"
+      />
+
+      <ConfirmDialog
+        visible={forceDeleteConfirmVisible}
+        title={t('force_delete_tool', 'Force Delete Tool')}
+        message={t('force_delete_tool_message', 'Tool is used by agents.\nBy deleting it, the tool will be removed from the agents and agents will be disabled.')}
+        onConfirm={confirmForceDelete}
+        onHide={hideForceDeleteConfirm}
+        confirmLabel={t('force_delete', 'Force Delete')}
+        severity="warning"
+      />
+
+      <ConfirmDialog
+        visible={forceToggleConfirmVisible}
+        title={t('force_disable_tool', 'Force Disable Tool')}
+        message={t('force_disable_tool_message', 'Tool is used by agents. By disabling it, the agents will be disabled as well.')}
+        onConfirm={confirmForceToggle}
+        onHide={hideForceToggleConfirm}
+        confirmLabel={t('force_disable', 'Force Disable')}
         severity="warning"
       />
     </BasePage>

@@ -4,18 +4,21 @@ export class ApiClientError extends Error {
   status?: number
   body?: unknown
   disableable?: boolean
+  force?: boolean
 
   constructor(
     message: string,
     status?: number,
     body?: unknown,
-    disableable?: boolean
+    disableable?: boolean,
+    force?: boolean
   ) {
     super(message)
     this.name = 'ApiClientError'
     this.status = status
     this.body = body
     this.disableable = disableable
+    this.force = force
   }
 }
 
@@ -55,6 +58,7 @@ export class ApiClient {
     if (!response.ok) {
       let message = `Request failed with status ${response.status}`
       let disableable = false
+      let force = false
       if (typeof payload === 'string' && payload) {
         message = payload
       } else if (payload && typeof payload === 'object') {
@@ -70,7 +74,7 @@ export class ApiClient {
           errorPayload.details.length > 0
         ) {
           const validationMessages = errorPayload.details
-            .filter((detail: any) => detail.type !== 'disableable')
+            .filter((detail: any) => detail.type !== 'disableable' && detail.type !== 'force')
             .map((detail: any) => detail.message)
             .join('\n')
           if (validationMessages) {
@@ -79,10 +83,14 @@ export class ApiClient {
           disableable = errorPayload.details.some(
             (detail: any) => detail.type === 'disableable'
           )
+          force = errorPayload.details.some(
+            (detail: any) => detail.type === 'force'
+          )
         }
+
       }
 
-      throw new ApiClientError(message, response.status, payload, disableable)
+      throw new ApiClientError(message, response.status, payload, disableable, force)
     }
 
     return payload as T as T

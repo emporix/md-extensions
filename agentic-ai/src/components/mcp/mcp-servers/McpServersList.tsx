@@ -30,7 +30,8 @@ export const McpServersList: React.FC<McpServersListProps> = ({
         name: predefinedServer?.name || mcpServer.domain,
         icon: faServer,
         type: 'predefined',
-        details: `${mcpServer.tools?.length || 0} tools selected`
+        details: `${mcpServer.tools?.length || 0} tools selected`,
+        enabled: true
       };
     } else if (mcpServer.type === 'custom' && mcpServer.mcpServer?.id) {
       const customServer = availableMcpServers.find(s => s.id === mcpServer.mcpServer!.id);
@@ -38,7 +39,8 @@ export const McpServersList: React.FC<McpServersListProps> = ({
         name: customServer?.name || mcpServer.mcpServer!.id,
         icon: faServer,
         type: 'custom',
-        details: customServer?.config.url || 'Custom MCP Server'
+        details: customServer?.config.url || 'Custom MCP Server',
+        enabled: customServer?.enabled !== false
       };
     }
     
@@ -46,7 +48,8 @@ export const McpServersList: React.FC<McpServersListProps> = ({
       name: 'Unknown Server',
       icon: faCog,
       type: 'unknown',
-      details: 'Invalid configuration'
+      details: 'Invalid configuration',
+      enabled: false
     };
   };
 
@@ -54,9 +57,14 @@ export const McpServersList: React.FC<McpServersListProps> = ({
     <div className="mcp-servers-list">
       {mcpServers.map((mcpServer, idx) => {
         const serverInfo = getMcpServerDisplayInfo(mcpServer);
+        const isDisabled = !serverInfo.enabled;
         
         return (
-          <div className="mcp-server-row" key={idx}>
+          <div 
+            className={`mcp-server-row ${isDisabled ? 'mcp-server-disabled' : ''}`}
+            key={idx}
+            title={isDisabled ? t('mcp_server_disabled', 'This MCP server is currently disabled') : undefined}
+          >
             <div className="mcp-server-row-top">
               <div className="mcp-server-info">
                 <div className="mcp-server-agent">
@@ -66,6 +74,7 @@ export const McpServersList: React.FC<McpServersListProps> = ({
                   />
                   <span className="mcp-server-name">
                     {serverInfo.name}
+                    {isDisabled && <span style={{ marginLeft: '8px', fontSize: '0.85em', color: '#f44336' }}>(Disabled)</span>}
                   </span>
                 </div>
               </div>

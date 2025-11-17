@@ -11,10 +11,12 @@ export interface McpServer {
   name: string;
   transport: string;
   config: McpConfig;
+  enabled?: boolean;
 }
 
 export interface McpCardProps {
   mcpServer: McpServer;
+  onToggleActive?: (mcpServerId: string, enabled: boolean) => void | Promise<void>;
   onConfigure: (mcpServer: McpServer) => void;
   onRemove: (mcpServerId: string) => void;
 }
