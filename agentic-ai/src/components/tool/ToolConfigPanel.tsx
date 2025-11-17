@@ -11,6 +11,7 @@ import { AiRagIndexerService } from '../../services/aiRagIndexerService'
 import { useToast } from '../../contexts/ToastContext'
 import { BaseConfigPanel } from '../shared/BaseConfigPanel'
 import { faTools } from '@fortawesome/free-solid-svg-icons'
+import '../../styles/components/ToolConfigPanel.css'
 
 const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   visible,
@@ -410,7 +411,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             onValueChange={(e) =>
               updateConfig('maxResults', String(e.value ?? 5))
             }
-            className={`w-full ${maxResults < 1 || maxResults > 100 ? 'p-invalid' : ''}`}
+            className={`w-full max-results-input-number ${maxResults < 1 || maxResults > 100 ? 'p-invalid' : ''}`}
             placeholder={t('enter_max_results', 'Enter max results (1-100)')}
             min={1}
             max={100}
@@ -787,12 +788,11 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                   )}
                 </div>
 
-                <div style={{ paddingTop: '28px' }}>
+                <div className="indexed-field-delete-button">
                   <Button
                     icon="pi pi-trash"
                     className="p-button-danger"
                     onClick={() => removeIndexedField(index)}
-                    tooltip={t('remove_field', 'Remove field')}
                   />
                 </div>
               </div>
