@@ -78,7 +78,7 @@ export const useAddAgentDialog = ({
       showError(`Error creating agent: ${errorMessage}`);
       setStep('error');
     }
-  }, [agentId, agentName, description, userPrompt, agentTemplate, appState]);
+  }, [agentId, agentName, description, userPrompt, agentTemplate, appState, showError]);
 
   const handleOk = useCallback(() => {
     if (step === 'success') {

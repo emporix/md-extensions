@@ -15,6 +15,11 @@ interface BasePageProps {
   onBack?: () => void;
   children: React.ReactNode;
 
+  // Import button props
+  importButtonIcon?: string;
+  onImport?: () => void;
+  importButtonTitle?: string;
+
   // Delete confirmation props
   deleteConfirmVisible?: boolean;
   deleteConfirmTitle?: string;
@@ -32,9 +37,10 @@ export const BasePage: React.FC<BasePageProps> = ({
   title,
   addButtonLabel,
   onAdd,
-  backButtonLabel,
-  onBack,
   children,
+  importButtonIcon,
+  onImport,
+  importButtonTitle,
   deleteConfirmVisible = false,
   deleteConfirmTitle,
   deleteConfirmMessage,
@@ -69,26 +75,27 @@ export const BasePage: React.FC<BasePageProps> = ({
   return (
     <div className={`${className}-page`} style={{ padding: '24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {onBack && (
+        <h1>{title}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {onImport && importButtonIcon && (
             <button
-              onClick={onBack}
-              className="details-back-button"
-              aria-label={backButtonLabel || 'Back'}
+              className="import-action-button"
+              onClick={onImport}
+              title={importButtonTitle}
+              aria-label={importButtonTitle}
             >
-              <i className="pi pi-arrow-left" />
+              <i className={importButtonIcon}></i>
             </button>
           )}
-          <h1>{title}</h1>
+          {onAdd && addButtonLabel && (
+            <Button
+              label={addButtonLabel}
+              icon="pi pi-plus"
+              className="p-button-primary add-new-agent-button"
+              onClick={onAdd}
+            />
+          )}
         </div>
-        {onAdd && addButtonLabel && (
-          <Button
-            label={addButtonLabel}
-            icon="pi pi-plus"
-            className="p-button-primary"
-            onClick={onAdd}
-          />
-        )}
       </div>
 
       {children}

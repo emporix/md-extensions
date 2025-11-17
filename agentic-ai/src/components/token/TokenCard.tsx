@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { TokenCardProps } from '../../types/Token';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faKey } from '@fortawesome/free-solid-svg-icons';
-import AgentCard from '../agent/AgentCard';
+import BaseCard from '../shared/BaseCard';
 
 const TokenCard: React.FC<TokenCardProps> = ({ token, onConfigure, onRemove }) => {
   const { t } = useTranslation();
@@ -20,25 +20,26 @@ const TokenCard: React.FC<TokenCardProps> = ({ token, onConfigure, onRemove }) =
   };
 
   return (
-    <AgentCard
+    <BaseCard
       id={token.id}
-      name={token.name}
-      description=''
+      title={token.name}
+      description=""
       icon={<FontAwesomeIcon icon={faKey} />}
-      tags={[getTokenTypeLabel()]}
+      badge={getTokenTypeLabel()}
       enabled={true}
-      primaryActions={[
+      actions={[
         {
           icon: 'pi pi-cog',
           label: t('configure'),
-          onClick: () => onConfigure(token)
-        }
-      ]}
-      secondaryActions={[
+          onClick: () => onConfigure(token),
+          className: 'configure-button'
+        },
         {
           icon: 'pi pi-trash',
           label: t('remove', 'Remove'),
-          onClick: () => onRemove(token.id)
+          onClick: () => onRemove(token.id),
+          title: t('remove_token', 'Remove token'),
+          className: 'remove-button'
         }
       ]}
       onClick={() => onConfigure(token)}

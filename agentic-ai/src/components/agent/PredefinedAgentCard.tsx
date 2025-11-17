@@ -14,7 +14,7 @@ interface PredefinedAgentCardProps extends AgentCardBaseProps {
 
 const PredefinedAgentCard = memo(({ 
   agent, 
-  onToggleActive, 
+  onToggleActive: _onToggleActive, 
   onAddAgent 
 }: PredefinedAgentCardProps) => {
   const { t, i18n } = useTranslation()
@@ -38,10 +38,9 @@ const PredefinedAgentCard = memo(({
       tags={agent.tags}
       enabled={agent.enabled}
       className="predefined-agent-card"
-      onToggleActive={onToggleActive}
       onClick={() => onAddAgent(agent.id)}
-      switchDisabled={true}
-      secondaryActions={[
+      showStatusDot={true}
+      actions={[
         {
           icon: 'pi pi-plus',
           label: t('add_agent', 'Add Agent'),

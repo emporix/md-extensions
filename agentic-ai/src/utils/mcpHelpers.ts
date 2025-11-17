@@ -6,5 +6,6 @@ export const createEmptyMcpServer = (): McpServer => ({
   transport: 'sse',
   config: {
     url: ''
-  }
+  },
+  enabled: true
 });
