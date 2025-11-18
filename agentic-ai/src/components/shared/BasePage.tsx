@@ -37,6 +37,8 @@ export const BasePage: React.FC<BasePageProps> = ({
   title,
   addButtonLabel,
   onAdd,
+  backButtonLabel,
+  onBack,
   children,
   importButtonIcon,
   onImport,
@@ -72,10 +74,23 @@ export const BasePage: React.FC<BasePageProps> = ({
     );
   }
 
+  const titleWithBackButton = onBack ? (
+    <div className="details-title-with-back">
+      <button 
+        onClick={onBack}
+        className="details-back-button"
+        aria-label={backButtonLabel}
+      >
+        <i className="pi pi-arrow-left" />
+      </button>
+      <span className="details-title-text">{title}</span>
+    </div>
+  ) : title;
+
   return (
     <div className={`${className}-page`} style={{ padding: '24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <h1>{title}</h1>
+        <h1>{titleWithBackButton}</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           {onImport && importButtonIcon && (
             <button
