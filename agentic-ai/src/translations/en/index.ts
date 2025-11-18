@@ -155,6 +155,8 @@ const TRANSLATIONS_EN = {
   select_mcp_server_placeholder: 'Choose an MCP server',
   delete_agent: 'Delete Agent',
   delete_agent_confirmation: 'Are you sure you want to delete this agent? This action cannot be undone.',
+  force_delete_agent: 'Force Delete Agent',
+  force_delete_agent_message: 'Agent is used by other agents as agent collaboration.\nBy deleting it, the agent will be removed from collaborations and related agents may will be disabled.',
   updating: 'Updating...',
   cannot_delete_active_agent: 'Cannot delete active agent',
   add_tool: 'Add Tool',

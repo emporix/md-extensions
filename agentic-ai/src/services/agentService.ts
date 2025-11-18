@@ -72,8 +72,9 @@ export class AgentService {
     );
   }
 
-  async deleteCustomAgent(agentId: string): Promise<void> {
-    await this.api.delete(`/ai-service/${this.tenant}/agentic/agents/${agentId}`);
+  async deleteCustomAgent(agentId: string, force?: boolean): Promise<void> {
+    const url = `/ai-service/${this.tenant}/agentic/agents/${agentId}${force ? '?force=true' : ''}`;
+    await this.api.delete(url);
   }
 
   async patchCustomAgent(agentId: string, patches: PatchOperation[]): Promise<void> {

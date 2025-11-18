@@ -8,6 +8,7 @@ import ImportAgentDialog from './ImportAgentDialog'
 import AgentConfigPanel from './AgentConfigPanel'
 import { ErrorBoundary } from '../shared/ErrorBoundary'
 import { BasePage } from '../shared/BasePage'
+import { ConfirmDialog } from '../shared/ConfirmDialog'
 import { AppState } from '../../types/common'
 import { useAgents } from '../../hooks/useAgents'
 import { AgentTemplate } from '../../types/Agent'
@@ -41,7 +42,10 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
     refreshCustomAgents,
     deleteConfirmVisible,
     hideDeleteConfirm,
-    confirmDelete
+    confirmDelete,
+    forceDeleteConfirmVisible,
+    hideForceDeleteConfirm,
+    confirmForceDelete
   } = useAgents(appState)
 
 
@@ -202,6 +206,16 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
           availableAgents={customAgents}
         />
       </ErrorBoundary>
+
+      <ConfirmDialog
+        visible={forceDeleteConfirmVisible}
+        title={t('force_delete_agent', 'Force Delete Agent')}
+        message={t('force_delete_agent_message', 'Agent is used by other agents or has active collaborations.\nBy deleting it, the agent will be removed from collaborations and related agents may be affected.')}
+        onConfirm={confirmForceDelete}
+        onHide={hideForceDeleteConfirm}
+        confirmLabel={t('force_delete', 'Force Delete')}
+        severity="warning"
+      />
     </BasePage>
   )
 });
