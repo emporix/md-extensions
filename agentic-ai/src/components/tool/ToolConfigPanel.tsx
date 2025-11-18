@@ -506,7 +506,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             )}
           </div>
 
-          <div className="form-field">
+          <div className="form-field" style={{marginBottom: '1.5rem'}}>
             <label className="field-label">
               {t('token', 'Token')}
               <span style={{ color: 'red' }}> *</span>
