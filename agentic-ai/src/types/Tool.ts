@@ -11,6 +11,7 @@ export interface ToolCardProps {
   onToggleActive?: (toolId: string, enabled: boolean) => void | Promise<void>;
   onConfigure: (tool: Tool) => void;
   onRemove: (toolId: string) => void;
+  onReindex?: (tool: Tool) => void;
 }
 
 export interface ToolConfigPanelProps {
