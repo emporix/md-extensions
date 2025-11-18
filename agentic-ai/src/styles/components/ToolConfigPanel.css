@@ -1,0 +1,103 @@
+/* Tool Configuration Panel Styles */
+
+/* Max Results Input Number with Buttons */
+.max-results-input-number.p-inputnumber .p-inputnumber-button-group {
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+.max-results-input-number.p-inputnumber .p-inputnumber-button {
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.max-results-input-number.p-inputnumber .p-inputnumber-button.p-inputnumber-button-up {
+  background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%) !important;
+  border-color: #d1d5db !important;
+  color: #374151 !important;
+  margin-left: 2px !important;
+  margin-right: 0 !important;
+}
+
+.max-results-input-number.p-inputnumber .p-inputnumber-button.p-inputnumber-button-up:hover:not(:disabled) {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%) !important;
+  border-color: #9ca3af !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3) !important;
+}
+
+.max-results-input-number.p-inputnumber .p-inputnumber-button.p-inputnumber-button-down {
+  background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%) !important;
+  border-color: #d1d5db !important;
+  color: #374151 !important;
+  margin-left: 2px !important;
+  margin-right: 0 !important;
+}
+
+.max-results-input-number.p-inputnumber .p-inputnumber-button.p-inputnumber-button-down:hover:not(:disabled) {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%) !important;
+  border-color: #9ca3af !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3) !important;
+}
+
+.max-results-input-number.p-inputnumber .p-inputnumber-button:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+.max-results-input-number.p-inputnumber .p-inputnumber-button .p-button-icon {
+  font-size: 0.875rem !important;
+}
+
+/* Input field styling for max results */
+.max-results-input-number .p-inputnumber-input {
+  border-radius: 6px !important;
+  border: 2px solid #e2e8f0 !important;
+  padding: 0.625rem !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.max-results-input-number .p-inputnumber-input:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+.max-results-input-number .p-inputnumber-input.p-invalid {
+  border-color: #ef4444 !important;
+}
+
+.max-results-input-number .p-inputnumber-input.p-invalid:focus {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Indexed Fields Section - RAG Emporix */
+.indexed-field-delete-button {
+  display: flex !important;
+  align-items: center !important;
+  padding-top: 0 !important;
+  margin-top: 24px !important;
+}
+
+.indexed-field-delete-button .p-button.p-button-danger {
+  background: transparent !important;
+  border: none !important;
+  color: #dc2626 !important;
+  font-size: 1.1rem !important;
+  cursor: pointer !important;
+  min-width: auto !important;
+  padding: 0.25rem 0.5rem !important;
+  border-radius: 6px !important;
+  transition: background 0.2s, color 0.2s !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.indexed-field-delete-button .p-button.p-button-danger:hover:not(:disabled) {
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+}
+

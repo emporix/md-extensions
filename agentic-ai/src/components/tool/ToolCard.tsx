@@ -4,32 +4,42 @@ import { ToolCardProps } from '../../types/Tool';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSlack, faMicrosoft } from '@fortawesome/free-brands-svg-icons';
 import { faTools } from '@fortawesome/free-solid-svg-icons';
-import BaseCard from '../shared/BaseCard';
+import BaseCard, { CardAction } from '../shared/BaseCard';
 
-const ToolCard: React.FC<ToolCardProps> = ({ tool, onToggleActive, onConfigure, onRemove }) => {
-  const { t } = useTranslation();
+const ToolCard: React.FC<ToolCardProps> = ({
+  tool,
+  onToggleActive,
+  onConfigure,
+  onRemove,
+  onReindex,
+}) => {
+  const { t } = useTranslation()
 
   const getToolIcon = () => {
     switch (tool.type) {
       case 'slack':
-        return faSlack;
+        return faSlack
       case 'teams':
-        return faMicrosoft;
+        return faMicrosoft
       default:
-        return faTools;
+        return faTools
     }
-  };
+  }
 
   const getToolTypeLabel = () => {
     switch (tool.type) {
       case 'slack':
-        return 'Slack';
+        return 'Slack'
       case 'teams':
-        return 'Microsoft Teams';
+        return 'Microsoft Teams'
+      case 'rag_emporix':
+        return 'RAG Emporix'
+      case 'rag_custom':
+        return 'RAG Custom'
       default:
-        return tool.type;
+        return tool.type
     }
-  };
+  }
 
   const getDescription = () => {
     if (tool.type === 'slack' || tool.type === 'teams') {
@@ -45,6 +55,50 @@ const ToolCard: React.FC<ToolCardProps> = ({ tool, onToggleActive, onConfigure, 
     return `${getToolTypeLabel()} Tool`;
   };
 
+  const getActions = (): CardAction[] => {
+    const actions: CardAction[] = [
+      {
+        icon: 'pi pi-cog',
+        label: t('configure'),
+        onClick: (e: React.MouseEvent) => {
+          e.stopPropagation()
+          onConfigure(tool)
+        },
+        className: 'configure-button'
+      },
+    ]
+
+    // Add reindex button for rag_emporix tools
+    if (tool.type === 'rag_emporix' && onReindex) {
+      actions.push({
+        icon: 'pi pi-refresh',
+        label: t('reindex', 'Reindex'),
+        onClick: (e: React.MouseEvent) => {
+          e.stopPropagation()
+          onReindex(tool)
+        },
+        className: 'configure-button'
+      })
+    }
+
+    // Add remove button
+    actions.push({
+      icon: 'pi pi-trash',
+      label: t('remove', 'Remove'),
+      onClick: (e: React.MouseEvent) => {
+        e.stopPropagation()
+        onRemove(tool.id)
+      },
+      disabled: tool.enabled,
+      title: tool.enabled
+        ? t('cannot_delete_active_tool', 'Cannot delete active tool')
+        : t('remove_tool', 'Remove tool'),
+      className: 'remove-button',
+    })
+
+    return actions
+  }
+
   return (
     <BaseCard
       id={tool.id}
@@ -54,25 +108,10 @@ const ToolCard: React.FC<ToolCardProps> = ({ tool, onToggleActive, onConfigure, 
       badge={getToolTypeLabel()}
       enabled={tool.enabled ?? true}
       onToggleActive={onToggleActive}
-      actions={[
-        {
-          icon: 'pi pi-cog',
-          label: t('configure'),
-          onClick: () => onConfigure(tool),
-          className: 'configure-button'
-        },
-        {
-          icon: 'pi pi-trash',
-          label: t('remove', 'Remove'),
-          onClick: () => onRemove(tool.id),
-          disabled: tool.enabled,
-          title: tool.enabled ? t('cannot_delete_active_tool', 'Cannot delete active tool') : t('remove_tool', 'Remove tool'),
-          className: 'remove-button'
-        }
-      ]}
+      actions={getActions()}
       onClick={() => onConfigure(tool)}
     />
-  );
-};
+  )
+}
 
 export default ToolCard;
