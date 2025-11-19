@@ -18,12 +18,11 @@ const TRANSLATIONS_EN = {
   configure: 'Configure',
   remove: 'Remove',
   view_logs: 'Logs',
-  flow: 'Flow',
+  session: 'Session',
   load_flow: 'Load Flow',
   sessions: 'Sessions',
   no_sessions_available: 'No sessions available',
   loading_sessions: 'Loading sessions...',
-  started_at: 'Started At',
   last_activity: 'Last Activity',
   messages: 'Messages',
   back_to_logs: 'Back to Logs',
@@ -326,8 +325,11 @@ const TRANSLATIONS_EN = {
   no_logs_found_with_filters: 'No logs found matching the filters',
   no_sessions_found_with_filters: 'No sessions found matching the filters',
 
-  // Template fallbacks (for backward compatibility if needed)
-  get_started: 'Get Started',
+  // Agent filter
+  agent_filter: 'Agent Filter',
+  search_agents: 'Search agents...',
+  of: 'of',
+  no_agents_selected: 'No agents selected',
 }
 
 export default TRANSLATIONS_EN

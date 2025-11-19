@@ -44,7 +44,7 @@ export class LogService {
       queryParams.append('pageNumber', params.pageNumber.toString())
     }
 
-    // Build q parameter with filters using regex pattern for flexible matching
+    // Build q parameter with filters
     const qParts: string[] = []
     
     // Add agentId filter if provided (for backward compatibility)
@@ -52,16 +52,21 @@ export class LogService {
       qParts.push(`triggerAgentId:${params.agentId}`)
     }
     
-    // Add column filters with regex pattern: field:~(value)
     if (params.filters) {
       Object.entries(params.filters).forEach(([field, value]) => {
         if (value && value.trim()) {
-          qParts.push(`${field}:~(${value.trim()})`)
+          const trimmedValue = value.trim()
+          const isDateRange = trimmedValue.startsWith('(>=') || trimmedValue.startsWith('(>')
+          
+          if (field === 'severity' || isDateRange) {
+            qParts.push(`${field}:${trimmedValue}`)
+          } else {
+            qParts.push(`${field}:~(${trimmedValue})`)
+          }
         }
       })
     }
     
-    // Combine all q parts with space separator
     if (qParts.length > 0) {
       queryParams.append('q', qParts.join(' '))
     }
@@ -111,7 +116,8 @@ export class LogService {
     })
     const logs = response.data
     const totalCount = parseInt(
-      response.headers.get('x-total-count') || '0',
+        response.headers.get('X-Total-Count') ||
+        '0',
       10
     )
 
@@ -152,7 +158,8 @@ export class LogService {
 
     const logs = response.data
     const totalCount = parseInt(
-      response.headers.get('x-total-count') || '0',
+        response.headers.get('X-Total-Count') ||
+        '0',
       10
     )
     const data = logs?.map((log) => this.transformToSummary(log))
@@ -181,11 +188,13 @@ export class LogService {
     agentId?: string,
     pageSize?: number,
     pageNumber?: number,
-    filters?: Record<string, string>
+    filters?: Record<string, string>,
+    sortBy?: string,
+    sortOrder?: 'ASC' | 'DESC'
   ): Promise<{ data: SessionLogs[]; totalCount: number }> {
     const queryString = this.buildQueryParams({
-      sortBy: 'metadata.modifiedAt',
-      sortOrder: 'DESC',
+      sortBy: sortBy || 'metadata.modifiedAt',
+      sortOrder: sortOrder || 'DESC',
       pageSize,
       pageNumber,
       agentId,

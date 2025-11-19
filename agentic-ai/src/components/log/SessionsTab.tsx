@@ -1,35 +1,55 @@
-import React, { useCallback, useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Tag } from 'primereact/tag';
-import { Paginator } from 'primereact/paginator';
-import { FilterMatchMode } from 'primereact/api';
-import { AppState } from '../../types/common';
-import { useSessions } from '../../hooks/useSessions';
-import { SessionLogs } from '../../types/Log';
-import { formatTimestamp } from '../../utils/formatHelpers';
-import { getLogLevelSeverity } from '../../utils/severityHelpers';
-import { convertFiltersToApiFormat } from '../../utils/filterHelpers';
+import React, { useCallback, useState, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useLocation } from 'react-router'
+import { DataTable, DataTableFilterMeta } from 'primereact/datatable'
+import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column'
+import { Dropdown } from 'primereact/dropdown'
+import { FilterMatchMode } from 'primereact/api'
+import { SessionLogs } from '../../types/Log'
+import { formatTimestamp } from '../../utils/formatHelpers'
+import { SeverityBadge, DateFilterTemplate } from '../shared'
+import { SEVERITY_OPTIONS } from '../../constants/logConstants'
+import {
+  handleDataTableSort,
+  handleDataTablePage,
+  convertSeverityFiltersToApi,
+} from '../../utils/dataTableHelpers'
 
 interface SessionsTabProps {
-  appState: AppState;
-  onSessionClick?: (sessionId: string, agentId: string) => void;
+  onSessionClick?: (sessionId: string, agentId: string) => void
+  sessions: SessionLogs[]
+  loading: boolean
+  error: string | null
+  pageSize: number
+  pageNumber: number
+  totalRecords: number
+  changePage: (pageNumber: number) => void
+  changePageSize: (pageSize: number) => void
+  updateFilters: (filters: Record<string, string>) => void
+  sortSessions: (
+    sortBy: string,
+    sortOrder: 'ASC' | 'DESC',
+    agentId: string
+  ) => void
 }
 
-const SessionsTab: React.FC<SessionsTabProps> = ({ appState, onSessionClick }) => {
-  const { t } = useTranslation();
-  
-  const {
-    sessions,
-    loading,
-    error,
-    pageSize,
-    pageNumber,
-    totalRecords,
-    changePage,
-    updateFilters: updateSessionFilters
-  } = useSessions(appState);
+const SessionsTab: React.FC<SessionsTabProps> = ({
+  onSessionClick,
+  sessions,
+  loading,
+  error,
+  pageSize,
+  pageNumber,
+  totalRecords,
+  changePage,
+  changePageSize,
+  updateFilters: updateSessionFilters,
+  sortSessions,
+}) => {
+  const { t } = useTranslation()
+  const location = useLocation()
+  const [sortField, setSortField] = useState<string>('metadata.modifiedAt')
+  const [sortOrder, setSortOrder] = useState<1 | -1>(-1)
 
   // PrimeReact filter state for sessions
   const [sessionFilters, setSessionFilters] = useState<DataTableFilterMeta>({
@@ -38,142 +58,262 @@ const SessionsTab: React.FC<SessionsTabProps> = ({ appState, onSessionClick }) =
     agents: { value: null, matchMode: FilterMatchMode.CONTAINS },
     'metadata.createdAt': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'metadata.modifiedAt': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    severity: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  });
+    severity: { value: null, matchMode: FilterMatchMode.EQUALS },
+  })
 
-  const handleSessionClick = useCallback((session: SessionLogs) => {
-    if (onSessionClick) {
-      onSessionClick(session.sessionId, session.triggerAgentId);
-    }
-  }, [onSessionClick]);
+  const handleSessionClick = useCallback(
+    (session: SessionLogs) => {
+      if (onSessionClick) {
+        onSessionClick(session.sessionId, session.triggerAgentId)
+      }
+    },
+    [onSessionClick]
+  )
 
-  const handlePageChange = useCallback((event: any) => {
-    changePage(event.page + 1); // PrimeReact uses 0-based indexing
-  }, [changePage]);
+  const handleSessionFilterChange = useCallback((e: any) => {
+    setSessionFilters(e.filters as DataTableFilterMeta)
+  }, [])
 
-  // Handle session filter changes
+  const handlePageChangeDataTable = useCallback(
+    (event: any) => {
+      const [action, value] = handleDataTablePage(event, pageSize)
+      if (action === 'pageSize') {
+        changePageSize(value)
+      } else {
+        changePage(value)
+      }
+    },
+    [changePage, changePageSize, pageSize]
+  )
+
+  const handleSort = useCallback(
+    (event: any) => {
+      // Map UI field names to API field names
+      const fieldMapping: Record<string, string> = {
+        sessionId: 'sessionId',
+        triggerAgentId: 'triggerAgentId',
+        agents: 'agents',
+        'metadata.createdAt': 'metadata.createdAt',
+        'metadata.modifiedAt': 'metadata.modifiedAt',
+        severity: 'severity',
+      }
+
+      // Use helper to handle sort logic
+      const [apiField, apiOrder, newSortField, newSortOrder] =
+        handleDataTableSort(event, sortField, sortOrder, fieldMapping)
+
+      // Update local state
+      setSortField(newSortField)
+      setSortOrder(newSortOrder)
+
+      // Get current agentId from URL for filtering
+      const urlParams = new URLSearchParams(location.search)
+      const agentIdParam = urlParams.get('agentId') || ''
+
+      sortSessions(apiField, apiOrder, agentIdParam)
+    },
+    [sortSessions, sortField, sortOrder, location.search]
+  )
+
   useEffect(() => {
-    const apiFilters = convertFiltersToApiFormat(sessionFilters);
-    updateSessionFilters(apiFilters);
-  }, [sessionFilters, updateSessionFilters]);
+    const apiFilters = convertSeverityFiltersToApi(sessionFilters, undefined, [
+      'metadata.createdAt',
+      'metadata.modifiedAt',
+    ])
+
+    updateSessionFilters(apiFilters)
+  }, [sessionFilters, updateSessionFilters])
 
   // Track initial load to prevent loading overlay on filter changes
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-  
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
+
   useEffect(() => {
     if (!loading) {
-      setHasLoadedOnce(true);
+      setHasLoadedOnce(true)
     }
-  }, [loading]);
+  }, [loading])
 
   const severityBodyTemplate = (rowData: SessionLogs) => {
-    return <Tag value={rowData.severity} severity={getLogLevelSeverity(rowData.severity)} />;
-  };
+    return <SeverityBadge severity={rowData.severity} />
+  }
+
+  const severityFilterElement = useCallback(
+    (options: ColumnFilterElementTemplateOptions) => {
+      return (
+        <Dropdown
+          value={options.value}
+          options={SEVERITY_OPTIONS}
+          valueTemplate={(option) => {
+            if (!option) return null
+            return <SeverityBadge severity={option.value} />
+          }}
+          onChange={(e) => options.filterApplyCallback(e.value)}
+          itemTemplate={(option) => <SeverityBadge severity={option.value} />}
+          placeholder={t('select_severity', 'Select Severity')}
+          className="p-column-filter filter-dropdown-wide"
+          showClear
+        />
+      )
+    },
+    [t]
+  )
+
+  const dateFilterElement = useCallback(
+    (options: ColumnFilterElementTemplateOptions) => {
+      return <DateFilterTemplate options={options} />
+    },
+    []
+  )
 
   const agentsBodyTemplate = (rowData: SessionLogs) => {
-    return rowData.agents.join(', ');
-  };
+    return rowData.agents.join(', ')
+  }
 
   const createDateTimeBodyTemplate = (fieldPath: string) => {
     return (rowData: SessionLogs) => {
-      const value = fieldPath.split('.').reduce((obj, key) => obj?.[key], rowData as any);
-      return formatTimestamp(value);
-    };
-  };
+      const value = fieldPath
+        .split('.')
+        .reduce((obj, key) => obj?.[key], rowData as any)
+      return formatTimestamp(value)
+    }
+  }
 
-  const renderSessionsTable = () => {
+  const renderSessionsTable = useMemo(() => {
+    // Calculate first index - ensure it's always valid
+    const firstIndex = Math.max(0, (pageNumber - 1) * pageSize)
+
     return (
       <div className="sessions-table-container">
-        <DataTable 
-          value={sessions} 
+        <DataTable
+          value={sessions}
           className="sessions-datatable"
-          emptyMessage={t('no_sessions_found_with_filters', 'No sessions found matching the filters')}
+          emptyMessage={t(
+            'no_sessions_found_with_filters',
+            'No sessions found matching the filters'
+          )}
           onRowClick={(e) => handleSessionClick(e.data)}
           selectionMode="single"
           metaKeySelection={false}
           sortMode="single"
+          sortField={sortField}
+          sortOrder={sortOrder}
+          onSort={handleSort}
           filters={sessionFilters}
-          onFilter={(e) => setSessionFilters(e.filters as DataTableFilterMeta)}
+          onFilter={handleSessionFilterChange}
           filterDisplay="row"
+          lazy={true}
+          paginator={sessions.length > 0 || totalRecords > 0}
+          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+          first={firstIndex}
+          rows={pageSize}
+          totalRecords={totalRecords}
+          onPage={handlePageChangeDataTable}
+          rowsPerPageOptions={[10, 25, 50, 100]}
+          currentPageReportTemplate={t(
+            'global.pagination',
+            'Showing {first} to {last} of {totalRecords} entries'
+          )}
         >
-          <Column 
-            field="sessionId" 
-            header={t('session_id', 'Session ID')} 
+          <Column
+            field="sessionId"
+            header={t('session_id', 'Session ID')}
             headerClassName="col-xl"
             bodyClassName="col-xl"
+            sortable
             filter
-            filterPlaceholder={t('filter_by_session_id', 'Filter by Session ID')}
+            filterPlaceholder={t(
+              'filter_by_session_id',
+              'Filter by Session ID'
+            )}
             showFilterMenu={false}
           />
-          <Column 
-            field="triggerAgentId" 
-            header={t('trigger_agent', 'Trigger Agent')} 
+          <Column
+            field="triggerAgentId"
+            header={t('trigger_agent', 'Trigger Agent')}
             headerClassName="col-md"
             bodyClassName="col-md"
+            sortable
             filter
             filterPlaceholder={t('filter_by_agent_id', 'Filter by Agent ID')}
             showFilterMenu={false}
           />
-          <Column 
-            field="agents" 
-            header={t('included_agents', 'Included Agents')} 
+          <Column
+            field="agents"
+            header={t('included_agents', 'Included Agents')}
             body={agentsBodyTemplate}
             headerClassName="col-lg"
             bodyClassName="col-lg"
+            sortable
             filter
-            filterPlaceholder={t('filter_by_included_agents', 'Filter by Included Agents')}
+            filterPlaceholder={t(
+              'filter_by_included_agents',
+              'Filter by Included Agents'
+            )}
             showFilterMenu={false}
           />
-          <Column 
-            field="metadata.createdAt" 
-            header={t('started', 'Started At')} 
+          <Column
+            field="metadata.createdAt"
+            header={t('started', 'Started At')}
             body={createDateTimeBodyTemplate('metadata.createdAt')}
             headerClassName="col-datetime"
             bodyClassName="col-datetime"
+            sortable
             filter
-            filterPlaceholder={t('filter_by_started_at', 'Filter by Started At')}
+            filterElement={dateFilterElement}
             showFilterMenu={false}
           />
-          <Column 
-            field="metadata.modifiedAt" 
-            header={t('last_activity', 'Last Activity')} 
+          <Column
+            field="metadata.modifiedAt"
+            header={t('last_activity', 'Last Activity')}
             body={createDateTimeBodyTemplate('metadata.modifiedAt')}
             headerClassName="col-datetime"
             bodyClassName="col-datetime"
+            sortable
             filter
-            filterPlaceholder={t('filter_by_last_activity', 'Filter by Last Activity')}
+            filterElement={dateFilterElement}
             showFilterMenu={false}
           />
-          <Column 
-            field="severity" 
-            header={t('result', 'Result')} 
+          <Column
+            field="severity"
+            header={t('result', 'Result')}
             body={severityBodyTemplate}
             headerClassName="col-result"
             bodyClassName="col-result"
+            sortable
             filter
-            filterPlaceholder={t('filter_by_severity', 'Filter by Severity')}
+            filterElement={severityFilterElement}
+            filterMatchMode={FilterMatchMode.EQUALS}
             showFilterMenu={false}
           />
         </DataTable>
-        <Paginator
-          first={(pageNumber - 1) * pageSize}
-          rows={pageSize}
-          totalRecords={totalRecords}
-          onPageChange={handlePageChange}
-          template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-        />
       </div>
-    );
-  };
+    )
+  }, [
+    sessions,
+    pageNumber,
+    pageSize,
+    totalRecords,
+    sessionFilters,
+    sortField,
+    sortOrder,
+    handleSessionClick,
+    handleSort,
+    handleSessionFilterChange,
+    handlePageChangeDataTable,
+    severityFilterElement,
+    t,
+  ])
 
   // Only show loading on initial load, not on filter changes
   if (!hasLoadedOnce && loading) {
     return (
       <div className="loading-state">
         <i className="pi pi-spin pi-spinner loading-spinner" />
-        <p className="loading-text">{t('loading_sessions', 'Loading sessions...')}</p>
+        <p className="loading-text">
+          {t('loading_sessions', 'Loading sessions...')}
+        </p>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -182,14 +322,10 @@ const SessionsTab: React.FC<SessionsTabProps> = ({ appState, onSessionClick }) =
         <i className="pi pi-exclamation-triangle error-icon" />
         <p>{error}</p>
       </div>
-    );
+    )
   }
 
-  return (
-    <div className="sessions-tab">
-      {renderSessionsTable()}
-    </div>
-  );
-};
+  return <div className="sessions-tab">{renderSessionsTable}</div>
+}
 
-export default SessionsTab;
+export default SessionsTab

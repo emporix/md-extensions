@@ -39,20 +39,6 @@
   margin: 0;
 }
 
-.add-new-agent-button {
-  background: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
-  color: white !important;
-  font-weight: var(--font-weight-semibold);
-  padding: var(--space-md) var(--space-xl);
-  border-radius: var(--radius-md);
-}
-
-.add-new-agent-button:hover {
-  background: var(--color-primary-hover) !important;
-  border-color: var(--color-primary-hover) !important;
-}
-
 .import-action-button {
   display: flex;
   align-items: center;

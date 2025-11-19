@@ -9,6 +9,10 @@ export { FormField } from './FormField';
 export { IconPicker } from './IconPicker';
 export { default as UnifiedLogsTable } from './UnifiedLogsTable';
 export { default as UnifiedDetailsView } from './UnifiedDetailsView';
+export { default as DateFilterTemplate } from './DateFilterTemplate';
+export { InfoCard } from './InfoCard';
+export { SeverityBadge } from './SeverityBadge';
+export { StatusBadge } from './StatusBadge';
 export { TagPicker } from './TagPicker';
 export { TagSelector } from './TagSelector';
 

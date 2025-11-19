@@ -18,12 +18,11 @@ const TRANSLATIONS_DE = {
   configure: 'Konfigurieren',
   remove: 'Entfernen',
   'view_logs': 'Logs Anzeigen',
-  flow: 'Ablauf',
+  session: 'Sitzung',
   load_flow: 'Ablauf Laden',
   sessions: 'Sitzungen',
   no_sessions_available: 'Keine Sitzungen verfügbar',
   loading_sessions: 'Sitzungen werden geladen...',
-  started_at: 'Gestartet um',
   last_activity: 'Letzte Aktivität',
   messages: 'Nachrichten',
   back_to_logs: 'Zurück zu Logs',
@@ -314,8 +313,12 @@ const TRANSLATIONS_DE = {
   no_logs_found_with_filters: 'Keine Protokolle gefunden, die den Filtern entsprechen',
   no_sessions_found_with_filters: 'Keine Sitzungen gefunden, die den Filtern entsprechen',
 
-  // Template fallbacks (for backward compatibility if needed)
-  get_started: 'Loslegen',
+  // Agent filter
+  agent_filter: 'Agent-Filter',
+  search_agents: 'Agenten suchen...',
+  of: 'von',
+  no_agents_selected: 'Keine Agenten ausgewählt',
+  back_to_sessions: 'Zurück zu Sitzungen',
 }
 
 export default TRANSLATIONS_DE

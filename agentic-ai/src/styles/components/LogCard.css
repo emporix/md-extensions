@@ -265,25 +265,6 @@
   background: var(--bg-hover);
 }
 
-/* Pagination alignment - align to left and add border */
-.logs-table-container .p-paginator,
-.sessions-table-container .p-paginator {
-  justify-content: flex-start !important;
-  text-align: left;
-  border: 1px solid var(--border-light);
-  border-top: none;
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-}
-
-.logs-table-container .p-paginator .p-paginator-left-content,
-.sessions-table-container .p-paginator .p-paginator-left-content {
-  margin-right: auto;
-}
-
-.logs-table-container .p-paginator .p-paginator-right-content,
-.sessions-table-container .p-paginator .p-paginator-right-content {
-  margin-left: 0;
-}
 
 
 

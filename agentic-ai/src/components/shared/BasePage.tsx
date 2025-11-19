@@ -9,8 +9,15 @@ interface BasePageProps {
   loading: boolean;
   error: string | null;
   title: React.ReactNode;
+  
+  // Add button props
   addButtonLabel?: string;
   onAdd?: () => void;
+  
+  // Refresh button props
+  refreshButtonLabel?: string;
+  onRefresh?: () => void;
+  
   backButtonLabel?: string;
   onBack?: () => void;
   children: React.ReactNode;
@@ -37,6 +44,8 @@ export const BasePage: React.FC<BasePageProps> = ({
   title,
   addButtonLabel,
   onAdd,
+  refreshButtonLabel,
+  onRefresh,
   backButtonLabel,
   onBack,
   children,
@@ -88,10 +97,10 @@ export const BasePage: React.FC<BasePageProps> = ({
   ) : title;
 
   return (
-    <div className={`${className}-page`} style={{ padding: '24px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+    <div className={`${className}-page base-page-container`}>
+      <div className="base-page-header">
         <h1>{titleWithBackButton}</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="base-page-actions">
           {onImport && importButtonIcon && (
             <button
               className="import-action-button"
@@ -102,11 +111,17 @@ export const BasePage: React.FC<BasePageProps> = ({
               <i className={importButtonIcon}></i>
             </button>
           )}
+          {onRefresh && refreshButtonLabel && (
+            <Button
+              label={refreshButtonLabel}
+              icon="pi pi-refresh"
+              onClick={onRefresh}
+            />
+          )}
           {onAdd && addButtonLabel && (
             <Button
               label={addButtonLabel}
               icon="pi pi-plus"
-              className="p-button-primary add-new-agent-button"
               onClick={onAdd}
             />
           )}

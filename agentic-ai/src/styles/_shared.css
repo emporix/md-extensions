@@ -60,6 +60,36 @@
   background: var(--bg-hover);
 }
 
+.filter-dropdown-wide {
+  min-width: 12rem;
+}
+
+.ml-auto {
+  margin-left: auto;
+}
+
+.mb-1rem {
+  margin-bottom: 1rem;
+}
+
+/* Base Page Container */
+.base-page-container {
+  padding: 24px;
+}
+
+.base-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.base-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 /* ========================================
    DataTable Column Width Utilities
    ======================================== */
@@ -645,38 +675,6 @@ h1 .details-title-with-back {
   font-size: 0.8125rem;
 }
 
-/* Download Button */
-.download-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-left: auto;
-  padding: 0.5rem 1rem;
-  background: #6366f1;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
-}
-
-.download-button:hover {
-  background: #4f46e5;
-  box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
-  transform: translateY(-1px);
-}
-
-.download-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
-}
-
-.download-button i {
-  font-size: 1rem;
-}
 
 /* Section spacing */
 .section-spacing {
@@ -687,51 +685,56 @@ h1 .details-title-with-back {
   margin-bottom: var(--spacing-md);
 }
 
-/* View switcher - Modern Tab Style */
-.view-switcher {
-  display: inline-flex;
-  background: #f3f4f6;
-  border-radius: 8px;
-  padding: 4px;
-  margin-bottom: 1.5rem;
-  gap: 4px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+/* TabView - Matching MD styling */
+.p-tabview {
+  width: 100%;
 }
 
-.view-tab {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
+.p-tabview .p-tabview-nav-container {
   background: transparent;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #6b7280;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
 }
 
-.view-tab:hover {
-  background: rgba(255, 255, 255, 0.5);
-  color: #374151;
+.p-tabview .p-tabview-nav-container .p-tabview-nav-content .p-tabview-nav {
+  background: transparent;
 }
 
-.view-tab-active {
-  background: #ffffff;
-  color: #111827;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+.p-tabview .p-tabview-nav-container .p-tabview-nav-content .p-tabview-nav .p-unselectable-text:hover .p-tabview-nav-link {
+  background: transparent;
+  border-color: #c7cad1;
+  color: #3e4759;
 }
 
-.view-tab-active:hover {
-  background: #ffffff;
-  color: #111827;
+.p-tabview .p-tabview-nav-container .p-tabview-nav-content .p-tabview-nav .p-tabview-nav-link {
+  border-radius: 0;
+  font-size: 1rem;
+  background: transparent;
+  padding: 0.75rem 1rem;
+  font-weight: normal;
+  color: #3e4759;
 }
 
-.view-tab i {
-  font-size: 0.875rem;
+.p-tabview .p-tabview-nav-container .p-tabview-nav-content .p-tabview-nav .p-tabview-nav-link:focus {
+  box-shadow: none;
+  border-color: #c7cad1;
+}
+
+.p-tabview .p-tabview-nav-container .p-tabview-nav-content .p-tabview-nav .p-tabview-selected .p-tabview-nav-link {
+  color: #3b73bb;
+}
+
+.p-tabview .p-tabview-nav-container .p-tabview-nav-content .p-tabview-nav .p-tabview-ink-bar {
+  background-color: #3b73bb;
+}
+
+.p-tabview .p-tabview-nav-container .p-tabview-nav-btn {
+  background-color: #fcfcfc;
+  color: #3e4759;
+}
+
+.p-tabview .p-tabview-panels {
+  background: transparent;
+  padding: 0;
+  margin-top: 1.5rem;
 }
 
 /* Timeline styles */

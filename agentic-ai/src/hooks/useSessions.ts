@@ -16,7 +16,7 @@ export const useSessions = (appState: AppState) => {
 
   const logService = new LogService(appState);
 
-  const fetchSessions = useCallback(async (agentId: string, _sortBy?: string, _sortOrder?: 'ASC' | 'DESC', newPageSize?: number, newPageNumber?: number, newFilters?: Record<string, string>) => {
+  const fetchSessions = useCallback(async (agentId: string, sortBy?: string, sortOrder?: 'ASC' | 'DESC', newPageSize?: number, newPageNumber?: number, newFilters?: Record<string, string>) => {
     try {
       setLoading(true);
       setError(null);
@@ -24,7 +24,7 @@ export const useSessions = (appState: AppState) => {
       const currentPageNumber = newPageNumber || pageNumber;
       const currentFilters = newFilters !== undefined ? newFilters : filters;
       
-      const response = await logService.getSessions(agentId || undefined, currentPageSize, currentPageNumber, currentFilters);
+      const response = await logService.getSessions(agentId || undefined, currentPageSize, currentPageNumber, currentFilters, sortBy, sortOrder);
       
       setSessions(response.data);
       setTotalRecords(response.totalCount);
@@ -39,8 +39,8 @@ export const useSessions = (appState: AppState) => {
     return fetchSessions(agentId || '', undefined, undefined, undefined, undefined, filters);
   }, [fetchSessions, filters]);
 
-  const sortSessions = useCallback((_sortBy: string, _sortOrder: 'ASC' | 'DESC', agentId: string) => {
-    return fetchSessions(agentId || '', _sortBy, _sortOrder, undefined, undefined, filters);
+  const sortSessions = useCallback((sortBy: string, sortOrder: 'ASC' | 'DESC', agentId: string) => {
+    return fetchSessions(agentId || '', sortBy, sortOrder, undefined, undefined, filters);
   }, [fetchSessions, filters]);
 
   const updateFilters = useCallback((newFilters: Record<string, string>) => {

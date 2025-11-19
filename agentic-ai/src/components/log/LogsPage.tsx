@@ -1,43 +1,67 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router';
-import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Tag } from 'primereact/tag';
-import { Paginator } from 'primereact/paginator';
-import { FilterMatchMode } from 'primereact/api';
-import SessionsTab from './SessionsTab';
-import { BasePage } from '../shared/BasePage';
-import { LogSummary } from '../../types/Log';
-import { JobSummary } from '../../types/Job';
-import { useAgentLogs } from '../../hooks/useAgentLogs';
-import { useJobs } from '../../hooks/useJobs';
-import { AppState } from '../../types/common';
-import { convertFiltersToApiFormat } from '../../utils/filterHelpers';
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useLocation, useNavigate } from 'react-router'
+import { DataTable, DataTableFilterMeta } from 'primereact/datatable'
+import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column'
+import { Dropdown } from 'primereact/dropdown'
+import { FilterMatchMode } from 'primereact/api'
+import { TabView, TabPanel, TabViewTabChangeParams } from 'primereact/tabview'
+import SessionsTab from './SessionsTab'
+import {
+  BasePage,
+  SeverityBadge,
+  StatusBadge,
+  DateFilterTemplate,
+} from '../shared'
+import { LogSummary } from '../../types/Log'
+import { JobSummary } from '../../types/Job'
+import { useAgentLogs } from '../../hooks/useAgentLogs'
+import { useJobs } from '../../hooks/useJobs'
+import { useSessions } from '../../hooks/useSessions'
+import { AppState } from '../../types/common'
+import {
+  SEVERITY_OPTIONS,
+  JOB_TYPE_OPTIONS,
+  JOB_STATUS_OPTIONS,
+  getJobTypeDisplay,
+  convertJobTypeToApi,
+} from '../../constants/logConstants'
+import {
+  convertSeverityFiltersToApi,
+  handleDataTableSort,
+  handleDataTablePage,
+} from '../../utils/dataTableHelpers'
 
 interface LogsPageProps {
-  appState: AppState;
+  appState: AppState
 }
 
 const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
-  const { t } = useTranslation();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [sortField, setSortField] = useState<string>('timestamp');
-  const [sortOrder, setSortOrder] = useState<1 | -1>(-1);
-  const [viewMode, setViewMode] = useState<'requests' | 'jobs' | 'sessions'>('requests');
+  const { t } = useTranslation()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [sortField, setSortField] = useState<string>('lastActivity')
+  const [sortOrder, setSortOrder] = useState<1 | -1>(-1)
+  const [viewMode, setViewMode] = useState<'requests' | 'jobs' | 'sessions'>(
+    'requests'
+  )
+  const [activeTabIndex, setActiveTabIndex] = useState(0)
 
-  // Initialize view mode from route path
   useEffect(() => {
-    const path = location.pathname;
+    const path = location.pathname
     if (path.includes('/logs/requests')) {
-      setViewMode('requests');
+      setViewMode('requests')
+      setActiveTabIndex(0)
+      setSortField('lastActivity')
     } else if (path.includes('/logs/jobs')) {
-      setViewMode('jobs');
+      setViewMode('jobs')
+      setActiveTabIndex(1)
+      setSortField('createdAt')
     } else if (path.includes('/logs/sessions')) {
-      setViewMode('sessions');
+      setViewMode('sessions')
+      setActiveTabIndex(2)
     }
-  }, [location.pathname]);
+  }, [location.pathname])
 
   const {
     logs,
@@ -49,8 +73,9 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     refreshLogs,
     sortLogs,
     changePage: changeLogsPage,
-    updateFilters: updateLogFilters
-  } = useAgentLogs(appState);
+    changePageSize: changeLogsPageSize,
+    updateFilters: updateLogFilters,
+  } = useAgentLogs(appState)
 
   const {
     jobs,
@@ -62,8 +87,23 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     refreshJobs,
     sortJobs,
     changePage: changeJobsPage,
-    updateFilters: updateJobFilters
-  } = useJobs(appState);
+    changePageSize: changeJobsPageSize,
+    updateFilters: updateJobFilters,
+  } = useJobs(appState)
+
+  const {
+    sessions,
+    loading: sessionsLoading,
+    error: sessionsError,
+    pageSize: sessionsPageSize,
+    pageNumber: sessionsPageNumber,
+    totalRecords: sessionsTotalRecords,
+    refreshSessions,
+    sortSessions,
+    changePage: changeSessionsPage,
+    changePageSize: changeSessionsPageSize,
+    updateFilters: updateSessionFilters,
+  } = useSessions(appState)
 
   // PrimeReact filter state for logs
   const [logFilters, setLogFilters] = useState<DataTableFilterMeta>({
@@ -71,8 +111,8 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     requestId: { value: null, matchMode: FilterMatchMode.CONTAINS },
     sessionId: { value: null, matchMode: FilterMatchMode.CONTAINS },
     lastActivity: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    errorCount: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  });
+    severity: { value: null, matchMode: FilterMatchMode.EQUALS },
+  })
 
   // PrimeReact filter state for jobs
   const [jobFilters, setJobFilters] = useState<DataTableFilterMeta>({
@@ -81,193 +121,300 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     type: { value: null, matchMode: FilterMatchMode.CONTAINS },
     status: { value: null, matchMode: FilterMatchMode.CONTAINS },
     createdAt: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  });
+  })
 
+  const handleLogClick = useCallback(
+    (log: LogSummary) => {
+      navigate(`/logs/requests/${log.id}`)
+    },
+    [navigate, location.search]
+  )
 
-  const handleLogClick = useCallback((log: LogSummary) => {
-    navigate(`/logs/requests/${log.id}`);
-  }, [navigate, location.search]);
+  const handleJobClick = useCallback(
+    (job: JobSummary) => {
+      navigate(`/logs/jobs/${job.id}`)
+    },
+    [navigate, location.search]
+  )
 
-  const handleJobClick = useCallback((job: JobSummary) => {
-    navigate(`/logs/jobs/${job.id}`);
-  }, [navigate, location.search]);
+  const handleSessionClick = useCallback(
+    (sessionId: string) => {
+      navigate(`/logs/sessions/${sessionId}`)
+    },
+    [navigate]
+  )
 
-  const handleSessionClick = useCallback((sessionId: string) => {
-    navigate(`/logs/sessions/${sessionId}`);
-  }, [navigate]);
+  const handleViewModeChange = useCallback(
+    (newMode: 'requests' | 'jobs' | 'sessions') => {
+      setViewMode(newMode)
+      const index = newMode === 'requests' ? 0 : newMode === 'jobs' ? 1 : 2
+      setActiveTabIndex(index)
+      
+      const defaultSortField = newMode === 'requests' ? 'lastActivity' : 'createdAt'
+      setSortField(defaultSortField)
+      setSortOrder(-1 as 1 | -1)
 
-  const handleViewModeChange = useCallback((newMode: 'requests' | 'jobs' | 'sessions') => {
-    setViewMode(newMode);
-    setSortField('timestamp');
-    setSortOrder(-1 as 1 | -1);
-    
-    navigate(`/logs/${newMode}`);
-  }, [navigate, location.search]);
+      navigate(`/logs/${newMode}`)
+    },
+    [navigate]
+  )
+
+  const handleTabChange = useCallback(
+    (e: TabViewTabChangeParams) => {
+      const newIndex = e.index
+      setActiveTabIndex(newIndex)
+      const newMode =
+        newIndex === 0 ? 'requests' : newIndex === 1 ? 'jobs' : 'sessions'
+      handleViewModeChange(newMode)
+    },
+    [handleViewModeChange]
+  )
 
   const handleRefresh = useCallback(() => {
     // Get current agentId from URL
-    const urlParams = new URLSearchParams(location.search);
-    const agentIdParam = urlParams.get('agentId');
-    
-    if (viewMode === 'requests') {
-      refreshLogs(agentIdParam || undefined);
-    } else {
-      refreshJobs(agentIdParam || undefined);
-    }
-  }, [refreshLogs, refreshJobs, viewMode, location.search]);
+    const urlParams = new URLSearchParams(location.search)
+    const agentIdParam = urlParams.get('agentId')
 
-  const handleSort = useCallback((event: any) => {
-    const { sortField: newSortField } = event;
-    
-    // Map UI field names to API field names
-    const fieldMapping: Record<string, string> = {
-      'agentId': 'agentId',
-      'requestId': 'requestId', 
-      'sessionId': 'sessionId',
-      'lastActivity': 'metadata.createdAt',
-      'createdAt': 'metadata.createdAt'
-    };
-    
-    const apiField = fieldMapping[newSortField] || newSortField;
-    
-    // Handle sort order logic
-    let apiOrder: 'ASC' | 'DESC';
-    if (newSortField === sortField) {
-      // Same field - toggle between ASC and DESC
-      if (sortOrder === 1) {
-        apiOrder = 'DESC';
+    if (viewMode === 'requests') {
+      refreshLogs(agentIdParam || undefined)
+    } else if (viewMode === 'jobs') {
+      refreshJobs(agentIdParam || undefined)
+    } else if (viewMode === 'sessions') {
+      refreshSessions(agentIdParam || '')
+    }
+  }, [refreshLogs, refreshJobs, refreshSessions, viewMode, location.search])
+
+  const handleSort = useCallback(
+    (event: any) => {
+      // Different mappings for requests vs jobs
+      const fieldMapping: Record<string, string> =
+        viewMode === 'requests'
+          ? {
+              agentId: 'triggerAgentId',
+              requestId: 'requestId',
+              sessionId: 'sessionId',
+              lastActivity: 'metadata.createdAt',
+              createdAt: 'metadata.createdAt',
+              severity: 'severity',
+            }
+          : {
+              agentId: 'agentId',
+              requestId: 'requestId',
+              sessionId: 'sessionId',
+              lastActivity: 'metadata.createdAt',
+              createdAt: 'metadata.createdAt',
+            }
+
+      // Use helper to handle sort logic
+      const [apiField, apiOrder, newSortField, newSortOrder] =
+        handleDataTableSort(event, sortField, sortOrder, fieldMapping)
+
+      // Update local state
+      setSortField(newSortField)
+      setSortOrder(newSortOrder)
+
+      // Get current agentId from URL for filtering
+      const urlParams = new URLSearchParams(location.search)
+      const agentIdParam = urlParams.get('agentId')
+
+      if (viewMode === 'requests') {
+        sortLogs(apiField, apiOrder, agentIdParam || undefined)
       } else {
-        apiOrder = 'ASC';
+        sortJobs(apiField, apiOrder, agentIdParam || undefined)
       }
-    } else {
-      // New field - start with ASC
-      apiOrder = 'ASC';
-    }
-    
-    // Update local state
-    setSortField(newSortField);
-    setSortOrder(apiOrder === 'ASC' ? 1 : -1);
-    
-    // Get current agentId from URL for filtering
-    const urlParams = new URLSearchParams(location.search);
-    const agentIdParam = urlParams.get('agentId');
-    
-    if (viewMode === 'requests') {
-      sortLogs(apiField, apiOrder, agentIdParam || undefined);
-    } else {
-      sortJobs(apiField, apiOrder, agentIdParam || undefined);
-    }
-  }, [sortLogs, sortJobs, sortField, sortOrder, viewMode, location.search]);
+    },
+    [sortLogs, sortJobs, sortField, sortOrder, viewMode, location.search]
+  )
 
-  const handleLogsPageChange = useCallback((event: any) => {
-    changeLogsPage(event.page + 1); // PrimeReact uses 0-based indexing
-  }, [changeLogsPage]);
+  const handleLogsPageChangeDataTable = useCallback(
+    (event: any) => {
+      const [action, value] = handleDataTablePage(event, logsPageSize)
+      if (action === 'pageSize') {
+        changeLogsPageSize(value)
+      } else {
+        changeLogsPage(value)
+      }
+    },
+    [changeLogsPage, changeLogsPageSize, logsPageSize]
+  )
 
-  const handleJobsPageChange = useCallback((event: any) => {
-    changeJobsPage(event.page + 1); // PrimeReact uses 0-based indexing
-  }, [changeJobsPage]);
+  const handleJobsPageChangeDataTable = useCallback(
+    (event: any) => {
+      const [action, value] = handleDataTablePage(event, jobsPageSize)
+      if (action === 'pageSize') {
+        changeJobsPageSize(value)
+      } else {
+        changeJobsPage(value)
+      }
+    },
+    [changeJobsPage, changeJobsPageSize, jobsPageSize]
+  )
 
-  // Handle log filter changes
   useEffect(() => {
-    const apiFilters = convertFiltersToApiFormat(logFilters, {
-      errorCount: 'severity', 
-      agentId: 'triggerAgentId',
-    });
-    updateLogFilters(apiFilters);
-  }, [logFilters, updateLogFilters]);
+    const apiFilters = convertSeverityFiltersToApi(
+      logFilters,
+      {
+        agentId: 'triggerAgentId',
+        lastActivity: 'metadata.createdAt',
+      },
+      ['lastActivity']
+    )
 
-  // Handle job filter changes
+    updateLogFilters(apiFilters)
+  }, [logFilters, updateLogFilters])
+
   useEffect(() => {
-    const apiFilters = convertFiltersToApiFormat(jobFilters, {
-      agentId: 'agentId', 
-    });
-    updateJobFilters(apiFilters);
-  }, [jobFilters, updateJobFilters]);
+    const apiFilters = convertSeverityFiltersToApi(
+      jobFilters,
+      {
+        createdAt: 'metadata.createdAt',
+      },
+      ['createdAt']
+    )
 
+    Object.entries(jobFilters).forEach(([key, filterMeta]) => {
+      if (
+        filterMeta &&
+        typeof filterMeta === 'object' &&
+        'value' in filterMeta
+      ) {
+        const value = filterMeta.value
+        if (value !== null && value !== undefined && String(value).trim()) {
+          if (key === 'type') {
+            apiFilters[key] = convertJobTypeToApi(String(value).trim())
+          }
+        }
+      }
+    })
+
+    updateJobFilters(apiFilters)
+  }, [jobFilters, updateJobFilters])
 
   const formatTimestamp = (timestamp: string) => {
     try {
-      const date = timestamp.includes('T') 
+      const date = timestamp.includes('T')
         ? new Date(timestamp)
-        : new Date(parseInt(timestamp));
-      
-      return date.toLocaleString();
+        : new Date(parseInt(timestamp))
+
+      return date.toLocaleString()
     } catch {
-      return timestamp;
+      return timestamp
     }
-  };
+  }
 
   const resultBodyTemplate = (rowData: LogSummary) => {
-    if (rowData.errorCount > 0) {
-      return <Tag value="ERROR" severity="danger" />;
-    }
-    return <Tag value="SUCCESS" severity="success" />;
-  };
+    return <SeverityBadge severity={rowData.severity} />
+  }
+
+  const severityFilterElement = useCallback(
+    (options: ColumnFilterElementTemplateOptions) => {
+      return (
+        <Dropdown
+          value={options.value}
+          options={SEVERITY_OPTIONS}
+          valueTemplate={(option) => {
+            if (!option) return null
+            return <SeverityBadge severity={option.value} />
+          }}
+          onChange={(e) => options.filterApplyCallback(e.value)}
+          itemTemplate={(option) => <SeverityBadge severity={option.value} />}
+          placeholder={t('select_severity', 'Select Severity')}
+          className="p-column-filter filter-dropdown-wide"
+          showClear
+        />
+      )
+    },
+    [t]
+  )
+
+  const dateFilterElement = useCallback(
+    (options: ColumnFilterElementTemplateOptions) => {
+      return <DateFilterTemplate options={options} />
+    },
+    []
+  )
+
+  const jobTypeFilterElement = useCallback(
+    (options: ColumnFilterElementTemplateOptions) => {
+      return (
+        <Dropdown
+          value={options.value}
+          options={JOB_TYPE_OPTIONS}
+          valueTemplate={(option) => {
+            if (!option) return null
+            return <span>{option.label}</span>
+          }}
+          onChange={(e) => options.filterApplyCallback(e.value)}
+          itemTemplate={(option) => <span>{option.label}</span>}
+          placeholder={t('select_job_type', 'Select Job Type')}
+          className="p-column-filter filter-dropdown-wide"
+          showClear
+        />
+      )
+    },
+    [t]
+  )
+
+  const jobStatusFilterElement = useCallback(
+    (options: ColumnFilterElementTemplateOptions) => {
+      return (
+        <Dropdown
+          value={options.value}
+          options={JOB_STATUS_OPTIONS}
+          valueTemplate={(option) => {
+            if (!option) return null
+            return <StatusBadge status={option.value} />
+          }}
+          onChange={(e) => options.filterApplyCallback(e.value)}
+          itemTemplate={(option) => <StatusBadge status={option.value} />}
+          placeholder={t('select_status', 'Select Status')}
+          className="p-column-filter filter-dropdown-wide"
+          showClear
+        />
+      )
+    },
+    [t]
+  )
 
   const timestampBodyTemplate = (rowData: LogSummary) => {
-    return formatTimestamp(rowData.lastActivity);
-  };
+    return formatTimestamp(rowData.lastActivity)
+  }
 
   const jobStatusBodyTemplate = (rowData: JobSummary) => {
-    const getSeverity = (status: string) => {
-      switch (status) {
-        case 'success':
-          return 'info'; // Blue for finished
-        case 'failure':
-          return 'danger'; // Red for failure
-        case 'in_progress':
-          return 'warning'; // yellow for in progress
-        default:
-          return 'info';
-      }
-    };
-
-    const getDisplayValue = (status: string) => {
-      switch (status) {
-        case 'success':
-          return 'FINISHED';
-        case 'failure':
-          return 'FAILURE';
-        case 'in_progress':
-          return 'IN PROGRESS';
-        default:
-          return status.toUpperCase();
-      }
-    };
-
-    return <Tag value={getDisplayValue(rowData.status)} severity={getSeverity(rowData.status)} />;
-  };
+    return <StatusBadge status={rowData.status} />
+  }
 
   const jobTypeBodyTemplate = (rowData: JobSummary) => {
-    const jobType = rowData.type || 'N/A';
-    
-    const getDisplayValue = (type: string) => {
-      switch (type) {
-        case 'import':
-          return 'IMPORT';
-        case 'export':
-          return 'EXPORT';
-        case 'agent_chat':
-          return 'AGENT CHAT';
-        default:
-          return type.toUpperCase();
-      }
-    };
-
-    return <span>{getDisplayValue(jobType)}</span>;
-  };
+    const jobType = rowData.type || 'N/A'
+    return <span>{getJobTypeDisplay(jobType)}</span>
+  }
 
   const jobTimestampBodyTemplate = (rowData: JobSummary) => {
-    return formatTimestamp(rowData.createdAt);
-  };
+    return formatTimestamp(rowData.createdAt)
+  }
 
-  const renderLogsTable = () => {
+  // Memoize filter change handlers to prevent unnecessary re-renders
+  const handleLogFilterChange = useCallback((e: any) => {
+    setLogFilters(e.filters as DataTableFilterMeta)
+  }, [])
+
+  const handleJobFilterChange = useCallback((e: any) => {
+    setJobFilters(e.filters as DataTableFilterMeta)
+  }, [])
+
+  const renderLogsTable = useMemo(() => {
+    // Calculate first index - ensure it's always valid
+    const firstIndex = Math.max(0, (logsPageNumber - 1) * logsPageSize)
+
     return (
       <div className="logs-table-container">
-        <DataTable 
-          value={logs} 
+        <DataTable
+          value={logs}
           className="logs-datatable"
-          emptyMessage={t('no_logs_found_with_filters', 'No logs found matching the filters')}
+          emptyMessage={t(
+            'no_logs_found_with_filters',
+            'No logs found matching the filters'
+          )}
           onRowClick={(e) => handleLogClick(e.data)}
           selectionMode="single"
           metaKeySelection={false}
@@ -276,12 +423,24 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
           sortOrder={sortOrder}
           onSort={handleSort}
           filters={logFilters}
-          onFilter={(e) => setLogFilters(e.filters as DataTableFilterMeta)}
+          onFilter={handleLogFilterChange}
           filterDisplay="row"
+          lazy={true}
+          paginator={logs.length > 0 || logsTotalRecords > 0}
+          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+          first={firstIndex}
+          rows={logsPageSize}
+          totalRecords={logsTotalRecords}
+          onPage={handleLogsPageChangeDataTable}
+          rowsPerPageOptions={[10, 25, 50, 100]}
+          currentPageReportTemplate={t(
+            'global.pagination',
+            'Showing {first} to {last} of {totalRecords} entries'
+          )}
         >
-          <Column 
-            field="agentId" 
-            header={t('logs_agent_id', 'Agent ID')} 
+          <Column
+            field="agentId"
+            header={t('logs_agent_id', 'Agent ID')}
             headerClassName="col-md"
             bodyClassName="col-md"
             sortable
@@ -289,66 +448,88 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             filterPlaceholder={t('filter_by_agent_id', 'Filter by Agent ID')}
             showFilterMenu={false}
           />
-          <Column 
-            field="requestId" 
-            header={t('request_id', 'Request ID')} 
+          <Column
+            field="requestId"
+            header={t('request_id', 'Request ID')}
             headerClassName="col-lg"
             bodyClassName="col-lg"
             sortable
             filter
-            filterPlaceholder={t('filter_by_request_id', 'Filter by Request ID')}
+            filterPlaceholder={t(
+              'filter_by_request_id',
+              'Filter by Request ID'
+            )}
             showFilterMenu={false}
           />
-          <Column 
-            field="sessionId" 
-            header={t('session_id', 'Session ID')} 
+          <Column
+            field="sessionId"
+            header={t('session_id', 'Session ID')}
             headerClassName="col-lg"
             bodyClassName="col-lg"
             sortable
             filter
-            filterPlaceholder={t('filter_by_session_id', 'Filter by Session ID')}
+            filterPlaceholder={t(
+              'filter_by_session_id',
+              'Filter by Session ID'
+            )}
             showFilterMenu={false}
           />
-          <Column 
-            field="lastActivity" 
-            header={t('timestamp', 'Timestamp')} 
+          <Column
+            field="lastActivity"
+            header={t('timestamp', 'Timestamp')}
             body={timestampBodyTemplate}
             headerClassName="col-datetime"
             bodyClassName="col-datetime"
             sortable
             filter
-            filterPlaceholder={t('filter_by_timestamp', 'Filter by Timestamp')}
+            filterElement={dateFilterElement}
             showFilterMenu={false}
           />
-          <Column 
-            field="errorCount" 
-            header={t('result', 'Result')} 
+          <Column
+            field="severity"
+            header={t('severity', 'Severity')}
             body={resultBodyTemplate}
             headerClassName="col-result"
             bodyClassName="col-result"
+            sortable
             filter
-            filterPlaceholder={t('filter_by_error_count', 'Filter by Error Count')}
+            filterMatchMode={FilterMatchMode.EQUALS}
+            filterElement={severityFilterElement}
             showFilterMenu={false}
+            showClearButton={false}
           />
         </DataTable>
-        <Paginator
-          first={(logsPageNumber - 1) * logsPageSize}
-          rows={logsPageSize}
-          totalRecords={logsTotalRecords}
-          onPageChange={handleLogsPageChange}
-          template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-        />
       </div>
-    );
-  };
+    )
+  }, [
+    logs,
+    logsPageNumber,
+    logsPageSize,
+    logsTotalRecords,
+    logFilters,
+    sortField,
+    sortOrder,
+    handleLogClick,
+    handleSort,
+    handleLogFilterChange,
+    handleLogsPageChangeDataTable,
+    severityFilterElement,
+    t,
+  ])
 
-  const renderJobsTable = () => {
+  const renderJobsTable = useMemo(() => {
+    // Calculate first index - ensure it's always valid
+    const firstIndex = Math.max(0, (jobsPageNumber - 1) * jobsPageSize)
+
     return (
       <div className="logs-table-container">
-        <DataTable 
-          value={jobs} 
+        <DataTable
+          value={jobs}
           className="logs-datatable"
-          emptyMessage={t('no_jobs_found_with_filters', 'No jobs found matching the filters')}
+          emptyMessage={t(
+            'no_jobs_found_with_filters',
+            'No jobs found matching the filters'
+          )}
           onRowClick={(e) => handleJobClick(e.data)}
           selectionMode="single"
           metaKeySelection={false}
@@ -357,12 +538,24 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
           sortOrder={sortOrder}
           onSort={handleSort}
           filters={jobFilters}
-          onFilter={(e) => setJobFilters(e.filters as DataTableFilterMeta)}
+          onFilter={handleJobFilterChange}
           filterDisplay="row"
+          lazy={true}
+          paginator={jobs.length > 0 || jobsTotalRecords > 0}
+          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+          first={firstIndex}
+          rows={jobsPageSize}
+          totalRecords={jobsTotalRecords}
+          onPage={handleJobsPageChangeDataTable}
+          rowsPerPageOptions={[10, 25, 50, 100]}
+          currentPageReportTemplate={t(
+            'global.pagination',
+            'Showing {first} to {last} of {totalRecords} entries'
+          )}
         >
-          <Column 
-            field="id" 
-            header={t('job_id', 'Job ID')} 
+          <Column
+            field="id"
+            header={t('job_id', 'Job ID')}
             headerClassName="col-lg"
             bodyClassName="col-lg"
             sortable
@@ -370,9 +563,9 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             filterPlaceholder={t('filter_by_job_id', 'Filter by Job ID')}
             showFilterMenu={false}
           />
-          <Column 
-            field="agentId" 
-            header={t('logs_agent_id', 'Agent ID')} 
+          <Column
+            field="agentId"
+            header={t('logs_agent_id', 'Agent ID')}
             headerClassName="col-md"
             bodyClassName="col-md"
             sortable
@@ -380,96 +573,101 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             filterPlaceholder={t('filter_by_agent_id', 'Filter by Agent ID')}
             showFilterMenu={false}
           />
-          <Column 
-            field="type" 
-            header={t('job_type', 'Job Type')} 
+          <Column
+            field="type"
+            header={t('job_type', 'Job Type')}
             body={jobTypeBodyTemplate}
             headerClassName="col-md"
             bodyClassName="col-md"
             sortable
             filter
-            filterPlaceholder={t('filter_by_type', 'Filter by Type')}
+            filterElement={jobTypeFilterElement}
+            filterMatchMode={FilterMatchMode.EQUALS}
             showFilterMenu={false}
           />
-          <Column 
-            field="createdAt" 
-            header={t('created_at', 'Created At')} 
+          <Column
+            field="createdAt"
+            header={t('created_at', 'Created At')}
             body={jobTimestampBodyTemplate}
             headerClassName="col-datetime"
             bodyClassName="col-datetime"
             sortable
             filter
-            filterPlaceholder={t('filter_by_created_at', 'Filter by Created At')}
+            filterElement={dateFilterElement}
             showFilterMenu={false}
           />
-          <Column 
-            field="status" 
-            header={t('status', 'Status')} 
+          <Column
+            field="status"
+            header={t('status', 'Status')}
             body={jobStatusBodyTemplate}
             headerClassName="col-status-wide"
             bodyClassName="col-status-wide"
             sortable
             filter
-            filterPlaceholder={t('filter_by_status', 'Filter by Status')}
+            filterElement={jobStatusFilterElement}
+            filterMatchMode={FilterMatchMode.EQUALS}
             showFilterMenu={false}
           />
         </DataTable>
-        <Paginator
-          first={(jobsPageNumber - 1) * jobsPageSize}
-          rows={jobsPageSize}
-          totalRecords={jobsTotalRecords}
-          onPageChange={handleJobsPageChange}
-          template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-        />
       </div>
-    );
-  };
-
-  const renderViewSwitcher = () => {
-    return (
-      <div className="view-switcher">
-        <button
-          className={`view-tab ${viewMode === 'requests' ? 'view-tab-active' : ''}`}
-          onClick={() => handleViewModeChange('requests')}
-        >
-          <i className="pi pi-list" />
-          <span>{t('requests', 'Requests')}</span>
-        </button>
-        <button
-          className={`view-tab ${viewMode === 'jobs' ? 'view-tab-active' : ''}`}
-          onClick={() => handleViewModeChange('jobs')}
-        >
-          <i className="pi pi-briefcase" />
-          <span>{t('jobs', 'Jobs')}</span>
-        </button>
-        <button
-          className={`view-tab ${viewMode === 'sessions' ? 'view-tab-active' : ''}`}
-          onClick={() => handleViewModeChange('sessions')}
-        >
-          <i className="pi pi-users" />
-          <span>{t('sessions', 'Sessions')}</span>
-        </button>
-      </div>
-    );
-  };
+    )
+  }, [
+    jobs,
+    jobsPageNumber,
+    jobsPageSize,
+    jobsTotalRecords,
+    jobFilters,
+    sortField,
+    sortOrder,
+    handleJobClick,
+    handleSort,
+    handleJobFilterChange,
+    handleJobsPageChangeDataTable,
+    jobStatusFilterElement,
+    jobStatusBodyTemplate,
+    jobTypeFilterElement,
+    jobTypeBodyTemplate,
+    jobTimestampBodyTemplate,
+    t,
+  ])
 
   // Track initial load to prevent loading overlay on filter changes
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-  
+  // Once data has loaded, never show loading overlay again (even on filter/pagination changes)
+  const [hasLoadedOnce, setHasLoadedOnce] = useState<
+    Record<'requests' | 'jobs', boolean>
+  >({
+    requests: false,
+    jobs: false,
+  })
+
+  // Mark as loaded when data first arrives (only once per view mode)
   useEffect(() => {
-    const isCurrentViewLoaded = viewMode === 'requests' ? !loading : !jobsLoading;
-    if (isCurrentViewLoaded) {
-      setHasLoadedOnce(true);
+    if (viewMode === 'requests' && !loading && !hasLoadedOnce.requests) {
+      setHasLoadedOnce((prev) => ({ ...prev, requests: true }))
     }
-  }, [loading, jobsLoading, viewMode]);
+  }, [loading, viewMode, hasLoadedOnce.requests])
+
+  useEffect(() => {
+    if (viewMode === 'jobs' && !jobsLoading && !hasLoadedOnce.jobs) {
+      setHasLoadedOnce((prev) => ({ ...prev, jobs: true }))
+    }
+  }, [jobsLoading, viewMode, hasLoadedOnce.jobs])
 
   // Reset hasLoadedOnce when view mode changes
   useEffect(() => {
-    setHasLoadedOnce(false);
-  }, [viewMode]);
+    // Don't reset - keep track per view mode
+  }, [viewMode])
 
-  const currentLoading = !hasLoadedOnce && (viewMode === 'requests' ? loading : jobsLoading);
-  const currentError = viewMode === 'requests' ? error : jobsError;
+  // Only show loading on initial load, never on filter/pagination changes
+  const currentLoading = useMemo(() => {
+    if (viewMode === 'requests') {
+      return !hasLoadedOnce.requests && loading
+    } else {
+      return !hasLoadedOnce.jobs && jobsLoading
+    }
+  }, [viewMode, hasLoadedOnce, loading, jobsLoading])
+
+  const currentError = viewMode === 'requests' ? error : jobsError
 
   return (
     <BasePage
@@ -480,14 +678,29 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
       onAdd={handleRefresh}
       className="logs"
     >
-      {renderViewSwitcher()}
-      
-      {viewMode === 'requests' ? renderLogsTable() : 
-       viewMode === 'jobs' ? renderJobsTable() : 
-       <SessionsTab appState={appState} onSessionClick={handleSessionClick} />}
-
+      <TabView activeIndex={activeTabIndex} onTabChange={handleTabChange}>
+        <TabPanel header={t('requests', 'Requests')}>
+          {renderLogsTable}
+        </TabPanel>
+        <TabPanel header={t('jobs', 'Jobs')}>{renderJobsTable}</TabPanel>
+        <TabPanel header={t('sessions', 'Sessions')}>
+          <SessionsTab
+            onSessionClick={handleSessionClick}
+            sessions={sessions}
+            loading={sessionsLoading}
+            error={sessionsError}
+            pageSize={sessionsPageSize}
+            pageNumber={sessionsPageNumber}
+            totalRecords={sessionsTotalRecords}
+            changePage={changeSessionsPage}
+            changePageSize={changeSessionsPageSize}
+            updateFilters={updateSessionFilters}
+            sortSessions={sortSessions}
+          />
+        </TabPanel>
+      </TabView>
     </BasePage>
-  );
-};
+  )
+}
 
-export default LogsPage;
+export default LogsPage

@@ -1,4 +1,4 @@
-type SeverityType = 'success' | 'info' | 'warning' | 'danger';
+type SeverityType = 'success' | 'info' | 'warning' | 'danger'
 
 /**
  * Get PrimeReact severity type for log level
@@ -8,16 +8,15 @@ type SeverityType = 'success' | 'info' | 'warning' | 'danger';
 export const getLogLevelSeverity = (level: string): SeverityType => {
   switch (level) {
     case 'ERROR':
-      return 'danger';
+      return 'danger'
     case 'WARNING':
     case 'WARN':
-      return 'warning';
+      return 'warning'
     case 'INFO':
-    case 'DEBUG':
     default:
-      return 'info';
+      return 'info'
   }
-};
+}
 
 /**
  * Get PrimeReact severity type for job/task status
@@ -27,20 +26,20 @@ export const getLogLevelSeverity = (level: string): SeverityType => {
 export const getStatusSeverity = (status: string): SeverityType => {
   switch (status) {
     case 'success':
-      return 'info'; // Blue for finished
+      return 'info' // Blue for finished
     case 'failure':
-      return 'danger'; // Red for failure
+      return 'danger' // Red for failure
     case 'in_progress':
-      return 'warning'; // Yellow for in progress
+      return 'warning' // Yellow for in progress
     case 'error':
-      return 'danger';
+      return 'danger'
     case 'warning':
     case 'warn':
-      return 'warning';
+      return 'warning'
     default:
-      return 'info';
+      return 'info'
   }
-};
+}
 
 /**
  * Get display value for status
@@ -50,15 +49,15 @@ export const getStatusSeverity = (status: string): SeverityType => {
 export const getStatusDisplayValue = (status: string): string => {
   switch (status) {
     case 'success':
-      return 'FINISHED';
+      return 'FINISHED'
     case 'failure':
-      return 'FAILURE';
+      return 'FAILURE'
     case 'in_progress':
-      return 'IN PROGRESS';
+      return 'IN PROGRESS'
     default:
-      return status.toUpperCase();
+      return status.toUpperCase()
   }
-};
+}
 
 /**
  * Get icon class for status
@@ -68,15 +67,15 @@ export const getStatusDisplayValue = (status: string): string => {
 export const getStatusIcon = (status: string): string => {
   switch (status) {
     case 'success':
-      return 'pi pi-check-circle';
+      return 'pi pi-check-circle'
     case 'failure':
-      return 'pi pi-times-circle';
+      return 'pi pi-times-circle'
     case 'in_progress':
-      return 'pi pi-spin pi-spinner';
+      return 'pi pi-spin pi-spinner'
     default:
-      return 'pi pi-info-circle';
+      return 'pi pi-info-circle'
   }
-};
+}
 
 /**
  * Get color for status
@@ -86,13 +85,30 @@ export const getStatusIcon = (status: string): string => {
 export const getStatusColor = (status: string): string => {
   switch (status) {
     case 'success':
-      return '#3b82f6'; // Blue
+      return '#3b82f6' // Blue
     case 'failure':
-      return '#ef4444'; // Red
+      return '#ef4444' // Red
     case 'in_progress':
-      return '#f59e0b'; // Yellow
+      return '#f59e0b' // Yellow
     default:
-      return '#6b7280'; // Gray
+      return '#6b7280' // Gray
   }
-};
+}
 
+/**
+ * Get color for severity level (for border and text styling)
+ * @param level - Severity level (INFO, WARNING, ERROR)
+ * @returns Hex color code
+ */
+export const getSeverityColor = (level: string): string => {
+  switch (level.toUpperCase()) {
+    case 'ERROR':
+      return '#ef4444' // Red
+    case 'WARNING':
+    case 'WARN':
+      return '#f59e0b' // Yellow/Orange
+    case 'INFO':
+    default:
+      return '#3b82f6' // Blue
+  }
+}
