@@ -122,7 +122,7 @@ export class AnalyticsService {
    * Get total count from API response headers (logs endpoint)
    */
   private async getTotalCount(queryParams: string): Promise<number> {
-    const url = `/ai-service/${this.tenant}/agentic/log/logs${queryParams}`
+    const url = `/ai-service/${this.tenant}/agentic/logs/requests${queryParams}`
     const response = await this.api.getWithHeaders<any[]>(url, {
       headers: this.getHeaders(),
     })
@@ -133,7 +133,7 @@ export class AnalyticsService {
    * Get total count from API response headers (sessions endpoint)
    */
   private async getSessionCount(queryParams: string): Promise<number> {
-    const url = `/ai-service/${this.tenant}/agentic/log/sessions${queryParams}`
+    const url = `/ai-service/${this.tenant}/agentic/logs/sessions${queryParams}`
     const response = await this.api.getWithHeaders<any[]>(url, {
       headers: this.getHeaders(),
     })

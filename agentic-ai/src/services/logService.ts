@@ -108,7 +108,7 @@ export class LogService {
       agentId,
       filters,
     })
-    const url = `/ai-service/${this.tenant}/agentic/log/logs${queryString}`
+    const url = `/ai-service/${this.tenant}/agentic/logs/requests${queryString}`
     const headers = this.getHeaders(true)
 
     const response = await this.api.getWithHeaders<RequestLogs[]>(url, {
@@ -129,7 +129,7 @@ export class LogService {
   async getAgentLogDetails(logId: string): Promise<RequestLogs> {
     const headers = this.getHeaders()
     const response = await this.api.getWithHeaders<RequestLogs>(
-      `/ai-service/${this.tenant}/agentic/log/logs/${logId}`,
+      `/ai-service/${this.tenant}/agentic/logs/requests/${logId}`,
       { headers }
     )
     return response.data
@@ -138,7 +138,7 @@ export class LogService {
   async getRequestLogs(requestId: string): Promise<RequestLogs | null> {
     const headers = this.getHeaders()
     const response = await this.api.getWithHeaders<RequestLogs[]>(
-      `/ai-service/${this.tenant}/agentic/log/logs?q=requestId:${requestId}`,
+      `/ai-service/${this.tenant}/agentic/logs/requests?q=requestId:${requestId}`,
       { headers }
     )
     return response.data.length > 0 ? response.data[0] : null
@@ -152,7 +152,7 @@ export class LogService {
     const queryString = this.buildQueryParams({ agentId, pageSize, pageNumber })
     const headers = this.getHeaders(true)
     const response = await this.api.getWithHeaders<RequestLogs[]>(
-      `/ai-service/${this.tenant}/agentic/log/logs${queryString}`,
+      `/ai-service/${this.tenant}/agentic/logs/requests${queryString}`,
       { headers }
     )
 
@@ -172,7 +172,7 @@ export class LogService {
   ): Promise<RequestLogs | null> {
     const headers = this.getHeaders()
     const result = await this.api.getWithHeaders<RequestLogs>(
-      `/ai-service/${this.tenant}/agentic/log/logs?q=requestId:${requestId}`,
+      `/ai-service/${this.tenant}/agentic/logs/requests?q=requestId:${requestId}`,
       { headers }
     )
 
@@ -201,7 +201,7 @@ export class LogService {
       filters,
     })
 
-    const url = `/ai-service/${this.tenant}/agentic/log/sessions${queryString}`
+    const url = `/ai-service/${this.tenant}/agentic/logs/sessions${queryString}`
     const headers = this.getHeaders(true)
     const response = await this.api.getWithHeaders<SessionLogs[]>(url, {
       headers,
@@ -219,7 +219,7 @@ export class LogService {
 
   async getSessionById(sessionId: string): Promise<SessionLogs> {
     const headers = this.getHeaders()
-    const url = `/ai-service/${this.tenant}/agentic/log/sessions/${sessionId}`
+    const url = `/ai-service/${this.tenant}/agentic/logs/sessions/${sessionId}`
     const response = await this.api.getWithHeaders<SessionLogs>(url, {
       headers,
     })
