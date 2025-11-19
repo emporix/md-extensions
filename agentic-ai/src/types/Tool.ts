@@ -20,4 +20,5 @@ export interface ToolConfigPanelProps {
   onHide: () => void;
   onSave: (tool: Tool) => void;
   appState: any; // Using any for now, can be typed more specifically later
+  isRagFeatureEnabled?: boolean;
 }

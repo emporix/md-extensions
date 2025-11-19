@@ -28,6 +28,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
     tools,
     loading,
     error,
+    isRagFeatureEnabled,
     updateTool,
     refreshTools,
     removeTool,
@@ -155,6 +156,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
         onHide={handleConfigClose}
         onSave={handleConfigSave}
         appState={appState}
+        isRagFeatureEnabled={isRagFeatureEnabled}
       />
 
       <ConfirmDialog
