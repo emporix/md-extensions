@@ -12,6 +12,7 @@ import {
   SeverityBadge,
   StatusBadge,
   DateFilterTemplate,
+  MetricsPanel,
 } from '../shared'
 import { LogSummary } from '../../types/Log'
 import { JobSummary } from '../../types/Job'
@@ -46,6 +47,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     'requests'
   )
   const [activeTabIndex, setActiveTabIndex] = useState(0)
+  const [metricsRefreshTrigger, setMetricsRefreshTrigger] = useState(0)
 
   useEffect(() => {
     const path = location.pathname
@@ -182,6 +184,9 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     } else if (viewMode === 'sessions') {
       refreshSessions(agentIdParam || '')
     }
+
+    // Trigger metrics refresh (force cache refresh)
+    setMetricsRefreshTrigger(prev => prev + 1)
   }, [refreshLogs, refreshJobs, refreshSessions, viewMode, location.search])
 
   const handleSort = useCallback(
@@ -678,6 +683,9 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
       onAdd={handleRefresh}
       className="logs"
     >
+      {/* Metrics Panel - Show on all tabs */}
+      <MetricsPanel appState={appState} refreshTrigger={metricsRefreshTrigger} />
+
       <TabView activeIndex={activeTabIndex} onTabChange={handleTabChange}>
         <TabPanel header={t('requests', 'Requests')}>
           {renderLogsTable}

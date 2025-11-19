@@ -330,6 +330,32 @@ const TRANSLATIONS_EN = {
   search_agents: 'Search agents...',
   of: 'of',
   no_agents_selected: 'No agents selected',
+
+  // Metrics and Analytics
+  error_rate: 'Error Rate',
+  total_logs: 'Total Logs',
+  error_logs: 'Error Logs',
+  error_trend_4_weeks: 'Error Trend (Last 4 Weeks)',
+  no_trend_data: 'No trend data available',
+  error_rate_percent: 'Error Rate (%)',
+  total_requests: 'Total Requests',
+  
+  // Session Metrics
+  session_severity_distribution: 'Session Severity Distribution',
+  session_error_trend_4_weeks: 'Session Error Trend (Last 4 Weeks)',
+  total_sessions: 'Total Sessions',
+  error_sessions: 'Error Sessions',
+  no_session_data: 'No session data available',
+  week: 'Week',
+  
+  // Resolution Efficiency
+  resolution_efficiency: 'Resolution Efficiency',
+  requests_per_session: 'Requests per Session',
+  efficiency_hint: 'Lower is better - fewer requests needed per session',
+  
+  // Chart Tooltips
+  error_sessions_label: 'Error Sessions',
+  total_sessions_label: 'Total Sessions',
 }
 
 export default TRANSLATIONS_EN

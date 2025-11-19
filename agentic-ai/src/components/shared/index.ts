@@ -15,6 +15,12 @@ export { SeverityBadge } from './SeverityBadge';
 export { StatusBadge } from './StatusBadge';
 export { TagPicker } from './TagPicker';
 export { TagSelector } from './TagSelector';
+export { default as MetricsPanel } from './MetricsPanel';
+export { default as ErrorMetrics } from './ErrorMetrics';
+export { default as ErrorTrendChart } from './ErrorTrendChart';
+export { default as SessionSeverityChart } from './SessionSeverityChart';
+export { default as SessionErrorTrendChart } from './SessionErrorTrendChart';
+export { default as ResolutionEfficiencyKPI } from './ResolutionEfficiencyKPI';
 
 // Native Tools (still shared)
 export { NativeToolForm } from './native-tools/NativeToolForm';

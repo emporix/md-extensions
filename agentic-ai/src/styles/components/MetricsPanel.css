@@ -1,0 +1,296 @@
+/* Metrics Panel Styles */
+
+.metrics-panel {
+  margin-bottom: 2rem;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 300px 300px 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+/* Metrics Card */
+.metrics-card {
+  background: linear-gradient(to bottom, #ffffff, #f9fafb);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Chart cards maintain fixed height */
+.metrics-card-chart {
+  height: 400px;
+}
+
+.metrics-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Fixed-size cards for KPI and Pie Chart */
+.metrics-card-fixed {
+  width: 300px;
+  height: 400px;
+  flex-shrink: 0;
+}
+
+/* Metrics Header */
+.metrics-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.metrics-icon {
+  font-size: 1.25rem;
+  color: #6366f1;
+}
+
+.metrics-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+/* Metrics Content */
+.metrics-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  flex: 1;
+  justify-content: center;
+}
+
+.metrics-value {
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.metrics-value-success {
+  color: #10b981;
+}
+
+.metrics-value-good {
+  color: #3b82f6;
+}
+
+.metrics-value-warning {
+  color: #f59e0b;
+}
+
+.metrics-value-error {
+  color: #ef4444;
+}
+
+.metrics-value-neutral {
+  color: #6b7280;
+}
+
+/* Metrics Details */
+.metrics-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.metrics-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: #f9fafb;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.metrics-detail-item:hover {
+  background: #f3f4f6;
+}
+
+.metrics-label {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.metrics-count {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.metrics-count-error {
+  color: #ef4444;
+}
+
+/* Chart Container */
+.metrics-chart-container {
+  flex: 1;
+  width: 100%;
+  position: relative;
+  min-height: 250px;
+}
+
+/* Loading State */
+.metrics-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.metrics-loading .p-progressspinner {
+  width: 30px;
+  height: 30px;
+}
+
+/* Efficiency Hint */
+.metrics-efficiency-hint {
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+  background: #f9fafb;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* Detail Item Spacing */
+.metrics-detail-item-spaced {
+  margin-bottom: 0.5rem;
+}
+
+/* Empty State */
+.metrics-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+  /* Stack trend chart below when screen is too narrow */
+  .metrics-grid {
+    grid-template-columns: 300px 300px;
+    grid-template-rows: auto auto;
+  }
+
+  .metrics-card-chart:not(.metrics-card-fixed) {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 1600px) {
+  .metrics-grid {
+    gap: 1rem;
+  }
+  
+  /* Keep fixed-size cards at their fixed size */
+  .metrics-card-fixed {
+    width: 300px;
+    height: 400px;
+  }
+}
+
+@media (max-width: 1280px) {
+  /* Fixed-size cards maintain their size */
+  .metrics-card-fixed {
+    width: 300px;
+    height: 400px;
+  }
+
+  /* Chart cards maintain fixed height */
+  .metrics-card-chart {
+    height: 400px;
+  }
+
+  .metrics-value {
+    font-size: 2.5rem;
+  }
+
+  .metrics-chart-container {
+    min-height: 220px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Fixed-size cards maintain their size even on mobile */
+  .metrics-card-fixed {
+    width: 100%;
+    max-width: 300px;
+    height: 400px;
+    margin: 0 auto;
+  }
+
+  /* Chart cards maintain fixed height */
+  .metrics-card-chart {
+    height: 400px;
+  }
+
+  .metrics-chart-container {
+    min-height: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .metrics-panel {
+    margin-bottom: 1.5rem;
+  }
+
+  /* Fixed-size cards maintain their size */
+  .metrics-card-fixed {
+    width: 100%;
+    max-width: 300px;
+    height: 400px;
+    padding: 1rem;
+  }
+
+  /* Chart cards maintain fixed height */
+  .metrics-card-chart {
+    height: 400px;
+    padding: 1rem;
+  }
+
+  .metrics-value {
+    font-size: 2rem;
+    padding: 0.75rem 0;
+  }
+
+  .metrics-header {
+    margin-bottom: 1rem;
+  }
+
+  .metrics-title {
+    font-size: 0.9375rem;
+  }
+
+  .metrics-icon {
+    font-size: 1.125rem;
+  }
+
+  .metrics-chart-container {
+    min-height: 180px;
+  }
+}
+

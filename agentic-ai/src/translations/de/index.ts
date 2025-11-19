@@ -319,6 +319,32 @@ const TRANSLATIONS_DE = {
   of: 'von',
   no_agents_selected: 'Keine Agenten ausgewählt',
   back_to_sessions: 'Zurück zu Sitzungen',
+
+  // Metrics and Analytics
+  error_rate: 'Fehlerrate',
+  total_logs: 'Gesamte Protokolle',
+  error_logs: 'Fehlerprotokolle',
+  error_trend_4_weeks: 'Fehlertrend (Letzte 4 Wochen)',
+  no_trend_data: 'Keine Trenddaten verfügbar',
+  error_rate_percent: 'Fehlerrate (%)',
+  total_requests: 'Gesamte Anfragen',
+  
+  // Session Metrics
+  session_severity_distribution: 'Sitzungsschweregrad-Verteilung',
+  session_error_trend_4_weeks: 'Sitzungsfehlerverlauf (Letzte 4 Wochen)',
+  total_sessions: 'Gesamte Sitzungen',
+  error_sessions: 'Fehlersitzungen',
+  no_session_data: 'Keine Sitzungsdaten verfügbar',
+  week: 'Woche',
+  
+  // Resolution Efficiency
+  resolution_efficiency: 'Lösungseffizienz',
+  requests_per_session: 'Anfragen pro Sitzung',
+  efficiency_hint: 'Niedriger ist besser - weniger Anfragen pro Sitzung erforderlich',
+  
+  // Chart Tooltips
+  error_sessions_label: 'Fehlersitzungen',
+  total_sessions_label: 'Gesamte Sitzungen',
 }
 
 export default TRANSLATIONS_DE
