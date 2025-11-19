@@ -149,7 +149,7 @@
   --z-tooltip: 1150;
 
   /* DataTable Column Widths */
-  --col-width-severity: 80px;
+  --col-width-severity: 110px;
   --col-width-timestamp: 200px;
   --col-width-timestamp-compact: 150px;
   --col-width-agent: 150px;
