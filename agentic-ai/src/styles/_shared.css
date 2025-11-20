@@ -64,6 +64,24 @@
   min-width: 12rem;
 }
 
+/* Filter row cell styling - ensure filter inputs match column widths */
+.p-datatable .p-datatable-thead > tr > th.p-column-filter {
+  padding: 0.5rem;
+}
+
+.p-datatable .p-datatable-thead > tr > th.p-column-filter .p-column-filter-element {
+  width: 100%;
+}
+
+.p-datatable .p-datatable-thead > tr > th.p-column-filter input,
+.p-datatable .p-datatable-thead > tr > th.p-column-filter .p-dropdown,
+.p-datatable .p-datatable-thead > tr > th.p-column-filter .p-calendar {
+  width: 100%;
+  min-width: 0;
+  position: relative;
+}
+
+
 .ml-auto {
   margin-left: auto;
 }

@@ -308,6 +308,8 @@ const TRANSLATIONS_DE = {
   filter_by_last_activity: 'Nach letzter Aktivität filtern',
   filter_by_severity: 'Nach Schweregrad filtern',
   filter_by_included_agents: 'Nach enthaltenen Agenten filtern',
+  filter_by_message: 'Nach Nachricht filtern',
+  select_severity: 'Schweregrad auswählen',
   clear_filters: 'Filter löschen',
   no_jobs_found_with_filters: 'Keine Jobs gefunden, die den Filtern entsprechen',
   no_logs_found_with_filters: 'Keine Protokolle gefunden, die den Filtern entsprechen',

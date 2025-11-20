@@ -320,6 +320,8 @@ const TRANSLATIONS_EN = {
   filter_by_last_activity: 'Filter by Last Activity',
   filter_by_severity: 'Filter by Severity',
   filter_by_included_agents: 'Filter by Included Agents',
+  filter_by_message: 'Filter by Message',
+  select_severity: 'Select Severity',
   clear_filters: 'Clear Filters',
   no_jobs_found_with_filters: 'No jobs found matching the filters',
   no_logs_found_with_filters: 'No logs found matching the filters',
