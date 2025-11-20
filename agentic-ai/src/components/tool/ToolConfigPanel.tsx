@@ -103,7 +103,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       const updatedTool: Tool = {
         id: toolId,
         name: toolName,
-        type: tool.type,
+        type: toolType,
         config,
         enabled: tool.enabled ?? true,
       };
