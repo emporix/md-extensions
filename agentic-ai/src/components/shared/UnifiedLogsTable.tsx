@@ -52,7 +52,7 @@ const UnifiedLogsTable = forwardRef<any, UnifiedLogsTableProps>(
 
     // Sort state
     const [sortField, setSortField] = useState<string>('timestamp')
-    const [sortOrder, setSortOrder] = useState<1 | -1>(-1)
+    const [sortOrder, setSortOrder] = useState<1 | -1>(1)
 
     // Filter elements
     const severityFilterElement = useCallback(
@@ -103,9 +103,17 @@ const UnifiedLogsTable = forwardRef<any, UnifiedLogsTableProps>(
     }
 
     const messageBodyTemplate = (rowData: LogMessage) => {
+      // Replace \n with actual line breaks
+      const formattedMessage = rowData.message.split('\\n').map((line, index, array) => (
+        <React.Fragment key={index}>
+          {line}
+          {index < array.length - 1 && <br />}
+        </React.Fragment>
+      ))
+
       return (
         <div className="log-message-content">
-          <span className="log-message-text">{rowData.message}</span>
+          <span className="log-message-text">{formattedMessage}</span>
         </div>
       )
     }
