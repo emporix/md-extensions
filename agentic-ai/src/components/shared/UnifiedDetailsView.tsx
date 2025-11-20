@@ -4,7 +4,7 @@ import { Button } from 'primereact/button'
 import { BasePage, UnifiedLogsTable, InfoCard, StatusBadge } from './index'
 import { LogMessage } from '../../types/Log'
 import { ImportResultSummary, ExportResult } from '../../types/Job'
-import { formatTimestamp, calculateDuration } from '../../utils/formatHelpers'
+import { formatTimestamp } from '../../utils/formatHelpers'
 import { useScrollToMessage } from '../../hooks/useScrollToMessage'
 import { getJobTypeDisplay } from '../../constants/logConstants'
 
@@ -24,6 +24,7 @@ interface UnifiedDetailsViewProps {
   sessionId?: string
   requestId?: string
   createdAt?: string | null
+  duration?: string
 
   // Status props
   status?: string
@@ -53,6 +54,7 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
   sessionId,
   requestId,
   createdAt,
+  duration,
   status,
   jobType,
   importResult,
@@ -188,10 +190,10 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
                 value={getJobTypeDisplay(jobType)}
               />
             )}
-            {messages && messages.length > 0 && (
+            {duration && (
               <InfoCard
                 label={t('duration', 'Duration')}
-                value={calculateDuration(messages)}
+                value={duration}
               />
             )}
             {createdAt && (

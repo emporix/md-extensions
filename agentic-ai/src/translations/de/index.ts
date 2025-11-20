@@ -248,7 +248,7 @@ const TRANSLATIONS_DE = {
   error_slack_installation: 'Fehler beim Initiieren der Slack-Installation',
 
   // Logs
-  agent_logs: 'Agent-Protokolle',
+  agent_logs: 'Agentenprotokolle',
   no_logs_available: 'Keine Protokolle verfügbar',
   refresh: 'Aktualisieren',
   log_details: 'Protokoll-Details',
@@ -326,14 +326,14 @@ const TRANSLATIONS_DE = {
   error_rate: 'Fehlerrate',
   total_logs: 'Gesamte Protokolle',
   error_logs: 'Fehlerprotokolle',
-  error_trend_4_weeks: 'Fehlertrend (Letzte 4 Wochen)',
+  error_trend_4_weeks: 'Fehlertrend (Letzten 4 Wochen)',
   no_trend_data: 'Keine Trenddaten verfügbar',
   error_rate_percent: 'Fehlerrate (%)',
   total_requests: 'Gesamte Anfragen',
   
   // Session Metrics
   session_severity_distribution: 'Sitzungsschweregrad-Verteilung',
-  session_error_trend_4_weeks: 'Sitzungsfehlerverlauf (Letzte 4 Wochen)',
+  session_error_trend_4_weeks: 'Sitzungsfehlerverlauf (Letzten 4 Wochen)',
   total_sessions: 'Gesamte Sitzungen',
   error_sessions: 'Fehlersitzungen',
   no_session_data: 'Keine Sitzungsdaten verfügbar',

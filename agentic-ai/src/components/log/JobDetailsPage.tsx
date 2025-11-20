@@ -80,6 +80,7 @@ const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ appState }) => {
       sessionId={selectedJob?.sessionId}
       requestId={selectedJob?.requestId}
       createdAt={selectedJob?.metadata?.createdAt}
+      duration={log?.duration}
       status={selectedJob?.status}
       jobType={selectedJob?.type}
       importResult={selectedJob?.importResult}

@@ -33,6 +33,7 @@ export interface RequestLogs {
   collaborationAgents: string[];
   messages: LogMessage[];
   metadata: Metadata;
+  duration?: string;
 }
 export interface SessionLogs {
   sessionId: string;
@@ -41,4 +42,5 @@ export interface SessionLogs {
   agents: string[];
   messages?: LogMessage[];
   metadata: Metadata;
+  duration?: string;
 }

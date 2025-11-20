@@ -2,6 +2,8 @@
 
 .metrics-panel {
   margin-bottom: 2rem;
+  width: 100%;
+  overflow: hidden;
 }
 
 .metrics-grid {
@@ -9,6 +11,10 @@
   grid-template-columns: 300px 300px 1fr;
   gap: 1.5rem;
   align-items: stretch;
+  width: 100%;
+  overflow: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Metrics Card */
@@ -22,6 +28,8 @@
   height: 400px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Chart cards maintain fixed height */
@@ -39,6 +47,16 @@
   width: 300px;
   height: 400px;
   flex-shrink: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.metrics-card-error-trend {
+  width: 100%;
+  height: 400px;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* Metrics Header */
@@ -143,6 +161,8 @@
   width: 100%;
   position: relative;
   min-height: 250px;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Loading State */
@@ -186,13 +206,13 @@
 
 /* Responsive Design */
 @media (max-width: 1400px) {
-  /* Stack trend chart below when screen is too narrow */
   .metrics-grid {
     grid-template-columns: 300px 300px;
     grid-template-rows: auto auto;
+    overflow: hidden;
   }
 
-  .metrics-card-chart:not(.metrics-card-fixed) {
+  .metrics-card-error-trend {
     grid-column: 1 / -1;
   }
 }
@@ -233,6 +253,8 @@
 @media (max-width: 1024px) {
   .metrics-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    overflow: hidden;
   }
 
   /* Fixed-size cards maintain their size even on mobile */
@@ -241,6 +263,13 @@
     max-width: 300px;
     height: 400px;
     margin: 0 auto;
+  }
+
+  /* Error trend chart on mobile */
+  .metrics-card-error-trend {
+    grid-column: 1;
+    width: 100%;
+    max-width: 100%;
   }
 
   /* Chart cards maintain fixed height */

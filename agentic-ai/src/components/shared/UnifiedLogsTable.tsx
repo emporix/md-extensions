@@ -209,6 +209,7 @@ const UnifiedLogsTable = forwardRef<any, UnifiedLogsTableProps>(
               filter
               filterElement={dateFilterElement}
               showFilterMenu={false}
+              showClearButton={false}
             />
             <Column
               field="agentId"
@@ -221,6 +222,7 @@ const UnifiedLogsTable = forwardRef<any, UnifiedLogsTableProps>(
               filter
               filterPlaceholder={t('filter_by_agent_id', 'Filter by Agent ID')}
               showFilterMenu={false}
+              showClearButton={false}
             />
             <Column
               field="message"
@@ -233,6 +235,7 @@ const UnifiedLogsTable = forwardRef<any, UnifiedLogsTableProps>(
               filter
               filterPlaceholder={t('filter_by_message', 'Filter by Message')}
               showFilterMenu={false}
+              showClearButton={false}
             />
           </DataTable>
         </div>

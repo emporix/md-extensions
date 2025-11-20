@@ -161,7 +161,7 @@ const SessionErrorTrendChart: React.FC<SessionErrorTrendChartProps> = ({ data, l
 
   if (loading) {
     return (
-      <div className="metrics-card metrics-card-chart">
+      <div className="metrics-card metrics-card-chart metrics-card-error-trend">
         <div className="metrics-loading">
           <ProgressSpinner />
         </div>
@@ -171,7 +171,7 @@ const SessionErrorTrendChart: React.FC<SessionErrorTrendChartProps> = ({ data, l
 
   if (!chartData) {
     return (
-      <div className="metrics-card metrics-card-chart">
+      <div className="metrics-card metrics-card-chart metrics-card-error-trend">
         <div className="metrics-header">
           <i className="pi pi-chart-line metrics-icon" aria-hidden="true"></i>
           <h3 className="metrics-title">
@@ -186,7 +186,7 @@ const SessionErrorTrendChart: React.FC<SessionErrorTrendChartProps> = ({ data, l
   }
 
   return (
-    <div className="metrics-card metrics-card-chart">
+    <div className="metrics-card metrics-card-chart metrics-card-error-trend">
       <div className="metrics-header">
         <i className="pi pi-chart-line metrics-icon" aria-hidden="true"></i>
         <h3 className="metrics-title">

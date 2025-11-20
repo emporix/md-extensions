@@ -226,6 +226,7 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
               'Filter by Session ID'
             )}
             showFilterMenu={false}
+            showClearButton={false}
           />
           <Column
             field="triggerAgentId"
@@ -236,6 +237,7 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
             filter
             filterPlaceholder={t('filter_by_agent_id', 'Filter by Agent ID')}
             showFilterMenu={false}
+            showClearButton={false}
           />
           <Column
             field="agents"
@@ -250,6 +252,7 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
               'Filter by Included Agents'
             )}
             showFilterMenu={false}
+            showClearButton={false}
           />
           <Column
             field="metadata.createdAt"
@@ -261,6 +264,7 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
             filter
             filterElement={dateFilterElement}
             showFilterMenu={false}
+            showClearButton={false}
           />
           <Column
             field="metadata.modifiedAt"
@@ -272,6 +276,7 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
             filter
             filterElement={dateFilterElement}
             showFilterMenu={false}
+            showClearButton={false}
           />
           <Column
             field="severity"
@@ -284,6 +289,7 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
             filterElement={severityFilterElement}
             filterMatchMode={FilterMatchMode.EQUALS}
             showFilterMenu={false}
+            showClearButton={false}
           />
         </DataTable>
       </div>

@@ -66,6 +66,7 @@ const LogDetailsPage: React.FC<LogDetailsPageProps> = ({ appState }) => {
       message={extractedMessage}
       response={extractedResponse}
       messages={selectedLog?.messages}
+      duration={selectedLog?.duration}
       createdAt={
         selectedLog?.metadata?.createdAt
           ? String(selectedLog.metadata.createdAt)

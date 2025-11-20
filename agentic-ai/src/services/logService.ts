@@ -1,7 +1,7 @@
 import { RequestLogs, LogSummary, SessionLogs } from '../types/Log'
 import { AppState } from '../types/common'
 import { ApiClient } from './apiClient'
-import { calculateDuration, formatDateObject } from '../utils/formatHelpers'
+import { formatDateObject } from '../utils/formatHelpers'
 
 export class LogService {
   private api: ApiClient
@@ -87,7 +87,7 @@ export class LogService {
       messageCount: log.messages.length,
       errorCount: log.messages.filter((msg) => msg.severity === 'ERROR').length,
       lastActivity: formatDateObject(log.metadata.modifiedAt),
-      duration: calculateDuration(log.messages),
+      duration: log.duration,
       severity: log.severity,
     }
   }

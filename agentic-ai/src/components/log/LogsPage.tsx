@@ -20,6 +20,8 @@ import { useAgentLogs } from '../../hooks/useAgentLogs'
 import { useJobs } from '../../hooks/useJobs'
 import { useSessions } from '../../hooks/useSessions'
 import { AppState } from '../../types/common'
+import { AgentService } from '../../services/agentService'
+import { getLocalizedValue } from '../../utils/agentHelpers'
 import {
   SEVERITY_OPTIONS,
   JOB_TYPE_OPTIONS,
@@ -32,6 +34,7 @@ import {
   handleDataTableSort,
   handleDataTablePage,
 } from '../../utils/dataTableHelpers'
+import i18n from '../../translations/i18n'
 
 interface LogsPageProps {
   appState: AppState
@@ -48,6 +51,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
   )
   const [activeTabIndex, setActiveTabIndex] = useState(0)
   const [metricsRefreshTrigger, setMetricsRefreshTrigger] = useState(0)
+  const [agentName, setAgentName] = useState<string | null>(null)
 
   useEffect(() => {
     const path = location.pathname
@@ -64,6 +68,31 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
       setActiveTabIndex(2)
     }
   }, [location.pathname])
+
+  // Fetch agent name when agentId is in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search)
+    const agentIdParam = urlParams.get('agentId')
+    
+    if (agentIdParam) {
+      const agentService = new AgentService(appState)
+      agentService.getCustomAgents()
+        .then(agents => {
+          const agent = agents.find(a => a.id === agentIdParam)
+          if (agent) {
+            const name = getLocalizedValue(agent.name, i18n.language)
+            setAgentName(name)
+          } else {
+            setAgentName(null)
+          }
+        })
+        .catch(() => {
+          setAgentName(null)
+        })
+    } else {
+      setAgentName(null)
+    }
+  }, [location.search, appState])
 
   const {
     logs,
@@ -140,10 +169,13 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
   )
 
   const handleSessionClick = useCallback(
-    (sessionId: string) => {
-      navigate(`/logs/sessions/${sessionId}`)
+    (sessionId: string, _agentId?: string) => {
+      const urlParams = new URLSearchParams(location.search)
+      const agentIdParam = urlParams.get('agentId')
+      const queryString = agentIdParam ? `?agentId=${agentIdParam}` : ''
+      navigate(`/logs/sessions/${sessionId}${queryString}`)
     },
-    [navigate]
+    [navigate, location.search]
   )
 
   const handleViewModeChange = useCallback(
@@ -452,6 +484,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             filter
             filterPlaceholder={t('filter_by_agent_id', 'Filter by Agent ID')}
             showFilterMenu={false}
+            showClearButton={false}
           />
           <Column
             field="requestId"
@@ -465,6 +498,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
               'Filter by Request ID'
             )}
             showFilterMenu={false}
+            showClearButton={false}
           />
           <Column
             field="sessionId"
@@ -478,6 +512,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
               'Filter by Session ID'
             )}
             showFilterMenu={false}
+            showClearButton={false}
           />
           <Column
             field="lastActivity"
@@ -489,6 +524,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             filter
             filterElement={dateFilterElement}
             showFilterMenu={false}
+            showClearButton={false}
           />
           <Column
             field="severity"
@@ -567,6 +603,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             filter
             filterPlaceholder={t('filter_by_job_id', 'Filter by Job ID')}
             showFilterMenu={false}
+            showClearButton={false}
           />
           <Column
             field="agentId"
@@ -577,6 +614,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             filter
             filterPlaceholder={t('filter_by_agent_id', 'Filter by Agent ID')}
             showFilterMenu={false}
+            showClearButton={false}
           />
           <Column
             field="type"
@@ -589,6 +627,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             filterElement={jobTypeFilterElement}
             filterMatchMode={FilterMatchMode.EQUALS}
             showFilterMenu={false}
+            showClearButton={false}
           />
           <Column
             field="createdAt"
@@ -600,6 +639,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             filter
             filterElement={dateFilterElement}
             showFilterMenu={false}
+            showClearButton={false}
           />
           <Column
             field="status"
@@ -612,6 +652,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
             filterElement={jobStatusFilterElement}
             filterMatchMode={FilterMatchMode.EQUALS}
             showFilterMenu={false}
+            showClearButton={false}
           />
         </DataTable>
       </div>
@@ -674,13 +715,29 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
 
   const currentError = viewMode === 'requests' ? error : jobsError
 
+  // Determine title based on whether agent name is available
+  const pageTitle = agentName 
+    ? `${agentName} ${t('logs', 'Logs')}`
+    : t('agent_logs', 'Agent Logs')
+
+  // Check if agentId is in URL to show back button
+  const urlParams = new URLSearchParams(location.search)
+  const agentIdParam = urlParams.get('agentId')
+  const hasAgentId = !!agentIdParam
+
+  const handleBackToAgents = useCallback(() => {
+    navigate('/agents')
+  }, [navigate])
+
   return (
     <BasePage
       loading={currentLoading}
       error={currentError}
-      title={t('agent_logs', 'Agent Logs')}
-      addButtonLabel={t('refresh', 'Refresh')}
-      onAdd={handleRefresh}
+      title={pageTitle}
+      refreshButtonLabel={t('refresh', 'Refresh')}
+      onRefresh={handleRefresh}
+      backButtonLabel={hasAgentId ? t('back_to_agents', 'Back to Agents') : undefined}
+      onBack={hasAgentId ? handleBackToAgents : undefined}
       className="logs"
     >
       {/* Metrics Panel - Show on all tabs */}
