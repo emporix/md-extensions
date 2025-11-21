@@ -30,6 +30,11 @@ const CustomAgentCard = memo(({
   const agentName = getLocalizedValue(agent.name, i18n.language)
   const agentDescription = getLocalizedValue(agent.description, i18n.language)
 
+  const handleViewLogs = () => {
+    const url = `#/logs/sessions?agentId=${agent.id}`
+    window.location.href = url
+  }
+
   const getAgentIcon = () => {
     if (agent.icon && iconMap[agent.icon]) {
       return <FontAwesomeIcon icon={iconMap[agent.icon]} />;
@@ -86,6 +91,12 @@ const CustomAgentCard = memo(({
           label: t('configure'),
           onClick: () => onConfigure(agent),
           className: 'configure-button'
+        },
+        {
+          icon: 'pi pi-bars',
+          label: t('view_logs', 'Logs'),
+          onClick: handleViewLogs,
+          className: 'view-logs-button'
         },
         {
           icon: 'pi pi-upload',

@@ -8,9 +8,18 @@ import { ConfirmDialog } from './ConfirmDialog';
 interface BasePageProps {
   loading: boolean;
   error: string | null;
-  title: string;
+  title: React.ReactNode;
+  
+  // Add button props
   addButtonLabel?: string;
   onAdd?: () => void;
+  
+  // Refresh button props
+  refreshButtonLabel?: string;
+  onRefresh?: () => void;
+  
+  backButtonLabel?: string;
+  onBack?: () => void;
   children: React.ReactNode;
 
   // Import button props
@@ -35,6 +44,10 @@ export const BasePage: React.FC<BasePageProps> = ({
   title,
   addButtonLabel,
   onAdd,
+  refreshButtonLabel,
+  onRefresh,
+  backButtonLabel,
+  onBack,
   children,
   importButtonIcon,
   onImport,
@@ -51,10 +64,9 @@ export const BasePage: React.FC<BasePageProps> = ({
   if (loading) {
     return (
       <div
-        className={`${className}-page`}
-        style={{ padding: '24px' }}
+        className={`${className}-page p-6`}
       >
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+        <div className="flex justify-center items-center min-h-[200px]">
           <ProgressSpinner />
         </div>
       </div>
@@ -64,19 +76,31 @@ export const BasePage: React.FC<BasePageProps> = ({
   if (error) {
     return (
       <div
-        className={`${className}-page`}
-        style={{ padding: '24px' }}
+        className={`${className}-page p-6`}
       >
         <Message severity="error" text={error} />
       </div>
     );
   }
 
+  const titleWithBackButton = onBack ? (
+    <div className="details-title-with-back">
+      <button 
+        onClick={onBack}
+        className="details-back-button"
+        aria-label={backButtonLabel}
+      >
+        <i className="pi pi-arrow-left" />
+      </button>
+      <span className="details-title-text">{title}</span>
+    </div>
+  ) : title;
+
   return (
-    <div className={`${className}-page`} style={{ padding: '24px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <h1>{title}</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <div className={`${className}-page base-page-container`}>
+      <div className="base-page-header">
+        <h1>{titleWithBackButton}</h1>
+        <div className="base-page-actions">
           {onImport && importButtonIcon && (
             <button
               className="import-action-button"
@@ -87,11 +111,17 @@ export const BasePage: React.FC<BasePageProps> = ({
               <i className={importButtonIcon}></i>
             </button>
           )}
+          {onRefresh && refreshButtonLabel && (
+            <Button
+              label={refreshButtonLabel}
+              icon="pi pi-refresh"
+              onClick={onRefresh}
+            />
+          )}
           {onAdd && addButtonLabel && (
             <Button
               label={addButtonLabel}
               icon="pi pi-plus"
-              className="p-button-primary add-new-agent-button"
               onClick={onAdd}
             />
           )}
