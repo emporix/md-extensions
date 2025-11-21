@@ -353,7 +353,7 @@ const TRANSLATIONS_EN = {
   // Resolution Efficiency
   resolution_efficiency: 'Resolution Efficiency',
   requests_per_session: 'Requests per Session',
-  efficiency_hint: 'Lower is better - fewer requests needed per session',
+  efficiency_hint: 'Lower is better - fewer requests needed per session to solve a request',
   
   // Chart Tooltips
   error_sessions_label: 'Error Sessions',

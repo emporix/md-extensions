@@ -68,7 +68,7 @@ const ResolutionEfficiencyKPI: React.FC<ResolutionEfficiencyKPIProps> = ({ data,
           </div>
         </div>
         <div className="metrics-efficiency-hint">
-          {t('efficiency_hint', 'Lower is better - fewer requests needed per session')}
+          {t('efficiency_hint', 'Lower is better - fewer requests needed per session to solve a request')}
         </div>
       </div>
     </div>

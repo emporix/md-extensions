@@ -400,7 +400,6 @@ export class AnalyticsService {
 
   /**
    * Get resolution efficiency metrics (requests per session)
-   * Lower is better - indicates faster problem resolution
    */
   async getResolutionEfficiency(
     agentId?: string,

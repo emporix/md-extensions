@@ -772,6 +772,8 @@ h1 .details-title-with-back {
 .timeline-message {
   color: var(--color-text-medium);
   white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .timeline-marker {
