@@ -95,6 +95,25 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     }
   }, [toolType, config.entityType])
 
+  useEffect(() => {
+    // Initialize default values for rag_custom tool type
+    if (toolType === 'rag_custom') {
+      const databaseConfig = config.databaseConfig || {}
+      const needsUpdate = !databaseConfig.type || !databaseConfig.entityType
+
+      if (needsUpdate) {
+        setConfig((prev) => ({
+          ...prev,
+          databaseConfig: {
+            ...databaseConfig,
+            type: databaseConfig.type || 'qdrant',
+            entityType: databaseConfig.entityType || 'product',
+          },
+        }))
+      }
+    }
+  }, [toolType, config.databaseConfig])
+
   const handleSave = async () => {
     if (!tool) return
 
@@ -106,7 +125,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         type: toolType,
         config,
         enabled: tool.enabled ?? true,
-      };
+      }
 
       onSave(updatedTool)
     } catch (error) {
@@ -507,7 +526,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             )}
           </div>
 
-          <div className="form-field" style={{marginBottom: '1.5rem'}}>
+          <div className="form-field" style={{ marginBottom: '1.5rem' }}>
             <label className="field-label">
               {t('token', 'Token')}
               <span style={{ color: 'red' }}> *</span>
@@ -925,8 +944,14 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
               { label: t('slack', 'Slack'), value: 'slack' },
               ...(isRagFeatureEnabled
                 ? [
-                    { label: t('rag_custom', 'RAG Custom'), value: 'rag_custom' },
-                    { label: t('rag_emporix', 'RAG Emporix'), value: 'rag_emporix' },
+                    {
+                      label: t('rag_custom', 'RAG Custom'),
+                      value: 'rag_custom',
+                    },
+                    {
+                      label: t('rag_emporix', 'RAG Emporix'),
+                      value: 'rag_emporix',
+                    },
                   ]
                 : []),
             ]}
