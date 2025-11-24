@@ -41,7 +41,10 @@ const ErrorTrendChart: React.FC<ErrorTrendChartProps> = ({ data, loading }) => {
 
     const labels = data.map((item) => {
       const date = new Date(item.date)
-      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+      return date.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+      })
     })
 
     return {
@@ -213,4 +216,3 @@ const ErrorTrendChart: React.FC<ErrorTrendChartProps> = ({ data, loading }) => {
 }
 
 export default ErrorTrendChart
-

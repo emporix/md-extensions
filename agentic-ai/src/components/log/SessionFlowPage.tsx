@@ -11,6 +11,7 @@ import { SeverityBadge } from '../shared'
 import { useSessionFlow } from '../../hooks/useSessionFlow'
 import { LogService } from '../../services/logService'
 import '../../styles/components/SessionFlowPage.css'
+import { LogMessage } from '../../types/Log'
 
 interface SessionFlowPageProps {
   appState: AppState
@@ -94,7 +95,7 @@ const SessionFlowPage: React.FC<SessionFlowPageProps> = ({ appState }) => {
     if (flows.length === 0) return new Map<string, string>()
 
     const allMessages = flows.flatMap((flow) => flow.nodes)
-    const groups = new Map<string, any[]>()
+    const groups = new Map<string, LogMessage[]>()
     allMessages.forEach((message) => {
       const key = message.agentId
       if (!groups.has(key)) {

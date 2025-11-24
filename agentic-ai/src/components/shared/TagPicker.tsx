@@ -1,31 +1,31 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { AVAILABLE_TAGS } from '../../utils/constants';
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { AVAILABLE_TAGS } from '../../utils/constants'
 
 interface TagPickerProps {
-  visible: boolean;
-  selectedTag: string | null;
-  onTagSelect: (tag: string | null) => void;
-  onClose: () => void;
+  visible: boolean
+  selectedTag: string | null
+  onTagSelect: (tag: string | null) => void
+  onClose: () => void
 }
 
 export const TagPicker: React.FC<TagPickerProps> = ({
   visible,
   selectedTag,
   onTagSelect,
-  onClose
+  onClose,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
-  if (!visible) return null;
+  if (!visible) return null
 
   return (
     <div className="tag-picker-overlay" onClick={onClose}>
       <div className="tag-picker-popup" onClick={(e) => e.stopPropagation()}>
         <div className="tag-picker-header">
           <h3>{t('select_tag', 'Select Tag')}</h3>
-          <button 
-            className="tag-picker-close" 
+          <button
+            className="tag-picker-close"
             onClick={onClose}
             aria-label={t('close', 'Close')}
           >
@@ -36,8 +36,8 @@ export const TagPicker: React.FC<TagPickerProps> = ({
           <button
             className={`tag-picker-item ${!selectedTag ? 'selected' : ''}`}
             onClick={() => {
-              onTagSelect(null);
-              onClose();
+              onTagSelect(null)
+              onClose()
             }}
             aria-label={t('no_tag', 'No Tag')}
           >
@@ -48,8 +48,8 @@ export const TagPicker: React.FC<TagPickerProps> = ({
               key={tag}
               className={`tag-picker-item ${selectedTag === tag ? 'selected' : ''}`}
               onClick={() => {
-                onTagSelect(tag);
-                onClose();
+                onTagSelect(tag)
+                onClose()
               }}
               aria-label={tag}
             >
@@ -59,5 +59,5 @@ export const TagPicker: React.FC<TagPickerProps> = ({
         </div>
       </div>
     </div>
-  );
-}; 
+  )
+}

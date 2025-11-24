@@ -1,77 +1,84 @@
-import React, { useState, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import McpCard from './McpCard';
-import McpConfigPanel from './McpConfigPanel';
-import { BasePage } from '../shared/BasePage';
-import { McpServer } from '../../types/Mcp';
-import { useMcp } from '../../hooks/useMcp';
-import { AppState } from '../../types/common';
-import { createEmptyMcpServer } from '../../utils/mcpHelpers';
-import { useToast } from '../../contexts/ToastContext';
-import { ConfirmDialog } from '../shared/ConfirmDialog';
+import React, { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
+import McpCard from './McpCard'
+import McpConfigPanel from './McpConfigPanel'
+import { BasePage } from '../shared/BasePage'
+import { McpServer } from '../../types/Mcp'
+import { useMcp } from '../../hooks/useMcp'
+import { AppState } from '../../types/common'
+import { createEmptyMcpServer } from '../../utils/mcpHelpers'
+import { useToast } from '../../contexts/ToastContext'
+import { ConfirmDialog } from '../shared/ConfirmDialog'
 
 interface McpPageProps {
-  appState?: AppState;
+  appState?: AppState
 }
 
-const McpPage: React.FC<McpPageProps> = ({ 
+const McpPage: React.FC<McpPageProps> = ({
   appState = {
     tenant: 'default',
     language: 'default',
     token: 'default',
-  }
+  },
 }) => {
-  const { t } = useTranslation();
-  const { showSuccess, showError } = useToast();
-  const { 
-    mcpServers, 
-    loading, 
-    error, 
-    upsertMcpServer, 
-    refreshMcpServers, 
+  const { t } = useTranslation()
+  const { showSuccess, showError } = useToast()
+  const {
+    mcpServers,
+    loading,
+    error,
+    upsertMcpServer,
+    refreshMcpServers,
     removeMcpServer,
     toggleMcpServerActive,
-    deleteConfirmVisible, 
-    hideDeleteConfirm, 
+    deleteConfirmVisible,
+    hideDeleteConfirm,
     confirmDelete,
     forceDeleteConfirmVisible,
     hideForceDeleteConfirm,
     confirmForceDelete,
     forceToggleConfirmVisible,
     hideForceToggleConfirm,
-    confirmForceToggle
-  } = useMcp(appState);
-  const [showConfigPanel, setShowConfigPanel] = useState(false);
-  const [selectedMcpServer, setSelectedMcpServer] = useState<McpServer | null>(null);
+    confirmForceToggle,
+  } = useMcp(appState)
+  const [showConfigPanel, setShowConfigPanel] = useState(false)
+  const [selectedMcpServer, setSelectedMcpServer] = useState<McpServer | null>(
+    null
+  )
 
   const handleConfigure = (mcpServer: McpServer) => {
-    setSelectedMcpServer(mcpServer);
-    setShowConfigPanel(true);
-  };
+    setSelectedMcpServer(mcpServer)
+    setShowConfigPanel(true)
+  }
 
   const handleAddNewMcpServer = useCallback(() => {
-    setSelectedMcpServer(createEmptyMcpServer());
-    setShowConfigPanel(true);
-  }, []);
+    setSelectedMcpServer(createEmptyMcpServer())
+    setShowConfigPanel(true)
+  }, [])
 
   const handleConfigSave = async (updatedMcpServer: McpServer) => {
     try {
-      await upsertMcpServer(updatedMcpServer);
-      showSuccess(t('mcp_server_updated_successfully', 'MCP Server updated successfully!'));
-      await refreshMcpServers();
-      setShowConfigPanel(false);
-      setSelectedMcpServer(null);
+      await upsertMcpServer(updatedMcpServer)
+      showSuccess(
+        t('mcp_server_updated_successfully', 'MCP Server updated successfully!')
+      )
+      await refreshMcpServers()
+      setShowConfigPanel(false)
+      setSelectedMcpServer(null)
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to save MCP server';
-      showError(`${t('error_saving_mcp_server', 'Error saving MCP server')}: ${errorMessage}`);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to save MCP server'
+      showError(
+        `${t('error_saving_mcp_server', 'Error saving MCP server')}: ${errorMessage}`
+      )
       // Don't close the panel on error - let user fix the issue
     }
-  };
+  }
 
   const handleConfigClose = () => {
-    setShowConfigPanel(false);
-    setSelectedMcpServer(null);
-  };
+    setShowConfigPanel(false)
+    setSelectedMcpServer(null)
+  }
 
   return (
     <BasePage
@@ -82,7 +89,10 @@ const McpPage: React.FC<McpPageProps> = ({
       onAdd={handleAddNewMcpServer}
       deleteConfirmVisible={deleteConfirmVisible}
       deleteConfirmTitle={t('delete_mcp_server', 'Delete MCP Server')}
-      deleteConfirmMessage={t('delete_mcp_server_confirmation', 'Are you sure you want to delete this MCP server? This action cannot be undone.')}
+      deleteConfirmMessage={t(
+        'delete_mcp_server_confirmation',
+        'Are you sure you want to delete this MCP server? This action cannot be undone.'
+      )}
       onDeleteConfirm={confirmDelete}
       onDeleteCancel={hideDeleteConfirm}
       className="mcp"
@@ -94,8 +104,8 @@ const McpPage: React.FC<McpPageProps> = ({
       ) : (
         <div className="agents-grid">
           {mcpServers.map((mcpServer) => (
-            <McpCard 
-              key={mcpServer.id} 
+            <McpCard
+              key={mcpServer.id}
               mcpServer={mcpServer}
               onToggleActive={toggleMcpServerActive}
               onConfigure={handleConfigure}
@@ -116,7 +126,10 @@ const McpPage: React.FC<McpPageProps> = ({
       <ConfirmDialog
         visible={forceDeleteConfirmVisible}
         title={t('force_delete_mcp', 'Force Delete MCP Server')}
-        message={t('force_delete_mcp_message', 'MCP server is used by agents.\nBy deleting it, the MCP server will be removed from the agents and agents will be disabled.')}
+        message={t(
+          'force_delete_mcp_message',
+          'MCP server is used by agents.\nBy deleting it, the MCP server will be removed from the agents and agents will be disabled.'
+        )}
         onConfirm={confirmForceDelete}
         onHide={hideForceDeleteConfirm}
         confirmLabel={t('force_delete', 'Force Delete')}
@@ -126,14 +139,17 @@ const McpPage: React.FC<McpPageProps> = ({
       <ConfirmDialog
         visible={forceToggleConfirmVisible}
         title={t('force_disable_mcp', 'Force Disable MCP Server')}
-        message={t('force_disable_mcp_message', 'MCP server is used by agents. By disabling it, the agents will be disabled as well.')}
+        message={t(
+          'force_disable_mcp_message',
+          'MCP server is used by agents. By disabling it, the agents will be disabled as well.'
+        )}
         onConfirm={confirmForceToggle}
         onHide={hideForceToggleConfirm}
         confirmLabel={t('force_disable', 'Force Disable')}
         severity="warning"
       />
     </BasePage>
-  );
-};
+  )
+}
 
-export default McpPage;
+export default McpPage

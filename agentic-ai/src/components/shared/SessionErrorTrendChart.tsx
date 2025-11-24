@@ -35,7 +35,10 @@ interface SessionErrorTrendChartProps {
   loading: boolean
 }
 
-const SessionErrorTrendChart: React.FC<SessionErrorTrendChartProps> = ({ data, loading }) => {
+const SessionErrorTrendChart: React.FC<SessionErrorTrendChartProps> = ({
+  data,
+  loading,
+}) => {
   const { t } = useTranslation()
 
   const chartData = useMemo(() => {
@@ -43,7 +46,10 @@ const SessionErrorTrendChart: React.FC<SessionErrorTrendChartProps> = ({ data, l
 
     const labels = data.map((item) => {
       const date = new Date(item.date)
-      return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+      return date.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+      })
     })
 
     return {
@@ -103,7 +109,7 @@ const SessionErrorTrendChart: React.FC<SessionErrorTrendChartProps> = ({ data, l
                 // Translations are handled at component level, using fallback strings here
                 return [
                   `Error Sessions: ${item.errorSessions}`,
-                  `Total Sessions: ${item.totalSessions}`
+                  `Total Sessions: ${item.totalSessions}`,
                 ]
               }
               return []
@@ -157,7 +163,7 @@ const SessionErrorTrendChart: React.FC<SessionErrorTrendChartProps> = ({ data, l
         },
       },
     }
-  }, [t])
+  }, [t, data])
 
   if (loading) {
     return (
@@ -175,7 +181,10 @@ const SessionErrorTrendChart: React.FC<SessionErrorTrendChartProps> = ({ data, l
         <div className="metrics-header">
           <i className="pi pi-chart-line metrics-icon" aria-hidden="true"></i>
           <h3 className="metrics-title">
-            {t('session_error_trend_4_weeks', 'Session Error Trend (Last 4 Weeks)')}
+            {t(
+              'session_error_trend_4_weeks',
+              'Session Error Trend (Last 4 Weeks)'
+            )}
           </h3>
         </div>
         <div className="metrics-empty">
@@ -190,7 +199,10 @@ const SessionErrorTrendChart: React.FC<SessionErrorTrendChartProps> = ({ data, l
       <div className="metrics-header">
         <i className="pi pi-chart-line metrics-icon" aria-hidden="true"></i>
         <h3 className="metrics-title">
-          {t('session_error_trend_4_weeks', 'Session Error Trend (Last 4 Weeks)')}
+          {t(
+            'session_error_trend_4_weeks',
+            'Session Error Trend (Last 4 Weeks)'
+          )}
         </h3>
       </div>
       <div className="metrics-chart-container">
@@ -201,4 +213,3 @@ const SessionErrorTrendChart: React.FC<SessionErrorTrendChartProps> = ({ data, l
 }
 
 export default SessionErrorTrendChart
-

@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode } from 'react'
 
 /**
  * Formats a string with newlines into JSX elements with proper line breaks
@@ -7,10 +7,10 @@ import React, { ReactNode } from 'react';
  */
 export const formatMessageWithLineBreaks = (message: string): ReactNode => {
   if (!message || !message.includes('\n')) {
-    return message;
+    return message
   }
-  
-  const lines = message.split('\n');
+
+  const lines = message.split('\n')
   return (
     <div style={{ whiteSpace: 'pre-line' }}>
       {lines.map((line, index) => (
@@ -20,6 +20,5 @@ export const formatMessageWithLineBreaks = (message: string): ReactNode => {
         </React.Fragment>
       ))}
     </div>
-  );
-};
-
+  )
+}

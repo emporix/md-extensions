@@ -21,7 +21,10 @@ interface SessionSeverityChartProps {
   loading: boolean
 }
 
-const SessionSeverityChart: React.FC<SessionSeverityChartProps> = ({ data, loading }) => {
+const SessionSeverityChart: React.FC<SessionSeverityChartProps> = ({
+  data,
+  loading,
+}) => {
   const { t } = useTranslation()
 
   const chartData = useMemo(() => {
@@ -77,9 +80,12 @@ const SessionSeverityChart: React.FC<SessionSeverityChartProps> = ({ data, loadi
             label: function (context) {
               const label = context.label || ''
               const value = context.parsed || 0
-              const total =
-                context.dataset.data.reduce((acc: number, curr) => acc + (curr as number), 0)
-              const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0'
+              const total = context.dataset.data.reduce(
+                (acc: number, curr) => acc + (curr as number),
+                0
+              )
+              const percentage =
+                total > 0 ? ((value / total) * 100).toFixed(1) : '0'
               return `${label}: ${value} (${percentage}%)`
             },
           },
@@ -101,12 +107,15 @@ const SessionSeverityChart: React.FC<SessionSeverityChartProps> = ({ data, loadi
   if (!chartData) {
     return (
       <div className="metrics-card metrics-card-fixed">
-      <div className="metrics-header">
-        <i className="pi pi-chart-pie metrics-icon" aria-hidden="true"></i>
-        <h3 className="metrics-title">
-          {t('session_severity_distribution', 'Session Severity Distribution')}
-        </h3>
-      </div>
+        <div className="metrics-header">
+          <i className="pi pi-chart-pie metrics-icon" aria-hidden="true"></i>
+          <h3 className="metrics-title">
+            {t(
+              'session_severity_distribution',
+              'Session Severity Distribution'
+            )}
+          </h3>
+        </div>
         <div className="metrics-empty">
           <p>{t('no_session_data', 'No session data available')}</p>
         </div>
@@ -126,7 +135,9 @@ const SessionSeverityChart: React.FC<SessionSeverityChartProps> = ({ data, loadi
       </div>
       <div className="metrics-content">
         <div className="metrics-detail-item metrics-detail-item-spaced">
-          <span className="metrics-label">{t('total_sessions', 'Total Sessions')}:</span>
+          <span className="metrics-label">
+            {t('total_sessions', 'Total Sessions')}:
+          </span>
           <span className="metrics-count">{total.toLocaleString()}</span>
         </div>
       </div>
@@ -138,4 +149,3 @@ const SessionSeverityChart: React.FC<SessionSeverityChartProps> = ({ data, loadi
 }
 
 export default SessionSeverityChart
-

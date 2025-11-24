@@ -41,4 +41,3 @@ export const EFFICIENCY_THRESHOLDS = {
   MODERATE: 8, // 5-8 requests per session
   // > 8 is poor
 } as const
-

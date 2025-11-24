@@ -1,63 +1,72 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import { McpServer } from '../../types/Agent';
-import { McpServer as ManagedMcpServer } from '../../types/Mcp';
-import { McpService } from '../../services/mcpService';
-import { AppState } from '../../types/common';
-import { McpServersList } from '../mcp/mcp-servers/McpServersList';
-import { McpServerForm } from '../mcp/mcp-servers/McpServerForm';
+import React, { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
+import { McpServer } from '../../types/Agent'
+import { McpServer as ManagedMcpServer } from '../../types/Mcp'
+import { McpService } from '../../services/mcpService'
+import { AppState } from '../../types/common'
+import { McpServersList } from '../mcp/mcp-servers/McpServersList'
+import { McpServerForm } from '../mcp/mcp-servers/McpServerForm'
 
 interface McpServersSelectorProps {
-  mcpServers: McpServer[];
-  onChange: (mcpServers: McpServer[]) => void;
-  appState: AppState;
+  mcpServers: McpServer[]
+  onChange: (mcpServers: McpServer[]) => void
+  appState: AppState
 }
 
-export const McpServersSelector: React.FC<McpServersSelectorProps> = ({ 
-  mcpServers, 
-  onChange, 
-  appState 
+export const McpServersSelector: React.FC<McpServersSelectorProps> = ({
+  mcpServers,
+  onChange,
+  appState,
 }) => {
-  const { t } = useTranslation();
-  const [availableMcpServers, setAvailableMcpServers] = useState<ManagedMcpServer[]>([]);
-  const [mcpServersLoading, setMcpServersLoading] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
+  const { t } = useTranslation()
+  const [availableMcpServers, setAvailableMcpServers] = useState<
+    ManagedMcpServer[]
+  >([])
+  const [mcpServersLoading, setMcpServersLoading] = useState(false)
+  const [showAddForm, setShowAddForm] = useState(false)
 
   useEffect(() => {
     const loadMcpServers = async () => {
-      setMcpServersLoading(true);
+      setMcpServersLoading(true)
       try {
-        const mcpService = new McpService(appState);
-        const fetchedServers = await mcpService.getMcpServers();
-        setAvailableMcpServers(fetchedServers);
+        const mcpService = new McpService(appState)
+        const fetchedServers = await mcpService.getMcpServers()
+        setAvailableMcpServers(fetchedServers)
       } catch (error) {
-        setAvailableMcpServers([]);
+        console.error(error)
+        setAvailableMcpServers([])
       } finally {
-        setMcpServersLoading(false);
+        setMcpServersLoading(false)
       }
-    };
+    }
 
-    loadMcpServers();
-  }, [appState]);
+    loadMcpServers()
+  }, [appState])
 
-  const handleAddMcpServer = useCallback((mcpServer: McpServer) => {
-    onChange([...mcpServers, mcpServer]);
-    setShowAddForm(false);
-  }, [mcpServers, onChange]);
+  const handleAddMcpServer = useCallback(
+    (mcpServer: McpServer) => {
+      onChange([...mcpServers, mcpServer])
+      setShowAddForm(false)
+    },
+    [mcpServers, onChange]
+  )
 
-  const handleDeleteMcpServer = useCallback((index: number) => {
-    const newMcpServers = mcpServers.filter((_, idx) => idx !== index);
-    onChange(newMcpServers);
-  }, [mcpServers, onChange]);
+  const handleDeleteMcpServer = useCallback(
+    (index: number) => {
+      const newMcpServers = mcpServers.filter((_, idx) => idx !== index)
+      onChange(newMcpServers)
+    },
+    [mcpServers, onChange]
+  )
 
   const handleCancelAdd = useCallback(() => {
-    setShowAddForm(false);
-  }, []);
+    setShowAddForm(false)
+  }, [])
 
   // Get existing server IDs to prevent duplicates
   const existingCustomServerIds = mcpServers
-    .filter(server => server.type === 'custom' && server.mcpServer?.id)
-    .map(server => server.mcpServer!.id);
+    .filter((server) => server.type === 'custom' && server.mcpServer?.id)
+    .map((server) => server.mcpServer!.id)
 
   return (
     <div className="mcp-servers-section">
@@ -89,5 +98,5 @@ export const McpServersSelector: React.FC<McpServersSelectorProps> = ({
         />
       )}
     </div>
-  );
-};
+  )
+}

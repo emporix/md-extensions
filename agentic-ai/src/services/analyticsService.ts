@@ -1,4 +1,5 @@
 import { AppState } from '../types/common'
+import { RequestLogs, SessionLogs } from '../types/Log'
 import { ApiClient } from './apiClient'
 
 export interface ErrorMetrics {
@@ -41,9 +42,9 @@ interface CacheEntry<T> {
 export class AnalyticsService {
   private api: ApiClient
   private tenant: string
-  
+
   // Static cache shared across all instances
-  private static cache: Map<string, CacheEntry<any>> = new Map()
+  private static cache: Map<string, CacheEntry<unknown>> = new Map()
   private static cacheTTL: number = 5 * 60 * 1000 // 5 minutes in milliseconds
 
   constructor(appState: AppState) {
@@ -78,7 +79,9 @@ export class AnalyticsService {
    * Set cache entry
    */
   private setCache<T>(key: string, data: T): void {
-    console.log(`[Analytics Cache] SET: ${key} (TTL: ${AnalyticsService.cacheTTL / 1000}s)`)
+    console.log(
+      `[Analytics Cache] SET: ${key} (TTL: ${AnalyticsService.cacheTTL / 1000}s)`
+    )
     AnalyticsService.cache.set(key, {
       data,
       timestamp: Date.now(),
@@ -98,8 +101,8 @@ export class AnalyticsService {
   public clearAgentCache(agentId?: string): void {
     const prefix = agentId ? `agent_${agentId}_` : 'all_'
     Array.from(AnalyticsService.cache.keys())
-      .filter(key => key.startsWith(prefix))
-      .forEach(key => AnalyticsService.cache.delete(key))
+      .filter((key) => key.startsWith(prefix))
+      .forEach((key) => AnalyticsService.cache.delete(key))
   }
 
   /**
@@ -123,7 +126,7 @@ export class AnalyticsService {
    */
   private async getTotalCount(queryParams: string): Promise<number> {
     const url = `/ai-service/${this.tenant}/agentic/logs/requests${queryParams}`
-    const response = await this.api.getWithHeaders<any[]>(url, {
+    const response = await this.api.getWithHeaders<RequestLogs[]>(url, {
       headers: this.getHeaders(),
     })
     return parseInt(response.headers.get('X-Total-Count') || '0', 10)
@@ -134,7 +137,7 @@ export class AnalyticsService {
    */
   private async getSessionCount(queryParams: string): Promise<number> {
     const url = `/ai-service/${this.tenant}/agentic/logs/sessions${queryParams}`
-    const response = await this.api.getWithHeaders<any[]>(url, {
+    const response = await this.api.getWithHeaders<SessionLogs[]>(url, {
       headers: this.getHeaders(),
     })
     return parseInt(response.headers.get('X-Total-Count') || '0', 10)
@@ -143,7 +146,10 @@ export class AnalyticsService {
   /**
    * Get error rate metrics
    */
-  async getErrorRate(agentId?: string, forceRefresh: boolean = false): Promise<ErrorMetrics> {
+  async getErrorRate(
+    agentId?: string,
+    forceRefresh: boolean = false
+  ): Promise<ErrorMetrics> {
     const cacheKey = agentId ? `agent_${agentId}_error_rate` : 'all_error_rate'
 
     // Check cache first
@@ -161,7 +167,9 @@ export class AnalyticsService {
         ? `${agentFilter} severity:30`
         : 'severity:30'
 
-      const totalQuery = agentFilter ? `?q=${agentFilter}&pageSize=1` : '?pageSize=1'
+      const totalQuery = agentFilter
+        ? `?q=${agentFilter}&pageSize=1`
+        : '?pageSize=1'
       const errorQuery = `?q=${errorFilter}&pageSize=1`
 
       const [totalLogs, errorLogs] = await Promise.all([
@@ -195,7 +203,9 @@ export class AnalyticsService {
     agentId?: string,
     forceRefresh: boolean = false
   ): Promise<ErrorTrendData[]> {
-    const cacheKey = agentId ? `agent_${agentId}_trend_${weeks}` : `all_trend_${weeks}`
+    const cacheKey = agentId
+      ? `agent_${agentId}_trend_${weeks}`
+      : `all_trend_${weeks}`
 
     // Check cache first
     if (!forceRefresh) {
@@ -256,16 +266,25 @@ export class AnalyticsService {
   /**
    * Get severity distribution
    */
-  async getSeverityDistribution(agentId?: string, forceRefresh: boolean = false): Promise<{
+  async getSeverityDistribution(
+    agentId?: string,
+    forceRefresh: boolean = false
+  ): Promise<{
     info: number
     warning: number
     error: number
   }> {
-    const cacheKey = agentId ? `agent_${agentId}_severity_dist` : 'all_severity_dist'
+    const cacheKey = agentId
+      ? `agent_${agentId}_severity_dist`
+      : 'all_severity_dist'
 
     // Check cache first
     if (!forceRefresh) {
-      const cached = this.getCached<{ info: number; warning: number; error: number }>(cacheKey)
+      const cached = this.getCached<{
+        info: number
+        warning: number
+        error: number
+      }>(cacheKey)
       if (cached) {
         return cached
       }
@@ -300,7 +319,9 @@ export class AnalyticsService {
     agentId?: string,
     forceRefresh: boolean = false
   ): Promise<SessionSeverityDistribution> {
-    const cacheKey = agentId ? `agent_${agentId}_session_severity` : 'all_session_severity'
+    const cacheKey = agentId
+      ? `agent_${agentId}_session_severity`
+      : 'all_session_severity'
 
     // Check cache first
     if (!forceRefresh) {
@@ -340,7 +361,9 @@ export class AnalyticsService {
     agentId?: string,
     forceRefresh: boolean = false
   ): Promise<SessionErrorTrendData[]> {
-    const cacheKey = agentId ? `agent_${agentId}_session_trend_${weeks}` : `all_session_trend_${weeks}`
+    const cacheKey = agentId
+      ? `agent_${agentId}_session_trend_${weeks}`
+      : `all_session_trend_${weeks}`
 
     // Check cache first
     if (!forceRefresh) {
@@ -378,7 +401,8 @@ export class AnalyticsService {
           this.getSessionCount(errorQuery),
         ])
 
-        const errorRate = totalSessions > 0 ? (errorSessions / totalSessions) * 100 : 0
+        const errorRate =
+          totalSessions > 0 ? (errorSessions / totalSessions) * 100 : 0
 
         trends.push({
           date: weekStart.toISOString().split('T')[0], // YYYY-MM-DD
@@ -405,7 +429,9 @@ export class AnalyticsService {
     agentId?: string,
     forceRefresh: boolean = false
   ): Promise<ResolutionEfficiencyMetrics> {
-    const cacheKey = agentId ? `agent_${agentId}_resolution_efficiency` : 'all_resolution_efficiency'
+    const cacheKey = agentId
+      ? `agent_${agentId}_resolution_efficiency`
+      : 'all_resolution_efficiency'
 
     // Check cache first
     if (!forceRefresh) {
@@ -418,17 +444,22 @@ export class AnalyticsService {
     try {
       const agentFilter = agentId ? `triggerAgentId:${agentId}` : ''
 
-      const totalRequestsQuery = agentFilter ? `?q=${agentFilter}&pageSize=1` : '?pageSize=1'
-      const totalSessionsQuery = agentFilter ? `?q=${agentFilter}&pageSize=1` : '?pageSize=1'
+      const totalRequestsQuery = agentFilter
+        ? `?q=${agentFilter}&pageSize=1`
+        : '?pageSize=1'
+      const totalSessionsQuery = agentFilter
+        ? `?q=${agentFilter}&pageSize=1`
+        : '?pageSize=1'
 
       const [totalRequests, totalSessions] = await Promise.all([
         this.getTotalCount(totalRequestsQuery),
         this.getSessionCount(totalSessionsQuery),
       ])
 
-      const requestsPerSession = totalSessions > 0 
-        ? Math.round((totalRequests / totalSessions) * 100) / 100 // Round to 2 decimals
-        : 0
+      const requestsPerSession =
+        totalSessions > 0
+          ? Math.round((totalRequests / totalSessions) * 100) / 100 // Round to 2 decimals
+          : 0
 
       const result: ResolutionEfficiencyMetrics = {
         requestsPerSession,
@@ -446,4 +477,3 @@ export class AnalyticsService {
     }
   }
 }
-

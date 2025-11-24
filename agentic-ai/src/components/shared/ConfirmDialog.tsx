@@ -1,18 +1,18 @@
-import React, { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Dialog } from 'primereact/dialog';
-import { Button } from 'primereact/button';
-import { formatMessageWithLineBreaks } from '../../utils/formatHelpers.tsx';
+import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Dialog } from 'primereact/dialog'
+import { Button } from 'primereact/button'
+import { formatMessageWithLineBreaks } from '../../utils/formatHelpers.tsx'
 
 interface ConfirmDialogProps {
-  visible: boolean;
-  onHide: () => void;
-  onConfirm: () => void;
-  title: string;
-  message: string;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  severity?: 'danger' | 'warning' | 'info';
+  visible: boolean
+  onHide: () => void
+  onConfirm: () => void
+  title: string
+  message: string
+  confirmLabel?: string
+  cancelLabel?: string
+  severity?: 'danger' | 'warning' | 'info'
 }
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -23,28 +23,28 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   message,
   confirmLabel,
   cancelLabel,
-  severity = 'danger'
+  severity = 'danger',
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   const confirmButtonClass = useMemo(() => {
     switch (severity) {
       case 'danger':
-        return 'p-button-danger';
+        return 'p-button-danger'
       case 'warning':
-        return 'p-button-warning';
+        return 'p-button-warning'
       default:
-        return 'p-button-primary';
+        return 'p-button-primary'
     }
-  }, [severity]);
+  }, [severity])
 
   const formattedMessage = useMemo(() => {
-    const formatted = formatMessageWithLineBreaks(message);
+    const formatted = formatMessageWithLineBreaks(message)
     if (typeof formatted === 'string') {
-      return <p>{formatted}</p>;
+      return <p>{formatted}</p>
     }
-    return formatted;
-  }, [message]);
+    return formatted
+  }, [message])
 
   const footer = (
     <div className="dialog-actions">
@@ -59,7 +59,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         className={`save-agent-button ${confirmButtonClass}`}
       />
     </div>
-  );
+  )
 
   return (
     <Dialog
@@ -74,5 +74,5 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     >
       {formattedMessage}
     </Dialog>
-  );
-}; 
+  )
+}

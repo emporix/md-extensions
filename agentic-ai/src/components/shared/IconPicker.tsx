@@ -1,32 +1,32 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { iconMap } from '../../utils/agentHelpers';
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { iconMap } from '../../utils/agentHelpers'
 
 interface IconPickerProps {
-  visible: boolean;
-  selectedIcon: string;
-  onIconSelect: (icon: string) => void;
-  onClose: () => void;
+  visible: boolean
+  selectedIcon: string
+  onIconSelect: (icon: string) => void
+  onClose: () => void
 }
 
 export const IconPicker: React.FC<IconPickerProps> = ({
   visible,
   selectedIcon,
   onIconSelect,
-  onClose
+  onClose,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
-  if (!visible) return null;
+  if (!visible) return null
 
   return (
     <div className="icon-picker-overlay" onClick={onClose}>
       <div className="icon-picker-popup" onClick={(e) => e.stopPropagation()}>
         <div className="icon-picker-header">
           <h3>{t('select_icon', 'Select Icon')}</h3>
-          <button 
-            className="icon-picker-close" 
+          <button
+            className="icon-picker-close"
             onClick={onClose}
             aria-label={t('close', 'Close')}
           >
@@ -39,8 +39,8 @@ export const IconPicker: React.FC<IconPickerProps> = ({
               key={key}
               className={`icon-picker-item ${selectedIcon === key ? 'selected' : ''}`}
               onClick={() => {
-                onIconSelect(key);
-                onClose();
+                onIconSelect(key)
+                onClose()
               }}
               aria-label={key}
             >
@@ -50,5 +50,5 @@ export const IconPicker: React.FC<IconPickerProps> = ({
         </div>
       </div>
     </div>
-  );
-}; 
+  )
+}

@@ -1,4 +1,11 @@
-import { AgentsView, ToolsPage, TokensPage, McpPage, LogsPage, SessionFlowPage } from './components'
+import {
+  AgentsView,
+  ToolsPage,
+  TokensPage,
+  McpPage,
+  LogsPage,
+  SessionFlowPage,
+} from './components'
 import LogDetailsPage from './components/log/LogDetailsPage'
 import JobDetailsPage from './components/log/JobDetailsPage'
 import { useTranslation } from 'react-i18next'
@@ -28,7 +35,9 @@ const RemoteComponent = ({
   const { i18n } = useTranslation()
   useEffect(() => {
     const validLanguages = ['en', 'de']
-    const language = validLanguages.includes(appState.language) ? appState.language : 'en'
+    const language = validLanguages.includes(appState.language)
+      ? appState.language
+      : 'en'
     i18n.changeLanguage(language)
   }, [appState.language, i18n])
 
@@ -40,13 +49,31 @@ const RemoteComponent = ({
           <Route path="/tools" element={<ToolsPage appState={appState} />} />
           <Route path="/tokens" element={<TokensPage appState={appState} />} />
           <Route path="/mcp" element={<McpPage appState={appState} />} />
-          <Route path="/logs" element={<Navigate to="/logs/requests" replace />} />
-          <Route path="/logs/requests" element={<LogsPage appState={appState} />} />
+          <Route
+            path="/logs"
+            element={<Navigate to="/logs/requests" replace />}
+          />
+          <Route
+            path="/logs/requests"
+            element={<LogsPage appState={appState} />}
+          />
           <Route path="/logs/jobs" element={<LogsPage appState={appState} />} />
-          <Route path="/logs/sessions" element={<LogsPage appState={appState} />} />
-          <Route path="/logs/requests/:logId" element={<LogDetailsPage appState={appState} />} />
-          <Route path="/logs/jobs/:jobId" element={<JobDetailsPage appState={appState} />} />
-          <Route path="/logs/sessions/:sessionId" element={<SessionFlowPage appState={appState} />} />
+          <Route
+            path="/logs/sessions"
+            element={<LogsPage appState={appState} />}
+          />
+          <Route
+            path="/logs/requests/:logId"
+            element={<LogDetailsPage appState={appState} />}
+          />
+          <Route
+            path="/logs/jobs/:jobId"
+            element={<JobDetailsPage appState={appState} />}
+          />
+          <Route
+            path="/logs/sessions/:sessionId"
+            element={<SessionFlowPage appState={appState} />}
+          />
           <Route path="/" element={<Navigate to="/agents" replace />} />
         </Routes>
       </HashRouter>

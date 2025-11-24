@@ -1,6 +1,10 @@
 import React, { forwardRef, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DataTable, DataTableFilterMeta } from 'primereact/datatable'
+import {
+  DataTable,
+  DataTableFilterMeta,
+  DataTablePFSEvent,
+} from 'primereact/datatable'
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { Message } from 'primereact/message'
@@ -27,7 +31,10 @@ interface UnifiedLogsTableProps {
   style?: React.CSSProperties
 }
 
-const UnifiedLogsTable = forwardRef<any, UnifiedLogsTableProps>(
+const UnifiedLogsTable = forwardRef<
+  React.ComponentRef<typeof DataTable>,
+  UnifiedLogsTableProps
+>(
   (
     {
       messages,
@@ -84,14 +91,14 @@ const UnifiedLogsTable = forwardRef<any, UnifiedLogsTableProps>(
     )
 
     // Filter change handler
-    const handleFilterChange = useCallback((e: any) => {
+    const handleFilterChange = useCallback((e: DataTablePFSEvent) => {
       setFilters(e.filters as DataTableFilterMeta)
     }, [])
 
     // Sort change handler
-    const handleSort = useCallback((e: any) => {
+    const handleSort = useCallback((e: DataTablePFSEvent) => {
       setSortField(e.sortField)
-      setSortOrder(e.sortOrder)
+      setSortOrder(e.sortOrder as 1 | -1)
     }, [])
 
     const severityBodyTemplate = (rowData: LogMessage) => {
@@ -104,12 +111,14 @@ const UnifiedLogsTable = forwardRef<any, UnifiedLogsTableProps>(
 
     const messageBodyTemplate = (rowData: LogMessage) => {
       // Replace \n with actual line breaks
-      const formattedMessage = rowData.message.split('\\n').map((line, index, array) => (
-        <React.Fragment key={index}>
-          {line}
-          {index < array.length - 1 && <br />}
-        </React.Fragment>
-      ))
+      const formattedMessage = rowData.message
+        .split('\\n')
+        .map((line, index, array) => (
+          <React.Fragment key={index}>
+            {line}
+            {index < array.length - 1 && <br />}
+          </React.Fragment>
+        ))
 
       return (
         <div className="log-message-content">
@@ -164,9 +173,7 @@ const UnifiedLogsTable = forwardRef<any, UnifiedLogsTableProps>(
 
     return (
       <div className="unified-logs-section">
-        {title && (
-          <h4 className="mb-1rem">{t('related_logs', title)}</h4>
-        )}
+        {title && <h4 className="mb-1rem">{t('related_logs', title)}</h4>}
         <div className="unified-logs-table">
           <DataTable
             ref={ref}

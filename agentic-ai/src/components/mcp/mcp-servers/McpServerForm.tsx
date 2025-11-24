@@ -1,75 +1,79 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Dropdown } from 'primereact/dropdown';
-import { MultiSelect } from 'primereact/multiselect';
-import { Button } from 'primereact/button';
-import { McpServer } from '../../../types/Agent';
-import { McpServer as ManagedMcpServer } from '../../../types/Mcp';
-import { MCP_SERVERS, McpKey } from '../../../utils/constants';
+import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Dropdown } from 'primereact/dropdown'
+import { MultiSelect } from 'primereact/multiselect'
+import { Button } from 'primereact/button'
+import { McpServer } from '../../../types/Agent'
+import { McpServer as ManagedMcpServer } from '../../../types/Mcp'
+import { MCP_SERVERS, McpKey } from '../../../utils/constants'
 
 interface McpServerFormProps {
-  onAdd: (mcpServer: McpServer) => void;
-  onCancel: () => void;
-  availableMcpServers: ManagedMcpServer[];
-  existingServerIds: string[];
+  onAdd: (mcpServer: McpServer) => void
+  onCancel: () => void
+  availableMcpServers: ManagedMcpServer[]
+  existingServerIds: string[]
 }
 
-export const McpServerForm: React.FC<McpServerFormProps> = ({ 
-  onAdd, 
-  onCancel, 
+export const McpServerForm: React.FC<McpServerFormProps> = ({
+  onAdd,
+  onCancel,
   availableMcpServers,
-  existingServerIds
+  existingServerIds,
 }) => {
-  const { t } = useTranslation();
-  const [serverType, setServerType] = useState<'predefined' | 'custom'>('predefined');
-  const [selectedDomain, setSelectedDomain] = useState<McpKey>('order');
-  const [selectedTools, setSelectedTools] = useState<string[]>([]);
-  const [selectedCustomServerId, setSelectedCustomServerId] = useState<string>('');
+  const { t } = useTranslation()
+  const [serverType, setServerType] = useState<'predefined' | 'custom'>(
+    'predefined'
+  )
+  const [selectedDomain, setSelectedDomain] = useState<McpKey>('order')
+  const [selectedTools, setSelectedTools] = useState<string[]>([])
+  const [selectedCustomServerId, setSelectedCustomServerId] =
+    useState<string>('')
 
   // Filter out custom servers that are already selected
   const availableCustomServers = availableMcpServers
-    .filter(server => !existingServerIds.includes(server.id))
-    .map(server => ({
+    .filter((server) => !existingServerIds.includes(server.id))
+    .map((server) => ({
       label: server.name,
-      value: server.id
-    }));
+      value: server.id,
+    }))
 
   const predefinedOptions = Object.entries(MCP_SERVERS)
-    .map(([key, val]) => ({ 
-      label: val.name, 
-      value: key as McpKey
+    .map(([key, val]) => ({
+      label: val.name,
+      value: key as McpKey,
     }))
-    .sort((a, b) => a.label.localeCompare(b.label));
+    .sort((a, b) => a.label.localeCompare(b.label))
 
-  const toolOptions = (MCP_SERVERS[selectedDomain]?.tools?.map((tool: string) => ({ 
-    label: tool, 
-    value: tool 
-  })) || [])
-    .sort((a, b) => a.label.localeCompare(b.label));
+  const toolOptions = (
+    MCP_SERVERS[selectedDomain]?.tools?.map((tool: string) => ({
+      label: tool,
+      value: tool,
+    })) || []
+  ).sort((a, b) => a.label.localeCompare(b.label))
 
   const handleAdd = () => {
     if (serverType === 'predefined' && selectedTools.length > 0) {
-      onAdd({ 
-        type: 'predefined', 
+      onAdd({
+        type: 'predefined',
         domain: selectedDomain,
-        tools: selectedTools 
-      });
+        tools: selectedTools,
+      })
     } else if (serverType === 'custom' && selectedCustomServerId) {
-      onAdd({ 
-        type: 'custom', 
+      onAdd({
+        type: 'custom',
         mcpServer: {
-          id: selectedCustomServerId
-        }
-      });
+          id: selectedCustomServerId,
+        },
+      })
     }
-  };
+  }
 
   const isFormValid = () => {
     if (serverType === 'predefined') {
-      return selectedTools.length > 0;
+      return selectedTools.length > 0
     }
-    return selectedCustomServerId !== '';
-  };
+    return selectedCustomServerId !== ''
+  }
 
   return (
     <div className="mcp-server-form">
@@ -80,13 +84,13 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
             value={serverType}
             options={[
               { label: t('emporix', 'Emporix'), value: 'predefined' },
-              { label: t('custom', 'Custom'), value: 'custom' }
+              { label: t('custom', 'Custom'), value: 'custom' },
             ]}
             onChange={(e) => {
-              setServerType(e.value);
+              setServerType(e.value)
               // Reset selections when changing type
-              setSelectedTools([]);
-              setSelectedCustomServerId('');
+              setSelectedTools([])
+              setSelectedCustomServerId('')
             }}
             className="w-full"
             appendTo="self"
@@ -101,8 +105,8 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
                 value={selectedDomain}
                 options={predefinedOptions}
                 onChange={(e) => {
-                  setSelectedDomain(e.value);
-                  setSelectedTools([]); // Reset tools when domain changes
+                  setSelectedDomain(e.value)
+                  setSelectedTools([]) // Reset tools when domain changes
                 }}
                 className="w-full"
                 appendTo="self"
@@ -125,18 +129,23 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
 
         {serverType === 'custom' && (
           <div className="form-field">
-            <label className="field-label">{t('select_mcp_server', 'Select MCP Server')}</label>
+            <label className="field-label">
+              {t('select_mcp_server', 'Select MCP Server')}
+            </label>
             <Dropdown
               value={selectedCustomServerId}
               options={availableCustomServers}
               onChange={(e) => setSelectedCustomServerId(e.value)}
-              placeholder={t('select_mcp_server_placeholder', 'Choose an MCP server')}
+              placeholder={t(
+                'select_mcp_server_placeholder',
+                'Choose an MCP server'
+              )}
               className="w-full"
               appendTo="self"
             />
           </div>
         )}
-        
+
         <div className="mcp-server-form-actions">
           <Button
             label={t('add', 'Add')}
@@ -152,5 +161,5 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

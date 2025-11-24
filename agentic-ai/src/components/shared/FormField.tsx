@@ -1,31 +1,25 @@
-import React, { memo } from 'react';
+import React, { memo } from 'react'
 
 interface FormFieldProps {
-  label: string;
-  required?: boolean;
-  error?: string;
-  children: React.ReactNode;
-  className?: string;
+  label: string
+  required?: boolean
+  error?: string
+  children: React.ReactNode
+  className?: string
 }
 
-export const FormField: React.FC<FormFieldProps> = memo(({ 
-  label, 
-  required = false, 
-  error, 
-  children, 
-  className = '' 
-}) => {
-  return (
-    <div className={`form-field ${className}`}>
-      <label className="field-label">
-        {label} {required && '*'}
-      </label>
-      {children}
-      {error && (
-        <small className="p-error">{error}</small>
-      )}
-    </div>
-  );
-});
+export const FormField: React.FC<FormFieldProps> = memo(
+  ({ label, required = false, error, children, className = '' }) => {
+    return (
+      <div className={`form-field ${className}`}>
+        <label className="field-label">
+          {label} {required && '*'}
+        </label>
+        {children}
+        {error && <small className="p-error">{error}</small>}
+      </div>
+    )
+  }
+)
 
-FormField.displayName = 'FormField'; 
+FormField.displayName = 'FormField'

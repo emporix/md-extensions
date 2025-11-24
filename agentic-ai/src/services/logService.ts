@@ -46,18 +46,19 @@ export class LogService {
 
     // Build q parameter with filters
     const qParts: string[] = []
-    
+
     // Add agentId filter if provided (for backward compatibility)
     if (params.agentId) {
       qParts.push(`triggerAgentId:${params.agentId}`)
     }
-    
+
     if (params.filters) {
       Object.entries(params.filters).forEach(([field, value]) => {
         if (value && value.trim()) {
           const trimmedValue = value.trim()
-          const isDateRange = trimmedValue.startsWith('(>=') || trimmedValue.startsWith('(>')
-          
+          const isDateRange =
+            trimmedValue.startsWith('(>=') || trimmedValue.startsWith('(>')
+
           if (field === 'severity' || isDateRange) {
             qParts.push(`${field}:${trimmedValue}`)
           } else {
@@ -66,7 +67,7 @@ export class LogService {
         }
       })
     }
-    
+
     if (qParts.length > 0) {
       queryParams.append('q', qParts.join(' '))
     }
@@ -116,8 +117,7 @@ export class LogService {
     })
     const logs = response.data
     const totalCount = parseInt(
-        response.headers.get('X-Total-Count') ||
-        '0',
+      response.headers.get('X-Total-Count') || '0',
       10
     )
 
@@ -158,8 +158,7 @@ export class LogService {
 
     const logs = response.data
     const totalCount = parseInt(
-        response.headers.get('X-Total-Count') ||
-        '0',
+      response.headers.get('X-Total-Count') || '0',
       10
     )
     const data = logs?.map((log) => this.transformToSummary(log))
