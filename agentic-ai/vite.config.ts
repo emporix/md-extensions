@@ -11,12 +11,7 @@ export default defineConfig({
       exposes: {
         './RemoteComponent': './src/RemoteComponent',
       },
-      shared: [
-        'react',
-        'react-dom',
-        'react-router',
-        'react-i18next',
-      ],
+      shared: ['react', 'react-dom', 'react-router', 'react-i18next'],
     }),
   ],
   server: {
@@ -26,7 +21,6 @@ export default defineConfig({
         'https://dev-admin.emporix.io',
         'https://stage-admin.emporix.io',
         'http://localhost:4200',
-        
       ],
       credentials: true,
     },

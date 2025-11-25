@@ -18,7 +18,7 @@ i18n.use(initReactI18next).init({
   interpolation: {
     escapeValue: false,
   },
-  missingKeyHandler: (_lng, _ns, key, _res) => {
+  missingKeyHandler: (_lng, _ns, key) => {
     return key
   },
   returnEmptyString: false,

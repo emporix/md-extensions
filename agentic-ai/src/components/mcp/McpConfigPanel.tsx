@@ -1,74 +1,75 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { InputText } from 'primereact/inputtext';
-import { Dropdown } from 'primereact/dropdown';
-import { McpConfigPanelProps, McpServer } from '../../types/Mcp';
-import { BaseConfigPanel } from '../shared/BaseConfigPanel';
-import { faServer } from '@fortawesome/free-solid-svg-icons';
-import { Token } from '../../types/Token';
-import { TokensService } from '../../services/tokensService';
+import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { InputText } from 'primereact/inputtext'
+import { Dropdown } from 'primereact/dropdown'
+import { McpConfigPanelProps, McpServer } from '../../types/Mcp'
+import { BaseConfigPanel } from '../shared/BaseConfigPanel'
+import { faServer } from '@fortawesome/free-solid-svg-icons'
+import { Token } from '../../types/Token'
+import { TokensService } from '../../services/tokensService'
 
-const McpConfigPanel: React.FC<McpConfigPanelProps> = ({ 
-  visible, 
-  mcpServer, 
-  onHide, 
+const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
+  visible,
+  mcpServer,
+  onHide,
   onSave,
-  appState
+  appState,
 }) => {
-  const { t } = useTranslation();
-  const [mcpServerId, setMcpServerId] = useState('');
-  const [mcpServerName, setMcpServerName] = useState('');
-  const [transport, setTransport] = useState('sse');
-  const [url, setUrl] = useState('');
-  const [authorizationHeaderName, setAuthorizationHeaderName] = useState('');
-  const [authorizationHeaderTokenId, setAuthorizationHeaderTokenId] = useState('');
-  const [tokens, setTokens] = useState<Token[]>([]);
-  const [tokensLoading, setTokensLoading] = useState(false);
+  const { t } = useTranslation()
+  const [mcpServerId, setMcpServerId] = useState('')
+  const [mcpServerName, setMcpServerName] = useState('')
+  const [transport, setTransport] = useState('sse')
+  const [url, setUrl] = useState('')
+  const [authorizationHeaderName, setAuthorizationHeaderName] = useState('')
+  const [authorizationHeaderTokenId, setAuthorizationHeaderTokenId] =
+    useState('')
+  const [tokens, setTokens] = useState<Token[]>([])
+  const [tokensLoading, setTokensLoading] = useState(false)
 
-
-  const transportOptions = [
-    { label: 'Server-Sent Events (SSE)', value: 'sse' }
-  ];
+  const transportOptions = [{ label: 'Server-Sent Events (SSE)', value: 'sse' }]
 
   // Load tokens when component mounts or appState changes
   useEffect(() => {
     const loadTokens = async () => {
-      if (!appState) return;
-      
-      setTokensLoading(true);
-      try {
-        const tokensService = new TokensService(appState);
-        const fetchedTokens = await tokensService.getTokens();
-        setTokens(fetchedTokens);
-      } catch (error) {
-        setTokens([]);
-      } finally {
-        setTokensLoading(false);
-      }
-    };
+      if (!appState) return
 
-    loadTokens();
-  }, [appState]);
+      setTokensLoading(true)
+      try {
+        const tokensService = new TokensService(appState)
+        const fetchedTokens = await tokensService.getTokens()
+        setTokens(fetchedTokens)
+      } catch (error) {
+        console.error(error)
+        setTokens([])
+      } finally {
+        setTokensLoading(false)
+      }
+    }
+
+    loadTokens()
+  }, [appState])
 
   useEffect(() => {
     if (mcpServer) {
-      setMcpServerId(mcpServer.id || '');
-      setMcpServerName(mcpServer.name);
-      setTransport(mcpServer.transport);
-      setUrl(mcpServer.config.url);
-      setAuthorizationHeaderName(mcpServer.config.authorizationHeaderName || '');
-      setAuthorizationHeaderTokenId(mcpServer.config.authorizationHeaderTokenId || '');
+      setMcpServerId(mcpServer.id || '')
+      setMcpServerName(mcpServer.name)
+      setTransport(mcpServer.transport)
+      setUrl(mcpServer.config.url)
+      setAuthorizationHeaderName(mcpServer.config.authorizationHeaderName || '')
+      setAuthorizationHeaderTokenId(
+        mcpServer.config.authorizationHeaderTokenId || ''
+      )
     }
-  }, [mcpServer]);
+  }, [mcpServer])
 
   // Create token options for dropdown
-  const tokenOptions = tokens.map(token => ({
+  const tokenOptions = tokens.map((token) => ({
     label: token.name,
-    value: token.id
-  }));
+    value: token.id,
+  }))
 
   const handleSave = async () => {
-    if (!mcpServer) return;
+    if (!mcpServer) return
 
     const updatedMcpServer: McpServer = {
       ...mcpServer,
@@ -80,12 +81,15 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
         authorizationHeaderName: authorizationHeaderName || undefined,
         authorizationHeaderTokenId: authorizationHeaderTokenId || undefined,
       },
-    };
+    }
 
-    onSave(updatedMcpServer);
-  };
+    onSave(updatedMcpServer)
+  }
 
-  const canSave = !!mcpServerName.trim() && !!url.trim() && (!!mcpServer?.id || !!mcpServerId.trim());
+  const canSave =
+    !!mcpServerName.trim() &&
+    !!url.trim() &&
+    (!!mcpServer?.id || !!mcpServerId.trim())
 
   return (
     <BaseConfigPanel
@@ -100,7 +104,7 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
     >
       <div className="form-field">
         <label className="field-label">
-          {t('mcp_server_id', 'MCP Server ID')} 
+          {t('mcp_server_id', 'MCP Server ID')}
           {!mcpServer?.id && <span style={{ color: 'red' }}> *</span>}
         </label>
         <InputText
@@ -111,13 +115,15 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
           placeholder={t('enter_mcp_server_id', 'Enter MCP server ID')}
         />
         {!mcpServer?.id && !mcpServerId.trim() && (
-          <small className="p-error">{t('mcp_server_id_required', 'MCP Server ID is required')}</small>
+          <small className="p-error">
+            {t('mcp_server_id_required', 'MCP Server ID is required')}
+          </small>
         )}
       </div>
 
       <div className="form-field">
         <label className="field-label">
-          {t('mcp_server_name', 'MCP Server Name')} 
+          {t('mcp_server_name', 'MCP Server Name')}
           <span style={{ color: 'red' }}> *</span>
         </label>
         <InputText
@@ -127,7 +133,9 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
           placeholder={t('enter_mcp_server_name', 'Enter MCP server name')}
         />
         {!mcpServerName.trim() && (
-          <small className="p-error">{t('mcp_server_name_required', 'MCP Server name is required')}</small>
+          <small className="p-error">
+            {t('mcp_server_name_required', 'MCP Server name is required')}
+          </small>
         )}
       </div>
 
@@ -145,7 +153,7 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
 
       <div className="form-field">
         <label className="field-label">
-          {t('url', 'URL')} 
+          {t('url', 'URL')}
           <span style={{ color: 'red' }}> *</span>
         </label>
         <InputText
@@ -155,35 +163,50 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
           placeholder={t('enter_url', 'Enter URL')}
         />
         {!url.trim() && (
-          <small className="p-error">{t('url_required', 'URL is required')}</small>
+          <small className="p-error">
+            {t('url_required', 'URL is required')}
+          </small>
         )}
       </div>
 
       <div className="form-field">
-        <label className="field-label">{t('authorization_header_name', 'Authorization Header Name')} ({t('optional', 'Optional')})</label>
+        <label className="field-label">
+          {t('authorization_header_name', 'Authorization Header Name')} (
+          {t('optional', 'Optional')})
+        </label>
         <InputText
           value={authorizationHeaderName}
           onChange={(e) => setAuthorizationHeaderName(e.target.value)}
           className="w-full"
-          placeholder={t('enter_authorization_header_name', 'Enter authorization header name')}
+          placeholder={t(
+            'enter_authorization_header_name',
+            'Enter authorization header name'
+          )}
         />
       </div>
 
       <div className="form-field">
-        <label className="field-label">{t('authorization_header_token_id', 'Authorization Header Token ID')} ({t('optional', 'Optional')})</label>
+        <label className="field-label">
+          {t('authorization_header_token_id', 'Authorization Header Token ID')}{' '}
+          ({t('optional', 'Optional')})
+        </label>
         <Dropdown
           value={authorizationHeaderTokenId}
           options={tokenOptions}
           onChange={(e) => setAuthorizationHeaderTokenId(e.value)}
           className="w-full"
-          placeholder={tokensLoading ? t('loading_tokens', 'Loading tokens...') : t('select_token', 'Select token')}
+          placeholder={
+            tokensLoading
+              ? t('loading_tokens', 'Loading tokens...')
+              : t('select_token', 'Select token')
+          }
           disabled={tokensLoading}
           showClear
           appendTo="self"
         />
       </div>
     </BaseConfigPanel>
-  );
-};
+  )
+}
 
-export default McpConfigPanel;
+export default McpConfigPanel

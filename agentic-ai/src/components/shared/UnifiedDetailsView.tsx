@@ -8,6 +8,17 @@ import { formatTimestamp } from '../../utils/formatHelpers'
 import { useScrollToMessage } from '../../hooks/useScrollToMessage'
 import { getJobTypeDisplay } from '../../constants/logConstants'
 
+interface ExportDataItem {
+  id: string
+  name?: string | { en?: string }
+}
+
+interface ExportData {
+  agents?: ExportDataItem[]
+  tools?: ExportDataItem[]
+  mcpServers?: ExportDataItem[]
+}
+
 interface UnifiedDetailsViewProps {
   // Common props
   title: string
@@ -65,10 +76,20 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
   scrollToMessage,
 }) => {
   const { t } = useTranslation()
-  const dataTableRef = useRef<any>(null)
+  const dataTableRef = useRef<React.ComponentRef<typeof UnifiedLogsTable>>(null)
 
   // Use the custom hook for scroll-to-message functionality
   useScrollToMessage(dataTableRef, messages, scrollToMessage, true)
+
+  const getExportItemName = (item: ExportDataItem): string => {
+    if (typeof item.name === 'object' && item.name?.en) {
+      return item.name.en
+    }
+    if (typeof item.name === 'string') {
+      return item.name
+    }
+    return item.id
+  }
 
   const statusBodyTemplate = (status: string) => {
     return <StatusBadge status={status} />
@@ -191,10 +212,7 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
               />
             )}
             {duration && (
-              <InfoCard
-                label={t('duration', 'Duration')}
-                value={duration}
-              />
+              <InfoCard label={t('duration', 'Duration')} value={duration} />
             )}
             {createdAt && (
               <InfoCard
@@ -347,11 +365,11 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
         {exportResult &&
           (() => {
             // Decode base64 data
-            let decodedData: any = null
+            let decodedData: ExportData | null = null
 
             try {
               const decoded = atob(exportResult.data)
-              decodedData = JSON.parse(decoded)
+              decodedData = JSON.parse(decoded) as ExportData
             } catch (error) {
               console.error('Failed to decode export data:', error)
             }
@@ -408,12 +426,10 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
                               </div>
                               <ul className="summary-list">
                                 {decodedData.agents.map(
-                                  (agent: any, idx: number) => (
+                                  (agent: ExportDataItem, idx: number) => (
                                     <li key={idx} className="summary-list-item">
                                       <span className="item-name">
-                                        {agent.name?.en ||
-                                          agent.name ||
-                                          agent.id}
+                                        {getExportItemName(agent)}
                                       </span>
                                       <span className="item-detail">
                                         ID: {agent.id}
@@ -435,10 +451,10 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
                             </div>
                             <ul className="summary-list">
                               {decodedData.tools.map(
-                                (tool: any, idx: number) => (
+                                (tool: ExportDataItem, idx: number) => (
                                   <li key={idx} className="summary-list-item">
                                     <span className="item-name">
-                                      {tool.name?.en || tool.name || tool.id}
+                                      {getExportItemName(tool)}
                                     </span>
                                     <span className="item-detail">
                                       ID: {tool.id}
@@ -461,12 +477,10 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
                               </div>
                               <ul className="summary-list">
                                 {decodedData.mcpServers.map(
-                                  (server: any, idx: number) => (
+                                  (server: ExportDataItem, idx: number) => (
                                     <li key={idx} className="summary-list-item">
                                       <span className="item-name">
-                                        {server.name?.en ||
-                                          server.name ||
-                                          server.id}
+                                        {getExportItemName(server)}
                                       </span>
                                       <span className="item-detail">
                                         ID: {server.id}

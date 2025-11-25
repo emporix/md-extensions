@@ -1,4 +1,4 @@
-import { DataTableFilterMeta } from 'primereact/datatable'
+import { DataTableFilterMeta, DataTablePFSEvent } from 'primereact/datatable'
 import { SEVERITY_TO_NUMBER_MAP } from '../constants/logConstants'
 import { getDateFilter } from './dateHelpers'
 
@@ -73,7 +73,7 @@ export const convertJobTypeToApi = (jobType: string): string => {
  * @returns [apiField, apiOrder, newSortField, newSortOrder]
  */
 export const handleDataTableSort = (
-  event: any,
+  event: DataTablePFSEvent,
   currentSortField: string,
   currentSortOrder: 1 | -1,
   fieldMappings?: Record<string, string>
@@ -105,7 +105,7 @@ export const handleDataTableSort = (
  * @returns ['pageSize' | 'page', value]
  */
 export const handleDataTablePage = (
-  event: any,
+  event: DataTablePFSEvent,
   currentPageSize: number
 ): ['pageSize' | 'page', number] => {
   const { first, rows } = event
@@ -113,7 +113,7 @@ export const handleDataTablePage = (
   if (rows !== currentPageSize) {
     return ['pageSize', rows]
   }
-  
+
   const newPageNumber = Math.floor(first / rows) + 1
   return ['page', newPageNumber]
 }

@@ -1,76 +1,77 @@
-import React, { useState, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import ToolCard from './ToolCard';
-import ToolConfigPanel from './ToolConfigPanel';
-import { BasePage } from '../shared/BasePage';
-import { Tool } from '../../types/Tool';
-import { useTools } from '../../hooks/useTools';
-import { AppState } from '../../types/common';
-import { createEmptyTool } from '../../utils/toolHelpers';
-import { useToast } from '../../contexts/ToastContext';
-import { ConfirmDialog } from '../shared/ConfirmDialog';
+import React, { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
+import ToolCard from './ToolCard'
+import ToolConfigPanel from './ToolConfigPanel'
+import { BasePage } from '../shared/BasePage'
+import { Tool } from '../../types/Tool'
+import { useTools } from '../../hooks/useTools'
+import { AppState } from '../../types/common'
+import { createEmptyTool } from '../../utils/toolHelpers'
+import { useToast } from '../../contexts/ToastContext'
+import { ConfirmDialog } from '../shared/ConfirmDialog'
 
 interface ToolsPageProps {
-  appState?: AppState;
+  appState?: AppState
 }
 
-const ToolsPage: React.FC<ToolsPageProps> = ({ 
+const ToolsPage: React.FC<ToolsPageProps> = ({
   appState = {
     tenant: 'default',
     language: 'default',
     token: 'default',
-  }
+  },
 }) => {
-  const { t } = useTranslation();
-  const { showSuccess } = useToast();
-  const { 
-    tools, 
-    loading, 
-    error, 
-    updateTool, 
+  const { t } = useTranslation()
+  const { showSuccess } = useToast()
+  const {
+    tools,
+    loading,
+    error,
+    updateTool,
     refreshTools,
     removeTool,
     toggleToolActive,
-    deleteConfirmVisible, 
-    hideDeleteConfirm, 
+    deleteConfirmVisible,
+    hideDeleteConfirm,
     confirmDelete,
     forceDeleteConfirmVisible,
     hideForceDeleteConfirm,
     confirmForceDelete,
     forceToggleConfirmVisible,
     hideForceToggleConfirm,
-    confirmForceToggle
-  } = useTools(appState);
-  const [showConfigPanel, setShowConfigPanel] = useState(false);
-  const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
+    confirmForceToggle,
+  } = useTools(appState)
+  const [showConfigPanel, setShowConfigPanel] = useState(false)
+  const [selectedTool, setSelectedTool] = useState<Tool | null>(null)
 
   const handleConfigure = (tool: Tool) => {
-    setSelectedTool(tool);
-    setShowConfigPanel(true);
-  };
+    setSelectedTool(tool)
+    setShowConfigPanel(true)
+  }
 
   const handleAddNewTool = useCallback(() => {
-    setSelectedTool(createEmptyTool());
-    setShowConfigPanel(true);
-  }, []);
+    setSelectedTool(createEmptyTool())
+    setShowConfigPanel(true)
+  }, [])
 
   const handleConfigSave = async (updatedTool: Tool) => {
     try {
-      await updateTool(updatedTool);
-      await refreshTools();
-      showSuccess(t('tool_updated_successfully', 'Tool updated successfully!'));
-      setShowConfigPanel(false);
-      setSelectedTool(null);
+      await updateTool(updatedTool)
+      await refreshTools()
+      showSuccess(t('tool_updated_successfully', 'Tool updated successfully!'))
+      setShowConfigPanel(false)
+      setSelectedTool(null)
     } catch (error) {
-      setShowConfigPanel(false);
-      setSelectedTool(null);
+      console.error(error)
+      setShowConfigPanel(false)
+      setSelectedTool(null)
     }
-  };
+  }
 
   const handleConfigClose = () => {
-    setShowConfigPanel(false);
-    setSelectedTool(null);
-  };
+    setShowConfigPanel(false)
+    setSelectedTool(null)
+  }
 
   return (
     <BasePage
@@ -81,7 +82,10 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
       onAdd={handleAddNewTool}
       deleteConfirmVisible={deleteConfirmVisible}
       deleteConfirmTitle={t('delete_tool', 'Delete Tool')}
-      deleteConfirmMessage={t('delete_tool_confirmation', 'Are you sure you want to delete this tool? This action cannot be undone.')}
+      deleteConfirmMessage={t(
+        'delete_tool_confirmation',
+        'Are you sure you want to delete this tool? This action cannot be undone.'
+      )}
       onDeleteConfirm={confirmDelete}
       onDeleteCancel={hideDeleteConfirm}
       className="tools"
@@ -93,8 +97,8 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
       ) : (
         <div className="agents-grid">
           {tools.map((tool) => (
-            <ToolCard 
-              key={tool.id} 
+            <ToolCard
+              key={tool.id}
               tool={tool}
               onToggleActive={toggleToolActive}
               onConfigure={handleConfigure}
@@ -115,7 +119,10 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
       <ConfirmDialog
         visible={forceDeleteConfirmVisible}
         title={t('force_delete_tool', 'Force Delete Tool')}
-        message={t('force_delete_tool_message', 'Tool is used by agents.\nBy deleting it, the tool will be removed from the agents and agents will be disabled.')}
+        message={t(
+          'force_delete_tool_message',
+          'Tool is used by agents.\nBy deleting it, the tool will be removed from the agents and agents will be disabled.'
+        )}
         onConfirm={confirmForceDelete}
         onHide={hideForceDeleteConfirm}
         confirmLabel={t('force_delete', 'Force Delete')}
@@ -125,14 +132,17 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
       <ConfirmDialog
         visible={forceToggleConfirmVisible}
         title={t('force_disable_tool', 'Force Disable Tool')}
-        message={t('force_disable_tool_message', 'Tool is used by agents. By disabling it, the agents will be disabled as well.')}
+        message={t(
+          'force_disable_tool_message',
+          'Tool is used by agents. By disabling it, the agents will be disabled as well.'
+        )}
         onConfirm={confirmForceToggle}
         onHide={hideForceToggleConfirm}
         confirmLabel={t('force_disable', 'Force Disable')}
         severity="warning"
       />
     </BasePage>
-  );
-};
+  )
+}
 
-export default ToolsPage;
+export default ToolsPage

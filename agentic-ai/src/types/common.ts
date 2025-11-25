@@ -10,4 +10,4 @@ export interface AgentCardBaseProps {
 
 export type AgentStatus = 'active' | 'inactive'
 
-export type ImportSummaryState = 'ENABLED' | 'DISABLED' | 'TO_CREATE' | 'EXISTS' 
+export type ImportSummaryState = 'ENABLED' | 'DISABLED' | 'TO_CREATE' | 'EXISTS'

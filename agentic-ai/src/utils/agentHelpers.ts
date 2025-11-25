@@ -1,34 +1,62 @@
 import { LocalizedString, CustomAgent } from '../types/Agent'
-import { 
-  faHeadset, faUser, faCog, faRobot, faDollarSign, faShoppingCart, 
-  faChartLine, faWrench, faEnvelope, faPhone, faShieldAlt, faBolt,
-  faBullseye, faSearch, faClipboard, faRocket, faLightbulb, faPalette,
-  faChartBar, faLock, faNetworkWired, faMobile
+import {
+  faHeadset,
+  faUser,
+  faCog,
+  faRobot,
+  faDollarSign,
+  faShoppingCart,
+  faChartLine,
+  faWrench,
+  faEnvelope,
+  faPhone,
+  faShieldAlt,
+  faBolt,
+  faBullseye,
+  faSearch,
+  faClipboard,
+  faRocket,
+  faLightbulb,
+  faPalette,
+  faChartBar,
+  faLock,
+  faNetworkWired,
+  faMobile,
 } from '@fortawesome/free-solid-svg-icons'
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
-export const getAgentStatusLabel = (enabled: boolean, t: (key: string) => string): string => {
+export const getAgentStatusLabel = (
+  enabled: boolean,
+  t: (key: string) => string
+): string => {
   return enabled ? t('active') : t('inactive')
 }
 
 /**
  * Extract localized string value, falling back to English if the current language is not available
  */
-export function getLocalizedValue(localizedString: LocalizedString | string, language: string = 'en'): string {
+export function getLocalizedValue(
+  localizedString: LocalizedString | string,
+  language: string = 'en'
+): string {
   if (typeof localizedString === 'string') {
     return localizedString
   }
-  
+
   if (localizedString && typeof localizedString === 'object') {
     return localizedString[language] || localizedString.en || ''
   }
-  
+
   return ''
 }
 
 /**
  * Shared icon map for all agent components
  */
-export const cleanAgentForConfig = (agent: CustomAgent, language: string = 'en'): CustomAgent => {
+export const cleanAgentForConfig = (
+  agent: CustomAgent,
+  language: string = 'en'
+): CustomAgent => {
   return {
     ...agent,
     id: agent.id || '',
@@ -36,7 +64,13 @@ export const cleanAgentForConfig = (agent: CustomAgent, language: string = 'en')
     description: { en: getLocalizedValue(agent.description, language) || '' },
     userPrompt: agent.userPrompt || '',
     triggers: agent.triggers || [{ type: 'endpoint', config: null }],
-    llmConfig: agent.llmConfig || { model: '', temperature: 0, maxTokens: 0, provider: 'emporix_openai', additionalParams: null },
+    llmConfig: agent.llmConfig || {
+      model: '',
+      temperature: 0,
+      maxTokens: 0,
+      provider: 'emporix_openai',
+      additionalParams: null,
+    },
     mcpServers: agent.mcpServers || [],
     nativeTools: agent.nativeTools || [],
     agentCollaborations: agent.agentCollaborations || [],
@@ -48,10 +82,10 @@ export const cleanAgentForConfig = (agent: CustomAgent, language: string = 'en')
       createdAt: new Date().toISOString(),
       modifiedAt: new Date().toISOString(),
       schema: null,
-      mixins: {}
-    }
-  };
-};
+      mixins: {},
+    },
+  }
+}
 
 export const createEmptyAgent = (): CustomAgent => ({
   id: '',
@@ -59,20 +93,32 @@ export const createEmptyAgent = (): CustomAgent => ({
   description: { en: '' },
   userPrompt: '',
   triggers: [{ type: 'endpoint', config: null }],
-  llmConfig: { model: '', temperature: 0, maxTokens: 0, provider: 'emporix_openai', additionalParams: null },
+  llmConfig: {
+    model: '',
+    temperature: 0,
+    maxTokens: 0,
+    provider: 'emporix_openai',
+    additionalParams: null,
+  },
   mcpServers: [],
   nativeTools: [],
   agentCollaborations: [],
   maxRecursionLimit: 20,
   enableMemory: true,
   enabled: true,
-  metadata: { version: 0, createdAt: '', modifiedAt: '', schema: null, mixins: {} },
+  metadata: {
+    version: 0,
+    createdAt: '',
+    modifiedAt: '',
+    schema: null,
+    mixins: {},
+  },
   icon: '',
   tags: [],
-  type: 'custom'
-});
+  type: 'custom',
+})
 
-export const iconMap: Record<string, any> = {
+export const iconMap: Record<string, IconDefinition> = {
   headset: faHeadset,
   user: faUser,
   cog: faCog,
@@ -94,5 +140,5 @@ export const iconMap: Record<string, any> = {
   growth: faChartBar,
   lock: faLock,
   network: faNetworkWired,
-  mobile: faMobile
-}; 
+  mobile: faMobile,
+}

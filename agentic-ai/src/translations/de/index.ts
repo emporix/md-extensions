@@ -12,7 +12,8 @@ const TRANSLATIONS_DE = {
   add_new_agent: 'NEUEN AGENT HINZUFÜGEN',
   my_agents: 'Meine Agenten',
   predefined_agents: 'Vordefinierte Agenten',
-  predefined_agents_description: 'Wir haben eine Reihe von verfügbaren Agenten in unserem System. Fügen Sie beliebige zu Ihrer Liste hinzu, benennen Sie sie um, um das gewünschte Ziel zu erreichen.',
+  predefined_agents_description:
+    'Wir haben eine Reihe von verfügbaren Agenten in unserem System. Fügen Sie beliebige zu Ihrer Liste hinzu, benennen Sie sie um, um das gewünschte Ziel zu erreichen.',
   no_custom_agents: 'Noch keine benutzerdefinierten Agenten erstellt.',
   edit: 'Bearbeiten',
   configure: 'Konfigurieren',
@@ -44,23 +45,28 @@ const TRANSLATIONS_DE = {
   browse_files: 'Dateien durchsuchen',
   invalid_file_type: 'Bitte wählen Sie eine gültige JSON-Datei',
   invalid_export_format: 'Ungültiges Exportdateiformat',
-  please_wait_import: 'Bitte warten Sie, während wir den Agenten importieren...',
+  please_wait_import:
+    'Bitte warten Sie, während wir den Agenten importieren...',
   import_completed: 'Import abgeschlossen',
   enabled: 'Aktiviert',
   disabled: 'Deaktiviert',
   TO_CREATE: 'Zu erstellen',
-  TO_CREATE_note: 'Elemente, die als "Zu erstellen" markiert sind, müssen manuell hinzugefügt werden.',
-  token_required_note: 'Bitte stellen Sie sicher, dass die erforderlichen Tokens bereitgestellt werden, bevor Sie die importierten Entitäten aktivieren.',
+  TO_CREATE_note:
+    'Elemente, die als "Zu erstellen" markiert sind, müssen manuell hinzugefügt werden.',
+  token_required_note:
+    'Bitte stellen Sie sicher, dass die erforderlichen Tokens bereitgestellt werden, bevor Sie die importierten Entitäten aktivieren.',
   agents: 'Agenten',
   being_copied: 'wird kopiert',
   please_wait: 'Bitte warten Sie, während wir die Agentenvorlage kopieren...',
   agent_saved_success: 'Agent erfolgreich zur Liste hinzugefügt!',
   ok: 'OK',
   agent_saved_error: 'Agent konnte nicht hinzugefügt werden!',
-  agent_saved_error_subtitle: 'Bitte versuchen Sie, den Agenten erneut hinzuzufügen.',
+  agent_saved_error_subtitle:
+    'Bitte versuchen Sie, den Agenten erneut hinzuzufügen.',
 
   // Add Agent Dialog
-  customize_agent_subtitle: 'Passen Sie Name und Beschreibung an, damit sie besser zu Ihrer Aufgabe passen.',
+  customize_agent_subtitle:
+    'Passen Sie Name und Beschreibung an, damit sie besser zu Ihrer Aufgabe passen.',
   agent_name: 'Agent Name',
   enter_agent_name: 'Agent Namen eingeben',
   description: 'Beschreibung',
@@ -74,7 +80,8 @@ const TRANSLATIONS_DE = {
 
   // Agent Configuration Panel
   agent_config_panel_title: 'Agent-Konfiguration',
-  agent_config_panel_subtitle: 'Passen Sie Name und Beschreibung an, um sie besser an Ihre spezifischen Bedürfnisse anzupassen.',
+  agent_config_panel_subtitle:
+    'Passen Sie Name und Beschreibung an, um sie besser an Ihre spezifischen Bedürfnisse anzupassen.',
   close: 'Schließen',
   trigger_type: 'Auslöser-Typ',
   trigger_type_endpoint: 'ENDPUNKT',
@@ -111,13 +118,16 @@ const TRANSLATIONS_DE = {
   tool_updated_successfully: 'Tool erfolgreich aktualisiert!',
   error_saving_tool: 'Fehler beim Speichern des Tools',
   delete_tool: 'Tool löschen',
-  delete_tool_confirmation: 'Sind Sie sicher, dass Sie dieses Tool löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+  delete_tool_confirmation:
+    'Sind Sie sicher, dass Sie dieses Tool löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
   tool_deleted_successfully: 'Tool erfolgreich gelöscht!',
   force_delete_tool: 'Tool erzwungen löschen',
-  force_delete_tool_message: 'Tool wird von Agenten verwendet.\nDurch das Löschen wird es aus den Agenten entfernt und die Agenten werden deaktiviert.',
+  force_delete_tool_message:
+    'Tool wird von Agenten verwendet.\nDurch das Löschen wird es aus den Agenten entfernt und die Agenten werden deaktiviert.',
   force_delete: 'Erzwungen löschen',
   force_disable_tool: 'Tool erzwungen deaktivieren',
-  force_disable_tool_message: 'Tool wird von Agenten verwendet. Durch die Deaktivierung werden auch die Agenten deaktiviert.',
+  force_disable_tool_message:
+    'Tool wird von Agenten verwendet. Durch die Deaktivierung werden auch die Agenten deaktiviert.',
   cannot_delete_active_tool: 'Aktives Tool kann nicht gelöscht werden',
   tool_disabled: 'Dieses Tool ist derzeit deaktiviert',
 
@@ -136,10 +146,12 @@ const TRANSLATIONS_DE = {
   token_updated_successfully: 'Token erfolgreich aktualisiert!',
   error_saving_token: 'Fehler beim Speichern des Tokens',
   delete_token: 'Token löschen',
-  delete_token_confirmation: 'Sind Sie sicher, dass Sie dieses Token löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+  delete_token_confirmation:
+    'Sind Sie sicher, dass Sie dieses Token löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
   token_deleted_successfully: 'Token erfolgreich gelöscht!',
   force_delete_token: 'Token erzwungen löschen',
-  force_delete_token_message: 'Token wird von Agenten oder MCP-Servern verwendet.\nDurch das Löschen wird es aus den Agenten und MCP-Servern entfernt und die Agenten werden deaktiviert.',
+  force_delete_token_message:
+    'Token wird von Agenten oder MCP-Servern verwendet.\nDurch das Löschen wird es aus den Agenten und MCP-Servern entfernt und die Agenten werden deaktiviert.',
 
   // Common UI
   save: 'Speichern',
@@ -160,7 +172,8 @@ const TRANSLATIONS_DE = {
   select_mcp_server: 'MCP-Server auswählen',
   select_mcp_server_placeholder: 'MCP-Server auswählen',
   delete_agent: 'Agent löschen',
-  delete_agent_confirmation: 'Sind Sie sicher, dass Sie diesen Agenten löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+  delete_agent_confirmation:
+    'Sind Sie sicher, dass Sie diesen Agenten löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
   updating: 'Aktualisiere...',
   cannot_delete_active_agent: 'Aktiver Agent kann nicht gelöscht werden',
   add_tool: 'Tool hinzufügen',
@@ -197,12 +210,15 @@ const TRANSLATIONS_DE = {
   mcp_server_updated_successfully: 'MCP-Server erfolgreich aktualisiert!',
   error_saving_mcp_server: 'Fehler beim Speichern des MCP-Servers',
   delete_mcp_server: 'MCP-Server löschen',
-  delete_mcp_server_confirmation: 'Sind Sie sicher, dass Sie diesen MCP-Server löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+  delete_mcp_server_confirmation:
+    'Sind Sie sicher, dass Sie diesen MCP-Server löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
   mcp_server_deleted_successfully: 'MCP-Server erfolgreich gelöscht!',
   force_delete_mcp: 'MCP-Server erzwungen löschen',
-  force_delete_mcp_message: 'MCP-Server wird von Agenten verwendet.\nDurch das Löschen wird er aus den Agenten entfernt und die Agenten werden deaktiviert.',
+  force_delete_mcp_message:
+    'MCP-Server wird von Agenten verwendet.\nDurch das Löschen wird er aus den Agenten entfernt und die Agenten werden deaktiviert.',
   force_disable_mcp: 'MCP-Server erzwungen deaktivieren',
-  force_disable_mcp_message: 'MCP-Server wird von Agenten verwendet. Durch die Deaktivierung werden auch die Agenten deaktiviert.',
+  force_disable_mcp_message:
+    'MCP-Server wird von Agenten verwendet. Durch die Deaktivierung werden auch die Agenten deaktiviert.',
   cannot_delete_active_mcp: 'Aktiver MCP-Server kann nicht gelöscht werden',
   mcp_server_disabled: 'Dieser MCP-Server ist derzeit deaktiviert',
   add: 'Hinzufügen',
@@ -240,9 +256,11 @@ const TRANSLATIONS_DE = {
 
   // Slack tool installation
   install_emporix_slack_ai: 'Emporix Slack AI installieren',
-  slack_install_description: 'Schnelle Einrichtung mit einem Klick. Konfiguriert automatisch Ihren Slack-Arbeitsbereich mit den erforderlichen Berechtigungen.',
+  slack_install_description:
+    'Schnelle Einrichtung mit einem Klick. Konfiguriert automatisch Ihren Slack-Arbeitsbereich mit den erforderlichen Berechtigungen.',
   provide_values_manually: 'Werte manuell eingeben',
-  manual_config_description: 'Geben Sie Ihre Slack-Arbeitsbereich-Details manuell ein, wenn Sie eine benutzerdefinierte Konfiguration bevorzugen.',
+  manual_config_description:
+    'Geben Sie Ihre Slack-Arbeitsbereich-Details manuell ein, wenn Sie eine benutzerdefinierte Konfiguration bevorzugen.',
   or: 'oder',
   error_app_state_missing: 'Anwendungsstatus fehlt',
   error_slack_installation: 'Fehler beim Initiieren der Slack-Installation',
@@ -311,9 +329,12 @@ const TRANSLATIONS_DE = {
   filter_by_message: 'Nach Nachricht filtern',
   select_severity: 'Schweregrad auswählen',
   clear_filters: 'Filter löschen',
-  no_jobs_found_with_filters: 'Keine Jobs gefunden, die den Filtern entsprechen',
-  no_logs_found_with_filters: 'Keine Protokolle gefunden, die den Filtern entsprechen',
-  no_sessions_found_with_filters: 'Keine Sitzungen gefunden, die den Filtern entsprechen',
+  no_jobs_found_with_filters:
+    'Keine Jobs gefunden, die den Filtern entsprechen',
+  no_logs_found_with_filters:
+    'Keine Protokolle gefunden, die den Filtern entsprechen',
+  no_sessions_found_with_filters:
+    'Keine Sitzungen gefunden, die den Filtern entsprechen',
 
   // Agent filter
   agent_filter: 'Agent-Filter',
@@ -330,7 +351,7 @@ const TRANSLATIONS_DE = {
   no_trend_data: 'Keine Trenddaten verfügbar',
   error_rate_percent: 'Fehlerrate (%)',
   total_requests: 'Gesamte Anfragen',
-  
+
   // Session Metrics
   session_severity_distribution: 'Sitzungsschweregrad-Verteilung',
   session_error_trend_4_weeks: 'Sitzungsfehlerverlauf (Letzten 4 Wochen)',
@@ -338,12 +359,13 @@ const TRANSLATIONS_DE = {
   error_sessions: 'Fehlersitzungen',
   no_session_data: 'Keine Sitzungsdaten verfügbar',
   week: 'Woche',
-  
+
   // Resolution Efficiency
   resolution_efficiency: 'Lösungseffizienz',
   requests_per_session: 'Anfragen pro Sitzung',
-  efficiency_hint: 'Niedriger ist besser - weniger Anfragen pro Sitzung erforderlich',
-  
+  efficiency_hint:
+    'Niedriger ist besser - weniger Anfragen pro Sitzung erforderlich',
+
   // Chart Tooltips
   error_sessions_label: 'Fehlersitzungen',
   total_sessions_label: 'Gesamte Sitzungen',

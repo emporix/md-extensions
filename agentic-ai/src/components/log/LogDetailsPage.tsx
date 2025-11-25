@@ -42,14 +42,23 @@ const LogDetailsPage: React.FC<LogDetailsPageProps> = ({ appState }) => {
   const scrollToMessage = sessionStorage.getItem('scrollToMessage')
 
   // Extract message and response from log messages
-  const messageRegex = /(?:Agent receive request:|Processing Slack message for user:[^,]*,\s*message:)\s*(.*)/s
+  const messageRegex =
+    /(?:Agent receive request:|Processing Slack message for user:[^,]*,\s*message:)\s*(.*)/s
   const extractedMessage = selectedLog?.messages
-    ?.find((msg) => msg.message.includes('Agent receive request:') || msg.message.includes('Processing Slack message for user:'))
+    ?.find(
+      (msg) =>
+        msg.message.includes('Agent receive request:') ||
+        msg.message.includes('Processing Slack message for user:')
+    )
     ?.message.match(messageRegex)?.[1]
     ?.trim()
 
   const extractedResponse = selectedLog?.messages
-    ?.find((msg) => msg.message.includes('Agent final response:') || msg.message.includes('Slack message sent successfully:'))
+    ?.find(
+      (msg) =>
+        msg.message.includes('Agent final response:') ||
+        msg.message.includes('Slack message sent successfully:')
+    )
     ?.message.replace('Agent final response:', '')
     .replace('Slack message sent successfully:', '')
     .trim()

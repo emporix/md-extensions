@@ -1,23 +1,23 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { Button } from 'primereact/button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeadset } from '@fortawesome/free-solid-svg-icons';
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { InputText } from 'primereact/inputtext'
+import { InputTextarea } from 'primereact/inputtextarea'
+import { Button } from 'primereact/button'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faHeadset } from '@fortawesome/free-solid-svg-icons'
 
 interface FormStepProps {
-  agentId: string;
-  setAgentId: (value: string) => void;
-  agentName: string;
-  setAgentName: (value: string) => void;
-  description: string;
-  setDescription: (value: string) => void;
-  setUserPrompt: (value: string) => void;
-  userPrompt: string;
-  templatePrompt: string;
-  onDiscard: () => void;
-  onSave: () => void;
+  agentId: string
+  setAgentId: (value: string) => void
+  agentName: string
+  setAgentName: (value: string) => void
+  description: string
+  setDescription: (value: string) => void
+  setUserPrompt: (value: string) => void
+  userPrompt: string
+  templatePrompt: string
+  onDiscard: () => void
+  onSave: () => void
 }
 
 export const FormStep: React.FC<FormStepProps> = ({
@@ -31,11 +31,15 @@ export const FormStep: React.FC<FormStepProps> = ({
   userPrompt,
   templatePrompt,
   onDiscard,
-  onSave
+  onSave,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
-  const isFormValid = agentId.trim() && agentName.trim() && description.trim() && userPrompt.trim();
+  const isFormValid =
+    agentId.trim() &&
+    agentName.trim() &&
+    description.trim() &&
+    userPrompt.trim()
 
   return (
     <div className="add-agent-form">
@@ -44,9 +48,14 @@ export const FormStep: React.FC<FormStepProps> = ({
         <div className="agent-icon">
           <FontAwesomeIcon icon={faHeadset} />
         </div>
-        <h2 className="agent-title">{agentName || t('add_agent', 'Add Agent')}</h2>
+        <h2 className="agent-title">
+          {agentName || t('add_agent', 'Add Agent')}
+        </h2>
         <p className="agent-subtitle">
-          {t('customize_agent_description', 'Customize name and description to suit it better to your task.')}
+          {t(
+            'customize_agent_description',
+            'Customize name and description to suit it better to your task.'
+          )}
         </p>
       </div>
 
@@ -64,12 +73,15 @@ export const FormStep: React.FC<FormStepProps> = ({
             placeholder={t('enter_agent_id', 'Enter agent id')}
           />
           {!agentId.trim() && (
-            <small className="p-error">{t('agent_id_required', 'Agent ID is required')}</small>
+            <small className="p-error">
+              {t('agent_id_required', 'Agent ID is required')}
+            </small>
           )}
         </div>
         <div className="form-field">
           <label htmlFor="agent-name" className="field-label">
-            {t('agent_name', 'Agent Name')} <span style={{ color: 'red' }}>*</span>
+            {t('agent_name', 'Agent Name')}{' '}
+            <span style={{ color: 'red' }}>*</span>
           </label>
           <InputText
             id="agent-name"
@@ -79,12 +91,15 @@ export const FormStep: React.FC<FormStepProps> = ({
             placeholder={t('enter_agent_name', 'Enter agent name')}
           />
           {!agentName.trim() && (
-            <small className="p-error">{t('agent_name_required', 'Agent name is required')}</small>
+            <small className="p-error">
+              {t('agent_name_required', 'Agent name is required')}
+            </small>
           )}
         </div>
         <div className="form-field">
           <label htmlFor="agent-description" className="field-label">
-            {t('description', 'Description')} <span style={{ color: 'red' }}>*</span>
+            {t('description', 'Description')}{' '}
+            <span style={{ color: 'red' }}>*</span>
           </label>
           <InputTextarea
             id="agent-description"
@@ -95,12 +110,15 @@ export const FormStep: React.FC<FormStepProps> = ({
             placeholder={t('enter_description', 'Enter description')}
           />
           {!description.trim() && (
-            <small className="p-error">{t('description_required', 'Description is required')}</small>
+            <small className="p-error">
+              {t('description_required', 'Description is required')}
+            </small>
           )}
         </div>
         <div className="form-field">
           <label htmlFor="user-prompt" className="field-label">
-            {t('user_prompt', 'User Prompt')} <span style={{ color: 'red' }}>*</span>
+            {t('user_prompt', 'User Prompt')}{' '}
+            <span style={{ color: 'red' }}>*</span>
           </label>
           <InputTextarea
             id="user-prompt"
@@ -108,10 +126,15 @@ export const FormStep: React.FC<FormStepProps> = ({
             rows={4}
             onChange={(e) => setUserPrompt(e.target.value)}
             className={`w-full ${!userPrompt.trim() ? 'p-invalid' : ''}`}
-            placeholder={t('user_prompt_placeholder', 'User prompt will appear here')}
+            placeholder={t(
+              'user_prompt_placeholder',
+              'User prompt will appear here'
+            )}
           />
           {!userPrompt.trim() && (
-            <small className="p-error">{t('user_prompt_required', 'User prompt is required')}</small>
+            <small className="p-error">
+              {t('user_prompt_required', 'User prompt is required')}
+            </small>
           )}
         </div>
         {templatePrompt && (
@@ -125,7 +148,10 @@ export const FormStep: React.FC<FormStepProps> = ({
               readOnly
               rows={4}
               className="w-full readonly-textarea"
-              placeholder={t('template_prompt_placeholder', 'Template prompt will appear here')}
+              placeholder={t(
+                'template_prompt_placeholder',
+                'Template prompt will appear here'
+              )}
             />
           </div>
         )}
@@ -146,5 +172,5 @@ export const FormStep: React.FC<FormStepProps> = ({
         />
       </div>
     </div>
-  );
-}; 
+  )
+}

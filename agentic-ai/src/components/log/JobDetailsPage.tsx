@@ -46,7 +46,7 @@ const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ appState }) => {
         setLog(logsData)
         setLastFetchedRequestId(requestId)
       } catch (err) {
-        // Silent fail - errors are handled in the UI
+        console.error(err)
       }
     },
     [appState]

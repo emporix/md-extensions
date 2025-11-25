@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import './App.css';
-import RemoteComponent from './RemoteComponent';
-import { Button } from 'primereact/button';
-import { Card } from 'primereact/card';
-import { InputText } from 'primereact/inputtext';
-import 'primereact/resources/themes/lara-light-indigo/theme.css';
-import 'primereact/resources/primereact.min.css';
-import 'primeicons/primeicons.css';
-import { ErrorBoundary } from './components/shared/ErrorBoundary';
+import React, { useState } from 'react'
+import './App.css'
+import RemoteComponent from './RemoteComponent'
+import { Button } from 'primereact/button'
+import { Card } from 'primereact/card'
+import { InputText } from 'primereact/inputtext'
+import 'primereact/resources/themes/lara-light-indigo/theme.css'
+import 'primereact/resources/primereact.min.css'
+import 'primeicons/primeicons.css'
+import { ErrorBoundary } from './components/shared/ErrorBoundary'
 
 function App() {
   const [tenant, setTenant] = useState(localStorage.getItem('tenant') || '')
@@ -33,7 +33,9 @@ function App() {
             <InputText
               id="in"
               value={tenant}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTenant(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setTenant(e.target.value)
+              }
             />
             <label htmlFor="in">Tenant</label>
           </span>
@@ -41,7 +43,9 @@ function App() {
             <InputText
               id="in"
               value={token}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setToken(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setToken(e.target.value)
+              }
             />
             <label htmlFor="in">Token</label>
           </span>
@@ -49,7 +53,9 @@ function App() {
             <InputText
               id="in"
               value={language}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLanguage(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setLanguage(e.target.value)
+              }
             />
             <label htmlFor="in">Language</label>
           </span>
@@ -68,7 +74,7 @@ function App() {
         }}
       />
     </ErrorBoundary>
-  );
+  )
 }
 
 export default App

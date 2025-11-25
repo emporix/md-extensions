@@ -1,19 +1,22 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Token } from '../types/Token';
-import { AppState } from '../types/common';
-import { formatApiError } from '../utils/errorHelpers';
-import { ServiceFactory } from '../services/serviceFactory';
-import { useDeleteConfirmation } from './useDeleteConfirmation';
-import { useUpsertItem } from './useUpsertItem';
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Token } from '../types/Token'
+import { AppState } from '../types/common'
+import { formatApiError } from '../utils/errorHelpers'
+import { ServiceFactory } from '../services/serviceFactory'
+import { useDeleteConfirmation } from './useDeleteConfirmation'
+import { useUpsertItem } from './useUpsertItem'
 
 export const useTokens = (appState: AppState) => {
-  const [tokens, setTokens] = useState<Token[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { t } = useTranslation();
+  const [tokens, setTokens] = useState<Token[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { t } = useTranslation()
 
-  const tokensService = useMemo(() => ServiceFactory.getTokensService(appState), [appState]);
+  const tokensService = useMemo(
+    () => ServiceFactory.getTokensService(appState),
+    [appState]
+  )
 
   const {
     deleteConfirmVisible,
@@ -22,47 +25,49 @@ export const useTokens = (appState: AppState) => {
     confirmDelete,
     forceDeleteConfirmVisible,
     hideForceDeleteConfirm,
-    confirmForceDelete
+    confirmForceDelete,
   } = useDeleteConfirmation({
     onDelete: async (tokenId: string, force?: boolean) => {
-      await tokensService.deleteToken(tokenId, force);
+      await tokensService.deleteToken(tokenId, force)
     },
     onSuccess: (tokenId: string) => {
-      setTokens(prev => prev.filter(token => token.id !== tokenId));
+      setTokens((prev) => prev.filter((token) => token.id !== tokenId))
     },
-    successMessage: t('token_deleted_successfully', 'Token deleted successfully!'),
-    errorMessage: 'Failed to delete token'
-  });
+    successMessage: t(
+      'token_deleted_successfully',
+      'Token deleted successfully!'
+    ),
+    errorMessage: 'Failed to delete token',
+  })
 
   const upsertToken = useUpsertItem({
     onUpsert: (token: Token) => tokensService.upsertToken(token),
     updateItems: setTokens,
     setError: undefined,
-    getId: (token: Token) => token.id
-  });
+    getId: (token: Token) => token.id,
+  })
 
   const loadTokens = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
-      const fetchedTokens = await tokensService.getTokens();
-      setTokens(fetchedTokens);
+      setLoading(true)
+      setError(null)
+      const fetchedTokens = await tokensService.getTokens()
+      setTokens(fetchedTokens)
     } catch (err) {
-      const message = formatApiError(err, 'Failed to load tokens');
-      setError(message);
+      const message = formatApiError(err, 'Failed to load tokens')
+      setError(message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [tokensService]);
-
+  }, [tokensService])
 
   const refreshTokens = useCallback(() => {
-    loadTokens();
-  }, [loadTokens]);
+    loadTokens()
+  }, [loadTokens])
 
   useEffect(() => {
-    loadTokens();
-  }, [loadTokens]);
+    loadTokens()
+  }, [loadTokens])
 
   return {
     tokens,
@@ -77,5 +82,5 @@ export const useTokens = (appState: AppState) => {
     forceDeleteConfirmVisible,
     hideForceDeleteConfirm,
     confirmForceDelete,
-  };
-};
+  }
+}

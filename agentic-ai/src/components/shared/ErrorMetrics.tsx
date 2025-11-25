@@ -45,11 +45,17 @@ const ErrorMetrics: React.FC<ErrorMetricsProps> = ({ data, loading }) => {
         </div>
         <div className="metrics-details">
           <div className="metrics-detail-item">
-            <span className="metrics-label">{t('total_logs', 'Total Logs')}:</span>
-            <span className="metrics-count">{data.totalLogs.toLocaleString()}</span>
+            <span className="metrics-label">
+              {t('total_logs', 'Total Logs')}:
+            </span>
+            <span className="metrics-count">
+              {data.totalLogs.toLocaleString()}
+            </span>
           </div>
           <div className="metrics-detail-item">
-            <span className="metrics-label">{t('error_logs', 'Error Logs')}:</span>
+            <span className="metrics-label">
+              {t('error_logs', 'Error Logs')}:
+            </span>
             <span className="metrics-count metrics-count-error">
               {data.errorLogs.toLocaleString()}
             </span>
@@ -61,4 +67,3 @@ const ErrorMetrics: React.FC<ErrorMetricsProps> = ({ data, loading }) => {
 }
 
 export default ErrorMetrics
-

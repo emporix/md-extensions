@@ -1,7 +1,11 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router'
-import { DataTable, DataTableFilterMeta } from 'primereact/datatable'
+import {
+  DataTable,
+  DataTableFilterMeta,
+  DataTablePFSEvent,
+} from 'primereact/datatable'
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column'
 import { Dropdown } from 'primereact/dropdown'
 import { FilterMatchMode } from 'primereact/api'
@@ -70,12 +74,12 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
     [onSessionClick]
   )
 
-  const handleSessionFilterChange = useCallback((e: any) => {
+  const handleSessionFilterChange = useCallback((e: DataTablePFSEvent) => {
     setSessionFilters(e.filters as DataTableFilterMeta)
   }, [])
 
   const handlePageChangeDataTable = useCallback(
-    (event: any) => {
+    (event: DataTablePFSEvent) => {
       const [action, value] = handleDataTablePage(event, pageSize)
       if (action === 'pageSize') {
         changePageSize(value)
@@ -87,7 +91,7 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
   )
 
   const handleSort = useCallback(
-    (event: any) => {
+    (event: DataTablePFSEvent) => {
       // Map UI field names to API field names
       const fieldMapping: Record<string, string> = {
         sessionId: 'sessionId',
@@ -171,10 +175,13 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
 
   const createDateTimeBodyTemplate = (fieldPath: string) => {
     return (rowData: SessionLogs) => {
-      const value = fieldPath
-        .split('.')
-        .reduce((obj, key) => obj?.[key], rowData as any)
-      return formatTimestamp(value)
+      const value = fieldPath.split('.').reduce((obj: unknown, key: string) => {
+        if (obj && typeof obj === 'object' && key in obj) {
+          return (obj as Record<string, unknown>)[key]
+        }
+        return undefined
+      }, rowData as unknown)
+      return formatTimestamp(value as string)
     }
   }
 
@@ -295,6 +302,7 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
       </div>
     )
   }, [
+    dateFilterElement,
     sessions,
     pageNumber,
     pageSize,

@@ -1,76 +1,80 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { Button } from 'primereact/button';
-import { CustomAgent } from '../../types/Agent';
-import { AppState } from '../../types/common';
-import { IconPicker } from '../shared/IconPicker';
-import { TagPicker } from '../shared/TagPicker';
-import { ConfirmDialog } from '../shared/ConfirmDialog';
-import { McpServersSelector } from './McpServersSelector';
-import { NativeToolsSelector } from './NativeToolsSelector';
-import { AgentCollaborationManager } from './AgentCollaborationManager';
-import { AgentHeader } from './agent-config/AgentHeader';
-import { AgentBasicInfo } from './agent-config/AgentBasicInfo';
-import { LlmConfigSection } from './agent-config/LlmConfigSection';
-import { useAgentConfig } from '../../hooks/useAgentConfig';
-import { usePanelAnimation } from '../../hooks/usePanelAnimation';
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { Button } from 'primereact/button'
+import { CustomAgent } from '../../types/Agent'
+import { AppState } from '../../types/common'
+import { IconPicker } from '../shared/IconPicker'
+import { TagPicker } from '../shared/TagPicker'
+import { ConfirmDialog } from '../shared/ConfirmDialog'
+import { McpServersSelector } from './McpServersSelector'
+import { NativeToolsSelector } from './NativeToolsSelector'
+import { AgentCollaborationManager } from './AgentCollaborationManager'
+import { AgentHeader } from './agent-config/AgentHeader'
+import { AgentBasicInfo } from './agent-config/AgentBasicInfo'
+import { LlmConfigSection } from './agent-config/LlmConfigSection'
+import { useAgentConfig } from '../../hooks/useAgentConfig'
+import { usePanelAnimation } from '../../hooks/usePanelAnimation'
 
 interface AgentConfigPanelProps {
-  visible: boolean;
-  agent: CustomAgent | null;
-  onHide: () => void;
-  onSave: (agent: CustomAgent) => void;
-  appState: AppState;
-  availableAgents: CustomAgent[];
+  visible: boolean
+  agent: CustomAgent | null
+  onHide: () => void
+  onSave: (agent: CustomAgent) => void
+  appState: AppState
+  availableAgents: CustomAgent[]
 }
 
-const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({ 
-  visible, 
-  agent, 
-  onHide, 
-  onSave, 
+const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
+  visible,
+  agent,
+  onHide,
+  onSave,
   appState,
-  availableAgents 
+  availableAgents,
 }) => {
-  const { t } = useTranslation();
-  const [showIconPicker, setShowIconPicker] = React.useState(false);
-  const [showTagPicker, setShowTagPicker] = React.useState(false);
+  const { t } = useTranslation()
+  const [showIconPicker, setShowIconPicker] = React.useState(false)
+  const [showTagPicker, setShowTagPicker] = React.useState(false)
 
-  const { 
-    state, 
-    saving, 
-    updateField, 
-    handleSave, 
+  const {
+    state,
+    saving,
+    updateField,
+    handleSave,
     isFormValid,
     showDisableConfirm,
     disableConfirmMessage,
     handleConfirmDisable,
-    handleCancelDisable
+    handleCancelDisable,
   } = useAgentConfig({
     agent,
     appState,
     onSave,
-    onHide
-  });
+    onHide,
+  })
 
-  const { isVisible, isClosing, handleClose, handleBackdropClick } = usePanelAnimation({
-    visible,
-    onHide
-  });
+  const { isVisible, isClosing, handleClose, handleBackdropClick } =
+    usePanelAnimation({
+      visible,
+      onHide,
+    })
 
-  if (!isVisible) return null;
+  if (!isVisible) return null
 
-  const handleFieldChange = (field: string, value: string | boolean | string[]) => {
-    updateField(field as any, value);
-  };
+  const handleFieldChange = (
+    field: string,
+    value: string | boolean | string[]
+  ) => {
+    updateField(field, value)
+  }
 
   return (
     <>
-      <div 
+      <div
         className={`agent-config-backdrop ${!isClosing ? 'backdrop-visible' : ''}`}
-        onClick={handleBackdropClick} 
+        onClick={handleBackdropClick}
       />
-      
+
       <div className="agent-config-panel">
         <AgentHeader
           agentName={state.agentName}
@@ -79,7 +83,7 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
           onIconClick={() => setShowIconPicker(true)}
           onTagClick={() => setShowTagPicker(true)}
         />
-        
+
         <div className="agent-config-content">
           <AgentBasicInfo
             agentId={state.agentId}
@@ -107,13 +111,15 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
             onChange={(tools) => updateField('nativeTools', tools)}
             appState={appState}
           />
-      <AgentCollaborationManager
-        collaborations={state.agentCollaborations}
-        onChange={(collaborations) => updateField('agentCollaborations', collaborations)}
-        availableAgents={availableAgents}
-        currentAgentId={agent?.id}
-        currentAgentType={state.agentType}
-      />
+          <AgentCollaborationManager
+            collaborations={state.agentCollaborations}
+            onChange={(collaborations) =>
+              updateField('agentCollaborations', collaborations)
+            }
+            availableAgents={availableAgents}
+            currentAgentId={agent?.id}
+            currentAgentType={state.agentType}
+          />
 
           <LlmConfigSection
             model={state.model}
@@ -132,16 +138,16 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
           />
 
           <div className="panel-actions">
-            <Button 
-              label={t('cancel', 'Cancel')} 
-              className="discard-button" 
-              onClick={handleClose} 
+            <Button
+              label={t('cancel', 'Cancel')}
+              className="discard-button"
+              onClick={handleClose}
             />
-            <Button 
-              label={t('save', 'Save')} 
-              className="save-agent-button" 
-              onClick={() => handleSave()} 
-              disabled={saving || !isFormValid} 
+            <Button
+              label={t('save', 'Save')}
+              className="save-agent-button"
+              onClick={() => handleSave()}
+              disabled={saving || !isFormValid}
             />
           </div>
         </div>
@@ -153,7 +159,7 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
         onIconSelect={(icon) => updateField('selectedIcon', icon)}
         onClose={() => setShowIconPicker(false)}
       />
-      
+
       <TagPicker
         visible={showTagPicker}
         selectedTag={state.tags.length > 0 ? state.tags[0] : null}
@@ -164,7 +170,10 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
       <ConfirmDialog
         visible={showDisableConfirm}
         title={t('confirm_save_agent', 'Save and Deactivate Agent')}
-        message={"You can not save the enabled agent with the errors. You can save the agent by disabling it first.\n\n" + disableConfirmMessage}
+        message={
+          'You can not save the enabled agent with the errors. You can save the agent by disabling it first.\n\n' +
+          disableConfirmMessage
+        }
         confirmLabel={t('save_and_deactivate', 'Save and Deactivate')}
         cancelLabel={t('cancel', 'Cancel')}
         onConfirm={handleConfirmDisable}
@@ -172,7 +181,7 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
         severity="warning"
       />
     </>
-  );
-};
+  )
+}
 
-export default AgentConfigPanel; 
+export default AgentConfigPanel

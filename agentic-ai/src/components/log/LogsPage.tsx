@@ -1,7 +1,11 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router'
-import { DataTable, DataTableFilterMeta } from 'primereact/datatable'
+import {
+  DataTable,
+  DataTableFilterMeta,
+  DataTablePFSEvent,
+} from 'primereact/datatable'
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column'
 import { Dropdown } from 'primereact/dropdown'
 import { FilterMatchMode } from 'primereact/api'
@@ -73,12 +77,13 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search)
     const agentIdParam = urlParams.get('agentId')
-    
+
     if (agentIdParam) {
       const agentService = new AgentService(appState)
-      agentService.getCustomAgents()
-        .then(agents => {
-          const agent = agents.find(a => a.id === agentIdParam)
+      agentService
+        .getCustomAgents()
+        .then((agents) => {
+          const agent = agents.find((a) => a.id === agentIdParam)
           if (agent) {
             const name = getLocalizedValue(agent.name, i18n.language)
             setAgentName(name)
@@ -158,18 +163,18 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     (log: LogSummary) => {
       navigate(`/logs/requests/${log.id}`)
     },
-    [navigate, location.search]
+    [navigate]
   )
 
   const handleJobClick = useCallback(
     (job: JobSummary) => {
       navigate(`/logs/jobs/${job.id}`)
     },
-    [navigate, location.search]
+    [navigate]
   )
 
   const handleSessionClick = useCallback(
-    (sessionId: string, _agentId?: string) => {
+    (sessionId: string) => {
       const urlParams = new URLSearchParams(location.search)
       const agentIdParam = urlParams.get('agentId')
       const queryString = agentIdParam ? `?agentId=${agentIdParam}` : ''
@@ -183,8 +188,9 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
       setViewMode(newMode)
       const index = newMode === 'requests' ? 0 : newMode === 'jobs' ? 1 : 2
       setActiveTabIndex(index)
-      
-      const defaultSortField = newMode === 'requests' ? 'lastActivity' : 'createdAt'
+
+      const defaultSortField =
+        newMode === 'requests' ? 'lastActivity' : 'createdAt'
       setSortField(defaultSortField)
       setSortOrder(-1 as 1 | -1)
 
@@ -218,11 +224,11 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     }
 
     // Trigger metrics refresh (force cache refresh)
-    setMetricsRefreshTrigger(prev => prev + 1)
+    setMetricsRefreshTrigger((prev) => prev + 1)
   }, [refreshLogs, refreshJobs, refreshSessions, viewMode, location.search])
 
   const handleSort = useCallback(
-    (event: any) => {
+    (event: DataTablePFSEvent) => {
       // Different mappings for requests vs jobs
       const fieldMapping: Record<string, string> =
         viewMode === 'requests'
@@ -264,7 +270,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
   )
 
   const handleLogsPageChangeDataTable = useCallback(
-    (event: any) => {
+    (event: DataTablePFSEvent) => {
       const [action, value] = handleDataTablePage(event, logsPageSize)
       if (action === 'pageSize') {
         changeLogsPageSize(value)
@@ -276,7 +282,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
   )
 
   const handleJobsPageChangeDataTable = useCallback(
-    (event: any) => {
+    (event: DataTablePFSEvent) => {
       const [action, value] = handleDataTablePage(event, jobsPageSize)
       if (action === 'pageSize') {
         changeJobsPageSize(value)
@@ -413,29 +419,34 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     [t]
   )
 
-  const timestampBodyTemplate = (rowData: LogSummary) => {
-    return formatTimestamp(rowData.lastActivity)
-  }
+  const timestampBodyTemplate = useMemo(
+    () => (rowData: LogSummary) => formatTimestamp(rowData.lastActivity),
+    []
+  )
 
-  const jobStatusBodyTemplate = (rowData: JobSummary) => {
-    return <StatusBadge status={rowData.status} />
-  }
+  const jobStatusBodyTemplate = useCallback(
+    (rowData: JobSummary) => <StatusBadge status={rowData.status} />,
+    []
+  )
 
-  const jobTypeBodyTemplate = (rowData: JobSummary) => {
-    const jobType = rowData.type || 'N/A'
-    return <span>{getJobTypeDisplay(jobType)}</span>
-  }
+  const jobTypeBodyTemplate = useCallback(
+    (rowData: JobSummary) => (
+      <span>{getJobTypeDisplay(rowData.type || 'N/A')}</span>
+    ),
+    []
+  )
 
-  const jobTimestampBodyTemplate = (rowData: JobSummary) => {
-    return formatTimestamp(rowData.createdAt)
-  }
+  const jobTimestampBodyTemplate = useCallback(
+    (rowData: JobSummary) => formatTimestamp(rowData.createdAt),
+    []
+  )
 
   // Memoize filter change handlers to prevent unnecessary re-renders
-  const handleLogFilterChange = useCallback((e: any) => {
+  const handleLogFilterChange = useCallback((e: DataTablePFSEvent) => {
     setLogFilters(e.filters as DataTableFilterMeta)
   }, [])
 
-  const handleJobFilterChange = useCallback((e: any) => {
+  const handleJobFilterChange = useCallback((e: DataTablePFSEvent) => {
     setJobFilters(e.filters as DataTableFilterMeta)
   }, [])
 
@@ -543,6 +554,8 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
       </div>
     )
   }, [
+    dateFilterElement,
+    timestampBodyTemplate,
     logs,
     logsPageNumber,
     logsPageSize,
@@ -665,6 +678,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     jobFilters,
     sortField,
     sortOrder,
+    dateFilterElement,
     handleJobClick,
     handleSort,
     handleJobFilterChange,
@@ -716,7 +730,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
   const currentError = viewMode === 'requests' ? error : jobsError
 
   // Determine title based on whether agent name is available
-  const pageTitle = agentName 
+  const pageTitle = agentName
     ? `${agentName} ${t('logs', 'Logs')}`
     : t('agent_logs', 'Agent Logs')
 
@@ -736,12 +750,17 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
       title={pageTitle}
       refreshButtonLabel={t('refresh', 'Refresh')}
       onRefresh={handleRefresh}
-      backButtonLabel={hasAgentId ? t('back_to_agents', 'Back to Agents') : undefined}
+      backButtonLabel={
+        hasAgentId ? t('back_to_agents', 'Back to Agents') : undefined
+      }
       onBack={hasAgentId ? handleBackToAgents : undefined}
       className="logs"
     >
       {/* Metrics Panel - Show on all tabs */}
-      <MetricsPanel appState={appState} refreshTrigger={metricsRefreshTrigger} />
+      <MetricsPanel
+        appState={appState}
+        refreshTrigger={metricsRefreshTrigger}
+      />
 
       <TabView activeIndex={activeTabIndex} onTabChange={handleTabChange}>
         <TabPanel header={t('requests', 'Requests')}>

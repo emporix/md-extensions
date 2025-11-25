@@ -1,46 +1,48 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Dropdown } from 'primereact/dropdown';
-import { Button } from 'primereact/button';
-import { NativeTool } from '../../../types/Agent';
-import { Tool } from '../../../types/Tool';
+import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Dropdown } from 'primereact/dropdown'
+import { Button } from 'primereact/button'
+import { NativeTool } from '../../../types/Agent'
+import { Tool } from '../../../types/Tool'
 
 interface NativeToolFormProps {
-  onAdd: (nativeTool: NativeTool) => void;
-  onCancel: () => void;
-  availableTools: Tool[];
-  existingToolIds: string[];
+  onAdd: (nativeTool: NativeTool) => void
+  onCancel: () => void
+  availableTools: Tool[]
+  existingToolIds: string[]
 }
 
-export const NativeToolForm: React.FC<NativeToolFormProps> = ({ 
-  onAdd, 
-  onCancel, 
+export const NativeToolForm: React.FC<NativeToolFormProps> = ({
+  onAdd,
+  onCancel,
   availableTools,
-  existingToolIds
+  existingToolIds,
 }) => {
-  const { t } = useTranslation();
-  const [selectedToolId, setSelectedToolId] = useState<string>('');
+  const { t } = useTranslation()
+  const [selectedToolId, setSelectedToolId] = useState<string>('')
 
   // Filter out tools that are already selected
   const availableOptions = availableTools
-    .filter(tool => !existingToolIds.includes(tool.id))
-    .map(tool => ({
+    .filter((tool) => !existingToolIds.includes(tool.id))
+    .map((tool) => ({
       label: tool.name,
-      value: tool.id
+      value: tool.id,
     }))
-    .sort((a, b) => a.label.localeCompare(b.label));
+    .sort((a, b) => a.label.localeCompare(b.label))
 
   const handleAdd = () => {
     if (selectedToolId) {
-      onAdd({ id: selectedToolId });
+      onAdd({ id: selectedToolId })
     }
-  };
+  }
 
   return (
     <div className="native-tool-form">
       <div className="native-tool-form-content">
         <div className="form-field">
-          <label className="field-label">{t('select_tool', 'Select Tool')}</label>
+          <label className="field-label">
+            {t('select_tool', 'Select Tool')}
+          </label>
           <Dropdown
             value={selectedToolId}
             options={availableOptions}
@@ -50,7 +52,7 @@ export const NativeToolForm: React.FC<NativeToolFormProps> = ({
             appendTo="self"
           />
         </div>
-        
+
         <div className="native-tool-form-actions">
           <Button
             label={t('add', 'Add')}
@@ -66,5 +68,5 @@ export const NativeToolForm: React.FC<NativeToolFormProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

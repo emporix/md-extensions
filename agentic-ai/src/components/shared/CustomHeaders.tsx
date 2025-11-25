@@ -1,72 +1,83 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
+import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { InputText } from 'primereact/inputtext'
+import { Button } from 'primereact/button'
 
 interface HeaderPair {
-  id: string;
-  key: string;
-  value: string;
+  id: string
+  key: string
+  value: string
 }
 
 interface CustomHeadersProps {
-  value: Record<string, any>;
-  onChange: (headers: Record<string, any>) => void;
+  value: Record<string, string>
+  onChange: (headers: Record<string, string>) => void
 }
 
-export const CustomHeaders: React.FC<CustomHeadersProps> = ({ value, onChange }) => {
-  const { t } = useTranslation();
-  const [headers, setHeaders] = useState<HeaderPair[]>([]);
+export const CustomHeaders: React.FC<CustomHeadersProps> = ({
+  value,
+  onChange,
+}) => {
+  const { t } = useTranslation()
+  const [headers, setHeaders] = useState<HeaderPair[]>([])
 
   // Initialize headers from value prop
   useEffect(() => {
-    const headerPairs: HeaderPair[] = Object.entries(value || {}).map(([key, value], index) => ({
-      id: `header-${index}`,
-      key,
-      value: String(value)
-    }));
-    setHeaders(headerPairs);
-  }, [value]);
+    const headerPairs: HeaderPair[] = Object.entries(value || {}).map(
+      ([key, value], index) => ({
+        id: `header-${index}`,
+        key,
+        value: String(value),
+      })
+    )
+    setHeaders(headerPairs)
+  }, [value])
 
   // Add a new empty header row
   const addHeader = () => {
     const newHeader: HeaderPair = {
       id: `header-${Date.now()}`,
       key: '',
-      value: ''
-    };
-    setHeaders(prev => [...prev, newHeader]);
-  };
+      value: '',
+    }
+    setHeaders((prev) => [...prev, newHeader])
+  }
 
   const removeHeader = (id: string) => {
-    setHeaders(prev => {
-      const filtered = prev.filter(header => header.id !== id);
-      setTimeout(() => syncToParent(), 0);
-      return filtered;
-    });
-  };
+    setHeaders((prev) => {
+      const filtered = prev.filter((header) => header.id !== id)
+      setTimeout(() => syncToParent(), 0)
+      return filtered
+    })
+  }
 
-  const updateHeader = (id: string, field: 'key' | 'value', newValue: string) => {
-    setHeaders(prev => prev.map(header => 
-      header.id === id ? { ...header, [field]: newValue } : header
-    ));
-  };
+  const updateHeader = (
+    id: string,
+    field: 'key' | 'value',
+    newValue: string
+  ) => {
+    setHeaders((prev) =>
+      prev.map((header) =>
+        header.id === id ? { ...header, [field]: newValue } : header
+      )
+    )
+  }
 
   const handleKeyBlur = () => {
     // Sync to parent when user finishes typing
-    syncToParent();
-  };
+    syncToParent()
+  }
 
   // Sync non-empty headers to parent
   const syncToParent = () => {
-    const headersObject: Record<string, any> = {};
-    headers.forEach(header => {
+    const headersObject: Record<string, string> = {}
+    headers.forEach((header) => {
       if (header.key.trim()) {
-        headersObject[header.key.trim()] = header.value;
+        headersObject[header.key.trim()] = header.value
       }
-    });
-    onChange(headersObject);
-  };
+    })
+    onChange(headersObject)
+  }
 
   return (
     <div className="custom-headers">
@@ -103,5 +114,5 @@ export const CustomHeaders: React.FC<CustomHeadersProps> = ({ value, onChange })
         />
       </div>
     </div>
-  );
-}; 
+  )
+}

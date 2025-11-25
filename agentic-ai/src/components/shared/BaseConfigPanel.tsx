@@ -1,24 +1,24 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { Button } from 'primereact/button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
-import { usePanelAnimation } from '../../hooks/usePanelAnimation';
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { Button } from 'primereact/button'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import { usePanelAnimation } from '../../hooks/usePanelAnimation'
 
 interface BaseConfigPanelProps {
-  visible: boolean;
-  onHide: () => void;
-  title: string;
-  icon: IconDefinition;
-  iconName?: string;
-  children: React.ReactNode;
-  onSave?: () => void;
-  onCancel?: () => void;
-  saving?: boolean;
-  canSave?: boolean;
-  saveLabel?: string;
-  cancelLabel?: string;
-  className?: string;
+  visible: boolean
+  onHide: () => void
+  title: string
+  icon: IconDefinition
+  iconName?: string
+  children: React.ReactNode
+  onSave?: () => void
+  onCancel?: () => void
+  saving?: boolean
+  canSave?: boolean
+  saveLabel?: string
+  cancelLabel?: string
+  className?: string
 }
 
 export const BaseConfigPanel: React.FC<BaseConfigPanelProps> = ({
@@ -34,43 +34,44 @@ export const BaseConfigPanel: React.FC<BaseConfigPanelProps> = ({
   canSave = true,
   saveLabel,
   cancelLabel,
-  className = ''
+  className = '',
 }) => {
-  const { t } = useTranslation();
-  
-  const { isVisible, isClosing, handleClose, handleBackdropClick } = usePanelAnimation({
-    visible,
-    onHide
-  });
+  const { t } = useTranslation()
 
-  if (!isVisible) return null;
+  const { isVisible, isClosing, handleClose, handleBackdropClick } =
+    usePanelAnimation({
+      visible,
+      onHide,
+    })
+
+  if (!isVisible) return null
 
   const handleSaveClick = () => {
     if (onSave && canSave && !saving) {
-      onSave();
+      onSave()
     }
-  };
+  }
 
   const handleCancelClick = () => {
     if (onCancel) {
-      onCancel();
+      onCancel()
     } else {
-      handleClose();
+      handleClose()
     }
-  };
+  }
 
   return (
     <>
-      <div 
+      <div
         className={`agent-config-backdrop ${!isClosing ? 'backdrop-visible' : ''}`}
-        onClick={handleBackdropClick} 
+        onClick={handleBackdropClick}
       />
-      
+
       <div className={`agent-config-panel ${className}`}>
         <div className="agent-config-header">
           <h2 className="panel-title">{title}</h2>
         </div>
-        
+
         <div className="agent-config-content">
           {iconName && (
             <div className="agent-config-icon-row">
@@ -105,7 +106,7 @@ export const BaseConfigPanel: React.FC<BaseConfigPanelProps> = ({
         </div>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default BaseConfigPanel;
+export default BaseConfigPanel

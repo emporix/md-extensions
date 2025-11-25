@@ -12,7 +12,8 @@ const TRANSLATIONS_EN = {
   add_new_agent: 'ADD NEW AGENT',
   my_agents: 'My Agents',
   predefined_agents: 'Predefined Agents',
-  predefined_agents_description: 'We have number of available Agents in our system. Add any to your list, rename it, to make the desired achievement.',
+  predefined_agents_description:
+    'We have number of available Agents in our system. Add any to your list, rename it, to make the desired achievement.',
   no_custom_agents: 'No custom agents created yet.',
   edit: 'edit',
   configure: 'Configure',
@@ -51,13 +52,15 @@ const TRANSLATIONS_EN = {
   disabled: 'Disabled',
   TO_CREATE: 'To be created',
   TO_CREATE_note: 'Items marked as "To be created" need to be added manually.',
-  token_required_note: 'Please make sure that required tokens are provided before enabling the imported entities.',
+  token_required_note:
+    'Please make sure that required tokens are provided before enabling the imported entities.',
   agents: 'Agents',
   being_copied: 'Being Copied',
   please_wait: 'Please wait while we copy the agent template...',
 
   // Add Agent Dialog
-  customize_agent_subtitle: 'Customize name and description to suit it better to your task.',
+  customize_agent_subtitle:
+    'Customize name and description to suit it better to your task.',
   agent_name: 'Agent Name',
   enter_agent_name: 'Enter agent name',
   description: 'Description',
@@ -80,7 +83,8 @@ const TRANSLATIONS_EN = {
 
   // Agent Configuration Panel
   agent_config_panel_title: 'Agent Configuration',
-  agent_config_panel_subtitle: 'Tailor the name and description to better align with your specific needs.',
+  agent_config_panel_subtitle:
+    'Tailor the name and description to better align with your specific needs.',
   close: 'Close',
   trigger_type: 'Trigger Type',
   trigger_type_endpoint: 'ENDPOINT',
@@ -116,13 +120,16 @@ const TRANSLATIONS_EN = {
   tool_updated_successfully: 'Tool updated successfully!',
   error_saving_tool: 'Error saving tool',
   delete_tool: 'Delete Tool',
-  delete_tool_confirmation: 'Are you sure you want to delete this tool? This action cannot be undone.',
+  delete_tool_confirmation:
+    'Are you sure you want to delete this tool? This action cannot be undone.',
   tool_deleted_successfully: 'Tool deleted successfully!',
   force_delete_tool: 'Force Delete Tool',
-  force_delete_tool_message: 'Tool is used by agents.\nBy deleting it, the tool will be removed from the agents and agents will be disabled.',
+  force_delete_tool_message:
+    'Tool is used by agents.\nBy deleting it, the tool will be removed from the agents and agents will be disabled.',
   force_delete: 'Force Delete',
   force_disable_tool: 'Force Disable Tool',
-  force_disable_tool_message: 'Tool is used by agents. By disabling it, the agents will be disabled as well.',
+  force_disable_tool_message:
+    'Tool is used by agents. By disabling it, the agents will be disabled as well.',
   cannot_delete_active_tool: 'Cannot delete active tool',
   tool_disabled: 'This tool is currently disabled',
 
@@ -140,10 +147,12 @@ const TRANSLATIONS_EN = {
   token_updated_successfully: 'Token updated successfully!',
   error_saving_token: 'Error saving token',
   delete_token: 'Delete Token',
-  delete_token_confirmation: 'Are you sure you want to delete this token? This action cannot be undone.',
+  delete_token_confirmation:
+    'Are you sure you want to delete this token? This action cannot be undone.',
   token_deleted_successfully: 'Token deleted successfully!',
   force_delete_token: 'Force Delete Token',
-  force_delete_token_message: 'Token is used by agents or MCP servers.\nBy deleting it, the token will be removed from the agents and MCP servers, and agents will be disabled.',
+  force_delete_token_message:
+    'Token is used by agents or MCP servers.\nBy deleting it, the token will be removed from the agents and MCP servers, and agents will be disabled.',
 
   // Common UI
   save: 'Save',
@@ -164,7 +173,8 @@ const TRANSLATIONS_EN = {
   select_mcp_server: 'Select MCP Server',
   select_mcp_server_placeholder: 'Choose an MCP server',
   delete_agent: 'Delete Agent',
-  delete_agent_confirmation: 'Are you sure you want to delete this agent? This action cannot be undone.',
+  delete_agent_confirmation:
+    'Are you sure you want to delete this agent? This action cannot be undone.',
   updating: 'Updating...',
   cannot_delete_active_agent: 'Cannot delete active agent',
   add_tool: 'Add Tool',
@@ -200,12 +210,15 @@ const TRANSLATIONS_EN = {
   mcp_server_updated_successfully: 'MCP Server updated successfully!',
   error_saving_mcp_server: 'Error saving MCP server',
   delete_mcp_server: 'Delete MCP Server',
-  delete_mcp_server_confirmation: 'Are you sure you want to delete this MCP server? This action cannot be undone.',
+  delete_mcp_server_confirmation:
+    'Are you sure you want to delete this MCP server? This action cannot be undone.',
   mcp_server_deleted_successfully: 'MCP Server deleted successfully!',
   force_delete_mcp: 'Force Delete MCP Server',
-  force_delete_mcp_message: 'MCP server is used by agents.\nBy deleting it, the MCP server will be removed from the agents and agents will be disabled.',
+  force_delete_mcp_message:
+    'MCP server is used by agents.\nBy deleting it, the MCP server will be removed from the agents and agents will be disabled.',
   force_disable_mcp: 'Force Disable MCP Server',
-  force_disable_mcp_message: 'MCP server is used by agents. By disabling it, the agents will be disabled as well.',
+  force_disable_mcp_message:
+    'MCP server is used by agents. By disabling it, the agents will be disabled as well.',
   cannot_delete_active_mcp: 'Cannot delete active MCP server',
   mcp_server_disabled: 'This MCP server is currently disabled',
   add: 'Add',
@@ -243,9 +256,11 @@ const TRANSLATIONS_EN = {
 
   // Slack tool installation
   install_emporix_slack_ai: 'Install Emporix Slack AI',
-  slack_install_description: 'Quick setup with one click. Automatically configure your Slack workspace with the necessary permissions.',
+  slack_install_description:
+    'Quick setup with one click. Automatically configure your Slack workspace with the necessary permissions.',
   provide_values_manually: 'Provide the values manually',
-  manual_config_description: 'Enter your Slack workspace details manually if you prefer custom configuration.',
+  manual_config_description:
+    'Enter your Slack workspace details manually if you prefer custom configuration.',
   or: 'or',
   error_app_state_missing: 'Application state is missing',
   error_slack_installation: 'Error initiating Slack installation',
@@ -341,7 +356,7 @@ const TRANSLATIONS_EN = {
   no_trend_data: 'No trend data available',
   error_rate_percent: 'Error Rate (%)',
   total_requests: 'Total Requests',
-  
+
   // Session Metrics
   session_severity_distribution: 'Session Severity Distribution',
   session_error_trend_4_weeks: 'Session Error Trend (Last 4 Weeks)',
@@ -349,12 +364,13 @@ const TRANSLATIONS_EN = {
   error_sessions: 'Error Sessions',
   no_session_data: 'No session data available',
   week: 'Week',
-  
+
   // Resolution Efficiency
   resolution_efficiency: 'Resolution Efficiency',
   requests_per_session: 'Requests per Session',
-  efficiency_hint: 'Lower is better - fewer requests needed per session to solve a request',
-  
+  efficiency_hint:
+    'Lower is better - fewer requests needed per session to solve a request',
+
   // Chart Tooltips
   error_sessions_label: 'Error Sessions',
   total_sessions_label: 'Total Sessions',
