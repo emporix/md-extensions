@@ -247,6 +247,4 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
   )
 })
 
-AgentsView.displayName = 'AgentsView'
-
 export default AgentsView

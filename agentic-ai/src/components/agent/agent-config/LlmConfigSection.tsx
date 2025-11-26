@@ -4,7 +4,7 @@ import { InputText } from 'primereact/inputtext'
 import { Dropdown } from 'primereact/dropdown'
 import { InputSwitch } from 'primereact/inputswitch'
 import { LLM_PROVIDERS } from '../../../utils/constants'
-import { TokensService } from '../../../services/tokensService'
+import { getTokens } from '../../../services/tokensService'
 import { Token } from '../../../types/Token'
 import { AppState } from '../../../types/common'
 
@@ -52,8 +52,7 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
       if (provider !== 'emporix_openai') {
         setTokensLoading(true)
         try {
-          const tokensService = new TokensService(appState)
-          const fetchedTokens = await tokensService.getTokens()
+          const fetchedTokens = await getTokens(appState)
           setTokens(fetchedTokens)
         } catch (error) {
           console.error(error)

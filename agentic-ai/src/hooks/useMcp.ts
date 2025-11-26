@@ -1,9 +1,14 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { McpServer } from '../types/Mcp'
 import { AppState } from '../types/common'
 import { formatApiError } from '../utils/errorHelpers'
-import { ServiceFactory } from '../services/serviceFactory'
+import {
+  deleteMcpServer,
+  getMcpServers,
+  upsertMcpServer as upsertMcpServerApi,
+  patchMcpServer,
+} from '../services/mcpService'
 import { useDeleteConfirmation } from './useDeleteConfirmation'
 import { useUpsertItem } from './useUpsertItem'
 import { useToast } from '../contexts/ToastContext'
@@ -23,11 +28,6 @@ export const useMcp = (appState: AppState) => {
     enabled: boolean
   } | null>(null)
 
-  const mcpService = useMemo(
-    () => ServiceFactory.getMcpService(appState),
-    [appState]
-  )
-
   const {
     deleteConfirmVisible,
     itemToDelete: mcpServerToDelete,
@@ -39,7 +39,7 @@ export const useMcp = (appState: AppState) => {
     confirmForceDelete,
   } = useDeleteConfirmation({
     onDelete: async (mcpServerId: string, force?: boolean) => {
-      await mcpService.deleteMcpServer(mcpServerId, force)
+      await deleteMcpServer(appState, mcpServerId, force)
     },
     onSuccess: (mcpServerId: string) => {
       setMcpServers((prev) =>
@@ -57,7 +57,7 @@ export const useMcp = (appState: AppState) => {
     try {
       setLoading(true)
       setError(null)
-      const fetchedMcpServers = await mcpService.getMcpServers()
+      const fetchedMcpServers = await getMcpServers(appState)
       setMcpServers(fetchedMcpServers)
     } catch (err) {
       const message = formatApiError(err, 'Failed to load MCP servers')
@@ -65,10 +65,10 @@ export const useMcp = (appState: AppState) => {
     } finally {
       setLoading(false)
     }
-  }, [mcpService])
+  }, [appState])
 
   const upsertMcpServer = useUpsertItem({
-    onUpsert: (server: McpServer) => mcpService.upsertMcpServer(server),
+    onUpsert: (server: McpServer) => upsertMcpServerApi(appState, server),
     updateItems: setMcpServers,
     setError: undefined,
     getId: (server: McpServer) => server.id,
@@ -97,7 +97,7 @@ export const useMcp = (appState: AppState) => {
             value: enabled,
           },
         ]
-        await mcpService.patchMcpServer(mcpServerId, patches, false)
+        await patchMcpServer(appState, mcpServerId, patches, false)
 
         showSuccess(
           `MCP Server ${enabled ? 'activated' : 'deactivated'} successfully!`
@@ -133,7 +133,7 @@ export const useMcp = (appState: AppState) => {
         )
       }
     },
-    [mcpServers, mcpService, showSuccess, showError, loadMcpServers]
+    [mcpServers, appState, showSuccess, showError, loadMcpServers]
   )
 
   const confirmForceToggle = useCallback(async () => {
@@ -155,7 +155,7 @@ export const useMcp = (appState: AppState) => {
           value: enabled,
         },
       ]
-      await mcpService.patchMcpServer(mcpServerId, patches, true)
+      await patchMcpServer(appState, mcpServerId, patches, true)
 
       showSuccess(
         `MCP Server ${enabled ? 'activated' : 'deactivated'} successfully!`
@@ -179,7 +179,7 @@ export const useMcp = (appState: AppState) => {
       setForceToggleConfirmVisible(false)
       setPendingToggle(null)
     }
-  }, [pendingToggle, mcpService, showSuccess, showError, loadMcpServers])
+  }, [pendingToggle, appState, showSuccess, showError, loadMcpServers])
 
   const hideForceToggleConfirm = useCallback(() => {
     setForceToggleConfirmVisible(false)

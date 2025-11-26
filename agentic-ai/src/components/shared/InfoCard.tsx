@@ -6,9 +6,6 @@ interface InfoCardProps {
   isTag?: boolean
 }
 
-/**
- * Reusable info card component for displaying key-value pairs
- */
 export const InfoCard: React.FC<InfoCardProps> = ({
   label,
   value,

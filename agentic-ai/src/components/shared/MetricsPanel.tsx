@@ -14,7 +14,7 @@ import '../../styles/components/MetricsPanel.css'
 
 interface MetricsPanelProps {
   appState: AppState
-  refreshTrigger?: number // Optional prop to trigger refresh from parent
+  refreshTrigger?: number
 }
 
 const MetricsPanel: React.FC<MetricsPanelProps> = ({
@@ -41,11 +41,9 @@ const MetricsPanel: React.FC<MetricsPanelProps> = ({
       try {
         setLoading(true)
 
-        // Get agentId from URL if present
         const urlParams = new URLSearchParams(location.search)
         const agentId = urlParams.get('agentId') || undefined
 
-        // Fetch all session metrics in parallel
         const [efficiencyData, severityData, trendData] = await Promise.all([
           analyticsService.getResolutionEfficiency(agentId, forceRefresh),
           analyticsService.getSessionSeverityDistribution(
@@ -67,12 +65,10 @@ const MetricsPanel: React.FC<MetricsPanelProps> = ({
     [analyticsService, location.search]
   )
 
-  // Initial load (with cache)
   useEffect(() => {
     fetchMetrics(false)
   }, [fetchMetrics])
 
-  // Refresh when parent triggers refresh (force refresh)
   useEffect(() => {
     if (refreshTrigger && refreshTrigger > 0) {
       fetchMetrics(true)

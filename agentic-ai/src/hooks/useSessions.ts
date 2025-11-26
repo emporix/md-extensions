@@ -96,10 +96,8 @@ export const useSessions = (appState: AppState) => {
     setPageNumber(1)
   }, [])
 
-  // Create stable reference for filters to prevent unnecessary re-renders
   const filtersString = useMemo(() => JSON.stringify(filters), [filters])
 
-  // Fetch sessions when dependencies change
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search)
     const agentIdParam = urlParams.get('agentId')
@@ -111,7 +109,6 @@ export const useSessions = (appState: AppState) => {
       pageNumber,
       filters
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     pageSize,
     pageNumber,
@@ -119,6 +116,8 @@ export const useSessions = (appState: AppState) => {
     appState.token,
     location.search,
     filtersString,
+    filters,
+    fetchSessions,
   ])
 
   return {

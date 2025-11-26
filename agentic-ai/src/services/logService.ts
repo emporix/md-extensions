@@ -2,6 +2,11 @@ import { RequestLogs, LogSummary, SessionLogs } from '../types/Log'
 import { AppState } from '../types/common'
 import { ApiClient } from './apiClient'
 import { formatDateObject } from '../utils/formatHelpers'
+import {
+  getApiHeaders,
+  buildQueryParams,
+  parseTotalCount,
+} from '../utils/apiHelpers'
 
 export class LogService {
   private api: ApiClient
@@ -10,70 +15,6 @@ export class LogService {
   constructor(appState: AppState) {
     this.api = new ApiClient(appState)
     this.tenant = appState.tenant
-  }
-
-  private getHeaders(
-    includeTotalCount: boolean = false
-  ): Record<string, string> {
-    const headers: Record<string, string> = {}
-
-    if (includeTotalCount) {
-      headers['X-Total-Count'] = 'true'
-    }
-
-    return headers
-  }
-
-  private buildQueryParams(params: {
-    sortBy?: string
-    sortOrder?: 'ASC' | 'DESC'
-    pageSize?: number
-    pageNumber?: number
-    agentId?: string
-    filters?: Record<string, string>
-  }): string {
-    const queryParams = new URLSearchParams()
-
-    if (params.sortBy && params.sortOrder) {
-      queryParams.append('sort', `${params.sortBy}:${params.sortOrder}`)
-    }
-    if (params.pageSize) {
-      queryParams.append('pageSize', params.pageSize.toString())
-    }
-    if (params.pageNumber) {
-      queryParams.append('pageNumber', params.pageNumber.toString())
-    }
-
-    // Build q parameter with filters
-    const qParts: string[] = []
-
-    // Add agentId filter if provided (for backward compatibility)
-    if (params.agentId) {
-      qParts.push(`triggerAgentId:${params.agentId}`)
-    }
-
-    if (params.filters) {
-      Object.entries(params.filters).forEach(([field, value]) => {
-        if (value && value.trim()) {
-          const trimmedValue = value.trim()
-          const isDateRange =
-            trimmedValue.startsWith('(>=') || trimmedValue.startsWith('(>')
-
-          if (field === 'severity' || isDateRange) {
-            qParts.push(`${field}:${trimmedValue}`)
-          } else {
-            qParts.push(`${field}:~(${trimmedValue})`)
-          }
-        }
-      })
-    }
-
-    if (qParts.length > 0) {
-      queryParams.append('q', qParts.join(' '))
-    }
-
-    const queryString = queryParams.toString()
-    return queryString ? `?${queryString}` : ''
   }
 
   /**
@@ -101,25 +42,28 @@ export class LogService {
     agentId?: string,
     filters?: Record<string, string>
   ): Promise<{ data: LogSummary[]; totalCount: number }> {
-    const queryString = this.buildQueryParams({
-      sortBy,
-      sortOrder,
-      pageSize,
-      pageNumber,
-      agentId,
-      filters,
-    })
+    const queryString = buildQueryParams(
+      {
+        sortBy,
+        sortOrder,
+        pageSize,
+        pageNumber,
+        agentId,
+        filters,
+      },
+      {
+        agentIdField: 'triggerAgentId',
+        exactMatchFields: ['severity'],
+      }
+    )
     const url = `/ai-service/${this.tenant}/agentic/logs/requests${queryString}`
-    const headers = this.getHeaders(true)
+    const headers = getApiHeaders(true)
 
     const response = await this.api.getWithHeaders<RequestLogs[]>(url, {
       headers,
     })
     const logs = response.data
-    const totalCount = parseInt(
-      response.headers.get('X-Total-Count') || '0',
-      10
-    )
+    const totalCount = parseTotalCount(response.headers)
 
     const data = logs.map((log) => this.transformToSummary(log))
 
@@ -127,7 +71,7 @@ export class LogService {
   }
 
   async getAgentLogDetails(logId: string): Promise<RequestLogs> {
-    const headers = this.getHeaders()
+    const headers = getApiHeaders()
     const response = await this.api.getWithHeaders<RequestLogs>(
       `/ai-service/${this.tenant}/agentic/logs/requests/${logId}`,
       { headers }
@@ -136,7 +80,7 @@ export class LogService {
   }
 
   async getRequestLogs(requestId: string): Promise<RequestLogs | null> {
-    const headers = this.getHeaders()
+    const headers = getApiHeaders()
     const response = await this.api.getWithHeaders<RequestLogs[]>(
       `/ai-service/${this.tenant}/agentic/logs/requests?q=requestId:${requestId}`,
       { headers }
@@ -149,18 +93,21 @@ export class LogService {
     pageSize?: number,
     pageNumber?: number
   ): Promise<{ data: LogSummary[]; totalCount: number }> {
-    const queryString = this.buildQueryParams({ agentId, pageSize, pageNumber })
-    const headers = this.getHeaders(true)
+    const queryString = buildQueryParams(
+      { agentId, pageSize, pageNumber },
+      {
+        agentIdField: 'triggerAgentId',
+        exactMatchFields: ['severity'],
+      }
+    )
+    const headers = getApiHeaders(true)
     const response = await this.api.getWithHeaders<RequestLogs[]>(
       `/ai-service/${this.tenant}/agentic/logs/requests${queryString}`,
       { headers }
     )
 
     const logs = response.data
-    const totalCount = parseInt(
-      response.headers.get('X-Total-Count') || '0',
-      10
-    )
+    const totalCount = parseTotalCount(response.headers)
     const data = logs?.map((log) => this.transformToSummary(log))
 
     return { data, totalCount }
@@ -169,7 +116,7 @@ export class LogService {
   async getAgentLogsByRequestId(
     requestId: string
   ): Promise<RequestLogs | null> {
-    const headers = this.getHeaders()
+    const headers = getApiHeaders()
     const result = await this.api.getWithHeaders<RequestLogs>(
       `/ai-service/${this.tenant}/agentic/logs/requests?q=requestId:${requestId}`,
       { headers }
@@ -191,33 +138,34 @@ export class LogService {
     sortBy?: string,
     sortOrder?: 'ASC' | 'DESC'
   ): Promise<{ data: SessionLogs[]; totalCount: number }> {
-    const queryString = this.buildQueryParams({
-      sortBy: sortBy || 'metadata.modifiedAt',
-      sortOrder: sortOrder || 'DESC',
-      pageSize,
-      pageNumber,
-      agentId,
-      filters,
-    })
+    const queryString = buildQueryParams(
+      {
+        sortBy: sortBy || 'metadata.modifiedAt',
+        sortOrder: sortOrder || 'DESC',
+        pageSize,
+        pageNumber,
+        agentId,
+        filters,
+      },
+      {
+        agentIdField: 'triggerAgentId',
+        exactMatchFields: ['severity'],
+      }
+    )
 
     const url = `/ai-service/${this.tenant}/agentic/logs/sessions${queryString}`
-    const headers = this.getHeaders(true)
+    const headers = getApiHeaders(true)
     const response = await this.api.getWithHeaders<SessionLogs[]>(url, {
       headers,
     })
 
-    const totalCount = parseInt(
-      response.headers.get('x-total-count') ||
-        response.headers.get('X-Total-Count') ||
-        '0',
-      10
-    )
+    const totalCount = parseTotalCount(response.headers)
 
     return { data: response.data, totalCount }
   }
 
   async getSessionById(sessionId: string): Promise<SessionLogs> {
-    const headers = this.getHeaders()
+    const headers = getApiHeaders()
     const url = `/ai-service/${this.tenant}/agentic/logs/sessions/${sessionId}`
     const response = await this.api.getWithHeaders<SessionLogs>(url, {
       headers,

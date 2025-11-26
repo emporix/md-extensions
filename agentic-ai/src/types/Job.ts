@@ -29,7 +29,7 @@ export interface Job {
   status: 'success' | 'failure' | 'in_progress'
   requestId?: string
   sessionId?: string
-  agentType?: string // deprecated, use type instead
+  agentType?: string
   agentId: string
   message: string
   response?: string
@@ -44,7 +44,7 @@ export interface JobSummary {
   status: 'success' | 'failure' | 'in_progress'
   requestId?: string
   sessionId?: string
-  agentType?: string // deprecated, use type instead
+  agentType?: string
   agentId: string
   message: string
   response?: string

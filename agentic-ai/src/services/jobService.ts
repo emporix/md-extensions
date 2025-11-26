@@ -1,6 +1,11 @@
 import { Job, JobSummary } from '../types/Job'
 import { AppState } from '../types/common'
 import { ApiClient } from './apiClient'
+import {
+  getApiHeaders,
+  buildQueryParams,
+  parseTotalCount,
+} from '../utils/apiHelpers'
 
 export class JobService {
   private api: ApiClient
@@ -11,74 +16,6 @@ export class JobService {
     this.tenant = appState.tenant
   }
 
-  private getHeaders(
-    includeTotalCount: boolean = false
-  ): Record<string, string> {
-    const headers: Record<string, string> = {}
-    if (includeTotalCount) {
-      headers['X-Total-Count'] = 'true'
-    }
-
-    return headers
-  }
-
-  private buildQueryParams(params: {
-    sortBy?: string
-    sortOrder?: 'ASC' | 'DESC'
-    pageSize?: number
-    pageNumber?: number
-    agentId?: string
-    filters?: Record<string, string>
-  }): string {
-    const queryParams = new URLSearchParams()
-
-    if (params.sortBy && params.sortOrder) {
-      queryParams.append('sort', `${params.sortBy}:${params.sortOrder}`)
-    }
-    if (params.pageSize) {
-      queryParams.append('pageSize', params.pageSize.toString())
-    }
-    if (params.pageNumber) {
-      queryParams.append('pageNumber', params.pageNumber.toString())
-    }
-
-    // Build q parameter with filters using regex pattern for flexible matching
-    const qParts: string[] = []
-
-    // Add agentId filter if provided (for backward compatibility)
-    if (params.agentId) {
-      qParts.push(`agentId:${params.agentId}`)
-    }
-
-    if (params.filters) {
-      Object.entries(params.filters).forEach(([field, value]) => {
-        if (value && value.trim()) {
-          const trimmedValue = value.trim()
-          const isDateRange =
-            trimmedValue.startsWith('(>=') || trimmedValue.startsWith('(>')
-
-          if (field === 'type' || field === 'status') {
-            qParts.push(`${field}:${trimmedValue.toUpperCase()}`)
-          } else if (isDateRange) {
-            qParts.push(`${field}:${trimmedValue}`)
-          } else {
-            qParts.push(`${field}:~(${trimmedValue})`)
-          }
-        }
-      })
-    }
-
-    if (qParts.length > 0) {
-      queryParams.append('q', qParts.join(' '))
-    }
-
-    const queryString = queryParams.toString()
-    return queryString ? `?${queryString}` : ''
-  }
-
-  /**
-   * Transform full job to summary format
-   */
   private transformToSummary(job: Job): JobSummary {
     return {
       id: job.id,
@@ -104,23 +41,26 @@ export class JobService {
     agentId?: string,
     filters?: Record<string, string>
   ): Promise<{ data: JobSummary[]; totalCount: number }> {
-    const queryString = this.buildQueryParams({
-      sortBy,
-      sortOrder,
-      pageSize,
-      pageNumber,
-      agentId,
-      filters,
-    })
+    const queryString = buildQueryParams(
+      {
+        sortBy,
+        sortOrder,
+        pageSize,
+        pageNumber,
+        agentId,
+        filters,
+      },
+      {
+        agentIdField: 'agentId',
+        exactMatchFields: ['type', 'status'],
+      }
+    )
     const url = `/ai-service/${this.tenant}/jobs${queryString}`
-    const headers = this.getHeaders(true)
+    const headers = getApiHeaders(true)
 
     const response = await this.api.getWithHeaders<Job[]>(url, { headers })
     const jobs = response.data
-    const totalCount = parseInt(
-      response.headers.get('X-Total-Count') || '0',
-      10
-    )
+    const totalCount = parseTotalCount(response.headers)
 
     const data = jobs.map((job) => this.transformToSummary(job))
 
@@ -128,7 +68,7 @@ export class JobService {
   }
 
   async getJobDetails(jobId: string): Promise<Job> {
-    const headers = this.getHeaders()
+    const headers = getApiHeaders()
     const response = await this.api.getWithHeaders<Job>(
       `/ai-service/${this.tenant}/jobs/${jobId}`,
       { headers }

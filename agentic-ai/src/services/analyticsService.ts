@@ -1,5 +1,6 @@
 import { AppState } from '../types/common'
 import { RequestLogs, SessionLogs } from '../types/Log'
+import { CACHE_TTL } from '../utils/constants'
 import { ApiClient } from './apiClient'
 
 export interface ErrorMetrics {
@@ -16,16 +17,16 @@ export interface ErrorTrendData {
 }
 
 export interface SessionSeverityDistribution {
-  success: number // INFO severity
-  warning: number // WARNING severity
-  error: number // ERROR severity
+  success: number
+  warning: number
+  error: number
 }
 
 export interface SessionErrorTrendData {
   date: string
   errorSessions: number
   totalSessions: number
-  errorRate: number // Percentage
+  errorRate: number
 }
 
 export interface ResolutionEfficiencyMetrics {
@@ -42,19 +43,13 @@ interface CacheEntry<T> {
 export class AnalyticsService {
   private api: ApiClient
   private tenant: string
-
-  // Static cache shared across all instances
   private static cache: Map<string, CacheEntry<unknown>> = new Map()
-  private static cacheTTL: number = 5 * 60 * 1000 // 5 minutes in milliseconds
 
   constructor(appState: AppState) {
     this.api = new ApiClient(appState)
     this.tenant = appState.tenant
   }
 
-  /**
-   * Get cached data or fetch if expired
-   */
   private getCached<T>(key: string): T | null {
     const entry = AnalyticsService.cache.get(key)
     if (!entry) {
@@ -63,9 +58,8 @@ export class AnalyticsService {
     }
 
     const now = Date.now()
-    const age = Math.round((now - entry.timestamp) / 1000) // seconds
-    if (now - entry.timestamp > AnalyticsService.cacheTTL) {
-      // Cache expired
+    const age = Math.round((now - entry.timestamp) / 1000)
+    if (now - entry.timestamp > CACHE_TTL) {
       console.log(`[Analytics Cache] EXPIRED: ${key} (age: ${age}s)`)
       AnalyticsService.cache.delete(key)
       return null
@@ -75,29 +69,18 @@ export class AnalyticsService {
     return entry.data as T
   }
 
-  /**
-   * Set cache entry
-   */
   private setCache<T>(key: string, data: T): void {
-    console.log(
-      `[Analytics Cache] SET: ${key} (TTL: ${AnalyticsService.cacheTTL / 1000}s)`
-    )
+    console.log(`[Analytics Cache] SET: ${key} (TTL: ${CACHE_TTL / 1000}s)`)
     AnalyticsService.cache.set(key, {
       data,
       timestamp: Date.now(),
     })
   }
 
-  /**
-   * Clear all cache
-   */
   public clearCache(): void {
     AnalyticsService.cache.clear()
   }
 
-  /**
-   * Clear cache for specific agent
-   */
   public clearAgentCache(agentId?: string): void {
     const prefix = agentId ? `agent_${agentId}_` : 'all_'
     Array.from(AnalyticsService.cache.keys())
@@ -105,9 +88,6 @@ export class AnalyticsService {
       .forEach((key) => AnalyticsService.cache.delete(key))
   }
 
-  /**
-   * Get cache statistics (for debugging)
-   */
   public getCacheStats(): { size: number; keys: string[] } {
     return {
       size: AnalyticsService.cache.size,
@@ -121,9 +101,6 @@ export class AnalyticsService {
     }
   }
 
-  /**
-   * Get total count from API response headers (logs endpoint)
-   */
   private async getTotalCount(queryParams: string): Promise<number> {
     const url = `/ai-service/${this.tenant}/agentic/logs/requests${queryParams}`
     const response = await this.api.getWithHeaders<RequestLogs[]>(url, {
@@ -132,9 +109,6 @@ export class AnalyticsService {
     return parseInt(response.headers.get('X-Total-Count') || '0', 10)
   }
 
-  /**
-   * Get total count from API response headers (sessions endpoint)
-   */
   private async getSessionCount(queryParams: string): Promise<number> {
     const url = `/ai-service/${this.tenant}/agentic/logs/sessions${queryParams}`
     const response = await this.api.getWithHeaders<SessionLogs[]>(url, {
@@ -143,16 +117,12 @@ export class AnalyticsService {
     return parseInt(response.headers.get('X-Total-Count') || '0', 10)
   }
 
-  /**
-   * Get error rate metrics
-   */
   async getErrorRate(
     agentId?: string,
     forceRefresh: boolean = false
   ): Promise<ErrorMetrics> {
     const cacheKey = agentId ? `agent_${agentId}_error_rate` : 'all_error_rate'
 
-    // Check cache first
     if (!forceRefresh) {
       const cached = this.getCached<ErrorMetrics>(cacheKey)
       if (cached) {
@@ -185,7 +155,6 @@ export class AnalyticsService {
         errorRate: Math.round(errorRate * 100) / 100, // Round to 2 decimals
       }
 
-      // Cache the result
       this.setCache(cacheKey, result)
 
       return result
@@ -195,9 +164,6 @@ export class AnalyticsService {
     }
   }
 
-  /**
-   * Get error trend data for the last N weeks
-   */
   async getErrorTrend(
     weeks: number = 4,
     agentId?: string,
@@ -207,7 +173,6 @@ export class AnalyticsService {
       ? `agent_${agentId}_trend_${weeks}`
       : `all_trend_${weeks}`
 
-    // Check cache first
     if (!forceRefresh) {
       const cached = this.getCached<ErrorTrendData[]>(cacheKey)
       if (cached) {
@@ -220,7 +185,6 @@ export class AnalyticsService {
       const today = new Date()
       const agentFilter = agentId ? `triggerAgentId:${agentId} ` : ''
 
-      // Fetch data for each week
       for (let i = weeks - 1; i >= 0; i--) {
         const weekEnd = new Date(today)
         weekEnd.setDate(today.getDate() - i * 7)
@@ -253,7 +217,6 @@ export class AnalyticsService {
         })
       }
 
-      // Cache the result
       this.setCache(cacheKey, trends)
 
       return trends
@@ -263,9 +226,6 @@ export class AnalyticsService {
     }
   }
 
-  /**
-   * Get severity distribution
-   */
   async getSeverityDistribution(
     agentId?: string,
     forceRefresh: boolean = false
@@ -278,7 +238,6 @@ export class AnalyticsService {
       ? `agent_${agentId}_severity_dist`
       : 'all_severity_dist'
 
-    // Check cache first
     if (!forceRefresh) {
       const cached = this.getCached<{
         info: number
@@ -302,7 +261,6 @@ export class AnalyticsService {
 
       const result = { info, warning, error }
 
-      // Cache the result
       this.setCache(cacheKey, result)
 
       return result
@@ -312,9 +270,6 @@ export class AnalyticsService {
     }
   }
 
-  /**
-   * Get session severity distribution (for pie chart)
-   */
   async getSessionSeverityDistribution(
     agentId?: string,
     forceRefresh: boolean = false
@@ -323,7 +278,6 @@ export class AnalyticsService {
       ? `agent_${agentId}_session_severity`
       : 'all_session_severity'
 
-    // Check cache first
     if (!forceRefresh) {
       const cached = this.getCached<SessionSeverityDistribution>(cacheKey)
       if (cached) {
@@ -343,7 +297,6 @@ export class AnalyticsService {
 
       const result: SessionSeverityDistribution = { success, warning, error }
 
-      // Cache the result
       this.setCache(cacheKey, result)
 
       return result
@@ -353,9 +306,6 @@ export class AnalyticsService {
     }
   }
 
-  /**
-   * Get session error trend data for the last N weeks
-   */
   async getSessionErrorTrend(
     weeks: number = 4,
     agentId?: string,
@@ -365,7 +315,6 @@ export class AnalyticsService {
       ? `agent_${agentId}_session_trend_${weeks}`
       : `all_session_trend_${weeks}`
 
-    // Check cache first
     if (!forceRefresh) {
       const cached = this.getCached<SessionErrorTrendData[]>(cacheKey)
       if (cached) {
@@ -378,7 +327,6 @@ export class AnalyticsService {
       const today = new Date()
       const agentFilter = agentId ? `triggerAgentId:${agentId} ` : ''
 
-      // Fetch data for each week
       for (let i = weeks - 1; i >= 0; i--) {
         const weekEnd = new Date(today)
         weekEnd.setDate(today.getDate() - i * 7)
@@ -412,7 +360,6 @@ export class AnalyticsService {
         })
       }
 
-      // Cache the result
       this.setCache(cacheKey, trends)
 
       return trends
@@ -422,9 +369,6 @@ export class AnalyticsService {
     }
   }
 
-  /**
-   * Get resolution efficiency metrics (requests per session)
-   */
   async getResolutionEfficiency(
     agentId?: string,
     forceRefresh: boolean = false
@@ -433,7 +377,6 @@ export class AnalyticsService {
       ? `agent_${agentId}_resolution_efficiency`
       : 'all_resolution_efficiency'
 
-    // Check cache first
     if (!forceRefresh) {
       const cached = this.getCached<ResolutionEfficiencyMetrics>(cacheKey)
       if (cached) {
@@ -467,7 +410,6 @@ export class AnalyticsService {
         totalSessions,
       }
 
-      // Cache the result
       this.setCache(cacheKey, result)
 
       return result

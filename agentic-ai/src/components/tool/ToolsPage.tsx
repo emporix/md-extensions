@@ -9,7 +9,7 @@ import { useTools } from '../../hooks/useTools'
 import { AppState } from '../../types/common'
 import { createEmptyTool } from '../../utils/toolHelpers'
 import { useToast } from '../../contexts/ToastContext'
-import { AiRagIndexerService } from '../../services/aiRagIndexerService'
+import { reindex } from '../../services/aiRagIndexerService'
 
 interface ToolsPageProps {
   appState?: AppState
@@ -102,8 +102,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
     hideReindexConfirm()
 
     try {
-      const aiRagIndexerService = new AiRagIndexerService(appState)
-      await aiRagIndexerService.reindex(toolToReindex.config.entityType)
+      await reindex(appState, toolToReindex.config.entityType)
       showSuccess(
         t('reindex_triggered_successfully', 'Reindex triggered successfully!')
       )

@@ -31,10 +31,8 @@ export const useSessionFlow = (appState: AppState) => {
         setLoading(true)
         setError(null)
 
-        // Fetch session with messages from the new endpoint
         const session: SessionLogs = await logService.getSessionById(sessionId)
 
-        // Map messages to nodes, filter for business logs only, and sort by timestamp
         const nodes: SessionFlowNode[] = (session.messages || [])
           .filter((m: LogMessage) => m.isBusinessLog)
           .map((m: LogMessage) => ({

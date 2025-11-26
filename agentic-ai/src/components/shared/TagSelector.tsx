@@ -17,7 +17,6 @@ export const TagSelector: React.FC<TagSelectorProps> = memo(
       value: tag,
     }))
 
-    // For single select, we'll use the first tag or empty string
     const selectedTag = selectedTags.length > 0 ? selectedTags[0] : null
 
     const handleTagChange = (value: string | null) => {
@@ -40,5 +39,3 @@ export const TagSelector: React.FC<TagSelectorProps> = memo(
     )
   }
 )
-
-TagSelector.displayName = 'TagSelector'

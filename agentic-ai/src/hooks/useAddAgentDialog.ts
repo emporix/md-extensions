@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { AgentTemplate } from '../types/Agent'
-import { AgentService } from '../services/agentService'
+import { copyTemplate } from '../services/agentService'
 import { AppState } from '../types/common'
 import { getLocalizedValue } from '../utils/agentHelpers'
 import { useToast } from '../contexts/ToastContext'
@@ -56,8 +56,8 @@ export const useAddAgentDialog = ({
     }, 200)
 
     try {
-      const agentService = new AgentService(appState)
-      await agentService.copyTemplate(
+      await copyTemplate(
+        appState,
         agentTemplate.id,
         agentId,
         agentName,

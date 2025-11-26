@@ -6,7 +6,7 @@ import { McpConfigPanelProps, McpServer } from '../../types/Mcp'
 import { BaseConfigPanel } from '../shared/BaseConfigPanel'
 import { faServer } from '@fortawesome/free-solid-svg-icons'
 import { Token } from '../../types/Token'
-import { TokensService } from '../../services/tokensService'
+import { getTokens } from '../../services/tokensService'
 
 const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
   visible,
@@ -35,8 +35,7 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
 
       setTokensLoading(true)
       try {
-        const tokensService = new TokensService(appState)
-        const fetchedTokens = await tokensService.getTokens()
+        const fetchedTokens = await getTokens(appState)
         setTokens(fetchedTokens)
       } catch (error) {
         console.error(error)

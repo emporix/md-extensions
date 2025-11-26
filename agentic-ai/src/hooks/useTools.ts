@@ -1,9 +1,15 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Tool } from '../types/Tool'
 import { AppState } from '../types/common'
 import { formatApiError } from '../utils/errorHelpers'
-import { ServiceFactory } from '../services/serviceFactory'
+import {
+  deleteTool,
+  updateTool as updateToolApi,
+  getTools,
+  patchTool,
+} from '../services/toolsService'
+import { isRagFeatureEnabled } from '../services/featureToggleService'
 import { useDeleteConfirmation } from './useDeleteConfirmation'
 import { useUpsertItem } from './useUpsertItem'
 import { useToast } from '../contexts/ToastContext'
@@ -13,7 +19,8 @@ export const useTools = (appState: AppState) => {
   const [tools, setTools] = useState<Tool[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isRagFeatureEnabled, setIsRagFeatureEnabled] = useState<boolean>(true)
+  const [isRagFeatureEnabledState, setIsRagFeatureEnabled] =
+    useState<boolean>(true)
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
 
@@ -23,15 +30,6 @@ export const useTools = (appState: AppState) => {
     toolId: string
     enabled: boolean
   } | null>(null)
-
-  const toolsService = useMemo(
-    () => ServiceFactory.getToolsService(appState),
-    [appState]
-  )
-  const featureToggleService = useMemo(
-    () => ServiceFactory.getFeatureToggleService(appState),
-    [appState]
-  )
 
   const {
     deleteConfirmVisible,
@@ -44,7 +42,7 @@ export const useTools = (appState: AppState) => {
     confirmForceDelete,
   } = useDeleteConfirmation({
     onDelete: async (toolId: string, force?: boolean) => {
-      await toolsService.deleteTool(toolId, force)
+      await deleteTool(appState, toolId, force)
     },
     onSuccess: (toolId: string) => {
       setTools((prev) => prev.filter((tool) => tool.id !== toolId))
@@ -57,7 +55,7 @@ export const useTools = (appState: AppState) => {
   })
 
   const updateTool = useUpsertItem({
-    onUpsert: (tool: Tool) => toolsService.updateTool(tool),
+    onUpsert: (tool: Tool) => updateToolApi(appState, tool),
     updateItems: setTools,
     setError: undefined,
     getId: (tool: Tool) => tool.id,
@@ -69,10 +67,10 @@ export const useTools = (appState: AppState) => {
       setError(null)
 
       // Check if RAG feature is enabled
-      const ragEnabled = await featureToggleService.isRagFeatureEnabled()
+      const ragEnabled = await isRagFeatureEnabled(appState)
       setIsRagFeatureEnabled(ragEnabled)
 
-      const fetchedTools = await toolsService.getTools()
+      const fetchedTools = await getTools(appState)
 
       // Filter out RAG tools if feature is disabled
       const filteredTools = ragEnabled
@@ -88,7 +86,7 @@ export const useTools = (appState: AppState) => {
     } finally {
       setLoading(false)
     }
-  }, [toolsService, featureToggleService])
+  }, [appState])
 
   const toggleToolActive = useCallback(
     async (toolId: string, enabled: boolean) => {
@@ -109,7 +107,7 @@ export const useTools = (appState: AppState) => {
             value: enabled,
           },
         ]
-        await toolsService.patchTool(toolId, patches, false)
+        await patchTool(appState, toolId, patches, false)
 
         showSuccess(
           `Tool ${enabled ? 'activated' : 'deactivated'} successfully!`
@@ -138,7 +136,7 @@ export const useTools = (appState: AppState) => {
         )
       }
     },
-    [tools, toolsService, showSuccess, showError, loadTools]
+    [tools, appState, showSuccess, showError, loadTools]
   )
 
   const confirmForceToggle = useCallback(async () => {
@@ -158,7 +156,7 @@ export const useTools = (appState: AppState) => {
           value: enabled,
         },
       ]
-      await toolsService.patchTool(toolId, patches, true)
+      await patchTool(appState, toolId, patches, true)
 
       showSuccess(`Tool ${enabled ? 'activated' : 'deactivated'} successfully!`)
       setForceToggleConfirmVisible(false)
@@ -177,7 +175,7 @@ export const useTools = (appState: AppState) => {
       setForceToggleConfirmVisible(false)
       setPendingToggle(null)
     }
-  }, [pendingToggle, toolsService, showSuccess, showError, loadTools])
+  }, [pendingToggle, appState, showSuccess, showError, loadTools])
 
   const hideForceToggleConfirm = useCallback(() => {
     setForceToggleConfirmVisible(false)
@@ -203,7 +201,7 @@ export const useTools = (appState: AppState) => {
     tools,
     loading,
     error,
-    isRagFeatureEnabled,
+    isRagFeatureEnabled: isRagFeatureEnabledState,
     updateTool,
     refreshTools,
     removeTool,

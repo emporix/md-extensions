@@ -13,7 +13,6 @@ import { SessionSeverityDistribution } from '../../services/analyticsService'
 import { CHART_COLORS, CHART_CONFIG } from '../../constants/chartConstants'
 import '../../styles/components/MetricsPanel.css'
 
-// Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend)
 
 interface SessionSeverityChartProps {

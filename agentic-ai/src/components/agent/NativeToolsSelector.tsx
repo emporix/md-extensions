@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NativeTool } from '../../types/Agent'
 import { Tool } from '../../types/Tool'
-import { ToolsService } from '../../services/toolsService'
+import { getTools } from '../../services/toolsService'
 import { AppState } from '../../types/common'
 import { NativeToolsList } from '../shared/native-tools/NativeToolsList'
 import { NativeToolForm } from '../shared/native-tools/NativeToolForm'
@@ -27,8 +27,7 @@ export const NativeToolsSelector: React.FC<NativeToolsSelectorProps> = ({
     const loadTools = async () => {
       setToolsLoading(true)
       try {
-        const toolsService = new ToolsService(appState)
-        const fetchedTools = await toolsService.getTools()
+        const fetchedTools = await getTools(appState)
         setAvailableTools(fetchedTools)
       } catch (error) {
         console.error(error)

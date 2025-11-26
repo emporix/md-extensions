@@ -3,35 +3,37 @@ import { AppState } from '../types/common'
 import { ApiClient } from './apiClient'
 import { validateToken } from '../utils/validation'
 
-export class TokensService {
-  private api: ApiClient
-  private tenant: string
+const getApiClient = (appState: AppState): ApiClient => {
+  return new ApiClient(appState)
+}
 
-  constructor(appState: AppState) {
-    this.api = new ApiClient(appState)
-    this.tenant = appState.tenant
-  }
+export const getTokens = async (appState: AppState): Promise<Token[]> => {
+  const api = getApiClient(appState)
+  return await api.get<Token[]>(`/ai-service/${appState.tenant}/agentic/tokens`)
+}
 
-  async getTokens(): Promise<Token[]> {
-    return await this.api.get<Token[]>(
-      `/ai-service/${this.tenant}/agentic/tokens`
-    )
-  }
+export const upsertToken = async (
+  appState: AppState,
+  token: Token
+): Promise<Token> => {
+  validateToken(token)
+  const api = getApiClient(appState)
 
-  async upsertToken(token: Token): Promise<Token> {
-    validateToken(token)
+  return await api.put<Token>(
+    `/ai-service/${appState.tenant}/agentic/tokens/${token.id}`,
+    {
+      name: token.name,
+      value: token.value,
+    }
+  )
+}
 
-    return await this.api.put<Token>(
-      `/ai-service/${this.tenant}/agentic/tokens/${token.id}`,
-      {
-        name: token.name,
-        value: token.value,
-      }
-    )
-  }
-
-  async deleteToken(tokenId: string, force?: boolean): Promise<void> {
-    const url = `/ai-service/${this.tenant}/agentic/tokens/${tokenId}${force ? '?force=true' : ''}`
-    await this.api.delete(url)
-  }
+export const deleteToken = async (
+  appState: AppState,
+  tokenId: string,
+  force?: boolean
+): Promise<void> => {
+  const api = getApiClient(appState)
+  const url = `/ai-service/${appState.tenant}/agentic/tokens/${tokenId}${force ? '?force=true' : ''}`
+  await api.delete(url)
 }

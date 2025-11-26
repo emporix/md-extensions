@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { CustomAgent, LlmConfig, McpServer, NativeTool } from '../types/Agent'
-import { AgentService } from '../services/agentService'
+import { upsertCustomAgent } from '../services/agentService'
 import { AppState } from '../types/common'
 import { getLocalizedValue } from '../utils/agentHelpers'
 import { useToast } from '../contexts/ToastContext'
@@ -231,8 +231,7 @@ export const useAgentConfig = ({
     }
 
     try {
-      const agentService = new AgentService(appState)
-      const savedAgent = await agentService.upsertCustomAgent(updatedAgent)
+      const savedAgent = await upsertCustomAgent(appState, updatedAgent)
 
       setSaving(false)
       const isUpdate = !!agent.id
@@ -286,8 +285,7 @@ export const useAgentConfig = ({
         enabled: false,
       }
 
-      const agentService = new AgentService(appState)
-      const savedAgent = await agentService.upsertCustomAgent(disabledAgent)
+      const savedAgent = await upsertCustomAgent(appState, disabledAgent)
 
       setSaving(false)
       const isUpdate = !!pendingAgent.id

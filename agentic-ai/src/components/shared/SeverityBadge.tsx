@@ -8,9 +8,6 @@ interface SeverityBadgeProps {
   className?: string
 }
 
-/**
- * Reusable badge component for displaying log severity
- */
 export const SeverityBadge: React.FC<SeverityBadgeProps> = ({
   severity,
   style = {},

@@ -11,20 +11,18 @@ import { Dropdown } from 'primereact/dropdown'
 import { FilterMatchMode } from 'primereact/api'
 import { TabView, TabPanel, TabViewTabChangeParams } from 'primereact/tabview'
 import SessionsTab from './SessionsTab'
-import {
-  BasePage,
-  SeverityBadge,
-  StatusBadge,
-  DateFilterTemplate,
-  MetricsPanel,
-} from '../shared'
+import { BasePage } from '../shared/BasePage'
+import { SeverityBadge } from '../shared/SeverityBadge'
+import { StatusBadge } from '../shared/StatusBadge'
+import DateFilterTemplate from '../shared/DateFilterTemplate'
+import MetricsPanel from '../shared/MetricsPanel'
 import { LogSummary } from '../../types/Log'
 import { JobSummary } from '../../types/Job'
 import { useAgentLogs } from '../../hooks/useAgentLogs'
 import { useJobs } from '../../hooks/useJobs'
 import { useSessions } from '../../hooks/useSessions'
 import { AppState } from '../../types/common'
-import { AgentService } from '../../services/agentService'
+import { getCustomAgents } from '../../services/agentService'
 import { getLocalizedValue } from '../../utils/agentHelpers'
 import {
   SEVERITY_OPTIONS,
@@ -75,28 +73,27 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
 
   // Fetch agent name when agentId is in URL
   useEffect(() => {
-    const urlParams = new URLSearchParams(location.search)
-    const agentIdParam = urlParams.get('agentId')
+    const fetchAgentName = async () => {
+      const urlParams = new URLSearchParams(location.search)
+      const agentIdParam = urlParams.get('agentId')
 
-    if (agentIdParam) {
-      const agentService = new AgentService(appState)
-      agentService
-        .getCustomAgents()
-        .then((agents) => {
-          const agent = agents.find((a) => a.id === agentIdParam)
-          if (agent) {
-            const name = getLocalizedValue(agent.name, i18n.language)
-            setAgentName(name)
-          } else {
-            setAgentName(null)
-          }
-        })
-        .catch(() => {
-          setAgentName(null)
-        })
-    } else {
-      setAgentName(null)
+      if (!agentIdParam) {
+        setAgentName(null)
+        return
+      }
+
+      try {
+        const agents = await getCustomAgents(appState)
+        const agent = agents.find((a) => a.id === agentIdParam)
+        setAgentName(
+          agent ? getLocalizedValue(agent.name, i18n.language) : null
+        )
+      } catch {
+        setAgentName(null)
+      }
     }
+
+    fetchAgentName()
   }, [location.search, appState])
 
   const {
@@ -351,17 +348,18 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
 
   const severityFilterElement = useCallback(
     (options: ColumnFilterElementTemplateOptions) => {
+      const placeholderText = t('select_severity', 'Select Severity')
       return (
         <Dropdown
           value={options.value}
           options={SEVERITY_OPTIONS}
           valueTemplate={(option) => {
-            if (!option) return null
+            if (!option) return <span className="dropdown-placeholder">{placeholderText}</span>
             return <SeverityBadge severity={option.value} />
           }}
           onChange={(e) => options.filterApplyCallback(e.value)}
           itemTemplate={(option) => <SeverityBadge severity={option.value} />}
-          placeholder={t('select_severity', 'Select Severity')}
+          placeholder={placeholderText}
           className="p-column-filter filter-dropdown-wide"
           showClear
         />
@@ -400,17 +398,18 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
 
   const jobStatusFilterElement = useCallback(
     (options: ColumnFilterElementTemplateOptions) => {
+      const placeholderText = t('select_status', 'Select Status')
       return (
         <Dropdown
           value={options.value}
           options={JOB_STATUS_OPTIONS}
           valueTemplate={(option) => {
-            if (!option) return null
+            if (!option) return <span className="dropdown-placeholder">{placeholderText}</span>
             return <StatusBadge status={option.value} />
           }}
           onChange={(e) => options.filterApplyCallback(e.value)}
           itemTemplate={(option) => <StatusBadge status={option.value} />}
-          placeholder={t('select_status', 'Select Status')}
+          placeholder={placeholderText}
           className="p-column-filter filter-dropdown-wide"
           showClear
         />

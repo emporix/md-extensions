@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { McpServer } from '../../types/Agent'
 import { McpServer as ManagedMcpServer } from '../../types/Mcp'
-import { McpService } from '../../services/mcpService'
+import { getMcpServers } from '../../services/mcpService'
 import { AppState } from '../../types/common'
 import { McpServersList } from '../mcp/mcp-servers/McpServersList'
 import { McpServerForm } from '../mcp/mcp-servers/McpServerForm'
@@ -29,8 +29,7 @@ export const McpServersSelector: React.FC<McpServersSelectorProps> = ({
     const loadMcpServers = async () => {
       setMcpServersLoading(true)
       try {
-        const mcpService = new McpService(appState)
-        const fetchedServers = await mcpService.getMcpServers()
+        const fetchedServers = await getMcpServers(appState)
         setAvailableMcpServers(fetchedServers)
       } catch (error) {
         console.error(error)

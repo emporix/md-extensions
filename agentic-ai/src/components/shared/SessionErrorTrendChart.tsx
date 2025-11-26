@@ -18,7 +18,6 @@ import { SessionErrorTrendData } from '../../services/analyticsService'
 import { CHART_COLORS, CHART_CONFIG } from '../../constants/chartConstants'
 import '../../styles/components/MetricsPanel.css'
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -106,7 +105,6 @@ const SessionErrorTrendChart: React.FC<SessionErrorTrendChartProps> = ({
               const dataIndex = context.dataIndex
               const item = data[dataIndex]
               if (item) {
-                // Translations are handled at component level, using fallback strings here
                 return [
                   `Error Sessions: ${item.errorSessions}`,
                   `Total Sessions: ${item.totalSessions}`,

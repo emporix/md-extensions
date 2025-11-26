@@ -64,6 +64,12 @@
   min-width: 12rem;
 }
 
+/* Dropdown placeholder styling to match input placeholders */
+.p-dropdown .p-dropdown-label.p-placeholder,
+.p-dropdown .dropdown-placeholder {
+  color: #9ca3af;
+}
+
 /* Filter row cell styling - ensure filter inputs match column widths */
 .p-datatable .p-datatable-thead > tr > th.p-column-filter {
   padding: 0.5rem;

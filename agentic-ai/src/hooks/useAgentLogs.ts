@@ -130,19 +130,15 @@ export const useAgentLogs = (appState: AppState) => {
 
   const changePage = useCallback((newPageNumber: number) => {
     setPageNumber(newPageNumber)
-    // The fetchLogs will be called by useEffect when pageNumber changes
   }, [])
 
   const changePageSize = useCallback((newPageSize: number) => {
     setPageSize(newPageSize)
     setPageNumber(1)
-    // The fetchLogs will be called by useEffect when pageSize changes
   }, [])
 
-  // Create stable reference for filters to prevent unnecessary re-renders
   const filtersString = useMemo(() => JSON.stringify(filters), [filters])
 
-  // Fetch logs when dependencies change
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search)
     const agentIdParam = urlParams.get('agentId')

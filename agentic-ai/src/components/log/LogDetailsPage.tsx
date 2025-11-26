@@ -2,8 +2,12 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useLocation } from 'react-router'
 import { AppState } from '../../types/common'
-import { UnifiedDetailsView } from '../shared'
+import UnifiedDetailsView from '../shared/UnifiedDetailsView'
 import { useAgentLogs } from '../../hooks/useAgentLogs'
+import {
+  extractInitialMessageFromLog,
+  extractResponseFromLog,
+} from '../../utils/logHelpers'
 
 interface LogDetailsPageProps {
   appState: AppState
@@ -42,26 +46,8 @@ const LogDetailsPage: React.FC<LogDetailsPageProps> = ({ appState }) => {
   const scrollToMessage = sessionStorage.getItem('scrollToMessage')
 
   // Extract message and response from log messages
-  const messageRegex =
-    /(?:Agent receive request:|Processing Slack message for user:[^,]*,\s*message:)\s*(.*)/s
-  const extractedMessage = selectedLog?.messages
-    ?.find(
-      (msg) =>
-        msg.message.includes('Agent receive request:') ||
-        msg.message.includes('Processing Slack message for user:')
-    )
-    ?.message.match(messageRegex)?.[1]
-    ?.trim()
-
-  const extractedResponse = selectedLog?.messages
-    ?.find(
-      (msg) =>
-        msg.message.includes('Agent final response:') ||
-        msg.message.includes('Slack message sent successfully:')
-    )
-    ?.message.replace('Agent final response:', '')
-    .replace('Slack message sent successfully:', '')
-    .trim()
+  const extractedMessage = extractInitialMessageFromLog(selectedLog?.messages)
+  const extractedResponse = extractResponseFromLog(selectedLog?.messages)
 
   return (
     <UnifiedDetailsView

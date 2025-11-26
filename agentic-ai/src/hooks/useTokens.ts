@@ -1,9 +1,13 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Token } from '../types/Token'
 import { AppState } from '../types/common'
 import { formatApiError } from '../utils/errorHelpers'
-import { ServiceFactory } from '../services/serviceFactory'
+import {
+  deleteToken,
+  upsertToken as upsertTokenApi,
+  getTokens,
+} from '../services/tokensService'
 import { useDeleteConfirmation } from './useDeleteConfirmation'
 import { useUpsertItem } from './useUpsertItem'
 
@@ -12,11 +16,6 @@ export const useTokens = (appState: AppState) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { t } = useTranslation()
-
-  const tokensService = useMemo(
-    () => ServiceFactory.getTokensService(appState),
-    [appState]
-  )
 
   const {
     deleteConfirmVisible,
@@ -28,7 +27,7 @@ export const useTokens = (appState: AppState) => {
     confirmForceDelete,
   } = useDeleteConfirmation({
     onDelete: async (tokenId: string, force?: boolean) => {
-      await tokensService.deleteToken(tokenId, force)
+      await deleteToken(appState, tokenId, force)
     },
     onSuccess: (tokenId: string) => {
       setTokens((prev) => prev.filter((token) => token.id !== tokenId))
@@ -41,7 +40,7 @@ export const useTokens = (appState: AppState) => {
   })
 
   const upsertToken = useUpsertItem({
-    onUpsert: (token: Token) => tokensService.upsertToken(token),
+    onUpsert: (token: Token) => upsertTokenApi(appState, token),
     updateItems: setTokens,
     setError: undefined,
     getId: (token: Token) => token.id,
@@ -51,7 +50,7 @@ export const useTokens = (appState: AppState) => {
     try {
       setLoading(true)
       setError(null)
-      const fetchedTokens = await tokensService.getTokens()
+      const fetchedTokens = await getTokens(appState)
       setTokens(fetchedTokens)
     } catch (err) {
       const message = formatApiError(err, 'Failed to load tokens')
@@ -59,7 +58,7 @@ export const useTokens = (appState: AppState) => {
     } finally {
       setLoading(false)
     }
-  }, [tokensService])
+  }, [appState])
 
   const refreshTokens = useCallback(() => {
     loadTokens()

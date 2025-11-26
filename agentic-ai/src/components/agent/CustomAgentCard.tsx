@@ -6,7 +6,7 @@ import { getLocalizedValue, iconMap } from '../../utils/agentHelpers'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRobot } from '@fortawesome/free-solid-svg-icons'
 import AgentCard from './AgentCard'
-import { AgentService } from '../../services/agentService'
+import { exportAgents } from '../../services/agentService'
 import { useToast } from '../../contexts/ToastContext'
 
 interface CustomAgentCardProps extends AgentCardBaseProps {
@@ -48,8 +48,7 @@ const CustomAgentCard = memo(
 
       setIsExporting(true)
       try {
-        const agentService = new AgentService(appState)
-        const response = await agentService.exportAgents([agent.id])
+        const response = await exportAgents(appState, [agent.id])
 
         const exportData = {
           exportedAt: response.exportedAt,
@@ -131,7 +130,5 @@ const CustomAgentCard = memo(
     )
   }
 )
-
-CustomAgentCard.displayName = 'CustomAgentCard'
 
 export default CustomAgentCard

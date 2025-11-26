@@ -16,7 +16,6 @@ import {
 import { Line } from 'react-chartjs-2'
 import { ErrorTrendData } from '../../services/analyticsService'
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,

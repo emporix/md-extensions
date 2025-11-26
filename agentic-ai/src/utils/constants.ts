@@ -159,3 +159,5 @@ export const VALIDATION = {
   MIN_PROMPT_LENGTH: 1,
   MIN_MODEL_LENGTH: 1,
 } as const
+
+export const CACHE_TTL = 5 * 60 * 1000 // 5 minutes in milliseconds

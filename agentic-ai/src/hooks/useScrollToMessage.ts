@@ -2,13 +2,6 @@ import React, { useEffect, RefObject } from 'react'
 import { LogMessage } from '../types/Log'
 import UnifiedLogsTable from '../components/shared/UnifiedLogsTable'
 
-/**
- * Custom hook to handle scrolling to a specific message in a DataTable
- * @param dataTableRef - Ref to the DataTable component
- * @param messages - Array of log messages
- * @param scrollToMessage - Timestamp of message to scroll to
- * @param isVisible - Whether the component is visible (for dialogs)
- */
 export const useScrollToMessage = (
   dataTableRef: RefObject<React.ComponentRef<typeof UnifiedLogsTable>>,
   messages?: LogMessage[],
@@ -18,15 +11,13 @@ export const useScrollToMessage = (
   useEffect(() => {
     if (!isVisible || !messages || !scrollToMessage) return
 
-    // Clear the stored timestamp
     sessionStorage.removeItem('scrollToMessage')
 
-    // Find the message with matching timestamp
-    const messageIndex = messages.findIndex(
+    const targetMessage = messages.find(
       (msg) => msg.timestamp === scrollToMessage
     )
 
-    if (messageIndex === -1) return
+    if (!targetMessage) return
 
     const attemptScroll = (attempt = 0) => {
       if (attempt > 10) return
@@ -39,7 +30,6 @@ export const useScrollToMessage = (
         return
       }
 
-      // Ensure we have an HTMLElement
       const element =
         tableElement instanceof HTMLElement
           ? tableElement
@@ -54,34 +44,65 @@ export const useScrollToMessage = (
         return
       }
 
-      // Try different selectors for the table body
-      const tbody =
-        element.querySelector('.p-datatable-tbody') ||
-        element.querySelector('tbody') ||
-        element.querySelector('[data-pc-section="tbody"]') ||
-        element.querySelector('[role="rowgroup"]')
+      const tbody = element.querySelector('.p-datatable-tbody')
 
-      if (tbody && tbody.children[messageIndex]) {
-        const targetRow = tbody.children[messageIndex] as HTMLElement
+      if (!tbody) {
+        setTimeout(() => attemptScroll(attempt + 1), 100)
+        return
+      }
 
-        // Scroll the row into view
-        targetRow.scrollIntoView({
+      // Find the row by matching timestamp and message in the DOM
+      // Iterate through all rows and check both timestamp and message
+      for (let i = 0; i < tbody.children.length; i++) {
+        const row = tbody.children[i] as HTMLElement
+
+        // Get all cells in the row
+        const cells = row.querySelectorAll('td')
+        if (cells.length < 4) continue
+
+        // Column order: severity (0), timestamp (1), agentId (2), message (3)
+        const timestampCell = cells[1]
+        const messageCell = cells[3]
+
+        if (!timestampCell || !messageCell) continue
+
+        // Get cell text content and remove prefixes
+        const timestampText = (timestampCell.textContent?.trim() || '').replace(
+          'Timestamp',
+          ''
+        )
+        const messageText = (messageCell.textContent?.trim() || '').replace(
+          'Message',
+          ''
+        )
+
+        // Format the target timestamp for comparison
+        const formattedTargetTimestamp = new Date(
+          targetMessage.timestamp
+        ).toLocaleString()
+
+        if (
+          timestampText !== formattedTargetTimestamp ||
+          messageText !== targetMessage.message.replace(/\n/g, '')
+        )
+          continue
+
+        row.scrollIntoView({
           behavior: 'smooth',
           block: 'center',
         })
 
-        // Highlight the row temporarily
-        targetRow.style.backgroundColor = '#fff3cd'
-        targetRow.style.transition = 'background-color 2s ease'
+        row.style.backgroundColor = '#fff3cd'
+        row.style.transition = 'background-color 2s ease'
 
         setTimeout(() => {
-          targetRow.style.backgroundColor = ''
+          row.style.backgroundColor = ''
         }, 2000)
 
         return
       }
 
-      // Retry after a short delay
+      // Row not found yet, retry after a short delay
       setTimeout(() => attemptScroll(attempt + 1), 100)
     }
 

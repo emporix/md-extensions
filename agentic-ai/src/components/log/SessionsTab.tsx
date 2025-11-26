@@ -11,7 +11,8 @@ import { Dropdown } from 'primereact/dropdown'
 import { FilterMatchMode } from 'primereact/api'
 import { SessionLogs } from '../../types/Log'
 import { formatTimestamp } from '../../utils/formatHelpers'
-import { SeverityBadge, DateFilterTemplate } from '../shared'
+import { SeverityBadge } from '../shared/SeverityBadge'
+import DateFilterTemplate from '../shared/DateFilterTemplate'
 import { SEVERITY_OPTIONS } from '../../constants/logConstants'
 import {
   handleDataTableSort,
@@ -55,7 +56,6 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
   const [sortField, setSortField] = useState<string>('metadata.modifiedAt')
   const [sortOrder, setSortOrder] = useState<1 | -1>(-1)
 
-  // PrimeReact filter state for sessions
   const [sessionFilters, setSessionFilters] = useState<DataTableFilterMeta>({
     sessionId: { value: null, matchMode: FilterMatchMode.CONTAINS },
     triggerAgentId: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -92,7 +92,6 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
 
   const handleSort = useCallback(
     (event: DataTablePFSEvent) => {
-      // Map UI field names to API field names
       const fieldMapping: Record<string, string> = {
         sessionId: 'sessionId',
         triggerAgentId: 'triggerAgentId',
@@ -102,15 +101,12 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
         severity: 'severity',
       }
 
-      // Use helper to handle sort logic
       const [apiField, apiOrder, newSortField, newSortOrder] =
         handleDataTableSort(event, sortField, sortOrder, fieldMapping)
 
-      // Update local state
       setSortField(newSortField)
       setSortOrder(newSortOrder)
 
-      // Get current agentId from URL for filtering
       const urlParams = new URLSearchParams(location.search)
       const agentIdParam = urlParams.get('agentId') || ''
 
@@ -143,17 +139,18 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
 
   const severityFilterElement = useCallback(
     (options: ColumnFilterElementTemplateOptions) => {
+      const placeholderText = t('select_result', 'Select Result')
       return (
         <Dropdown
           value={options.value}
           options={SEVERITY_OPTIONS}
           valueTemplate={(option) => {
-            if (!option) return null
+            if (!option) return <span className="dropdown-placeholder">{placeholderText}</span>
             return <SeverityBadge severity={option.value} />
           }}
           onChange={(e) => options.filterApplyCallback(e.value)}
           itemTemplate={(option) => <SeverityBadge severity={option.value} />}
-          placeholder={t('select_severity', 'Select Severity')}
+          placeholder={placeholderText}
           className="p-column-filter filter-dropdown-wide"
           showClear
         />
@@ -186,7 +183,6 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
   }
 
   const renderSessionsTable = useMemo(() => {
-    // Calculate first index - ensure it's always valid
     const firstIndex = Math.max(0, (pageNumber - 1) * pageSize)
 
     return (
@@ -318,7 +314,6 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
     t,
   ])
 
-  // Only show loading on initial load, not on filter changes
   if (!hasLoadedOnce && loading) {
     return (
       <div className="loading-state">

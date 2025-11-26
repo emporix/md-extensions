@@ -2,17 +2,11 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router'
 import { AppState } from '../types/common'
 
-/**
- * Response structure for paginated API calls
- */
 export interface PaginatedResponse<T> {
   data: T[]
   totalCount: number
 }
 
-/**
- * Fetch function signature for paginated data
- */
 export type FetchFunction<T> = (
   sortBy?: string,
   sortOrder?: 'ASC' | 'DESC',
@@ -22,16 +16,6 @@ export type FetchFunction<T> = (
   filters?: Record<string, string>
 ) => Promise<PaginatedResponse<T>>
 
-/**
- * Generic hook for managing paginated data with sorting, filtering, and pagination
- * This hook reduces code duplication across useAgentLogs, useJobs, and useSessions
- *
- * @param appState - Application state containing tenant and token
- * @param fetchFunction - Function to fetch paginated data
- * @param defaultSort - Default sort field
- * @param defaultSortOrder - Default sort order
- * @returns Paginated data state and management functions
- */
 export const usePaginatedData = <T>(
   appState: AppState,
   fetchFunction: FetchFunction<T>,
@@ -47,9 +31,6 @@ export const usePaginatedData = <T>(
   const [totalRecords, setTotalRecords] = useState<number>(0)
   const [filters, setFilters] = useState<Record<string, string>>({})
 
-  /**
-   * Fetch data with optional parameters
-   */
   const fetchData = useCallback(
     async (
       sortBy?: string,
@@ -86,9 +67,6 @@ export const usePaginatedData = <T>(
     [fetchFunction, pageSize, pageNumber, filters]
   )
 
-  /**
-   * Refresh data with current parameters
-   */
   const refresh = useCallback(
     (agentId?: string) => {
       return fetchData(
@@ -103,9 +81,6 @@ export const usePaginatedData = <T>(
     [fetchData, defaultSort, defaultSortOrder, filters]
   )
 
-  /**
-   * Sort data
-   */
   const sort = useCallback(
     (sortBy: string, sortOrder: 'ASC' | 'DESC', agentId?: string) => {
       return fetchData(
@@ -120,33 +95,22 @@ export const usePaginatedData = <T>(
     [fetchData, filters]
   )
 
-  /**
-   * Update filters and reset to first page
-   */
   const updateFilters = useCallback((newFilters: Record<string, string>) => {
     setFilters(newFilters)
     setPageNumber(1)
   }, [])
 
-  /**
-   * Change page number
-   */
   const changePage = useCallback((newPageNumber: number) => {
     setPageNumber(newPageNumber)
   }, [])
 
-  /**
-   * Change page size and reset to first page
-   */
   const changePageSize = useCallback((newPageSize: number) => {
     setPageSize(newPageSize)
     setPageNumber(1)
   }, [])
 
-  // Create stable reference for filters to prevent unnecessary re-renders
   const filtersString = useMemo(() => JSON.stringify(filters), [filters])
 
-  // Fetch data when dependencies change
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search)
     const agentIdParam = urlParams.get('agentId')
@@ -158,7 +122,6 @@ export const usePaginatedData = <T>(
       agentIdParam || undefined,
       filters
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     pageSize,
     pageNumber,
@@ -166,6 +129,10 @@ export const usePaginatedData = <T>(
     appState.token,
     location.search,
     filtersString,
+    filters,
+    defaultSort,
+    defaultSortOrder,
+    fetchData,
   ])
 
   return {

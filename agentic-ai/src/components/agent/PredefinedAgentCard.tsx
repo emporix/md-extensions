@@ -54,6 +54,4 @@ const PredefinedAgentCard = memo(
   }
 )
 
-PredefinedAgentCard.displayName = 'PredefinedAgentCard'
-
 export default PredefinedAgentCard

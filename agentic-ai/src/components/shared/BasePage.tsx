@@ -10,11 +10,9 @@ interface BasePageProps {
   error: string | null
   title: React.ReactNode
 
-  // Add button props
   addButtonLabel?: string
   onAdd?: () => void
 
-  // Refresh button props
   refreshButtonLabel?: string
   onRefresh?: () => void
 
@@ -22,12 +20,10 @@ interface BasePageProps {
   onBack?: () => void
   children: React.ReactNode
 
-  // Import button props
   importButtonIcon?: string
   onImport?: () => void
   importButtonTitle?: string
 
-  // Delete confirmation props
   deleteConfirmVisible?: boolean
   deleteConfirmTitle?: string
   deleteConfirmMessage?: string

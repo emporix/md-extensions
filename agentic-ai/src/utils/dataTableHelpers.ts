@@ -2,9 +2,6 @@ import { DataTableFilterMeta, DataTablePFSEvent } from 'primereact/datatable'
 import { SEVERITY_TO_NUMBER_MAP } from '../constants/logConstants'
 import { getDateFilter } from './dateHelpers'
 
-/**
- * Convert PrimeReact filters to API format
- */
 export const convertFiltersToApi = (
   filters: DataTableFilterMeta,
   fieldMappings?: Record<string, string>,
@@ -39,9 +36,6 @@ export const convertFiltersToApi = (
   return apiFilters
 }
 
-/**
- * Convert filters with severity enum conversion (INFO -> 10, WARNING -> 20, ERROR -> 30)
- */
 export const convertSeverityFiltersToApi = (
   filters: DataTableFilterMeta,
   fieldMappings?: Record<string, string>,
@@ -68,10 +62,6 @@ export const convertJobTypeToApi = (jobType: string): string => {
   }
 }
 
-/**
- * Handle DataTable sort event
- * @returns [apiField, apiOrder, newSortField, newSortOrder]
- */
 export const handleDataTableSort = (
   event: DataTablePFSEvent,
   currentSortField: string,
@@ -100,10 +90,6 @@ export const handleDataTableSort = (
   return [apiField, apiOrder, newSortField, newSortOrder]
 }
 
-/**
- * Handle DataTable page event
- * @returns ['pageSize' | 'page', value]
- */
 export const handleDataTablePage = (
   event: DataTablePFSEvent,
   currentPageSize: number

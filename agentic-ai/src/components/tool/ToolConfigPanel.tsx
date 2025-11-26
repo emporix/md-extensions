@@ -10,14 +10,17 @@ import {
   ToolConfig,
   ToolConfigPanelProps,
 } from '../../types/Tool'
-import { ToolsService } from '../../services/toolsService'
+import {
+  getTokens,
+  getSlackInstallationData,
+} from '../../services/toolsService'
 import { useToast } from '../../contexts/ToastContext'
 import { BaseConfigPanel } from '../shared/BaseConfigPanel'
 import { faTools } from '@fortawesome/free-solid-svg-icons'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { InputNumber } from 'primereact/inputnumber'
 import { Dropdown } from 'primereact/dropdown'
-import { AiRagIndexerService } from '../../services/aiRagIndexerService'
+import { getRagMetadata } from '../../services/aiRagIndexerService'
 
 const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   visible,
@@ -53,8 +56,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     if (!appState) return
 
     try {
-      const toolsService = new ToolsService(appState)
-      const tokens = await toolsService.getTokens()
+      const tokens = await getTokens(appState)
       setAvailableTokens(tokens)
     } catch (error) {
       console.error('Failed to load tokens:', error)
@@ -66,9 +68,8 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     if (!appState) return
 
     try {
-      const aiRagIndexerService = new AiRagIndexerService(appState)
       // Use 'product' as the default entity type for now
-      const fields = await aiRagIndexerService.getRagMetadata('product')
+      const fields = await getRagMetadata(appState, 'product')
       setAvailableFields(fields)
     } catch (error) {
       console.error('Failed to load fields:', error)
@@ -194,9 +195,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
     setSlackInstallLoading(true)
     try {
-      const toolsService = new ToolsService(appState)
-      const { id: stateId, clientId } =
-        await toolsService.getSlackInstallationData()
+      const { id: stateId, clientId } = await getSlackInstallationData(appState)
       const slackOAuthUrl = `https://slack.com/oauth/v2/authorize?client_id=${clientId}&scope=app_mentions:read,channels:history,channels:manage,channels:read,channels:write.invites,chat:write,groups:read,groups:write,users:read,users:read.email&user_scope=&state=${stateId}`
       window.location.href = slackOAuthUrl
     } catch (error) {

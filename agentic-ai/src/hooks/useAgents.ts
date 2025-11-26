@@ -1,10 +1,15 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { PatchOperation } from '../services/agentService'
 import { AgentTemplate, CustomAgent } from '../types/Agent'
 import { AppState } from '../types/common'
 import { useToast } from '../contexts/ToastContext'
 import { formatApiError } from '../utils/errorHelpers'
-import { ServiceFactory } from '../services/serviceFactory'
+import {
+  getAgentTemplates,
+  getCustomAgents,
+  deleteCustomAgent,
+  patchCustomAgent,
+} from '../services/agentService'
 import { useDeleteConfirmation } from './useDeleteConfirmation'
 
 interface UseAgentsResult {
@@ -46,17 +51,12 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
     null
   )
 
-  const agentService = useMemo(
-    () => ServiceFactory.getAgentService(appState),
-    [appState]
-  )
-
   const loadAgentTemplates = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
 
-      const templates = await agentService.getAgentTemplates()
+      const templates = await getAgentTemplates(appState)
       setAgents(templates)
     } catch (err) {
       const errorMessage = formatApiError(err, 'Failed to load agent templates')
@@ -65,14 +65,14 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
     } finally {
       setLoading(false)
     }
-  }, [agentService, showError])
+  }, [appState, showError])
 
   const loadCustomAgents = useCallback(async () => {
     try {
       setCustomAgentsLoading(true)
       setCustomAgentsError(null)
 
-      const customAgentsList = await agentService.getCustomAgents()
+      const customAgentsList = await getCustomAgents(appState)
       setCustomAgents(customAgentsList)
     } catch (err) {
       const errorMessage = formatApiError(err, 'Failed to load custom agents')
@@ -81,7 +81,7 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
     } finally {
       setCustomAgentsLoading(false)
     }
-  }, [agentService, showError])
+  }, [appState, showError])
 
   const {
     deleteConfirmVisible,
@@ -94,7 +94,7 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
     confirmForceDelete,
   } = useDeleteConfirmation({
     onDelete: async (agentId: string, force?: boolean) => {
-      await agentService.deleteCustomAgent(agentId, force)
+      await deleteCustomAgent(appState, agentId, force)
     },
     onSuccess: async (agentId: string) => {
       setCustomAgents((prev) => prev.filter((agent) => agent.id !== agentId))
@@ -136,7 +136,7 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
             value: enabled,
           },
         ]
-        await agentService.patchCustomAgent(agentId, patches)
+        await patchCustomAgent(appState, agentId, patches)
 
         showSuccess(
           `Agent ${enabled ? 'activated' : 'deactivated'} successfully!`
@@ -159,7 +159,7 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
         )
       }
     },
-    [loadCustomAgents, customAgents, showError, showSuccess, agentService]
+    [appState, loadCustomAgents, customAgents, showError, showSuccess]
   )
 
   const removeCustomAgent = useCallback(

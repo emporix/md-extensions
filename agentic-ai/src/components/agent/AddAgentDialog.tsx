@@ -103,6 +103,4 @@ const AddAgentDialog: React.FC<AddAgentDialogProps> = memo(
   }
 )
 
-AddAgentDialog.displayName = 'AddAgentDialog'
-
 export default AddAgentDialog

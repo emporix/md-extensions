@@ -6,7 +6,7 @@ import { ProgressBar } from 'primereact/progressbar'
 import { Badge } from 'primereact/badge'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from '@fortawesome/free-solid-svg-icons'
-import { AgentService } from '../../services/agentService'
+import { importAgents } from '../../services/agentService'
 import { AppState, ImportSummaryState } from '../../types/common'
 import { useToast } from '../../contexts/ToastContext'
 
@@ -54,8 +54,7 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
 
         const parsedJson = JSON.parse(fileContent)
 
-        const agentService = new AgentService(appState)
-        const result = await agentService.importAgents(parsedJson)
+        const result = await importAgents(appState, parsedJson)
 
         setImportResult(result)
         showSuccess(

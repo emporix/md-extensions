@@ -11,9 +11,6 @@ interface StatusBadgeProps {
   className?: string
 }
 
-/**
- * Reusable badge component for displaying job/task status
- */
 export const StatusBadge: React.FC<StatusBadgeProps> = ({
   status,
   style = {},

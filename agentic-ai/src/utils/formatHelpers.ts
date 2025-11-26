@@ -1,8 +1,3 @@
-/**
- * Format a timestamp string to a localized date string
- * @param timestamp - ISO string, number string, or Date object
- * @returns Formatted date string
- */
 export const formatTimestamp = (timestamp: string): string => {
   try {
     const date = timestamp.includes('T')

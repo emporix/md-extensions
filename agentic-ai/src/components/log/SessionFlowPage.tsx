@@ -7,7 +7,7 @@ import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
 import { AppState } from '../../types/common'
 import { BasePage } from '../shared/BasePage'
-import { SeverityBadge } from '../shared'
+import { SeverityBadge } from '../shared/SeverityBadge'
 import { useSessionFlow } from '../../hooks/useSessionFlow'
 import { LogService } from '../../services/logService'
 import '../../styles/components/SessionFlowPage.css'
@@ -30,20 +30,17 @@ const SessionFlowPage: React.FC<SessionFlowPageProps> = ({ appState }) => {
   const logService = useMemo(() => new LogService(appState), [appState])
 
   useEffect(() => {
-    // Get agentId from URL parameters
     const urlParams = new URLSearchParams(location.search)
     const agentIdParam = urlParams.get('agentId')
     setAgentId(agentIdParam || undefined)
   }, [location.search])
 
   useEffect(() => {
-    // Fetch session flow data
     if (sessionId) {
       fetchBySessionId(sessionId)
     }
   }, [fetchBySessionId, sessionId])
 
-  // Initialize selected agents when flows change (all selected by default)
   useEffect(() => {
     if (flows.length > 0) {
       const allMessages = flows.flatMap((flow) => flow.nodes)
@@ -53,7 +50,6 @@ const SessionFlowPage: React.FC<SessionFlowPageProps> = ({ appState }) => {
   }, [flows])
 
   const handleBackToLogs = () => {
-    // Navigate back to sessions tab with agentId if available
     const queryParams = agentId ? `?agentId=${agentId}` : ''
     navigate(`/logs/sessions${queryParams}`)
   }
@@ -62,13 +58,11 @@ const SessionFlowPage: React.FC<SessionFlowPageProps> = ({ appState }) => {
     requestId: string,
     messageTimestamp?: string
   ) => {
-    // Store the message timestamp for scrolling to specific message
     if (messageTimestamp) {
       sessionStorage.setItem('scrollToMessage', messageTimestamp)
     }
 
     try {
-      // Navigate to log details page
       const log = await logService.getRequestLogs(requestId)
       if (log?.id) {
         navigate(`/logs/requests/${log.id}`)
@@ -90,7 +84,6 @@ const SessionFlowPage: React.FC<SessionFlowPageProps> = ({ appState }) => {
     })
   }
 
-  // Assign colors to agents
   const agentColors = useMemo(() => {
     if (flows.length === 0) return new Map<string, string>()
 
@@ -132,7 +125,6 @@ const SessionFlowPage: React.FC<SessionFlowPageProps> = ({ appState }) => {
     return groupColors
   }, [flows])
 
-  // Calculate agent statistics
   const agentStats = useMemo(() => {
     if (flows.length === 0) return []
 
@@ -180,10 +172,8 @@ const SessionFlowPage: React.FC<SessionFlowPageProps> = ({ appState }) => {
   const items = useMemo(() => {
     if (flows.length === 0) return []
 
-    // Merge all messages from all flows
     const allMessages = flows.flatMap((flow) => flow.nodes)
 
-    // Filter messages by selected agents
     const filteredMessages = allMessages.filter((message) =>
       selectedAgents.has(message.agentId)
     )
@@ -215,7 +205,6 @@ const SessionFlowPage: React.FC<SessionFlowPageProps> = ({ appState }) => {
       className="session-flow"
     >
       <div className="session-flow-container">
-        {/* Agent Filter Control Panel - Collapsed Tab */}
         {!isControlExpanded && (
           <div
             className="agent-filter-collapsed"
@@ -231,7 +220,6 @@ const SessionFlowPage: React.FC<SessionFlowPageProps> = ({ appState }) => {
           </div>
         )}
 
-        {/* Agent Filter Control Panel - Expanded */}
         {isControlExpanded && (
           <div className="agent-filter-expanded">
             <div className="agent-filter-header">
@@ -304,7 +292,6 @@ const SessionFlowPage: React.FC<SessionFlowPageProps> = ({ appState }) => {
           </div>
         )}
 
-        {/* Timeline Content */}
         <div className="session-flow-timeline-container">
           <div className="session-flow-timeline-wrapper">
             {loading ? (

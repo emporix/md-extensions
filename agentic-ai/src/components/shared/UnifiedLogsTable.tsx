@@ -12,19 +12,15 @@ import { Dropdown } from 'primereact/dropdown'
 import { FilterMatchMode } from 'primereact/api'
 import { LogMessage } from '../../types/Log'
 import { formatTimestamp } from '../../utils/formatHelpers'
+import { formatMessageWithLineBreaks } from '../../utils/formatHelpers.tsx'
 import { SeverityBadge } from './SeverityBadge'
 import { SEVERITY_OPTIONS } from '../../constants/logConstants'
 import DateFilterTemplate from './DateFilterTemplate'
 
 interface UnifiedLogsTableProps {
-  // Data props - messages array
   messages?: LogMessage[]
-
-  // Loading and error states
   loading?: boolean
   error?: string | null
-
-  // Display options
   title?: string
   emptyMessage?: string
   className?: string
@@ -49,7 +45,6 @@ const UnifiedLogsTable = forwardRef<
   ) => {
     const { t } = useTranslation()
 
-    // Filter state
     const [filters, setFilters] = useState<DataTableFilterMeta>({
       severity: { value: null, matchMode: FilterMatchMode.EQUALS },
       timestamp: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -57,24 +52,23 @@ const UnifiedLogsTable = forwardRef<
       message: { value: null, matchMode: FilterMatchMode.CONTAINS },
     })
 
-    // Sort state
     const [sortField, setSortField] = useState<string>('timestamp')
     const [sortOrder, setSortOrder] = useState<1 | -1>(1)
 
-    // Filter elements
     const severityFilterElement = useCallback(
       (options: ColumnFilterElementTemplateOptions) => {
+        const placeholderText = t('select_severity', 'Select Severity')
         return (
           <Dropdown
             value={options.value}
             options={SEVERITY_OPTIONS}
-            valueTemplate={(option) => {
-              if (!option) return null
-              return <SeverityBadge severity={option.value} />
-            }}
+              valueTemplate={(option) => {
+                if (!option) return <span className="dropdown-placeholder">{placeholderText}</span>
+                return <SeverityBadge severity={option.value} />
+              }}
             onChange={(e) => options.filterApplyCallback(e.value)}
             itemTemplate={(option) => <SeverityBadge severity={option.value} />}
-            placeholder={t('select_severity', 'Select Severity')}
+            placeholder={placeholderText}
             className="p-column-filter"
             showClear
           />
@@ -90,12 +84,10 @@ const UnifiedLogsTable = forwardRef<
       []
     )
 
-    // Filter change handler
     const handleFilterChange = useCallback((e: DataTablePFSEvent) => {
       setFilters(e.filters as DataTableFilterMeta)
     }, [])
 
-    // Sort change handler
     const handleSort = useCallback((e: DataTablePFSEvent) => {
       setSortField(e.sortField)
       setSortOrder(e.sortOrder as 1 | -1)
@@ -110,19 +102,11 @@ const UnifiedLogsTable = forwardRef<
     }
 
     const messageBodyTemplate = (rowData: LogMessage) => {
-      // Replace \n with actual line breaks
-      const formattedMessage = rowData.message
-        .split('\\n')
-        .map((line, index, array) => (
-          <React.Fragment key={index}>
-            {line}
-            {index < array.length - 1 && <br />}
-          </React.Fragment>
-        ))
-
       return (
         <div className="log-message-content">
-          <span className="log-message-text">{formattedMessage}</span>
+          <span className="log-message-text">
+            {formatMessageWithLineBreaks(rowData.message)}
+          </span>
         </div>
       )
     }
@@ -250,7 +234,5 @@ const UnifiedLogsTable = forwardRef<
     )
   }
 )
-
-UnifiedLogsTable.displayName = 'UnifiedLogsTable'
 
 export default UnifiedLogsTable

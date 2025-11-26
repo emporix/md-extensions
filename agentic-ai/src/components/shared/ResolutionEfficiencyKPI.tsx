@@ -10,10 +10,6 @@ interface ResolutionEfficiencyKPIProps {
   loading: boolean
 }
 
-/**
- * Resolution Efficiency KPI Component
- * Displays requests per session metric with color-coded efficiency levels
- */
 const ResolutionEfficiencyKPI: React.FC<ResolutionEfficiencyKPIProps> = ({
   data,
   loading,

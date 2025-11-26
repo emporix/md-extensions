@@ -21,5 +21,3 @@ export const FormField: React.FC<FormFieldProps> = memo(
     )
   }
 )
-
-FormField.displayName = 'FormField'

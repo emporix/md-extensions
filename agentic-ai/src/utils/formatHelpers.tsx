@@ -1,16 +1,17 @@
 import React, { ReactNode } from 'react'
 
-/**
- * Formats a string with newlines into JSX elements with proper line breaks
- * @param message - The message string that may contain \n characters
- * @returns ReactNode with proper line breaks or the original string
- */
 export const formatMessageWithLineBreaks = (message: string): ReactNode => {
-  if (!message || !message.includes('\n')) {
+  if (!message) {
     return message
   }
 
-  const lines = message.split('\n')
+  const normalizedMessage = message.replace(/\\n/g, '\n')
+
+  if (!normalizedMessage.includes('\n')) {
+    return message
+  }
+
+  const lines = normalizedMessage.split('\n')
   return (
     <div style={{ whiteSpace: 'pre-line' }}>
       {lines.map((line, index) => (

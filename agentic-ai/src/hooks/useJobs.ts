@@ -111,19 +111,15 @@ export const useJobs = (appState: AppState) => {
 
   const changePage = useCallback((newPageNumber: number) => {
     setPageNumber(newPageNumber)
-    // The fetchJobs will be called by useEffect when pageNumber changes
   }, [])
 
   const changePageSize = useCallback((newPageSize: number) => {
     setPageSize(newPageSize)
     setPageNumber(1)
-    // The fetchJobs will be called by useEffect when pageSize changes
   }, [])
 
-  // Create stable reference for filters to prevent unnecessary re-renders
   const filtersString = useMemo(() => JSON.stringify(filters), [filters])
 
-  // Fetch jobs when dependencies change
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search)
     const agentIdParam = urlParams.get('agentId')

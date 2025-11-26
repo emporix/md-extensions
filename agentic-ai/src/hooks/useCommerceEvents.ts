@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { AppState } from '../types/common'
-import { AgentService } from '../services/agentService'
+import { getCommerceEvents } from '../services/agentService'
 import { formatApiError } from '../utils/errorHelpers'
 
 export interface CommerceEventsState {
@@ -24,8 +24,7 @@ export const useCommerceEvents = (appState: AppState) => {
     setState((prev) => ({ ...prev, loading: true, error: null }))
 
     try {
-      const agentService = new AgentService(appState)
-      const response = await agentService.getCommerceEvents()
+      const response = await getCommerceEvents(appState)
       const sortedEvents = (response.events || []).sort((a, b) =>
         a.localeCompare(b)
       )

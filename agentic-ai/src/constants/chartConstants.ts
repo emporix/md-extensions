@@ -1,8 +1,3 @@
-/**
- * Chart configuration constants
- */
-
-// Chart color palette
 export const CHART_COLORS = {
   success: {
     background: 'rgba(16, 185, 129, 0.8)',
@@ -22,7 +17,6 @@ export const CHART_COLORS = {
   },
 } as const
 
-// Chart configuration
 export const CHART_CONFIG = {
   borderWidth: 2,
   pointRadius: 4,
@@ -34,7 +28,6 @@ export const CHART_CONFIG = {
   axisTitleFontSize: 12,
 } as const
 
-// Resolution efficiency thresholds
 export const EFFICIENCY_THRESHOLDS = {
   EXCELLENT: 3, // < 3 requests per session
   GOOD: 5, // 3-5 requests per session

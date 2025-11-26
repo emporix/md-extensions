@@ -1,11 +1,9 @@
-import {
-  AgentsView,
-  ToolsPage,
-  TokensPage,
-  McpPage,
-  LogsPage,
-  SessionFlowPage,
-} from './components'
+import { AgentsView } from './components/agent'
+import { ToolsPage } from './components/tool'
+import { TokensPage } from './components/token'
+import { McpPage } from './components/mcp'
+import LogsPage from './components/log/LogsPage'
+import SessionFlowPage from './components/log/SessionFlowPage'
 import LogDetailsPage from './components/log/LogDetailsPage'
 import JobDetailsPage from './components/log/JobDetailsPage'
 import { useTranslation } from 'react-i18next'
