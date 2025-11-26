@@ -1,10 +1,10 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { ToolCardProps } from '../../types/Tool';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSlack, faMicrosoft } from '@fortawesome/free-brands-svg-icons';
-import { faTools } from '@fortawesome/free-solid-svg-icons';
-import BaseCard, { CardAction } from '../shared/BaseCard';
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { ToolCardProps } from '../../types/Tool'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSlack, faMicrosoft } from '@fortawesome/free-brands-svg-icons'
+import { faTools } from '@fortawesome/free-solid-svg-icons'
+import BaseCard, { CardAction } from '../shared/BaseCard'
 
 const ToolCard: React.FC<ToolCardProps> = ({
   tool,
@@ -43,17 +43,17 @@ const ToolCard: React.FC<ToolCardProps> = ({
 
   const getDescription = () => {
     if (tool.type === 'slack' || tool.type === 'teams') {
-      const parts: string[] = [];
+      const parts: string[] = []
       if (tool.config?.teamId) {
-        parts.push(`Team ID: ${tool.config?.teamId}`);
+        parts.push(`Team ID: ${tool.config?.teamId}`)
       }
       if (tool.config?.botToken) {
-        parts.push(`Bot Token: ${'•'.repeat(8)}`);
+        parts.push(`Bot Token: ${'•'.repeat(8)}`)
       }
-      return parts.length > 0 ? parts.join('\n') : `${getToolTypeLabel()} Tool`;
+      return parts.length > 0 ? parts.join('\n') : `${getToolTypeLabel()} Tool`
     }
-    return `${getToolTypeLabel()} Tool`;
-  };
+    return `${getToolTypeLabel()} Tool`
+  }
 
   const getActions = (): CardAction[] => {
     const actions: CardAction[] = [
@@ -64,7 +64,7 @@ const ToolCard: React.FC<ToolCardProps> = ({
           e.stopPropagation()
           onConfigure(tool)
         },
-        className: 'configure-button'
+        className: 'configure-button',
       },
     ]
 
@@ -77,7 +77,7 @@ const ToolCard: React.FC<ToolCardProps> = ({
           e.stopPropagation()
           onReindex(tool)
         },
-        className: 'configure-button'
+        className: 'configure-button',
       })
     }
 
@@ -114,4 +114,4 @@ const ToolCard: React.FC<ToolCardProps> = ({
   )
 }
 
-export default ToolCard;
+export default ToolCard

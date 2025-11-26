@@ -1,75 +1,77 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Dropdown } from 'primereact/dropdown';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { Button } from 'primereact/button';
-import { AgentCollaboration } from '../../../types/Agent';
-import { CustomAgent } from '../../../types/Agent';
-import { getLocalizedValue } from '../../../utils/agentHelpers';
-import { iconMap } from '../../../utils/agentHelpers';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Dropdown } from 'primereact/dropdown'
+import { InputTextarea } from 'primereact/inputtextarea'
+import { Button } from 'primereact/button'
+import { AgentCollaboration } from '../../../types/Agent'
+import { CustomAgent } from '../../../types/Agent'
+import { getLocalizedValue } from '../../../utils/agentHelpers'
+import { iconMap } from '../../../utils/agentHelpers'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 interface AgentCollaborationFormProps {
-  onAdd: (collaboration: AgentCollaboration) => void;
-  onCancel: () => void;
-  availableAgents: CustomAgent[];
-  editingCollaboration?: AgentCollaboration;
-  currentAgentType?: string;
+  onAdd: (collaboration: AgentCollaboration) => void
+  onCancel: () => void
+  availableAgents: CustomAgent[]
+  editingCollaboration?: AgentCollaboration
+  currentAgentType?: string
 }
 
-export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({ 
-  onAdd, 
-  onCancel, 
+export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({
+  onAdd,
+  onCancel,
   availableAgents,
   editingCollaboration,
-  currentAgentType 
+  currentAgentType,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(
     editingCollaboration?.agentId || null
-  );
+  )
   const [description, setDescription] = useState(
     editingCollaboration?.description || ''
-  );
+  )
 
   const agentOptions = availableAgents
-    .filter(agent => {
+    .filter((agent) => {
       // Show emporix--collaboration agent only if current agent type is complaint or anti_fraud
       if (agent.id === 'emporix--collaboration') {
-        return currentAgentType === 'complaint' || currentAgentType === 'anti_fraud';
+        return (
+          currentAgentType === 'complaint' || currentAgentType === 'anti_fraud'
+        )
       }
       // Show all other agents normally
-      return true;
+      return true
     })
-    .map(agent => ({
+    .map((agent) => ({
       label: (
         <div className="agent-option">
-          <FontAwesomeIcon 
-            icon={iconMap[agent.icon || 'robot'] || iconMap.robot} 
-            className="agent-option-icon" 
+          <FontAwesomeIcon
+            icon={iconMap[agent.icon || 'robot'] || iconMap.robot}
+            className="agent-option-icon"
           />
           <span>{getLocalizedValue(agent.name)}</span>
         </div>
       ),
       value: agent.id,
-      sortName: getLocalizedValue(agent.name)
+      sortName: getLocalizedValue(agent.name),
     }))
-    .sort((a, b) => a.sortName.localeCompare(b.sortName));
+    .sort((a, b) => a.sortName.localeCompare(b.sortName))
 
   const isFormValid = () => {
-    return selectedAgentId && description.trim();
-  };
+    return selectedAgentId && description.trim()
+  }
 
   const handleAdd = () => {
-    if (!isFormValid() || !selectedAgentId) return;
+    if (!isFormValid() || !selectedAgentId) return
 
     const collaboration: AgentCollaboration = {
       agentId: selectedAgentId,
-      description: description.trim()
-    };
+      description: description.trim(),
+    }
 
-    onAdd(collaboration);
-  };
+    onAdd(collaboration)
+  }
 
   return (
     <div className="agent-collaboration-form">
@@ -110,5 +112,5 @@ export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({
         />
       </div>
     </div>
-  );
-}; 
+  )
+}

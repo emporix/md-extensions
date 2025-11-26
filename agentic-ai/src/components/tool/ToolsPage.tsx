@@ -9,7 +9,7 @@ import { useTools } from '../../hooks/useTools'
 import { AppState } from '../../types/common'
 import { createEmptyTool } from '../../utils/toolHelpers'
 import { useToast } from '../../contexts/ToastContext'
-import { AiRagIndexerService } from '../../services/aiRagIndexerService'
+import { reindex } from '../../services/aiRagIndexerService'
 
 interface ToolsPageProps {
   appState?: AppState
@@ -24,6 +24,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
 }) => {
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
+
   const {
     tools,
     loading,
@@ -41,7 +42,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
     confirmForceDelete,
     forceToggleConfirmVisible,
     hideForceToggleConfirm,
-    confirmForceToggle
+    confirmForceToggle,
   } = useTools(appState)
   const [showConfigPanel, setShowConfigPanel] = useState(false)
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null)
@@ -65,7 +66,8 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
       showSuccess(t('tool_updated_successfully', 'Tool updated successfully!'))
       setShowConfigPanel(false)
       setSelectedTool(null)
-    } catch {
+    } catch (error) {
+      console.error(error)
       setShowConfigPanel(false)
       setSelectedTool(null)
     }
@@ -100,8 +102,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
     hideReindexConfirm()
 
     try {
-      const aiRagIndexerService = new AiRagIndexerService(appState)
-      await aiRagIndexerService.reindex(toolToReindex.config.entityType)
+      await reindex(appState, toolToReindex.config.entityType)
       showSuccess(
         t('reindex_triggered_successfully', 'Reindex triggered successfully!')
       )
@@ -175,7 +176,10 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
       <ConfirmDialog
         visible={forceDeleteConfirmVisible}
         title={t('force_delete_tool', 'Force Delete Tool')}
-        message={t('force_delete_tool_message', 'Tool is used by agents.\nBy deleting it, the tool will be removed from the agents and agents will be disabled.')}
+        message={t(
+          'force_delete_tool_message',
+          'Tool is used by agents.\nBy deleting it, the tool will be removed from the agents and agents will be disabled.'
+        )}
         onConfirm={confirmForceDelete}
         onHide={hideForceDeleteConfirm}
         confirmLabel={t('force_delete', 'Force Delete')}
@@ -185,7 +189,10 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
       <ConfirmDialog
         visible={forceToggleConfirmVisible}
         title={t('force_disable_tool', 'Force Disable Tool')}
-        message={t('force_disable_tool_message', 'Tool is used by agents. By disabling it, the agents will be disabled as well.')}
+        message={t(
+          'force_disable_tool_message',
+          'Tool is used by agents. By disabling it, the agents will be disabled as well.'
+        )}
         onConfirm={confirmForceToggle}
         onHide={hideForceToggleConfirm}
         confirmLabel={t('force_disable', 'Force Disable')}

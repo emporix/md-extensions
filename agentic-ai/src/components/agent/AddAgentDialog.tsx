@@ -1,112 +1,106 @@
-import React, { memo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Dialog } from 'primereact/dialog';
-import { AgentTemplate } from '../../types/Agent';
-import { AppState } from '../../types/common';
-import { FormStep } from './add-agent/FormStep';
-import { LoadingStep } from './add-agent/LoadingStep';
-import { SuccessStep } from './add-agent/SuccessStep';
-import { ErrorStep } from './add-agent/ErrorStep';
-import { useAddAgentDialog } from '../../hooks/useAddAgentDialog';
+import React, { memo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Dialog } from 'primereact/dialog'
+import { AgentTemplate } from '../../types/Agent'
+import { AppState } from '../../types/common'
+import { FormStep } from './add-agent/FormStep'
+import { LoadingStep } from './add-agent/LoadingStep'
+import { SuccessStep } from './add-agent/SuccessStep'
+import { ErrorStep } from './add-agent/ErrorStep'
+import { useAddAgentDialog } from '../../hooks/useAddAgentDialog'
 
 interface AddAgentDialogProps {
-  visible: boolean;
-  agentTemplate: AgentTemplate | null;
-  onHide: () => void;
-  onSave: (name: string, description: string, templateId: string) => void;
-  appState: AppState;
+  visible: boolean
+  agentTemplate: AgentTemplate | null
+  onHide: () => void
+  onSave: (name: string, description: string, templateId: string) => void
+  appState: AppState
 }
 
-const AddAgentDialog: React.FC<AddAgentDialogProps> = memo(({ 
-  visible, 
-  agentTemplate, 
-  onHide, 
-  onSave, 
-  appState 
-}) => {
-  const { t } = useTranslation();
+const AddAgentDialog: React.FC<AddAgentDialogProps> = memo(
+  ({ visible, agentTemplate, onHide, onSave, appState }) => {
+    const { t } = useTranslation()
 
-  const {
-    step,
-    agentId,
-    agentName,
-    description,
-    userPrompt,
-    templatePrompt,
-    progress,
-    errorMessage,
-    setAgentId,
-    setAgentName,
-    setDescription,
-    setUserPrompt,
-    handleSave,
-    handleOk,
-    handleDiscard,
-    resetForm
-  } = useAddAgentDialog({
-    agentTemplate,
-    appState,
-    onSave,
-    onHide
-  });
+    const {
+      step,
+      agentId,
+      agentName,
+      description,
+      userPrompt,
+      templatePrompt,
+      progress,
+      errorMessage,
+      setAgentId,
+      setAgentName,
+      setDescription,
+      setUserPrompt,
+      handleSave,
+      handleOk,
+      handleDiscard,
+      resetForm,
+    } = useAddAgentDialog({
+      agentTemplate,
+      appState,
+      onSave,
+      onHide,
+    })
 
-  const renderStepContent = () => {
-    switch (step) {
-      case 'form':
-        return (
-          <FormStep
-            agentId={agentId}
-            setAgentId={setAgentId}
-            agentName={agentName}
-            setUserPrompt={setUserPrompt}
-            setAgentName={setAgentName}
-            description={description}
-            userPrompt={userPrompt}
-            templatePrompt={templatePrompt}
-            setDescription={setDescription}
-            onDiscard={handleDiscard}
-            onSave={handleSave}
-          />
-        );
-      case 'loading':
-        return (
-          <LoadingStep
-            agentName={agentName}
-            progress={progress}
-            onDiscard={handleDiscard}
-          />
-        );
-      case 'success':
-        return <SuccessStep onOk={handleOk} />;
-      case 'error':
-        return <ErrorStep onOk={handleOk} errorMessage={errorMessage} />;
-      default:
-        return null;
+    const renderStepContent = () => {
+      switch (step) {
+        case 'form':
+          return (
+            <FormStep
+              agentId={agentId}
+              setAgentId={setAgentId}
+              agentName={agentName}
+              setUserPrompt={setUserPrompt}
+              setAgentName={setAgentName}
+              description={description}
+              userPrompt={userPrompt}
+              templatePrompt={templatePrompt}
+              setDescription={setDescription}
+              onDiscard={handleDiscard}
+              onSave={handleSave}
+            />
+          )
+        case 'loading':
+          return (
+            <LoadingStep
+              agentName={agentName}
+              progress={progress}
+              onDiscard={handleDiscard}
+            />
+          )
+        case 'success':
+          return <SuccessStep onOk={handleOk} />
+        case 'error':
+          return <ErrorStep onOk={handleOk} errorMessage={errorMessage} />
+        default:
+          return null
+      }
     }
-  };
 
-  const getDialogTitle = () => {
-    if (!agentTemplate) return t('add_agent', 'Add Agent');
-    
-    return t('add_agent');
-  };
+    const getDialogTitle = () => {
+      if (!agentTemplate) return t('add_agent', 'Add Agent')
 
-  return (
-    <Dialog
-      visible={visible}
-      onHide={onHide}
-      header={getDialogTitle()}
-      className="add-agent-dialog"
-      style={{ width: '80vw', maxWidth: '900px' }}
-      modal
-      closable={step === 'form'}
-      onShow={resetForm}
-    >
-      {renderStepContent()}
-    </Dialog>
-  );
-});
+      return t('add_agent')
+    }
 
-AddAgentDialog.displayName = 'AddAgentDialog';
+    return (
+      <Dialog
+        visible={visible}
+        onHide={onHide}
+        header={getDialogTitle()}
+        className="add-agent-dialog"
+        style={{ width: '80vw', maxWidth: '900px' }}
+        modal
+        closable={step === 'form'}
+        onShow={resetForm}
+      >
+        {renderStepContent()}
+      </Dialog>
+    )
+  }
+)
 
-export default AddAgentDialog; 
+export default AddAgentDialog

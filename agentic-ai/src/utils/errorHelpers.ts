@@ -1,6 +1,9 @@
 import { ApiClientError } from '../services/apiClient'
 
-export const formatApiError = (err: unknown, fallbackMessage: string): string => {
+export const formatApiError = (
+  err: unknown,
+  fallbackMessage: string
+): string => {
   if (err instanceof ApiClientError) {
     return err.message || fallbackMessage
   }
@@ -9,5 +12,3 @@ export const formatApiError = (err: unknown, fallbackMessage: string): string =>
   }
   return fallbackMessage
 }
-
-

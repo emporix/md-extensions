@@ -1,0 +1,307 @@
+/* ========================================
+   Log Card & Log Details Styles
+   ======================================== */
+
+/* Timeline Styles */
+.p-timeline-event-content {
+  min-width: 600px !important;
+  max-width: 1200px !important;
+  padding: var(--space-lg) 20px !important;
+}
+
+/* Log Card - extends base card */
+.log-card {
+  max-width: 400px;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-xl);
+  transition: all var(--transition-base);
+  margin: 0;
+  cursor: pointer;
+}
+
+.log-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.log-card .p-card-header {
+  padding: var(--space-xl) var(--space-xl) var(--space-xs) var(--space-xl);
+  border-bottom: none;
+}
+
+.log-card .p-card-content {
+  padding: 0 var(--space-xl) var(--space-lg) var(--space-xl);
+}
+
+.log-card .p-card-footer {
+  padding: 0 var(--space-xl) var(--space-xl) var(--space-xl);
+  border-top: none;
+}
+
+.log-card .p-card-body {
+  padding-top: 0 !important;
+}
+
+/* Log Severity Badges */
+.log-card .tool-type-badge {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  background: var(--color-success-bg);
+  color: var(--color-green-700);
+}
+
+.log-card[data-has-errors="true"] .tool-type-badge {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+/* Log Metadata */
+.log-metadata {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--border-default);
+}
+
+.log-meta-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-xs);
+}
+
+.log-meta-label {
+  color: var(--text-muted);
+  font-weight: var(--font-weight-medium);
+}
+
+.log-meta-value {
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+/* ========================================
+   Warning Tag Styles
+   ======================================== */
+
+/* Simplified warning tag styling - targets all PrimeReact warning tags */
+.p-tag-warning,
+.p-tag.p-tag-warning {
+  background-color: var(--color-warning) !important;
+  color: var(--color-warning-text) !important;
+  border-color: var(--color-warning-border) !important;
+}
+
+.p-tag-warning .p-tag-value,
+.p-tag.p-tag-warning .p-tag-value,
+.p-tag-warning * {
+  color: var(--color-warning-text) !important;
+}
+
+
+/* ========================================
+   Log Messages Table
+   ======================================== */
+
+.log-messages-table {
+  flex: 1;
+  padding: var(--space-xl);
+}
+
+.log-messages-datatable,
+.unified-logs-datatable {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+}
+
+.log-messages-datatable table,
+.unified-logs-datatable table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.log-messages-datatable .p-datatable-tbody,
+.unified-logs-datatable .p-datatable-tbody {
+  border-collapse: collapse;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body,
+.unified-logs-datatable .p-datatable-scrollable-body {
+  overflow-y: auto !important;
+  overflow-x: hidden;
+}
+
+.log-messages-datatable .p-datatable-scrollable-wrapper,
+.unified-logs-datatable .p-datatable-scrollable-wrapper {
+  position: relative;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body::-webkit-scrollbar,
+.unified-logs-datatable .p-datatable-scrollable-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body::-webkit-scrollbar-track,
+.unified-logs-datatable .p-datatable-scrollable-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body::-webkit-scrollbar-thumb,
+.unified-logs-datatable .p-datatable-scrollable-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body::-webkit-scrollbar-thumb:hover,
+.unified-logs-datatable .p-datatable-scrollable-body::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body table,
+.unified-logs-datatable .p-datatable-scrollable-body table {
+  border-collapse: collapse;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body table tbody tr,
+.unified-logs-datatable .p-datatable-scrollable-body table tbody tr {
+  border-bottom: 1px solid var(--border-default) !important;
+}
+
+.log-messages-datatable .p-datatable-scrollable-wrapper .p-datatable-scrollable-body table tbody tr,
+.unified-logs-datatable .p-datatable-scrollable-wrapper .p-datatable-scrollable-body table tbody tr {
+  border-bottom: 1px solid var(--border-default) !important;
+}
+
+.log-messages-datatable table.p-datatable-table tbody tr,
+.unified-logs-datatable table.p-datatable-table tbody tr {
+  border-bottom: 1px solid var(--border-default) !important;
+}
+
+.log-messages-datatable .p-datatable-header,
+.unified-logs-datatable .p-datatable-header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.log-messages-datatable .p-datatable-tbody > tr,
+.unified-logs-datatable .p-datatable-tbody > tr {
+  border-bottom: 1px solid var(--border-default) !important;
+  display: table-row;
+  position: relative;
+}
+
+.log-messages-datatable .p-datatable-tbody > tr:last-child,
+.unified-logs-datatable .p-datatable-tbody > tr:last-child {
+  border-bottom: 1px solid var(--border-default) !important;
+}
+
+.log-messages-datatable .p-datatable-tbody > tr:not(:last-child),
+.unified-logs-datatable .p-datatable-tbody > tr:not(:last-child) {
+  border-bottom: 1px solid var(--border-default) !important;
+}
+
+.log-messages-datatable .p-datatable-tbody > tr td,
+.unified-logs-datatable .p-datatable-tbody > tr td {
+  border-bottom: none;
+  border-top: none;
+  vertical-align: top;
+}
+
+.log-messages-datatable .p-datatable-scrollable-body table tbody tr td,
+.unified-logs-datatable .p-datatable-scrollable-body table tbody tr td {
+  border-bottom: none;
+  border-top: none;
+}
+
+.log-messages-datatable .p-datatable-tbody > tr:hover,
+.unified-logs-datatable .p-datatable-tbody > tr:hover {
+  background: var(--bg-hover);
+}
+
+.log-message-content {
+  max-width: 100%;
+}
+
+.log-message-text {
+  word-break: break-word;
+  white-space: pre-wrap;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+/* ========================================
+   Logs Table Styles
+   ======================================== */
+
+.logs-table-container {
+  width: 100%;
+  margin-top: var(--space-lg);
+}
+
+.logs-datatable {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+}
+
+.logs-datatable .p-datatable-header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.logs-datatable .p-datatable-tbody > tr {
+  border-bottom: 1px solid var(--border-default);
+  cursor: pointer;
+}
+
+.logs-datatable .p-datatable-tbody > tr:hover,
+.logs-datatable .p-datatable-tbody > tr.p-selectable-row:hover {
+  background: var(--bg-hover);
+}
+
+
+
+
+/* ========================================
+   Animations
+   ======================================== */
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+@media (max-width: 768px) {
+  .log-details-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .log-meta-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+  }
+  
+  .log-messages-datatable .p-column-header-content,
+  .logs-datatable .p-column-header-content {
+    font-size: var(--font-size-xs);
+  }
+  
+  .log-message-text {
+    font-size: var(--font-size-xs);
+  }
+}

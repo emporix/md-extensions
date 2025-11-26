@@ -1,15 +1,15 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { Button } from 'primereact/button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck } from '@fortawesome/free-solid-svg-icons';
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { Button } from 'primereact/button'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck } from '@fortawesome/free-solid-svg-icons'
 
 interface SuccessStepProps {
-  onOk: () => void;
+  onOk: () => void
 }
 
 export const SuccessStep: React.FC<SuccessStepProps> = ({ onOk }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   return (
     <div className="add-agent-success-state">
@@ -33,5 +33,5 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({ onOk }) => {
         />
       </div>
     </div>
-  );
-}; 
+  )
+}

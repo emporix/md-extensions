@@ -1,49 +1,49 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { AgentCollaboration } from '../../../types/Agent';
-import { CustomAgent } from '../../../types/Agent';
-import { AgentCollaborationForm } from './AgentCollaborationForm';
-import { getLocalizedValue } from '../../../utils/agentHelpers';
-import { iconMap } from '../../../utils/agentHelpers';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { AgentCollaboration } from '../../../types/Agent'
+import { CustomAgent } from '../../../types/Agent'
+import { AgentCollaborationForm } from './AgentCollaborationForm'
+import { getLocalizedValue } from '../../../utils/agentHelpers'
+import { iconMap } from '../../../utils/agentHelpers'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 interface AgentCollaborationListProps {
-  collaborations: AgentCollaboration[];
-  onDelete: (index: number) => void;
-  onEdit: (index: number, collaboration: AgentCollaboration) => void;
-  onUpdate: (index: number, collaboration: AgentCollaboration) => void;
-  onCancelEdit: () => void;
-  editingIndex?: number;
-  availableAgents: CustomAgent[];
-  currentAgentType?: string;
+  collaborations: AgentCollaboration[]
+  onDelete: (index: number) => void
+  onEdit: (index: number, collaboration: AgentCollaboration) => void
+  onUpdate: (index: number, collaboration: AgentCollaboration) => void
+  onCancelEdit: () => void
+  editingIndex?: number
+  availableAgents: CustomAgent[]
+  currentAgentType?: string
 }
 
-export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({ 
-  collaborations, 
-  onDelete, 
-  onEdit, 
-  onUpdate, 
-  onCancelEdit, 
+export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({
+  collaborations,
+  onDelete,
+  onEdit,
+  onUpdate,
+  onCancelEdit,
   editingIndex,
   availableAgents,
-  currentAgentType 
+  currentAgentType,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   if (collaborations.length === 0) {
-    return null;
+    return null
   }
 
   const getAgentDisplayInfo = (agentId: string) => {
-    const agent = availableAgents.find(a => a.id === agentId);
+    const agent = availableAgents.find((a) => a.id === agentId)
     if (!agent) {
-      return { name: agentId, icon: 'robot' };
+      return { name: agentId, icon: 'robot' }
     }
     return {
       name: getLocalizedValue(agent.name),
-      icon: agent.icon || 'robot'
-    };
-  };
+      icon: agent.icon || 'robot',
+    }
+  }
 
   return (
     <div className="agent-collaboration-list">
@@ -51,7 +51,9 @@ export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({
         <div className="agent-collaboration-row" key={idx}>
           {editingIndex === idx ? (
             <AgentCollaborationForm
-              onAdd={(updatedCollaboration: AgentCollaboration) => onUpdate(idx, updatedCollaboration)}
+              onAdd={(updatedCollaboration: AgentCollaboration) =>
+                onUpdate(idx, updatedCollaboration)
+              }
               onCancel={onCancelEdit}
               availableAgents={availableAgents}
               editingCollaboration={collaboration}
@@ -62,9 +64,13 @@ export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({
               <div className="agent-collaboration-row-top">
                 <div className="agent-collaboration-info">
                   <div className="agent-collaboration-agent">
-                    <FontAwesomeIcon 
-                      icon={iconMap[getAgentDisplayInfo(collaboration.agentId).icon] || iconMap.robot} 
-                      className="agent-collaboration-icon" 
+                    <FontAwesomeIcon
+                      icon={
+                        iconMap[
+                          getAgentDisplayInfo(collaboration.agentId).icon
+                        ] || iconMap.robot
+                      }
+                      className="agent-collaboration-icon"
                     />
                     <span className="agent-collaboration-name">
                       {getAgentDisplayInfo(collaboration.agentId).name}
@@ -72,18 +78,18 @@ export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({
                   </div>
                 </div>
                 <div className="agent-collaboration-actions">
-                  <button 
-                    className="agent-collaboration-edit-btn" 
-                    type="button" 
-                    aria-label={t('edit', 'Edit')} 
+                  <button
+                    className="agent-collaboration-edit-btn"
+                    type="button"
+                    aria-label={t('edit', 'Edit')}
                     onClick={() => onEdit(idx, collaboration)}
                   >
                     <i className="pi pi-pencil"></i>
                   </button>
-                  <button 
-                    className="agent-collaboration-delete-btn" 
-                    type="button" 
-                    aria-label={t('delete', 'Delete')} 
+                  <button
+                    className="agent-collaboration-delete-btn"
+                    type="button"
+                    aria-label={t('delete', 'Delete')}
                     onClick={() => onDelete(idx)}
                   >
                     <i className="pi pi-trash"></i>
@@ -101,5 +107,5 @@ export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({
         </div>
       ))}
     </div>
-  );
-}; 
+  )
+}

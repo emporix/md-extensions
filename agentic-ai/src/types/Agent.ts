@@ -1,19 +1,20 @@
 export interface McpServer {
   type: 'predefined' | 'custom'
-  domain?: string    // For predefined servers
-  tools?: string[]   // For predefined servers
-  mcpServer?: {      // For custom servers (references MCP management)
+  domain?: string // For predefined servers
+  tools?: string[] // For predefined servers
+  mcpServer?: {
+    // For custom servers (references MCP management)
     id: string
   }
 }
 
 export interface NativeTool {
-  id: string;
+  id: string
 }
 
 export interface AgentCollaboration {
-  agentId: string;
-  description: string;
+  agentId: string
+  description: string
 }
 
 export interface LocalizedString {
@@ -44,34 +45,34 @@ export interface AgentCategory {
 }
 
 export interface LlmConfig {
-  model: string;
-  temperature: number;
-  maxTokens: number;
-  provider: string;
-  additionalParams: Record<string, unknown> | null;
+  model: string
+  temperature: number
+  maxTokens: number
+  provider: string
+  additionalParams: Record<string, unknown> | null
   token?: {
-    id: string;
-  };
+    id: string
+  }
   selfHostedParams?: {
-    url: string;
-    authorizationHeaderName?: string;
+    url: string
+    authorizationHeaderName?: string
     authorizationHeaderToken?: {
-      id: string;
-    };
-  };
+      id: string
+    }
+  }
 }
 
 export interface Trigger {
-  type: string;
-  config: Record<string, unknown> | null;
+  type: string
+  config: Record<string, unknown> | null
 }
 
 export interface Metadata {
-  version: number;
-  createdAt: string;
-  modifiedAt: string;
-  schema: Record<string, unknown> | null;
-  mixins: Record<string, unknown>;
+  version: number
+  createdAt: string
+  modifiedAt: string
+  schema: Record<string, unknown> | null
+  mixins: Record<string, unknown>
 }
 
 export interface CustomAgent {
@@ -94,4 +95,4 @@ export interface CustomAgent {
   tags?: string[]
   type: string
   requiredScopes?: string[]
-} 
+}

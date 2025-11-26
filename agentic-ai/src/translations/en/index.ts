@@ -1,22 +1,33 @@
 const TRANSLATIONS_EN = {
   // Agents view
   loading: 'Loading...',
-  'loading_agents': 'Loading agents...',
+  loading_agents: 'Loading agents...',
   active: 'Active',
   inactive: 'Inactive',
   configuration: 'configuration',
-  'add_agent': 'Add Agent',
-  'agents_title': 'AI Agents',
-  'agents_subtitle': 'Manage your predefined AI agents',
-  'custom_ai_agents': 'Agentic AI',
-  'add_new_agent': 'ADD NEW AGENT',
-  'my_agents': 'My Agents',
-  'predefined_agents': 'Predefined Agents',
-  'predefined_agents_description': 'We have number of available Agents in our system. Add any to your list, rename it, to make the desired achievement.',
-  'no_custom_agents': 'No custom agents created yet.',
+  add_agent: 'Add Agent',
+  agents_title: 'AI Agents',
+  agents_subtitle: 'Manage your predefined AI agents',
+  custom_ai_agents: 'Agentic AI',
+  add_new_agent: 'ADD NEW AGENT',
+  my_agents: 'My Agents',
+  predefined_agents: 'Predefined Agents',
+  predefined_agents_description:
+    'We have number of available Agents in our system. Add any to your list, rename it, to make the desired achievement.',
+  no_custom_agents: 'No custom agents created yet.',
   edit: 'edit',
   configure: 'Configure',
   remove: 'Remove',
+  view_logs: 'Logs',
+  session: 'Session',
+  load_flow: 'Load Flow',
+  sessions: 'Sessions',
+  no_sessions_available: 'No sessions available',
+  loading_sessions: 'Loading sessions...',
+  last_activity: 'Last Activity',
+  messages: 'Messages',
+  back_to_logs: 'Back to Logs',
+  back_to_sessions: 'Back to Sessions',
   remove_agent: 'Remove agent',
   remove_tool: 'Remove tool',
   remove_token: 'Remove token',
@@ -41,13 +52,15 @@ const TRANSLATIONS_EN = {
   disabled: 'Disabled',
   TO_CREATE: 'To be created',
   TO_CREATE_note: 'Items marked as "To be created" need to be added manually.',
-  token_required_note: 'Please make sure that required tokens are provided before enabling the imported entities.',
+  token_required_note:
+    'Please make sure that required tokens are provided before enabling the imported entities.',
   agents: 'Agents',
   being_copied: 'Being Copied',
   please_wait: 'Please wait while we copy the agent template...',
 
   // Add Agent Dialog
-  customize_agent_subtitle: 'Customize name and description to suit it better to your task.',
+  customize_agent_subtitle:
+    'Customize name and description to suit it better to your task.',
   agent_name: 'Agent Name',
   enter_agent_name: 'Enter agent name',
   description: 'Description',
@@ -69,8 +82,9 @@ const TRANSLATIONS_EN = {
   template_prompt_placeholder: 'Template prompt will appear here',
 
   // Agent Configuration Panel
-  'agent_config_panel.title': 'Agent Configuration',
-  'agent_config_panel.subtitle': 'Tailor the name and description to better align with your specific needs.',
+  agent_config_panel_title: 'Agent Configuration',
+  agent_config_panel_subtitle:
+    'Tailor the name and description to better align with your specific needs.',
   close: 'Close',
   trigger_type: 'Trigger Type',
   trigger_type_endpoint: 'ENDPOINT',
@@ -109,14 +123,16 @@ const TRANSLATIONS_EN = {
   tool_updated_successfully: 'Tool updated successfully!',
   error_saving_tool: 'Error saving tool',
   delete_tool: 'Delete Tool',
-  delete_tool_confirmation: 'Are you sure you want to delete this tool? This action cannot be undone.',
+  delete_tool_confirmation:
+    'Are you sure you want to delete this tool? This action cannot be undone.',
   tool_deleted_successfully: 'Tool deleted successfully!',
   entity_type_missing: 'Entity type is missing in tool configuration',
   reindex_tool: 'Reindex Tool',
   reindex: 'Reindex',
   reindex_triggered_successfully: 'Reindex triggered successfully!',
   error_triggering_reindex: 'Error triggering reindex',
-  reindex_confirmation: 'This is a time-consuming operation that will regenerate all embeddings. Please proceed with caution. Are you sure you want to continue?',
+  reindex_confirmation:
+    'This is a time-consuming operation that will regenerate all embeddings. Please proceed with caution. Are you sure you want to continue?',
   max_results: 'Max Results',
   enter_max_results: 'Enter max results (1-100)',
   max_results_range: 'Max results must be between 1 and 100',
@@ -141,10 +157,12 @@ const TRANSLATIONS_EN = {
   remove_field: 'Remove field',
   add_indexed_field: 'Add Indexed Field',
   force_delete_tool: 'Force Delete Tool',
-  force_delete_tool_message: 'Tool is used by agents.\nBy deleting it, the tool will be removed from the agents and agents will be disabled.',
+  force_delete_tool_message:
+    'Tool is used by agents.\nBy deleting it, the tool will be removed from the agents and agents will be disabled.',
   force_delete: 'Force Delete',
   force_disable_tool: 'Force Disable Tool',
-  force_disable_tool_message: 'Tool is used by agents. By disabling it, the agents will be disabled as well.',
+  force_disable_tool_message:
+    'Tool is used by agents. By disabling it, the agents will be disabled as well.',
   cannot_delete_active_tool: 'Cannot delete active tool',
   tool_disabled: 'This tool is currently disabled',
 
@@ -162,10 +180,12 @@ const TRANSLATIONS_EN = {
   token_updated_successfully: 'Token updated successfully!',
   error_saving_token: 'Error saving token',
   delete_token: 'Delete Token',
-  delete_token_confirmation: 'Are you sure you want to delete this token? This action cannot be undone.',
+  delete_token_confirmation:
+    'Are you sure you want to delete this token? This action cannot be undone.',
   token_deleted_successfully: 'Token deleted successfully!',
   force_delete_token: 'Force Delete Token',
-  force_delete_token_message: 'Token is used by agents or MCP servers.\nBy deleting it, the token will be removed from the agents and MCP servers, and agents will be disabled.',
+  force_delete_token_message:
+    'Token is used by agents or MCP servers.\nBy deleting it, the token will be removed from the agents and MCP servers, and agents will be disabled.',
 
   // Common UI
   save: 'Save',
@@ -186,9 +206,11 @@ const TRANSLATIONS_EN = {
   select_mcp_server: 'Select MCP Server',
   select_mcp_server_placeholder: 'Choose an MCP server',
   delete_agent: 'Delete Agent',
-  delete_agent_confirmation: 'Are you sure you want to delete this agent? This action cannot be undone.',
+  delete_agent_confirmation:
+    'Are you sure you want to delete this agent? This action cannot be undone.',
   force_delete_agent: 'Force Delete Agent',
-  force_delete_agent_message: 'Agent is used by other agents as agent collaboration.\nBy deleting it, the agent will be removed from collaborations and related agents may will be disabled.',
+  force_delete_agent_message:
+    'Agent is used by other agents as agent collaboration.\nBy deleting it, the agent will be removed from collaborations and related agents may will be disabled.',
   updating: 'Updating...',
   cannot_delete_active_agent: 'Cannot delete active agent',
   add_tool: 'Add Tool',
@@ -224,12 +246,15 @@ const TRANSLATIONS_EN = {
   mcp_server_updated_successfully: 'MCP Server updated successfully!',
   error_saving_mcp_server: 'Error saving MCP server',
   delete_mcp_server: 'Delete MCP Server',
-  delete_mcp_server_confirmation: 'Are you sure you want to delete this MCP server? This action cannot be undone.',
+  delete_mcp_server_confirmation:
+    'Are you sure you want to delete this MCP server? This action cannot be undone.',
   mcp_server_deleted_successfully: 'MCP Server deleted successfully!',
   force_delete_mcp: 'Force Delete MCP Server',
-  force_delete_mcp_message: 'MCP server is used by agents.\nBy deleting it, the MCP server will be removed from the agents and agents will be disabled.',
+  force_delete_mcp_message:
+    'MCP server is used by agents.\nBy deleting it, the MCP server will be removed from the agents and agents will be disabled.',
   force_disable_mcp: 'Force Disable MCP Server',
-  force_disable_mcp_message: 'MCP server is used by agents. By disabling it, the agents will be disabled as well.',
+  force_disable_mcp_message:
+    'MCP server is used by agents. By disabling it, the agents will be disabled as well.',
   cannot_delete_active_mcp: 'Cannot delete active MCP server',
   mcp_server_disabled: 'This MCP server is currently disabled',
   add: 'Add',
@@ -267,9 +292,11 @@ const TRANSLATIONS_EN = {
 
   // Slack tool installation
   install_emporix_slack_ai: 'Install Emporix Slack AI',
-  slack_install_description: 'Quick setup with one click. Automatically configure your Slack workspace with the necessary permissions.',
+  slack_install_description:
+    'Quick setup with one click. Automatically configure your Slack workspace with the necessary permissions.',
   provide_values_manually: 'Provide the values manually',
-  manual_config_description: 'Enter your Slack workspace details manually if you prefer custom configuration.',
+  manual_config_description:
+    'Enter your Slack workspace details manually if you prefer custom configuration.',
   or: 'or',
   error_app_state_missing: 'Application state is missing',
   error_slack_installation: 'Error initiating Slack installation',
@@ -282,8 +309,107 @@ const TRANSLATIONS_EN = {
   no_events_available: 'No events available',
   commerce_events_required: 'At least one commerce event is required',
 
-  // Template fallbacks (for backward compatibility if needed)
-  get_started: 'Get Started',
+  // Logs
+  agent_logs: 'Agent Logs',
+  no_logs_available: 'No logs available',
+  refresh: 'Refresh',
+  logs_agent_id: 'Agent ID',
+  log_details: 'Log Details',
+  loading_log_details: 'Loading log details...',
+  no_log_selected: 'No log selected',
+  session_id: 'Session ID',
+  request_id: 'Request ID',
+  total_messages: 'Total Messages',
+  severity: 'Severity',
+  timestamp: 'Timestamp',
+  message: 'Message',
+  errors: 'errors',
+  duration: 'Duration',
+  agent: 'Agent',
+  no_messages: 'No messages found',
+  result: 'Result',
+  jobs: 'Jobs',
+  requests: 'Requests',
+  no_jobs_available: 'No jobs available',
+  job_details: 'Job Details',
+  loading_job_details: 'Loading job details...',
+  no_job_selected: 'No job selected',
+  job_id: 'Job ID',
+  agent_type: 'Agent Type',
+  job_type: 'Job Type',
+  response: 'Response',
+  created_at: 'Created At',
+  related_logs: 'Related Logs',
+  trigger_agent: 'Trigger Agent',
+  included_agents: 'Included Agents',
+  started: 'Started At',
+  no_logs_found: 'No logs found',
+  loading_logs: 'Loading logs...',
+  import_result: 'Import Result',
+  export_result: 'Export Result',
+  export_summary: 'Export Summary',
+  exported_data: 'Exported Data',
+  download: 'Download',
+  summary: 'Summary',
+  mcp_servers_label: 'MCP Servers',
+  checksum: 'Checksum',
+  data_size: 'Data Size',
+  characters: 'characters',
+  status: 'Status',
+
+  // Filter translations
+  filter_by_job_id: 'Filter by Job ID',
+  filter_by_agent_id: 'Filter by Agent ID',
+  filter_by_type: 'Filter by Type',
+  filter_by_status: 'Filter by Status',
+  filter_by_created_at: 'Filter by Created At',
+  filter_by_request_id: 'Filter by Request ID',
+  filter_by_session_id: 'Filter by Session ID',
+  filter_by_timestamp: 'Filter by Timestamp',
+  filter_by_error_count: 'Filter by Error Count',
+  filter_by_started_at: 'Filter by Started At',
+  filter_by_last_activity: 'Filter by Last Activity',
+  filter_by_severity: 'Filter by Severity',
+  filter_by_included_agents: 'Filter by Included Agents',
+  filter_by_message: 'Filter by Message',
+  select_severity: 'Select Severity',
+  clear_filters: 'Clear Filters',
+  no_jobs_found_with_filters: 'No jobs found matching the filters',
+  no_logs_found_with_filters: 'No logs found matching the filters',
+  no_sessions_found_with_filters: 'No sessions found matching the filters',
+
+  // Agent filter
+  agent_filter: 'Agent Filter',
+  search_agents: 'Search agents...',
+  of: 'of',
+  no_agents_selected: 'No agents selected',
+
+  // Metrics and Analytics
+  error_rate: 'Error Rate',
+  total_logs: 'Total Logs',
+  error_logs: 'Error Logs',
+  error_trend_4_weeks: 'Error Trend (Last 4 Weeks)',
+  no_trend_data: 'No trend data available',
+  error_rate_percent: 'Error Rate (%)',
+  total_requests: 'Total Requests',
+
+  // Session Metrics
+  session_severity_distribution: 'Session Severity Distribution',
+  session_error_trend_4_weeks: 'Session Error Trend (Last 4 Weeks)',
+  total_sessions: 'Total Sessions',
+  error_sessions: 'Error Sessions',
+  no_session_data: 'No session data available',
+  week: 'Week',
+
+  // Resolution Efficiency
+  resolution_efficiency: 'Resolution Efficiency',
+  requests_per_session: 'Requests per Session',
+  efficiency_hint:
+    'Lower is better - fewer requests needed per session to solve a request',
+
+  // Chart Tooltips
+  error_sessions_label: 'Error Sessions',
+  total_sessions_label: 'Total Sessions',
 }
 
 export default TRANSLATIONS_EN

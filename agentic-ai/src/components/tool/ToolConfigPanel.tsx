@@ -1,17 +1,26 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { InputText } from 'primereact/inputtext'
-import { InputTextarea } from 'primereact/inputtextarea'
-import { InputNumber } from 'primereact/inputnumber'
-import { Dropdown } from 'primereact/dropdown'
 import { Button } from 'primereact/button'
-import { Tool, ToolConfigPanelProps } from '../../types/Tool'
-import { ToolsService } from '../../services/toolsService'
-import { AiRagIndexerService } from '../../services/aiRagIndexerService'
+import {
+  RagCustomDatabase,
+  RagEmporixFieldConfig,
+  RagEntityType,
+  Tool,
+  ToolConfig,
+  ToolConfigPanelProps,
+} from '../../types/Tool'
+import {
+  getTokens,
+  getSlackInstallationData,
+} from '../../services/toolsService'
 import { useToast } from '../../contexts/ToastContext'
 import { BaseConfigPanel } from '../shared/BaseConfigPanel'
 import { faTools } from '@fortawesome/free-solid-svg-icons'
-import '../../styles/components/ToolConfigPanel.css'
+import { InputTextarea } from 'primereact/inputtextarea'
+import { InputNumber } from 'primereact/inputnumber'
+import { Dropdown } from 'primereact/dropdown'
+import { getRagMetadata } from '../../services/aiRagIndexerService'
 
 const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   visible,
@@ -25,11 +34,10 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   const { showError } = useToast()
   const [toolId, setToolId] = useState('')
   const [toolName, setToolName] = useState('')
-  const [toolType, setToolType] = useState('')
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [config, setConfig] = useState<Record<string, any>>({})
+  const [config, setConfig] = useState<ToolConfig>({})
   const [saving, setSaving] = useState(false)
   const [slackInstallLoading, setSlackInstallLoading] = useState(false)
+  const [toolType, setToolType] = useState('')
   const [availableTokens, setAvailableTokens] = useState<
     Array<{ id: string; name: string }>
   >([])
@@ -48,8 +56,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     if (!appState) return
 
     try {
-      const toolsService = new ToolsService(appState)
-      const tokens = await toolsService.getTokens()
+      const tokens = await getTokens(appState)
       setAvailableTokens(tokens)
     } catch (error) {
       console.error('Failed to load tokens:', error)
@@ -61,9 +68,8 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     if (!appState) return
 
     try {
-      const aiRagIndexerService = new AiRagIndexerService(appState)
       // Use 'product' as the default entity type for now
-      const fields = await aiRagIndexerService.getRagMetadata('product')
+      const fields = await getRagMetadata(appState, 'product')
       setAvailableFields(fields)
     } catch (error) {
       console.error('Failed to load fields:', error)
@@ -90,7 +96,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     if (toolType === 'rag_emporix' && !config.entityType) {
       setConfig((prev) => ({
         ...prev,
-        entityType: 'product',
+        entityType: RagEntityType.PRODUCT,
       }))
     }
   }, [toolType, config.entityType])
@@ -106,8 +112,8 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           ...prev,
           databaseConfig: {
             ...databaseConfig,
-            type: databaseConfig.type || 'qdrant',
-            entityType: databaseConfig.entityType || 'product',
+            type: databaseConfig.type || RagCustomDatabase.QDRANT,
+            entityType: databaseConfig.entityType || RagEntityType.PRODUCT,
           },
         }))
       }
@@ -149,13 +155,13 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   const updateNestedConfig = (
     parentKey: string,
     childKey: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    value: any
+    value: string
   ) => {
     setConfig((prev) => ({
       ...prev,
       [parentKey]: {
-        ...(prev[parentKey] || {}),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...((prev as any)[parentKey] || {}),
         [childKey]: value,
       },
     }))
@@ -165,16 +171,16 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     parentKey: string,
     childKey: string,
     grandchildKey: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    value: any
+    value: string
   ) => {
     setConfig((prev) => ({
       ...prev,
       [parentKey]: {
-        ...(prev[parentKey] || {}),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...((prev as any)[parentKey] || {}),
         [childKey]: {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ...((prev[parentKey] as any)?.[childKey] || {}),
+          ...((prev as any)[parentKey]?.[childKey] || {}),
           [grandchildKey]: value,
         },
       },
@@ -189,9 +195,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
     setSlackInstallLoading(true)
     try {
-      const toolsService = new ToolsService(appState)
-      const { id: stateId, clientId } =
-        await toolsService.getSlackInstallationData()
+      const { id: stateId, clientId } = await getSlackInstallationData(appState)
       const slackOAuthUrl = `https://slack.com/oauth/v2/authorize?client_id=${clientId}&scope=app_mentions:read,channels:history,channels:manage,channels:read,channels:write.invites,chat:write,groups:read,groups:write,users:read,users:read.email&user_scope=&state=${stateId}`
       window.location.href = slackOAuthUrl
     } catch (error) {
@@ -849,7 +853,6 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     switch (toolType) {
       case 'slack':
         return renderSlackConfigFields()
-
       case 'rag_custom':
         return renderRagCustomConfigFields()
 
@@ -908,8 +911,8 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         // Check all indexed fields have valid keys
         const isValidKey = (key: string) => /^[a-zA-Z0-9_.-]+$/.test(key)
         return indexedFields.every(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (field: any) => field.key?.trim() && isValidKey(field.key)
+          (field: RagEmporixFieldConfig) =>
+            field.key?.trim() && isValidKey(field.key)
         )
       }
 

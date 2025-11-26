@@ -1,5 +1,18 @@
 import { AppState } from '../types/common'
 
+interface ErrorDetail {
+  field: string
+  type: string
+  message: string
+}
+
+interface ErrorPayload {
+  code: number
+  type: string
+  message: string
+  details?: ErrorDetail[]
+}
+
 export class ApiClientError extends Error {
   status?: number
   body?: unknown
@@ -62,7 +75,7 @@ export class ApiClient {
       if (typeof payload === 'string' && payload) {
         message = payload
       } else if (payload && typeof payload === 'object') {
-        const errorPayload = payload as any
+        const errorPayload = payload as ErrorPayload
 
         // Handle validation errors with details
         if (errorPayload.message) {
@@ -74,23 +87,31 @@ export class ApiClient {
           errorPayload.details.length > 0
         ) {
           const validationMessages = errorPayload.details
-            .filter((detail: any) => detail.type !== 'disableable' && detail.type !== 'force')
-            .map((detail: any) => detail.message)
+            .filter(
+              (detail: ErrorDetail) =>
+                detail.type !== 'disableable' && detail.type !== 'force'
+            )
+            .map((detail: ErrorDetail) => detail.message)
             .join('\n')
           if (validationMessages) {
             message += `\n${validationMessages}`
           }
           disableable = errorPayload.details.some(
-            (detail: any) => detail.type === 'disableable'
+            (detail: ErrorDetail) => detail.type === 'disableable'
           )
           force = errorPayload.details.some(
-            (detail: any) => detail.type === 'force'
+            (detail: ErrorDetail) => detail.type === 'force'
           )
         }
-
       }
 
-      throw new ApiClientError(message, response.status, payload, disableable, force)
+      throw new ApiClientError(
+        message,
+        response.status,
+        payload,
+        disableable,
+        force
+      )
     }
 
     return payload as T as T
@@ -105,6 +126,22 @@ export class ApiClient {
       ...init,
     })
     return this.handleResponse<T>(response)
+  }
+
+  async getWithHeaders<T>(
+    path: string,
+    init?: RequestInit
+  ): Promise<{ data: T; headers: Headers }> {
+    const { headers: extraHeaders, ...restInit } = init || {}
+    const response = await fetch(this.buildUrl(path), {
+      method: 'GET',
+      headers: this.buildHeaders(
+        extraHeaders as Record<string, string> | undefined
+      ),
+      ...restInit,
+    })
+    const data = await this.handleResponse<T>(response)
+    return { data, headers: response.headers }
   }
 
   async post<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {

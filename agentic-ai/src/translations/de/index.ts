@@ -1,22 +1,32 @@
 const TRANSLATIONS_DE = {
   // Agents view
   loading: 'Lädt...',
-  'loading_agents': 'Agenten werden geladen...',
+  loading_agents: 'Agenten werden geladen...',
   active: 'Aktiv',
   inactive: 'Inaktiv',
   configuration: 'Konfiguration',
-  'add_agent': 'Agent Hinzufügen',
-  'agents_title': 'KI-Agenten',
-  'agents_subtitle': 'Verwalten Sie Ihre vordefinierten KI-Agenten',
-  'custom_ai_agents': 'Benutzerdefinierte KI-Agenten',
-  'add_new_agent': 'NEUEN AGENT HINZUFÜGEN',
-  'my_agents': 'Meine Agenten',
-  'predefined_agents': 'Vordefinierte Agenten',
-  'predefined_agents_description': 'Wir haben eine Reihe von verfügbaren Agenten in unserem System. Fügen Sie beliebige zu Ihrer Liste hinzu, benennen Sie sie um, um das gewünschte Ziel zu erreichen.',
-  'no_custom_agents': 'Noch keine benutzerdefinierten Agenten erstellt.',
+  add_agent: 'Agent Hinzufügen',
+  agents_title: 'KI-Agenten',
+  agents_subtitle: 'Verwalten Sie Ihre vordefinierten KI-Agenten',
+  custom_ai_agents: 'Benutzerdefinierte KI-Agenten',
+  add_new_agent: 'NEUEN AGENT HINZUFÜGEN',
+  my_agents: 'Meine Agenten',
+  predefined_agents: 'Vordefinierte Agenten',
+  predefined_agents_description:
+    'Wir haben eine Reihe von verfügbaren Agenten in unserem System. Fügen Sie beliebige zu Ihrer Liste hinzu, benennen Sie sie um, um das gewünschte Ziel zu erreichen.',
+  no_custom_agents: 'Noch keine benutzerdefinierten Agenten erstellt.',
   edit: 'Bearbeiten',
   configure: 'Konfigurieren',
   remove: 'Entfernen',
+  view_logs: 'Logs',
+  session: 'Sitzung',
+  load_flow: 'Ablauf Laden',
+  sessions: 'Sitzungen',
+  no_sessions_available: 'Keine Sitzungen verfügbar',
+  loading_sessions: 'Sitzungen werden geladen...',
+  last_activity: 'Letzte Aktivität',
+  messages: 'Nachrichten',
+  back_to_logs: 'Zurück zu Logs',
   remove_agent: 'Agent entfernen',
   remove_tool: 'Tool entfernen',
   remove_token: 'Token entfernen',
@@ -35,23 +45,28 @@ const TRANSLATIONS_DE = {
   browse_files: 'Dateien durchsuchen',
   invalid_file_type: 'Bitte wählen Sie eine gültige JSON-Datei',
   invalid_export_format: 'Ungültiges Exportdateiformat',
-  please_wait_import: 'Bitte warten Sie, während wir den Agenten importieren...',
+  please_wait_import:
+    'Bitte warten Sie, während wir den Agenten importieren...',
   import_completed: 'Import abgeschlossen',
   enabled: 'Aktiviert',
   disabled: 'Deaktiviert',
   TO_CREATE: 'Zu erstellen',
-  TO_CREATE_note: 'Elemente, die als "Zu erstellen" markiert sind, müssen manuell hinzugefügt werden.',
-  token_required_note: 'Bitte stellen Sie sicher, dass die erforderlichen Tokens bereitgestellt werden, bevor Sie die importierten Entitäten aktivieren.',
+  TO_CREATE_note:
+    'Elemente, die als "Zu erstellen" markiert sind, müssen manuell hinzugefügt werden.',
+  token_required_note:
+    'Bitte stellen Sie sicher, dass die erforderlichen Tokens bereitgestellt werden, bevor Sie die importierten Entitäten aktivieren.',
   agents: 'Agenten',
   being_copied: 'wird kopiert',
   please_wait: 'Bitte warten Sie, während wir die Agentenvorlage kopieren...',
   agent_saved_success: 'Agent erfolgreich zur Liste hinzugefügt!',
   ok: 'OK',
   agent_saved_error: 'Agent konnte nicht hinzugefügt werden!',
-  agent_saved_error_subtitle: 'Bitte versuchen Sie, den Agenten erneut hinzuzufügen.',
+  agent_saved_error_subtitle:
+    'Bitte versuchen Sie, den Agenten erneut hinzuzufügen.',
 
   // Add Agent Dialog
-  customize_agent_subtitle: 'Passen Sie Name und Beschreibung an, damit sie besser zu Ihrer Aufgabe passen.',
+  customize_agent_subtitle:
+    'Passen Sie Name und Beschreibung an, damit sie besser zu Ihrer Aufgabe passen.',
   agent_name: 'Agent Name',
   enter_agent_name: 'Agent Namen eingeben',
   description: 'Beschreibung',
@@ -64,8 +79,9 @@ const TRANSLATIONS_DE = {
   enter_agent_id: 'Agent ID eingeben',
 
   // Agent Configuration Panel
-  'agent_config_panel.title': 'Agent-Konfiguration',
-  'agent_config_panel.subtitle': 'Passen Sie Name und Beschreibung an, um sie besser an Ihre spezifischen Bedürfnisse anzupassen.',
+  agent_config_panel_title: 'Agent-Konfiguration',
+  agent_config_panel_subtitle:
+    'Passen Sie Name und Beschreibung an, um sie besser an Ihre spezifischen Bedürfnisse anzupassen.',
   close: 'Schließen',
   trigger_type: 'Auslöser-Typ',
   trigger_type_endpoint: 'ENDPUNKT',
@@ -105,14 +121,16 @@ const TRANSLATIONS_DE = {
   tool_updated_successfully: 'Tool erfolgreich aktualisiert!',
   error_saving_tool: 'Fehler beim Speichern des Tools',
   delete_tool: 'Tool löschen',
-  delete_tool_confirmation: 'Sind Sie sicher, dass Sie dieses Tool löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+  delete_tool_confirmation:
+    'Sind Sie sicher, dass Sie dieses Tool löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
   tool_deleted_successfully: 'Tool erfolgreich gelöscht!',
   entity_type_missing: 'Entity-Typ fehlt in der Tool-Konfiguration',
   reindex_tool: 'Tool neu indizieren',
   reindex: 'Neu indizieren',
   reindex_triggered_successfully: 'Neuindizierung erfolgreich gestartet!',
   error_triggering_reindex: 'Fehler beim Starten der Neuindizierung',
-  reindex_confirmation: 'Dies ist eine zeitaufwändige Operation, die alle Embeddings neu generiert. Bitte gehen Sie mit Vorsicht vor. Möchten Sie wirklich fortfahren?',
+  reindex_confirmation:
+    'Dies ist eine zeitaufwändige Operation, die alle Embeddings neu generiert. Bitte gehen Sie mit Vorsicht vor. Möchten Sie wirklich fortfahren?',
   max_results: 'Max. Ergebnisse',
   enter_max_results: 'Max. Ergebnisse eingeben (1-100)',
   max_results_range: 'Max. Ergebnisse müssen zwischen 1 und 100 liegen',
@@ -127,7 +145,8 @@ const TRANSLATIONS_DE = {
   collection_name_required: 'Collection-Name ist erforderlich',
   embedding_configuration: 'Embedding-Konfiguration',
   indexed_fields: 'Indizierte Felder',
-  indexed_fields_description: 'Konfigurieren Sie die Felder, die für die Suche indiziert werden sollen',
+  indexed_fields_description:
+    'Konfigurieren Sie die Felder, die für die Suche indiziert werden sollen',
   indexed_fields_required: 'Mindestens ein indiziertes Feld ist erforderlich',
   field_name: 'Name',
   enter_field_name: 'Feldname eingeben',
@@ -137,10 +156,12 @@ const TRANSLATIONS_DE = {
   remove_field: 'Feld entfernen',
   add_indexed_field: 'Indiziertes Feld hinzufügen',
   force_delete_tool: 'Tool erzwungen löschen',
-  force_delete_tool_message: 'Tool wird von Agenten verwendet.\nDurch das Löschen wird es aus den Agenten entfernt und die Agenten werden deaktiviert.',
+  force_delete_tool_message:
+    'Tool wird von Agenten verwendet.\nDurch das Löschen wird es aus den Agenten entfernt und die Agenten werden deaktiviert.',
   force_delete: 'Erzwungen löschen',
   force_disable_tool: 'Tool erzwungen deaktivieren',
-  force_disable_tool_message: 'Tool wird von Agenten verwendet. Durch die Deaktivierung werden auch die Agenten deaktiviert.',
+  force_disable_tool_message:
+    'Tool wird von Agenten verwendet. Durch die Deaktivierung werden auch die Agenten deaktiviert.',
   cannot_delete_active_tool: 'Aktives Tool kann nicht gelöscht werden',
   tool_disabled: 'Dieses Tool ist derzeit deaktiviert',
 
@@ -159,10 +180,12 @@ const TRANSLATIONS_DE = {
   token_updated_successfully: 'Token erfolgreich aktualisiert!',
   error_saving_token: 'Fehler beim Speichern des Tokens',
   delete_token: 'Token löschen',
-  delete_token_confirmation: 'Sind Sie sicher, dass Sie dieses Token löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+  delete_token_confirmation:
+    'Sind Sie sicher, dass Sie dieses Token löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
   token_deleted_successfully: 'Token erfolgreich gelöscht!',
   force_delete_token: 'Token erzwungen löschen',
-  force_delete_token_message: 'Token wird von Agenten oder MCP-Servern verwendet.\nDurch das Löschen wird es aus den Agenten und MCP-Servern entfernt und die Agenten werden deaktiviert.',
+  force_delete_token_message:
+    'Token wird von Agenten oder MCP-Servern verwendet.\nDurch das Löschen wird es aus den Agenten und MCP-Servern entfernt und die Agenten werden deaktiviert.',
 
   // Common UI
   save: 'Speichern',
@@ -183,9 +206,11 @@ const TRANSLATIONS_DE = {
   select_mcp_server: 'MCP-Server auswählen',
   select_mcp_server_placeholder: 'MCP-Server auswählen',
   delete_agent: 'Agent löschen',
-  delete_agent_confirmation: 'Sind Sie sicher, dass Sie diesen Agenten löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+  delete_agent_confirmation:
+    'Sind Sie sicher, dass Sie diesen Agenten löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
   force_delete_agent: 'Agent erzwungen löschen',
-  force_delete_agent_message: 'Agent wird von anderen Agenten als Agent-Kollaboration verwendet.\nDurch das Löschen wird der Agent aus Kollaborationen entfernt und verwandte Agenten können deaktiviert werden.',
+  force_delete_agent_message:
+    'Agent wird von anderen Agenten als Agent-Kollaboration verwendet.\nDurch das Löschen wird der Agent aus Kollaborationen entfernt und verwandte Agenten können deaktiviert werden.',
   updating: 'Aktualisiere...',
   cannot_delete_active_agent: 'Aktiver Agent kann nicht gelöscht werden',
   add_tool: 'Tool hinzufügen',
@@ -222,12 +247,15 @@ const TRANSLATIONS_DE = {
   mcp_server_updated_successfully: 'MCP-Server erfolgreich aktualisiert!',
   error_saving_mcp_server: 'Fehler beim Speichern des MCP-Servers',
   delete_mcp_server: 'MCP-Server löschen',
-  delete_mcp_server_confirmation: 'Sind Sie sicher, dass Sie diesen MCP-Server löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+  delete_mcp_server_confirmation:
+    'Sind Sie sicher, dass Sie diesen MCP-Server löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
   mcp_server_deleted_successfully: 'MCP-Server erfolgreich gelöscht!',
   force_delete_mcp: 'MCP-Server erzwungen löschen',
-  force_delete_mcp_message: 'MCP-Server wird von Agenten verwendet.\nDurch das Löschen wird er aus den Agenten entfernt und die Agenten werden deaktiviert.',
+  force_delete_mcp_message:
+    'MCP-Server wird von Agenten verwendet.\nDurch das Löschen wird er aus den Agenten entfernt und die Agenten werden deaktiviert.',
   force_disable_mcp: 'MCP-Server erzwungen deaktivieren',
-  force_disable_mcp_message: 'MCP-Server wird von Agenten verwendet. Durch die Deaktivierung werden auch die Agenten deaktiviert.',
+  force_disable_mcp_message:
+    'MCP-Server wird von Agenten verwendet. Durch die Deaktivierung werden auch die Agenten deaktiviert.',
   cannot_delete_active_mcp: 'Aktiver MCP-Server kann nicht gelöscht werden',
   mcp_server_disabled: 'Dieser MCP-Server ist derzeit deaktiviert',
   add: 'Hinzufügen',
@@ -265,15 +293,119 @@ const TRANSLATIONS_DE = {
 
   // Slack tool installation
   install_emporix_slack_ai: 'Emporix Slack AI installieren',
-  slack_install_description: 'Schnelle Einrichtung mit einem Klick. Konfiguriert automatisch Ihren Slack-Arbeitsbereich mit den erforderlichen Berechtigungen.',
+  slack_install_description:
+    'Schnelle Einrichtung mit einem Klick. Konfiguriert automatisch Ihren Slack-Arbeitsbereich mit den erforderlichen Berechtigungen.',
   provide_values_manually: 'Werte manuell eingeben',
-  manual_config_description: 'Geben Sie Ihre Slack-Arbeitsbereich-Details manuell ein, wenn Sie eine benutzerdefinierte Konfiguration bevorzugen.',
+  manual_config_description:
+    'Geben Sie Ihre Slack-Arbeitsbereich-Details manuell ein, wenn Sie eine benutzerdefinierte Konfiguration bevorzugen.',
   or: 'oder',
   error_app_state_missing: 'Anwendungsstatus fehlt',
   error_slack_installation: 'Fehler beim Initiieren der Slack-Installation',
 
-  // Template fallbacks (for backward compatibility if needed)
-  get_started: 'Loslegen',
+  // Logs
+  agent_logs: 'Agentenprotokolle',
+  no_logs_available: 'Keine Protokolle verfügbar',
+  refresh: 'Aktualisieren',
+  log_details: 'Protokoll-Details',
+  loading_log_details: 'Lade Protokoll-Details...',
+  no_log_selected: 'Kein Protokoll ausgewählt',
+  session_id: 'Sitzungs-ID',
+  request_id: 'Anfrage-ID',
+  total_messages: 'Gesamte Nachrichten',
+  severity: 'Schweregrad',
+  timestamp: 'Zeitstempel',
+  message: 'Nachricht',
+  errors: 'Fehler',
+  duration: 'Dauer',
+  agent: 'Agent',
+  no_messages: 'Keine Nachrichten gefunden',
+  result: 'Ergebnis',
+  logs_agent_id: 'Agent-ID',
+  jobs: 'Jobs',
+  requests: 'Anfragen',
+  no_jobs_available: 'Keine Jobs verfügbar',
+  job_details: 'Job-Details',
+  loading_job_details: 'Lade Job-Details...',
+  no_job_selected: 'Kein Job ausgewählt',
+  job_id: 'Job-ID',
+  agent_type: 'Agent-Typ',
+  job_type: 'Job-Typ',
+  response: 'Antwort',
+  created_at: 'Erstellt am',
+  related_logs: 'Verwandte Protokolle',
+  trigger_agent: 'Auslöser-Agent',
+  included_agents: 'Beteiligte Agenten',
+  no_logs_found: 'Keine Protokolle gefunden',
+  loading_logs: 'Lade Protokolle...',
+  import_result: 'Import-Ergebnis',
+  export_result: 'Export-Ergebnis',
+  export_summary: 'Export-Zusammenfassung',
+  exported_data: 'Exportierte Daten',
+  download: 'Herunterladen',
+  summary: 'Zusammenfassung',
+  mcp_servers_label: 'MCP-Server',
+  checksum: 'Prüfsumme',
+  data_size: 'Datengröße',
+  characters: 'Zeichen',
+  status: 'Status',
+
+  // Filter translations
+  filter_by_job_id: 'Nach Job-ID filtern',
+  filter_by_agent_id: 'Nach Agent-ID filtern',
+  filter_by_type: 'Nach Typ filtern',
+  filter_by_status: 'Nach Status filtern',
+  filter_by_created_at: 'Nach Erstellungsdatum filtern',
+  filter_by_request_id: 'Nach Anfrage-ID filtern',
+  filter_by_session_id: 'Nach Sitzungs-ID filtern',
+  filter_by_timestamp: 'Nach Zeitstempel filtern',
+  filter_by_error_count: 'Nach Fehleranzahl filtern',
+  filter_by_started_at: 'Nach Startzeit filtern',
+  filter_by_last_activity: 'Nach letzter Aktivität filtern',
+  filter_by_severity: 'Nach Schweregrad filtern',
+  filter_by_included_agents: 'Nach enthaltenen Agenten filtern',
+  filter_by_message: 'Nach Nachricht filtern',
+  select_severity: 'Schweregrad auswählen',
+  clear_filters: 'Filter löschen',
+  no_jobs_found_with_filters:
+    'Keine Jobs gefunden, die den Filtern entsprechen',
+  no_logs_found_with_filters:
+    'Keine Protokolle gefunden, die den Filtern entsprechen',
+  no_sessions_found_with_filters:
+    'Keine Sitzungen gefunden, die den Filtern entsprechen',
+
+  // Agent filter
+  agent_filter: 'Agent-Filter',
+  search_agents: 'Agenten suchen...',
+  of: 'von',
+  no_agents_selected: 'Keine Agenten ausgewählt',
+  back_to_sessions: 'Zurück zu Sitzungen',
+
+  // Metrics and Analytics
+  error_rate: 'Fehlerrate',
+  total_logs: 'Gesamte Protokolle',
+  error_logs: 'Fehlerprotokolle',
+  error_trend_4_weeks: 'Fehlertrend (Letzten 4 Wochen)',
+  no_trend_data: 'Keine Trenddaten verfügbar',
+  error_rate_percent: 'Fehlerrate (%)',
+  total_requests: 'Gesamte Anfragen',
+
+  // Session Metrics
+  session_severity_distribution: 'Sitzungsschweregrad-Verteilung',
+  session_error_trend_4_weeks: 'Sitzungsfehlerverlauf (Letzten 4 Wochen)',
+  total_sessions: 'Gesamte Sitzungen',
+  error_sessions: 'Fehlersitzungen',
+  no_session_data: 'Keine Sitzungsdaten verfügbar',
+  week: 'Woche',
+
+  // Resolution Efficiency
+  resolution_efficiency: 'Lösungseffizienz',
+  requests_per_session: 'Anfragen pro Sitzung',
+  efficiency_hint:
+    'Niedriger ist besser - weniger Anfragen pro Sitzung erforderlich',
+
+  // Chart Tooltips
+  error_sessions_label: 'Fehlersitzungen',
+  total_sessions_label: 'Gesamte Sitzungen',
 }
 
 export default TRANSLATIONS_DE

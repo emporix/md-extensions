@@ -1,23 +1,23 @@
-import React from 'react';
-import { Badge } from 'primereact/badge';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRobot } from '@fortawesome/free-solid-svg-icons';
-import BaseCard, { CardAction } from '../shared/BaseCard';
+import React from 'react'
+import { Badge } from 'primereact/badge'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faRobot } from '@fortawesome/free-solid-svg-icons'
+import BaseCard, { CardAction } from '../shared/BaseCard'
 
 export interface AgentCardProps {
-  id: string;
-  name: string;
-  description: string;
-  icon?: React.ReactNode;
-  tags?: string[];
-  enabled: boolean;
-  className?: string;
-  actions?: CardAction[];
-  onToggleActive?: (id: string, enabled: boolean) => void | Promise<void>;
-  onClick?: () => void;
-  switchDisabled?: boolean;
-  children?: React.ReactNode;
-  showStatusDot?: boolean;
+  id: string
+  name: string
+  description: string
+  icon?: React.ReactNode
+  tags?: string[]
+  enabled: boolean
+  className?: string
+  actions?: CardAction[]
+  onToggleActive?: (id: string, enabled: boolean) => void | Promise<void>
+  onClick?: () => void
+  switchDisabled?: boolean
+  children?: React.ReactNode
+  showStatusDot?: boolean
 }
 
 const AgentCard: React.FC<AgentCardProps> = ({
@@ -33,20 +33,20 @@ const AgentCard: React.FC<AgentCardProps> = ({
   onClick,
   switchDisabled = false,
   children,
-  showStatusDot = false
+  showStatusDot = false,
 }) => {
   // Render tags as Badges for agent-specific styling
   const renderTagBadges = () => {
-    if (tags.length === 0) return null;
-    
+    if (tags.length === 0) return null
+
     return (
       <div className="agent-tags">
-        {tags.map(tag => (
+        {tags.map((tag) => (
           <Badge value={tag} key={tag} className="agent-tag-badge" />
         ))}
       </div>
-    );
-  };
+    )
+  }
 
   return (
     <BaseCard
@@ -65,7 +65,7 @@ const AgentCard: React.FC<AgentCardProps> = ({
     >
       {children}
     </BaseCard>
-  );
-};
+  )
+}
 
-export default AgentCard;
+export default AgentCard

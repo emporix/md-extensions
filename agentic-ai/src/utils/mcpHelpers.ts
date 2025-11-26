@@ -1,11 +1,11 @@
-import { McpServer } from '../types/Mcp';
+import { McpServer } from '../types/Mcp'
 
 export const createEmptyMcpServer = (): McpServer => ({
   id: '',
   name: '',
   transport: 'sse',
   config: {
-    url: ''
+    url: '',
   },
-  enabled: true
-});
+  enabled: true,
+})

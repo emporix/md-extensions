@@ -1,146 +1,160 @@
-import React, { useState, useCallback, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Dialog } from 'primereact/dialog';
-import { Button } from 'primereact/button';
-import { ProgressBar } from 'primereact/progressbar';
-import { Badge } from 'primereact/badge';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck } from '@fortawesome/free-solid-svg-icons';
-import { AgentService } from '../../services/agentService';
-import { AppState, ImportSummaryState } from '../../types/common';
-import { useToast } from '../../contexts/ToastContext';
+import React, { useState, useCallback, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Dialog } from 'primereact/dialog'
+import { Button } from 'primereact/button'
+import { ProgressBar } from 'primereact/progressbar'
+import { Badge } from 'primereact/badge'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck } from '@fortawesome/free-solid-svg-icons'
+import { importAgents } from '../../services/agentService'
+import { AppState, ImportSummaryState } from '../../types/common'
+import { useToast } from '../../contexts/ToastContext'
 
 interface ImportAgentDialogProps {
-  visible: boolean;
-  onHide: () => void;
-  onImport: () => void;
-  appState: AppState;
+  visible: boolean
+  onHide: () => void
+  onImport: () => void
+  appState: AppState
 }
 
 const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
   visible,
   onHide,
   onImport,
-  appState
+  appState,
 }) => {
-  const { t } = useTranslation();
-  const { showSuccess, showError } = useToast();
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
+  const { t } = useTranslation()
+  const { showSuccess, showError } = useToast()
+  const [isDragOver, setIsDragOver] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
   const [importResult, setImportResult] = useState<{
-    importedAt: string;
+    importedAt: string
     summary: {
-      agents: Array<{ id: string; name: string; state: ImportSummaryState }>;
-      tools: Array<{ id: string; name: string; state: ImportSummaryState }>;
-      mcpServers: Array<{ id: string; name: string; state: ImportSummaryState }>;
-    };
-    message: string;
-  } | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileSelect = useCallback(async (file: File) => {
-    if (!file) return;
-
-    if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
-      showError(t('invalid_file_type', 'Please select a valid JSON file'));
-      return;
+      agents: Array<{ id: string; name: string; state: ImportSummaryState }>
+      tools: Array<{ id: string; name: string; state: ImportSummaryState }>
+      mcpServers: Array<{ id: string; name: string; state: ImportSummaryState }>
     }
+    message: string
+  } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-    setIsImporting(true);
+  const handleFileSelect = useCallback(
+    async (file: File) => {
+      if (!file) return
 
-    try {
-      const fileContent = await file.text();
-      
-      const parsedJson = JSON.parse(fileContent);
-      
-      const agentService = new AgentService(appState);
-      const result = await agentService.importAgents(parsedJson);
+      if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+        showError(t('invalid_file_type', 'Please select a valid JSON file'))
+        return
+      }
 
-      setImportResult(result);
-      showSuccess(result.message || t('agent_imported_successfully', 'Agent imported successfully'));
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to import agent';
-      showError(`${t('error_importing_agent', 'Error importing agent')}: ${errorMessage}`);
-    } finally {
-      setIsImporting(false);
-    }
-  }, [appState, showSuccess, showError, t]);
+      setIsImporting(true)
 
-  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragOver(false);
+      try {
+        const fileContent = await file.text()
 
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      handleFileSelect(file);
-    }
-  }, [handleFileSelect]);
+        const parsedJson = JSON.parse(fileContent)
+
+        const result = await importAgents(appState, parsedJson)
+
+        setImportResult(result)
+        showSuccess(
+          result.message ||
+            t('agent_imported_successfully', 'Agent imported successfully')
+        )
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to import agent'
+        showError(
+          `${t('error_importing_agent', 'Error importing agent')}: ${errorMessage}`
+        )
+      } finally {
+        setIsImporting(false)
+      }
+    },
+    [appState, showSuccess, showError, t]
+  )
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault()
+      setIsDragOver(false)
+
+      const file = e.dataTransfer.files[0]
+      if (file) {
+        handleFileSelect(file)
+      }
+    },
+    [handleFileSelect]
+  )
 
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  }, []);
+    e.preventDefault()
+    setIsDragOver(true)
+  }, [])
 
   const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragOver(false);
-  }, []);
+    e.preventDefault()
+    setIsDragOver(false)
+  }, [])
 
-  const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileSelect(file);
-    }
-  }, [handleFileSelect]);
+  const handleFileInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (file) {
+        handleFileSelect(file)
+      }
+    },
+    [handleFileSelect]
+  )
 
   const handleBrowseClick = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
+    fileInputRef.current?.click()
+  }, [])
 
   const handleHide = useCallback(() => {
-    setIsDragOver(false);
-    setImportResult(null);
-    setIsImporting(false);
+    setIsDragOver(false)
+    setImportResult(null)
+    setIsImporting(false)
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = ''
     }
-    onHide();
-  }, [onHide]);
+    onHide()
+  }, [onHide])
 
   const handleSummaryOk = useCallback(() => {
-    onImport();
-    handleHide();
-  }, [onImport, handleHide]);
+    onImport()
+    handleHide()
+  }, [onImport, handleHide])
 
   const getStateLabel = (state: ImportSummaryState) => {
     switch (state) {
       case 'ENABLED':
-        return t('enabled', 'Enabled');
+        return t('enabled', 'Enabled')
       case 'DISABLED':
-        return t('disabled', 'Disabled');
+        return t('disabled', 'Disabled')
       case 'TO_CREATE':
-        return t('TO_CREATE', 'To Import');
+        return t('TO_CREATE', 'To Import')
       case 'EXISTS':
-        return t('exists', 'Exists');
+        return t('exists', 'Exists')
       default:
-        return state;
+        return state
     }
-  };
+  }
 
   const getStateSeverity = (state: ImportSummaryState) => {
     switch (state) {
       case 'ENABLED':
-        return 'success';
+        return 'success'
       case 'DISABLED':
-        return 'warning';
+        return 'warning'
       case 'TO_CREATE':
-        return 'info';
+        return 'info'
       case 'EXISTS':
-        return 'success';
+        return 'success'
       default:
-        return undefined;
+        return undefined
     }
-  };
+  }
 
   const footer = isImporting ? (
     <div className="dialog-actions">
@@ -172,7 +186,7 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
         className="p-button-primary"
       />
     </div>
-  );
+  )
 
   return (
     <Dialog
@@ -195,7 +209,10 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
             </h2>
             <ProgressBar mode="indeterminate" style={{ height: '6px' }} />
             <p className="loading-text">
-              {t('please_wait_import', 'Please wait while we import the agent...')}
+              {t(
+                'please_wait_import',
+                'Please wait while we import the agent...'
+              )}
             </p>
           </div>
         ) : importResult ? (
@@ -207,9 +224,7 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
               <h2 className="dialog-title">
                 {t('import_completed', 'Import Completed')}
               </h2>
-              <p className="import-summary-message">
-                {importResult.message}
-              </p>
+              <p className="import-summary-message">{importResult.message}</p>
             </div>
 
             <div className="import-summary-sections">
@@ -222,9 +237,9 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
                     {importResult.summary.agents.map((agent, idx) => (
                       <div key={idx} className="import-summary-item">
                         <span className="import-item-name">{agent.name}</span>
-                        <Badge 
-                          value={getStateLabel(agent.state)} 
-                          severity={getStateSeverity(agent.state) as any}
+                        <Badge
+                          value={getStateLabel(agent.state)}
+                          severity={getStateSeverity(agent.state)}
                         />
                       </div>
                     ))}
@@ -236,10 +251,15 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
                 <div className="import-summary-section">
                   <h3 className="import-section-title">
                     {t('tools', 'Tools')}
-                    {importResult.summary.tools.some(t => t.state === 'TO_CREATE') && (
-                      <i 
-                        className="pi pi-info-circle import-info-icon" 
-                        title={t('TO_CREATE_note', 'Items marked as "To Import" need to be added manually.')}
+                    {importResult.summary.tools.some(
+                      (t) => t.state === 'TO_CREATE'
+                    ) && (
+                      <i
+                        className="pi pi-info-circle import-info-icon"
+                        title={t(
+                          'TO_CREATE_note',
+                          'Items marked as "To Import" need to be added manually.'
+                        )}
                       />
                     )}
                   </h3>
@@ -247,9 +267,9 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
                     {importResult.summary.tools.map((tool, idx) => (
                       <div key={idx} className="import-summary-item">
                         <span className="import-item-name">{tool.name}</span>
-                        <Badge 
-                          value={getStateLabel(tool.state)} 
-                          severity={getStateSeverity(tool.state) as any}
+                        <Badge
+                          value={getStateLabel(tool.state)}
+                          severity={getStateSeverity(tool.state)}
                         />
                       </div>
                     ))}
@@ -266,9 +286,9 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
                     {importResult.summary.mcpServers.map((server, idx) => (
                       <div key={idx} className="import-summary-item">
                         <span className="import-item-name">{server.name}</span>
-                        <Badge 
-                          value={getStateLabel(server.state)} 
-                          severity={getStateSeverity(server.state) as any}
+                        <Badge
+                          value={getStateLabel(server.state)}
+                          severity={getStateSeverity(server.state)}
                         />
                       </div>
                     ))}
@@ -277,12 +297,21 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
               )}
             </div>
 
-            {(importResult.summary.agents.some(a => a.state === 'ENABLED' || a.state === 'DISABLED') ||
-              importResult.summary.tools.some(t => t.state === 'ENABLED' || t.state === 'DISABLED') || 
-              importResult.summary.mcpServers.some(s => s.state === 'ENABLED' || s.state === 'DISABLED')) && (
+            {(importResult.summary.agents.some(
+              (a) => a.state === 'ENABLED' || a.state === 'DISABLED'
+            ) ||
+              importResult.summary.tools.some(
+                (t) => t.state === 'ENABLED' || t.state === 'DISABLED'
+              ) ||
+              importResult.summary.mcpServers.some(
+                (s) => s.state === 'ENABLED' || s.state === 'DISABLED'
+              )) && (
               <div className="import-summary-note">
                 <p>
-                  {t('token_required_note', 'Please make sure that required tokens are provided before enabling the imported entities.')}
+                  {t(
+                    'token_required_note',
+                    'Please make sure that required tokens are provided before enabling the imported entities.'
+                  )}
                 </p>
               </div>
             )}
@@ -302,7 +331,7 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
               onChange={handleFileInputChange}
               style={{ display: 'none' }}
             />
-            
+
             <div className="drop-zone-content">
               <i className="pi pi-download drop-zone-icon"></i>
               <p className="drop-zone-title">
@@ -316,8 +345,7 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
         )}
       </div>
     </Dialog>
-  );
-};
+  )
+}
 
-export default ImportAgentDialog;
-
+export default ImportAgentDialog

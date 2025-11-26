@@ -5,25 +5,21 @@ export interface FeatureToggleDto {
   isEnabled: boolean
 }
 
-export class FeatureToggleService {
-  private api: ApiClient
-  private tenant: string
-
-  constructor(appState: AppState) {
-    this.api = new ApiClient(appState)
-    this.tenant = appState.tenant
-  }
-
-  async isRagFeatureEnabled(): Promise<boolean> {
-    try {
-      const response = await this.api.get<FeatureToggleDto>(
-        `/feature-toggle/${this.tenant}/features/rag`
-      )
-      return response.isEnabled
-    } catch (error) {
-      console.error('Failed to fetch RAG feature toggle:', error)
-      return false
-    }
-  }
+const getApiClient = (appState: AppState): ApiClient => {
+  return new ApiClient(appState)
 }
 
+export const isRagFeatureEnabled = async (
+  appState: AppState
+): Promise<boolean> => {
+  try {
+    const api = getApiClient(appState)
+    const response = await api.get<FeatureToggleDto>(
+      `/feature-toggle/${appState.tenant}/features/rag`
+    )
+    return response.isEnabled
+  } catch (error) {
+    console.error('Failed to fetch RAG feature toggle:', error)
+    return false
+  }
+}

@@ -1,32 +1,37 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { ProgressSpinner } from 'primereact/progressspinner';
-import { Message } from 'primereact/message';
-import { Button } from 'primereact/button';
-import { ConfirmDialog } from './ConfirmDialog';
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { ProgressSpinner } from 'primereact/progressspinner'
+import { Message } from 'primereact/message'
+import { Button } from 'primereact/button'
+import { ConfirmDialog } from './ConfirmDialog'
 
 interface BasePageProps {
-  loading: boolean;
-  error: string | null;
-  title: string;
-  addButtonLabel?: string;
-  onAdd?: () => void;
-  children: React.ReactNode;
+  loading: boolean
+  error: string | null
+  title: React.ReactNode
 
-  // Import button props
-  importButtonIcon?: string;
-  onImport?: () => void;
-  importButtonTitle?: string;
+  addButtonLabel?: string
+  onAdd?: () => void
 
-  // Delete confirmation props
-  deleteConfirmVisible?: boolean;
-  deleteConfirmTitle?: string;
-  deleteConfirmMessage?: string;
-  onDeleteConfirm?: () => void;
-  onDeleteCancel?: () => void;
+  refreshButtonLabel?: string
+  onRefresh?: () => void
 
-  className?: string;
-  maxWidth?: string;
+  backButtonLabel?: string
+  onBack?: () => void
+  children: React.ReactNode
+
+  importButtonIcon?: string
+  onImport?: () => void
+  importButtonTitle?: string
+
+  deleteConfirmVisible?: boolean
+  deleteConfirmTitle?: string
+  deleteConfirmMessage?: string
+  onDeleteConfirm?: () => void
+  onDeleteCancel?: () => void
+
+  className?: string
+  maxWidth?: string
 }
 
 export const BasePage: React.FC<BasePageProps> = ({
@@ -35,6 +40,10 @@ export const BasePage: React.FC<BasePageProps> = ({
   title,
   addButtonLabel,
   onAdd,
+  refreshButtonLabel,
+  onRefresh,
+  backButtonLabel,
+  onBack,
   children,
   importButtonIcon,
   onImport,
@@ -44,39 +53,48 @@ export const BasePage: React.FC<BasePageProps> = ({
   deleteConfirmMessage,
   onDeleteConfirm,
   onDeleteCancel,
-  className = ''
+  className = '',
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   if (loading) {
     return (
-      <div
-        className={`${className}-page`}
-        style={{ padding: '24px' }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+      <div className={`${className}-page p-6`}>
+        <div className="flex justify-center items-center min-h-[200px]">
           <ProgressSpinner />
         </div>
       </div>
-    );
+    )
   }
 
   if (error) {
     return (
-      <div
-        className={`${className}-page`}
-        style={{ padding: '24px' }}
-      >
+      <div className={`${className}-page p-6`}>
         <Message severity="error" text={error} />
       </div>
-    );
+    )
   }
 
+  const titleWithBackButton = onBack ? (
+    <div className="details-title-with-back">
+      <button
+        onClick={onBack}
+        className="details-back-button"
+        aria-label={backButtonLabel}
+      >
+        <i className="pi pi-arrow-left" />
+      </button>
+      <span className="details-title-text">{title}</span>
+    </div>
+  ) : (
+    title
+  )
+
   return (
-    <div className={`${className}-page`} style={{ padding: '24px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <h1>{title}</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <div className={`${className}-page base-page-container`}>
+      <div className="base-page-header">
+        <h1>{titleWithBackButton}</h1>
+        <div className="base-page-actions">
           {onImport && importButtonIcon && (
             <button
               className="import-action-button"
@@ -87,13 +105,15 @@ export const BasePage: React.FC<BasePageProps> = ({
               <i className={importButtonIcon}></i>
             </button>
           )}
-          {onAdd && addButtonLabel && (
+          {onRefresh && refreshButtonLabel && (
             <Button
-              label={addButtonLabel}
-              icon="pi pi-plus"
-              className="p-button-primary add-new-agent-button"
-              onClick={onAdd}
+              label={refreshButtonLabel}
+              icon="pi pi-refresh"
+              onClick={onRefresh}
             />
+          )}
+          {onAdd && addButtonLabel && (
+            <Button label={addButtonLabel} icon="pi pi-plus" onClick={onAdd} />
           )}
         </div>
       </div>
@@ -104,13 +124,19 @@ export const BasePage: React.FC<BasePageProps> = ({
         <ConfirmDialog
           visible={deleteConfirmVisible}
           title={deleteConfirmTitle || t('confirm_delete', 'Confirm Delete')}
-          message={deleteConfirmMessage || t('are_you_sure_delete', 'Are you sure you want to delete this item?')}
+          message={
+            deleteConfirmMessage ||
+            t(
+              'are_you_sure_delete',
+              'Are you sure you want to delete this item?'
+            )
+          }
           onConfirm={onDeleteConfirm}
           onHide={onDeleteCancel}
         />
       )}
     </div>
-  );
-};
+  )
+}
 
-export default BasePage;
+export default BasePage

@@ -82,13 +82,7 @@
   flex-shrink: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  word-break: break-word;
-  height: calc(1.25rem * 1.3 * 2);
-  max-height: calc(1.25rem * 1.3 * 2);
+  white-space: nowrap;
 }
 
 .agent-description {
@@ -223,6 +217,7 @@
 }
 
 .configure-button .pi,
+.view-logs-button .pi,
 .export-button .pi,
 .remove-button .pi {
   font-size: 1rem;
@@ -233,6 +228,7 @@
 }
 
 .configure-button,
+.view-logs-button,
 .export-button {
   color: #3B64A0;
 }
@@ -242,6 +238,7 @@
 }
 
 .configure-button:hover,
+.view-logs-button:hover:not(:disabled),
 .export-button:hover:not(:disabled) {
   color: #2d4d7a;
 }
