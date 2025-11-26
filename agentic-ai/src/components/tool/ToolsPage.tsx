@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next'
 import ToolCard from './ToolCard'
 import ToolConfigPanel from './ToolConfigPanel'
 import { BasePage } from '../shared/BasePage'
+import { ConfirmDialog } from '../shared/ConfirmDialog'
 import { Tool } from '../../types/Tool'
 import { useTools } from '../../hooks/useTools'
 import { AppState } from '../../types/common'
 import { createEmptyTool } from '../../utils/toolHelpers'
 import { useToast } from '../../contexts/ToastContext'
-import { ConfirmDialog } from '../shared/ConfirmDialog'
+import { AiRagIndexerService } from '../../services/aiRagIndexerService'
 
 interface ToolsPageProps {
   appState?: AppState
@@ -22,11 +23,13 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
   },
 }) => {
   const { t } = useTranslation()
-  const { showSuccess } = useToast()
+  const { showSuccess, showError } = useToast()
+
   const {
     tools,
     loading,
     error,
+    isRagFeatureEnabled,
     updateTool,
     refreshTools,
     removeTool,
@@ -43,6 +46,8 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
   } = useTools(appState)
   const [showConfigPanel, setShowConfigPanel] = useState(false)
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null)
+  const [reindexConfirmVisible, setReindexConfirmVisible] = useState(false)
+  const [toolToReindex, setToolToReindex] = useState<Tool | null>(null)
 
   const handleConfigure = (tool: Tool) => {
     setSelectedTool(tool)
@@ -71,6 +76,44 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
   const handleConfigClose = () => {
     setShowConfigPanel(false)
     setSelectedTool(null)
+  }
+
+  const handleReindex = (tool: Tool) => {
+    setToolToReindex(tool)
+    setReindexConfirmVisible(true)
+  }
+
+  const hideReindexConfirm = () => {
+    setReindexConfirmVisible(false)
+    setToolToReindex(null)
+  }
+
+  const confirmReindex = async () => {
+    if (!toolToReindex) return
+
+    if (!toolToReindex.config.entityType) {
+      showError(
+        t('entity_type_missing', 'Entity type is missing in tool configuration')
+      )
+      hideReindexConfirm()
+      return
+    }
+
+    hideReindexConfirm()
+
+    try {
+      const aiRagIndexerService = new AiRagIndexerService(appState)
+      await aiRagIndexerService.reindex(toolToReindex.config.entityType)
+      showSuccess(
+        t('reindex_triggered_successfully', 'Reindex triggered successfully!')
+      )
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to trigger reindex'
+      showError(
+        `${t('error_triggering_reindex', 'Error triggering reindex')}: ${errorMessage}`
+      )
+    }
   }
 
   return (
@@ -103,6 +146,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
               onToggleActive={toggleToolActive}
               onConfigure={handleConfigure}
               onRemove={removeTool}
+              onReindex={handleReindex}
             />
           ))}
         </div>
@@ -114,6 +158,20 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
         onHide={handleConfigClose}
         onSave={handleConfigSave}
         appState={appState}
+        isRagFeatureEnabled={isRagFeatureEnabled}
+      />
+
+      <ConfirmDialog
+        visible={reindexConfirmVisible}
+        onHide={hideReindexConfirm}
+        onConfirm={confirmReindex}
+        title={t('reindex_tool', 'Reindex Tool')}
+        message={t(
+          'reindex_confirmation',
+          'This is a time-consuming operation that will regenerate all embeddings. Please proceed with caution. Are you sure you want to continue?'
+        )}
+        confirmLabel={t('reindex', 'Reindex')}
+        severity="warning"
       />
 
       <ConfirmDialog

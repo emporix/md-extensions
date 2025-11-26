@@ -3,11 +3,16 @@ import { TokensService } from './tokensService'
 import { ToolsService } from './toolsService'
 import { McpService } from './mcpService'
 import { AgentService } from './agentService'
+import { FeatureToggleService } from './featureToggleService'
 
 export class ServiceFactory {
   private static instances = new Map<
     string,
-    TokensService | ToolsService | McpService | AgentService
+    | TokensService
+    | ToolsService
+    | McpService
+    | AgentService
+    | FeatureToggleService
   >()
 
   static getTokensService(appState: AppState): TokensService {
@@ -40,6 +45,14 @@ export class ServiceFactory {
       this.instances.set(key, new AgentService(appState))
     }
     return this.instances.get(key) as AgentService
+  }
+
+  static getFeatureToggleService(appState: AppState): FeatureToggleService {
+    const key = `feature-toggle-${appState.tenant}-${appState.token}`
+    if (!this.instances.has(key)) {
+      this.instances.set(key, new FeatureToggleService(appState))
+    }
+    return this.instances.get(key) as FeatureToggleService
   }
 
   static clearCache(): void {

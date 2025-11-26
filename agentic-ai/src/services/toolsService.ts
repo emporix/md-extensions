@@ -75,4 +75,16 @@ export class ToolsService {
       throw new Error(errorMessage)
     }
   }
+
+  async getTokens(): Promise<Array<{ id: string; name: string }>> {
+    try {
+      return await this.api.get<Array<{ id: string; name: string }>>(
+        `/ai-service/${this.tenant}/agentic/tokens`
+      )
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to fetch tokens'
+      throw new Error(errorMessage)
+    }
+  }
 }

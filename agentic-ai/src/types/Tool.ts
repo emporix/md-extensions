@@ -1,4 +1,5 @@
 import { AppState } from './common'
+import { Token } from './Token'
 
 export enum RagCustomDatabase {
   QDRANT = 'qdrant',
@@ -17,7 +18,7 @@ export interface RagEmporixFieldConfig {
 
 export interface RagCustomEmbeddingConfig {
   model?: string
-  tokenId?: string
+  token?: Token
 }
 
 export interface RagCustomDatabaseConfig {
@@ -25,7 +26,7 @@ export interface RagCustomDatabaseConfig {
   type?: RagCustomDatabase
   entityType?: RagEntityType
   collectionName?: string
-  tokenId?: string
+  token?: Token
 }
 
 export interface RagEmporixNativeToolConfig {
@@ -42,6 +43,8 @@ export interface ToolConfig {
   databaseConfig?: RagCustomDatabaseConfig
   embeddingConfig?: RagCustomEmbeddingConfig
   emporixNativeToolConfig?: RagEmporixNativeToolConfig
+  entityType?: RagEntityType
+  indexedFields?: RagEmporixFieldConfig[]
 }
 
 export interface Tool {
@@ -57,6 +60,7 @@ export interface ToolCardProps {
   onToggleActive?: (toolId: string, enabled: boolean) => void | Promise<void>
   onConfigure: (tool: Tool) => void
   onRemove: (toolId: string) => void
+  onReindex?: (tool: Tool) => void
 }
 
 export interface ToolConfigPanelProps {
@@ -65,4 +69,5 @@ export interface ToolConfigPanelProps {
   onHide: () => void
   onSave: (tool: Tool) => void
   appState: AppState
+  isRagFeatureEnabled?: boolean
 }

@@ -13,6 +13,7 @@ export const useTools = (appState: AppState) => {
   const [tools, setTools] = useState<Tool[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isRagFeatureEnabled, setIsRagFeatureEnabled] = useState<boolean>(true)
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
 
@@ -25,6 +26,10 @@ export const useTools = (appState: AppState) => {
 
   const toolsService = useMemo(
     () => ServiceFactory.getToolsService(appState),
+    [appState]
+  )
+  const featureToggleService = useMemo(
+    () => ServiceFactory.getFeatureToggleService(appState),
     [appState]
   )
 
@@ -62,15 +67,28 @@ export const useTools = (appState: AppState) => {
     try {
       setLoading(true)
       setError(null)
+
+      // Check if RAG feature is enabled
+      const ragEnabled = await featureToggleService.isRagFeatureEnabled()
+      setIsRagFeatureEnabled(ragEnabled)
+
       const fetchedTools = await toolsService.getTools()
-      setTools(fetchedTools)
+
+      // Filter out RAG tools if feature is disabled
+      const filteredTools = ragEnabled
+        ? fetchedTools
+        : fetchedTools.filter(
+            (tool) => tool.type !== 'rag_emporix' && tool.type !== 'rag_custom'
+          )
+
+      setTools(filteredTools)
     } catch (err) {
       const message = formatApiError(err, 'Failed to load tools')
       setError(message)
     } finally {
       setLoading(false)
     }
-  }, [toolsService])
+  }, [toolsService, featureToggleService])
 
   const toggleToolActive = useCallback(
     async (toolId: string, enabled: boolean) => {
@@ -185,6 +203,7 @@ export const useTools = (appState: AppState) => {
     tools,
     loading,
     error,
+    isRagFeatureEnabled,
     updateTool,
     refreshTools,
     removeTool,
