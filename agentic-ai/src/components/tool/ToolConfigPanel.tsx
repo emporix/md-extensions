@@ -21,6 +21,7 @@ import { InputTextarea } from 'primereact/inputtextarea'
 import { InputNumber } from 'primereact/inputnumber'
 import { Dropdown } from 'primereact/dropdown'
 import { getRagMetadata } from '../../services/aiRagIndexerService'
+import { sanitizeIdInput } from '../../utils/validation'
 
 const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   visible,
@@ -285,7 +286,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           </label>
           <InputText
             value={toolId}
-            onChange={(e) => setToolId(e.target.value)}
+            onChange={(e) => setToolId(sanitizeIdInput(e.target.value))}
             className={`w-full ${!tool?.id && !toolId.trim() ? 'p-invalid' : ''}`}
             disabled={!!tool?.id}
             placeholder={t('enter_tool_id', 'Enter tool ID')}
@@ -375,7 +376,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           </label>
           <InputText
             value={toolId}
-            onChange={(e) => setToolId(e.target.value)}
+            onChange={(e) => setToolId(sanitizeIdInput(e.target.value))}
             className={`w-full ${!tool?.id && !toolId.trim() ? 'p-invalid' : ''}`}
             disabled={!!tool?.id}
             placeholder={t('enter_tool_id', 'Enter tool ID')}
@@ -688,7 +689,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           </label>
           <InputText
             value={toolId}
-            onChange={(e) => setToolId(e.target.value)}
+            onChange={(e) => setToolId(sanitizeIdInput(e.target.value))}
             className={`w-full ${!tool?.id && !toolId.trim() ? 'p-invalid' : ''}`}
             disabled={!!tool?.id}
             placeholder={t('enter_tool_id', 'Enter tool ID')}
