@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'primereact/button'
-import { CustomAgent } from '../../types/Agent'
+import { CustomAgent, LocalizedString } from '../../types/Agent'
 import { AppState } from '../../types/common'
 import { IconPicker } from '../shared/IconPicker'
 import { TagPicker } from '../shared/TagPicker'
@@ -63,7 +63,7 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
 
   const handleFieldChange = (
     field: string,
-    value: string | boolean | string[]
+    value: string | boolean | string[] | LocalizedString
   ) => {
     updateField(field, value)
   }
@@ -82,6 +82,7 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
           selectedTag={state.tags.length > 0 ? state.tags[0] : null}
           onIconClick={() => setShowIconPicker(true)}
           onTagClick={() => setShowTagPicker(true)}
+          appState={appState}
         />
 
         <div className="agent-config-content">
@@ -119,6 +120,7 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
             availableAgents={availableAgents}
             currentAgentId={agent?.id}
             currentAgentType={state.agentType}
+            appState={appState}
           />
 
           <LlmConfigSection

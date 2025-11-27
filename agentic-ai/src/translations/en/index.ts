@@ -410,6 +410,10 @@ const TRANSLATIONS_EN = {
   // Chart Tooltips
   error_sessions_label: 'Error Sessions',
   total_sessions_label: 'Total Sessions',
+
+  // Localized Input
+  show_languages: 'Show languages',
+  hide_languages: 'Hide languages',
 }
 
 export default TRANSLATIONS_EN

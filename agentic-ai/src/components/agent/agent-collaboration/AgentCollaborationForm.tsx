@@ -8,6 +8,7 @@ import { CustomAgent } from '../../../types/Agent'
 import { getLocalizedValue } from '../../../utils/agentHelpers'
 import { iconMap } from '../../../utils/agentHelpers'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { AppState } from '../../../types/common'
 
 interface AgentCollaborationFormProps {
   onAdd: (collaboration: AgentCollaboration) => void
@@ -15,6 +16,7 @@ interface AgentCollaborationFormProps {
   availableAgents: CustomAgent[]
   editingCollaboration?: AgentCollaboration
   currentAgentType?: string
+  appState: AppState
 }
 
 export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({
@@ -23,6 +25,7 @@ export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({
   availableAgents,
   editingCollaboration,
   currentAgentType,
+  appState,
 }) => {
   const { t } = useTranslation()
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(
@@ -50,11 +53,11 @@ export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({
             icon={iconMap[agent.icon || 'robot'] || iconMap.robot}
             className="agent-option-icon"
           />
-          <span>{getLocalizedValue(agent.name)}</span>
+          <span>{getLocalizedValue(agent.name, appState.contentLanguage)}</span>
         </div>
       ),
       value: agent.id,
-      sortName: getLocalizedValue(agent.name),
+      sortName: getLocalizedValue(agent.name, appState.contentLanguage),
     }))
     .sort((a, b) => a.sortName.localeCompare(b.sortName))
 

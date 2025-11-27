@@ -18,7 +18,6 @@ export interface AgentCollaboration {
 }
 
 export interface LocalizedString {
-  en: string
   [key: string]: string
 }
 
@@ -77,8 +76,8 @@ export interface Metadata {
 
 export interface CustomAgent {
   id: string
-  name: LocalizedString | string
-  description: LocalizedString | string
+  name: LocalizedString
+  description: LocalizedString
   userPrompt: string
   templatePrompt?: string
   triggers: Trigger[]

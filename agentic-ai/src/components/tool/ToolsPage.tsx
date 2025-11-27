@@ -20,6 +20,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
     tenant: 'default',
     language: 'default',
     token: 'default',
+    contentLanguage: 'en',
   },
 }) => {
   const { t } = useTranslation()

@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AgentTemplate } from '../../types/Agent'
-import { AgentCardBaseProps } from '../../types/common'
+import { AgentCardBaseProps, AppState } from '../../types/common'
 import { getLocalizedValue, iconMap } from '../../utils/agentHelpers'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRobot } from '@fortawesome/free-solid-svg-icons'
@@ -10,14 +10,18 @@ import AgentCard from './AgentCard'
 interface PredefinedAgentCardProps extends AgentCardBaseProps {
   agent: AgentTemplate
   onAddAgent: (agentId: string) => void
+  appState: AppState
 }
 
 const PredefinedAgentCard = memo(
-  ({ agent, onAddAgent }: PredefinedAgentCardProps) => {
-    const { t, i18n } = useTranslation()
+  ({ agent, onAddAgent, appState }: PredefinedAgentCardProps) => {
+    const { t } = useTranslation()
 
-    const agentName = getLocalizedValue(agent.name, i18n.language)
-    const agentDescription = getLocalizedValue(agent.description, i18n.language)
+    const agentName = getLocalizedValue(agent.name, appState.contentLanguage)
+    const agentDescription = getLocalizedValue(
+      agent.description,
+      appState.contentLanguage
+    )
 
     const getAgentIcon = () => {
       if (agent.icon && iconMap[agent.icon]) {

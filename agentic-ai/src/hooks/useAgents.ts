@@ -11,6 +11,7 @@ import {
   patchCustomAgent,
 } from '../services/agentService'
 import { useDeleteConfirmation } from './useDeleteConfirmation'
+import { getLocalizedValue } from '../utils/agentHelpers'
 
 interface UseAgentsResult {
   agents: AgentTemplate[]
@@ -55,7 +56,6 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
     try {
       setLoading(true)
       setError(null)
-
       const templates = await getAgentTemplates(appState)
       setAgents(templates)
     } catch (err) {
@@ -71,9 +71,23 @@ export const useAgents = (appState: AppState): UseAgentsResult => {
     try {
       setCustomAgentsLoading(true)
       setCustomAgentsError(null)
+      console.log('appState', appState)
 
       const customAgentsList = await getCustomAgents(appState)
-      setCustomAgents(customAgentsList)
+
+      const sortedAgents = [...customAgentsList].sort((a, b) => {
+        const nameA = getLocalizedValue(
+          a.name,
+          appState.contentLanguage
+        ).toLowerCase()
+        const nameB = getLocalizedValue(
+          b.name,
+          appState.contentLanguage
+        ).toLowerCase()
+        return nameA.localeCompare(nameB)
+      })
+
+      setCustomAgents(sortedAgents)
     } catch (err) {
       const errorMessage = formatApiError(err, 'Failed to load custom agents')
       setCustomAgentsError(errorMessage)

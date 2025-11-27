@@ -2,6 +2,7 @@ export interface AppState {
   tenant: string
   language: string
   token: string
+  contentLanguage: string
 }
 
 export interface AgentCardBaseProps {

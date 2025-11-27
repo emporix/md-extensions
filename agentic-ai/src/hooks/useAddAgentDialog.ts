@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
-import { AgentTemplate } from '../types/Agent'
+import { AgentTemplate, LocalizedString } from '../types/Agent'
 import { copyTemplate } from '../services/agentService'
 import { AppState } from '../types/common'
-import { getLocalizedValue } from '../utils/agentHelpers'
 import { useToast } from '../contexts/ToastContext'
 
 type Step = 'form' | 'loading' | 'success' | 'error'
@@ -10,7 +9,11 @@ type Step = 'form' | 'loading' | 'success' | 'error'
 interface UseAddAgentDialogProps {
   agentTemplate: AgentTemplate | null
   appState: AppState
-  onSave: (name: string, description: string, templateId: string) => void
+  onSave: (
+    name: LocalizedString,
+    description: LocalizedString,
+    templateId: string
+  ) => void
   onHide: () => void
 }
 
@@ -23,8 +26,8 @@ export const useAddAgentDialog = ({
   const { showSuccess, showError } = useToast()
   const [step, setStep] = useState<Step>('form')
   const [agentId, setAgentId] = useState('')
-  const [agentName, setAgentName] = useState('')
-  const [description, setDescription] = useState('')
+  const [agentName, setAgentName] = useState<LocalizedString>({})
+  const [description, setDescription] = useState<LocalizedString>({})
   const [progress, setProgress] = useState(0)
   const [errorMessage, setErrorMessage] = useState<string>('')
   const [userPrompt, setUserPrompt] = useState('')
@@ -32,8 +35,8 @@ export const useAddAgentDialog = ({
 
   useEffect(() => {
     if (agentTemplate) {
-      setAgentName(getLocalizedValue(agentTemplate.name, 'en'))
-      setDescription(getLocalizedValue(agentTemplate.description, 'en'))
+      setAgentName(agentTemplate.name)
+      setDescription(agentTemplate.description)
       setUserPrompt(agentTemplate.userPrompt || '')
       setTemplatePrompt(agentTemplate.templatePrompt)
     }
@@ -104,8 +107,8 @@ export const useAddAgentDialog = ({
     setStep('form')
     setProgress(0)
     setAgentId('')
-    setAgentName('')
-    setDescription('')
+    setAgentName({})
+    setDescription({})
   }, [onHide])
 
   const resetForm = useCallback(() => {
@@ -114,8 +117,8 @@ export const useAddAgentDialog = ({
     setAgentId('')
     setErrorMessage('')
     if (agentTemplate) {
-      setAgentName(getLocalizedValue(agentTemplate.name, 'en'))
-      setDescription(getLocalizedValue(agentTemplate.description, 'en'))
+      setAgentName(agentTemplate.name)
+      setDescription(agentTemplate.description)
       setUserPrompt(agentTemplate.userPrompt || '')
       setTemplatePrompt(agentTemplate.templatePrompt || '')
     }

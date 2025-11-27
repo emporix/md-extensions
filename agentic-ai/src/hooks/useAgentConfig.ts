@@ -1,11 +1,17 @@
 import { useState, useEffect, useCallback } from 'react'
-import { CustomAgent, LlmConfig, McpServer, NativeTool } from '../types/Agent'
+import {
+  CustomAgent,
+  LlmConfig,
+  McpServer,
+  NativeTool,
+  LocalizedString,
+} from '../types/Agent'
 import { upsertCustomAgent } from '../services/agentService'
 import { AppState } from '../types/common'
-import { getLocalizedValue } from '../utils/agentHelpers'
 import { useToast } from '../contexts/ToastContext'
 import { ApiClientError } from '../services/apiClient'
 import { formatApiError } from '../utils/errorHelpers'
+import { hasAnyLocalizedValue } from '../utils/agentHelpers'
 
 interface UseAgentConfigProps {
   agent: CustomAgent | null
@@ -21,8 +27,8 @@ interface AgentCollaboration {
 
 interface AgentConfigState {
   agentId: string
-  agentName: string
-  description: string
+  agentName: LocalizedString
+  description: LocalizedString
   agentType: string
   triggerTypes: string[]
   prompt: string
@@ -61,8 +67,8 @@ export const useAgentConfig = ({
 
   const [state, setState] = useState<AgentConfigState>({
     agentId: '',
-    agentName: '',
-    description: '',
+    agentName: {} as LocalizedString,
+    description: {} as LocalizedString,
     agentType: 'custom',
     triggerTypes: ['endpoint'],
     prompt: '',
@@ -99,8 +105,8 @@ export const useAgentConfig = ({
 
       setState({
         agentId: agent.id,
-        agentName: getLocalizedValue(agent.name, 'en'),
-        description: getLocalizedValue(agent.description, 'en'),
+        agentName: agent.name || ({} as LocalizedString),
+        description: agent.description || ({} as LocalizedString),
         agentType: agentType,
         triggerTypes: agentType === 'support' ? ['slack'] : triggerTypes,
         prompt: agent.userPrompt || '',
@@ -156,8 +162,8 @@ export const useAgentConfig = ({
     return {
       ...agent,
       id: state.agentId || '',
-      name: { en: state.agentName || '' },
-      description: { en: state.description || '' },
+      name: state.agentName || ({} as LocalizedString),
+      description: state.description || ({} as LocalizedString),
       triggers: triggers,
       userPrompt: state.prompt || '',
       templatePrompt: state.templatePrompt || undefined,
@@ -317,8 +323,8 @@ export const useAgentConfig = ({
     const isSelfHosted = state.provider === 'self_hosted_ollama'
 
     const basicValidation =
-      state.agentName.trim() &&
-      state.description.trim() &&
+      hasAnyLocalizedValue(state.agentName) &&
+      hasAnyLocalizedValue(state.description) &&
       state.prompt.trim() &&
       state.model.trim() &&
       (isCreating ? state.agentId.trim() : true)
