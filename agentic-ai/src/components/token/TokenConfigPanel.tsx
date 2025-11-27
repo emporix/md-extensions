@@ -5,6 +5,7 @@ import { Password } from 'primereact/password'
 import { TokenConfigPanelProps, Token } from '../../types/Token'
 import { BaseConfigPanel } from '../shared/BaseConfigPanel'
 import { faKey } from '@fortawesome/free-solid-svg-icons'
+import { sanitizeIdInput } from '../../utils/validation'
 
 const TokenConfigPanel: React.FC<TokenConfigPanelProps> = ({
   visible,
@@ -65,7 +66,7 @@ const TokenConfigPanel: React.FC<TokenConfigPanelProps> = ({
         </label>
         <InputText
           value={tokenId}
-          onChange={(e) => setTokenId(e.target.value)}
+          onChange={(e) => setTokenId(sanitizeIdInput(e.target.value))}
           className={`w-full ${!isExistingToken && !tokenId.trim() ? 'p-invalid' : ''}`}
           disabled={!!token?.id}
           placeholder={t('enter_token_id', 'Enter token ID')}

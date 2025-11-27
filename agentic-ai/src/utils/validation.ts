@@ -20,11 +20,33 @@ export const validateRequired = (
   }
 }
 
+// ID format validation: only word characters (letters, digits, underscore) and hyphens, 1-66 characters
+export const ID_PATTERN = /^[\w-]{1,66}$/
+
+export const isValidIdFormat = (id: string): boolean => {
+  return ID_PATTERN.test(id)
+}
+
+export const sanitizeIdInput = (value: string): string => {
+  // Remove all characters that are not word characters or hyphens
+  // Also limit to 66 characters
+  return value.replace(/[^\w-]/g, '').slice(0, 66)
+}
+
 export const validateId = (
   id: string | undefined | null,
   entityName: string = 'ID'
 ): void => {
   validateRequired(id, `${entityName} ID`)
+
+  if (id && id.trim()) {
+    if (!isValidIdFormat(id.trim())) {
+      throw new ValidationError(
+        `${entityName} ID must contain only letters, numbers, underscores, and hyphens (1-66 characters)`,
+        `${entityName.toLowerCase()}_id`
+      )
+    }
+  }
 }
 
 export const validateName = (

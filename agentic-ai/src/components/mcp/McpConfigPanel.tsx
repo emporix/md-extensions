@@ -7,6 +7,7 @@ import { BaseConfigPanel } from '../shared/BaseConfigPanel'
 import { faServer } from '@fortawesome/free-solid-svg-icons'
 import { Token } from '../../types/Token'
 import { getTokens } from '../../services/tokensService'
+import { sanitizeIdInput } from '../../utils/validation'
 
 const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
   visible,
@@ -108,7 +109,7 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
         </label>
         <InputText
           value={mcpServerId}
-          onChange={(e) => setMcpServerId(e.target.value)}
+          onChange={(e) => setMcpServerId(sanitizeIdInput(e.target.value))}
           className={`w-full ${!mcpServer?.id && !mcpServerId.trim() ? 'p-invalid' : ''}`}
           disabled={!!mcpServer?.id}
           placeholder={t('enter_mcp_server_id', 'Enter MCP server ID')}

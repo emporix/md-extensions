@@ -6,6 +6,7 @@ import { MultiSelect } from 'primereact/multiselect'
 import { TRIGGER_TYPES } from '../../../utils/constants'
 import { AppState } from '../../../types/common'
 import { useCommerceEvents } from '../../../hooks/useCommerceEvents'
+import { sanitizeIdInput } from '../../../utils/validation'
 
 interface AgentBasicInfoProps {
   agentId: string
@@ -62,6 +63,11 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       ? TRIGGER_TYPES.filter((option) => option.value === 'slack')
       : TRIGGER_TYPES.filter((option) => option.value !== 'slack')
 
+  const handleAgentIdChange = (value: string) => {
+    const sanitized = sanitizeIdInput(value)
+    onFieldChange('agentId', sanitized)
+  }
+
   return (
     <>
       <div className="form-field">
@@ -71,7 +77,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
         </label>
         <InputText
           value={agentId}
-          onChange={(e) => onFieldChange('agentId', e.target.value)}
+          onChange={(e) => handleAgentIdChange(e.target.value)}
           className={`w-full ${!isEditing && !agentId.trim() ? 'p-invalid' : ''}`}
           disabled={isEditing}
           placeholder={
