@@ -20,7 +20,7 @@ interface AgentsViewProps {
 }
 
 const AgentsView = memo(({ appState }: AgentsViewProps) => {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
 
   const [showAddAgentDialog, setShowAddAgentDialog] = useState(false)
   const [selectedAgentTemplate, setSelectedAgentTemplate] =
@@ -78,18 +78,15 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
   }
 
   const handleAddNewAgent = useCallback(() => {
-    setSelectedCustomAgent(createEmptyAgent())
+    setSelectedCustomAgent(createEmptyAgent(appState.contentLanguage))
+    setShowConfigPanel(true)
+  }, [appState.contentLanguage])
+
+  const handleConfigure = useCallback((agent: CustomAgent) => {
+    const cleanAgent = cleanAgentForConfig(agent)
+    setSelectedCustomAgent(cleanAgent)
     setShowConfigPanel(true)
   }, [])
-
-  const handleConfigure = useCallback(
-    (agent: CustomAgent) => {
-      const cleanAgent = cleanAgentForConfig(agent, i18n.language)
-      setSelectedCustomAgent(cleanAgent)
-      setShowConfigPanel(true)
-    },
-    [i18n.language]
-  )
 
   const handleConfigSave = async (updatedAgent: CustomAgent) => {
     try {
@@ -98,7 +95,7 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
       setSelectedCustomAgent(null)
     } catch (error) {
       console.error(error)
-      const cleanAgent = cleanAgentForConfig(updatedAgent, i18n.language)
+      const cleanAgent = cleanAgentForConfig(updatedAgent)
       setCustomAgents((prev: CustomAgent[]) =>
         prev.map((a: CustomAgent) => (a.id === cleanAgent.id ? cleanAgent : a))
       )
@@ -199,6 +196,7 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
                 agent={agent}
                 onToggleActive={toggleAgentActive}
                 onAddAgent={handleAddAgent}
+                appState={appState}
               />
             ))}
           </div>

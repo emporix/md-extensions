@@ -2,17 +2,22 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { ProgressBar } from 'primereact/progressbar'
 import { Button } from 'primereact/button'
+import { LocalizedString } from '../../../types/Agent'
+import { getLocalizedValue } from '../../../utils/agentHelpers'
+import { AppState } from '../../../types/common'
 
 interface LoadingStepProps {
-  agentName: string
+  agentName: LocalizedString
   progress: number
   onDiscard: () => void
+  appState: AppState
 }
 
 export const LoadingStep: React.FC<LoadingStepProps> = ({
   agentName,
   progress,
   onDiscard,
+  appState,
 }) => {
   const { t } = useTranslation()
 
@@ -25,7 +30,8 @@ export const LoadingStep: React.FC<LoadingStepProps> = ({
         className="dialog-title"
         style={{ textAlign: 'center', marginBottom: '2rem' }}
       >
-        {agentName} {t('being_copied')}
+        {getLocalizedValue(agentName, appState.contentLanguage)}{' '}
+        {t('being_copied')}
       </h2>
       <ProgressBar value={progress} style={{ height: '6px' }} />
       <p style={{ textAlign: 'center', marginTop: '1rem', color: '#666' }}>

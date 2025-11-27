@@ -6,6 +6,7 @@ import { AgentCollaborationForm } from './AgentCollaborationForm'
 import { getLocalizedValue } from '../../../utils/agentHelpers'
 import { iconMap } from '../../../utils/agentHelpers'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { AppState } from '../../../types/common'
 
 interface AgentCollaborationListProps {
   collaborations: AgentCollaboration[]
@@ -16,6 +17,7 @@ interface AgentCollaborationListProps {
   editingIndex?: number
   availableAgents: CustomAgent[]
   currentAgentType?: string
+  appState: AppState
 }
 
 export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({
@@ -27,6 +29,7 @@ export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({
   editingIndex,
   availableAgents,
   currentAgentType,
+  appState,
 }) => {
   const { t } = useTranslation()
 
@@ -40,7 +43,7 @@ export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({
       return { name: agentId, icon: 'robot' }
     }
     return {
-      name: getLocalizedValue(agent.name),
+      name: getLocalizedValue(agent.name, appState.contentLanguage),
       icon: agent.icon || 'robot',
     }
   }
@@ -58,6 +61,7 @@ export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({
               availableAgents={availableAgents}
               editingCollaboration={collaboration}
               currentAgentType={currentAgentType}
+              appState={appState}
             />
           ) : (
             <>

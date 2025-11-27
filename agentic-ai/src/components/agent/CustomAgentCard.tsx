@@ -24,12 +24,15 @@ const CustomAgentCard = memo(
     onConfigure,
     onRemove,
   }: CustomAgentCardProps) => {
-    const { t, i18n } = useTranslation()
+    const { t } = useTranslation()
     const { showSuccess, showError } = useToast()
     const [isExporting, setIsExporting] = useState(false)
 
-    const agentName = getLocalizedValue(agent.name, i18n.language)
-    const agentDescription = getLocalizedValue(agent.description, i18n.language)
+    const agentName = getLocalizedValue(agent.name, appState.contentLanguage)
+    const agentDescription = getLocalizedValue(
+      agent.description,
+      appState.contentLanguage
+    )
 
     const handleViewLogs = () => {
       const url = `#/logs/sessions?agentId=${agent.id}`

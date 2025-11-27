@@ -36,32 +36,35 @@ export const getAgentStatusLabel = (
  * Extract localized string value, falling back to English if the current language is not available
  */
 export function getLocalizedValue(
-  localizedString: LocalizedString | string,
+  localizedString: LocalizedString,
   language: string = 'en'
 ): string {
-  if (typeof localizedString === 'string') {
-    return localizedString
+  if (localizedString && hasAnyLocalizedValue(localizedString)) {
+    return (
+      localizedString[language] ||
+      localizedString.en ||
+      Object.values(localizedString)[0] ||
+      ''
+    )
   }
-
-  if (localizedString && typeof localizedString === 'object') {
-    return localizedString[language] || localizedString.en || ''
-  }
-
   return ''
+}
+
+export const hasAnyLocalizedValue = (
+  localizedString: LocalizedString
+): boolean => {
+  return Object.values(localizedString).some((value) => value.trim().length > 0)
 }
 
 /**
  * Shared icon map for all agent components
  */
-export const cleanAgentForConfig = (
-  agent: CustomAgent,
-  language: string = 'en'
-): CustomAgent => {
+export const cleanAgentForConfig = (agent: CustomAgent): CustomAgent => {
   return {
     ...agent,
     id: agent.id || '',
-    name: { en: getLocalizedValue(agent.name, language) || '' },
-    description: { en: getLocalizedValue(agent.description, language) || '' },
+    name: agent.name,
+    description: agent.description,
     userPrompt: agent.userPrompt || '',
     triggers: agent.triggers || [{ type: 'endpoint', config: null }],
     llmConfig: agent.llmConfig || {
@@ -87,10 +90,10 @@ export const cleanAgentForConfig = (
   }
 }
 
-export const createEmptyAgent = (): CustomAgent => ({
+export const createEmptyAgent = (language: string = 'en'): CustomAgent => ({
   id: '',
-  name: { en: '' },
-  description: { en: '' },
+  name: { [language]: '' },
+  description: { [language]: '' },
   userPrompt: '',
   triggers: [{ type: 'endpoint', config: null }],
   llmConfig: {

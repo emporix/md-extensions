@@ -5,19 +5,27 @@ import { InputTextarea } from 'primereact/inputtextarea'
 import { Button } from 'primereact/button'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHeadset } from '@fortawesome/free-solid-svg-icons'
+import { LocalizedString } from '../../../types/Agent'
+import { AppState } from '../../../types/common'
+import {
+  getLocalizedValue,
+  hasAnyLocalizedValue,
+} from '../../../utils/agentHelpers'
+import { LocalizedInput } from '../../shared/LocalizedInput'
 
 interface FormStepProps {
   agentId: string
   setAgentId: (value: string) => void
-  agentName: string
-  setAgentName: (value: string) => void
-  description: string
-  setDescription: (value: string) => void
+  agentName: LocalizedString
+  setAgentName: (value: LocalizedString) => void
+  description: LocalizedString
+  setDescription: (value: LocalizedString) => void
   setUserPrompt: (value: string) => void
   userPrompt: string
   templatePrompt: string
   onDiscard: () => void
   onSave: () => void
+  appState: AppState
 }
 
 export const FormStep: React.FC<FormStepProps> = ({
@@ -32,14 +40,15 @@ export const FormStep: React.FC<FormStepProps> = ({
   templatePrompt,
   onDiscard,
   onSave,
+  appState,
 }) => {
   const { t } = useTranslation()
 
   const isFormValid =
     agentId.trim() &&
-    agentName.trim() &&
-    description.trim() &&
-    userPrompt.trim()
+    hasAnyLocalizedValue(agentName) &&
+    hasAnyLocalizedValue(description) &&
+    userPrompt?.trim()
 
   return (
     <div className="add-agent-form">
@@ -49,7 +58,8 @@ export const FormStep: React.FC<FormStepProps> = ({
           <FontAwesomeIcon icon={faHeadset} />
         </div>
         <h2 className="agent-title">
-          {agentName || t('add_agent', 'Add Agent')}
+          {getLocalizedValue(agentName, appState.contentLanguage) ||
+            t('add_agent', 'Add Agent')}
         </h2>
         <p className="agent-subtitle">
           {t(
@@ -83,37 +93,34 @@ export const FormStep: React.FC<FormStepProps> = ({
             {t('agent_name', 'Agent Name')}{' '}
             <span style={{ color: 'red' }}>*</span>
           </label>
-          <InputText
-            id="agent-name"
+          <LocalizedInput
             value={agentName}
-            onChange={(e) => setAgentName(e.target.value)}
-            className={`w-full ${!agentName.trim() ? 'p-invalid' : ''}`}
+            onChange={(value) => setAgentName(value)}
+            appState={appState}
             placeholder={t('enter_agent_name', 'Enter agent name')}
+            error={
+              !hasAnyLocalizedValue(agentName)
+                ? t('agent_name_required', 'Agent name is required')
+                : undefined
+            }
           />
-          {!agentName.trim() && (
-            <small className="p-error">
-              {t('agent_name_required', 'Agent name is required')}
-            </small>
-          )}
         </div>
         <div className="form-field">
           <label htmlFor="agent-description" className="field-label">
             {t('description', 'Description')}{' '}
             <span style={{ color: 'red' }}>*</span>
           </label>
-          <InputTextarea
-            id="agent-description"
+          <LocalizedInput
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            className={`w-full ${!description.trim() ? 'p-invalid' : ''}`}
+            onChange={(value) => setDescription(value)}
+            appState={appState}
             placeholder={t('enter_description', 'Enter description')}
+            error={
+              !hasAnyLocalizedValue(description)
+                ? t('description_required', 'Description is required')
+                : undefined
+            }
           />
-          {!description.trim() && (
-            <small className="p-error">
-              {t('description_required', 'Description is required')}
-            </small>
-          )}
         </div>
         <div className="form-field">
           <label htmlFor="user-prompt" className="field-label">
