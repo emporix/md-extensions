@@ -45,12 +45,64 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   >([])
   const [availableFields, setAvailableFields] = useState<string[]>([])
 
+  const getToolTypeDisplayValue = (type: string): string => {
+    switch (type) {
+      case 'slack':
+        return t('slack', 'Slack')
+      case 'rag_custom':
+        return t('rag_custom', 'RAG Custom')
+      case 'rag_emporix':
+        return t('rag_emporix', 'RAG Emporix')
+      default:
+        return type
+    }
+  }
+
   useEffect(() => {
     if (tool) {
       setToolId(tool.id || '')
       setToolName(tool.name)
       setToolType(tool.type || '')
-      setConfig({ ...tool.config })
+
+      // Start with the raw config from the backend
+      let loadedConfig: ToolConfig = { ...tool.config }
+
+      // For rag_emporix tools, flatten emporixNativeToolConfig into top-level config.
+      // Prefer non-empty values from either top-level config or emporixNativeToolConfig
+      // so we don't accidentally overwrite populated fields (like dimensions) with empty ones.
+      if (tool.type === 'rag_emporix' && tool.config.emporixNativeToolConfig) {
+        const emporixConfig = tool.config.emporixNativeToolConfig
+
+        const topLevelEmbedding =
+          (loadedConfig.embeddingConfig as
+            | RagEmporixEmbeddingConfig
+            | undefined) || undefined
+        const nestedEmbedding =
+          (emporixConfig.embeddingConfig as
+            | RagEmporixEmbeddingConfig
+            | undefined) || undefined
+
+        // Merge embedding configs from both places, giving preference to
+        // defined values so that existing dimensions from the backend are preserved.
+        const mergedEmbeddingConfig: RagEmporixEmbeddingConfig | undefined =
+          topLevelEmbedding || nestedEmbedding
+            ? {
+                ...(topLevelEmbedding || {}),
+                ...(nestedEmbedding || {}),
+              }
+            : undefined
+
+        loadedConfig = {
+          ...loadedConfig,
+          prompt: emporixConfig.prompt ?? loadedConfig.prompt,
+          entityType: emporixConfig.entityType ?? loadedConfig.entityType,
+          indexedFields:
+            emporixConfig.indexedFields ?? loadedConfig.indexedFields,
+          embeddingConfig: mergedEmbeddingConfig,
+        }
+      }
+
+      setConfig(loadedConfig)
     }
   }, [tool])
 
@@ -829,6 +881,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
               </label>
               <InputNumber
                 value={dimensionsValue}
+                disabled={!!tool?.id}
                 onChange={(e) => {
                   // Store the actual value the user types, even if it's null or invalid
                   // onChange fires on every keystroke for immediate validation feedback
@@ -1153,7 +1206,11 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           {!tool?.id && <span style={{ color: 'red' }}> *</span>}
         </label>
         {tool?.id ? (
-          <InputText value={toolType} className="w-full" disabled />
+          <InputText
+            value={getToolTypeDisplayValue(toolType)}
+            className="w-full"
+            disabled
+          />
         ) : (
           <Dropdown
             value={toolType}

@@ -109,6 +109,11 @@
   color: #3B64A0 !important;
 }
 
+/* Agent Config Icon Row - Add margin to separate from other fields */
+.tool-config-panel .agent-config-icon-row {
+  margin-bottom: 2rem;
+}
+
 /* Tool Config Panel Field Styling */
 .tool-config-panel .form-field {
   margin-bottom: 1rem;
