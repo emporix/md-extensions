@@ -48,11 +48,11 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   const getToolTypeDisplayValue = (type: string): string => {
     switch (type) {
       case 'slack':
-        return t('slack', 'Slack')
+        return t('slack')
       case 'rag_custom':
-        return t('rag_custom', 'RAG Custom')
+        return t('rag_custom')
       case 'rag_emporix':
-        return t('rag_emporix', 'RAG Emporix')
+        return t('rag_emporix')
       default:
         return type
     }
@@ -64,12 +64,8 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       setToolName(tool.name)
       setToolType(tool.type || '')
 
-      // Start with the raw config from the backend
       let loadedConfig: ToolConfig = { ...tool.config }
 
-      // For rag_emporix tools, flatten emporixNativeToolConfig into top-level config.
-      // Prefer non-empty values from either top-level config or emporixNativeToolConfig
-      // so we don't accidentally overwrite populated fields (like dimensions) with empty ones.
       if (tool.type === 'rag_emporix' && tool.config.emporixNativeToolConfig) {
         const emporixConfig = tool.config.emporixNativeToolConfig
 
@@ -82,8 +78,6 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             | RagEmporixEmbeddingConfig
             | undefined) || undefined
 
-        // Merge embedding configs from both places, giving preference to
-        // defined values so that existing dimensions from the backend are preserved.
         const mergedEmbeddingConfig: RagEmporixEmbeddingConfig | undefined =
           topLevelEmbedding || nestedEmbedding
             ? {
@@ -114,7 +108,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       setAvailableTokens(tokens)
     } catch (error) {
       console.error('Failed to load tokens:', error)
-      showError(t('error_loading_tokens', 'Failed to load available tokens'))
+      showError(t('error_loading_tokens'))
     }
   }, [appState, showError, t])
 
@@ -122,31 +116,27 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     if (!appState) return
 
     try {
-      // Use 'product' as the default entity type for now
       const fields = await getRagMetadata(appState, 'product')
       setAvailableFields(fields)
     } catch (error) {
       console.error('Failed to load fields:', error)
-      showError(t('error_loading_fields', 'Failed to load available fields'))
+      showError(t('error_loading_fields'))
     }
   }, [appState, showError, t])
 
   useEffect(() => {
-    // Load available tokens for rag_custom and rag_emporix tool types
     if ((toolType === 'rag_custom' || toolType === 'rag_emporix') && appState) {
       loadAvailableTokens()
     }
   }, [toolType, appState, loadAvailableTokens])
 
   useEffect(() => {
-    // Load available fields for rag_emporix tool type
     if (toolType === 'rag_emporix' && appState) {
       loadAvailableFields()
     }
   }, [toolType, appState, loadAvailableFields])
 
   useEffect(() => {
-    // Initialize default values for rag_emporix tool type
     if (toolType === 'rag_emporix') {
       const embeddingConfig =
         (config.embeddingConfig as RagEmporixEmbeddingConfig) || {}
@@ -166,7 +156,6 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   }, [toolType, config.entityType, config.embeddingConfig])
 
   useEffect(() => {
-    // Initialize default values for rag_custom tool type
     if (toolType === 'rag_custom') {
       const databaseConfig = config.databaseConfig || {}
       const needsUpdate = !databaseConfig.type || !databaseConfig.entityType
@@ -200,10 +189,8 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       onSave(updatedTool)
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Failed to save tool'
-      showError(
-        `${t('error_saving_tool', 'Error saving tool')}: ${errorMessage}`
-      )
+        error instanceof Error ? error.message : t('failed_to_save_tool')
+      showError(`${t('error_saving_tool')}: ${errorMessage}`)
     } finally {
       setSaving(false)
     }
@@ -253,7 +240,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
   const handleSlackInstallation = async () => {
     if (!appState) {
-      showError(t('error_app_state_missing', 'Application state is missing'))
+      showError(t('error_app_state_missing'))
       return
     }
 
@@ -266,10 +253,8 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       const errorMessage =
         error instanceof Error
           ? error.message
-          : 'Failed to initiate Slack installation'
-      showError(
-        `${t('error_slack_installation', 'Error initiating Slack installation')}: ${errorMessage}`
-      )
+          : t('failed_to_initiate_slack_installation')
+      showError(`${t('error_slack_installation')}: ${errorMessage}`)
     } finally {
       setSlackInstallLoading(false)
     }
@@ -283,14 +268,9 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         {isCreating && (
           <>
             <div className="slack-install-section">
-              <h3 className="section-title">
-                {t('install_emporix_slack_ai', 'Install Emporix Slack AI')}
-              </h3>
+              <h3 className="section-title">{t('install_emporix_slack_ai')}</h3>
               <p className="section-subtitle">
-                {t(
-                  'slack_install_description',
-                  'Quick setup with one click. Automatically configure your Slack workspace with the necessary permissions.'
-                )}
+                {t('slack_install_description')}
               </p>
               <div className="slack-install-button-container">
                 <Button
@@ -323,28 +303,22 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
             <div className="form-separator">
               <div className="separator-line"></div>
-              <span className="separator-text">{t('or', 'or')}</span>
+              <span className="separator-text">{t('or')}</span>
               <div className="separator-line"></div>
             </div>
 
             <div className="manual-config-section">
-              <h3 className="section-title">
-                {t('provide_values_manually', 'Provide the values manually')}
-              </h3>
+              <h3 className="section-title">{t('provide_values_manually')}</h3>
               <p className="section-subtitle">
-                {t(
-                  'manual_config_description',
-                  'Enter your Slack workspace details manually if you prefer custom configuration.'
-                )}
+                {t('manual_config_description')}
               </p>
             </div>
           </>
         )}
 
-        {/* Tool ID and Name fields */}
         <div className="form-field">
           <label className="field-label">
-            {t('tool_id', 'Tool ID')}
+            {t('tool_id')}
             {!tool?.id && <span style={{ color: 'red' }}> *</span>}
           </label>
           <InputText
@@ -352,67 +326,58 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             onChange={(e) => setToolId(e.target.value)}
             className={`w-full ${!tool?.id && !toolId.trim() ? 'p-invalid' : ''}`}
             disabled={!!tool?.id}
-            placeholder={t('enter_tool_id', 'Enter tool ID')}
+            placeholder={t('enter_tool_id')}
           />
           {!tool?.id && !toolId.trim() && (
-            <small className="p-error">
-              {t('tool_id_required', 'Tool ID is required')}
-            </small>
+            <small className="p-error">{t('tool_id_required')}</small>
           )}
         </div>
         <div className="form-field">
           <label className="field-label">
-            {t('tool_name', 'Tool Name')}
+            {t('tool_name')}
             <span style={{ color: 'red' }}> *</span>
           </label>
           <InputText
             value={toolName}
             onChange={(e) => setToolName(e.target.value)}
             className={`w-full ${!toolName.trim() ? 'p-invalid' : ''}`}
-            placeholder={t('enter_tool_name', 'Enter tool name')}
+            placeholder={t('enter_tool_name')}
           />
           {!toolName.trim() && (
-            <small className="p-error">
-              {t('tool_name_required', 'Tool name is required')}
-            </small>
+            <small className="p-error">{t('tool_name_required')}</small>
           )}
         </div>
 
-        {/* Slack-specific configuration fields */}
         <div className="form-field">
           <label className="field-label">
-            {t('team_id', 'Team ID')}
+            {t('team_id')}
             <span style={{ color: 'red' }}> *</span>
           </label>
           <InputText
             value={config.teamId || ''}
             onChange={(e) => updateConfig('teamId', e.target.value)}
             className={`w-full ${!config.teamId?.trim() ? 'p-invalid' : ''}`}
-            placeholder={t('enter_team_id', 'Enter team ID')}
+            placeholder={t('enter_team_id')}
           />
           {!config.teamId?.trim() && (
-            <small className="p-error">
-              {t('team_id_required', 'Team ID is required')}
-            </small>
+            <small className="p-error">{t('team_id_required')}</small>
           )}
         </div>
         {!tool?.id && (
           <div className="form-field">
             <label className="field-label">
-              {t('bot_token', 'Bot Token')}
+              {t('bot_token')}
               <span style={{ color: 'red' }}> *</span>
             </label>
             <InputText
               value={config.botToken || ''}
               onChange={(e) => updateConfig('botToken', e.target.value)}
               className={`w-full ${!config.botToken?.trim() ? 'p-invalid' : ''}`}
-              placeholder={t('enter_bot_token', 'Enter bot token')}
+              placeholder={t('enter_bot_token')}
               type="password"
             />
             {!config.botToken?.trim() && (
-              <small className="p-error">
-                {t('bot_token_required', 'Bot token is required')}
-              </small>
+              <small className="p-error">{t('bot_token_required')}</small>
             )}
           </div>
         )}
@@ -427,14 +392,13 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
     // Enums
     const databaseTypes = [{ label: 'Qdrant', value: 'qdrant' }]
-    const entityTypes = [{ label: 'Product', value: 'product' }]
+    const entityTypes = [{ label: t('entity_type'), value: 'product' }]
 
     return (
       <>
-        {/* Tool ID and Name fields */}
         <div className="form-field">
           <label className="field-label">
-            {t('tool_id', 'Tool ID')}
+            {t('tool_id')}
             {!tool?.id && <span style={{ color: 'red' }}> *</span>}
           </label>
           <InputText
@@ -442,56 +406,48 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             onChange={(e) => setToolId(e.target.value)}
             className={`w-full ${!tool?.id && !toolId.trim() ? 'p-invalid' : ''}`}
             disabled={!!tool?.id}
-            placeholder={t('enter_tool_id', 'Enter tool ID')}
+            placeholder={t('enter_tool_id')}
           />
           {!tool?.id && !toolId.trim() && (
-            <small className="p-error">
-              {t('tool_id_required', 'Tool ID is required')}
-            </small>
+            <small className="p-error">{t('tool_id_required')}</small>
           )}
         </div>
         <div className="form-field">
           <label className="field-label">
-            {t('tool_name', 'Tool Name')}
+            {t('tool_name')}
             <span style={{ color: 'red' }}> *</span>
           </label>
           <InputText
             value={toolName}
             onChange={(e) => setToolName(e.target.value)}
             className={`w-full ${!toolName.trim() ? 'p-invalid' : ''}`}
-            placeholder={t('enter_tool_name', 'Enter tool name')}
+            placeholder={t('enter_tool_name')}
           />
           {!toolName.trim() && (
-            <small className="p-error">
-              {t('tool_name_required', 'Tool name is required')}
-            </small>
+            <small className="p-error">{t('tool_name_required')}</small>
           )}
         </div>
 
-        {/* Prompt field */}
         <div className="form-field">
           <label className="field-label">
-            {t('prompt', 'Prompt')}
+            {t('prompt')}
             <span style={{ color: 'red' }}> *</span>
           </label>
           <InputTextarea
             value={config.prompt || ''}
             onChange={(e) => updateConfig('prompt', e.target.value)}
             className={`w-full ${!config.prompt?.trim() ? 'p-invalid' : ''}`}
-            placeholder={t('enter_prompt', 'Enter prompt')}
+            placeholder={t('enter_prompt')}
             rows={3}
           />
           {!config.prompt?.trim() && (
-            <small className="p-error">
-              {t('prompt_required', 'Prompt is required')}
-            </small>
+            <small className="p-error">{t('prompt_required')}</small>
           )}
         </div>
 
-        {/* Max Results field */}
         <div className="form-field">
           <label className="field-label">
-            {t('max_results', 'Max Results')}
+            {t('max_results')}
             <span style={{ color: 'red' }}> *</span>
           </label>
           <InputNumber
@@ -500,26 +456,21 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
               updateConfig('maxResults', String(e.value ?? 5))
             }
             className={`w-full ${maxResults < 1 || maxResults > 100 ? 'p-invalid' : ''}`}
-            placeholder={t('enter_max_results', 'Enter max results (1-100)')}
+            placeholder={t('enter_max_results')}
             min={1}
             max={100}
           />
           {(maxResults < 1 || maxResults > 100) && (
-            <small className="p-error">
-              {t('max_results_range', 'Max results must be between 1 and 100')}
-            </small>
+            <small className="p-error">{t('max_results_range')}</small>
           )}
         </div>
 
-        {/* Database Configuration Section */}
         <div className="config-section">
-          <h3 className="section-title">
-            {t('database_configuration', 'Database Configuration')}
-          </h3>
+          <h3 className="section-title">{t('database_configuration')}</h3>
 
           <div className="form-field">
             <label className="field-label">
-              {t('database_url', 'Database URL')}
+              {t('database_url')}
               <span style={{ color: 'red' }}> *</span>
             </label>
             <InputText
@@ -528,18 +479,16 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                 updateNestedConfig('databaseConfig', 'url', e.target.value)
               }
               className={`w-full ${!databaseConfig.url?.trim() ? 'p-invalid' : ''}`}
-              placeholder={t('enter_database_url', 'Enter database URL')}
+              placeholder={t('enter_database_url')}
             />
             {!databaseConfig.url?.trim() && (
-              <small className="p-error">
-                {t('database_url_required', 'Database URL is required')}
-              </small>
+              <small className="p-error">{t('database_url_required')}</small>
             )}
           </div>
 
           <div className="form-field">
             <label className="field-label">
-              {t('database_type', 'Database Type')}
+              {t('database_type')}
               <span style={{ color: 'red' }}> *</span>
             </label>
             <Dropdown
@@ -555,7 +504,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
           <div className="form-field">
             <label className="field-label">
-              {t('entity_type', 'Entity Type')}
+              {t('entity_type')}
               <span style={{ color: 'red' }}> *</span>
             </label>
             <Dropdown
@@ -571,7 +520,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
           <div className="form-field">
             <label className="field-label">
-              {t('collection_name', 'Collection Name')}
+              {t('collection_name')}
               <span style={{ color: 'red' }}> *</span>
             </label>
             <InputText
@@ -584,18 +533,16 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                 )
               }
               className={`w-full ${!databaseConfig.collectionName?.trim() ? 'p-invalid' : ''}`}
-              placeholder={t('enter_collection_name', 'Enter collection name')}
+              placeholder={t('enter_collection_name')}
             />
             {!databaseConfig.collectionName?.trim() && (
-              <small className="p-error">
-                {t('collection_name_required', 'Collection name is required')}
-              </small>
+              <small className="p-error">{t('collection_name_required')}</small>
             )}
           </div>
 
           <div className="form-field" style={{ marginBottom: '1.5rem' }}>
             <label className="field-label">
-              {t('token', 'Token')}
+              {t('token')}
               <span style={{ color: 'red' }}> *</span>
             </label>
             <Dropdown
@@ -610,27 +557,22 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                 )
               }
               className={`w-full ${!databaseConfig.token?.id ? 'p-invalid' : ''}`}
-              placeholder={t('select_token', 'Select a token')}
+              placeholder={t('select_token')}
               optionLabel="name"
               optionValue="id"
             />
             {!databaseConfig.token?.id && (
-              <small className="p-error">
-                {t('token_required', 'Token is required')}
-              </small>
+              <small className="p-error">{t('token_required')}</small>
             )}
           </div>
         </div>
 
-        {/* Embedding Configuration Section */}
         <div className="config-section">
-          <h3 className="section-title">
-            {t('embedding_configuration', 'Embedding Configuration')}
-          </h3>
+          <h3 className="section-title">{t('embedding_configuration')}</h3>
 
           <div className="form-field">
             <label className="field-label">
-              {t('model', 'Model')}
+              {t('model')}
               <span style={{ color: 'red' }}> *</span>
             </label>
             <InputText
@@ -639,18 +581,16 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                 updateNestedConfig('embeddingConfig', 'model', e.target.value)
               }
               className={`w-full ${!embeddingConfig.model?.trim() ? 'p-invalid' : ''}`}
-              placeholder={t('enter_model', 'Enter model')}
+              placeholder={t('enter_model')}
             />
             {!embeddingConfig.model?.trim() && (
-              <small className="p-error">
-                {t('model_required', 'Model is required')}
-              </small>
+              <small className="p-error">{t('model_required')}</small>
             )}
           </div>
 
           <div className="form-field">
             <label className="field-label">
-              {t('token', 'Token')}
+              {t('token')}
               <span style={{ color: 'red' }}> *</span>
             </label>
             <Dropdown
@@ -665,14 +605,12 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                 )
               }
               className={`w-full ${!embeddingConfig.token?.id ? 'p-invalid' : ''}`}
-              placeholder={t('select_token', 'Select a token')}
+              placeholder={t('select_token')}
               optionLabel="name"
               optionValue="id"
             />
             {!embeddingConfig.token?.id && (
-              <small className="p-error">
-                {t('token_required', 'Token is required')}
-              </small>
+              <small className="p-error">{t('token_required')}</small>
             )}
           </div>
         </div>
@@ -684,19 +622,15 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     const indexedFields = config.indexedFields || []
     const embeddingConfig = (config.embeddingConfig ||
       {}) as RagEmporixEmbeddingConfig
-    const dimensionsValue =
-      embeddingConfig.dimensions !== undefined &&
-      embeddingConfig.dimensions !== null
-        ? Number(embeddingConfig.dimensions)
-        : 0
-    // Validate: check if value exists and is outside valid range
-    // If value is null/undefined, it's invalid (required field)
+    const dimensionsValue = embeddingConfig.dimensions
+      ? Number(embeddingConfig.dimensions)
+      : 0
     const isDimensionsInvalid =
       embeddingConfig.dimensions === null ||
       embeddingConfig.dimensions === undefined ||
       dimensionsValue < 128 ||
       dimensionsValue > 4096
-    const entityTypes = [{ label: 'Product', value: 'product' }]
+    const entityTypes = [{ label: t('entity_type'), value: 'product' }]
     const providerOptions = [
       { label: 'OpenAI', value: RagLlmProvider.OPENAI },
       { label: 'Emporix OpenAI', value: RagLlmProvider.EMPORIX_OPENAI },
@@ -734,28 +668,21 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     }
 
     const getAvailableFieldsForIndex = (currentIndex: number) => {
-      // Get all selected keys except the current one being edited
       const selectedKeys = indexedFields
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((f: any, i: number) => (i !== currentIndex ? f.key : null))
         .filter((key: string | null) => key && key.trim())
         .map((key: string | null) => key as string)
 
-      // Filter out fields that conflict with already selected fields
       return availableFields.filter((field) => {
-        // Check if this field conflicts with any selected field
         const hasConflict = selectedKeys.some((selectedKey: string) => {
-          // Check if field is exactly the same as selectedKey
           const isExactMatch = field === selectedKey
-          // Check if field is a parent of selectedKey (e.g., 'brand' is parent of 'brand.localizedDescription')
           const isParentOfSelected = selectedKey.startsWith(`${field}.`)
-          // Check if field is a child of selectedKey (e.g., 'brand.localizedDescription.en' is child of 'brand.localizedDescription')
           const isChildOfSelected = field.startsWith(`${selectedKey}.`)
 
           return isExactMatch || isParentOfSelected || isChildOfSelected
         })
 
-        // Only include fields that don't have conflicts
         return !hasConflict
       })
     }
@@ -773,10 +700,9 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
     return (
       <>
-        {/* Tool ID and Name fields */}
         <div className="form-field">
           <label className="field-label">
-            {t('tool_id', 'Tool ID')}
+            {t('tool_id')}
             {!tool?.id && <span style={{ color: 'red' }}> *</span>}
           </label>
           <InputText
@@ -784,56 +710,48 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             onChange={(e) => setToolId(e.target.value)}
             className={`w-full ${!tool?.id && !toolId.trim() ? 'p-invalid' : ''}`}
             disabled={!!tool?.id}
-            placeholder={t('enter_tool_id', 'Enter tool ID')}
+            placeholder={t('enter_tool_id')}
           />
           {!tool?.id && !toolId.trim() && (
-            <small className="p-error">
-              {t('tool_id_required', 'Tool ID is required')}
-            </small>
+            <small className="p-error">{t('tool_id_required')}</small>
           )}
         </div>
         <div className="form-field">
           <label className="field-label">
-            {t('tool_name', 'Tool Name')}
+            {t('tool_name')}
             <span style={{ color: 'red' }}> *</span>
           </label>
           <InputText
             value={toolName}
             onChange={(e) => setToolName(e.target.value)}
             className={`w-full ${!toolName.trim() ? 'p-invalid' : ''}`}
-            placeholder={t('enter_tool_name', 'Enter tool name')}
+            placeholder={t('enter_tool_name')}
           />
           {!toolName.trim() && (
-            <small className="p-error">
-              {t('tool_name_required', 'Tool name is required')}
-            </small>
+            <small className="p-error">{t('tool_name_required')}</small>
           )}
         </div>
 
-        {/* Prompt field */}
         <div className="form-field">
           <label className="field-label">
-            {t('prompt', 'Prompt')}
+            {t('prompt')}
             <span style={{ color: 'red' }}> *</span>
           </label>
           <InputTextarea
             value={config.prompt || ''}
             onChange={(e) => updateConfig('prompt', e.target.value)}
             className={`w-full ${!config.prompt?.trim() ? 'p-invalid' : ''}`}
-            placeholder={t('enter_prompt', 'Enter prompt')}
+            placeholder={t('enter_prompt')}
             rows={3}
           />
           {!config.prompt?.trim() && (
-            <small className="p-error">
-              {t('prompt_required', 'Prompt is required')}
-            </small>
+            <small className="p-error">{t('prompt_required')}</small>
           )}
         </div>
 
-        {/* Embedding Configuration Fields */}
         <div className="form-field">
           <label className="field-label">
-            {t('provider', 'Provider')}
+            {t('provider')}
             <span style={{ color: 'red' }}> *</span>
           </label>
           <Dropdown
@@ -843,12 +761,10 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
               updateNestedConfig('embeddingConfig', 'provider', e.value)
             }
             className={`w-full ${!embeddingConfig.provider ? 'p-invalid' : ''}`}
-            placeholder={t('select_provider', 'Select provider')}
+            placeholder={t('select_provider')}
           />
           {!embeddingConfig.provider && (
-            <small className="p-error">
-              {t('provider_required', 'Provider is required')}
-            </small>
+            <small className="p-error">{t('provider_required')}</small>
           )}
         </div>
 
@@ -856,7 +772,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <>
             <div className="form-field">
               <label className="field-label">
-                {t('model', 'Model')}
+                {t('model')}
                 <span style={{ color: 'red' }}> *</span>
               </label>
               <InputText
@@ -865,26 +781,22 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                   updateNestedConfig('embeddingConfig', 'model', e.target.value)
                 }
                 className={`w-full ${!embeddingConfig.model?.trim() ? 'p-invalid' : ''}`}
-                placeholder={t('enter_model', 'Enter model')}
+                placeholder={t('enter_model')}
               />
               {!embeddingConfig.model?.trim() && (
-                <small className="p-error">
-                  {t('model_required', 'Model is required')}
-                </small>
+                <small className="p-error">{t('model_required')}</small>
               )}
             </div>
 
             <div className="form-field">
               <label className="field-label">
-                {t('dimensions', 'Dimensions')}
+                {t('dimensions')}
                 <span style={{ color: 'red' }}> *</span>
               </label>
               <InputNumber
                 value={dimensionsValue}
                 disabled={!!tool?.id}
                 onChange={(e) => {
-                  // Store the actual value the user types, even if it's null or invalid
-                  // onChange fires on every keystroke for immediate validation feedback
                   const numValue =
                     e.value !== null && e.value !== undefined ? e.value : null
                   setConfig((prev) => ({
@@ -896,18 +808,10 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                   }))
                 }}
                 className={`w-full ${isDimensionsInvalid ? 'p-invalid' : ''}`}
-                placeholder={t(
-                  'enter_dimensions',
-                  'Enter dimensions (128-4096)'
-                )}
+                placeholder={t('enter_dimensions')}
               />
               {isDimensionsInvalid && (
-                <small className="p-error">
-                  {t(
-                    'dimensions_range',
-                    'Dimensions must be between 128 and 4096'
-                  )}
-                </small>
+                <small className="p-error">{t('dimensions_range')}</small>
               )}
             </div>
           </>
@@ -916,7 +820,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         {requiresUrl(embeddingConfig.provider) && (
           <div className="form-field">
             <label className="field-label">
-              {t('url', 'URL')}
+              {t('url')}
               <span style={{ color: 'red' }}> *</span>
             </label>
             <InputText
@@ -925,12 +829,10 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                 updateNestedConfig('embeddingConfig', 'url', e.target.value)
               }
               className={`w-full ${!embeddingConfig.url?.trim() ? 'p-invalid' : ''}`}
-              placeholder={t('enter_url', 'Enter URL')}
+              placeholder={t('enter_url')}
             />
             {!embeddingConfig.url?.trim() && (
-              <small className="p-error">
-                {t('url_required', 'URL is required')}
-              </small>
+              <small className="p-error">{t('url_required')}</small>
             )}
           </div>
         )}
@@ -938,7 +840,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         {requiresTokenAndModel(embeddingConfig.provider) && (
           <div className="form-field">
             <label className="field-label">
-              {t('token', 'Token')}
+              {t('token')}
               <span style={{ color: 'red' }}> *</span>
             </label>
             <Dropdown
@@ -953,22 +855,19 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                 )
               }
               className={`w-full ${!embeddingConfig.token?.id ? 'p-invalid' : ''}`}
-              placeholder={t('select_token', 'Select a token')}
+              placeholder={t('select_token')}
               optionLabel="name"
               optionValue="id"
             />
             {!embeddingConfig.token?.id && (
-              <small className="p-error">
-                {t('token_required', 'Token is required')}
-              </small>
+              <small className="p-error">{t('token_required')}</small>
             )}
           </div>
         )}
 
-        {/* Entity Type field */}
         <div className="form-field">
           <label className="field-label">
-            {t('entity_type', 'Entity Type')}
+            {t('entity_type')}
             <span style={{ color: 'red' }}> *</span>
           </label>
           <Dropdown
@@ -980,10 +879,9 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           />
         </div>
 
-        {/* Indexed Fields */}
         <div className="form-field">
           <label className="field-label">
-            {t('indexed_fields', 'Indexed Fields')}
+            {t('indexed_fields')}
             <span style={{ color: 'red' }}> *</span>
           </label>
 
@@ -998,22 +896,20 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                 }}
               >
                 <div className="form-field" style={{ flex: 2 }}>
-                  <label className="field-label">
-                    {t('field_name', 'Name')}
-                  </label>
+                  <label className="field-label">{t('field_name')}</label>
                   <InputText
                     value={field.name || ''}
                     onChange={(e) =>
                       updateIndexedField(index, 'name', e.target.value)
                     }
                     className="w-full"
-                    placeholder={t('enter_field_name', 'Enter field name')}
+                    placeholder={t('enter_field_name')}
                   />
                 </div>
 
                 <div className="form-field" style={{ flex: 3 }}>
                   <label className="field-label">
-                    {t('field_key', 'Key')}
+                    {t('field_key')}
                     <span style={{ color: 'red' }}> *</span>
                   </label>
                   <Dropdown
@@ -1024,14 +920,12 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                     }))}
                     onChange={(e) => updateIndexedField(index, 'key', e.value)}
                     className={`w-full ${!field.key?.trim() ? 'p-invalid' : ''}`}
-                    placeholder={t('select_field_key', 'Select field key')}
+                    placeholder={t('select_field_key')}
                     filter
                     showClear
                   />
                   {!field.key?.trim() && (
-                    <small className="p-error">
-                      {t('field_key_required', 'Field key is required')}
-                    </small>
+                    <small className="p-error">{t('field_key_required')}</small>
                   )}
                 </div>
 
@@ -1048,7 +942,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
           <Button
             icon="pi pi-plus"
-            label={t('add_indexed_field', 'Add Indexed Field')}
+            label={t('add_indexed_field')}
             onClick={addIndexedField}
             className="p-button-secondary"
             style={{ marginTop: '16px' }}
@@ -1059,10 +953,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
               className="p-error"
               style={{ marginTop: '8px', display: 'block' }}
             >
-              {t(
-                'indexed_fields_required',
-                'At least one indexed field is required'
-              )}
+              {t('indexed_fields_required')}
             </small>
           )}
         </div>
@@ -1092,6 +983,17 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           </div>
         )
     }
+  }
+
+  const validateModelAndDimensions = (
+    embeddingConfig: RagEmporixEmbeddingConfig
+  ): boolean => {
+    return (
+      !!embeddingConfig.model?.trim() &&
+      !!embeddingConfig.dimensions &&
+      embeddingConfig.dimensions >= 128 &&
+      embeddingConfig.dimensions <= 4096
+    )
   }
 
   const canSave = () => {
@@ -1135,7 +1037,6 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           return false
         }
 
-        // Check all indexed fields have valid keys
         const isValidKey = (key: string) => /^[a-zA-Z0-9_.-]+$/.test(key)
         const hasValidIndexedFields = indexedFields.every(
           (field: RagEmporixFieldConfig) =>
@@ -1146,35 +1047,24 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           return false
         }
 
-        // Check embedding configuration
         if (!embeddingConfig.provider) {
           return false
         }
 
-        // Validate based on provider type
         if (embeddingConfig.provider === RagLlmProvider.EMPORIX_OPENAI) {
-          // Only provider is required for EMPORIX_OPENAI
           return true
         }
 
         if (embeddingConfig.provider === RagLlmProvider.OPENAI) {
-          // Require model, dimensions, and token for OPENAI
           return (
-            !!embeddingConfig.model?.trim() &&
-            !!embeddingConfig.dimensions &&
-            embeddingConfig.dimensions >= 128 &&
-            embeddingConfig.dimensions <= 4096 &&
+            validateModelAndDimensions(embeddingConfig) &&
             !!embeddingConfig.token?.id
           )
         }
 
         if (embeddingConfig.provider === RagLlmProvider.SELF_HOSTED_OLLAMA) {
-          // Require model, dimensions, url, and token for SELF_HOSTED_OLLAMA
           return (
-            !!embeddingConfig.model?.trim() &&
-            !!embeddingConfig.dimensions &&
-            embeddingConfig.dimensions >= 128 &&
-            embeddingConfig.dimensions <= 4096 &&
+            validateModelAndDimensions(embeddingConfig) &&
             !!embeddingConfig.url?.trim() &&
             !!embeddingConfig.token?.id
           )
@@ -1202,7 +1092,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     >
       <div className="form-field">
         <label className="field-label">
-          {t('tool_type', 'Tool Type')}
+          {t('tool_type')}
           {!tool?.id && <span style={{ color: 'red' }}> *</span>}
         </label>
         {tool?.id ? (
@@ -1215,15 +1105,15 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <Dropdown
             value={toolType}
             options={[
-              { label: t('slack', 'Slack'), value: 'slack' },
+              { label: t('slack'), value: 'slack' },
               ...(isRagFeatureEnabled
                 ? [
                     {
-                      label: t('rag_custom', 'RAG Custom'),
+                      label: t('rag_custom'),
                       value: 'rag_custom',
                     },
                     {
-                      label: t('rag_emporix', 'RAG Emporix'),
+                      label: t('rag_emporix'),
                       value: 'rag_emporix',
                     },
                   ]
@@ -1234,13 +1124,11 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
               setConfig({})
             }}
             className={`w-full ${!toolType ? 'p-invalid' : ''}`}
-            placeholder={t('select_tool_type', 'Select tool type')}
+            placeholder={t('select_tool_type')}
           />
         )}
         {!tool?.id && !toolType && (
-          <small className="p-error">
-            {t('tool_type_required', 'Tool type is required')}
-          </small>
+          <small className="p-error">{t('tool_type_required')}</small>
         )}
       </div>
 
