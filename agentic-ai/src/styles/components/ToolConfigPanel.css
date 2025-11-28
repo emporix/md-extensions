@@ -1,76 +1,82 @@
-/* Tool Configuration Panel Styles */
+/* Tool Configuration Panel Styles - Matching Management Dashboard */
 
-/* Max Results Input Number with Buttons */
-.max-results-input-number.p-inputnumber .p-inputnumber-button-group {
-  display: flex !important;
-  flex-direction: row !important;
+/* Input Number - Matching Orders Quantity Field Style */
+.tool-config-panel .p-inputnumber {
+  width: 100%;
+  border-radius: 4px !important;
 }
 
-.max-results-input-number.p-inputnumber .p-inputnumber-button {
-  border-radius: 6px !important;
-  transition: all 0.2s ease !important;
+.tool-config-panel .p-inputnumber .p-inputnumber-input,
+.tool-config-panel .p-inputnumber input,
+.tool-config-panel .p-inputnumber .p-inputnumber-input-wrapper input {
+  border: 1px solid #c7cad1 !important;
+  border-radius: 8px !important;
+  padding: 8px !important;
+  font-size: 0.875rem !important;
+  line-height: 1 !important;
+  font-weight: normal !important;
+  max-height: 34px !important;
+  transition: border-color 0.2s ease !important;
 }
 
-.max-results-input-number.p-inputnumber .p-inputnumber-button.p-inputnumber-button-up {
-  background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%) !important;
-  border-color: #d1d5db !important;
-  color: #374151 !important;
-  margin-left: 2px !important;
-  margin-right: 0 !important;
+/* Ensure InputNumber wrapper and all nested elements use consistent border-radius */
+.tool-config-panel .p-inputnumber > *,
+.tool-config-panel .p-inputnumber .p-inputnumber-input-wrapper,
+.tool-config-panel .p-inputnumber .p-inputnumber-input-wrapper > * {
+  border-radius: 4px !important;
 }
 
-.max-results-input-number.p-inputnumber .p-inputnumber-button.p-inputnumber-button-up:hover:not(:disabled) {
-  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%) !important;
-  border-color: #9ca3af !important;
-  color: white !important;
-  box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3) !important;
+.tool-config-panel .p-inputnumber .p-inputnumber-input:enabled:hover {
+  border-color: #3b73bb !important;
 }
 
-.max-results-input-number.p-inputnumber .p-inputnumber-button.p-inputnumber-button-down {
-  background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%) !important;
-  border-color: #d1d5db !important;
-  color: #374151 !important;
-  margin-left: 2px !important;
-  margin-right: 0 !important;
+.tool-config-panel .p-inputnumber .p-inputnumber-input:focus {
+  border-color: #3b73bb !important;
+  box-shadow: none !important;
 }
 
-.max-results-input-number.p-inputnumber .p-inputnumber-button.p-inputnumber-button-down:hover:not(:disabled) {
-  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%) !important;
-  border-color: #9ca3af !important;
-  color: white !important;
-  box-shadow: 0 2px 8px rgba(156, 163, 175, 0.3) !important;
+.tool-config-panel .p-inputnumber .p-inputnumber-input.p-invalid {
+  border-color: #e8615a !important;
 }
 
-.max-results-input-number.p-inputnumber .p-inputnumber-button:disabled {
+.tool-config-panel .p-inputnumber .p-inputnumber-input.p-invalid:focus {
+  border-color: #e8615a !important;
+  box-shadow: none !important;
+}
+
+.tool-config-panel .p-inputnumber .p-inputnumber-button {
+  width: 24px !important;
+  max-height: 34px !important;
+  border: none !important;
+  background: #3b73bb !important;
+  box-shadow: none !important;
+  border-radius: 2px !important;
+  transition: background 0.2s ease !important;
+}
+
+.tool-config-panel .p-inputnumber .p-inputnumber-button:hover:not(:disabled) {
+  background: #2665b7 !important;
+  border: none !important;
+}
+
+.tool-config-panel .p-inputnumber .p-inputnumber-button.p-inputnumber-button-up {
+  margin-left: 5px !important;
+  border-radius: 2px !important;
+}
+
+.tool-config-panel .p-inputnumber .p-inputnumber-button.p-inputnumber-button-down {
+  margin-right: 5px !important;
+  border-radius: 2px !important;
+}
+
+.tool-config-panel .p-inputnumber .p-inputnumber-button:disabled {
   opacity: 0.5 !important;
   cursor: not-allowed !important;
 }
 
-.max-results-input-number.p-inputnumber .p-inputnumber-button .p-button-icon {
+.tool-config-panel .p-inputnumber .p-inputnumber-button .p-button-icon {
   font-size: 0.875rem !important;
-}
-
-/* Input field styling for max results */
-.max-results-input-number .p-inputnumber-input {
-  border-radius: 6px !important;
-  border: 2px solid #e2e8f0 !important;
-  padding: 0.625rem !important;
-  font-weight: 500 !important;
-  transition: all 0.2s ease !important;
-}
-
-.max-results-input-number .p-inputnumber-input:focus {
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-}
-
-.max-results-input-number .p-inputnumber-input.p-invalid {
-  border-color: #ef4444 !important;
-}
-
-.max-results-input-number .p-inputnumber-input.p-invalid:focus {
-  border-color: #dc2626 !important;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+  color: white !important;
 }
 
 /* Indexed Fields Section - RAG Emporix */
@@ -84,20 +90,95 @@
 .indexed-field-delete-button .p-button.p-button-danger {
   background: transparent !important;
   border: none !important;
-  color: #dc2626 !important;
+  color: #3B64A0 !important;
   font-size: 1.1rem !important;
   cursor: pointer !important;
   min-width: auto !important;
   padding: 0.25rem 0.5rem !important;
-  border-radius: 6px !important;
+  border-radius: 4px !important;
   transition: background 0.2s, color 0.2s !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  height: 34px !important;
+  width: 34px !important;
 }
 
 .indexed-field-delete-button .p-button.p-button-danger:hover:not(:disabled) {
-  background: #fef2f2 !important;
-  color: #b91c1c !important;
+  background: rgba(59, 100, 160, 0.1) !important;
+  color: #3B64A0 !important;
+}
+
+/* Tool Config Panel Field Styling */
+.tool-config-panel .form-field {
+  margin-bottom: 1rem;
+}
+
+.tool-config-panel .field-label {
+  color: #1b2029;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.tool-config-panel .p-inputtext,
+.tool-config-panel .p-dropdown,
+.tool-config-panel .p-inputtextarea {
+  border-radius: 8px !important;
+  padding: 8px !important;
+  font-size: 0.875rem !important;
+  line-height: 1 !important;
+}
+
+.tool-config-panel .p-inputtext:enabled:hover,
+.tool-config-panel .p-dropdown:not(.p-disabled):hover,
+.tool-config-panel .p-inputtextarea:enabled:hover {
+  border-color: #3b73bb !important;
+}
+
+.tool-config-panel .p-inputtext:not(.p-inputtextarea) {
+  max-height: 34px !important;
+}
+
+.tool-config-panel .p-dropdown {
+  height: 34px !important;
+}
+
+.tool-config-panel .p-dropdown .p-dropdown-label {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  font-size: 0.875rem !important;
+}
+
+.tool-config-panel .p-inputtext::placeholder,
+.tool-config-panel .p-dropdown .p-dropdown-label.p-placeholder {
+  color: #c7cad1 !important;
+  font-size: 0.875rem !important;
+  opacity: 1 !important;
+  font-style: italic !important;
+}
+
+.tool-config-panel .p-inputtext.p-invalid,
+.tool-config-panel .p-dropdown.p-invalid {
+  border-color: #e8615a !important;
+}
+
+.tool-config-panel .p-error {
+  color: #e8615a !important;
+  font-size: 0.875rem !important;
+}
+
+.tool-config-panel .indexed-field-group {
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e8e9eb;
+}
+
+.tool-config-panel .indexed-field-group:last-child {
+  border-bottom: none;
 }
 

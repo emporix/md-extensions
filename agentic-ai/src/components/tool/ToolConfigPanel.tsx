@@ -6,6 +6,8 @@ import {
   RagCustomDatabase,
   RagEmporixFieldConfig,
   RagEntityType,
+  RagLlmProvider,
+  RagEmporixEmbeddingConfig,
   Tool,
   ToolConfig,
   ToolConfigPanelProps,
@@ -78,8 +80,8 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   }, [appState, showError, t])
 
   useEffect(() => {
-    // Load available tokens for rag_custom tool type
-    if (toolType === 'rag_custom' && appState) {
+    // Load available tokens for rag_custom and rag_emporix tool types
+    if ((toolType === 'rag_custom' || toolType === 'rag_emporix') && appState) {
       loadAvailableTokens()
     }
   }, [toolType, appState, loadAvailableTokens])
@@ -93,13 +95,23 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
   useEffect(() => {
     // Initialize default values for rag_emporix tool type
-    if (toolType === 'rag_emporix' && !config.entityType) {
-      setConfig((prev) => ({
-        ...prev,
-        entityType: RagEntityType.PRODUCT,
-      }))
+    if (toolType === 'rag_emporix') {
+      const embeddingConfig =
+        (config.embeddingConfig as RagEmporixEmbeddingConfig) || {}
+      const needsUpdate = !config.entityType || !embeddingConfig.provider
+
+      if (needsUpdate) {
+        setConfig((prev) => ({
+          ...prev,
+          entityType: config.entityType || RagEntityType.PRODUCT,
+          embeddingConfig: {
+            ...embeddingConfig,
+            provider: embeddingConfig.provider || RagLlmProvider.EMPORIX_OPENAI,
+          },
+        }))
+      }
     }
-  }, [toolType, config.entityType])
+  }, [toolType, config.entityType, config.embeddingConfig])
 
   useEffect(() => {
     // Initialize default values for rag_custom tool type
@@ -435,11 +447,10 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             onValueChange={(e) =>
               updateConfig('maxResults', String(e.value ?? 5))
             }
-            className={`w-full max-results-input-number ${maxResults < 1 || maxResults > 100 ? 'p-invalid' : ''}`}
+            className={`w-full ${maxResults < 1 || maxResults > 100 ? 'p-invalid' : ''}`}
             placeholder={t('enter_max_results', 'Enter max results (1-100)')}
             min={1}
             max={100}
-            showButtons
           />
           {(maxResults < 1 || maxResults > 100) && (
             <small className="p-error">
@@ -619,7 +630,26 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
   const renderRagEmporixConfigFields = () => {
     const indexedFields = config.indexedFields || []
+    const embeddingConfig = (config.embeddingConfig ||
+      {}) as RagEmporixEmbeddingConfig
+    const dimensionsValue =
+      embeddingConfig.dimensions !== undefined &&
+      embeddingConfig.dimensions !== null
+        ? Number(embeddingConfig.dimensions)
+        : 0
+    // Validate: check if value exists and is outside valid range
+    // If value is null/undefined, it's invalid (required field)
+    const isDimensionsInvalid =
+      embeddingConfig.dimensions === null ||
+      embeddingConfig.dimensions === undefined ||
+      dimensionsValue < 128 ||
+      dimensionsValue > 4096
     const entityTypes = [{ label: 'Product', value: 'product' }]
+    const providerOptions = [
+      { label: 'OpenAI', value: RagLlmProvider.OPENAI },
+      { label: 'Emporix OpenAI', value: RagLlmProvider.EMPORIX_OPENAI },
+      { label: 'Self-Hosted Ollama', value: RagLlmProvider.SELF_HOSTED_OLLAMA },
+    ]
 
     const addIndexedField = () => {
       const newFields = [...indexedFields, { name: '', key: '' }]
@@ -676,6 +706,17 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         // Only include fields that don't have conflicts
         return !hasConflict
       })
+    }
+
+    const requiresTokenAndModel = (provider?: RagLlmProvider) => {
+      return (
+        provider === RagLlmProvider.OPENAI ||
+        provider === RagLlmProvider.SELF_HOSTED_OLLAMA
+      )
+    }
+
+    const requiresUrl = (provider?: RagLlmProvider) => {
+      return provider === RagLlmProvider.SELF_HOSTED_OLLAMA
     }
 
     return (
@@ -737,6 +778,140 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           )}
         </div>
 
+        {/* Embedding Configuration Fields */}
+        <div className="form-field">
+          <label className="field-label">
+            {t('provider', 'Provider')}
+            <span style={{ color: 'red' }}> *</span>
+          </label>
+          <Dropdown
+            value={embeddingConfig.provider || ''}
+            options={providerOptions}
+            onChange={(e) =>
+              updateNestedConfig('embeddingConfig', 'provider', e.value)
+            }
+            className={`w-full ${!embeddingConfig.provider ? 'p-invalid' : ''}`}
+            placeholder={t('select_provider', 'Select provider')}
+          />
+          {!embeddingConfig.provider && (
+            <small className="p-error">
+              {t('provider_required', 'Provider is required')}
+            </small>
+          )}
+        </div>
+
+        {requiresTokenAndModel(embeddingConfig.provider) && (
+          <>
+            <div className="form-field">
+              <label className="field-label">
+                {t('model', 'Model')}
+                <span style={{ color: 'red' }}> *</span>
+              </label>
+              <InputText
+                value={embeddingConfig.model || ''}
+                onChange={(e) =>
+                  updateNestedConfig('embeddingConfig', 'model', e.target.value)
+                }
+                className={`w-full ${!embeddingConfig.model?.trim() ? 'p-invalid' : ''}`}
+                placeholder={t('enter_model', 'Enter model')}
+              />
+              {!embeddingConfig.model?.trim() && (
+                <small className="p-error">
+                  {t('model_required', 'Model is required')}
+                </small>
+              )}
+            </div>
+
+            <div className="form-field">
+              <label className="field-label">
+                {t('dimensions', 'Dimensions')}
+                <span style={{ color: 'red' }}> *</span>
+              </label>
+              <InputNumber
+                value={dimensionsValue}
+                onChange={(e) => {
+                  // Store the actual value the user types, even if it's null or invalid
+                  // onChange fires on every keystroke for immediate validation feedback
+                  const numValue =
+                    e.value !== null && e.value !== undefined ? e.value : null
+                  setConfig((prev) => ({
+                    ...prev,
+                    embeddingConfig: {
+                      ...(prev.embeddingConfig as RagEmporixEmbeddingConfig),
+                      dimensions: numValue,
+                    },
+                  }))
+                }}
+                className={`w-full ${isDimensionsInvalid ? 'p-invalid' : ''}`}
+                placeholder={t(
+                  'enter_dimensions',
+                  'Enter dimensions (128-4096)'
+                )}
+              />
+              {isDimensionsInvalid && (
+                <small className="p-error">
+                  {t(
+                    'dimensions_range',
+                    'Dimensions must be between 128 and 4096'
+                  )}
+                </small>
+              )}
+            </div>
+          </>
+        )}
+
+        {requiresUrl(embeddingConfig.provider) && (
+          <div className="form-field">
+            <label className="field-label">
+              {t('url', 'URL')}
+              <span style={{ color: 'red' }}> *</span>
+            </label>
+            <InputText
+              value={embeddingConfig.url || ''}
+              onChange={(e) =>
+                updateNestedConfig('embeddingConfig', 'url', e.target.value)
+              }
+              className={`w-full ${!embeddingConfig.url?.trim() ? 'p-invalid' : ''}`}
+              placeholder={t('enter_url', 'Enter URL')}
+            />
+            {!embeddingConfig.url?.trim() && (
+              <small className="p-error">
+                {t('url_required', 'URL is required')}
+              </small>
+            )}
+          </div>
+        )}
+
+        {requiresTokenAndModel(embeddingConfig.provider) && (
+          <div className="form-field">
+            <label className="field-label">
+              {t('token', 'Token')}
+              <span style={{ color: 'red' }}> *</span>
+            </label>
+            <Dropdown
+              value={embeddingConfig.token?.id || ''}
+              options={availableTokens}
+              onChange={(e) =>
+                updateDeeplyNestedConfig(
+                  'embeddingConfig',
+                  'token',
+                  'id',
+                  e.value
+                )
+              }
+              className={`w-full ${!embeddingConfig.token?.id ? 'p-invalid' : ''}`}
+              placeholder={t('select_token', 'Select a token')}
+              optionLabel="name"
+              optionValue="id"
+            />
+            {!embeddingConfig.token?.id && (
+              <small className="p-error">
+                {t('token_required', 'Token is required')}
+              </small>
+            )}
+          </div>
+        )}
+
         {/* Entity Type field */}
         <div className="form-field">
           <label className="field-label">
@@ -752,17 +927,12 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           />
         </div>
 
-        {/* Indexed Fields Section */}
-        <div className="config-section">
-          <h3 className="section-title">
+        {/* Indexed Fields */}
+        <div className="form-field">
+          <label className="field-label">
             {t('indexed_fields', 'Indexed Fields')}
-          </h3>
-          <p className="section-subtitle">
-            {t(
-              'indexed_fields_description',
-              'Configure the fields to be indexed for search'
-            )}
-          </p>
+            <span style={{ color: 'red' }}> *</span>
+          </label>
 
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {indexedFields.map((field: any, index: number) => (
@@ -827,7 +997,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             icon="pi pi-plus"
             label={t('add_indexed_field', 'Add Indexed Field')}
             onClick={addIndexedField}
-            className="p-button-outlined"
+            className="p-button-secondary"
             style={{ marginTop: '16px' }}
           />
 
@@ -905,15 +1075,59 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
       case 'rag_emporix': {
         const indexedFields = config.indexedFields || []
+        const embeddingConfig = (config.embeddingConfig ||
+          {}) as RagEmporixEmbeddingConfig
+
         if (!config.prompt?.trim() || indexedFields.length === 0) {
           return false
         }
+
         // Check all indexed fields have valid keys
         const isValidKey = (key: string) => /^[a-zA-Z0-9_.-]+$/.test(key)
-        return indexedFields.every(
+        const hasValidIndexedFields = indexedFields.every(
           (field: RagEmporixFieldConfig) =>
             field.key?.trim() && isValidKey(field.key)
         )
+
+        if (!hasValidIndexedFields) {
+          return false
+        }
+
+        // Check embedding configuration
+        if (!embeddingConfig.provider) {
+          return false
+        }
+
+        // Validate based on provider type
+        if (embeddingConfig.provider === RagLlmProvider.EMPORIX_OPENAI) {
+          // Only provider is required for EMPORIX_OPENAI
+          return true
+        }
+
+        if (embeddingConfig.provider === RagLlmProvider.OPENAI) {
+          // Require model, dimensions, and token for OPENAI
+          return (
+            !!embeddingConfig.model?.trim() &&
+            !!embeddingConfig.dimensions &&
+            embeddingConfig.dimensions >= 128 &&
+            embeddingConfig.dimensions <= 4096 &&
+            !!embeddingConfig.token?.id
+          )
+        }
+
+        if (embeddingConfig.provider === RagLlmProvider.SELF_HOSTED_OLLAMA) {
+          // Require model, dimensions, url, and token for SELF_HOSTED_OLLAMA
+          return (
+            !!embeddingConfig.model?.trim() &&
+            !!embeddingConfig.dimensions &&
+            embeddingConfig.dimensions >= 128 &&
+            embeddingConfig.dimensions <= 4096 &&
+            !!embeddingConfig.url?.trim() &&
+            !!embeddingConfig.token?.id
+          )
+        }
+
+        return false
       }
 
       default:
