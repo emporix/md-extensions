@@ -145,7 +145,10 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
           value={options.value}
           options={SEVERITY_OPTIONS}
           valueTemplate={(option) => {
-            if (!option) return <span className="dropdown-placeholder">{placeholderText}</span>
+            if (!option)
+              return (
+                <span className="dropdown-placeholder">{placeholderText}</span>
+              )
             return <SeverityBadge severity={option.value} />
           }}
           onChange={(e) => options.filterApplyCallback(e.value)}

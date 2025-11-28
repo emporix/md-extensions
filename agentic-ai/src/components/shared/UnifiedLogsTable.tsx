@@ -62,10 +62,15 @@ const UnifiedLogsTable = forwardRef<
           <Dropdown
             value={options.value}
             options={SEVERITY_OPTIONS}
-              valueTemplate={(option) => {
-                if (!option) return <span className="dropdown-placeholder">{placeholderText}</span>
-                return <SeverityBadge severity={option.value} />
-              }}
+            valueTemplate={(option) => {
+              if (!option)
+                return (
+                  <span className="dropdown-placeholder">
+                    {placeholderText}
+                  </span>
+                )
+              return <SeverityBadge severity={option.value} />
+            }}
             onChange={(e) => options.filterApplyCallback(e.value)}
             itemTemplate={(option) => <SeverityBadge severity={option.value} />}
             placeholder={placeholderText}
