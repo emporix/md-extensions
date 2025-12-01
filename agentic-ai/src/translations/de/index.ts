@@ -143,6 +143,7 @@ const TRANSLATIONS_DE = {
   database_url_required: 'Datenbank-URL ist erforderlich',
   database_type: 'Datenbank-Typ',
   entity_type: 'Entity-Typ',
+  product: 'Produkt',
   collection_name: 'Collection-Name',
   enter_collection_name: 'Collection-Name eingeben',
   collection_name_required: 'Collection-Name ist erforderlich',

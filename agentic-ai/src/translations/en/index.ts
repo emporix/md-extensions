@@ -145,6 +145,7 @@ const TRANSLATIONS_EN = {
   database_url_required: 'Database URL is required',
   database_type: 'Database Type',
   entity_type: 'Entity Type',
+  product: 'Product',
   collection_name: 'Collection Name',
   enter_collection_name: 'Enter collection name',
   collection_name_required: 'Collection name is required',

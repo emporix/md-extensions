@@ -45,6 +45,22 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   >([])
   const [availableFields, setAvailableFields] = useState<string[]>([])
 
+  const normalizeEntityType = (
+    value?: RagEntityType | string
+  ): RagEntityType | undefined => {
+    if (!value) return undefined
+
+    if (value === RagEntityType.PRODUCT || value === 'PRODUCT') {
+      return RagEntityType.PRODUCT
+    }
+
+    if (value === RagEntityType.INVALID || value === 'INVALID') {
+      return RagEntityType.INVALID
+    }
+
+    return value as RagEntityType
+  }
+
   const getToolTypeDisplayValue = (type: string): string => {
     switch (type) {
       case 'slack':
@@ -86,10 +102,14 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
               }
             : undefined
 
+        const mergedEntityType = normalizeEntityType(
+          emporixConfig.entityType ?? loadedConfig.entityType
+        )
+
         loadedConfig = {
           ...loadedConfig,
           prompt: emporixConfig.prompt ?? loadedConfig.prompt,
-          entityType: emporixConfig.entityType ?? loadedConfig.entityType,
+          entityType: mergedEntityType,
           indexedFields:
             emporixConfig.indexedFields ?? loadedConfig.indexedFields,
           embeddingConfig: mergedEmbeddingConfig,
@@ -145,7 +165,8 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       if (needsUpdate) {
         setConfig((prev) => ({
           ...prev,
-          entityType: config.entityType || RagEntityType.PRODUCT,
+          entityType:
+            normalizeEntityType(config.entityType) || RagEntityType.PRODUCT,
           embeddingConfig: {
             ...embeddingConfig,
             provider: embeddingConfig.provider || RagLlmProvider.EMPORIX_OPENAI,
@@ -158,7 +179,10 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   useEffect(() => {
     if (toolType === 'rag_custom') {
       const databaseConfig = config.databaseConfig || {}
-      const needsUpdate = !databaseConfig.type || !databaseConfig.entityType
+      const normalizedEntityType = normalizeEntityType(
+        databaseConfig.entityType
+      )
+      const needsUpdate = !databaseConfig.type || !normalizedEntityType
 
       if (needsUpdate) {
         setConfig((prev) => ({
@@ -166,7 +190,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           databaseConfig: {
             ...databaseConfig,
             type: databaseConfig.type || RagCustomDatabase.QDRANT,
-            entityType: databaseConfig.entityType || RagEntityType.PRODUCT,
+            entityType: normalizedEntityType || RagEntityType.PRODUCT,
           },
         }))
       }
@@ -392,7 +416,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
     // Enums
     const databaseTypes = [{ label: 'Qdrant', value: 'qdrant' }]
-    const entityTypes = [{ label: t('entity_type'), value: 'product' }]
+    const entityTypes = [{ label: t('product'), value: RagEntityType.PRODUCT }]
 
     return (
       <>
@@ -508,7 +532,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
               <span style={{ color: 'red' }}> *</span>
             </label>
             <Dropdown
-              value={databaseConfig.entityType || 'product'}
+              value={databaseConfig.entityType || RagEntityType.PRODUCT}
               options={entityTypes}
               onChange={(e) =>
                 updateNestedConfig('databaseConfig', 'entityType', e.value)
@@ -630,7 +654,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       embeddingConfig.dimensions === undefined ||
       dimensionsValue < 128 ||
       dimensionsValue > 4096
-    const entityTypes = [{ label: t('entity_type'), value: 'product' }]
+    const entityTypes = [{ label: t('product'), value: RagEntityType.PRODUCT }]
     const providerOptions = [
       { label: 'OpenAI', value: RagLlmProvider.OPENAI },
       { label: 'Emporix OpenAI', value: RagLlmProvider.EMPORIX_OPENAI },
@@ -871,7 +895,9 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             <span style={{ color: 'red' }}> *</span>
           </label>
           <Dropdown
-            value={config.entityType || 'product'}
+            value={
+              normalizeEntityType(config.entityType) || RagEntityType.PRODUCT
+            }
             options={entityTypes}
             onChange={(e) => updateConfig('entityType', e.value)}
             className="w-full"
