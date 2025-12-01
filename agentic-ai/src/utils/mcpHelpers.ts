@@ -1,9 +1,9 @@
-import { McpServer } from '../types/Mcp'
+import { CustomMcpServerTransportType, McpServer } from '../types/Mcp'
 
 export const createEmptyMcpServer = (): McpServer => ({
   id: '',
   name: '',
-  transport: 'sse',
+  transport: CustomMcpServerTransportType.STREAMABLE_HTTP,
   config: {
     url: '',
   },
