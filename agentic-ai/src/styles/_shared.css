@@ -140,7 +140,16 @@
 .col-agent {
   width: var(--col-width-agent);
   min-width: var(--col-width-agent);
-  max-width: 160px;
+  max-width: 200px;
+}
+
+/* Allow word breaking in agent ID cells */
+.p-datatable .col-agent,
+.p-datatable th.col-agent,
+.p-datatable td.col-agent {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 
 .col-message {

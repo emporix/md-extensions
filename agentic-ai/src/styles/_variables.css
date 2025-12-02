@@ -152,7 +152,7 @@
   --col-width-severity: 200px;
   --col-width-timestamp: 200px;
   --col-width-timestamp-compact: 150px;
-  --col-width-agent: 150px;
+  --col-width-agent: 180px;
   --col-width-message-min: 400px;
 }
 
