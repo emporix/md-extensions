@@ -12,6 +12,7 @@ import {
   hasAnyLocalizedValue,
 } from '../../../utils/agentHelpers'
 import { LocalizedInput } from '../../shared/LocalizedInput'
+import { sanitizeIdInput } from '../../../utils/validation'
 
 interface FormStepProps {
   agentId: string
@@ -43,6 +44,11 @@ export const FormStep: React.FC<FormStepProps> = ({
   appState,
 }) => {
   const { t } = useTranslation()
+
+  const handleAgentIdChange = (value: string) => {
+    const sanitized = sanitizeIdInput(value)
+    setAgentId(sanitized)
+  }
 
   const isFormValid =
     agentId.trim() &&
@@ -78,7 +84,7 @@ export const FormStep: React.FC<FormStepProps> = ({
           <InputText
             id="agent-id"
             value={agentId}
-            onChange={(e) => setAgentId(e.target.value)}
+            onChange={(e) => handleAgentIdChange(e.target.value)}
             className={`w-full ${!agentId.trim() ? 'p-invalid' : ''}`}
             placeholder={t('enter_agent_id', 'Enter agent id')}
           />

@@ -7,6 +7,7 @@
 @import './components/AgentCard.css';
 @import './components/AddAgentDialog.css';
 @import './components/AgentConfigPanel.css';
+@import './components/ToolConfigPanel.css';
 @import './components/LogCard.css';
 @import './components/ToolCard.css';
 @import './components/ImportAgentDialog.css';
