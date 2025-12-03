@@ -156,6 +156,10 @@
   font-weight: 600;
   color: #1e293b;
   margin: 0;
+  max-width: 25ch;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .agent-config-subtitle {
@@ -348,7 +352,7 @@
 .mcp-server-delete-btn {
   background: transparent;
   border: none;
-  color: #dc2626;
+  color: #3B64A0;
   font-size: 1.1rem;
   cursor: pointer;
   align-self: center;
@@ -358,8 +362,8 @@
 }
 
 .mcp-server-delete-btn:hover {
-  background: #fef2f2;
-  color: #b91c1c;
+  background: rgba(59, 100, 160, 0.1);
+  color: #3B64A0;
 }
 
 .mcp-server-config {
@@ -952,7 +956,7 @@
 .tool-delete-btn {
   background: transparent;
   border: none;
-  color: #ef4444;
+  color: #3B64A0;
   cursor: pointer;
   padding: 0.25rem;
   border-radius: 4px;
@@ -960,7 +964,7 @@
 }
 
 .tool-delete-btn:hover {
-  background: #fef2f2;
+  background: rgba(59, 100, 160, 0.1);
 }
 
 .tool-divider {
@@ -1227,6 +1231,10 @@
   color: #334155;
   margin-right: auto;
   min-width: 120px;
+  max-width: 25ch;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .native-tool-actions {
@@ -1239,7 +1247,7 @@
 .native-tool-delete-btn {
   background: transparent;
   border: none;
-  color: #dc2626;
+  color: #3B64A0;
   font-size: 1.1rem;
   cursor: pointer;
   align-self: center;
@@ -1249,8 +1257,8 @@
 }
 
 .native-tool-delete-btn:hover {
-  background: #fef2f2;
-  color: #b91c1c;
+  background: rgba(59, 100, 160, 0.1);
+  color: #3B64A0;
 }
 
 .native-tool-divider {
@@ -1413,7 +1421,7 @@
 .agent-collaboration-delete-btn {
   background: transparent;
   border: none;
-  color: #dc2626;
+  color: #3B64A0;
   font-size: 1.1rem;
   cursor: pointer;
   align-self: center;
@@ -1423,8 +1431,8 @@
 }
 
 .agent-collaboration-delete-btn:hover {
-  background: #fef2f2;
-  color: #b91c1c;
+  background: rgba(59, 100, 160, 0.1);
+  color: #3B64A0;
 }
 
 .agent-collaboration-divider {

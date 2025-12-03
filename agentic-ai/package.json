@@ -11,7 +11,7 @@
     "build:stage": "tsc -b && vite build --mode stage",
     "build:prod": "tsc -b && vite build --mode prod",
     "build": "tsc -b && vite build --mode prod",
-    "lint": "eslint .",
+    "lint": "eslint . --fix",
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run"

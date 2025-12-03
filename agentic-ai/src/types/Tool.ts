@@ -11,6 +11,12 @@ export enum RagEntityType {
   INVALID = 'invalid',
 }
 
+export enum RagLlmProvider {
+  OPENAI = 'openai',
+  EMPORIX_OPENAI = 'emporix_openai',
+  SELF_HOSTED_OLLAMA = 'self_hosted_ollama',
+}
+
 export interface RagEmporixFieldConfig {
   name?: string
   key?: string
@@ -29,10 +35,19 @@ export interface RagCustomDatabaseConfig {
   token?: Token
 }
 
+export interface RagEmporixEmbeddingConfig {
+  provider?: RagLlmProvider
+  model?: string
+  dimensions?: number
+  url?: string
+  token?: Token
+}
+
 export interface RagEmporixNativeToolConfig {
   prompt?: string
   entityType?: RagEntityType
   indexedFields?: RagEmporixFieldConfig[]
+  embeddingConfig?: RagEmporixEmbeddingConfig
 }
 
 export interface ToolConfig {
@@ -41,7 +56,7 @@ export interface ToolConfig {
   prompt?: string
   maxResults?: number
   databaseConfig?: RagCustomDatabaseConfig
-  embeddingConfig?: RagCustomEmbeddingConfig
+  embeddingConfig?: RagCustomEmbeddingConfig | RagEmporixEmbeddingConfig
   emporixNativeToolConfig?: RagEmporixNativeToolConfig
   entityType?: RagEntityType
   indexedFields?: RagEmporixFieldConfig[]

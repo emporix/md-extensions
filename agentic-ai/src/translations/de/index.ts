@@ -110,6 +110,9 @@ const TRANSLATIONS_DE = {
   no_tools: 'Keine Tools verfügbar',
   add_new_tool: 'NEUES TOOL HINZUFÜGEN',
   tool_configuration: 'Tool-Konfiguration',
+  slack: 'Slack',
+  rag_custom: 'RAG Custom',
+  rag_emporix: 'RAG Emporix',
   tool_id: 'Tool-ID',
   enter_tool_id: 'Tool-ID eingeben',
   tool_id_required: 'Tool-ID ist erforderlich',
@@ -140,6 +143,7 @@ const TRANSLATIONS_DE = {
   database_url_required: 'Datenbank-URL ist erforderlich',
   database_type: 'Datenbank-Typ',
   entity_type: 'Entity-Typ',
+  product: 'Produkt',
   collection_name: 'Collection-Name',
   enter_collection_name: 'Collection-Name eingeben',
   collection_name_required: 'Collection-Name ist erforderlich',
@@ -164,6 +168,9 @@ const TRANSLATIONS_DE = {
     'Tool wird von Agenten verwendet. Durch die Deaktivierung werden auch die Agenten deaktiviert.',
   cannot_delete_active_tool: 'Aktives Tool kann nicht gelöscht werden',
   tool_disabled: 'Dieses Tool ist derzeit deaktiviert',
+  error_loading_tokens: 'Fehler beim Laden der verfügbaren Tokens',
+  error_loading_fields: 'Fehler beim Laden der verfügbaren Felder',
+  failed_to_save_tool: 'Tool konnte nicht gespeichert werden',
 
   // Tokens
   tokens: 'Token',
@@ -275,6 +282,10 @@ const TRANSLATIONS_DE = {
   prompt_required: 'Prompt ist erforderlich',
   enter_prompt: 'Prompt eingeben',
   provider: 'Anbieter',
+  provider_required: 'Anbieter ist erforderlich',
+  dimensions: 'Dimensionen',
+  enter_dimensions: 'Dimensionen eingeben (128-4096)',
+  dimensions_range: 'Dimensionen müssen zwischen 128 und 4096 liegen',
   model_required: 'Modell ist erforderlich',
   enter_model: 'Modellname eingeben',
   api_key: 'API-Schlüssel',
@@ -301,6 +312,8 @@ const TRANSLATIONS_DE = {
   or: 'oder',
   error_app_state_missing: 'Anwendungsstatus fehlt',
   error_slack_installation: 'Fehler beim Initiieren der Slack-Installation',
+  failed_to_initiate_slack_installation:
+    'Slack-Installation konnte nicht gestartet werden',
 
   // Logs
   agent_logs: 'Agentenprotokolle',

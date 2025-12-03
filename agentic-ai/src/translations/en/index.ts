@@ -112,6 +112,9 @@ const TRANSLATIONS_EN = {
   no_tools: 'No tools available',
   add_new_tool: 'ADD NEW TOOL',
   tool_configuration: 'Tool Configuration',
+  slack: 'Slack',
+  rag_custom: 'RAG Custom',
+  rag_emporix: 'RAG Emporix',
   tool_id: 'Tool ID',
   enter_tool_id: 'Enter tool ID',
   tool_id_required: 'Tool ID is required',
@@ -142,6 +145,7 @@ const TRANSLATIONS_EN = {
   database_url_required: 'Database URL is required',
   database_type: 'Database Type',
   entity_type: 'Entity Type',
+  product: 'Product',
   collection_name: 'Collection Name',
   enter_collection_name: 'Enter collection name',
   collection_name_required: 'Collection name is required',
@@ -165,6 +169,9 @@ const TRANSLATIONS_EN = {
     'Tool is used by agents. By disabling it, the agents will be disabled as well.',
   cannot_delete_active_tool: 'Cannot delete active tool',
   tool_disabled: 'This tool is currently disabled',
+  error_loading_tokens: 'Failed to load available tokens',
+  error_loading_fields: 'Failed to load available fields',
+  failed_to_save_tool: 'Failed to save tool',
 
   // Tokens
   tokens: 'Tokens',
@@ -274,6 +281,10 @@ const TRANSLATIONS_EN = {
   prompt_required: 'Prompt is required',
   enter_prompt: 'Enter prompt',
   provider: 'Provider',
+  provider_required: 'Provider is required',
+  dimensions: 'Dimensions',
+  enter_dimensions: 'Enter dimensions (128-4096)',
+  dimensions_range: 'Dimensions must be between 128 and 4096',
   model_required: 'Model is required',
   enter_model: 'Enter model name',
   api_key: 'API Key',
@@ -300,6 +311,8 @@ const TRANSLATIONS_EN = {
   or: 'or',
   error_app_state_missing: 'Application state is missing',
   error_slack_installation: 'Error initiating Slack installation',
+  failed_to_initiate_slack_installation:
+    'Failed to initiate Slack installation',
 
   // Commerce Events
   commerce_events: 'Commerce Events',
