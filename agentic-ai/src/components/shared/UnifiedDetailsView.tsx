@@ -26,7 +26,7 @@ interface UnifiedDetailsViewProps {
   sessionId?: string
   requestId?: string
   createdAt?: string | null
-  duration?: string
+  duration?: number
 
   status?: string
 
@@ -185,8 +185,11 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
                 value={getJobTypeDisplay(jobType)}
               />
             )}
-            {duration && (
-              <InfoCard label={t('duration', 'Duration')} value={duration} />
+            {duration !== undefined && duration !== null && (
+              <InfoCard
+                label={t('duration', 'Duration')}
+                value={String(duration)}
+              />
             )}
             {createdAt && (
               <InfoCard

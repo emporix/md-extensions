@@ -22,7 +22,7 @@ export interface LogSummary {
   errorCount: number
   lastActivity: string
   severity: 'INFO' | 'ERROR' | 'WARNING'
-  duration?: string
+  duration?: number
 }
 export interface RequestLogs {
   id: string
@@ -33,7 +33,7 @@ export interface RequestLogs {
   collaborationAgents: string[]
   messages: LogMessage[]
   metadata: Metadata
-  duration?: string
+  duration?: number
 }
 export interface SessionLogs {
   sessionId: string
@@ -42,5 +42,5 @@ export interface SessionLogs {
   agents: string[]
   messages?: LogMessage[]
   metadata: Metadata
-  duration?: string
+  duration?: number
 }
