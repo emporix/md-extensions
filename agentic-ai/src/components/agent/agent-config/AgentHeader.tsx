@@ -2,14 +2,17 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRobot } from '@fortawesome/free-solid-svg-icons'
-import { iconMap } from '../../../utils/agentHelpers'
+import { iconMap, getLocalizedValue } from '../../../utils/agentHelpers'
+import { LocalizedString } from '../../../types/Agent'
+import { AppState } from '../../../types/common'
 
 interface AgentHeaderProps {
-  agentName: string
+  agentName: LocalizedString
   selectedIcon: string
   selectedTag: string | null
   onIconClick: () => void
   onTagClick: () => void
+  appState: AppState
 }
 
 export const AgentHeader: React.FC<AgentHeaderProps> = ({
@@ -18,8 +21,13 @@ export const AgentHeader: React.FC<AgentHeaderProps> = ({
   selectedTag,
   onIconClick,
   onTagClick,
+  appState,
 }) => {
   const { t } = useTranslation()
+  const agentDisplayName = getLocalizedValue(
+    agentName,
+    appState.contentLanguage
+  )
 
   return (
     <>
@@ -43,7 +51,7 @@ export const AgentHeader: React.FC<AgentHeaderProps> = ({
             )}
           </div>
           <div className="agent-config-name-block">
-            <h3 className="agent-config-name">{agentName}</h3>
+            <h3 className="agent-config-name">{agentDisplayName}</h3>
           </div>
           <div
             className="agent-tag-selector"

@@ -1,6 +1,25 @@
-import { AgentTemplate, CustomAgent } from '../types/Agent'
+import { AgentTemplate, CustomAgent, LocalizedString } from '../types/Agent'
 import { AppState, ImportSummaryState } from '../types/common'
 import { ApiClient } from './apiClient'
+import { getLanguagesFromStorage } from '../hooks/useLanguages'
+
+const filterLocalizedString = (
+  localizedString: LocalizedString
+): LocalizedString => {
+  const allowedLanguages = getLanguagesFromStorage().map((lang) =>
+    lang.id.toLowerCase()
+  )
+  const filtered: LocalizedString = {}
+
+  Object.entries(localizedString).forEach(([key, value]) => {
+    const normalizedKey = key.toLowerCase()
+    if (allowedLanguages.includes(normalizedKey)) {
+      filtered[normalizedKey] = value
+    }
+  })
+
+  return Object.keys(filtered).length > 0 ? filtered : {}
+}
 
 export interface PatchOperation {
   op: 'REPLACE' | 'ADD' | 'REMOVE'
@@ -34,8 +53,8 @@ export const copyTemplate = async (
   appState: AppState,
   templateId: string,
   id: string,
-  name: string,
-  description: string,
+  name: LocalizedString,
+  description: LocalizedString,
   userPrompt: string
 ): Promise<{ success: boolean }> => {
   const api = getApiClient(appState)
@@ -43,8 +62,8 @@ export const copyTemplate = async (
     `/ai-service/${appState.tenant}/agentic/templates/${templateId}/agents`,
     {
       id,
-      name: { en: name },
-      description: { en: description },
+      name: filterLocalizedString(name),
+      description: filterLocalizedString(description),
       userPrompt: userPrompt,
     }
   )
@@ -57,11 +76,8 @@ export const upsertCustomAgent = async (
   const api = getApiClient(appState)
   const formattedAgent = {
     id: agent.id,
-    name: typeof agent.name === 'string' ? { en: agent.name } : agent.name,
-    description:
-      typeof agent.description === 'string'
-        ? { en: agent.description }
-        : agent.description,
+    name: agent.name,
+    description: agent.description,
     userPrompt: agent.userPrompt,
     triggers: agent.triggers,
     llmConfig: {

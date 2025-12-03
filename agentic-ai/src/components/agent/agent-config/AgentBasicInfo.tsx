@@ -5,19 +5,25 @@ import { InputTextarea } from 'primereact/inputtextarea'
 import { MultiSelect } from 'primereact/multiselect'
 import { TRIGGER_TYPES } from '../../../utils/constants'
 import { AppState } from '../../../types/common'
+import { LocalizedString } from '../../../types/Agent'
 import { useCommerceEvents } from '../../../hooks/useCommerceEvents'
+import { LocalizedInput } from '../../shared/LocalizedInput'
+import { hasAnyLocalizedValue } from '../../../utils/agentHelpers'
 import { sanitizeIdInput } from '../../../utils/validation'
 
 interface AgentBasicInfoProps {
   agentId: string
-  agentName: string
-  description: string
+  agentName: LocalizedString
+  description: LocalizedString
   agentType: string
   triggerTypes: string[]
   prompt: string
   commerceEvents: string[]
   isEditing: boolean
-  onFieldChange: (field: string, value: string | string[]) => void
+  onFieldChange: (
+    field: string,
+    value: string | string[] | LocalizedString
+  ) => void
   appState: AppState
   templatePrompt: string
   requiredScopes: string[]
@@ -93,35 +99,34 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
 
       <div className="form-field">
         <label className="field-label">{t('agent_name', 'Agent Name')} *</label>
-        <InputText
+        <LocalizedInput
           value={agentName}
-          onChange={(e) => onFieldChange('agentName', e.target.value)}
-          className={`w-full ${!agentName.trim() ? 'p-invalid' : ''}`}
+          onChange={(value) => onFieldChange('agentName', value)}
+          appState={appState}
           placeholder={t('enter_agent_name', 'Enter agent name')}
+          error={
+            !hasAnyLocalizedValue(agentName)
+              ? t('agent_name_required', 'Agent name is required')
+              : undefined
+          }
         />
-        {!agentName.trim() && (
-          <small className="p-error">
-            {t('agent_name_required', 'Agent name is required')}
-          </small>
-        )}
       </div>
 
       <div className="form-field">
         <label className="field-label">
           {t('description', 'Description')} *
         </label>
-        <InputTextarea
+        <LocalizedInput
           value={description}
-          onChange={(e) => onFieldChange('description', e.target.value)}
-          rows={3}
-          className={`w-full ${!description.trim() ? 'p-invalid' : ''}`}
+          onChange={(value) => onFieldChange('description', value)}
+          appState={appState}
           placeholder={t('enter_description', 'Enter description')}
+          error={
+            !hasAnyLocalizedValue(description)
+              ? t('description_required', 'Description is required')
+              : undefined
+          }
         />
-        {!description.trim() && (
-          <small className="p-error">
-            {t('description_required', 'Description is required')}
-          </small>
-        )}
       </div>
 
       <div className="form-field">

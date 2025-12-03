@@ -15,13 +15,16 @@ function App() {
     localStorage.getItem('language') || 'en'
   )
   const [token, setToken] = useState(localStorage.getItem('token') || '')
-
+  const [contentLanguage, setContentLanguage] = useState(
+    localStorage.getItem('contentLanguage') || 'en'
+  )
   const [isDialogOpen, setIsDialogOpen] = useState(true)
 
   const handleSave = () => {
     localStorage.setItem('tenant', tenant)
     localStorage.setItem('language', language)
     localStorage.setItem('token', token)
+    localStorage.setItem('contentLanguage', contentLanguage)
     setIsDialogOpen(false)
   }
 
@@ -59,6 +62,16 @@ function App() {
             />
             <label htmlFor="in">Language</label>
           </span>
+          <span className="p-float-label mb-5">
+            <InputText
+              id="in"
+              value={contentLanguage}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setContentLanguage(e.target.value)
+              }
+            />
+            <label htmlFor="in">Content Language</label>
+          </span>
           <Button label="Save" onClick={handleSave} />
         </Card>
       </div>
@@ -71,6 +84,7 @@ function App() {
           tenant,
           language,
           token,
+          contentLanguage,
         }}
       />
     </ErrorBoundary>

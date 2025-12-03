@@ -36,7 +36,6 @@ import {
   handleDataTableSort,
   handleDataTablePage,
 } from '../../utils/dataTableHelpers'
-import i18n from '../../translations/i18n'
 
 interface LogsPageProps {
   appState: AppState
@@ -86,7 +85,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
         const agents = await getCustomAgents(appState)
         const agent = agents.find((a) => a.id === agentIdParam)
         setAgentName(
-          agent ? getLocalizedValue(agent.name, i18n.language) : null
+          agent ? getLocalizedValue(agent.name, appState.contentLanguage) : null
         )
       } catch {
         setAgentName(null)

@@ -45,12 +45,17 @@ export class ApiClient {
   }
 
   private buildHeaders(extraHeaders?: Record<string, string>): HeadersInit {
-    return {
+    const headers: HeadersInit = {
       'Content-Type': 'application/json',
       'Emporix-tenant': this.appState.tenant,
       Authorization: `Bearer ${this.appState.token}`,
       ...(extraHeaders || {}),
     }
+
+    headers['Content-Language'] = '*'
+    headers['Accept-Language'] = '*'
+
+    return headers
   }
 
   private buildUrl(path: string): string {

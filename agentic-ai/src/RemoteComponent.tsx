@@ -28,6 +28,7 @@ const RemoteComponent = ({
     tenant: 'default',
     language: 'default',
     token: 'default',
+    contentLanguage: 'en',
   },
 }: RemoteComponentProps) => {
   const { i18n } = useTranslation()

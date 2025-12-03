@@ -419,6 +419,10 @@ const TRANSLATIONS_DE = {
   // Chart Tooltips
   error_sessions_label: 'Fehlersitzungen',
   total_sessions_label: 'Gesamte Sitzungen',
+
+  // Localized Input
+  show_languages: 'Sprachen anzeigen',
+  hide_languages: 'Sprachen ausblenden',
 }
 
 export default TRANSLATIONS_DE

@@ -19,6 +19,7 @@ const TokensPage: React.FC<TokensPageProps> = ({
     tenant: 'default',
     language: 'default',
     token: 'default',
+    contentLanguage: 'en',
   },
 }) => {
   const { t } = useTranslation()
