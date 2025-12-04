@@ -1,4 +1,4 @@
-import { LocalizedString, CustomAgent } from '../types/Agent'
+import { LocalizedString, CustomAgent, LlmProvider } from '../types/Agent'
 import {
   faHeadset,
   faUser,
@@ -100,7 +100,7 @@ export const createEmptyAgent = (language: string = 'en'): CustomAgent => ({
     model: '',
     temperature: 0,
     maxTokens: 0,
-    provider: 'emporix_openai',
+    provider: LlmProvider.EMPORIX_OPENAI,
     additionalParams: null,
   },
   mcpServers: [],
