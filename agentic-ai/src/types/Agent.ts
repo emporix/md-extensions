@@ -43,11 +43,19 @@ export interface AgentCategory {
   [key: string]: string
 }
 
+export enum LlmProvider {
+  ANTHROPIC = 'anthropic',
+  OPENAI = 'openai',
+  GOOGLE = 'google',
+  EMPORIX_OPENAI = 'emporix_openai',
+  SELF_HOSTED_OLLAMA = 'self_hosted_ollama',
+  SELF_HOSTED_VLLM = 'self_hosted_vllm',
+}
 export interface LlmConfig {
   model: string
   temperature: number
   maxTokens: number
-  provider: string
+  provider: LlmProvider
   additionalParams: Record<string, unknown> | null
   token?: {
     id: string
