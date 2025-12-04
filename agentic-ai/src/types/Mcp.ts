@@ -6,10 +6,15 @@ export interface McpConfig {
   authorizationHeaderTokenId?: string
 }
 
+export enum CustomMcpServerTransportType {
+  SSE = 'sse',
+  STREAMABLE_HTTP = 'streamable_http',
+}
+
 export interface McpServer {
   id: string
   name: string
-  transport: string
+  transport: CustomMcpServerTransportType
   config: McpConfig
   enabled?: boolean
 }

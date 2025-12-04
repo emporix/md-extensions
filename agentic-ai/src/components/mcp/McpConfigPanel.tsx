@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { InputText } from 'primereact/inputtext'
 import { Dropdown } from 'primereact/dropdown'
-import { McpConfigPanelProps, McpServer } from '../../types/Mcp'
+import {
+  CustomMcpServerTransportType,
+  McpConfigPanelProps,
+  McpServer,
+} from '../../types/Mcp'
 import { BaseConfigPanel } from '../shared/BaseConfigPanel'
 import { faServer } from '@fortawesome/free-solid-svg-icons'
 import { Token } from '../../types/Token'
@@ -19,7 +23,7 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
   const { t } = useTranslation()
   const [mcpServerId, setMcpServerId] = useState('')
   const [mcpServerName, setMcpServerName] = useState('')
-  const [transport, setTransport] = useState('sse')
+  const [transport, setTransport] = useState(CustomMcpServerTransportType.SSE)
   const [url, setUrl] = useState('')
   const [authorizationHeaderName, setAuthorizationHeaderName] = useState('')
   const [authorizationHeaderTokenId, setAuthorizationHeaderTokenId] =
@@ -27,7 +31,16 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
   const [tokens, setTokens] = useState<Token[]>([])
   const [tokensLoading, setTokensLoading] = useState(false)
 
-  const transportOptions = [{ label: 'Server-Sent Events (SSE)', value: 'sse' }]
+  const transportOptions = [
+    {
+      label: 'Server-Sent Events (SSE)',
+      value: CustomMcpServerTransportType.SSE,
+    },
+    {
+      label: 'Streamable HTTP',
+      value: CustomMcpServerTransportType.STREAMABLE_HTTP,
+    },
+  ]
 
   // Load tokens when component mounts or appState changes
   useEffect(() => {
