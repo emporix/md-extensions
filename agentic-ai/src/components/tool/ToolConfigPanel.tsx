@@ -31,7 +31,6 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   onHide,
   onSave,
   appState,
-  isRagFeatureEnabled = true,
 }) => {
   const { t } = useTranslation()
   const { showError } = useToast()
@@ -1133,18 +1132,14 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             value={toolType}
             options={[
               { label: t('slack'), value: 'slack' },
-              ...(isRagFeatureEnabled
-                ? [
-                    {
-                      label: t('rag_custom'),
-                      value: 'rag_custom',
-                    },
-                    {
-                      label: t('rag_emporix'),
-                      value: 'rag_emporix',
-                    },
-                  ]
-                : []),
+              {
+                label: t('rag_custom'),
+                value: 'rag_custom',
+              },
+              {
+                label: t('rag_emporix'),
+                value: 'rag_emporix',
+              },
             ]}
             onChange={(e) => {
               setToolType(e.value)

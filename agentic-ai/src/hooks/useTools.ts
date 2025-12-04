@@ -9,7 +9,6 @@ import {
   getTools,
   patchTool,
 } from '../services/toolsService'
-import { isRagFeatureEnabled } from '../services/featureToggleService'
 import { useDeleteConfirmation } from './useDeleteConfirmation'
 import { useUpsertItem } from './useUpsertItem'
 import { useToast } from '../contexts/ToastContext'
@@ -19,8 +18,6 @@ export const useTools = (appState: AppState) => {
   const [tools, setTools] = useState<Tool[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isRagFeatureEnabledState, setIsRagFeatureEnabled] =
-    useState<boolean>(true)
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
 
@@ -66,20 +63,8 @@ export const useTools = (appState: AppState) => {
       setLoading(true)
       setError(null)
 
-      // Check if RAG feature is enabled
-      const ragEnabled = await isRagFeatureEnabled(appState)
-      setIsRagFeatureEnabled(ragEnabled)
-
       const fetchedTools = await getTools(appState)
-
-      // Filter out RAG tools if feature is disabled
-      const filteredTools = ragEnabled
-        ? fetchedTools
-        : fetchedTools.filter(
-            (tool) => tool.type !== 'rag_emporix' && tool.type !== 'rag_custom'
-          )
-
-      setTools(filteredTools)
+      setTools(fetchedTools)
     } catch (err) {
       const message = formatApiError(err, 'Failed to load tools')
       setError(message)
@@ -201,7 +186,6 @@ export const useTools = (appState: AppState) => {
     tools,
     loading,
     error,
-    isRagFeatureEnabled: isRagFeatureEnabledState,
     updateTool,
     refreshTools,
     removeTool,
