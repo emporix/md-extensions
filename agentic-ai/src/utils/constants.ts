@@ -1,3 +1,5 @@
+import { LlmProvider } from '../types/Agent'
+
 export const MCP_SERVERS = {
   customer: {
     name: 'Customer MCP',
@@ -112,11 +114,12 @@ export const TRIGGER_TYPES = [
 ]
 
 export const LLM_PROVIDERS = [
-  { label: 'Claude', value: 'anthropic' },
-  { label: 'Emporix OpenAI', value: 'emporix_openai' },
-  { label: 'Gemini', value: 'google' },
-  { label: 'OpenAI', value: 'openai' },
-  { label: 'Self-hosted Ollama', value: 'self_hosted_ollama' },
+  { label: 'Claude', value: LlmProvider.ANTHROPIC },
+  { label: 'Emporix OpenAI', value: LlmProvider.EMPORIX_OPENAI },
+  { label: 'Gemini', value: LlmProvider.GOOGLE },
+  { label: 'OpenAI', value: LlmProvider.OPENAI },
+  { label: 'Self-hosted Ollama', value: LlmProvider.SELF_HOSTED_OLLAMA },
+  { label: 'Self-hosted VLLM', value: LlmProvider.SELF_HOSTED_VLLM },
 ]
 
 // API Constants

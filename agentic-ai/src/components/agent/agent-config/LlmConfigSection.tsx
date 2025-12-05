@@ -7,6 +7,7 @@ import { LLM_PROVIDERS } from '../../../utils/constants'
 import { getTokens } from '../../../services/tokensService'
 import { Token } from '../../../types/Token'
 import { AppState } from '../../../types/common'
+import { LlmProvider } from '../../../types/Agent'
 
 interface LlmConfigSectionProps {
   model: string
@@ -146,39 +147,42 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
             className="w-full"
           />
         </div>
-        {provider !== 'emporix_openai' && provider !== 'self_hosted_ollama' && (
-          <div className="form-field">
-            <label className="field-label">
-              {t('token', 'Token')}
-              {!isEditing && <span style={{ color: 'red' }}> *</span>}
-            </label>
-            <Dropdown
-              value={tokenId}
-              options={tokenOptions}
-              onChange={(e) => onFieldChange('tokenId', e.value)}
-              className={`w-full ${!isEditing && !tokenId.trim() ? 'p-invalid' : ''}`}
-              placeholder={
-                tokensLoading
-                  ? t('loading_tokens', 'Loading tokens...')
-                  : t('select_token', 'Select token')
-              }
-              disabled={tokensLoading}
-              appendTo="self"
-            />
-            {!isEditing && !tokenId.trim() && (
-              <small className="p-error">
-                {t('token_required', 'Token is required')}
-              </small>
-            )}
-          </div>
-        )}
+        {provider !== LlmProvider.EMPORIX_OPENAI &&
+          provider !== LlmProvider.SELF_HOSTED_OLLAMA &&
+          provider !== LlmProvider.SELF_HOSTED_VLLM && (
+            <div className="form-field">
+              <label className="field-label">
+                {t('token', 'Token')}
+                {!isEditing && <span style={{ color: 'red' }}> *</span>}
+              </label>
+              <Dropdown
+                value={tokenId}
+                options={tokenOptions}
+                onChange={(e) => onFieldChange('tokenId', e.value)}
+                className={`w-full ${!isEditing && !tokenId.trim() ? 'p-invalid' : ''}`}
+                placeholder={
+                  tokensLoading
+                    ? t('loading_tokens', 'Loading tokens...')
+                    : t('select_token', 'Select token')
+                }
+                disabled={tokensLoading}
+                appendTo="self"
+              />
+              {!isEditing && !tokenId.trim() && (
+                <small className="p-error">
+                  {t('token_required', 'Token is required')}
+                </small>
+              )}
+            </div>
+          )}
 
-        {provider === 'self_hosted_ollama' && (
+        {(provider === LlmProvider.SELF_HOSTED_OLLAMA ||
+          provider === LlmProvider.SELF_HOSTED_VLLM) && (
           <>
             <div className="form-field">
               <label className="field-label">
                 {t('self_hosted_url', 'Self-hosted URL')}
-                {!isEditing && <span style={{ color: 'red' }}> *</span>}
+                <span> *</span>
               </label>
               <InputText
                 value={selfHostedUrl}
@@ -189,7 +193,7 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
                   'Enter self-hosted URL'
                 )}
               />
-              {!isEditing && !selfHostedUrl.trim() && (
+              {!selfHostedUrl.trim() && (
                 <small className="p-error">
                   {t('self_hosted_url_required', 'Self-hosted URL is required')}
                 </small>
