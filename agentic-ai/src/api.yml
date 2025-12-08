@@ -1728,7 +1728,7 @@ components:
               description: For PredefinedMcpServer it has to be set to `predefined`.
               example: predefined
             domain:
-              enum: [customer,extensibility,order,product]
+              enum: [customer,extensibility,order,product,frontend]
             tools:
               type: array
               description: List of the tools which should be used by the agent from this particular MCP server.

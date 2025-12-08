@@ -14,7 +14,7 @@ Agentic AI is a sophisticated React application for managing AI agents within th
 
 ### **🔧 Advanced Configuration**
 - **LLM Provider Support**: OpenAI, Google, Anthropic, and Emporix OpenAI
-- **MCP Server Integration**: Order, Customer, Product, and Extensibility servers
+- **MCP Server Integration**: Order, Customer, Product, Frotend and Extensibility servers
 - **Trigger Management**: Endpoint, time, and commerce event triggers
 - **Memory & Recursion**: Configure agent memory and recursion limits
 
@@ -96,7 +96,7 @@ npm run build:dev
 
 ### Agent Configuration
 - **LLM Providers**: Configure OpenAI, Google, Anthropic, or Emporix OpenAI
-- **MCP Servers**: Enable Order, Customer, Product, and Extensibility servers
+- **MCP Servers**: Enable Order, Customer, Product, Frontend and Extensibility servers
 - **Triggers**: Set up endpoint, time, or commerce event triggers
 - **Memory Settings**: Configure agent memory and recursion limits
 
