@@ -5,6 +5,7 @@ import {
   McpServer,
   NativeTool,
   LocalizedString,
+  LlmProvider,
 } from '../types/Agent'
 import { upsertCustomAgent } from '../services/agentService'
 import { AppState } from '../types/common'
@@ -36,7 +37,7 @@ interface AgentConfigState {
   model: string
   temperature: string
   maxTokens: string
-  provider: string
+  provider: LlmProvider
   tokenId: string
   recursionLimit: string
   enableMemory: boolean
@@ -76,7 +77,7 @@ export const useAgentConfig = ({
     model: '',
     temperature: '0',
     maxTokens: '0',
-    provider: 'emporix_openai',
+    provider: LlmProvider.EMPORIX_OPENAI,
     tokenId: '',
     recursionLimit: '20',
     enableMemory: true,
@@ -114,7 +115,7 @@ export const useAgentConfig = ({
         model: agent.llmConfig?.model || '',
         temperature: agent.llmConfig?.temperature?.toString() || '0',
         maxTokens: agent.llmConfig?.maxTokens?.toString() || '0',
-        provider: agent.llmConfig?.provider || 'emporix_openai',
+        provider: agent.llmConfig?.provider || LlmProvider.EMPORIX_OPENAI,
         tokenId: agent.llmConfig?.token?.id || '',
         recursionLimit: agent.maxRecursionLimit?.toString() || '20',
         enableMemory:
@@ -178,15 +179,19 @@ export const useAgentConfig = ({
 
         // Add regular token for non-emporix and non-self-hosted providers
         if (
-          state.provider !== 'emporix_openai' &&
-          state.provider !== 'self_hosted_ollama' &&
+          state.provider !== LlmProvider.EMPORIX_OPENAI &&
+          state.provider !== LlmProvider.SELF_HOSTED_OLLAMA &&
+          state.provider !== LlmProvider.SELF_HOSTED_VLLM &&
           state.tokenId
         ) {
           baseConfig.token = { id: state.tokenId }
         }
 
         // Add selfHostedParams for self-hosted providers
-        if (state.provider === 'self_hosted_ollama') {
+        if (
+          state.provider === LlmProvider.SELF_HOSTED_OLLAMA ||
+          state.provider === LlmProvider.SELF_HOSTED_VLLM
+        ) {
           baseConfig.selfHostedParams = {
             url: state.selfHostedUrl || '',
           }
@@ -319,8 +324,10 @@ export const useAgentConfig = ({
 
   const isFormValid = useCallback(() => {
     const isCreating = !agent?.id
-    const isEmporixProvider = state.provider === 'emporix_openai'
-    const isSelfHosted = state.provider === 'self_hosted_ollama'
+    const isEmporixProvider = state.provider === LlmProvider.EMPORIX_OPENAI
+    const isSelfHosted =
+      state.provider === LlmProvider.SELF_HOSTED_OLLAMA ||
+      state.provider === LlmProvider.SELF_HOSTED_VLLM
 
     const basicValidation =
       hasAnyLocalizedValue(state.agentName) &&
@@ -330,7 +337,7 @@ export const useAgentConfig = ({
       (isCreating ? state.agentId.trim() : true)
 
     // Token validation:
-    // - Never required for emporix_openai or self_hosted_ollama
+    // - Never required for emporix_openai or self_hosted_ollama or self_hosted_vllm
     // - Only required when creating (not updating) for other providers
     const tokenValidation =
       isEmporixProvider || isSelfHosted || !isCreating || state.tokenId.trim()
