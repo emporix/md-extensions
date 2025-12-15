@@ -102,6 +102,27 @@ export const MCP_SERVERS = {
       'upsert-product',
     ],
   },
+  frontend: {
+    name: 'Frontend MCP',
+    tools: [
+      'get-customer-info',
+      'update-customer-profile',
+      'get-companies-addresses',
+      'get-products',
+      'upsert-customer-address',
+      'get-cart',
+      'modify-cart-items',
+      'checkout',
+      'get-customer-orders',
+      'get-payment-methods',
+      'get-returns',
+      'create-return',
+      'get-quotes',
+      'get-quote-reasons',
+      'create-quote',
+      'update-quote',
+    ]
+  }
 } as const
 
 export type McpKey = keyof typeof MCP_SERVERS
