@@ -308,6 +308,73 @@
           "value": "*"
         } ]
       } ]
+    },
+
+    {
+      "target": "emporix-dashboard-extension-develop",
+      "public": "dashboard/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [ {
+        "source" : "**",
+        "headers": [ {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        } ]
+      } ]
+    },
+    {
+      "target": "emporix-dashboard-extension-stage",
+      "public": "dashboard/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [ {
+        "source" : "**",
+        "headers": [ {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        } ]
+      } ]
+    },
+    {
+      "target": "emporix-dashboard-extension",
+      "public": "dashboard/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [ {
+        "source" : "**",
+        "headers": [ {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        } ]
+      } ]
     }
   ]
 }
