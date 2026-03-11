@@ -1,0 +1,86 @@
+.card {
+  height: 100%;
+  min-height: 120px;
+  position: relative;
+  background: #fff;
+  border: 1px solid #c7cad1;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(89, 121, 150, 0.06);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.card :global(.p-card-body) {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-top: 24px !important;
+  padding-bottom: 24px !important;
+}
+
+.card :global(.p-card-content) {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.kpiCard :global(.p-card-body) {
+  height: 100%;
+  padding: 0 !important;
+  padding-top: 0 !important;
+}
+
+.kpiCard :global(.p-card-content) {
+  height: 100%;
+  padding: 0 !important;
+  padding-top: 0 !important;
+}
+
+.toolbar {
+  position: absolute;
+  top: var(--spacing-sm, 0.5rem);
+  left: var(--spacing-sm, 0.5rem);
+  right: var(--spacing-sm, 0.5rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-xs, 0.25rem);
+  z-index: 1;
+}
+
+.removeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--p-text-color, #495057);
+  cursor: pointer;
+}
+
+.removeBtn:hover {
+  background: var(--p-surface-100, #f3f4f6);
+  color: var(--p-text-color, #495057);
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-top: 0;
+}
+
+.cardEdit .content {
+  padding-top: 2rem;
+}

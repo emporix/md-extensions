@@ -1,0 +1,79 @@
+.container {
+  width: 100%;
+}
+
+.grid {
+  :global(.react-grid-item) {
+    transition: box-shadow 0.15s ease;
+  }
+
+  :global(.react-grid-item.react-draggable-dragging) {
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  :global(.react-resizable-handle) {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  :global(.react-grid-item:hover .react-resizable-handle),
+  :global(.react-grid-item.react-resizable-resizing .react-resizable-handle) {
+    opacity: 1;
+  }
+
+  :global(.react-resizable-handle::after) {
+    content: '';
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    width: 12px;
+    height: 12px;
+    border-right: 2px solid var(--p-border-color, #dee2e6);
+    border-bottom: 2px solid var(--p-border-color, #dee2e6);
+    pointer-events: none;
+  }
+
+  :global(.react-resizable-handle-se) {
+    cursor: se-resize;
+  }
+  :global(.react-resizable-handle-sw) {
+    cursor: sw-resize;
+  }
+  :global(.react-resizable-handle-nw) {
+    cursor: nw-resize;
+  }
+  :global(.react-resizable-handle-ne) {
+    cursor: ne-resize;
+  }
+  :global(.react-resizable-handle-s) {
+    cursor: s-resize;
+  }
+  :global(.react-resizable-handle-n) {
+    cursor: n-resize;
+  }
+  :global(.react-resizable-handle-w) {
+    cursor: w-resize;
+  }
+  :global(.react-resizable-handle-e) {
+    cursor: e-resize;
+  }
+}
+
+.widgetWrapper {
+  height: 100%;
+  min-height: 0;
+}
+
+.dragHandle {
+  cursor: grab;
+  touch-action: none;
+  padding: 0.25rem 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--p-text-muted-color, #6c757d);
+
+  &:active {
+    cursor: grabbing;
+  }
+}

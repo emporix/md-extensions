@@ -1,0 +1,15 @@
+/**
+ * Main Styles Entry Point
+ * ============================================================================
+ * Imports only what the dashboard and app shell use.
+ * All styles are scoped to .dashboard-app so they do not override the host application.
+ */
+
+/* 1. Design Tokens (Variables) - used by dashboard modules and ErrorBoundary */
+@use './tokens.scss';
+
+/* 2. Base/Reset and typography */
+@use './base.scss';
+
+/* 3. PrimeReact component overrides (Card, Button, Dropdown, etc.) */
+@use './primereact-overrides.scss';

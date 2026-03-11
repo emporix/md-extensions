@@ -1,0 +1,113 @@
+.root {
+  padding: var(--spacing-xs, 0.25rem) var(--spacing-sm, 0.5rem);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm, 0.5rem);
+  margin-bottom: var(--spacing-sm, 0.5rem);
+  flex-shrink: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-lg, 1.125rem);
+  font-weight: 700;
+  color: var(--text-primary, #1b1b1e);
+}
+
+.placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary, #6b7280);
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.listItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-sm, 0.1rem);
+  padding: var(--spacing-sm, 0.1rem) 0;
+  border-bottom: 1px solid var(--border-color-light, #f3f4f6);
+  font-size: var(--font-size-sm, 0.875rem);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.itemMain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.orderId {
+  font-weight: 700;
+  color: var(--text-primary, #1b1b1e);
+}
+
+.orderLink {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.customerName {
+  color: var(--text-secondary, #6b7280);
+  font-size: var(--font-size-xs, 0.75rem);
+}
+
+.itemRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.125rem;
+  flex-shrink: 0;
+}
+
+.status {
+  color: var(--text-secondary, #6b7280);
+  text-transform: uppercase;
+  font-size: var(--font-size-xs, 0.75rem);
+}
+
+.price {
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 600;
+  color: var(--text-primary, #1b1b1e);
+}
+
+.seeAllLink {
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--color-primary, #3b82f6);
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

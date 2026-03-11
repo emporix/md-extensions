@@ -1,0 +1,245 @@
+/**
+ * Base & Reset Styles
+ * ============================================================================
+ * Scoped to .dashboard-app so they do not override the host application.
+ */
+
+/* ============================================================================
+   Reset & Normalize (scoped to dashboard-app only)
+   ============================================================================ */
+
+.dashboard-app,
+.dashboard-app *,
+.dashboard-app *::before,
+.dashboard-app *::after {
+  box-sizing: border-box;
+}
+
+/* ============================================================================
+   Typography (scoped)
+   ============================================================================ */
+
+.dashboard-app {
+  font-family: var(--font-family-base);
+  color: var(--text-primary);
+}
+
+.dashboard-app h1,
+.dashboard-app h2,
+.dashboard-app h3,
+.dashboard-app h4,
+.dashboard-app h5,
+.dashboard-app h6 {
+  margin: 0 0 var(--spacing-md) 0;
+  font-family: var(--font-family-heading);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  color: var(--text-primary);
+}
+
+/* Figma Desktop/heading/h1 */
+.dashboard-app h1 {
+  font-size: var(--font-size-h1, 48px);
+  line-height: var(--line-height-h1, 52px);
+}
+
+.dashboard-app h2 {
+  font-size: var(--font-size-3xl);
+}
+
+.dashboard-app h3 {
+  font-size: var(--font-size-2xl);
+}
+
+.dashboard-app h4 {
+  font-size: var(--font-size-xl);
+}
+
+/* Figma Desktop/heading/h5 */
+.dashboard-app h5 {
+  font-size: var(--font-size-h5, 20px);
+  line-height: 24px;
+}
+
+/* Figma Desktop/heading/h6 */
+.dashboard-app h6 {
+  font-size: var(--font-size-h6, 16px);
+  line-height: 20px;
+}
+
+.dashboard-app p {
+  margin: 0 0 var(--spacing-md) 0;
+  line-height: var(--line-height-relaxed);
+}
+
+.dashboard-app a {
+  color: var(--text-link);
+  text-decoration: none;
+  transition: var(--transition-base);
+}
+
+.dashboard-app a:hover {
+  color: var(--text-link-hover);
+  text-decoration: underline;
+}
+
+.dashboard-app code,
+.dashboard-app pre {
+  font-family: var(--font-family-mono);
+  font-size: 0.9em;
+}
+
+.dashboard-app code {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.dashboard-app pre {
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+.dashboard-app pre code {
+  padding: 0;
+  background: transparent;
+}
+
+/* ============================================================================
+   Lists (scoped)
+   ============================================================================ */
+
+.dashboard-app ul,
+.dashboard-app ol {
+  margin: 0 0 var(--spacing-md) 0;
+  padding-left: var(--spacing-xl);
+}
+
+.dashboard-app li {
+  margin-bottom: var(--spacing-xs);
+}
+
+/* ============================================================================
+   Forms (scoped)
+   ============================================================================ */
+
+.dashboard-app button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.dashboard-app input,
+.dashboard-app textarea,
+.dashboard-app select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.dashboard-app label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+/* ============================================================================
+   Images (scoped)
+   ============================================================================ */
+
+.dashboard-app img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ============================================================================
+   Scrollbar Styling (scoped to dashboard-app)
+   ============================================================================ */
+
+.dashboard-app * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-app *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dashboard-app *::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.dashboard-app *::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: var(--radius-sm);
+}
+
+.dashboard-app *::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-hover);
+}
+
+/* ============================================================================
+   Selection (scoped)
+   ============================================================================ */
+
+.dashboard-app::selection {
+  background: rgba(var(--color-primary-rgb), 0.2);
+  color: var(--text-primary);
+}
+
+.dashboard-app::-moz-selection {
+  background: rgba(var(--color-primary-rgb), 0.2);
+  color: var(--text-primary);
+}
+
+/* ============================================================================
+   Focus Styles (scoped)
+   ============================================================================ */
+
+.dashboard-app :focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.dashboard-app button:focus-visible,
+.dashboard-app a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================================================
+   Print Styles (scoped)
+   ============================================================================ */
+
+@media print {
+  .dashboard-app * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .dashboard-app a,
+  .dashboard-app a:visited {
+    text-decoration: underline;
+  }
+
+  .dashboard-app pre,
+  .dashboard-app blockquote {
+    border: 1px solid #999;
+    page-break-inside: avoid;
+  }
+
+  .dashboard-app img {
+    page-break-inside: avoid;
+  }
+
+  .dashboard-app h2,
+  .dashboard-app h3 {
+    page-break-after: avoid;
+  }
+}

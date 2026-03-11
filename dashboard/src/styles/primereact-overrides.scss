@@ -1,0 +1,511 @@
+/**
+ * PrimeReact Component Overrides
+ * ============================================================================
+ * Customizations for PrimeReact components using design tokens.
+ * Scoped to .dashboard-app so they do not override the host application.
+ */
+
+/* ============================================================================
+   Card Component
+   ============================================================================ */
+
+.dashboard-app .p-card {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color-light);
+  background: var(--bg-primary);
+  backdrop-filter: blur(10px);
+}
+
+.dashboard-app .p-card .p-card-header {
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  font-weight: var(--font-weight-semibold);
+}
+
+.dashboard-app .p-card .p-card-body {
+  padding: var(--spacing-lg);
+}
+
+.dashboard-app .p-card .p-card-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.dashboard-app .p-card .p-card-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* ============================================================================
+   Button Component
+   ============================================================================ */
+
+.dashboard-app .p-button {
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-semibold);
+  transition: var(--transition-all);
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-app .p-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.dashboard-app .p-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.dashboard-app .p-button.p-button-success {
+  background: var(--gradient-success);
+  border: none;
+}
+
+.dashboard-app .p-button.p-button-info {
+  background: var(--gradient-info);
+  border: none;
+}
+
+.dashboard-app .p-button.p-button-warning {
+  background: var(--gradient-warning);
+  border: none;
+}
+
+.dashboard-app .p-button.p-button-danger {
+  background: var(--gradient-error);
+  border: none;
+}
+
+.dashboard-app .p-button.p-button-secondary {
+  background: #fff;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.dashboard-app .p-button.p-button-text {
+  background: transparent;
+  color: var(--color-primary);
+  box-shadow: none;
+}
+
+/* ============================================================================
+   Selector components (site dropdown + date picker) – aligned with reference
+   ============================================================================ */
+
+$selector-border: #c7cad1; /* rgb(199, 202, 209) */
+$selector-text: #3e4759;   /* rgb(62, 71, 89) */
+
+.dashboard-app .p-dropdown,
+.dashboard-app .p-calendar .p-inputtext {
+  background-color: rgb(255, 255, 255);
+  border: 1px solid $selector-border;
+  border-radius: 4px;
+  color: $selector-text;
+  font-size: 16px;
+  font-weight: 400;
+  min-height: 34px;
+  height: 34px;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.dashboard-app .p-dropdown {
+  display: inline-flex;
+  padding: 0;
+}
+
+.dashboard-app .p-dropdown .p-dropdown-label {
+  color: $selector-text;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.dashboard-app .p-calendar .p-inputtext {
+  padding: 0 12px;
+}
+
+.dashboard-app .p-dropdown:focus,
+.dashboard-app .p-dropdown.p-focus {
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus);
+  outline: none;
+}
+
+.dashboard-app .p-calendar .p-inputtext:focus,
+.dashboard-app .p-calendar.p-focus .p-inputtext {
+  border-color: #a0a6ff; /* rgb(160, 166, 255) – date picker active/focus */
+  box-shadow: 0 0 0 3px rgba(160, 166, 255, 0.15);
+  outline: none;
+}
+
+.dashboard-app .p-dropdown:hover:not(:disabled),
+.dashboard-app .p-dropdown.p-focus,
+.dashboard-app .p-calendar:hover:not(.p-disabled) .p-inputtext,
+.dashboard-app .p-calendar.p-focus .p-inputtext {
+  border-color: var(--border-focus);
+}
+
+.dashboard-app .p-calendar:hover:not(.p-disabled) .p-inputtext,
+.dashboard-app .p-calendar.p-focus .p-inputtext {
+  border-color: #a0a6ff;
+}
+
+.dashboard-app .p-dropdown .p-dropdown-clear-icon,
+.dashboard-app .p-dropdown .p-dropdown-trigger-icon {
+  color: var(--text-secondary, #6b7280);
+}
+
+.dashboard-app .p-dropdown .p-dropdown-clear-icon:hover,
+.dashboard-app .p-dropdown .p-dropdown-trigger:hover .p-dropdown-trigger-icon {
+  color: $selector-text;
+}
+
+/* ============================================================================
+   Input Components (other inputs)
+   ============================================================================ */
+
+.dashboard-app .p-inputtext,
+.dashboard-app .p-inputtextarea,
+.dashboard-app .p-multiselect {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  transition: var(--transition-all);
+  font-size: var(--font-size-base);
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.dashboard-app .p-inputtext:focus,
+.dashboard-app .p-inputtextarea:focus,
+.dashboard-app .p-multiselect:focus {
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-focus);
+  outline: none;
+}
+
+.dashboard-app .p-inputtext:hover:not(:disabled),
+.dashboard-app .p-inputtextarea:hover:not(:disabled),
+.dashboard-app .p-multiselect:hover:not(:disabled) {
+  border-color: var(--border-color-dark);
+}
+
+.dashboard-app .p-inputtext.p-invalid,
+.dashboard-app .p-dropdown.p-invalid,
+.dashboard-app .p-calendar.p-invalid .p-inputtext {
+  border-color: var(--color-error);
+}
+
+.dashboard-app .p-inputtext.p-invalid:focus,
+.dashboard-app .p-dropdown.p-invalid:focus,
+.dashboard-app .p-calendar.p-invalid .p-inputtext:focus {
+  box-shadow: var(--shadow-focus-error);
+}
+
+/* ============================================================================
+   Date picker panel (portal; scoped by panelClassName)
+   Selected days & today in range – colors from reference
+   ============================================================================ */
+
+.dashboard-datepicker-panel table td > span.p-highlight {
+  background: var(--color-primary-bg, #E7F1FB);
+  color: var(--color-primary, #0F77D9);
+}
+
+.dashboard-datepicker-panel table td.p-datepicker-today > span.p-highlight {
+  background: var(--color-primary-bg, #E7F1FB);
+  color: var(--color-primary, #0F77D9);
+}
+
+/* ============================================================================
+   DataTable Component
+   ============================================================================ */
+
+.dashboard-app .p-datatable {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-app .p-datatable .p-datatable-header {
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.dashboard-app .p-datatable .p-datatable-thead > tr > th {
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
+  border: none;
+  font-weight: var(--font-weight-semibold);
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.dashboard-app .p-datatable .p-datatable-tbody > tr {
+  transition: var(--transition-all);
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+.dashboard-app .p-datatable .p-datatable-tbody > tr:hover {
+  background: rgba(var(--color-primary-rgb), 0.05);
+}
+
+.dashboard-app .p-datatable .p-datatable-tbody > tr.p-datatable-row-selected {
+  background: rgba(var(--color-primary-rgb), 0.1);
+}
+
+.dashboard-app .p-datatable .p-datatable-tbody > tr > td {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: none;
+}
+
+.dashboard-app .p-datatable .p-datatable-footer {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+/* ============================================================================
+   TabView Component
+   ============================================================================ */
+
+.dashboard-app .p-tabview .p-tabview-nav {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-sm);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.dashboard-app .p-tabview .p-tabview-nav li .p-tabview-nav-link {
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  transition: var(--transition-all);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: none;
+  color: var(--text-secondary);
+}
+
+.dashboard-app .p-tabview .p-tabview-nav li .p-tabview-nav-link:hover {
+  background: rgba(var(--color-primary-rgb), 0.05);
+  color: var(--text-primary);
+}
+
+.dashboard-app .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-app .p-tabview .p-tabview-panels {
+  background: var(--bg-primary);
+  padding: var(--spacing-lg);
+  border: none;
+}
+
+/* ============================================================================
+   Dialog Component
+   ============================================================================ */
+
+.dashboard-app .p-dialog {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-2xl);
+  border: 1px solid var(--border-color-light);
+}
+
+.dashboard-app .p-dialog .p-dialog-header {
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-bottom: none;
+}
+
+.dashboard-app .p-dialog .p-dialog-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dashboard-app .p-dialog .p-dialog-header-icons button {
+  color: var(--text-inverse);
+}
+
+.dashboard-app .p-dialog .p-dialog-header-icons button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dashboard-app .p-dialog .p-dialog-content {
+  padding: var(--spacing-xl);
+  background: var(--bg-primary);
+}
+
+.dashboard-app .p-dialog .p-dialog-footer {
+  padding: var(--spacing-lg) var(--spacing-xl);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+
+/* ============================================================================
+   Toast/Message Component
+   ============================================================================ */
+
+.dashboard-app .p-toast {
+  opacity: 0.95;
+}
+
+.dashboard-app .p-toast .p-toast-message {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  backdrop-filter: blur(10px);
+}
+
+.dashboard-app .p-toast .p-toast-message.p-toast-message-success {
+  background: var(--color-success-bg);
+  border-left: 4px solid var(--color-success);
+  color: var(--color-success-text);
+}
+
+.dashboard-app .p-toast .p-toast-message.p-toast-message-info {
+  background: var(--color-info-bg);
+  border-left: 4px solid var(--color-info);
+  color: var(--color-info-text);
+}
+
+.dashboard-app .p-toast .p-toast-message.p-toast-message-warn {
+  background: var(--color-warning-bg);
+  border-left: 4px solid var(--color-warning);
+  color: var(--color-warning-text);
+}
+
+.dashboard-app .p-toast .p-toast-message.p-toast-message-error {
+  background: var(--color-error-bg);
+  border-left: 4px solid var(--color-error);
+  color: var(--color-error-text);
+}
+
+/* ============================================================================
+   Tag Component
+   ============================================================================ */
+
+.dashboard-app .p-tag {
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+}
+
+.dashboard-app .p-tag.p-tag-success {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.dashboard-app .p-tag.p-tag-info {
+  background: var(--color-info-bg);
+  color: var(--color-info-text);
+}
+
+.dashboard-app .p-tag.p-tag-warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.dashboard-app .p-tag.p-tag-danger {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+}
+
+/* ============================================================================
+   ProgressBar Component
+   ============================================================================ */
+
+.dashboard-app .p-progressbar {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: rgba(var(--color-primary-rgb), 0.1);
+  height: 1.5rem;
+}
+
+.dashboard-app .p-progressbar .p-progressbar-value {
+  background: var(--gradient-primary);
+  border-radius: var(--radius-md);
+}
+
+.dashboard-app .p-progressbar .p-progressbar-label {
+  color: var(--text-inverse);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+}
+
+/* ============================================================================
+   Toolbar Component
+   ============================================================================ */
+
+.dashboard-app .p-toolbar {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color-light);
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+/* ============================================================================
+   Menu Component
+   ============================================================================ */
+
+.dashboard-app .p-menu {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+}
+
+.dashboard-app .p-menu .p-menuitem-link {
+  padding: var(--spacing-sm) var(--spacing-md);
+  transition: var(--transition-all);
+}
+
+.dashboard-app .p-menu .p-menuitem-link:hover {
+  background: var(--bg-hover);
+}
+
+.dashboard-app .p-menu .p-menuitem-link:focus {
+  box-shadow: none;
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* ============================================================================
+   Pagination Component
+   ============================================================================ */
+
+.dashboard-app .p-paginator {
+  background: transparent;
+  border: none;
+  padding: var(--spacing-md) 0;
+}
+
+.dashboard-app .p-paginator .p-paginator-pages .p-paginator-page {
+  border-radius: var(--radius-md);
+  min-width: 2.5rem;
+  height: 2.5rem;
+  margin: 0 var(--spacing-xs);
+  transition: var(--transition-all);
+}
+
+.dashboard-app .p-paginator .p-paginator-pages .p-paginator-page:hover {
+  background: var(--bg-hover);
+}
+
+.dashboard-app .p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow-sm);
+}
