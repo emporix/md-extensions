@@ -1,4 +1,4 @@
-# Emporix extension module
+# Emporix Dashboard extension module
 
 ## Introduction
 
