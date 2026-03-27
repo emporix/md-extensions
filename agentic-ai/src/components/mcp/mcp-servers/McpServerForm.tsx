@@ -12,6 +12,8 @@ interface McpServerFormProps {
   onCancel: () => void
   availableMcpServers: ManagedMcpServer[]
   existingServerIds: string[]
+  existingDomains?: string[]
+  editingMcpServer?: McpServer
 }
 
 export const McpServerForm: React.FC<McpServerFormProps> = ({
@@ -19,15 +21,22 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
   onCancel,
   availableMcpServers,
   existingServerIds,
+  existingDomains = [],
+  editingMcpServer,
 }) => {
   const { t } = useTranslation()
   const [serverType, setServerType] = useState<'predefined' | 'custom'>(
-    'predefined'
+    editingMcpServer?.type || 'predefined'
   )
-  const [selectedDomain, setSelectedDomain] = useState<McpKey>('order')
-  const [selectedTools, setSelectedTools] = useState<string[]>([])
-  const [selectedCustomServerId, setSelectedCustomServerId] =
-    useState<string>('')
+  const [selectedDomain, setSelectedDomain] = useState<McpKey>(
+    (editingMcpServer?.domain as McpKey) || 'order'
+  )
+  const [selectedTools, setSelectedTools] = useState<string[]>(
+    editingMcpServer?.tools || []
+  )
+  const [selectedCustomServerId, setSelectedCustomServerId] = useState<string>(
+    editingMcpServer?.mcpServer?.id || ''
+  )
 
   // Filter out custom servers that are already selected
   const availableCustomServers = availableMcpServers
@@ -38,6 +47,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
     }))
 
   const predefinedOptions = Object.entries(MCP_SERVERS)
+    .filter(([key]) => !existingDomains.includes(key))
     .map(([key, val]) => ({
       label: val.name,
       value: key as McpKey,
@@ -122,6 +132,8 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
                 className="w-full"
                 display="chip"
                 appendTo="self"
+                filter
+                filterPlaceholder={t('search_tools', 'Search tools')}
               />
             </div>
           </>
@@ -148,7 +160,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
 
         <div className="mcp-server-form-actions">
           <Button
-            label={t('add', 'Add')}
+            label={editingMcpServer ? t('update', 'Update') : t('add', 'Add')}
             onClick={handleAdd}
             disabled={!isFormValid()}
             className="p-button-sm"

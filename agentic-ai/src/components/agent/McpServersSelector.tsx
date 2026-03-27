@@ -24,6 +24,9 @@ export const McpServersSelector: React.FC<McpServersSelectorProps> = ({
   >([])
   const [mcpServersLoading, setMcpServersLoading] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
+  const [editingIndex, setEditingIndex] = useState<number | undefined>(
+    undefined
+  )
 
   useEffect(() => {
     const loadMcpServers = async () => {
@@ -58,14 +61,45 @@ export const McpServersSelector: React.FC<McpServersSelectorProps> = ({
     [mcpServers, onChange]
   )
 
+  const handleEditMcpServer = useCallback((index: number) => {
+    setEditingIndex(index)
+    setShowAddForm(false)
+  }, [])
+
+  const handleUpdateMcpServer = useCallback(
+    (index: number, mcpServer: McpServer) => {
+      const newMcpServers = [...mcpServers]
+      newMcpServers[index] = mcpServer
+      onChange(newMcpServers)
+      setEditingIndex(undefined)
+    },
+    [mcpServers, onChange]
+  )
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingIndex(undefined)
+  }, [])
+
   const handleCancelAdd = useCallback(() => {
     setShowAddForm(false)
   }, [])
 
-  // Get existing server IDs to prevent duplicates
+  // Compute taken IDs/domains excluding the item currently being edited
   const existingCustomServerIds = mcpServers
-    .filter((server) => server.type === 'custom' && server.mcpServer?.id)
+    .filter(
+      (server, idx) =>
+        idx !== editingIndex &&
+        server.type === 'custom' &&
+        server.mcpServer?.id
+    )
     .map((server) => server.mcpServer!.id)
+
+  const existingDomains = mcpServers
+    .filter(
+      (server, idx) =>
+        idx !== editingIndex && server.type === 'predefined' && server.domain
+    )
+    .map((server) => server.domain!)
 
   return (
     <div className="mcp-servers-section">
@@ -86,6 +120,12 @@ export const McpServersSelector: React.FC<McpServersSelectorProps> = ({
         mcpServers={mcpServers}
         availableMcpServers={availableMcpServers}
         onDelete={handleDeleteMcpServer}
+        onEdit={handleEditMcpServer}
+        onUpdate={handleUpdateMcpServer}
+        onCancelEdit={handleCancelEdit}
+        editingIndex={editingIndex}
+        existingServerIds={existingCustomServerIds}
+        existingDomains={existingDomains}
       />
 
       {showAddForm && (
@@ -94,6 +134,7 @@ export const McpServersSelector: React.FC<McpServersSelectorProps> = ({
           onCancel={handleCancelAdd}
           availableMcpServers={availableMcpServers}
           existingServerIds={existingCustomServerIds}
+          existingDomains={existingDomains}
         />
       )}
     </div>

@@ -5,17 +5,30 @@ import { McpServer as ManagedMcpServer } from '../../../types/Mcp'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faServer, faCog } from '@fortawesome/free-solid-svg-icons'
 import { MCP_SERVERS, McpKey } from '../../../utils/constants'
+import { McpServerForm } from './McpServerForm'
 
 interface McpServersListProps {
   mcpServers: McpServer[]
   availableMcpServers: ManagedMcpServer[]
   onDelete: (index: number) => void
+  onEdit: (index: number) => void
+  onUpdate: (index: number, mcpServer: McpServer) => void
+  onCancelEdit: () => void
+  editingIndex?: number
+  existingServerIds: string[]
+  existingDomains: string[]
 }
 
 export const McpServersList: React.FC<McpServersListProps> = ({
   mcpServers,
   availableMcpServers,
   onDelete,
+  onEdit,
+  onUpdate,
+  onCancelEdit,
+  editingIndex,
+  existingServerIds,
+  existingDomains,
 }) => {
   const { t } = useTranslation()
 
@@ -74,62 +87,83 @@ export const McpServersList: React.FC<McpServersListProps> = ({
                 : undefined
             }
           >
-            <div className="mcp-server-row-top">
-              <div className="mcp-server-info">
-                <div className="mcp-server-agent">
-                  <FontAwesomeIcon
-                    icon={serverInfo.icon}
-                    className="mcp-server-icon"
-                  />
-                  <span className="mcp-server-name">
-                    {serverInfo.name}
-                    {isDisabled && (
-                      <span
-                        style={{
-                          marginLeft: '8px',
-                          fontSize: '0.85em',
-                          color: '#f44336',
-                        }}
-                      >
-                        (Disabled)
+            {editingIndex === idx ? (
+              <McpServerForm
+                onAdd={(updatedServer) => onUpdate(idx, updatedServer)}
+                onCancel={onCancelEdit}
+                availableMcpServers={availableMcpServers}
+                existingServerIds={existingServerIds}
+                existingDomains={existingDomains}
+                editingMcpServer={mcpServer}
+              />
+            ) : (
+              <>
+                <div className="mcp-server-row-top">
+                  <div className="mcp-server-info">
+                    <div className="mcp-server-agent">
+                      <FontAwesomeIcon
+                        icon={serverInfo.icon}
+                        className="mcp-server-icon"
+                      />
+                      <span className="mcp-server-name">
+                        {serverInfo.name}
+                        {isDisabled && (
+                          <span
+                            style={{
+                              marginLeft: '8px',
+                              fontSize: '0.85em',
+                              color: '#f44336',
+                            }}
+                          >
+                            (Disabled)
+                          </span>
+                        )}
                       </span>
-                    )}
-                  </span>
+                    </div>
+                  </div>
+                  <div className="mcp-server-actions">
+                    <button
+                      className="mcp-server-edit-btn"
+                      type="button"
+                      aria-label={t('edit', 'Edit')}
+                      onClick={() => onEdit(idx)}
+                    >
+                      <i className="pi pi-pencil"></i>
+                    </button>
+                    <button
+                      className="mcp-server-delete-btn"
+                      type="button"
+                      aria-label={t('delete', 'Delete')}
+                      onClick={() => onDelete(idx)}
+                    >
+                      <i className="pi pi-trash"></i>
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className="mcp-server-actions">
-                <button
-                  className="mcp-server-delete-btn"
-                  type="button"
-                  aria-label={t('delete', 'Delete')}
-                  onClick={() => onDelete(idx)}
-                >
-                  <i className="pi pi-trash"></i>
-                </button>
-              </div>
-            </div>
-            <div className="mcp-server-divider" />
-            <div className="mcp-server-details">
-              <div className="mcp-server-config">
-                <span className="mcp-server-type-badge">
-                  {serverInfo.type === 'predefined'
-                    ? t('emporix', 'Emporix')
-                    : t('custom', 'Custom')}
-                </span>
-                <span className="mcp-server-details-text">
-                  {serverInfo.details}
-                </span>
-              </div>
-              {mcpServer.type === 'predefined' && mcpServer.tools && (
-                <div className="mcp-server-tools">
-                  {mcpServer.tools.map((tool: string) => (
-                    <span className="mcp-server-tool-chip" key={tool}>
-                      {tool}
+                <div className="mcp-server-divider" />
+                <div className="mcp-server-details">
+                  <div className="mcp-server-config">
+                    <span className="mcp-server-type-badge">
+                      {serverInfo.type === 'predefined'
+                        ? t('emporix', 'Emporix')
+                        : t('custom', 'Custom')}
                     </span>
-                  ))}
+                    <span className="mcp-server-details-text">
+                      {serverInfo.details}
+                    </span>
+                  </div>
+                  {mcpServer.type === 'predefined' && mcpServer.tools && (
+                    <div className="mcp-server-tools">
+                      {mcpServer.tools.map((tool: string) => (
+                        <span className="mcp-server-tool-chip" key={tool}>
+                          {tool}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
         )
       })}
