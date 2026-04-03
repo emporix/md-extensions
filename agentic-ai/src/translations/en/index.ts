@@ -398,10 +398,6 @@ const TRANSLATIONS_EN = {
   no_agents_selected: 'No agents selected',
 
   // Metrics and Analytics
-  error_rate: 'Error Rate',
-  total_logs: 'Total Logs',
-  error_logs: 'Error Logs',
-  error_trend_4_weeks: 'Error Trend (Last 4 Weeks)',
   no_trend_data: 'No trend data available',
   error_rate_percent: 'Error Rate (%)',
   total_requests: 'Total Requests',
