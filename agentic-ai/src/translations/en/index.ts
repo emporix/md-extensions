@@ -424,6 +424,9 @@ const TRANSLATIONS_EN = {
   error_sessions_label: 'Error Sessions',
   total_sessions_label: 'Total Sessions',
 
+  // Field Tooltips
+  required_scopes_tooltip: 'Anonymous - no additional scopes are needed to chat with an Agent\nCustomer - requires \'ai.agentexecution_manage_own\' scope to chat with an Agent\nEmployee, Integration - requires \'ai.agentexecution_manage\' scope to chat with an Agent\n\nScopes validation is ignored for Commerce events*',
+
   // Localized Input
   show_languages: 'Show languages',
   hide_languages: 'Hide languages',
