@@ -135,7 +135,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
           {t('required_scopes', 'Required Scopes')}
           <i 
             className="pi pi-info-circle" 
-            data-pr-tooltip={t('required_scopes_tooltip', 'Anonymous - no additional scopes are needed to chat with an Agent\nCustomer - requires \'ai.agentexecution_manage_own\' scope to chat with an Agent\nEmployee, Integration - requires \'ai.agentexecution_manage\' scope to chat with an Agent\n\nScopes validation is ignored for Commerce events*')}
+            data-pr-tooltip={t('required_scopes_tooltip')}
             data-pr-position="top"
             style={{ marginLeft: '8px', color: '#6b7280', cursor: 'help' }}
           />
