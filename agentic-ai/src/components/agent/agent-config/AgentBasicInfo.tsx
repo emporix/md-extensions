@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { InputText } from 'primereact/inputtext'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { MultiSelect } from 'primereact/multiselect'
+import { Tooltip } from 'primereact/tooltip'
 import { TRIGGER_TYPES } from '../../../utils/constants'
 import { AppState } from '../../../types/common'
 import { LocalizedString } from '../../../types/Agent'
@@ -132,7 +133,14 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       <div className="form-field">
         <label className="field-label">
           {t('required_scopes', 'Required Scopes')}
+          <i 
+            className="pi pi-info-circle" 
+            data-pr-tooltip={t('required_scopes_tooltip')}
+            data-pr-position="top"
+            style={{ marginLeft: '8px', color: '#6b7280', cursor: 'help' }}
+          />
         </label>
+        <Tooltip target=".pi-info-circle" />
         <MultiSelect
           value={requiredScopes}
           options={scopeOptions}

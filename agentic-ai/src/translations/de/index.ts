@@ -420,6 +420,9 @@ const TRANSLATIONS_DE = {
   error_sessions_label: 'Fehlersitzungen',
   total_sessions_label: 'Gesamte Sitzungen',
 
+  // Field Tooltips
+  required_scopes_tooltip: 'Anonymous - keine zusätzlichen Berechtigung erforderlich für Chat mit Agent\nCustomer - benötigt \'ai.agentexecution_manage_own\' Berechtigung für Chat mit Agent\nEmployee, Integration - benötigt \'ai.agentexecution_manage\' Berechtigung für Chat mit Agent\n\nBerechtigungsvalidierung wird für Commerce Events ignoriert*',
+
   // Localized Input
   show_languages: 'Sprachen anzeigen',
   hide_languages: 'Sprachen ausblenden',
