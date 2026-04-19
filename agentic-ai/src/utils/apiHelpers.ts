@@ -5,6 +5,7 @@ export interface QueryParamsOptions {
   pageNumber?: number
   agentId?: string
   filters?: Record<string, string>
+  fields?: string
 }
 
 export interface BuildQueryParamsConfig {
@@ -38,6 +39,9 @@ export const buildQueryParams = (
   }
   if (params.pageNumber) {
     queryParams.append('pageNumber', params.pageNumber.toString())
+  }
+  if (params.fields) {
+    queryParams.append('fields', params.fields)
   }
 
   const qParts: string[] = []

@@ -26,8 +26,8 @@ export class LogService {
       agentId: log.triggerAgentId,
       requestId: log.requestId,
       sessionId: log.sessionId,
-      messageCount: log.messages.length,
-      errorCount: log.messages.filter((msg) => msg.severity === 'ERROR').length,
+      messageCount: log.messages?.length ?? 0,
+      errorCount: log.messages?.filter((msg) => msg.severity === 'ERROR').length ?? 0,
       lastActivity: formatDateObject(log.metadata.modifiedAt),
       duration: log.duration,
       severity: log.severity,
@@ -50,6 +50,8 @@ export class LogService {
         pageNumber,
         agentId,
         filters,
+        // Only fetch required fields for list view, exclude full messages content due to performance reasons
+        fields: 'id,triggerAgentId,requestId,sessionId,severity,metadata,duration,collaborationAgents',
       },
       {
         agentIdField: 'triggerAgentId',
