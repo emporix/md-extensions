@@ -1,14 +1,14 @@
 import { useCallback } from 'react'
 import { formatApiError } from '../utils/errorHelpers'
 
-export interface UseUpsertItemOptions<T extends { id: string }> {
+export interface UseUpsertItemOptions<T> {
   onUpsert: (item: T) => Promise<T>
   updateItems: (updater: (prevItems: T[]) => T[]) => void
   setError?: (error: string | null) => void
   getId: (item: T) => string
 }
 
-export const useUpsertItem = <T extends { id: string }>({
+export const useUpsertItem = <T>({
   onUpsert,
   updateItems,
   setError,
@@ -24,13 +24,15 @@ export const useUpsertItem = <T extends { id: string }>({
             (existing) => getId(existing) === getId(item)
           )
           if (existingIndex >= 0) {
+            // Update existing item
             return prevItems.map((existingItem) =>
               getId(existingItem) === getId(savedItem)
                 ? savedItem
                 : existingItem
             )
+          } else {
+            return [...prevItems, savedItem]
           }
-          return [...prevItems, savedItem]
         })
 
         return savedItem
