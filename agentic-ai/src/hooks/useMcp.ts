@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { McpServer, McpServerUpsert } from '../types/Mcp'
+import { McpServer } from '../types/Mcp'
 import { AppState } from '../types/common'
 import { formatApiError } from '../utils/errorHelpers'
 import {
@@ -64,7 +64,7 @@ export const useMcp = (appState: AppState) => {
     }
   }, [appState, t])
 
-  const upsertMcpServer = useUpsertItem<McpServer, McpServerUpsert>({
+  const upsertMcpServer = useUpsertItem<McpServer>({
     onUpsert: (server) => upsertMcpServerApi(appState, server),
     updateItems: setMcpServers,
     setError: undefined,

@@ -1,4 +1,4 @@
-import { McpServer, McpServerUpsert } from '../types/Mcp'
+import { McpServer } from '../types/Mcp'
 import { AppState } from '../types/common'
 import { ApiClient } from './apiClient'
 
@@ -22,20 +22,14 @@ export const getMcpServers = async (
 
 export const upsertMcpServer = async (
   appState: AppState,
-  mcpServer: McpServerUpsert
+  mcpServer: McpServer
 ): Promise<McpServer> => {
   try {
     const api = getApiClient(appState)
-    const { authorizationHeaderToken, ...restConfig } = mcpServer.config
     const payload = {
       name: mcpServer.name,
       transport: mcpServer.transport,
-      config: {
-        ...restConfig,
-        ...(authorizationHeaderToken
-          ? { authorizationHeaderToken: { id: authorizationHeaderToken } }
-          : {}),
-      },
+      config: mcpServer.config,
       enabled: mcpServer.enabled,
     }
     const saved = await api.put<McpServer>(

@@ -1,27 +1,21 @@
 import { useCallback } from 'react'
 import { formatApiError } from '../utils/errorHelpers'
 
-export interface UseUpsertItemOptions<
-  TSaved extends { id: string },
-  TInput extends { id: string } = TSaved,
-> {
-  onUpsert: (item: TInput) => Promise<TSaved>
-  updateItems: (updater: (prevItems: TSaved[]) => TSaved[]) => void
+export interface UseUpsertItemOptions<T extends { id: string }> {
+  onUpsert: (item: T) => Promise<T>
+  updateItems: (updater: (prevItems: T[]) => T[]) => void
   setError?: (error: string | null) => void
-  getId: (item: TSaved | TInput) => string
+  getId: (item: T) => string
 }
 
-export const useUpsertItem = <
-  TSaved extends { id: string },
-  TInput extends { id: string } = TSaved,
->({
+export const useUpsertItem = <T extends { id: string }>({
   onUpsert,
   updateItems,
   setError,
   getId,
-}: UseUpsertItemOptions<TSaved, TInput>) => {
+}: UseUpsertItemOptions<T>) => {
   return useCallback(
-    async (item: TInput): Promise<TSaved> => {
+    async (item: T): Promise<T> => {
       try {
         const savedItem = await onUpsert(item)
 

@@ -5,7 +5,7 @@ import { Dropdown } from 'primereact/dropdown'
 import {
   CustomMcpServerTransportType,
   McpConfigPanelProps,
-  McpServerUpsert,
+  McpServer,
 } from '../../types/Mcp'
 import { BaseConfigPanel } from '../shared/BaseConfigPanel'
 import { faServer } from '@fortawesome/free-solid-svg-icons'
@@ -85,7 +85,7 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
   const handleSave = async () => {
     if (!mcpServer) return
 
-    const updatedMcpServer: McpServerUpsert = {
+    const updatedMcpServer: McpServer = {
       ...mcpServer,
       id: mcpServerId,
       name: mcpServerName,
@@ -93,7 +93,9 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
       config: {
         url,
         authorizationHeaderName: authorizationHeaderName || undefined,
-        authorizationHeaderToken: authorizationHeaderToken || undefined,
+        authorizationHeaderToken: authorizationHeaderToken
+          ? { id: authorizationHeaderToken }
+          : undefined,
       },
     }
 

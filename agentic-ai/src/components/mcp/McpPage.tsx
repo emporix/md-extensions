@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import McpCard from './McpCard'
 import McpConfigPanel from './McpConfigPanel'
 import { BasePage } from '../shared/BasePage'
-import { McpServer, McpServerUpsert } from '../../types/Mcp'
+import { McpServer } from '../../types/Mcp'
 import { useMcp } from '../../hooks/useMcp'
 import { AppState } from '../../types/common'
 import { createEmptyMcpServer } from '../../utils/mcpHelpers'
@@ -57,7 +57,7 @@ const McpPage: React.FC<McpPageProps> = ({
     setShowConfigPanel(true)
   }, [])
 
-  const handleConfigSave = async (updatedMcpServer: McpServerUpsert) => {
+  const handleConfigSave = async (updatedMcpServer: McpServer) => {
     try {
       await upsertMcpServer(updatedMcpServer)
       showSuccess(t('mcp_server_updated_successfully'))
