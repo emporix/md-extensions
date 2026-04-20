@@ -96,6 +96,10 @@
   margin-bottom: 1rem;
 }
 
+.field-required-mark {
+  color: var(--color-danger);
+}
+
 /* Base Page Container */
 .base-page-container {
   padding: 24px;

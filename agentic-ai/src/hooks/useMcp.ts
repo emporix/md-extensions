@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { McpServer } from '../types/Mcp'
+import { McpServer, McpServerUpsert } from '../types/Mcp'
 import { AppState } from '../types/common'
 import { formatApiError } from '../utils/errorHelpers'
 import {
@@ -46,11 +46,8 @@ export const useMcp = (appState: AppState) => {
         prev.filter((server) => server.id !== mcpServerId)
       )
     },
-    successMessage: t(
-      'mcp_server_deleted_successfully',
-      'MCP Server deleted successfully!'
-    ),
-    errorMessage: 'Failed to delete MCP server',
+    successMessage: t('mcp_server_deleted_successfully'),
+    errorMessage: t('failed_to_delete_mcp_server'),
   })
 
   const loadMcpServers = useCallback(async () => {
@@ -60,18 +57,18 @@ export const useMcp = (appState: AppState) => {
       const fetchedMcpServers = await getMcpServers(appState)
       setMcpServers(fetchedMcpServers)
     } catch (err) {
-      const message = formatApiError(err, 'Failed to load MCP servers')
+      const message = formatApiError(err, t('failed_to_load_mcp_servers'))
       setError(message)
     } finally {
       setLoading(false)
     }
-  }, [appState])
+  }, [appState, t])
 
-  const upsertMcpServer = useUpsertItem({
-    onUpsert: (server: McpServer) => upsertMcpServerApi(appState, server),
+  const upsertMcpServer = useUpsertItem<McpServer, McpServerUpsert>({
+    onUpsert: (server) => upsertMcpServerApi(appState, server),
     updateItems: setMcpServers,
     setError: undefined,
-    getId: (server: McpServer) => server.id,
+    getId: (server) => server.id,
   })
 
   const toggleMcpServerActive = useCallback(
@@ -81,7 +78,7 @@ export const useMcp = (appState: AppState) => {
           (server) => server.id === mcpServerId
         )
         if (!currentMcpServer) {
-          throw new Error('MCP Server not found')
+          throw new Error(t('mcp_server_not_found'))
         }
 
         setMcpServers((prev) =>
@@ -100,7 +97,9 @@ export const useMcp = (appState: AppState) => {
         await patchMcpServer(appState, mcpServerId, patches, false)
 
         showSuccess(
-          `MCP Server ${enabled ? 'activated' : 'deactivated'} successfully!`
+          enabled
+            ? t('mcp_server_activated_successfully')
+            : t('mcp_server_deactivated_successfully')
         )
 
         await loadMcpServers()
@@ -118,11 +117,8 @@ export const useMcp = (appState: AppState) => {
           return
         }
 
-        const errorMessage = formatApiError(
-          err,
-          'Failed to update MCP server status'
-        )
-        showError(`Error updating MCP server: ${errorMessage}`)
+        const errorMessage = formatApiError(err, t('error_updating_mcp_server'))
+        showError(`${t('error_updating_mcp_server')}: ${errorMessage}`)
 
         setMcpServers((prev) =>
           prev.map((server) =>
@@ -133,7 +129,7 @@ export const useMcp = (appState: AppState) => {
         )
       }
     },
-    [mcpServers, appState, showSuccess, showError, loadMcpServers]
+    [mcpServers, appState, showSuccess, showError, loadMcpServers, t]
   )
 
   const confirmForceToggle = useCallback(async () => {
@@ -158,18 +154,17 @@ export const useMcp = (appState: AppState) => {
       await patchMcpServer(appState, mcpServerId, patches, true)
 
       showSuccess(
-        `MCP Server ${enabled ? 'activated' : 'deactivated'} successfully!`
+        enabled
+          ? t('mcp_server_activated_successfully')
+          : t('mcp_server_deactivated_successfully')
       )
       setForceToggleConfirmVisible(false)
       setPendingToggle(null)
 
       await loadMcpServers()
     } catch (err) {
-      const errorMessage = formatApiError(
-        err,
-        'Failed to update MCP server status'
-      )
-      showError(`Error updating MCP server: ${errorMessage}`)
+      const errorMessage = formatApiError(err, t('error_updating_mcp_server'))
+      showError(`${t('error_updating_mcp_server')}: ${errorMessage}`)
 
       setMcpServers((prev) =>
         prev.map((server) =>
@@ -179,7 +174,7 @@ export const useMcp = (appState: AppState) => {
       setForceToggleConfirmVisible(false)
       setPendingToggle(null)
     }
-  }, [pendingToggle, appState, showSuccess, showError, loadMcpServers])
+  }, [pendingToggle, appState, showSuccess, showError, loadMcpServers, t])
 
   const hideForceToggleConfirm = useCallback(() => {
     setForceToggleConfirmVisible(false)

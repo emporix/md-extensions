@@ -1,21 +1,27 @@
 import { useCallback } from 'react'
 import { formatApiError } from '../utils/errorHelpers'
 
-export interface UseUpsertItemOptions<T> {
-  onUpsert: (item: T) => Promise<T>
-  updateItems: (updater: (prevItems: T[]) => T[]) => void
+export interface UseUpsertItemOptions<
+  TSaved extends { id: string },
+  TInput extends { id: string } = TSaved,
+> {
+  onUpsert: (item: TInput) => Promise<TSaved>
+  updateItems: (updater: (prevItems: TSaved[]) => TSaved[]) => void
   setError?: (error: string | null) => void
-  getId: (item: T) => string
+  getId: (item: TSaved | TInput) => string
 }
 
-export const useUpsertItem = <T>({
+export const useUpsertItem = <
+  TSaved extends { id: string },
+  TInput extends { id: string } = TSaved,
+>({
   onUpsert,
   updateItems,
   setError,
   getId,
-}: UseUpsertItemOptions<T>) => {
+}: UseUpsertItemOptions<TSaved, TInput>) => {
   return useCallback(
-    async (item: T): Promise<T> => {
+    async (item: TInput): Promise<TSaved> => {
       try {
         const savedItem = await onUpsert(item)
 
@@ -24,15 +30,13 @@ export const useUpsertItem = <T>({
             (existing) => getId(existing) === getId(item)
           )
           if (existingIndex >= 0) {
-            // Update existing item
             return prevItems.map((existingItem) =>
               getId(existingItem) === getId(savedItem)
                 ? savedItem
                 : existingItem
             )
-          } else {
-            return [...prevItems, savedItem]
           }
+          return [...prevItems, savedItem]
         })
 
         return savedItem

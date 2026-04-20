@@ -1,19 +1,18 @@
-import { McpServer } from '../types/Mcp'
+import { McpServer, McpServerUpsert } from '../types/Mcp'
 import { AppState } from '../types/common'
 import { ApiClient } from './apiClient'
 
-const getApiClient = (appState: AppState): ApiClient => {
-  return new ApiClient(appState)
-}
+const getApiClient = (appState: AppState): ApiClient => new ApiClient(appState)
 
 export const getMcpServers = async (
   appState: AppState
 ): Promise<McpServer[]> => {
   try {
     const api = getApiClient(appState)
-    return await api.get<McpServer[]>(
+    const servers = await api.get<McpServer[]>(
       `/ai-service/${appState.tenant}/agentic/mcp-servers`
     )
+    return servers
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : 'Failed to load MCP servers'
@@ -23,20 +22,27 @@ export const getMcpServers = async (
 
 export const upsertMcpServer = async (
   appState: AppState,
-  mcpServer: McpServer
+  mcpServer: McpServerUpsert
 ): Promise<McpServer> => {
   try {
     const api = getApiClient(appState)
+    const { authorizationHeaderToken, ...restConfig } = mcpServer.config
     const payload = {
       name: mcpServer.name,
       transport: mcpServer.transport,
-      config: mcpServer.config,
+      config: {
+        ...restConfig,
+        ...(authorizationHeaderToken
+          ? { authorizationHeaderToken: { id: authorizationHeaderToken } }
+          : {}),
+      },
       enabled: mcpServer.enabled,
     }
-    return await api.put<McpServer>(
+    const saved = await api.put<McpServer>(
       `/ai-service/${appState.tenant}/agentic/mcp-servers/${mcpServer.id}`,
       payload
     )
+    return saved
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : 'Failed to save MCP server'
@@ -53,7 +59,8 @@ export const patchMcpServer = async (
   try {
     const api = getApiClient(appState)
     const url = `/ai-service/${appState.tenant}/agentic/mcp-servers/${mcpServerId}${force ? '?force=true' : ''}`
-    return await api.patch<McpServer>(url, patches)
+    const patched = await api.patch<McpServer>(url, patches)
+    return patched
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : 'Failed to patch MCP server'

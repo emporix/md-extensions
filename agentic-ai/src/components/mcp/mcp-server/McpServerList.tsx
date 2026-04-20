@@ -47,8 +47,8 @@ export const McpServerList: React.FC<McpServerListProps> = React.memo(
                 <div className="mcp-server-row-top">
                   <span className="mcp-server-type">
                     {server.type === 'predefined'
-                      ? t('emporix', 'Emporix')
-                      : t('custom', 'Custom')}
+                      ? t('emporix')
+                      : t('custom')}
                   </span>
                   {server.type === 'predefined' && server.domain && (
                     <span className="mcp-server-mcp">
@@ -64,7 +64,7 @@ export const McpServerList: React.FC<McpServerListProps> = React.memo(
                     <button
                       className="mcp-server-edit-btn"
                       type="button"
-                      aria-label={t('edit', 'Edit')}
+                      aria-label={t('edit')}
                       onClick={() => onEdit(idx, server)}
                     >
                       <i className="pi pi-pencil"></i>
@@ -72,7 +72,7 @@ export const McpServerList: React.FC<McpServerListProps> = React.memo(
                     <button
                       className="mcp-server-delete-btn"
                       type="button"
-                      aria-label={t('delete', 'Delete')}
+                      aria-label={t('delete')}
                       onClick={() => onDelete(idx)}
                     >
                       <i className="pi pi-trash"></i>

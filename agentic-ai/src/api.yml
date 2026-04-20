@@ -2651,7 +2651,7 @@ components:
         config:
           url: 'http://localhost:7900'
           authorizationHeaderName: Authorization
-          authorizationHeaderTokenId: token-id
+          authorizationHeaderToken: token-id
     McpServersResponse:
       value:
         - id: mcp-custom
@@ -2660,7 +2660,7 @@ components:
           config:
             url: 'http://localhost:7900'
             authorizationHeaderName: Authorization
-            authorizationHeaderTokenId: token-id
+            authorizationHeaderToken: token-id
     TokenResponse:
       value:
         id: openai
@@ -2760,7 +2760,7 @@ components:
         config:
           url: 'http://localhost:7900'
           authorizationHeaderName: Authorization
-          authorizationHeaderTokenId: token-id
+          authorizationHeaderToken: token-id
     TokenRequest:
       value:
         name: OpenAI Token
