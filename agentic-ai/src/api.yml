@@ -1655,10 +1655,11 @@ components:
           description: Name of the header required for authorization e.g. `Authorization`.
         authorizationHeaderToken:
           type: object
+          description: Token reference only; always `{ id }` (same shape on create, update, and read when not expanded). The secret is never sent or stored inline.
           properties:
             id:
               type: string
-              description: Id of the token which should store secret for authorization header.
+              description: Id of the token that stores the authorization header secret.
           required:
             - id
       required:
@@ -1710,8 +1711,8 @@ components:
       description: Type of the MCP server. The `custom` type allows you to integrate with your own MCP server instance, while the `predefined` type allows you to integrate with one of the instances provided by `Emporix`.
     CustomMcpServerTransportType:
       type: string
-      enum: [sse]
-      description: Type of the communication between the agent and the MCP server. For now, only `sse` is supported.
+      enum: [sse, streamable_http]
+      description: Transport between the agent and the MCP server (`sse` or `streamable_http`).
     BaseAgentMcpServer:
       type: object
       properties:
@@ -1821,10 +1822,11 @@ components:
           description: Name of the header required for authorization e.g. `Authorization`
         authorizationHeaderToken:
           type: object
+          description: Token reference only; always `{ id }` on request and in non-expanded responses.
           properties:
             id:
               type: string
-              description: Id of the token which should store secret for authorization header.
+              description: Id of the token that stores the authorization header secret.
           required:
             - id
       required:
@@ -2651,7 +2653,8 @@ components:
         config:
           url: 'http://localhost:7900'
           authorizationHeaderName: Authorization
-          authorizationHeaderTokenId: token-id
+          authorizationHeaderToken:
+            id: token-id
     McpServersResponse:
       value:
         - id: mcp-custom
@@ -2660,7 +2663,8 @@ components:
           config:
             url: 'http://localhost:7900'
             authorizationHeaderName: Authorization
-            authorizationHeaderTokenId: token-id
+            authorizationHeaderToken:
+              id: token-id
     TokenResponse:
       value:
         id: openai
@@ -2760,7 +2764,8 @@ components:
         config:
           url: 'http://localhost:7900'
           authorizationHeaderName: Authorization
-          authorizationHeaderTokenId: token-id
+          authorizationHeaderToken:
+            id: token-id
     TokenRequest:
       value:
         name: OpenAI Token

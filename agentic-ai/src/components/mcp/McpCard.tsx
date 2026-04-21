@@ -16,9 +16,9 @@ const McpCard: React.FC<McpCardProps> = ({
   const getTransportLabel = () => {
     switch (mcpServer.transport) {
       case CustomMcpServerTransportType.SSE:
-        return 'Server-Sent Events'
+        return t('mcp_transport_sse')
       case CustomMcpServerTransportType.STREAMABLE_HTTP:
-        return 'Streamable HTTP'
+        return t('mcp_transport_streamable_http')
       default:
         return String(mcpServer.transport).toUpperCase()
     }
@@ -50,12 +50,12 @@ const McpCard: React.FC<McpCardProps> = ({
         },
         {
           icon: 'pi pi-trash',
-          label: t('remove', 'Remove'),
+          label: t('remove'),
           onClick: () => onRemove(mcpServer.id),
           disabled: mcpServer.enabled,
           title: mcpServer.enabled
-            ? t('cannot_delete_active_mcp', 'Cannot delete active MCP server')
-            : t('remove_mcp', 'Remove MCP server'),
+            ? t('cannot_delete_active_mcp')
+            : t('remove_mcp'),
           className: 'remove-button',
         },
       ]}

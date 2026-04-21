@@ -67,12 +67,12 @@ export const McpServerManager: React.FC<McpServerManagerProps> = memo(
       <div className="mcp-servers-section">
         <div className="mcp-servers-header">
           <span className="mcp-servers-title">
-            {t('mcp_servers', 'MCP Servers')}
+            {t('mcp_servers')}
           </span>
           <button
             className="mcp-servers-add-btn"
             type="button"
-            aria-label={t('add', 'Add')}
+            aria-label={t('add')}
             onClick={() => setShowAddMcp(true)}
           >
             <i className="pi pi-plus"></i>

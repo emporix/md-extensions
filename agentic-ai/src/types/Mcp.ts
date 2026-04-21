@@ -1,9 +1,13 @@
 import { AppState } from './common'
 
+export interface McpTokenRef {
+  id: string
+}
+
 export interface McpConfig {
   url: string
   authorizationHeaderName?: string
-  authorizationHeaderTokenId?: string
+  authorizationHeaderToken?: McpTokenRef
 }
 
 export enum CustomMcpServerTransportType {

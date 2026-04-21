@@ -89,12 +89,12 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
     <div className="mcp-server-form">
       <div className="mcp-server-form-content">
         <div className="form-field">
-          <label className="field-label">{t('type', 'Type')}</label>
+          <label className="field-label">{t('type')}</label>
           <Dropdown
             value={serverType}
             options={[
-              { label: t('emporix', 'Emporix'), value: 'predefined' },
-              { label: t('custom', 'Custom'), value: 'custom' },
+              { label: t('emporix'), value: 'predefined' },
+              { label: t('custom'), value: 'custom' },
             ]}
             onChange={(e) => {
               setServerType(e.value)
@@ -110,7 +110,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
         {serverType === 'predefined' && (
           <>
             <div className="form-field">
-              <label className="field-label">{t('mcp', 'MCP')}</label>
+              <label className="field-label">{t('mcp')}</label>
               <Dropdown
                 value={selectedDomain}
                 options={predefinedOptions}
@@ -123,17 +123,17 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
               />
             </div>
             <div className="form-field">
-              <label className="field-label">{t('mcp_tools', 'Tools')}</label>
+              <label className="field-label">{t('mcp_tools')}</label>
               <MultiSelect
                 value={selectedTools}
                 options={toolOptions}
                 onChange={(e) => setSelectedTools(e.value)}
-                placeholder={t('select_tools_placeholder', 'Select tools')}
+                placeholder={t('select_tools_placeholder')}
                 className="w-full"
                 display="chip"
                 appendTo="self"
                 filter
-                filterPlaceholder={t('search_tools', 'Search tools')}
+                filterPlaceholder={t('search_tools')}
               />
             </div>
           </>
@@ -142,16 +142,13 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
         {serverType === 'custom' && (
           <div className="form-field">
             <label className="field-label">
-              {t('select_mcp_server', 'Select MCP Server')}
+              {t('select_mcp_server')}
             </label>
             <Dropdown
               value={selectedCustomServerId}
               options={availableCustomServers}
               onChange={(e) => setSelectedCustomServerId(e.value)}
-              placeholder={t(
-                'select_mcp_server_placeholder',
-                'Choose an MCP server'
-              )}
+              placeholder={t('select_mcp_server_placeholder')}
               className="w-full"
               appendTo="self"
             />
@@ -160,13 +157,13 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
 
         <div className="mcp-server-form-actions">
           <Button
-            label={editingMcpServer ? t('update', 'Update') : t('add', 'Add')}
+            label={editingMcpServer ? t('update') : t('add')}
             onClick={handleAdd}
             disabled={!isFormValid()}
             className="p-button-sm"
           />
           <Button
-            label={t('cancel', 'Cancel')}
+            label={t('cancel')}
             onClick={onCancel}
             className="p-button-outlined p-button-sm"
           />

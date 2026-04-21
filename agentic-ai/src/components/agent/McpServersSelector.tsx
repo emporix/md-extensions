@@ -104,12 +104,12 @@ export const McpServersSelector: React.FC<McpServersSelectorProps> = ({
   return (
     <div className="mcp-servers-section">
       <div className="mcp-servers-header">
-        <h3 className="mcp-servers-title">{t('mcp_servers', 'MCP Servers')}</h3>
+        <h3 className="mcp-servers-title">{t('mcp_servers')}</h3>
         <button
           className="mcp-servers-add-btn"
           onClick={() => setShowAddForm(true)}
           type="button"
-          aria-label={t('add_mcp_server', 'Add MCP Server')}
+          aria-label={t('add_mcp_server')}
           disabled={mcpServersLoading}
         >
           <i className="pi pi-plus"></i>
