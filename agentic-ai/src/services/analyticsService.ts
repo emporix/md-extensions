@@ -82,16 +82,15 @@ export class AnalyticsService {
     })
   }
 
-  private bundleCacheKey(agentId: string | undefined, trendWeeks: number): string {
-    return `bundle_${agentId ?? 'all'}_${trendWeeks}`
+  private bundleCacheKey(agentId: string | undefined): string {
+    return `bundle_${agentId ?? 'all'}`
   }
 
   private async fetchAnalyticsBundle(
     agentId: string | undefined,
-    trendWeeks: number,
     forceRefresh: boolean
   ): Promise<AgentAnalyticsApiResponse> {
-    const cacheKey = this.bundleCacheKey(agentId, trendWeeks)
+    const cacheKey = this.bundleCacheKey(agentId)
     if (!forceRefresh) {
       const cached = this.getCached<AgentAnalyticsApiResponse>(cacheKey)
       if (cached) {
@@ -102,7 +101,6 @@ export class AnalyticsService {
     if (agentId) {
       params.set('agentId', agentId)
     }
-    params.set('trendWeeks', String(trendWeeks))
     const url = `/ai-service/${this.tenant}/agentic/analytics?${params.toString()}`
     const data = await this.api.get<AgentAnalyticsApiResponse>(url)
     this.setCache(cacheKey, data)
@@ -111,14 +109,13 @@ export class AnalyticsService {
 
   async getDashboardSnapshot(
     agentId?: string,
-    trendWeeks: number = 4,
     forceRefresh: boolean = false
   ): Promise<{
     resolutionEfficiency: ResolutionEfficiencyMetrics
     sessionSeverity: SessionSeverityDistribution
     sessionErrorTrend: SessionErrorTrendData[]
   }> {
-    const b = await this.fetchAnalyticsBundle(agentId, trendWeeks, forceRefresh)
+    const b = await this.fetchAnalyticsBundle(agentId, forceRefresh)
     return {
       resolutionEfficiency: b.resolutionEfficiency,
       sessionSeverity: {

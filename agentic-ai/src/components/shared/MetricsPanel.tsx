@@ -46,7 +46,6 @@ const MetricsPanel: React.FC<MetricsPanelProps> = ({
 
         const snapshot = await analyticsService.getDashboardSnapshot(
           agentId,
-          4,
           forceRefresh
         )
 
