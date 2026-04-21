@@ -125,7 +125,7 @@ export const McpServersList: React.FC<McpServersListProps> = ({
                     <button
                       className="mcp-server-edit-btn"
                       type="button"
-                      aria-label={t('edit', 'Edit')}
+                      aria-label={t('edit')}
                       onClick={() => onEdit(idx)}
                     >
                       <i className="pi pi-pencil"></i>
@@ -133,7 +133,7 @@ export const McpServersList: React.FC<McpServersListProps> = ({
                     <button
                       className="mcp-server-delete-btn"
                       type="button"
-                      aria-label={t('delete', 'Delete')}
+                      aria-label={t('delete')}
                       onClick={() => onDelete(idx)}
                     >
                       <i className="pi pi-trash"></i>
@@ -145,8 +145,8 @@ export const McpServersList: React.FC<McpServersListProps> = ({
                   <div className="mcp-server-config">
                     <span className="mcp-server-type-badge">
                       {serverInfo.type === 'predefined'
-                        ? t('emporix', 'Emporix')
-                        : t('custom', 'Custom')}
+                        ? t('emporix')
+                        : t('custom')}
                     </span>
                     <span className="mcp-server-details-text">
                       {serverInfo.details}

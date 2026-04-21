@@ -84,13 +84,13 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(
     return (
       <div className="mcp-server-form">
         <div className="form-field">
-          <label className="field-label">{t('type', 'Type')}</label>
+          <label className="field-label">{t('type')}</label>
           <Dropdown
             value={newMcpType}
             appendTo="self"
             options={[
-              { label: t('emporix', 'Emporix'), value: 'predefined' },
-              { label: t('custom', 'Custom'), value: 'custom' },
+              { label: t('emporix'), value: 'predefined' },
+              { label: t('custom'), value: 'custom' },
             ]}
             onChange={(e) => {
               setNewMcpType(e.value)
@@ -105,7 +105,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(
         {newMcpType === 'predefined' && (
           <>
             <div className="form-field">
-              <label className="field-label">{t('mcp', 'MCP')}</label>
+              <label className="field-label">{t('mcp')}</label>
               <Dropdown
                 value={newEmporixMcp}
                 appendTo="self"
@@ -123,7 +123,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(
               />
             </div>
             <div className="form-field">
-              <label className="field-label">{t('mcp_tools', 'Tools')}</label>
+              <label className="field-label">{t('mcp_tools')}</label>
               <MultiSelect
                 value={newEmporixTools}
                 options={(
@@ -144,7 +144,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(
         {newMcpType === 'custom' && (
           <>
             <div className="form-field">
-              <label className="field-label">{t('name', 'Name')}</label>
+              <label className="field-label">{t('name')}</label>
               <InputText
                 value={newCustomName}
                 onChange={(e) => setNewCustomName(e.target.value)}
@@ -152,7 +152,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(
               />
             </div>
             <div className="form-field">
-              <label className="field-label">{t('url', 'Url')}</label>
+              <label className="field-label">{t('url')}</label>
               <InputText
                 value={newCustomUrl}
                 onChange={(e) => setNewCustomUrl(e.target.value)}
@@ -161,7 +161,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(
             </div>
             <div className="form-field">
               <label className="field-label">
-                {t('transport_layer', 'Transport layer')}
+                {t('transport_layer')}
               </label>
               <Dropdown
                 value={newCustomTransport}
@@ -177,7 +177,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(
               />
             </div>
             <div className="form-field">
-              <label className="field-label">{t('headers', 'Headers')}</label>
+              <label className="field-label">{t('headers')}</label>
               <CustomHeaders
                 value={newCustomHeaders}
                 onChange={setNewCustomHeaders}
@@ -191,12 +191,12 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(
           style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}
         >
           <Button
-            label={t('cancel', 'Cancel')}
+            label={t('cancel')}
             className="discard-button"
             onClick={onCancel}
           />
           <Button
-            label={isEditing ? t('update', 'Update') : t('add', 'Add')}
+            label={isEditing ? t('update') : t('add')}
             className="save-agent-button"
             onClick={handleAdd}
             disabled={!isFormValid()}

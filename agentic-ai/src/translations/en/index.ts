@@ -206,6 +206,7 @@ const TRANSLATIONS_EN = {
   native_tools: 'Native Tools',
   select_tools: 'Select Tools',
   select_tools_placeholder: 'Select tools',
+  search_tools: 'Search tools',
   loading_tools: 'Loading tools...',
   select_tool: 'Select Tool',
   select_tool_placeholder: 'Choose a tool to add',
@@ -234,6 +235,7 @@ const TRANSLATIONS_EN = {
 
   // MCP Servers
   mcp_servers: 'MCP Servers',
+  failed_to_load_mcp_servers: 'Failed to load MCP servers',
   no_mcp_servers: 'No MCP servers available',
   add_new_mcp_server: 'ADD NEW MCP SERVER',
   mcp_server_configuration: 'MCP Server Configuration',
@@ -243,15 +245,25 @@ const TRANSLATIONS_EN = {
   enter_mcp_server_name: 'Enter MCP server name',
   transport: 'Transport',
   select_transport: 'Select transport',
+  mcp_transport_sse: 'Server-Sent Events (SSE)',
+  mcp_transport_streamable_http: 'Streamable HTTP',
   url: 'URL',
   enter_url: 'Enter URL',
+  url_required: 'URL is required',
+  mcp_server_id_required: 'MCP Server ID is required',
+  mcp_server_name_required: 'MCP Server name is required',
   authorization_header_name: 'Authorization Header Name',
   enter_authorization_header_name: 'Enter authorization header name',
   authorization_header_token_id: 'Authorization Header Token ID',
   enter_authorization_header_token_id: 'Enter authorization header token ID',
   optional: 'Optional',
   mcp_server_updated_successfully: 'MCP Server updated successfully!',
+  mcp_server_activated_successfully: 'MCP Server activated successfully!',
+  mcp_server_deactivated_successfully: 'MCP Server deactivated successfully!',
   error_saving_mcp_server: 'Error saving MCP server',
+  error_updating_mcp_server: 'Error updating MCP server',
+  failed_to_delete_mcp_server: 'Failed to delete MCP server',
+  mcp_server_not_found: 'MCP Server not found',
   delete_mcp_server: 'Delete MCP Server',
   delete_mcp_server_confirmation:
     'Are you sure you want to delete this MCP server? This action cannot be undone.',
@@ -419,6 +431,9 @@ const TRANSLATIONS_EN = {
   // Chart Tooltips
   error_sessions_label: 'Error Sessions',
   total_sessions_label: 'Total Sessions',
+
+  // Field Tooltips
+  required_scopes_tooltip: 'Anonymous - no additional scopes are needed to chat with an Agent\nCustomer - requires \'ai.agentexecution_manage_own\' scope to chat with an Agent\nEmployee, Integration - requires \'ai.agentexecution_manage\' scope to chat with an Agent\n\nScopes validation is ignored for Commerce events*',
 
   // Localized Input
   show_languages: 'Show languages',
