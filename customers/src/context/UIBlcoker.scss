@@ -1,0 +1,16 @@
+.ui-blocker {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  transition: all 300ms linear;
+  &--active {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+}
+
+.progress {
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
+}
