@@ -406,10 +406,6 @@ const TRANSLATIONS_DE = {
   back_to_sessions: 'Zurück zu Sitzungen',
 
   // Metrics and Analytics
-  error_rate: 'Fehlerrate',
-  total_logs: 'Gesamte Protokolle',
-  error_logs: 'Fehlerprotokolle',
-  error_trend_4_weeks: 'Fehlertrend (Letzten 4 Wochen)',
   no_trend_data: 'Keine Trenddaten verfügbar',
   error_rate_percent: 'Fehlerrate (%)',
   total_requests: 'Gesamte Anfragen',

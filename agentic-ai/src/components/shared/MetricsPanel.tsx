@@ -44,18 +44,14 @@ const MetricsPanel: React.FC<MetricsPanelProps> = ({
         const urlParams = new URLSearchParams(location.search)
         const agentId = urlParams.get('agentId') || undefined
 
-        const [efficiencyData, severityData, trendData] = await Promise.all([
-          analyticsService.getResolutionEfficiency(agentId, forceRefresh),
-          analyticsService.getSessionSeverityDistribution(
-            agentId,
-            forceRefresh
-          ),
-          analyticsService.getSessionErrorTrend(4, agentId, forceRefresh),
-        ])
+        const snapshot = await analyticsService.getDashboardSnapshot(
+          agentId,
+          forceRefresh
+        )
 
-        setResolutionEfficiency(efficiencyData)
-        setSessionSeverity(severityData)
-        setSessionErrorTrend(trendData)
+        setResolutionEfficiency(snapshot.resolutionEfficiency)
+        setSessionSeverity(snapshot.sessionSeverity)
+        setSessionErrorTrend(snapshot.sessionErrorTrend)
       } catch (error) {
         console.error('Error fetching session metrics:', error)
       } finally {
