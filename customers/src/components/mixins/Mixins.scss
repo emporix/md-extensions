@@ -1,0 +1,75 @@
+.mixins-section-box-wrapper {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 0.25rem;
+  border: 1px solid $grey-2;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+
+  .mixins-section-box-title {
+    color: $grey-5;
+    font-weight: bold;
+    font-size: 0.875rem;
+  }
+
+  .mixins-section-box {
+    background-color: white;
+    width: 100%;
+    flex-grow: 1;
+
+    &--red {
+      background-color: #faf0f0;
+      border-color: #e32012;
+    }
+
+    &--green {
+      background-color: #f0faf2;
+      border-color: #0c971f;
+    }
+  }
+
+  &.reference-section {
+    width: 100% !important;
+    grid-column: 1 / -1;
+
+    .reference-field-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      .reference-field-label {
+        color: $grey-7;
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .p-inputtext {
+        width: 100% !important;
+      }
+    }
+  }
+}
+
+.mixins-technical-wrapper {
+  .schema-template {
+    overflow: hidden;
+    min-width: 0;
+    flex: 1 1 0;
+  }
+  .url-text {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .schema-pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: $grey-1;
+    max-height: 400px;
+    overflow: auto;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+}

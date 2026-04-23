@@ -1,0 +1,27 @@
+.section-box-wrapper {
+  display: flex;
+  flex-direction: column;
+
+  .section-box {
+    background-color: white;
+    border-radius: 0.25rem;
+    border: 1px solid $grey-4;
+    padding: 1.5rem;
+    width: 100%;
+    flex-grow: 1;
+  }
+}
+
+.section-title-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  min-height: 34px;
+
+  .section-title {
+    color: $grey-5;
+    font-weight: normal;
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+  }
+}
