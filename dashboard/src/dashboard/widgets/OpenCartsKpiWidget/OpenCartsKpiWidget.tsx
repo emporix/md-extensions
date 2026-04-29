@@ -15,8 +15,7 @@ export const OpenCartsKpiWidget = () => {
 
   const value = count != null ? String(count) : '—'
   const isSignedIn = Boolean(appState?.tenant)
-  const isNoAccess =
-    error === 'Access denied' || (site?.code != null && count === 0 && !error)
+  const isNoAccess = error === 'Access denied'
 
   return (
     <KpiMetricWidget
