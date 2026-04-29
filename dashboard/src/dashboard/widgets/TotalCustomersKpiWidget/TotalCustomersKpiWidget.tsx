@@ -14,8 +14,7 @@ export const TotalCustomersKpiWidget = () => {
 
   const value = total != null ? String(total) : '—'
   const isSignedIn = Boolean(appState?.tenant)
-  const isNoAccess =
-    error === 'Access denied' || (site?.code != null && total === 0 && !error)
+  const isNoAccess = error === 'Access denied'
 
   return (
     <KpiMetricWidget
