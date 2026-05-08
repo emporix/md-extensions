@@ -9,7 +9,6 @@ import {
   Template,
 } from '../models/Groups'
 import { User, UserScopes } from '../models/User'
-import axiosRetry from 'axios-retry'
 import { AxiosError, AxiosResponse } from 'axios'
 import { useTenant } from '../context/TenantProvider'
 import { PaginationProps } from '../hooks/usePagination'
@@ -300,7 +299,6 @@ export const fetchUsers = async (
     pageNumber: number
   }
 ): Promise<PaginatedResponse<User>> => {
-  axiosRetry(api, { retries: 4 })
   const { data, headers } = await api.get(`/iam/${tenant}/users`, {
     headers: {
       'x-total-count': true,

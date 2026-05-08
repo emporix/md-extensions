@@ -1,4 +1,5 @@
 import axios from 'axios'
+import axiosRetry from 'axios-retry'
 
 export const ID_SORTING_ASCENDING = 'id:ASC'
 
@@ -24,5 +25,7 @@ export interface ErrorResponse {
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 })
+
+axiosRetry(api, { retries: 4 })
 
 export { api }

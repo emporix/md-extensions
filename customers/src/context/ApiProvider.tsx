@@ -9,18 +9,20 @@ const ApiProvider = ({ children }: Props) => {
   const [apiIsReady, setApiIsReady] = useState(false)
 
   useEffect(() => {
-    api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-      const { headers } = config
-      if (headers) {
-        headers['Authorization'] = `Bearer ${token}`
-        headers['Accept-Language'] = headers['Accept-Language'] || '*'
-        headers['Content-Language'] = '*'
-        headers['Emporix-Tenant'] = tenant
+    const requestInterceptorId = api.interceptors.request.use(
+      (config: InternalAxiosRequestConfig) => {
+        const { headers } = config
+        if (headers) {
+          headers['Authorization'] = `Bearer ${token}`
+          headers['Accept-Language'] = headers['Accept-Language'] || '*'
+          headers['Content-Language'] = '*'
+          headers['Emporix-Tenant'] = tenant
+        }
+        return config
       }
-      return config
-    })
+    )
 
-    api.interceptors.response.use(
+    const responseInterceptorId = api.interceptors.response.use(
       (response) => response,
       async (error: AxiosError<ErrorResponse>) => {
         if (error?.response?.status === 401) {
@@ -30,8 +32,11 @@ const ApiProvider = ({ children }: Props) => {
       }
     )
 
-    if (token && tenant) {
-      setApiIsReady(true)
+    setApiIsReady(Boolean(token && tenant))
+
+    return () => {
+      api.interceptors.request.eject(requestInterceptorId)
+      api.interceptors.response.eject(responseInterceptorId)
     }
   }, [token, tenant, onError])
 
