@@ -68,8 +68,6 @@ const addCustomer = async (
       },
       headers: {
         'X-Version': 'v2',
-        // remove after backend fixes
-        'hybris-session-id': 'mock_session_id',
       },
     }
   )
