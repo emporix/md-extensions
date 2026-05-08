@@ -1,19 +1,15 @@
 import { useCallback } from 'react'
+import { api } from './index'
+import { MixinsSchema } from '../models/Mixins'
 
 const getMixinsSchemaCall = async (url: string) => {
-  const res = await fetch(url, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-    },
-  })
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(
-      `Failed to fetch mixins schema (${res.status} ${res.statusText}): ${text}`
-    )
-  }
-  return await res.json()
+  const trimmed = url.trim()
+  const path =
+    trimmed.startsWith('http://') || trimmed.startsWith('https://')
+      ? trimmed
+      : trimmed.replace(/^\/+/, '')
+  const { data } = await api.get<MixinsSchema>(path)
+  return data
 }
 
 export const useMixinsApi = () => {

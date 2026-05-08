@@ -7,10 +7,5 @@ dist-ssr
 node_modules
 package-lock.json
 
-# Environment (use .env.example as template)
-.env
-.env.*
-!.env.example
-
 # TypeScript
 *.tsbuildinfo

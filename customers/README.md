@@ -11,13 +11,6 @@ GPL-3.0 — see [LICENSE](./LICENSE). Security reporting: [SECURITY.md](./SECURI
 - **Node.js** ≥ 18 (see [`.nvmrc`](./.nvmrc))
 - **Yarn** 1.x (or use `npm` equivalents)
 
-## Configuration
-
-1. Copy [`.env.example`](./.env.example) to `.env` (and optionally mode-specific files used by Vite, e.g. `.env.prod` for `--mode prod`).
-2. Set **`VITE_API_URL`** to your REST API base URL (no trailing slash), e.g. `https://api.example.com`.
-
-`.env` and `.env.*` are **gitignored** — do not commit real URLs or secrets; keep templates in `.env.example` only.
-
 Optional:
 
 - **`VITE_DISABLE_ASSISTED_BUYING`** — set to `true` to hide assisted-buying UI.
