@@ -933,7 +933,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                   alignItems: 'flex-start',
                 }}
               >
-                <div className="form-field" style={{ flex: 2 }}>
+                <div className="form-field" style={{ flex: 2, minWidth: 0 }}>
                   <label className="field-label">{t('field_name')}</label>
                   <InputText
                     value={field.name || ''}
@@ -945,7 +945,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                   />
                 </div>
 
-                <div className="form-field" style={{ flex: 3 }}>
+                <div className="form-field" style={{ flex: 3, minWidth: 0 }}>
                   <label className="field-label">
                     {t('field_key')}
                     <span style={{ color: 'red' }}> *</span>
@@ -956,9 +956,16 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                     <>
                       <InputText
                         value={field.key || ''}
-                        onChange={(e) =>
-                          updateIndexedField(index, 'key', e.target.value)
-                        }
+                        onChange={(e) => {
+                          const newValue = e.target.value
+                          updateIndexedField(
+                            index,
+                            'key',
+                            newValue.startsWith(MIXINS_PREFIX)
+                              ? newValue
+                              : MIXINS_PREFIX
+                          )
+                        }}
                         className={`w-full ${!isValidCustomFieldKey(field.key) ? 'p-invalid' : ''}`}
                         placeholder={t('enter_custom_field_key')}
                       />
@@ -970,20 +977,21 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                     </>
                   ) : (
                     <>
-                      <Dropdown
-                        value={field.key || ''}
-                        options={getAvailableFieldsForIndex(index).map((f) => ({
-                          label: f,
-                          value: f,
-                        }))}
-                        onChange={(e) =>
-                          updateIndexedField(index, 'key', e.value)
-                        }
-                        className={`w-full ${!field.key?.trim() ? 'p-invalid' : ''}`}
-                        placeholder={t('select_field_key')}
-                        filter
-                        showClear
-                      />
+                      <div title={field.key || ''}>
+                        <Dropdown
+                          value={field.key || ''}
+                          options={getAvailableFieldsForIndex(index).map(
+                            (f) => ({ label: f, value: f })
+                          )}
+                          onChange={(e) =>
+                            updateIndexedField(index, 'key', e.value)
+                          }
+                          className={`w-full ${!field.key?.trim() ? 'p-invalid' : ''}`}
+                          placeholder={t('select_field_key')}
+                          filter
+                          showClear
+                        />
+                      </div>
                       {!field.key?.trim() && (
                         <small className="p-error">
                           {t('field_key_required')}
@@ -1112,7 +1120,8 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         const hasValidIndexedFields = indexedFields.every(
           (field: RagEmporixFieldConfig) => {
             if (!field.key?.trim() || !isValidKey(field.key)) return false
-            if (field.custom) return isValidCustomFieldKey(field.key)
+            if (field.custom || field.key?.startsWith(MIXINS_PREFIX))
+              return isValidCustomFieldKey(field.key)
             return true
           }
         )

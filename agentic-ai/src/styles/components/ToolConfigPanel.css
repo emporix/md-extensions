@@ -157,6 +157,9 @@
   align-items: center;
   height: 100%;
   font-size: 0.875rem !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tool-config-panel .p-inputtext::placeholder,
