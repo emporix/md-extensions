@@ -160,6 +160,9 @@ const TRANSLATIONS_EN = {
   field_key_required: 'Field key is required',
   remove_field: 'Remove field',
   add_indexed_field: 'Add Indexed Field',
+  add_custom_field: 'Add Custom Field',
+  enter_custom_field_key: 'Enter field path (e.g. mixins.fieldName)',
+  custom_field_key_invalid: 'Field path must start with "mixins." and contain a valid path',
   force_delete_tool: 'Force Delete Tool',
   force_delete_tool_message:
     'Tool is used by agents.\nBy deleting it, the tool will be removed from the agents and agents will be disabled.',
