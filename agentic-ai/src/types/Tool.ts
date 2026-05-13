@@ -20,6 +20,7 @@ export enum RagLlmProvider {
 export interface RagEmporixFieldConfig {
   name?: string
   key?: string
+  custom?: boolean
 }
 
 export interface RagCustomEmbeddingConfig {

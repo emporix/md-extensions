@@ -159,6 +159,9 @@ const TRANSLATIONS_DE = {
   field_key_required: 'Feldschlüssel ist erforderlich',
   remove_field: 'Feld entfernen',
   add_indexed_field: 'Indiziertes Feld hinzufügen',
+  add_custom_field: 'Benutzerdefiniertes Feld hinzufügen',
+  enter_custom_field_key: 'Feldpfad eingeben (z.B. mixins.feldname)',
+  custom_field_key_invalid: 'Feldpfad muss mit "mixins." beginnen und einen gültigen Pfad enthalten',
   force_delete_tool: 'Tool erzwungen löschen',
   force_delete_tool_message:
     'Tool wird von Agenten verwendet.\nDurch das Löschen wird es aus den Agenten entfernt und die Agenten werden deaktiviert.',

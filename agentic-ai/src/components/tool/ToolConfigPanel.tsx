@@ -25,6 +25,10 @@ import { Dropdown } from 'primereact/dropdown'
 import { getRagMetadata } from '../../services/aiRagIndexerService'
 import { sanitizeIdInput } from '../../utils/validation'
 
+const MIXINS_PREFIX = 'mixins.'
+const isValidCustomFieldKey = (key?: string) =>
+  !!key?.startsWith(MIXINS_PREFIX) && key.length > MIXINS_PREFIX.length
+
 const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   visible,
   tool,
@@ -669,6 +673,14 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       }))
     }
 
+    const addCustomIndexedField = () => {
+      const newFields = [...indexedFields, { name: '', key: MIXINS_PREFIX, custom: true }]
+      setConfig((prev) => ({
+        ...prev,
+        indexedFields: newFields,
+      }))
+    }
+
     const removeIndexedField = (index: number) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const newFields = indexedFields.filter((_: any, i: number) => i !== index)
@@ -921,7 +933,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                   alignItems: 'flex-start',
                 }}
               >
-                <div className="form-field" style={{ flex: 2 }}>
+                <div className="form-field" style={{ flex: 2, minWidth: 0 }}>
                   <label className="field-label">{t('field_name')}</label>
                   <InputText
                     value={field.name || ''}
@@ -933,25 +945,59 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                   />
                 </div>
 
-                <div className="form-field" style={{ flex: 3 }}>
+                <div className="form-field" style={{ flex: 3, minWidth: 0 }}>
                   <label className="field-label">
                     {t('field_key')}
                     <span style={{ color: 'red' }}> *</span>
                   </label>
-                  <Dropdown
-                    value={field.key || ''}
-                    options={getAvailableFieldsForIndex(index).map((f) => ({
-                      label: f,
-                      value: f,
-                    }))}
-                    onChange={(e) => updateIndexedField(index, 'key', e.value)}
-                    className={`w-full ${!field.key?.trim() ? 'p-invalid' : ''}`}
-                    placeholder={t('select_field_key')}
-                    filter
-                    showClear
-                  />
-                  {!field.key?.trim() && (
-                    <small className="p-error">{t('field_key_required')}</small>
+                  {field.custom ||
+                  (field.key?.startsWith(MIXINS_PREFIX) &&
+                    !availableFields.includes(field.key)) ? (
+                    <>
+                      <InputText
+                        value={field.key || ''}
+                        onChange={(e) => {
+                          const newValue = e.target.value
+                          updateIndexedField(
+                            index,
+                            'key',
+                            newValue.startsWith(MIXINS_PREFIX)
+                              ? newValue
+                              : MIXINS_PREFIX
+                          )
+                        }}
+                        className={`w-full ${!isValidCustomFieldKey(field.key) ? 'p-invalid' : ''}`}
+                        placeholder={t('enter_custom_field_key')}
+                      />
+                      {!isValidCustomFieldKey(field.key) && (
+                        <small className="p-error">
+                          {t('custom_field_key_invalid')}
+                        </small>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div title={field.key || ''}>
+                        <Dropdown
+                          value={field.key || ''}
+                          options={getAvailableFieldsForIndex(index).map(
+                            (f) => ({ label: f, value: f })
+                          )}
+                          onChange={(e) =>
+                            updateIndexedField(index, 'key', e.value)
+                          }
+                          className={`w-full ${!field.key?.trim() ? 'p-invalid' : ''}`}
+                          placeholder={t('select_field_key')}
+                          filter
+                          showClear
+                        />
+                      </div>
+                      {!field.key?.trim() && (
+                        <small className="p-error">
+                          {t('field_key_required')}
+                        </small>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -966,13 +1012,20 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             </div>
           ))}
 
-          <Button
-            icon="pi pi-plus"
-            label={t('add_indexed_field')}
-            onClick={addIndexedField}
-            className="p-button-secondary"
-            style={{ marginTop: '16px' }}
-          />
+          <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+            <Button
+              icon="pi pi-plus"
+              label={t('add_indexed_field')}
+              onClick={addIndexedField}
+              className="p-button-secondary"
+            />
+            <Button
+              icon="pi pi-plus"
+              label={t('add_custom_field')}
+              onClick={addCustomIndexedField}
+              className="p-button-secondary"
+            />
+          </div>
 
           {indexedFields.length === 0 && (
             <small
@@ -1065,8 +1118,12 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
         const isValidKey = (key: string) => /^[a-zA-Z0-9_.-]+$/.test(key)
         const hasValidIndexedFields = indexedFields.every(
-          (field: RagEmporixFieldConfig) =>
-            field.key?.trim() && isValidKey(field.key)
+          (field: RagEmporixFieldConfig) => {
+            if (!field.key?.trim() || !isValidKey(field.key)) return false
+            if (field.custom || field.key?.startsWith(MIXINS_PREFIX))
+              return isValidCustomFieldKey(field.key)
+            return true
+          }
         )
 
         if (!hasValidIndexedFields) {
