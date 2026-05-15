@@ -6,6 +6,7 @@ import { Site } from '../../models/Site'
 import { useCustomerApi } from '../../api/customers'
 import { useFeatureToggles } from '../featureToggles/FeatureTogglesProvider'
 import { usePermissions } from '../../context/PermissionsProvider'
+import { customerMayManage } from '../../helpers/customerAccess'
 
 interface AssistedBuyingProps {
   customerNumber: string
@@ -15,11 +16,10 @@ const AssistedBuying = ({ customerNumber }: AssistedBuyingProps) => {
   const { t } = useTranslation()
   const { sites } = useSites()
   const { getAssistedBuyingLogin } = useCustomerApi()
-  const { userScopes } = usePermissions()
+  const { userScopes, permissions } = usePermissions()
   const [configuredSites, setConfiguredSites] = useState<Site[]>([])
   const toggles = useFeatureToggles()
-  const { permissions } = usePermissions()
-  const canBeManaged = permissions?.customers?.manager
+  const canBeManaged = customerMayManage(permissions)
 
   const ASSISTED_BUYING_FEATURE_TOGGLE = 'DCP_ASSISTED_BUYING'
 

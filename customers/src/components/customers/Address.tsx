@@ -1,8 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { InputText } from 'primereact/inputtext'
 import { SelectButton } from 'primereact/selectbutton'
 import { useTranslation } from 'react-i18next'
-import { CustomerAddress } from '../../models/Customer'
+import {
+  CustomerAddress,
+  DEFAULT_ADDRESS,
+} from '../../models/Customer'
 import { TOGGLE } from '../../modules/CustomersAddEdit.module'
 import InputField from '../InputField'
 import { Chips, ChipsChangeParams } from 'primereact/chips'
@@ -15,7 +18,31 @@ import useMixinsForm from '../mixins/useMixinsForm'
 import { SchemaType } from '../../models/Schema'
 import { Mixins } from '../../models/Mixins'
 import { useTabs } from '../../hooks/useTabs'
+import { deepClone } from '../../helpers/utils'
 import { usePermissions } from '../../context/PermissionsProvider'
+import { customerMayManage } from '../../helpers/customerAccess'
+
+/** RHF field row includes `customArrayKey`; omit from semantic comparison. */
+type AddressFieldRow = CustomerAddress & { customArrayKey?: string }
+
+function normalizeAddressSnapshot(raw: AddressFieldRow): CustomerAddress {
+  const { customArrayKey: _ignore, ...addr } = raw
+  const meta = addr.metadata ?? {}
+  const metaMixins =
+    (meta as { mixins?: Record<string, string> }).mixins ?? {}
+  return {
+    ...DEFAULT_ADDRESS,
+    ...addr,
+    tags: Array.isArray(addr.tags) ? addr.tags : [],
+    streetAppendix: addr.streetAppendix ?? '',
+    mixins: { ...(addr.mixins ?? {}) },
+    metadata: {
+      ...DEFAULT_ADDRESS.metadata,
+      ...meta,
+      mixins: { ...metaMixins },
+    },
+  }
+}
 
 interface AddressProps {
   idx: number
@@ -32,6 +59,7 @@ interface AddressProps {
     mixinMetadata: MixinsFormMetadata
   ) => unknown
   onDelete: (idx: number, addressId: string) => unknown
+  onAddressDirty?: (idx: number, dirty: boolean) => void
 }
 
 const TABS = ['general']
@@ -42,38 +70,46 @@ const Address = ({
   onUpdate,
   onUpdateMixins,
   onDelete,
+  onAddressDirty,
 }: AddressProps) => {
   const { t } = useTranslation()
   const { activeCountriesDropdownOptions } = useCountries()
-  const [editAddress, setEditAddress] = useState<CustomerAddress>(address)
+  const [editAddress, setEditAddress] = useState<AddressFieldRow>(() =>
+    deepClone(address as AddressFieldRow)
+  )
+  const [addressId] = useState<string | undefined>(address?.id)
   const { activeIndex, onTabChange } = useTabs(TABS, false)
   const handleSave = useCallback(() => {
     onUpdate(idx, editAddress, addressId)
-  }, [idx, editAddress])
-  const [addressId] = useState<string | undefined>(address?.id)
+  }, [idx, editAddress, addressId, onUpdate])
   const { permissions } = usePermissions()
-  const canBeManaged = permissions?.customers?.manager
+  const canBeManaged = customerMayManage(permissions)
+
+  useEffect(() => {
+    setEditAddress(deepClone(address as AddressFieldRow))
+  }, [address])
+
+  const baselineJson = useMemo(
+    () => JSON.stringify(normalizeAddressSnapshot(address as AddressFieldRow)),
+    [address]
+  )
+  const addressDirty =
+    JSON.stringify(normalizeAddressSnapshot(editAddress)) !== baselineJson
+
+  useEffect(() => {
+    onAddressDirty?.(idx, addressDirty)
+  }, [idx, addressDirty, onAddressDirty])
 
   const updateAddress = (key: string, value: string | boolean | string[]) => {
     setEditAddress((prev) => {
       return { ...prev, [key]: value }
     })
   }
-  const initMixins = (address: CustomerAddress) => {
-    if (address.mixins === undefined) {
-      address.mixins = {}
-    }
-    if (address.metadata === undefined) {
-      address.metadata = {}
-    }
-    if (address.metadata.mixins === undefined) {
-      address.metadata.mixins = {}
-    }
-    loadMixins(address.metadata.mixins, address.mixins)
-  }
-
   useEffect(() => {
-    initMixins(address)
+    void loadMixins(
+      (address.metadata?.mixins ?? {}) as Record<string, string>,
+      address.mixins ?? {}
+    )
   }, [])
 
   const saveMixin = async (data: Mixins, mixinMetadata: MixinsFormMetadata) => {
@@ -88,7 +124,11 @@ const Address = ({
 
   return (
     <div className="grid col-12 bg-white">
-      <TabView activeIndex={activeIndex} onTabChange={onTabChange}>
+      <TabView
+        renderActiveOnly={false}
+        activeIndex={activeIndex}
+        onTabChange={onTabChange}
+      >
         <TabPanel header="General" key="general">
           <div className="flex justify-content-end">
             <Button
@@ -159,7 +199,7 @@ const Address = ({
             >
               <InputText
                 disabled={!canBeManaged}
-                value={editAddress.streetAppendix}
+                value={editAddress.streetAppendix || ''}
                 onChange={(e) =>
                   updateAddress('streetAppendix', e.target.value)
                 }

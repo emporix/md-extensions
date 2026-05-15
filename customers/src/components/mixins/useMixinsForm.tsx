@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useSchemaApi } from 'api/schema'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedValue } from 'hooks/useLocalizedValue'
@@ -46,6 +46,8 @@ interface MixinsProps {
     metadata: Metadata
   ) => Promise<void> | void
   managerPermissions?: boolean
+  /** Customer edit screen only — registers mixin forms for shared Save / hides per-tab actions */
+  enableBulkCustomerMixinSave?: boolean
 }
 
 const useMixinsForm = (props: MixinsProps) => {
@@ -59,6 +61,15 @@ const useMixinsForm = (props: MixinsProps) => {
     useState<Map<string, MixinsFormData[]>>()
   const [isMixinsLoading, setIsMixinsLoading] = useState(false)
   const { getAllCategories } = useCategoriesApi()
+
+  const [mixinTabDirty, setMixinTabDirty] = useState<Record<string, boolean>>({})
+
+  const setMixinTabDirtyForId = useCallback((id: string, dirty: boolean) => {
+    setMixinTabDirty((prev) => {
+      if (prev[id] === dirty) return prev
+      return { ...prev, [id]: dirty }
+    })
+  }, [])
 
   const mixinsForms: MixinsFormTemplate[] = useMemo(() => {
     if (!forms) return []
@@ -79,13 +90,27 @@ const useMixinsForm = (props: MixinsProps) => {
             managerPermissions={props.managerPermissions}
             presentSchemaUrl={present?.metadata?.url}
             newerSchemaUrl={newer?.metadata?.url}
+            onDirtyChange={(dirty) =>
+              present?.id && setMixinTabDirtyForId(present.id, dirty)
+            }
+            bulkRegistrationBaseId={
+              props.enableBulkCustomerMixinSave ? present?.id : undefined
+            }
           />
         ),
       }
       schemas.push(item)
     }
     return schemas.sort(sortById)
-  }, [forms, i18n.language, mixins, props.onEdit])
+  }, [
+    forms,
+    i18n.language,
+    mixins,
+    props.onEdit,
+    props.managerPermissions,
+    props.enableBulkCustomerMixinSave,
+    setMixinTabDirtyForId,
+  ])
 
   const resolveMixinNames = (
     attributes: SchemaAttribute[],
@@ -113,6 +138,7 @@ const useMixinsForm = (props: MixinsProps) => {
     mixins: Mixins = {} as Mixins,
     classificationMixins?: ClassificationMixin[]
   ) => {
+    setMixinTabDirty({})
     setMixins(mixins)
     setIsMixinsLoading(true)
     try {
@@ -534,12 +560,21 @@ const useMixinsForm = (props: MixinsProps) => {
       return <TabPanel disabled={true} header={<TabsLoader />} />
     } else {
       return mixinsForms.map((f) => (
-        <TabPanel header={<MixinsTabTitle form={f} />} key={f.id}>
+        <TabPanel
+          header={
+            <MixinsTabTitle
+              form={f}
+              dirty={mixinTabDirty[f.id]}
+              unsavedLabel={t('customers.tabs.unsavedChanges')}
+            />
+          }
+          key={f.id}
+        >
           {f.template}
         </TabPanel>
       ))
     }
-  }, [isMixinsLoading, mixinsForms])
+  }, [isMixinsLoading, mixinsForms, mixinTabDirty, t])
 
   return {
     mixinsForms,
@@ -547,6 +582,7 @@ const useMixinsForm = (props: MixinsProps) => {
     isMixinsLoading,
     mixinsTabs,
     classificationsTab,
+    mixinTabDirty,
   }
 }
 

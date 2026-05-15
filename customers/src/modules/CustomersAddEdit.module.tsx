@@ -26,10 +26,12 @@ import { Dropdown } from 'primereact/dropdown'
 import { useSites } from '../context/SitesProvider'
 import { useToast } from '../context/ToastProvider'
 import useCustomNavigate from '../hooks/useCustomNavigate'
-import { Controller, useFieldArray, useForm } from 'react-hook-form'
+import { Controller, useFieldArray, useForm, UseFormSetValue } from 'react-hook-form'
 import { useCurrencyContext } from '../context/CurrencyProvider'
 import AssistedBuying from '../components/customers/AssistedBuying'
+import { customerMayManage } from '../helpers/customerAccess'
 import { deepClone } from '../helpers/utils'
+import { isOptimisticLockConflictError } from '../helpers/optimisticLock'
 import { MixinsFormMetadata } from '../components/mixins/helpers'
 import useMixinsForm from '../components/mixins/useMixinsForm'
 import { SchemaType } from '../models/Schema'
@@ -53,6 +55,69 @@ import { useSegmentsApi } from '../api/segments'
 import { Segment } from '../models/Segment'
 import { SEGMENTS_BASE_PATH } from '../router/Segments.routes'
 import { useConfigurationApi } from '../api/configuration'
+import {
+  CustomerBulkMixinRegistryProvider,
+  useCreateCustomerBulkMixinRegistry,
+  type MixinBulkPatch,
+} from '../context/CustomerBulkSaveContext'
+
+function mergeCustomerMixinPatches(
+  customer: Customer,
+  patches: MixinBulkPatch[]
+) {
+  const mergedMixins = { ...(customer.mixins ?? {}) }
+  const metadataMixins = { ...(customer.metadata?.mixins ?? {}) }
+  if (metadataMixins.mixins === undefined) {
+    metadataMixins.mixins = {}
+  }
+  for (const p of patches) {
+    mergedMixins[p.key] = deepClone(p.data)
+    metadataMixins.mixins[p.key] = p.url
+  }
+  return { mergedMixins, metadataMixins }
+}
+
+function extractCustomerDetailPatch(
+  fv: Customer,
+  serverAddresses: CustomerAddress[]
+): Partial<Customer> & { id: string } {
+  const { addresses: _a, mixins: _m, metadata: _meta, password, ...scalars } =
+    fv
+  return {
+    ...scalars,
+    restriction: (fv.restriction || null) as string | null | undefined,
+    password: password === '' ? undefined : password,
+    addresses: serverAddresses,
+    id: fv.id as string,
+  }
+}
+
+function normalizeCustomerForSave(customer: Customer): Customer {
+  const customerData = { ...customer }
+  customerData.restriction = (customerData.restriction || null) as
+    | string
+    | null
+    | undefined
+  if (customerData.password === '') {
+    customerData.password = undefined
+  }
+  return customerData
+}
+
+/** Keep form lock fields aligned with server after a nested save (e.g. address). */
+function applyServerOptimisticLockToForm(
+  setValue: UseFormSetValue<Customer>,
+  serverCustomer: Customer
+) {
+  const md = serverCustomer.metadata
+  if (!md) return
+  if (md.version !== undefined) {
+    setValue('metadata.version', md.version, { shouldDirty: false })
+  }
+  if (md.modifiedAt !== undefined) {
+    setValue('metadata.modifiedAt', md.modifiedAt, { shouldDirty: false })
+  }
+}
 
 export const TOGGLE = [
   { name: 'Yes', value: true },
@@ -111,7 +176,7 @@ const CustomersAddEdit = () => {
 
   const { permissions } = usePermissions()
   const { customerRestrictions } = useRestrictions()
-  const canBeManaged = permissions?.customers?.manager
+  const canBeManaged = customerMayManage(permissions)
   const hasFullRestrictionAccess = customerRestrictions === null
 
   const {
@@ -125,6 +190,8 @@ const CustomersAddEdit = () => {
     partiallyEditCustomerAddress,
     deleteCustomerAddress,
   } = useCustomerApi()
+
+  const bulkMixinRegistry = useCreateCustomerBulkMixinRegistry()
 
   const { selectedCurrency } = useCurrencyContext()
   const { getAllGroups4User } = useIamApi()
@@ -145,6 +212,8 @@ const CustomersAddEdit = () => {
     reset,
     setValue,
     watch,
+    trigger,
+    getValues,
     formState: { errors, isValid, isDirty },
   } = useForm<Customer>({
     defaultValues: useMemo(() => {
@@ -160,11 +229,41 @@ const CustomersAddEdit = () => {
     }, [selectedCurrency, customer]),
   })
 
-  const { fields, append, remove, update } = useFieldArray({
+  const { fields, append, replace } = useFieldArray({
     control,
     name: 'addresses',
     keyName: 'customArrayKey',
   })
+
+  const [addressDirtyByIdx, setAddressDirtyByIdx] = useState<
+    Record<number, boolean>
+  >({})
+
+  const reportAddressDirty = useCallback((idx: number, dirty: boolean) => {
+    setAddressDirtyByIdx((prev) =>
+      prev[idx] === dirty ? prev : { ...prev, [idx]: dirty }
+    )
+  }, [])
+
+  useEffect(() => {
+    setAddressDirtyByIdx((prev) => {
+      const next = { ...prev }
+      let changed = false
+      for (const key of Object.keys(next)) {
+        const i = Number(key)
+        if (Number.isNaN(i) || i >= fields.length) {
+          delete next[i]
+          changed = true
+        }
+      }
+      return changed ? next : prev
+    })
+  }, [fields.length])
+
+  const addressesTabDirty = useMemo(
+    () => Object.values(addressDirtyByIdx).some(Boolean),
+    [addressDirtyByIdx]
+  )
 
   const [isLoading, setIsLoading] = useState(false)
 
@@ -208,6 +307,14 @@ const CustomersAddEdit = () => {
     return newCustomer
   }
 
+  const refreshCustomerLockState = useCallback(async () => {
+    const fresh = await reloadData()
+    if (!fresh) return
+    applyServerOptimisticLockToForm(setValue, fresh)
+    replace(fresh.addresses ?? [])
+    setCustomer(fresh)
+  }, [reloadData, replace, setCustomer, setValue])
+
   const fetchReferralCoupon = async () => {
     if (!customerId) return
     const resp = await getReferralCoupon(customerId)
@@ -244,17 +351,16 @@ const CustomersAddEdit = () => {
       try {
         blockPanel(true)
 
-        const customerData = { ...customer }
-        customerData.restriction = (customerData.restriction || null) as
-          | string
-          | null
-          | undefined
-        if (customerData.password === '') {
-          customerData.password = undefined
-        }
+        const customerData = normalizeCustomerForSave(customer)
 
         if (customerId) {
-          await editCustomer(customerData)
+          try {
+            await editCustomer(customerData)
+          } catch (e: unknown) {
+            if (!isOptimisticLockConflictError(e)) throw e
+            await refreshCustomerLockState()
+            await editCustomer(normalizeCustomerForSave(getValues()))
+          }
           const newCustomer = await reloadData()
 
           toast.showToast(t('customers.toasts.successUpdate'), '', 'success')
@@ -270,14 +376,27 @@ const CustomersAddEdit = () => {
       } catch (e: any) {
         toast.showError(
           t('customers.toasts.errorSave'),
-          e.response.data.message
+          e.response?.data?.message ?? e.message
         )
         console.error(e)
       } finally {
         blockPanel(false)
       }
     },
-    [customerId]
+    [
+      blockPanel,
+      createCustomer,
+      customerId,
+      editCustomer,
+      getValues,
+      navigate,
+      reloadData,
+      refreshCustomerLockState,
+      reset,
+      setCustomer,
+      t,
+      toast,
+    ]
   )
 
   const addNewAddress = useCallback(() => {
@@ -285,26 +404,37 @@ const CustomersAddEdit = () => {
   }, [customer])
 
   const handleDeleteAddress = useCallback(
-    async (idx: number, addressId: string) => {
+    async (_idx: number, addressId: string) => {
       try {
         blockPanel(true)
         if (!customerId) {
           return
         }
         await deleteCustomerAddress(customerId, addressId)
-        const newCustomer = await syncCustomer(customerId)
-        setCustomer(newCustomer)
-        remove(idx)
+        const newCustomer = await reloadData()
+        if (newCustomer) {
+          replace(newCustomer.addresses ?? [])
+          setCustomer(newCustomer)
+          applyServerOptimisticLockToForm(setValue, newCustomer)
+        }
       } finally {
         blockPanel(false)
       }
     },
-    [customerId]
+    [
+      blockPanel,
+      customerId,
+      deleteCustomerAddress,
+      reloadData,
+      replace,
+      setCustomer,
+      setValue,
+    ]
   )
 
   const handleUpdateAddress = useCallback(
     async (
-      idx: number,
+      _idx: number,
       newAddress: CustomerAddress,
       addressId: string | undefined
     ) => {
@@ -322,15 +452,29 @@ const CustomersAddEdit = () => {
           )
           newAddress.id = creationResponse.id
         }
-        const newCustomer = await syncCustomer(customerId)
-        setCustomer(newCustomer)
-        update(idx, newAddress)
+        const newCustomer = await reloadData()
+        if (newCustomer) {
+          replace(newCustomer.addresses ?? [])
+          setCustomer(newCustomer)
+          applyServerOptimisticLockToForm(setValue, newCustomer)
+        }
         toast.showToast(t('customers.toasts.successUpdate'), '', 'success')
       } finally {
         blockPanel(false)
       }
     },
-    [customer]
+    [
+      blockPanel,
+      createCustomerAddress,
+      customerId,
+      editCustomerAddress,
+      reloadData,
+      replace,
+      setCustomer,
+      setValue,
+      t,
+      toast,
+    ]
   )
 
   const handleUpdateAddressMixins = useCallback(
@@ -355,9 +499,12 @@ const CustomersAddEdit = () => {
           mixins: { ...address.mixins },
           metadata: { mixins: { [key]: url } },
         })
-        const newCustomer = await syncCustomer(customerId)
-        setCustomer(newCustomer)
-        update(idx, address)
+        const newCustomer = await reloadData()
+        if (newCustomer) {
+          replace(newCustomer.addresses ?? [])
+          setCustomer(newCustomer)
+          applyServerOptimisticLockToForm(setValue, newCustomer)
+        }
         toast.showToast(t('customers.toasts.successUpdate'), '', 'success')
       } catch (e) {
         console.error(e)
@@ -365,7 +512,18 @@ const CustomersAddEdit = () => {
         blockPanel(false)
       }
     },
-    [customer]
+    [
+      blockPanel,
+      customer,
+      customerId,
+      partiallyEditCustomerAddress,
+      reloadData,
+      replace,
+      setCustomer,
+      setValue,
+      t,
+      toast,
+    ]
   )
 
   const saveMixin = async (data: Mixins, mixinMetadata: MixinsFormMetadata) => {
@@ -387,7 +545,11 @@ const CustomersAddEdit = () => {
         mixins: { ...mixins },
         metadata: { ...metadataMixins },
       })
-      await reloadData()
+      const fresh = await reloadData()
+      if (fresh) {
+        applyServerOptimisticLockToForm(setValue, fresh)
+        setCustomer(fresh)
+      }
       toast.showToast(t('customers.toasts.successUpdate'), '', 'success')
     } catch (e) {
       console.error(e)
@@ -396,11 +558,134 @@ const CustomersAddEdit = () => {
     }
   }
 
-  const { loadMixins, mixinsTabs } = useMixinsForm({
+  const { loadMixins, mixinsTabs, mixinTabDirty } = useMixinsForm({
     type: SchemaType.CUSTOMER,
     onEdit: saveMixin,
     managerPermissions: canBeManaged,
+    enableBulkCustomerMixinSave: true,
   })
+
+  const hasMixinTabDirty = useMemo(
+    () => Object.values(mixinTabDirty).some(Boolean),
+    [mixinTabDirty]
+  )
+
+  const handleBulkDiscard = useCallback(() => {
+    if (customer) reset(customer)
+    bulkMixinRegistry.discardMixinDrafts()
+  }, [bulkMixinRegistry, customer, reset])
+
+  const handleBulkSave = useCallback(async () => {
+    if (!customerId || !getValues().id) return
+
+    const mixinPrep = await bulkMixinRegistry.prepareMixinPatches()
+    if (!mixinPrep.ok) {
+      toast.showToast(t('customers.toasts.errorSave'), '', 'error')
+      return
+    }
+
+    const mainOk = await trigger()
+    if (!mainOk) {
+      toast.showToast(t('customers.toasts.errorSave'), '', 'error')
+      return
+    }
+
+    const patches = mixinPrep.patches
+    const hasMixinWrites = patches.length > 0
+    const mainDirty = isDirty
+
+    if (!hasMixinWrites && !mainDirty) return
+
+    blockPanel(true)
+    try {
+      let routedViaDetailSubmit = false
+      const executeBulkWrites = async () => {
+        if (!hasMixinWrites && mainDirty) {
+          await handleSubmit(onSubmit)()
+          routedViaDetailSubmit = true
+          return
+        }
+        const snapshot = getValues()
+        if (hasMixinWrites) {
+          const { mergedMixins, metadataMixins } = mergeCustomerMixinPatches(
+            snapshot,
+            patches
+          )
+          await patchCustomer({
+            id: snapshot.id as string,
+            mixins: mergedMixins,
+            metadata: { ...metadataMixins } as Customer['metadata'],
+          })
+        }
+        if (mainDirty) {
+          await patchCustomer(
+            extractCustomerDetailPatch(getValues(), getValues().addresses)
+          )
+        }
+      }
+
+      let lockAttempts = 0
+      while (true) {
+        try {
+          await executeBulkWrites()
+          break
+        } catch (e: unknown) {
+          if (
+            lockAttempts > 0 ||
+            !isOptimisticLockConflictError(e)
+          ) {
+            throw e
+          }
+          lockAttempts += 1
+          await refreshCustomerLockState()
+        }
+      }
+
+      if (!routedViaDetailSubmit) {
+        const newCustomer = await reloadData()
+        if (newCustomer) {
+          setCustomer(newCustomer)
+          reset(newCustomer)
+        }
+        toast.showToast(t('customers.toasts.successUpdate'), '', 'success')
+      }
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } }
+      toast.showError(
+        t('customers.toasts.errorSave'),
+        err.response?.data?.message
+      )
+      console.error(e)
+    } finally {
+      blockPanel(false)
+    }
+  }, [
+    blockPanel,
+    bulkMixinRegistry,
+    customerId,
+    getValues,
+    handleSubmit,
+    isDirty,
+    onSubmit,
+    patchCustomer,
+    reloadData,
+    refreshCustomerLockState,
+    reset,
+    setCustomer,
+    t,
+    toast,
+    trigger,
+  ])
+
+  const canSharedDiscard =
+    !!customerId && !!customer?.id && canBeManaged && (isDirty || hasMixinTabDirty)
+
+  const canSharedSave =
+    !!customerId &&
+    !!customer?.id &&
+    canBeManaged &&
+    (isDirty || hasMixinTabDirty) &&
+    isValid
 
   const sitesDropdownOptions = useMemo(() => {
     let filteredSites = sites || []
@@ -580,26 +865,62 @@ const CustomersAddEdit = () => {
           </>
         }
       />
-      <TabView scrollable activeIndex={activeIndex} onTabChange={onTabChange}>
-        <TabPanel header={t('customers.tabs.first')}>
-          <div className="flex gap-2 align-items-center justify-content-end">
-            {customerId && <AssistedBuying customerNumber={customerId} />}
-            <Button
-              className="p-button-secondary"
-              label={t('global.discard')}
-              disabled={!isDirty || !canBeManaged}
-              onClick={() => {
-                reset()
-              }}
-            />
-            {activeIndex === 0 && (
+      {customerId && (
+        <div className="flex flex-wrap gap-2 justify-content-end align-items-center mb-3">
+          <AssistedBuying customerNumber={customerId} />
+          <Button
+            className="p-button-secondary"
+            label={t('global.discard')}
+            disabled={!canSharedDiscard}
+            onClick={handleBulkDiscard}
+          />
+          <Button
+            disabled={!canSharedSave}
+            label={t('global.save')}
+            onClick={() => void handleBulkSave()}
+          />
+        </div>
+      )}
+      <CustomerBulkMixinRegistryProvider value={bulkMixinRegistry}>
+        <TabView
+          scrollable
+          renderActiveOnly={false}
+          activeIndex={activeIndex}
+          onTabChange={onTabChange}
+        >
+        <TabPanel
+          header={
+            <span className="inline-flex align-items-center gap-1">
+              {t('customers.tabs.first')}
+              {isDirty || hasMixinTabDirty ? (
+                <span
+                  className="text-orange-500 font-bold"
+                  title={t('customers.tabs.unsavedChanges')}
+                  aria-label={t('customers.tabs.unsavedChanges')}
+                >
+                  *
+                </span>
+              ) : null}
+            </span>
+          }
+        >
+          {!customerId && (
+            <div className="flex gap-2 align-items-center justify-content-end">
+              <Button
+                className="p-button-secondary"
+                label={t('global.discard')}
+                disabled={!isDirty || !canBeManaged}
+                onClick={() => {
+                  reset()
+                }}
+              />
               <Button
                 disabled={!isDirty || !isValid || !canBeManaged}
                 label={t('global.save')}
                 onClick={handleSubmit(onSubmit)}
               />
-            )}
-          </div>
+            </div>
+          )}
           <SectionBox className="mb-6" name={t('customers.details.subtitle')}>
             <form className="grid">
               <div className="grid col-12">
@@ -1044,7 +1365,23 @@ const CustomersAddEdit = () => {
             </>
           )}
         </TabPanel>
-        <TabPanel disabled={!customerId} header={t('customers.tabs.second')}>
+        <TabPanel
+          disabled={!customerId}
+          header={
+            <span className="inline-flex align-items-center gap-1">
+              {t('customers.tabs.second')}
+              {addressesTabDirty ? (
+                <span
+                  className="text-orange-500 font-bold"
+                  title={t('customers.tabs.unsavedChanges')}
+                  aria-label={t('customers.tabs.unsavedChanges')}
+                >
+                  *
+                </span>
+              ) : null}
+            </span>
+          }
+        >
           {fields.map((address, idx) => {
             return (
               <SectionBox key={address.customArrayKey} className={'mb-2'}>
@@ -1055,6 +1392,7 @@ const CustomersAddEdit = () => {
                     onDelete={handleDeleteAddress}
                     onUpdate={handleUpdateAddress}
                     onUpdateMixins={handleUpdateAddressMixins}
+                    onAddressDirty={reportAddressDirty}
                   />
                 </div>
               </SectionBox>
@@ -1069,6 +1407,7 @@ const CustomersAddEdit = () => {
         </TabPanel>
         {mixinsTabs}
       </TabView>
+      </CustomerBulkMixinRegistryProvider>
       <ConfirmBox
         visible={isDeleteConfirmOpened}
         onAccept={handleDelete}

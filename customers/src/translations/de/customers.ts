@@ -80,6 +80,7 @@ export default {
   tabs: {
     first: 'Details',
     second: 'Adressen',
+    unsavedChanges: 'Ungespeicherte Änderungen',
   },
   address: {
     id: 'ID',

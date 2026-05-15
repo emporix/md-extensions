@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react'
-import { AppState } from '../models/AppState.model'
+import { ResolvedAppState } from '../models/AppState.model'
 
-type DashboardContextType = AppState
+type DashboardContextType = ResolvedAppState
 
 const Context = createContext<DashboardContextType>({
   tenant: '',
@@ -23,7 +23,7 @@ export const DashboardProvider = ({
   appState,
 }: {
   children: React.ReactNode
-  appState: AppState
+  appState: ResolvedAppState
 }) => {
   return <Context.Provider value={appState}>{children}</Context.Provider>
 }

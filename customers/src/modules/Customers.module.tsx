@@ -17,6 +17,7 @@ import HeaderSection from '../components/shared/HeaderSection'
 import useCustomNavigate from '../hooks/useCustomNavigate'
 import TableActions from '../components/shared/TableActions'
 import { usePermissions } from '../context/PermissionsProvider'
+import { customerMayManage } from '../helpers/customerAccess'
 import { useTenant } from '../context/TenantProvider'
 import MdDataTable from '../components/MdDataTable'
 import { SchemaType } from 'models/Schema'
@@ -59,7 +60,7 @@ const CustomersModule = () => {
   const { tenant } = useTenant()
 
   const { permissions } = usePermissions()
-  const canBeManaged = permissions?.customers?.manager
+  const canBeManaged = customerMayManage(permissions)
 
   const { getTableMixinColumns, fetchVisibleColumns, tableConfigurations } =
     useConfiguration()

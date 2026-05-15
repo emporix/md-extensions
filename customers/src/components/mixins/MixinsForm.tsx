@@ -19,6 +19,7 @@ import {
 import { Mixins } from 'models/Mixins'
 import MixinsFormItemTemplate from './MixinsFormItemTemplate'
 import { deepMerge } from 'helpers/utils'
+import { useCustomerBulkMixinRegistry } from '../../context/CustomerBulkSaveContext'
 
 interface MixinFormProps {
   name: string
@@ -28,6 +29,10 @@ interface MixinFormProps {
   onSave: (data: Mixins, metadata: MixinsFormMetadata) => Promise<void> | void
   items: MixinsFormItem[] | undefined
   managerPermissions?: boolean
+  onDirtyChange?: (dirty: boolean) => void
+  /** When set with bulk registry context, registers this form for shared Save / hides inline actions */
+  bulkRegistrationId?: string
+  participateInBulkSave?: boolean
 }
 
 const MixinsForm = (props: MixinFormProps) => {
@@ -38,30 +43,69 @@ const MixinsForm = (props: MixinFormProps) => {
     onSave,
     items,
     managerPermissions = true,
+    onDirtyChange,
+    bulkRegistrationId,
+    participateInBulkSave = false,
   } = props
   const { t } = useTranslation()
   const methods = useForm()
-  const { control, reset, handleSubmit, formState } = methods
+  const { control, reset, handleSubmit, formState, getValues, trigger } =
+    methods
+  const bulkRegistry = useCustomerBulkMixinRegistry()
 
   useEffect(() => {
-    ;(async () => {
-      resetForm()
-    })()
-  }, [mixins, items])
+    onDirtyChange?.(formState.isDirty)
+  }, [formState.isDirty, onDirtyChange])
 
-  const resetForm = () => {
-    const defaultFormValues = prepareData()
-    reset(defaultFormValues)
-  }
-
-  const prepareData = () => {
+  const resetForm = useCallback(() => {
     const schemaData = createForm(sortTree(items) ?? [])
     const mixinsData = mixins[metadata.key]
     const filteredMixinsData = filterOutChangedMixins(mixinsData, items || [])
     const convertedSchemaData = convertToIdValuePair(schemaData)
     const convertedMixinsData = convertToIdValuePair(filteredMixinsData)
-    return deepMerge(convertedSchemaData, convertedMixinsData)
-  }
+    reset(deepMerge(convertedSchemaData, convertedMixinsData))
+  }, [items, metadata.key, mixins, reset])
+
+  useEffect(() => {
+    resetForm()
+  }, [mixins, items, resetForm])
+
+  const collectForBulk = useCallback(async () => {
+    if (!methods.formState.isDirty) return null
+    const data = getValues()
+    const filteredData = filterOutDeletedMixins(data, items || [])
+    const result = applyDefaultsOnEmptyFields(filteredData, items || [])
+    return {
+      key: metadata.key,
+      url: metadata.url,
+      data: convertFromIdValuePair(result),
+    }
+  }, [getValues, items, metadata.key, metadata.url, methods])
+
+  const validateForBulk = useCallback(() => trigger(), [trigger])
+
+  useEffect(() => {
+    if (
+      !bulkRegistry ||
+      bulkRegistrationId === undefined ||
+      !participateInBulkSave
+    ) {
+      return
+    }
+    bulkRegistry.register(bulkRegistrationId, {
+      validate: validateForBulk,
+      collect: collectForBulk,
+      discard: resetForm,
+    })
+    return () => bulkRegistry.unregister(bulkRegistrationId)
+  }, [
+    bulkRegistry,
+    bulkRegistrationId,
+    participateInBulkSave,
+    collectForBulk,
+    validateForBulk,
+    resetForm,
+  ])
 
   const onSubmit = useCallback(
     async (data: Mixins) => {
@@ -72,25 +116,34 @@ const MixinsForm = (props: MixinFormProps) => {
     [onSave, metadata, items]
   )
 
+  const showInlineActions =
+    !bulkRegistry || bulkRegistrationId === undefined
+
   return (
     <>
       <SectionBox
         name={name}
         actions={
-          <>
-            <Button
-              className="p-button-secondary"
-              label={t('global.discard')}
-              onClick={() => resetForm()}
-              disabled={!formState.isDirty || !managerPermissions}
-            />
-            <Button
-              className="ml-2"
-              disabled={!formState.isValid || !managerPermissions}
-              label={t('global.save')}
-              onClick={handleSubmit((data) => onSubmit(data))}
-            />
-          </>
+          showInlineActions ? (
+            <>
+              <Button
+                className="p-button-secondary"
+                label={t('global.discard')}
+                onClick={() => resetForm()}
+                disabled={!formState.isDirty || !managerPermissions}
+              />
+              <Button
+                className="ml-2"
+                disabled={
+                  !formState.isDirty ||
+                  !formState.isValid ||
+                  !managerPermissions
+                }
+                label={t('global.save')}
+                onClick={handleSubmit((data) => onSubmit(data))}
+              />
+            </>
+          ) : undefined
         }
       >
         <FormProvider {...methods}>

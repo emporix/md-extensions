@@ -42,10 +42,13 @@ const PermissionsContext = createContext<PermissionContextType>({
 export const usePermissions = () => useContext(PermissionsContext)
 
 /**
- * Permissions are supplied by the Management Dashboard host via appState.
+ * Permissions map from `appState.permissions`.
+ * `userScopes` from `appState.userScopes` or legacy `appState.scopes` when the host supplies them.
  */
 export const PermissionsProvider: FC<Props> = ({ children }) => {
-  const { permissions } = useDashboardContext()
+  const ctx = useDashboardContext()
+  const { permissions, userScopes: scopesFromState } = ctx
+  const userScopes = scopesFromState ?? []
 
   return (
     <PermissionsContext.Provider
@@ -56,7 +59,7 @@ export const PermissionsProvider: FC<Props> = ({ children }) => {
         userAccessControls: [],
         tenantAccessControls: [],
         templates: [],
-        userScopes: [],
+        userScopes,
         isPermissionsLoading: false,
         vendor: undefined,
         syncUserAccessControls: async () => {},

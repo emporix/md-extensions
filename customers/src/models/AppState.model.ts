@@ -22,4 +22,11 @@ export type AppState = {
   permissions: Permissions
   user: HostUser
   onError: (error: unknown) => void
+  /** OAuth-style scopes when MD passes them (see PermissionsProvider). */
+  userScopes?: string[]
+  /** Alias some hosts use instead of `userScopes`; merged into `userScopes` for consumers. */
+  scopes?: string[]
 }
+
+/** `DashboardProvider` value: typed core fields plus forwarded keys from the MD host. */
+export type ResolvedAppState = AppState & Record<string, unknown>

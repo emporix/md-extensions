@@ -14,6 +14,9 @@ interface Props {
   managerPermissions?: boolean
   presentSchemaUrl?: string
   newerSchemaUrl?: string
+  onDirtyChange?: (dirty: boolean) => void
+  /** Present schema id — enables shared customer Save when bulk registry wraps the page */
+  bulkRegistrationBaseId?: string
 }
 
 const MixinsFormBox = (props: Props) => {
@@ -24,15 +27,37 @@ const MixinsFormBox = (props: Props) => {
     presentSchemaUrl,
     newerSchemaUrl,
     managerPermissions = true,
+    onDirtyChange,
+    bulkRegistrationBaseId,
   } = props
   const { t } = useTranslation()
   const { getUiLangValue } = useLocalizedValue()
   const [activeFormIndex, setActiveFormIndex] = useState(forms.length - 1)
   const [showDialog, setShowDialog] = useState(false)
+  const [versionDirty, setVersionDirty] = useState<boolean[]>(() =>
+    forms.map(() => false)
+  )
 
   useEffect(() => {
     setActiveFormIndex(forms.length - 1)
   }, [forms])
+
+  useEffect(() => {
+    setVersionDirty((prev) => forms.map((_, i) => prev[i] ?? false))
+  }, [forms])
+
+  useEffect(() => {
+    onDirtyChange?.(versionDirty.some(Boolean))
+  }, [versionDirty, onDirtyChange])
+
+  const setVersionDirtyAt = (index: number, dirty: boolean) => {
+    setVersionDirty((prev) => {
+      if (prev[index] === dirty) return prev
+      const next = [...prev]
+      next[index] = dirty
+      return next
+    })
+  }
 
   return (
     <>
@@ -64,18 +89,27 @@ const MixinsFormBox = (props: Props) => {
         </div>
       )}
       {forms.map((f, index) => (
-        <div key={f.id + index}>
-          {index === activeFormIndex && (
-            <MixinsForm
-              name={getUiLangValue(f.name)}
-              items={f.items}
-              mixins={mixins}
-              metadata={f.metadata}
-              newerMetadata={f.newerMetadata}
-              onSave={onSave}
-              managerPermissions={managerPermissions}
-            ></MixinsForm>
-          )}
+        <div
+          key={f.id + index}
+          style={{ display: index === activeFormIndex ? 'block' : 'none' }}
+          aria-hidden={index !== activeFormIndex}
+        >
+          <MixinsForm
+            name={getUiLangValue(f.name)}
+            items={f.items}
+            mixins={mixins}
+            metadata={f.metadata}
+            newerMetadata={f.newerMetadata}
+            onSave={onSave}
+            managerPermissions={managerPermissions}
+            onDirtyChange={(dirty) => setVersionDirtyAt(index, dirty)}
+            bulkRegistrationId={
+              bulkRegistrationBaseId != null
+                ? `${bulkRegistrationBaseId}-slot-${index}`
+                : undefined
+            }
+            participateInBulkSave={index === activeFormIndex}
+          ></MixinsForm>
         </div>
       ))}
     </>

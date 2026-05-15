@@ -21,9 +21,11 @@ import { RefreshValuesProvider } from './context/RefreshValuesProvider.tsx'
 import { FeatureTogglesProvider } from './components/featureToggles/FeatureTogglesProvider.tsx'
 import CustomersModule from './modules/Customers.module.tsx'
 import CustomersAddEdit from './modules/CustomersAddEdit.module.tsx'
+import { mergeRemoteAppState } from './helpers/mergeRemoteAppState.ts'
 
 interface RemoteComponentProps {
-  appState?: AppState
+  /** Host may send extra keys; see {@link mergeRemoteAppState}. */
+  appState?: Partial<AppState> & Record<string, unknown>
 }
 
 /** Standalone dev defaults (match products/) so ApiProvider mounts the tree. Host replaces with real tenant/token. */
@@ -38,7 +40,8 @@ const defaultAppState: AppState = {
   onError: () => {},
 }
 
-const RemoteComponent = ({ appState = defaultAppState }: RemoteComponentProps) => {
+const RemoteComponent = ({ appState: incomingAppState }: RemoteComponentProps) => {
+  const appState = mergeRemoteAppState(defaultAppState, incomingAppState)
   const { i18n, t } = useTranslation()
 
   useEffect(() => {

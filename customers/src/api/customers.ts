@@ -12,7 +12,6 @@ import {
   CustomerBusinessModel,
 } from '../models/Customer'
 import { PaginatedResponse } from './orders'
-import { usePermissions } from '../context/PermissionsProvider'
 import { useTenant } from '../context/TenantProvider'
 
 const getCustomers = async (
@@ -196,23 +195,18 @@ const getAssistedBuyingLoginCall = async (
 
 export const useCustomerApi = () => {
   const { tenant } = useTenant()
-  const { permissions } = usePermissions()
-  const canViewCustomers = permissions?.customers?.viewer
 
   const syncCustomers = useCallback(
     (
       paginationParams: Partial<PaginationProps>,
       businessModel?: CustomerBusinessModel
     ) => {
-      if (tenant && canViewCustomers) {
+      if (tenant) {
         return getCustomers(tenant, paginationParams, businessModel)
-      } else if (!canViewCustomers) {
-        return Promise.reject('no permissions')
-      } else {
-        return Promise.reject('no tenant')
       }
+      return Promise.reject('no tenant')
     },
-    [tenant, permissions]
+    [tenant]
   )
 
   const syncCustomer = useCallback(

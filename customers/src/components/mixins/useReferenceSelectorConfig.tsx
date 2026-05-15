@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { usePermissions } from '../../context/PermissionsProvider'
+import { customerMayManage, customerMayView } from '../../helpers/customerAccess'
 import { ReactNode, useMemo } from 'react'
 import { FilterMatchMode } from 'primereact/api'
 import { PaginationProps } from '../../hooks/usePagination'
@@ -127,8 +128,8 @@ const useReferenceSelectorConfig = (props: Props) => {
             return `${first} ${last}`.trim()
           },
           permissions: {
-            canView: !!permissions?.customers?.viewer,
-            canManage: !!permissions?.customers?.manager,
+            canView: customerMayView(permissions),
+            canManage: customerMayManage(permissions),
           },
           navigationPath: (id: string) => `/customers/${id}`,
           goToLabel: () => t('mixins.labels.goToCustomer'),

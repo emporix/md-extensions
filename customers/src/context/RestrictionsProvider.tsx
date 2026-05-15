@@ -26,7 +26,7 @@ const RestrictionsContext = createContext<RestrictionsContextType>({
 
 export const useRestrictions = () => useContext(RestrictionsContext)
 
-/** Same logic as Management Dashboard; userScopes from host are empty in extension. */
+/** Same logic as MD; `userScopes` come from `appState.userScopes` or `appState.scopes` when the host passes them. */
 export const RestrictionsProvider: FC<Props> = ({ children }) => {
   const { userScopes } = usePermissions()
   const [quoteRestrictions, setQuoteRestrictions] = useState<string[] | null>(
