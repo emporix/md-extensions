@@ -38,6 +38,66 @@ interface SchemaFormInputProps extends StylableProps {
   disableReferenceSelector?: boolean
 }
 
+/** Loads reference catalog only for reference fields (not once per mixin row). */
+const MixinReferenceFormInput = ({
+  item,
+  value,
+  onInputChange,
+  disabled,
+  className,
+  disableReferenceSelector,
+  isReadonly,
+}: Pick<
+  SchemaFormInputProps,
+  'item' | 'value' | 'onInputChange' | 'disabled' | 'className' | 'disableReferenceSelector'
+> & { isReadonly: boolean }) => {
+  const { t } = useTranslation()
+  const { referenceOptions } = useReferenceOptions()
+
+  const referenceValue = (value as {
+    emporixReferenceType: string
+    id: string
+  }) || { emporixReferenceType: '', id: '' }
+
+  const referenceType =
+    referenceValue.emporixReferenceType ||
+    (item.referenceTypeEnum && item.referenceTypeEnum.length === 1
+      ? item.referenceTypeEnum[0]
+      : '')
+
+  const isReferenceTypeSupported =
+    referenceType && referenceOptions.includes(referenceType)
+
+  return (
+    <>
+      {isReferenceTypeSupported ? (
+        <ReferenceSelector
+          value={referenceValue.id ? [referenceValue.id] : []}
+          onChange={(selectedIds) => {
+            onInputChange(item.key as string, {
+              emporixReferenceType: referenceType,
+              id: selectedIds.at(-1) || '',
+            })
+          }}
+          referenceType={referenceType}
+          disabled={disabled || isReadonly}
+          disableDropdown={disableReferenceSelector}
+          className={className}
+          style={{ width: '300px' }}
+        />
+      ) : (
+        <InputText
+          className={className}
+          value={referenceValue.id || ''}
+          disabled={true}
+          placeholder={t('mixins.labels.unsupportedType')}
+          readOnly
+        />
+      )}
+    </>
+  )
+}
+
 const MixinsFormInput = (props: SchemaFormInputProps) => {
   const {
     item,
@@ -48,9 +108,8 @@ const MixinsFormInput = (props: SchemaFormInputProps) => {
     hideFieldName = false,
     disableReferenceSelector = false,
   } = props
-  const { i18n, t } = useTranslation()
+  const { i18n } = useTranslation()
   const { getUiLangValue } = useLocalizedValue()
-  const { referenceOptions } = useReferenceOptions()
 
   const isReadonly: boolean = item.isReadonly ?? false
   const type =
@@ -220,48 +279,16 @@ const MixinsFormInput = (props: SchemaFormInputProps) => {
         )
       }
       case MixinsFormItemType.reference: {
-        const referenceValue = (value as {
-          emporixReferenceType: string
-          id: string
-        }) || { emporixReferenceType: '', id: '' }
-
-        const referenceType =
-          referenceValue.emporixReferenceType ||
-          (item.referenceTypeEnum && item.referenceTypeEnum.length === 1
-            ? item.referenceTypeEnum[0]
-            : '')
-
-        const isReferenceTypeSupported =
-          referenceType && referenceOptions.includes(referenceType)
-
         return (
-          <>
-            {isReferenceTypeSupported ? (
-              <ReferenceSelector
-                value={referenceValue.id ? [referenceValue.id] : []}
-                onChange={(selectedIds) => {
-                  onInputChange(item.key as string, {
-                    emporixReferenceType: referenceType,
-                    id: selectedIds.at(-1) || '',
-                  })
-                }}
-                referenceType={referenceType}
-                disabled={disabled || isReadonly}
-                disableDropdown={disableReferenceSelector}
-                className={className}
-                style={{ width: '300px' }}
-              />
-            ) : (
-              // For unsupported reference types, show a disabled text input with the ID
-              <InputText
-                className={className}
-                value={referenceValue.id || ''}
-                disabled={true}
-                placeholder={t('mixins.labels.unsupportedType')}
-                readOnly
-              />
-            )}
-          </>
+          <MixinReferenceFormInput
+            item={item}
+            value={value}
+            onInputChange={onInputChange}
+            disabled={disabled}
+            className={className}
+            disableReferenceSelector={disableReferenceSelector}
+            isReadonly={isReadonly}
+          />
         )
       }
       default: {
@@ -280,7 +307,6 @@ const MixinsFormInput = (props: SchemaFormInputProps) => {
     className,
     hideFieldName,
     disableReferenceSelector,
-    referenceOptions,
     getUiLangValue,
     onInputChange,
   ])

@@ -15,6 +15,10 @@ const PREDEFINED_REFERENCE_TYPES = [
   'CATEGORY',
 ] as const
 
+/** Per-tenant in-flight + short-lived cache so many mixin fields share one catalog request. */
+const customEntitiesCache = new Map<string, CustomEntity[]>()
+const customEntitiesInflight = new Map<string, Promise<CustomEntity[]>>()
+
 export const useReferenceOptions = () => {
   const { tenant } = useTenant()
   const { getCustomEntities } = useCustomEntitiesApi()
@@ -26,11 +30,29 @@ export const useReferenceOptions = () => {
   const loadReferenceOptions = useCallback(async () => {
     if (!tenant) return
 
+    const cached = customEntitiesCache.get(tenant)
+    if (cached) {
+      setCustomEntities(cached)
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
 
-      const { customEntities: entities } = await getCustomEntities({})
+      let request = customEntitiesInflight.get(tenant)
+      if (!request) {
+        request = getCustomEntities({}).then(({ customEntities: entities }) => {
+          customEntitiesCache.set(tenant, entities)
+          return entities
+        })
+        customEntitiesInflight.set(tenant, request)
+        request.finally(() => {
+          customEntitiesInflight.delete(tenant)
+        })
+      }
+
+      const entities = await request
       setCustomEntities(entities)
     } catch (err) {
       console.error('Failed to fetch custom entities:', err)
@@ -40,7 +62,7 @@ export const useReferenceOptions = () => {
   }, [tenant, getCustomEntities])
 
   useEffect(() => {
-    loadReferenceOptions()
+    void loadReferenceOptions()
   }, [loadReferenceOptions])
 
   const referenceOptions = useMemo(() => {
