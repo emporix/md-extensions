@@ -1,0 +1,11 @@
+# Build
+dist
+dist-ssr
+*.local
+
+# Dependencies
+node_modules
+package-lock.json
+
+# TypeScript
+*.tsbuildinfo
