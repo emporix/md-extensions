@@ -158,10 +158,21 @@ const TRANSLATIONS_DE = {
   select_field_key: 'Feldschlüssel auswählen',
   field_key_required: 'Feldschlüssel ist erforderlich',
   remove_field: 'Feld entfernen',
+  remove_filter_field: 'Filterfeld entfernen',
   add_indexed_field: 'Indiziertes Feld hinzufügen',
   add_custom_field: 'Benutzerdefiniertes Feld hinzufügen',
   enter_custom_field_key: 'Feldpfad eingeben (z.B. mixins.feldname)',
-  custom_field_key_invalid: 'Feldpfad muss mit "mixins." beginnen und einen gültigen Pfad enthalten',
+  custom_field_key_invalid:
+    'Feldpfad muss mit "mixins." beginnen und einen gültigen Pfad enthalten',
+  filter_fields: 'Filterfelder',
+  filter_fields_required: 'Mindestens ein Filterfeld ist erforderlich',
+  filter_fields_description:
+    'Wählen Sie Felder aus, mit denen der Agent die Vektorsuchergebnisse vor der Abfrage filtern kann',
+  add_filter_field: 'Filterfeld hinzufügen',
+  select_filter_field_key: 'Filterfeld auswählen',
+  field_description: 'Beschreibung',
+  enter_field_description: 'Feldbeschreibung eingeben (für LLM-Kontext)',
+  error_loading_filter_fields: 'Fehler beim Laden der verfügbaren Filterfelder',
   force_delete_tool: 'Tool erzwungen löschen',
   force_delete_tool_message:
     'Tool wird von Agenten verwendet.\nDurch das Löschen wird es aus den Agenten entfernt und die Agenten werden deaktiviert.',
@@ -298,6 +309,9 @@ const TRANSLATIONS_DE = {
   enter_prompt: 'Prompt eingeben',
   provider: 'Anbieter',
   provider_required: 'Anbieter ist erforderlich',
+  llm_provider_openai: 'OpenAI',
+  llm_provider_emporix_openai: 'Emporix OpenAI',
+  llm_provider_self_hosted_ollama: 'Self-Hosted Ollama',
   dimensions: 'Dimensionen',
   enter_dimensions: 'Dimensionen eingeben (128-4096)',
   dimensions_range: 'Dimensionen müssen zwischen 128 und 4096 liegen',
@@ -432,7 +446,8 @@ const TRANSLATIONS_DE = {
   total_sessions_label: 'Gesamte Sitzungen',
 
   // Field Tooltips
-  required_scopes_tooltip: 'Anonymous - keine zusätzlichen Berechtigung erforderlich für Chat mit Agent\nCustomer - benötigt \'ai.agentexecution_manage_own\' Berechtigung für Chat mit Agent\nEmployee, Integration - benötigt \'ai.agentexecution_manage\' Berechtigung für Chat mit Agent\n\nBerechtigungsvalidierung wird für Commerce Events ignoriert*',
+  required_scopes_tooltip:
+    "Anonymous - keine zusätzlichen Berechtigung erforderlich für Chat mit Agent\nCustomer - benötigt 'ai.agentexecution_manage_own' Berechtigung für Chat mit Agent\nEmployee, Integration - benötigt 'ai.agentexecution_manage' Berechtigung für Chat mit Agent\n\nBerechtigungsvalidierung wird für Commerce Events ignoriert*",
 
   // Localized Input
   show_languages: 'Sprachen anzeigen',

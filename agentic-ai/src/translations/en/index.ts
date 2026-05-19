@@ -159,10 +159,21 @@ const TRANSLATIONS_EN = {
   select_field_key: 'Select field key',
   field_key_required: 'Field key is required',
   remove_field: 'Remove field',
+  remove_filter_field: 'Remove filter field',
   add_indexed_field: 'Add Indexed Field',
   add_custom_field: 'Add Custom Field',
   enter_custom_field_key: 'Enter field path (e.g. mixins.fieldName)',
-  custom_field_key_invalid: 'Field path must start with "mixins." and contain a valid path',
+  custom_field_key_invalid:
+    'Field path must start with "mixins." and contain a valid path',
+  filter_fields: 'Filter Fields',
+  filter_fields_required: 'At least one filter field is required',
+  filter_fields_description:
+    'Select fields the agent can use to filter vector search results before retrieval',
+  add_filter_field: 'Add Filter Field',
+  select_filter_field_key: 'Select filter field',
+  field_description: 'Description',
+  enter_field_description: 'Enter field description (for LLM context)',
+  error_loading_filter_fields: 'Failed to load available filter fields',
   force_delete_tool: 'Force Delete Tool',
   force_delete_tool_message:
     'Tool is used by agents.\nBy deleting it, the tool will be removed from the agents and agents will be disabled.',
@@ -297,6 +308,9 @@ const TRANSLATIONS_EN = {
   enter_prompt: 'Enter prompt',
   provider: 'Provider',
   provider_required: 'Provider is required',
+  llm_provider_openai: 'OpenAI',
+  llm_provider_emporix_openai: 'Emporix OpenAI',
+  llm_provider_self_hosted_ollama: 'Self-Hosted Ollama',
   dimensions: 'Dimensions',
   enter_dimensions: 'Enter dimensions (128-4096)',
   dimensions_range: 'Dimensions must be between 128 and 4096',
@@ -436,7 +450,8 @@ const TRANSLATIONS_EN = {
   total_sessions_label: 'Total Sessions',
 
   // Field Tooltips
-  required_scopes_tooltip: 'Anonymous - no additional scopes are needed to chat with an Agent\nCustomer - requires \'ai.agentexecution_manage_own\' scope to chat with an Agent\nEmployee, Integration - requires \'ai.agentexecution_manage\' scope to chat with an Agent\n\nScopes validation is ignored for Commerce events*',
+  required_scopes_tooltip:
+    "Anonymous - no additional scopes are needed to chat with an Agent\nCustomer - requires 'ai.agentexecution_manage_own' scope to chat with an Agent\nEmployee, Integration - requires 'ai.agentexecution_manage' scope to chat with an Agent\n\nScopes validation is ignored for Commerce events*",
 
   // Localized Input
   show_languages: 'Show languages',

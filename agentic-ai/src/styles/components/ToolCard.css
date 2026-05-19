@@ -123,6 +123,11 @@
   transform: none;
 }
 
+.slack-install-button-container .slack-install-button:disabled img {
+  opacity: 0.6;
+  transition: opacity var(--transition-base);
+}
+
 .slack-install-button-container img {
   border-radius: 12px;
 }

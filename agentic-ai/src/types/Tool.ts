@@ -17,10 +17,18 @@ export enum RagLlmProvider {
   SELF_HOSTED_OLLAMA = 'self_hosted_ollama',
 }
 
+export const RAG_FIELD_KEY_PATTERN = /^[a-zA-Z0-9_.-]+$/
+
 export interface RagEmporixFieldConfig {
   name?: string
   key?: string
   custom?: boolean
+}
+
+export interface RagEmporixFilterFieldConfig {
+  key?: string
+  name?: string
+  description?: string
 }
 
 export interface RagCustomEmbeddingConfig {
@@ -44,13 +52,6 @@ export interface RagEmporixEmbeddingConfig {
   token?: Token
 }
 
-export interface RagEmporixNativeToolConfig {
-  prompt?: string
-  entityType?: RagEntityType
-  indexedFields?: RagEmporixFieldConfig[]
-  embeddingConfig?: RagEmporixEmbeddingConfig
-}
-
 export interface ToolConfig {
   teamId?: string
   botToken?: string
@@ -58,9 +59,9 @@ export interface ToolConfig {
   maxResults?: number
   databaseConfig?: RagCustomDatabaseConfig
   embeddingConfig?: RagCustomEmbeddingConfig | RagEmporixEmbeddingConfig
-  emporixNativeToolConfig?: RagEmporixNativeToolConfig
   entityType?: RagEntityType
   indexedFields?: RagEmporixFieldConfig[]
+  filterFields?: RagEmporixFilterFieldConfig[]
 }
 
 export interface Tool {
