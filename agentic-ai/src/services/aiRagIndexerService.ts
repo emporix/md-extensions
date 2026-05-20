@@ -3,8 +3,6 @@ import { ApiClient } from './apiClient'
 
 export interface RagFilterMetadataField {
   key: string
-  name?: string
-  description?: string
 }
 
 const getApiClient = (appState: AppState): ApiClient => {

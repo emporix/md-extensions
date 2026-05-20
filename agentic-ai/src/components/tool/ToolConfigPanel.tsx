@@ -763,13 +763,8 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       if (!key?.trim()) {
         newFields[index] = createEmptyFilterField()
       } else {
-        const metadata = availableFilterFields.find(
-          (field) => field.key === key
-        )
         newFields[index] = {
-          key,
-          name: metadata?.name ?? '',
-          description: metadata?.description ?? '',
+          key
         }
       }
 
