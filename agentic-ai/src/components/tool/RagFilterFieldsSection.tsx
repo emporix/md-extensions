@@ -107,7 +107,7 @@ const RagFilterFieldsSection: React.FC<RagFilterFieldsSectionProps> = ({
                 }
                 className="w-full rag-field-description-input"
                 placeholder={t('enter_field_description')}
-                rows={1}
+                rows={2}
               />
             </div>
           }

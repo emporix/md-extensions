@@ -221,8 +221,8 @@
 }
 
 .tool-config-panel .rag-field-description .rag-field-description-input {
-  min-height: 34px !important;
-  max-height: 34px !important;
+  min-height: 56px !important;
+  max-height: 72px !important;
   resize: none;
   overflow-y: auto;
 }
