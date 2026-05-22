@@ -2,6 +2,8 @@ export const getStatusDisplayValue = (status: string): string => {
   switch (status) {
     case 'success':
       return 'FINISHED'
+    case 'skipped':
+      return 'SKIPPED'
     case 'failure':
       return 'FAILURE'
     case 'in_progress':
@@ -15,6 +17,8 @@ export const getStatusIcon = (status: string): string => {
   switch (status) {
     case 'success':
       return 'pi pi-check-circle'
+    case 'skipped':
+      return 'pi pi-minus-circle'
     case 'failure':
       return 'pi pi-times-circle'
     case 'in_progress':
@@ -27,6 +31,8 @@ export const getStatusIcon = (status: string): string => {
 export const getStatusColor = (status: string): string => {
   switch (status) {
     case 'success':
+      return '#3b82f6' // Blue
+    case 'skipped':
       return '#3b82f6' // Blue
     case 'failure':
       return '#ef4444' // Red

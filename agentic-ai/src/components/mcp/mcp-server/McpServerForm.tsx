@@ -160,9 +160,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(
               />
             </div>
             <div className="form-field">
-              <label className="field-label">
-                {t('transport_layer')}
-              </label>
+              <label className="field-label">{t('transport_layer')}</label>
               <Dropdown
                 value={newCustomTransport}
                 options={[
@@ -191,13 +189,14 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(
           style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}
         >
           <Button
+            type="button"
             label={t('cancel')}
-            className="discard-button"
+            className="p-button-secondary"
             onClick={onCancel}
           />
           <Button
+            type="button"
             label={isEditing ? t('update') : t('add')}
-            className="save-agent-button"
             onClick={handleAdd}
             disabled={!isFormValid()}
           />

@@ -176,6 +176,14 @@
   text-align: center;
 }
 
+.add-agent-error-state .error-description {
+  margin: 0 0 var(--space-2xl);
+  padding: 0 var(--space-lg);
+  text-align: center;
+  color: var(--text-muted);
+  max-width: 28rem;
+}
+
 .add-agent-error-state .dialog-actions {
   margin-top: 3rem;
   justify-content: center;
@@ -214,6 +222,18 @@
 .add-agent-loading-state .p-progressbar {
   width: 100%;
   max-width: 400px;
+  height: 6px;
+}
+
+.add-agent-loading-state .loading-hint {
+  text-align: center;
+  margin-top: var(--space-lg);
+  color: var(--text-muted);
+}
+
+.add-agent-loading-state .loading-actions {
+  text-align: center;
+  margin-top: var(--space-2xl);
 }
 
 

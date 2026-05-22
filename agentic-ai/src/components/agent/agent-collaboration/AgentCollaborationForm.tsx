@@ -36,16 +36,11 @@ export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({
   )
 
   const agentOptions = availableAgents
-    .filter((agent) => {
-      // Show emporix--collaboration agent only if current agent type is complaint or anti_fraud
-      if (agent.id === 'emporix--collaboration') {
-        return (
-          currentAgentType === 'complaint' || currentAgentType === 'anti_fraud'
-        )
-      }
-      // Show all other agents normally
-      return true
-    })
+    .filter((agent) =>
+      agent.id === 'emporix--collaboration'
+        ? currentAgentType === 'complaint' || currentAgentType === 'anti_fraud'
+        : true
+    )
     .map((agent) => ({
       label: (
         <div className="agent-option">
@@ -79,23 +74,23 @@ export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({
   return (
     <div className="agent-collaboration-form">
       <div className="form-field">
-        <label className="field-label">{t('agent', 'Agent')}</label>
+        <label className="field-label">{t('agent')}</label>
         <Dropdown
           value={selectedAgentId}
           options={agentOptions}
           onChange={(e) => setSelectedAgentId(e.value)}
-          placeholder={t('select_agent', 'Select agent')}
+          placeholder={t('select_agent')}
           className="w-full"
           appendTo="self"
         />
       </div>
 
       <div className="form-field">
-        <label className="field-label">{t('description', 'Description')}</label>
+        <label className="field-label">{t('description')}</label>
         <InputTextarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder={t('enter_description', 'Enter description')}
+          placeholder={t('enter_description')}
           className="w-full"
           rows={3}
         />
@@ -103,15 +98,16 @@ export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({
 
       <div className="form-actions">
         <Button
-          label={t('cancel', 'Cancel')}
+          type="button"
+          label={t('cancel')}
           onClick={onCancel}
-          className="discard-button"
+          className="p-button-secondary"
         />
         <Button
-          label={editingCollaboration ? t('update', 'Update') : t('add', 'Add')}
+          type="button"
+          label={editingCollaboration ? t('update') : t('add')}
           onClick={handleAdd}
           disabled={!isFormValid()}
-          className="save-agent-button"
         />
       </div>
     </div>

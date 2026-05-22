@@ -27,11 +27,11 @@
 }
 
 .tool-config-panel .p-inputnumber .p-inputnumber-input:enabled:hover {
-  border-color: #3b73bb !important;
+  border-color: var(--color-interactive-accent) !important;
 }
 
 .tool-config-panel .p-inputnumber .p-inputnumber-input:focus {
-  border-color: #3b73bb !important;
+  border-color: var(--color-interactive-accent) !important;
   box-shadow: none !important;
 }
 
@@ -48,7 +48,7 @@
   width: 24px !important;
   max-height: 34px !important;
   border: none !important;
-  background: #3b73bb !important;
+  background: var(--color-interactive-accent) !important;
   box-shadow: none !important;
   border-radius: 2px !important;
   transition: background 0.2s ease !important;
@@ -87,26 +87,9 @@
   margin-top: 24px !important;
 }
 
-.indexed-field-delete-button .p-button.p-button-danger {
-  background: transparent !important;
-  border: none !important;
-  color: #3B64A0 !important;
-  font-size: 1.1rem !important;
-  cursor: pointer !important;
-  min-width: auto !important;
-  padding: 0.25rem 0.5rem !important;
-  border-radius: 4px !important;
-  transition: background 0.2s, color 0.2s !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  height: 34px !important;
-  width: 34px !important;
-}
-
-.indexed-field-delete-button .p-button.p-button-danger:hover:not(:disabled) {
-  background: rgba(59, 100, 160, 0.1) !important;
-  color: #3B64A0 !important;
+.indexed-field-delete-button .p-button {
+  width: 2rem;
+  height: 2rem;
 }
 
 /* Agent Config Icon Row - Add margin to separate from other fields */
@@ -141,7 +124,7 @@
 .tool-config-panel .p-inputtext:enabled:hover,
 .tool-config-panel .p-dropdown:not(.p-disabled):hover,
 .tool-config-panel .p-inputtextarea:enabled:hover {
-  border-color: #3b73bb !important;
+  border-color: var(--color-interactive-accent) !important;
 }
 
 .tool-config-panel .p-inputtext:not(.p-inputtextarea) {

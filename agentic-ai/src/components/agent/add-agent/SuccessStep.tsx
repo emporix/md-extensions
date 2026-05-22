@@ -17,19 +17,20 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({ onOk }) => {
         <FontAwesomeIcon icon={faCheck} />
       </div>
       <h2 className="dialog-title">
-        {t('agent_saved_success', 'Agent Saved to Your List!')}
+        {t('agent_saved_success')}
       </h2>
       <div className="dialog-actions">
         <Button
-          label={t('discard', 'DISCARD')}
+          type="button"
+          label={t('discard')}
           onClick={onOk}
-          className="discard-button"
+          className="p-button-secondary"
           disabled
         />
         <Button
-          label={t('ok', 'OK')}
+          type="button"
+          label={t('ok')}
           onClick={onOk}
-          className="save-agent-button"
         />
       </div>
     </div>

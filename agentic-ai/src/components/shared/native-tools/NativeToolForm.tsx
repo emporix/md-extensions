@@ -21,7 +21,6 @@ export const NativeToolForm: React.FC<NativeToolFormProps> = ({
   const { t } = useTranslation()
   const [selectedToolId, setSelectedToolId] = useState<string>('')
 
-  // Filter out tools that are already selected
   const availableOptions = availableTools
     .filter((tool) => !existingToolIds.includes(tool.id))
     .map((tool) => ({
@@ -41,13 +40,13 @@ export const NativeToolForm: React.FC<NativeToolFormProps> = ({
       <div className="native-tool-form-content">
         <div className="form-field">
           <label className="field-label">
-            {t('select_tool', 'Select Tool')}
+            {t('select_tool')}
           </label>
           <Dropdown
             value={selectedToolId}
             options={availableOptions}
             onChange={(e) => setSelectedToolId(e.value)}
-            placeholder={t('select_tool_placeholder', 'Choose a tool to add')}
+            placeholder={t('select_tool_placeholder')}
             className="w-full"
             appendTo="self"
           />
@@ -55,15 +54,16 @@ export const NativeToolForm: React.FC<NativeToolFormProps> = ({
 
         <div className="native-tool-form-actions">
           <Button
-            label={t('add', 'Add')}
+            type="button"
+            label={t('add')}
             onClick={handleAdd}
             disabled={!selectedToolId}
-            className="p-button-sm"
           />
           <Button
-            label={t('cancel', 'Cancel')}
+            type="button"
+            label={t('cancel')}
             onClick={onCancel}
-            className="p-button-outlined p-button-sm"
+            className="p-button-secondary"
           />
         </div>
       </div>

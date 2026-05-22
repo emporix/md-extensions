@@ -66,9 +66,7 @@ export const McpServerManager: React.FC<McpServerManagerProps> = memo(
     return (
       <div className="mcp-servers-section">
         <div className="mcp-servers-header">
-          <span className="mcp-servers-title">
-            {t('mcp_servers')}
-          </span>
+          <span className="mcp-servers-title">{t('mcp_servers')}</span>
           <button
             className="mcp-servers-add-btn"
             type="button"

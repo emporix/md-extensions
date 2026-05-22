@@ -26,8 +26,7 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
   const [transport, setTransport] = useState(CustomMcpServerTransportType.SSE)
   const [url, setUrl] = useState('')
   const [authorizationHeaderName, setAuthorizationHeaderName] = useState('')
-  const [authorizationHeaderToken, setAuthorizationHeaderToken] =
-    useState('')
+  const [authorizationHeaderToken, setAuthorizationHeaderToken] = useState('')
   const [tokens, setTokens] = useState<Token[]>([])
   const [tokensLoading, setTokensLoading] = useState(false)
 
@@ -121,9 +120,7 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
       <div className="form-field">
         <label className="field-label">
           {t('mcp_server_id')}
-          {!mcpServer?.id && (
-            <span className="field-required-mark"> *</span>
-          )}
+          {!mcpServer?.id && <span className="field-required-mark"> *</span>}
         </label>
         <InputText
           value={mcpServerId}
@@ -133,9 +130,7 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
           placeholder={t('enter_mcp_server_id')}
         />
         {!mcpServer?.id && !mcpServerId.trim() && (
-          <small className="p-error">
-            {t('mcp_server_id_required')}
-          </small>
+          <small className="p-error">{t('mcp_server_id_required')}</small>
         )}
       </div>
 
@@ -151,9 +146,7 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
           placeholder={t('enter_mcp_server_name')}
         />
         {!mcpServerName.trim() && (
-          <small className="p-error">
-            {t('mcp_server_name_required')}
-          </small>
+          <small className="p-error">{t('mcp_server_name_required')}</small>
         )}
       </div>
 
@@ -180,11 +173,7 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
           className={`w-full ${!url.trim() ? 'p-invalid' : ''}`}
           placeholder={t('enter_url')}
         />
-        {!url.trim() && (
-          <small className="p-error">
-            {t('url_required')}
-          </small>
-        )}
+        {!url.trim() && <small className="p-error">{t('url_required')}</small>}
       </div>
 
       <div className="form-field">
@@ -208,9 +197,7 @@ const McpConfigPanel: React.FC<McpConfigPanelProps> = ({
           options={tokenOptions}
           onChange={(e) => setAuthorizationHeaderToken(e.value)}
           className="w-full"
-          placeholder={
-            tokensLoading ? t('loading_tokens') : t('select_token')
-          }
+          placeholder={tokensLoading ? t('loading_tokens') : t('select_token')}
           disabled={tokensLoading}
           showClear
           appendTo="self"

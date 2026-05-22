@@ -347,7 +347,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('tool_id')}
-            {!tool?.id && <span style={{ color: 'red' }}> *</span>}
+            {!tool?.id && <span className="field-required-mark">*</span>}
           </label>
           <InputText
             value={toolId}
@@ -363,7 +363,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('tool_name')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark">*</span>
           </label>
           <InputText
             value={toolName}
@@ -379,7 +379,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('team_id')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark">*</span>
           </label>
           <InputText
             value={config.teamId || ''}
@@ -395,7 +395,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('bot_token')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark">*</span>
             </label>
             <InputText
               value={config.botToken || ''}
@@ -427,7 +427,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('tool_id')}
-            {!tool?.id && <span style={{ color: 'red' }}> *</span>}
+            {!tool?.id && <span className="field-required-mark">*</span>}
           </label>
           <InputText
             value={toolId}
@@ -443,7 +443,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('tool_name')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark">*</span>
           </label>
           <InputText
             value={toolName}
@@ -459,7 +459,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('prompt')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark">*</span>
           </label>
           <InputTextarea
             value={config.prompt || ''}
@@ -476,7 +476,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('max_results')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark">*</span>
           </label>
           <InputNumber
             value={maxResults}
@@ -499,7 +499,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('database_url')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark">*</span>
             </label>
             <InputText
               value={databaseConfig.url || ''}
@@ -517,7 +517,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('database_type')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark">*</span>
             </label>
             <Dropdown
               value={databaseConfig.type || 'qdrant'}
@@ -533,7 +533,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('entity_type')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark">*</span>
             </label>
             <Dropdown
               value={databaseConfig.entityType || RagEntityType.PRODUCT}
@@ -549,7 +549,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('collection_name')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark">*</span>
             </label>
             <InputText
               value={databaseConfig.collectionName || ''}
@@ -571,7 +571,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field" style={{ marginBottom: '1.5rem' }}>
             <label className="field-label">
               {t('token')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark">*</span>
             </label>
             <Dropdown
               value={databaseConfig.token?.id || ''}
@@ -601,7 +601,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('model')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark">*</span>
             </label>
             <InputText
               value={embeddingConfig.model || ''}
@@ -619,7 +619,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('token')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark">*</span>
             </label>
             <Dropdown
               value={embeddingConfig.token?.id || ''}
@@ -674,7 +674,10 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     }
 
     const addCustomIndexedField = () => {
-      const newFields = [...indexedFields, { name: '', key: MIXINS_PREFIX, custom: true }]
+      const newFields = [
+        ...indexedFields,
+        { name: '', key: MIXINS_PREFIX, custom: true },
+      ]
       setConfig((prev) => ({
         ...prev,
         indexedFields: newFields,
@@ -739,7 +742,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('tool_id')}
-            {!tool?.id && <span style={{ color: 'red' }}> *</span>}
+            {!tool?.id && <span className="field-required-mark">*</span>}
           </label>
           <InputText
             value={toolId}
@@ -755,7 +758,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('tool_name')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark">*</span>
           </label>
           <InputText
             value={toolName}
@@ -771,7 +774,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('prompt')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark">*</span>
           </label>
           <InputTextarea
             value={config.prompt || ''}
@@ -788,7 +791,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('provider')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark">*</span>
           </label>
           <Dropdown
             value={embeddingConfig.provider || ''}
@@ -809,7 +812,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             <div className="form-field">
               <label className="field-label">
                 {t('model')}
-                <span style={{ color: 'red' }}> *</span>
+                <span className="field-required-mark">*</span>
               </label>
               <InputText
                 value={embeddingConfig.model || ''}
@@ -827,7 +830,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             <div className="form-field">
               <label className="field-label">
                 {t('dimensions')}
-                <span style={{ color: 'red' }}> *</span>
+                <span className="field-required-mark">*</span>
               </label>
               <InputNumber
                 value={dimensionsValue}
@@ -857,7 +860,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('url')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark">*</span>
             </label>
             <InputText
               value={embeddingConfig.url || ''}
@@ -877,7 +880,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('token')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark">*</span>
             </label>
             <Dropdown
               value={embeddingConfig.token?.id || ''}
@@ -904,7 +907,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('entity_type')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark">*</span>
           </label>
           <Dropdown
             value={
@@ -920,7 +923,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('indexed_fields')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark">*</span>
           </label>
 
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -948,7 +951,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                 <div className="form-field" style={{ flex: 3, minWidth: 0 }}>
                   <label className="field-label">
                     {t('field_key')}
-                    <span style={{ color: 'red' }}> *</span>
+                    <span className="field-required-mark">*</span>
                   </label>
                   {field.custom ||
                   (field.key?.startsWith(MIXINS_PREFIX) &&
@@ -1003,8 +1006,9 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
                 <div className="indexed-field-delete-button">
                   <Button
+                    type="button"
                     icon="pi pi-trash"
-                    className="p-button-danger"
+                    className="p-button-text p-button-rounded p-button-danger"
                     onClick={() => removeIndexedField(index)}
                   />
                 </div>
@@ -1014,12 +1018,14 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
           <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
             <Button
+              type="button"
               icon="pi pi-plus"
               label={t('add_indexed_field')}
               onClick={addIndexedField}
               className="p-button-secondary"
             />
             <Button
+              type="button"
               icon="pi pi-plus"
               label={t('add_custom_field')}
               onClick={addCustomIndexedField}
@@ -1056,7 +1062,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         return (
           <div className="form-field">
             <label className="field-label">
-              {t('configuration', 'Configuration')}
+              {t('configuration')}
             </label>
             <pre className="config-json">{JSON.stringify(config, null, 2)}</pre>
           </div>
@@ -1165,7 +1171,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     <BaseConfigPanel
       visible={visible}
       onHide={onHide}
-      title={t('tool_configuration', 'Tool Configuration')}
+      title={t('tool_configuration')}
       icon={faTools}
       iconName={toolName}
       onSave={handleSave}
@@ -1176,7 +1182,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       <div className="form-field">
         <label className="field-label">
           {t('tool_type')}
-          {!tool?.id && <span style={{ color: 'red' }}> *</span>}
+          {!tool?.id && <span className="field-required-mark">*</span>}
         </label>
         {tool?.id ? (
           <InputText

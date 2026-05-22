@@ -55,29 +55,6 @@
   text-align: center;
 }
 
-.close-btn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  font-size: 1.25rem;
-  color: #64748b;
-  background: transparent !important;
-  border: none !important;
-  border-radius: 6px !important;
-  z-index: 2;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 0 !important;
-}
-
-.close-btn:hover {
-  background: #f1f5f9 !important;
-  color: #334155 !important;
-}
-
 .agent-config-icon-section {
   padding: 2rem;
   flex-shrink: 0;
@@ -131,8 +108,7 @@
   line-height: 1.2;
 }
 
-.agent-config-panel .agent-icon,
-.base-config-panel .agent-icon {
+.agent-config-panel .agent-icon {
   width: 64px;
   height: 64px;
   background: #f8fafc;
@@ -160,12 +136,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.agent-config-subtitle {
-  font-size: 0.95rem;
-  color: #64748b;
-  margin: 0;
 }
 
 .form-field {
@@ -228,56 +198,14 @@
 .panel-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
-  background: #FAFAFA;
+  gap: var(--space-sm);
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--border-light);
+  background: var(--bg-secondary);
 }
 
-.discard-button {
-  background: #fff !important;
-  border: 1px solid #d1d5db !important;
-  color: #374151 !important;
-  font-family: 'Lato', sans-serif !important;
-  font-size: 0.875rem !important;
-  font-weight: 600;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  letter-spacing: 0.025em;
-  box-shadow: none !important;
-}
 
-.discard-button:hover {
-  background: #f9fafb !important;
-  border-color: #9ca3af !important;
-  color: #1f2937 !important;
-}
-
-.save-agent-button {
-  background: #2563eb !important;
-  border: 1px solid #2563eb !important;
-  color: white !important;
-  font-family: 'Lato', sans-serif !important;
-  font-size: 0.875rem !important;
-  font-weight: 600;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  letter-spacing: 0.025em;
-  box-shadow: none !important;
-}
-
-.save-agent-button:hover:not(:disabled) {
-  background: #174ea6 !important;
-  border-color: #174ea6 !important;
-}
-
-.save-agent-button:disabled {
-  background: #d1d5db !important;
-  border-color: #d1d5db !important;
-  color: #9ca3af !important;
-  cursor: not-allowed;
-} 
 
 .mcp-servers-section {
   margin-top: 2.5rem;
@@ -1458,11 +1386,12 @@
 .agent-collaboration-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #f9fafb;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  margin-top: var(--space-lg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
   width: 100%;
 }
 

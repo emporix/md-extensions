@@ -159,25 +159,27 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
   const footer = isImporting ? (
     <div className="dialog-actions">
       <Button
+        type="button"
         label={t('cancel', 'Cancel')}
         onClick={handleHide}
-        className="discard-button"
+        className="p-button-secondary"
       />
     </div>
   ) : importResult ? (
     <div className="dialog-actions">
       <Button
+        type="button"
         label={t('ok', 'OK')}
         onClick={handleSummaryOk}
-        className="p-button-primary"
       />
     </div>
   ) : (
     <div className="dialog-actions">
       <Button
+        type="button"
         label={t('cancel', 'Cancel')}
         onClick={handleHide}
-        className="discard-button"
+        className="p-button-secondary"
       />
       <Button
         label={t('browse_files', 'Browse Files')}

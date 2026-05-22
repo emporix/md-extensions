@@ -72,6 +72,13 @@
   --color-warning-text: var(--color-yellow-800);
   --color-warning-border: var(--color-yellow-500);
 
+  --color-interactive-accent: #3b64a0;
+  --color-interactive-accent-hover: #2d4d7a;
+
+  /* Line height */
+  --line-height-base: 1.5;
+  --line-height-tight: 1.45;
+
   /* Text Colors */
   --text-primary: var(--color-gray-900);
   --text-secondary: var(--color-gray-700);

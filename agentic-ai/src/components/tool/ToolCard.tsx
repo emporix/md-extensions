@@ -68,31 +68,29 @@ const ToolCard: React.FC<ToolCardProps> = ({
       },
     ]
 
-    // Add reindex button for rag_emporix tools
     if (tool.type === 'rag_emporix' && onReindex) {
       actions.push({
         icon: 'pi pi-refresh',
-        label: t('reindex', 'Reindex'),
+        label: t('reindex'),
         onClick: (e: React.MouseEvent) => {
           e.stopPropagation()
           onReindex(tool)
         },
-        className: 'configure-button',
+        className: 'reindex-button',
       })
     }
 
-    // Add remove button
     actions.push({
       icon: 'pi pi-trash',
-      label: t('remove', 'Remove'),
+      label: t('remove'),
       onClick: (e: React.MouseEvent) => {
         e.stopPropagation()
         onRemove(tool.id)
       },
       disabled: tool.enabled,
       title: tool.enabled
-        ? t('cannot_delete_active_tool', 'Cannot delete active tool')
-        : t('remove_tool', 'Remove tool'),
+        ? t('cannot_delete_active_tool')
+        : t('remove_tool'),
       className: 'remove-button',
     })
 

@@ -121,8 +121,8 @@ export const MCP_SERVERS = {
       'get-quote-reasons',
       'create-quote',
       'update-quote',
-    ]
-  }
+    ],
+  },
 } as const
 
 export type McpKey = keyof typeof MCP_SERVERS
@@ -143,7 +143,6 @@ export const LLM_PROVIDERS = [
   { label: 'Self-hosted VLLM', value: LlmProvider.SELF_HOSTED_VLLM },
 ]
 
-// API Constants
 export const API_ENDPOINTS = {
   TEMPLATES: '/ai-service/{tenant}/agentic/templates',
   AGENTS: '/ai-service/{tenant}/agentic/agents',
@@ -151,14 +150,12 @@ export const API_ENDPOINTS = {
   COPY_TEMPLATE: '/ai-service/{tenant}/agentic/templates/{templateId}/agents',
 } as const
 
-// HTTP Headers
 export const API_HEADERS = {
   CONTENT_TYPE: 'application/json',
   AUTHORIZATION: 'Authorization',
   EMPORIX_TENANT: 'Emporix-tenant',
 } as const
 
-// Default Values
 export const DEFAULT_VALUES = {
   RECURSION_LIMIT: 20,
   ENABLE_MEMORY: true,
@@ -167,7 +164,6 @@ export const DEFAULT_VALUES = {
   PROVIDER: 'emporix_openai',
 } as const
 
-// Available Tags
 export const AVAILABLE_TAGS = [
   'Productivity',
   'Security',
@@ -176,7 +172,6 @@ export const AVAILABLE_TAGS = [
   'Customer Service',
 ] as const
 
-// Validation Constants
 export const VALIDATION = {
   MIN_NAME_LENGTH: 1,
   MIN_DESCRIPTION_LENGTH: 1,
@@ -184,4 +179,4 @@ export const VALIDATION = {
   MIN_MODEL_LENGTH: 1,
 } as const
 
-export const CACHE_TTL = 5 * 60 * 1000 // 5 minutes in milliseconds
+export const CACHE_TTL = 5 * 60 * 1000

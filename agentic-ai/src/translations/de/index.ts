@@ -58,6 +58,10 @@ const TRANSLATIONS_DE = {
   agents: 'Agenten',
   being_copied: 'wird kopiert',
   please_wait: 'Bitte warten Sie, während wir die Agentenvorlage kopieren...',
+  error_creating_agent: 'Fehler beim Erstellen des Agenten',
+  agent_creation_failed:
+    'Beim Erstellen Ihres Agenten ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.',
+  select_agent: 'Agent auswählen',
   agent_saved_success: 'Agent erfolgreich zur Liste hinzugefügt!',
   ok: 'OK',
   agent_saved_error: 'Agent konnte nicht hinzugefügt werden!',
@@ -77,11 +81,23 @@ const TRANSLATIONS_DE = {
   save_agent: 'AGENT SPEICHERN',
   agent_id: 'ID',
   enter_agent_id: 'Agent ID eingeben',
+  user_prompt: 'Benutzer-Prompt',
+  user_prompt_required: 'Benutzer-Prompt ist erforderlich',
+  user_prompt_placeholder: 'Der Benutzer-Prompt wird hier angezeigt',
+  template_prompt: 'Vorlagen-Prompt',
+  template_prompt_placeholder: 'Der Vorlagen-Prompt wird hier angezeigt',
 
   // Agent Configuration Panel
   agent_config_panel_title: 'Agent-Konfiguration',
   agent_config_panel_subtitle:
     'Passen Sie Name und Beschreibung an, um sie besser an Ihre spezifischen Bedürfnisse anzupassen.',
+  agent_id_required: 'Agent-ID ist erforderlich',
+  trigger_types: 'Auslöser-Typen',
+  select_trigger_types: 'Auslöser-Typen auswählen',
+  confirm_save_agent: 'Speichern und Agent deaktivieren',
+  save_and_deactivate: 'Speichern und deaktivieren',
+  confirm_disable_agent_message:
+    'Sie können den aktivierten Agenten mit diesen Fehlern nicht speichern. Sie können den Agenten speichern, indem Sie ihn zuerst deaktivieren.\n\n{{detail}}',
   close: 'Schließen',
   trigger_type: 'Auslöser-Typ',
   trigger_type_endpoint: 'ENDPUNKT',
@@ -132,6 +148,8 @@ const TRANSLATIONS_DE = {
   reindex: 'Neu indizieren',
   reindex_triggered_successfully: 'Neuindizierung erfolgreich gestartet!',
   error_triggering_reindex: 'Fehler beim Starten der Neuindizierung',
+  failed_to_trigger_reindex:
+    'Neuindizierung konnte nicht gestartet werden.',
   reindex_confirmation:
     'Dies ist eine zeitaufwändige Operation, die alle Embeddings neu generiert. Bitte gehen Sie mit Vorsicht vor. Möchten Sie wirklich fortfahren?',
   max_results: 'Max. Ergebnisse',
@@ -161,7 +179,8 @@ const TRANSLATIONS_DE = {
   add_indexed_field: 'Indiziertes Feld hinzufügen',
   add_custom_field: 'Benutzerdefiniertes Feld hinzufügen',
   enter_custom_field_key: 'Feldpfad eingeben (z.B. mixins.feldname)',
-  custom_field_key_invalid: 'Feldpfad muss mit "mixins." beginnen und einen gültigen Pfad enthalten',
+  custom_field_key_invalid:
+    'Feldpfad muss mit "mixins." beginnen und einen gültigen Pfad enthalten',
   force_delete_tool: 'Tool erzwungen löschen',
   force_delete_tool_message:
     'Tool wird von Agenten verwendet.\nDurch das Löschen wird es aus den Agenten entfernt und die Agenten werden deaktiviert.',
@@ -330,6 +349,79 @@ const TRANSLATIONS_DE = {
   failed_to_initiate_slack_installation:
     'Slack-Installation konnte nicht gestartet werden',
 
+  commerce_events: 'Commerce-Ereignisse',
+  select_events: 'Ereignisse auswählen',
+  select_events_placeholder:
+    'Ereignisse auswählen, die diesen Agenten auslösen',
+  loading_events: 'Ereignisse werden geladen...',
+  no_events_available: 'Keine Ereignisse verfügbar',
+  commerce_events_required: 'Mindestens ein Commerce-Ereignis ist erforderlich',
+  commerce_event_filter: 'Bedingungen für Commerce-Ereignisse',
+  commerce_event_filter_optional: '(optional)',
+
+  commerce_filter_tab_form: 'Filter',
+  commerce_filter_tab_json: 'Bedingung',
+  commerce_filter_payload_field: 'Payload-Pfad',
+  commerce_filter_payload_placeholder: 'z. B. cart.siteCode',
+  commerce_filter_values: 'Werte',
+  commerce_filter_single_value_placeholder: 'z. B. DE',
+  commerce_filter_operator: 'Operator',
+  commerce_filter_value: 'Wert',
+  commerce_filter_csv_placeholder: 'Kommagetrennte Werte',
+  commerce_filter_invalid:
+    'Vervollständigen Sie den Filter oder beheben Sie Validierungsfehler.',
+  commerce_filter_apply_json: 'JSON anwenden',
+  commerce_filter_invalid_json: 'Ungültiger Filter',
+  commerce_filter_json_parse_error: 'JSON konnte nicht gelesen werden',
+  commerce_filter_reset: 'Zurücksetzen',
+  commerce_filter_remove: 'Filter entfernen',
+  commerce_filter_none:
+    'Kein Filter konfiguriert. Klicken Sie auf „Filter hinzufügen“.',
+  commerce_filter_add: 'Filter hinzufügen',
+  copy: 'Kopieren',
+
+  commerce_filter_op_equals: 'Gleich',
+  commerce_filter_op_notEquals: 'Ungleich',
+  commerce_filter_op_in: 'In',
+  commerce_filter_op_notIn: 'Nicht in',
+  commerce_filter_op_exists: 'Existiert',
+  commerce_filter_op_notExists: 'Existiert nicht',
+  commerce_filter_op_isEmpty: 'Ist leer',
+  commerce_filter_op_notEmpty: 'Nicht leer',
+
+  commerce_filter_combine: 'Wie sollen Bedingungen verknüpft werden?',
+  commerce_filter_match_all: 'Alle Bedingungen (AND)',
+  commerce_filter_match_any: 'Beliebige Bedingung (OR)',
+  commerce_filter_need_two_for_logic:
+    'Fügen Sie eine zweite Bedingung hinzu, um AND/OR zwischen Regeln zu nutzen.',
+  commerce_filter_add_condition: 'Bedingung hinzufügen',
+  commerce_filter_remove_condition: 'Bedingung entfernen',
+  commerce_filter_rule_label: 'Bedingung {{n}}',
+  commerce_filter_complex_use_json:
+    'Dieser Filter nutzt geschachtelte Logik. Bearbeitung im Tab „Bedingung“ (JSON).',
+
+  commerce_filter_parse_unsupported_operator:
+    'Nicht unterstützter oder fehlender Operator für diese Bedingung.',
+  commerce_filter_parse_field_left_required:
+    'Feld (Payload-Pfad) ist für jede Bedingung erforderlich.',
+  commerce_filter_parse_value_list_required:
+    'Für diesen Operator ist eine nicht-leere Wertliste erforderlich.',
+  commerce_filter_parse_value_must_be_array:
+    'Die Werte müssen für diesen Operator ein JSON-Array sein.',
+  commerce_filter_parse_list_strings_only:
+    'Alle Einträge in der Liste müssen Zeichenketten sein.',
+  commerce_filter_parse_scalar_required:
+    'Für diesen Operator ist ein nicht-leerer Wert erforderlich.',
+  commerce_filter_parse_scalar_type: 'Der Wert muss eine Zeichenkette oder Zahl sein.',
+  commerce_filter_parse_filter_must_be_object:
+    'Der Filter muss ein JSON-Objekt sein.',
+  commerce_filter_parse_compound_op_invalid:
+    'Verbundfilter müssen op „$and“ oder „$or“ verwenden.',
+  commerce_filter_parse_conditions_non_empty:
+    '„conditions“ muss ein nicht-leeres Array sein.',
+  commerce_filter_parse_invalid_condition_at_position:
+    'Ungültige Bedingung an Position {{position}}.',
+
   // Logs
   agent_logs: 'Agentenprotokolle',
   no_logs_available: 'Keine Protokolle verfügbar',
@@ -432,7 +524,8 @@ const TRANSLATIONS_DE = {
   total_sessions_label: 'Gesamte Sitzungen',
 
   // Field Tooltips
-  required_scopes_tooltip: 'Anonymous - keine zusätzlichen Berechtigung erforderlich für Chat mit Agent\nCustomer - benötigt \'ai.agentexecution_manage_own\' Berechtigung für Chat mit Agent\nEmployee, Integration - benötigt \'ai.agentexecution_manage\' Berechtigung für Chat mit Agent\n\nBerechtigungsvalidierung wird für Commerce Events ignoriert*',
+  required_scopes_tooltip:
+    "Anonymous - keine zusätzlichen Berechtigung erforderlich für Chat mit Agent\nCustomer - benötigt 'ai.agentexecution_manage_own' Berechtigung für Chat mit Agent\nEmployee, Integration - benötigt 'ai.agentexecution_manage' Berechtigung für Chat mit Agent\n\nBerechtigungsvalidierung wird für Commerce Events ignoriert*",
 
   // Localized Input
   show_languages: 'Sprachen anzeigen',
