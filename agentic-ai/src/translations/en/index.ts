@@ -95,7 +95,7 @@ const TRANSLATIONS_EN = {
   confirm_save_agent: 'Save and Deactivate Agent',
   save_and_deactivate: 'Save and Deactivate',
   confirm_disable_agent_message:
-    'You can not save the enabled agent with the errors. You can save the agent by disabling it first.\n\n{{detail}}',
+    'You cannot save an enabled agent while it has validation errors. You can save the agent by disabling it first.\n\n{{detail}}',
   close: 'Close',
   trigger_type: 'Trigger Type',
   trigger_type_endpoint: 'ENDPOINT',
