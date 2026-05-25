@@ -76,16 +76,19 @@ export const useCommerceFilterDslAssistant = ({
             agents.some((a) => a.id === COMMERCE_FILTER_DSL_AGENT_ID)
           )
         }
-      } catch {
+      } catch (err) {
         if (!cancelled) {
-          setHelperAgentPresent(null)
+          setHelperAgentPresent(false)
+          showError(
+            formatApiError(err, 'Failed to check helper agent availability.')
+          )
         }
       }
     })()
     return () => {
       cancelled = true
     }
-  }, [activeTab, appState, helperAgentPresent])
+  }, [activeTab, appState, helperAgentPresent, showError])
 
   const handleEnableHelperAgent = useCallback(async () => {
     if (!appState) return
