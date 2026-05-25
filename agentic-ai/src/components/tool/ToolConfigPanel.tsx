@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
 import {
   RagCustomDatabase,
   RagEmporixFieldConfig,
+  RagEmporixFilterFieldConfig,
   RagEntityType,
   RagLlmProvider,
   RagEmporixEmbeddingConfig,
@@ -22,12 +23,43 @@ import { faTools } from '@fortawesome/free-solid-svg-icons'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { InputNumber } from 'primereact/inputnumber'
 import { Dropdown } from 'primereact/dropdown'
-import { getRagMetadata } from '../../services/aiRagIndexerService'
+import {
+  getRagFilterMetadata,
+  getRagMetadata,
+  RagFilterMetadataField,
+} from '../../services/aiRagIndexerService'
 import { sanitizeIdInput } from '../../utils/validation'
+import {
+  areRagEmporixFilterFieldsValid,
+  createEmptyFilterField,
+  isValidRagFieldKey,
+  toRagEmporixToolConfig,
+} from '../../utils/ragEmporixToolHelpers'
+import RagFieldRowLayout from './RagFieldRowLayout'
+import RagFilterFieldsSection from './RagFilterFieldsSection'
 
 const MIXINS_PREFIX = 'mixins.'
 const isValidCustomFieldKey = (key?: string) =>
   !!key?.startsWith(MIXINS_PREFIX) && key.length > MIXINS_PREFIX.length
+
+const normalizeEntityType = (
+  value?: RagEntityType | string
+): RagEntityType | undefined => {
+  if (!value) return undefined
+
+  if (value === RagEntityType.PRODUCT || value === 'PRODUCT') {
+    return RagEntityType.PRODUCT
+  }
+
+  if (value === RagEntityType.INVALID || value === 'INVALID') {
+    return RagEntityType.INVALID
+  }
+
+  return value as RagEntityType
+}
+
+const getRagEntityTypePath = (entityType?: RagEntityType | string) =>
+  normalizeEntityType(entityType) ?? RagEntityType.PRODUCT
 
 const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   visible,
@@ -38,6 +70,22 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 }) => {
   const { t } = useTranslation()
   const { showError } = useToast()
+
+  const ragProviderOptions = useMemo(
+    () => [
+      { label: t('llm_provider_openai'), value: RagLlmProvider.OPENAI },
+      {
+        label: t('llm_provider_emporix_openai'),
+        value: RagLlmProvider.EMPORIX_OPENAI,
+      },
+      {
+        label: t('llm_provider_self_hosted_ollama'),
+        value: RagLlmProvider.SELF_HOSTED_OLLAMA,
+      },
+    ],
+    [t]
+  )
+
   const [toolId, setToolId] = useState('')
   const [toolName, setToolName] = useState('')
   const [config, setConfig] = useState<ToolConfig>({})
@@ -48,22 +96,9 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     Array<{ id: string; name: string }>
   >([])
   const [availableFields, setAvailableFields] = useState<string[]>([])
-
-  const normalizeEntityType = (
-    value?: RagEntityType | string
-  ): RagEntityType | undefined => {
-    if (!value) return undefined
-
-    if (value === RagEntityType.PRODUCT || value === 'PRODUCT') {
-      return RagEntityType.PRODUCT
-    }
-
-    if (value === RagEntityType.INVALID || value === 'INVALID') {
-      return RagEntityType.INVALID
-    }
-
-    return value as RagEntityType
-  }
+  const [availableFilterFields, setAvailableFilterFields] = useState<
+    RagFilterMetadataField[]
+  >([])
 
   const getToolTypeDisplayValue = (type: string): string => {
     switch (type) {
@@ -84,43 +119,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       setToolName(tool.name)
       setToolType(tool.type || '')
 
-      let loadedConfig: ToolConfig = { ...tool.config }
-
-      if (tool.type === 'rag_emporix' && tool.config.emporixNativeToolConfig) {
-        const emporixConfig = tool.config.emporixNativeToolConfig
-
-        const topLevelEmbedding =
-          (loadedConfig.embeddingConfig as
-            | RagEmporixEmbeddingConfig
-            | undefined) || undefined
-        const nestedEmbedding =
-          (emporixConfig.embeddingConfig as
-            | RagEmporixEmbeddingConfig
-            | undefined) || undefined
-
-        const mergedEmbeddingConfig: RagEmporixEmbeddingConfig | undefined =
-          topLevelEmbedding || nestedEmbedding
-            ? {
-                ...(topLevelEmbedding || {}),
-                ...(nestedEmbedding || {}),
-              }
-            : undefined
-
-        const mergedEntityType = normalizeEntityType(
-          emporixConfig.entityType ?? loadedConfig.entityType
-        )
-
-        loadedConfig = {
-          ...loadedConfig,
-          prompt: emporixConfig.prompt ?? loadedConfig.prompt,
-          entityType: mergedEntityType,
-          indexedFields:
-            emporixConfig.indexedFields ?? loadedConfig.indexedFields,
-          embeddingConfig: mergedEmbeddingConfig,
-        }
-      }
-
-      setConfig(loadedConfig)
+      setConfig({ ...tool.config })
     }
   }, [tool])
 
@@ -140,13 +139,31 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     if (!appState) return
 
     try {
-      const fields = await getRagMetadata(appState, 'product')
+      const fields = await getRagMetadata(
+        appState,
+        getRagEntityTypePath(config.entityType)
+      )
       setAvailableFields(fields)
     } catch (error) {
       console.error('Failed to load fields:', error)
       showError(t('error_loading_fields'))
     }
-  }, [appState, showError, t])
+  }, [appState, config.entityType, showError, t])
+
+  const loadAvailableFilterFields = useCallback(async () => {
+    if (!appState) return
+
+    try {
+      const fields = await getRagFilterMetadata(
+        appState,
+        getRagEntityTypePath(config.entityType)
+      )
+      setAvailableFilterFields(fields)
+    } catch (error) {
+      console.error('Failed to load filter fields:', error)
+      showError(t('error_loading_filter_fields'))
+    }
+  }, [appState, config.entityType, showError, t])
 
   useEffect(() => {
     if ((toolType === 'rag_custom' || toolType === 'rag_emporix') && appState) {
@@ -157,8 +174,9 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   useEffect(() => {
     if (toolType === 'rag_emporix' && appState) {
       loadAvailableFields()
+      loadAvailableFilterFields()
     }
-  }, [toolType, appState, loadAvailableFields])
+  }, [toolType, appState, loadAvailableFields, loadAvailableFilterFields])
 
   useEffect(() => {
     if (toolType === 'rag_emporix') {
@@ -210,7 +228,8 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         id: toolId,
         name: toolName,
         type: toolType,
-        config,
+        config:
+          toolType === 'rag_emporix' ? toRagEmporixToolConfig(config) : config,
         enabled: tool.enabled ?? true,
       }
 
@@ -306,12 +325,6 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                   loading={slackInstallLoading}
                   disabled={slackInstallLoading}
                   className="slack-install-button"
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    padding: 0,
-                    borderRadius: '12px',
-                  }}
                 >
                   <img
                     alt="Add to Slack"
@@ -319,11 +332,6 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                     width="139"
                     src="https://platform.slack-edge.com/img/add_to_slack.png"
                     srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"
-                    style={{
-                      borderRadius: '12px',
-                      opacity: slackInstallLoading ? 0.6 : 1,
-                      transition: 'opacity 0.2s ease',
-                    }}
                   />
                 </Button>
               </div>
@@ -347,7 +355,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('tool_id')}
-            {!tool?.id && <span style={{ color: 'red' }}> *</span>}
+            {!tool?.id && <span className="field-required-mark"> *</span>}
           </label>
           <InputText
             value={toolId}
@@ -363,7 +371,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('tool_name')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark"> *</span>
           </label>
           <InputText
             value={toolName}
@@ -379,7 +387,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('team_id')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark"> *</span>
           </label>
           <InputText
             value={config.teamId || ''}
@@ -395,7 +403,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('bot_token')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark"> *</span>
             </label>
             <InputText
               value={config.botToken || ''}
@@ -427,7 +435,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('tool_id')}
-            {!tool?.id && <span style={{ color: 'red' }}> *</span>}
+            {!tool?.id && <span className="field-required-mark"> *</span>}
           </label>
           <InputText
             value={toolId}
@@ -443,7 +451,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('tool_name')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark"> *</span>
           </label>
           <InputText
             value={toolName}
@@ -459,7 +467,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('prompt')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark"> *</span>
           </label>
           <InputTextarea
             value={config.prompt || ''}
@@ -476,7 +484,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('max_results')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark"> *</span>
           </label>
           <InputNumber
             value={maxResults}
@@ -499,7 +507,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('database_url')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark"> *</span>
             </label>
             <InputText
               value={databaseConfig.url || ''}
@@ -517,7 +525,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('database_type')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark"> *</span>
             </label>
             <Dropdown
               value={databaseConfig.type || 'qdrant'}
@@ -533,7 +541,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('entity_type')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark"> *</span>
             </label>
             <Dropdown
               value={databaseConfig.entityType || RagEntityType.PRODUCT}
@@ -549,7 +557,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('collection_name')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark"> *</span>
             </label>
             <InputText
               value={databaseConfig.collectionName || ''}
@@ -568,10 +576,10 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             )}
           </div>
 
-          <div className="form-field" style={{ marginBottom: '1.5rem' }}>
+          <div className="form-field form-field-spaced">
             <label className="field-label">
               {t('token')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark"> *</span>
             </label>
             <Dropdown
               value={databaseConfig.token?.id || ''}
@@ -601,7 +609,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('model')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark"> *</span>
             </label>
             <InputText
               value={embeddingConfig.model || ''}
@@ -619,7 +627,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('token')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark"> *</span>
             </label>
             <Dropdown
               value={embeddingConfig.token?.id || ''}
@@ -648,6 +656,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
   const renderRagEmporixConfigFields = () => {
     const indexedFields = config.indexedFields || []
+    const filterFields = config.filterFields || []
     const embeddingConfig = (config.embeddingConfig ||
       {}) as RagEmporixEmbeddingConfig
     const dimensionsValue = embeddingConfig.dimensions
@@ -659,11 +668,6 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       dimensionsValue < 128 ||
       dimensionsValue > 4096
     const entityTypes = [{ label: t('product'), value: RagEntityType.PRODUCT }]
-    const providerOptions = [
-      { label: 'OpenAI', value: RagLlmProvider.OPENAI },
-      { label: 'Emporix OpenAI', value: RagLlmProvider.EMPORIX_OPENAI },
-      { label: 'Self-Hosted Ollama', value: RagLlmProvider.SELF_HOSTED_OLLAMA },
-    ]
 
     const addIndexedField = () => {
       const newFields = [...indexedFields, { name: '', key: '' }]
@@ -674,7 +678,10 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     }
 
     const addCustomIndexedField = () => {
-      const newFields = [...indexedFields, { name: '', key: MIXINS_PREFIX, custom: true }]
+      const newFields = [
+        ...indexedFields,
+        { name: '', key: MIXINS_PREFIX, custom: true },
+      ]
       setConfig((prev) => ({
         ...prev,
         indexedFields: newFields,
@@ -682,8 +689,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     }
 
     const removeIndexedField = (index: number) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newFields = indexedFields.filter((_: any, i: number) => i !== index)
+      const newFields = indexedFields.filter((_, i) => i !== index)
       setConfig((prev) => ({
         ...prev,
         indexedFields: newFields,
@@ -692,7 +698,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
     const updateIndexedField = (
       index: number,
-      field: string,
+      field: keyof Pick<RagEmporixFieldConfig, 'name' | 'key'>,
       value: string
     ) => {
       const newFields = [...indexedFields]
@@ -705,10 +711,10 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
     const getAvailableFieldsForIndex = (currentIndex: number) => {
       const selectedKeys = indexedFields
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((f: any, i: number) => (i !== currentIndex ? f.key : null))
-        .filter((key: string | null) => key && key.trim())
-        .map((key: string | null) => key as string)
+        .map((field, i) =>
+          i !== currentIndex && field.key?.trim() ? field.key : null
+        )
+        .filter((key): key is string => !!key)
 
       return availableFields.filter((field) => {
         const hasConflict = selectedKeys.some((selectedKey: string) => {
@@ -721,6 +727,51 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
         return !hasConflict
       })
+    }
+
+    const addFilterField = () => {
+      setConfig((prev) => ({
+        ...prev,
+        filterFields: [...(prev.filterFields ?? []), createEmptyFilterField()],
+      }))
+    }
+
+    const removeFilterField = (index: number) => {
+      const newFields = filterFields.filter((_, i) => i !== index)
+      setConfig((prev) => ({
+        ...prev,
+        filterFields: newFields,
+      }))
+    }
+
+    const updateFilterField = (
+      index: number,
+      field: keyof Pick<RagEmporixFilterFieldConfig, 'name' | 'description'>,
+      value: string
+    ) => {
+      const newFields = [...filterFields]
+      newFields[index] = { ...newFields[index], [field]: value }
+      setConfig((prev) => ({
+        ...prev,
+        filterFields: newFields,
+      }))
+    }
+
+    const selectFilterFieldKey = (index: number, key?: string | null) => {
+      const newFields = [...filterFields]
+
+      if (!key?.trim()) {
+        newFields[index] = createEmptyFilterField()
+      } else {
+        newFields[index] = {
+          key
+        }
+      }
+
+      setConfig((prev) => ({
+        ...prev,
+        filterFields: newFields,
+      }))
     }
 
     const requiresTokenAndModel = (provider?: RagLlmProvider) => {
@@ -739,7 +790,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('tool_id')}
-            {!tool?.id && <span style={{ color: 'red' }}> *</span>}
+            {!tool?.id && <span className="field-required-mark"> *</span>}
           </label>
           <InputText
             value={toolId}
@@ -755,7 +806,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('tool_name')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark"> *</span>
           </label>
           <InputText
             value={toolName}
@@ -771,7 +822,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('prompt')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark"> *</span>
           </label>
           <InputTextarea
             value={config.prompt || ''}
@@ -788,11 +839,11 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('provider')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark"> *</span>
           </label>
           <Dropdown
             value={embeddingConfig.provider || ''}
-            options={providerOptions}
+            options={ragProviderOptions}
             onChange={(e) =>
               updateNestedConfig('embeddingConfig', 'provider', e.value)
             }
@@ -809,7 +860,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             <div className="form-field">
               <label className="field-label">
                 {t('model')}
-                <span style={{ color: 'red' }}> *</span>
+                <span className="field-required-mark"> *</span>
               </label>
               <InputText
                 value={embeddingConfig.model || ''}
@@ -827,7 +878,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             <div className="form-field">
               <label className="field-label">
                 {t('dimensions')}
-                <span style={{ color: 'red' }}> *</span>
+                <span className="field-required-mark"> *</span>
               </label>
               <InputNumber
                 value={dimensionsValue}
@@ -857,7 +908,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('url')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark"> *</span>
             </label>
             <InputText
               value={embeddingConfig.url || ''}
@@ -877,7 +928,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           <div className="form-field">
             <label className="field-label">
               {t('token')}
-              <span style={{ color: 'red' }}> *</span>
+              <span className="field-required-mark"> *</span>
             </label>
             <Dropdown
               value={embeddingConfig.token?.id || ''}
@@ -904,7 +955,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('entity_type')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark"> *</span>
           </label>
           <Dropdown
             value={
@@ -920,20 +971,19 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         <div className="form-field">
           <label className="field-label">
             {t('indexed_fields')}
-            <span style={{ color: 'red' }}> *</span>
+            <span className="field-required-mark"> *</span>
           </label>
 
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {indexedFields.map((field: any, index: number) => (
-            <div key={index} className="indexed-field-group">
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '12px',
-                  alignItems: 'flex-start',
-                }}
-              >
-                <div className="form-field" style={{ flex: 2, minWidth: 0 }}>
+          {indexedFields.map((field: RagEmporixFieldConfig, index: number) => (
+            <RagFieldRowLayout
+              key={index}
+              primaryClassName="tool-field-row__name"
+              secondaryClassName="tool-field-row__key-wide"
+              onRemove={() => removeIndexedField(index)}
+              removeAriaLabel={t('remove_field')}
+              removeTooltip={t('remove_field')}
+              primaryField={
+                <>
                   <label className="field-label">{t('field_name')}</label>
                   <InputText
                     value={field.name || ''}
@@ -943,12 +993,13 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                     className="w-full"
                     placeholder={t('enter_field_name')}
                   />
-                </div>
-
-                <div className="form-field" style={{ flex: 3, minWidth: 0 }}>
+                </>
+              }
+              secondaryField={
+                <>
                   <label className="field-label">
                     {t('field_key')}
-                    <span style={{ color: 'red' }}> *</span>
+                    <span className="field-required-mark"> *</span>
                   </label>
                   {field.custom ||
                   (field.key?.startsWith(MIXINS_PREFIX) &&
@@ -977,21 +1028,21 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                     </>
                   ) : (
                     <>
-                      <div title={field.key || ''}>
-                        <Dropdown
-                          value={field.key || ''}
-                          options={getAvailableFieldsForIndex(index).map(
-                            (f) => ({ label: f, value: f })
-                          )}
-                          onChange={(e) =>
-                            updateIndexedField(index, 'key', e.value)
-                          }
-                          className={`w-full ${!field.key?.trim() ? 'p-invalid' : ''}`}
-                          placeholder={t('select_field_key')}
-                          filter
-                          showClear
-                        />
-                      </div>
+                      <Dropdown
+                        value={field.key || ''}
+                        options={getAvailableFieldsForIndex(index).map(
+                          (f) => ({ label: f, value: f })
+                        )}
+                        onChange={(e) =>
+                          updateIndexedField(index, 'key', e.value)
+                        }
+                        className={`w-full rag-field-key-dropdown ${!field.key?.trim() ? 'p-invalid' : ''}`}
+                        placeholder={t('select_field_key')}
+                        tooltip={field.key?.trim() || undefined}
+                        tooltipOptions={{ position: 'top' }}
+                        filter
+                        showClear
+                      />
                       {!field.key?.trim() && (
                         <small className="p-error">
                           {t('field_key_required')}
@@ -999,20 +1050,12 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                       )}
                     </>
                   )}
-                </div>
-
-                <div className="indexed-field-delete-button">
-                  <Button
-                    icon="pi pi-trash"
-                    className="p-button-danger"
-                    onClick={() => removeIndexedField(index)}
-                  />
-                </div>
-              </div>
-            </div>
+                </>
+              }
+            />
           ))}
 
-          <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+          <div className="field-list-actions">
             <Button
               icon="pi pi-plus"
               label={t('add_indexed_field')}
@@ -1028,14 +1071,20 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           </div>
 
           {indexedFields.length === 0 && (
-            <small
-              className="p-error"
-              style={{ marginTop: '8px', display: 'block' }}
-            >
+            <small className="p-error field-validation-message">
               {t('indexed_fields_required')}
             </small>
           )}
         </div>
+
+        <RagFilterFieldsSection
+          filterFields={filterFields}
+          availableFilterFields={availableFilterFields}
+          onAdd={addFilterField}
+          onRemove={removeFilterField}
+          onUpdateField={updateFilterField}
+          onSelectKey={selectFilterFieldKey}
+        />
       </>
     )
   }
@@ -1056,7 +1105,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         return (
           <div className="form-field">
             <label className="field-label">
-              {t('configuration', 'Configuration')}
+              {t('configuration')}
             </label>
             <pre className="config-json">{JSON.stringify(config, null, 2)}</pre>
           </div>
@@ -1109,6 +1158,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
       case 'rag_emporix': {
         const indexedFields = config.indexedFields || []
+        const filterFieldsConfig = config.filterFields ?? []
         const embeddingConfig = (config.embeddingConfig ||
           {}) as RagEmporixEmbeddingConfig
 
@@ -1116,17 +1166,20 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
           return false
         }
 
-        const isValidKey = (key: string) => /^[a-zA-Z0-9_.-]+$/.test(key)
         const hasValidIndexedFields = indexedFields.every(
           (field: RagEmporixFieldConfig) => {
-            if (!field.key?.trim() || !isValidKey(field.key)) return false
-            if (field.custom || field.key?.startsWith(MIXINS_PREFIX))
+            if (!isValidRagFieldKey(field.key)) return false
+            if (field.custom || field.key.startsWith(MIXINS_PREFIX)) {
               return isValidCustomFieldKey(field.key)
+            }
             return true
           }
         )
 
-        if (!hasValidIndexedFields) {
+        if (
+          !hasValidIndexedFields ||
+          !areRagEmporixFilterFieldsValid(filterFieldsConfig)
+        ) {
           return false
         }
 
@@ -1165,7 +1218,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     <BaseConfigPanel
       visible={visible}
       onHide={onHide}
-      title={t('tool_configuration', 'Tool Configuration')}
+      title={t('tool_configuration')}
       icon={faTools}
       iconName={toolName}
       onSave={handleSave}
@@ -1176,7 +1229,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       <div className="form-field">
         <label className="field-label">
           {t('tool_type')}
-          {!tool?.id && <span style={{ color: 'red' }}> *</span>}
+          {!tool?.id && <span className="field-required-mark"> *</span>}
         </label>
         {tool?.id ? (
           <InputText
