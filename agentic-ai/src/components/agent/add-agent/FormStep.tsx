@@ -82,9 +82,7 @@ export const FormStep: React.FC<FormStepProps> = ({
             placeholder={t('enter_agent_id')}
           />
           {!agentId.trim() && (
-            <small className="p-error">
-              {t('agent_id_required')}
-            </small>
+            <small className="p-error">{t('agent_id_required')}</small>
           )}
         </div>
         <div className="form-field">
@@ -132,9 +130,7 @@ export const FormStep: React.FC<FormStepProps> = ({
             placeholder={t('user_prompt_placeholder')}
           />
           {!userPrompt.trim() && (
-            <small className="p-error">
-              {t('user_prompt_required')}
-            </small>
+            <small className="p-error">{t('user_prompt_required')}</small>
           )}
         </div>
         {templatePrompt && (

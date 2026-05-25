@@ -148,8 +148,7 @@ const TRANSLATIONS_DE = {
   reindex: 'Neu indizieren',
   reindex_triggered_successfully: 'Neuindizierung erfolgreich gestartet!',
   error_triggering_reindex: 'Fehler beim Starten der Neuindizierung',
-  failed_to_trigger_reindex:
-    'Neuindizierung konnte nicht gestartet werden.',
+  failed_to_trigger_reindex: 'Neuindizierung konnte nicht gestartet werden.',
   reindex_confirmation:
     'Dies ist eine zeitaufwändige Operation, die alle Embeddings neu generiert. Bitte gehen Sie mit Vorsicht vor. Möchten Sie wirklich fortfahren?',
   max_results: 'Max. Ergebnisse',
@@ -361,6 +360,7 @@ const TRANSLATIONS_DE = {
 
   commerce_filter_tab_form: 'Filter',
   commerce_filter_tab_json: 'Bedingung',
+  commerce_filter_tab_assistant: 'Assistent',
   commerce_filter_payload_field: 'Payload-Pfad',
   commerce_filter_payload_placeholder: 'z. B. cart.siteCode',
   commerce_filter_values: 'Werte',
@@ -400,6 +400,32 @@ const TRANSLATIONS_DE = {
   commerce_filter_complex_use_json:
     'Dieser Filter nutzt geschachtelte Logik. Bearbeitung im Tab „Bedingung“ (JSON).',
 
+  commerce_filter_assistant_checking: 'Prüfe, ob der Hilfeagent verfügbar ist…',
+  commerce_filter_assistant_intro:
+    'Nutzen Sie einen speziellen Hilfeagenten, um Filter in natürlicher Sprache zu beschreiben und JSON für dieses Tab zu erhalten. Der Hilfeagent muss einmalig aus den vordefinierten Vorlagen angelegt werden.',
+  commerce_filter_assistant_enable: 'Hilfeagent aktivieren',
+  commerce_filter_assistant_agent_created: 'Hilfeagent wurde erstellt.',
+  commerce_filter_assistant_agent_exists:
+    'Hilfeagent existiert bereits. Sie können Ihren Filter unten beschreiben.',
+  commerce_filter_assistant_prompt_label: 'Filter beschreiben',
+  commerce_filter_assistant_prompt_placeholder:
+    'z. B. Nur auslösen wenn siteCode main und Währung EUR',
+  commerce_filter_assistant_generate: 'Bedingungs-JSON erzeugen',
+  commerce_filter_assistant_extract_failed:
+    'In der Antwort des Agenten wurde kein gültiges JSON gefunden. Bitten Sie nur um JSON oder versuchen Sie es erneut.',
+  commerce_filter_assistant_applied:
+    'Bedingungs-JSON wurde übernommen. Bitte Tab „Bedingung“ prüfen.',
+  commerce_filter_assistant_create_failed:
+    'Der Hilfeagent konnte nicht erstellt oder aktiviert werden.',
+  commerce_filter_assistant_chat_failed:
+    'Der Hilfeagent lieferte keine verwertbare Antwort.',
+  commerce_filter_assistant_empty_response:
+    'Der Hilfeagent hat eine leere Nachricht zurückgegeben.',
+  commerce_filter_assistant_template_not_found:
+    'Die Vorlage für den Commerce-Filter-Hilfeagenten ist für diesen Mandanten nicht verfügbar.',
+  commerce_filter_assistant_enable_failed:
+    'Der vorhandene Hilfeagent konnte nicht aktiviert werden.',
+
   commerce_filter_parse_unsupported_operator:
     'Nicht unterstützter oder fehlender Operator für diese Bedingung.',
   commerce_filter_parse_field_left_required:
@@ -412,7 +438,8 @@ const TRANSLATIONS_DE = {
     'Alle Einträge in der Liste müssen Zeichenketten sein.',
   commerce_filter_parse_scalar_required:
     'Für diesen Operator ist ein nicht-leerer Wert erforderlich.',
-  commerce_filter_parse_scalar_type: 'Der Wert muss eine Zeichenkette oder Zahl sein.',
+  commerce_filter_parse_scalar_type:
+    'Der Wert muss eine Zeichenkette oder Zahl sein.',
   commerce_filter_parse_filter_must_be_object:
     'Der Filter muss ein JSON-Objekt sein.',
   commerce_filter_parse_compound_op_invalid:

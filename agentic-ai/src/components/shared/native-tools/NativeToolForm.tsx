@@ -39,9 +39,7 @@ export const NativeToolForm: React.FC<NativeToolFormProps> = ({
     <div className="native-tool-form">
       <div className="native-tool-form-content">
         <div className="form-field">
-          <label className="field-label">
-            {t('select_tool')}
-          </label>
+          <label className="field-label">{t('select_tool')}</label>
           <Dropdown
             value={selectedToolId}
             options={availableOptions}

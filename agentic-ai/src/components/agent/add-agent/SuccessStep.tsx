@@ -16,9 +16,7 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({ onOk }) => {
       <div className="success-icon">
         <FontAwesomeIcon icon={faCheck} />
       </div>
-      <h2 className="dialog-title">
-        {t('agent_saved_success')}
-      </h2>
+      <h2 className="dialog-title">{t('agent_saved_success')}</h2>
       <div className="dialog-actions">
         <Button
           type="button"
@@ -27,11 +25,7 @@ export const SuccessStep: React.FC<SuccessStepProps> = ({ onOk }) => {
           className="p-button-secondary"
           disabled
         />
-        <Button
-          type="button"
-          label={t('ok')}
-          onClick={onOk}
-        />
+        <Button type="button" label={t('ok')} onClick={onOk} />
       </div>
     </div>
   )

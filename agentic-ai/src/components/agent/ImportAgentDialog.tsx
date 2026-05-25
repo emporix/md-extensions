@@ -167,11 +167,7 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
     </div>
   ) : importResult ? (
     <div className="dialog-actions">
-      <Button
-        type="button"
-        label={t('ok', 'OK')}
-        onClick={handleSummaryOk}
-      />
+      <Button type="button" label={t('ok', 'OK')} onClick={handleSummaryOk} />
     </div>
   ) : (
     <div className="dialog-actions">

@@ -88,9 +88,7 @@ const ToolCard: React.FC<ToolCardProps> = ({
         onRemove(tool.id)
       },
       disabled: tool.enabled,
-      title: tool.enabled
-        ? t('cannot_delete_active_tool')
-        : t('remove_tool'),
+      title: tool.enabled ? t('cannot_delete_active_tool') : t('remove_tool'),
       className: 'remove-button',
     })
 

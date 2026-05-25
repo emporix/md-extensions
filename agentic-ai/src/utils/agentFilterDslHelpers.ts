@@ -1,3 +1,12 @@
+export const COMMERCE_FILTER_ASSISTANT_I18N_KEYS = {
+  emptyResponse: 'commerce_filter_assistant_empty_response',
+  templateNotFound: 'commerce_filter_assistant_template_not_found',
+} as const
+
+export const COMMERCE_FILTER_ASSISTANT_I18N_MESSAGES = Object.values(
+  COMMERCE_FILTER_ASSISTANT_I18N_KEYS
+) as readonly string[]
+
 export const COMMERCE_FILTER_PARSE_I18N_KEYS = {
   unsupportedOperator: 'commerce_filter_parse_unsupported_operator',
   fieldLeftRequired: 'commerce_filter_parse_field_left_required',
@@ -100,9 +109,8 @@ export const isCompoundFilter = (
 ): n is AgentCommerceCompoundDsl =>
   'conditions' in n && Array.isArray((n as AgentCommerceCompoundDsl).conditions)
 
-const isLeafFilter = (
-  n: AgentCommerceFilterDsl
-): n is AgentCommerceLeafDsl => !isCompoundFilter(n)
+const isLeafFilter = (n: AgentCommerceFilterDsl): n is AgentCommerceLeafDsl =>
+  !isCompoundFilter(n)
 
 export const uiOperatorToDsl = (op: UiFilterOperator): DslLeafOperator =>
   UI_TO_DSL_LEAF[op]
@@ -391,4 +399,31 @@ export const stringifyFilterDsl = (
 ): string => {
   if (!dsl) return ''
   return JSON.stringify(serializeFilterForPersist(dsl), null, 2)
+}
+
+const tryParseTopLevelJsonObject = (
+  text: string
+): Record<string, unknown> | null => {
+  try {
+    const parsed: unknown = JSON.parse(text)
+    if (
+      parsed !== null &&
+      typeof parsed === 'object' &&
+      !Array.isArray(parsed)
+    ) {
+      return parsed as Record<string, unknown>
+    }
+  } catch {
+  // Ignore exception
+  }
+  return null
+}
+
+export const extractFilterDslJsonFromAgentMessage = (
+  message: string
+): { parsed: Record<string, unknown>; rawSnippet: string } | null => {
+  const trimmed = message.trim()
+  const obj = tryParseTopLevelJsonObject(trimmed)
+  if (!obj) return null
+  return { parsed: obj, rawSnippet: trimmed }
 }

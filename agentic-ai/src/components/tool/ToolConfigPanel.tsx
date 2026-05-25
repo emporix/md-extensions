@@ -1061,9 +1061,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       default:
         return (
           <div className="form-field">
-            <label className="field-label">
-              {t('configuration')}
-            </label>
+            <label className="field-label">{t('configuration')}</label>
             <pre className="config-json">{JSON.stringify(config, null, 2)}</pre>
           </div>
         )

@@ -155,6 +155,9 @@
   --z-toast: 1100;
   --z-tooltip: 1150;
 
+  /* Component sizes */
+  --spinner-size-md: 2.25rem;
+
   /* DataTable Column Widths */
   --col-width-severity: 200px;
   --col-width-timestamp: 200px;
