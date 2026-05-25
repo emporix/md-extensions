@@ -414,7 +414,7 @@ const tryParseTopLevelJsonObject = (
       return parsed as Record<string, unknown>
     }
   } catch {
-  // Ignore exception
+    // Ignore exception
   }
   return null
 }
