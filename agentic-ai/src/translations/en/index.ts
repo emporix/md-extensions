@@ -145,6 +145,8 @@ const TRANSLATIONS_EN = {
   database_url_required: 'Database URL is required',
   database_type: 'Database Type',
   entity_type: 'Entity Type',
+  select_entity_type: 'Select entity type',
+  loading_entity_types: 'Loading entity types...',
   product: 'Product',
   collection_name: 'Collection Name',
   enter_collection_name: 'Enter collection name',
@@ -185,6 +187,8 @@ const TRANSLATIONS_EN = {
   tool_disabled: 'This tool is currently disabled',
   error_loading_tokens: 'Failed to load available tokens',
   error_loading_fields: 'Failed to load available fields',
+  error_loading_entity_types:
+    'Failed to load entity types. Product is still available.',
   failed_to_save_tool: 'Failed to save tool',
 
   // Tokens

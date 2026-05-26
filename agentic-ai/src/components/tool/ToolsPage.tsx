@@ -10,6 +10,7 @@ import { AppState } from '../../types/common'
 import { createEmptyTool } from '../../utils/toolHelpers'
 import { useToast } from '../../contexts/ToastContext'
 import { reindex } from '../../services/aiRagIndexerService'
+import { resolveRagEntityType } from '../../utils/ragEmporixToolHelpers'
 
 interface ToolsPageProps {
   appState?: AppState
@@ -91,7 +92,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
   const confirmReindex = async () => {
     if (!toolToReindex) return
 
-    if (!toolToReindex.config.entityType) {
+    if (!toolToReindex.config.entityType?.trim()) {
       showError(
         t('entity_type_missing', 'Entity type is missing in tool configuration')
       )
@@ -102,7 +103,10 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
     hideReindexConfirm()
 
     try {
-      await reindex(appState, toolToReindex.config.entityType)
+      await reindex(
+        appState,
+        resolveRagEntityType(toolToReindex.config.entityType)
+      )
       showSuccess(
         t('reindex_triggered_successfully', 'Reindex triggered successfully!')
       )

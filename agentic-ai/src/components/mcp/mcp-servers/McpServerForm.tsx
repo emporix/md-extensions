@@ -141,9 +141,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
 
         {serverType === 'custom' && (
           <div className="form-field">
-            <label className="field-label">
-              {t('select_mcp_server')}
-            </label>
+            <label className="field-label">{t('select_mcp_server')}</label>
             <Dropdown
               value={selectedCustomServerId}
               options={availableCustomServers}

@@ -1,10 +1,16 @@
 import {
+  PRODUCT_ENTITY_TYPE,
   RAG_FIELD_KEY_PATTERN,
   RagEmporixEmbeddingConfig,
   RagEmporixFieldConfig,
   RagEmporixFilterFieldConfig,
   ToolConfig,
 } from '../types/Tool'
+
+export const resolveRagEntityType = (entityType?: string): string => {
+  const trimmed = entityType?.trim()
+  return trimmed || PRODUCT_ENTITY_TYPE
+}
 
 export const isValidRagFieldKey = (key?: string): key is string => {
   const trimmed = key?.trim()
@@ -50,7 +56,7 @@ export const sanitizeRagEmporixFilterFields = (
 
 export const toRagEmporixToolConfig = (config: ToolConfig): ToolConfig => ({
   prompt: config.prompt,
-  entityType: config.entityType,
+  entityType: resolveRagEntityType(config.entityType),
   indexedFields: sanitizeRagEmporixIndexedFields(config.indexedFields ?? []),
   filterFields: sanitizeRagEmporixFilterFields(config.filterFields ?? []),
   embeddingConfig: config.embeddingConfig as

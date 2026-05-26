@@ -88,9 +88,7 @@ export const McpServersSelector: React.FC<McpServersSelectorProps> = ({
   const existingCustomServerIds = mcpServers
     .filter(
       (server, idx) =>
-        idx !== editingIndex &&
-        server.type === 'custom' &&
-        server.mcpServer?.id
+        idx !== editingIndex && server.type === 'custom' && server.mcpServer?.id
     )
     .map((server) => server.mcpServer!.id)
 

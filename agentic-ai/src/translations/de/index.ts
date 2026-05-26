@@ -143,6 +143,8 @@ const TRANSLATIONS_DE = {
   database_url_required: 'Datenbank-URL ist erforderlich',
   database_type: 'Datenbank-Typ',
   entity_type: 'Entity-Typ',
+  select_entity_type: 'Entity-Typ auswählen',
+  loading_entity_types: 'Entity-Typen werden geladen...',
   product: 'Produkt',
   collection_name: 'Collection-Name',
   enter_collection_name: 'Collection-Name eingeben',
@@ -184,6 +186,8 @@ const TRANSLATIONS_DE = {
   tool_disabled: 'Dieses Tool ist derzeit deaktiviert',
   error_loading_tokens: 'Fehler beim Laden der verfügbaren Tokens',
   error_loading_fields: 'Fehler beim Laden der verfügbaren Felder',
+  error_loading_entity_types:
+    'Fehler beim Laden der Entity-Typen. Produkt ist weiterhin verfügbar.',
   failed_to_save_tool: 'Tool konnte nicht gespeichert werden',
 
   // Tokens

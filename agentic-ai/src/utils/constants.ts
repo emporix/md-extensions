@@ -121,8 +121,8 @@ export const MCP_SERVERS = {
       'get-quote-reasons',
       'create-quote',
       'update-quote',
-    ]
-  }
+    ],
+  },
 } as const
 
 export type McpKey = keyof typeof MCP_SERVERS
