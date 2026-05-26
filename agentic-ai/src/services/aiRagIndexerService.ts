@@ -1,6 +1,10 @@
 import { AppState } from '../types/common'
 import { ApiClient } from './apiClient'
 
+export interface RagFilterMetadataField {
+  key: string
+}
+
 const getApiClient = (appState: AppState): ApiClient => {
   return new ApiClient(appState)
 }
@@ -17,6 +21,24 @@ export const getRagMetadata = async (
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : 'Failed to fetch RAG metadata'
+    throw new Error(errorMessage)
+  }
+}
+
+export const getRagFilterMetadata = async (
+  appState: AppState,
+  ragEntityType: string
+): Promise<RagFilterMetadataField[]> => {
+  try {
+    const api = getApiClient(appState)
+    return await api.get<RagFilterMetadataField[]>(
+      `/ai-rag-indexer/${appState.tenant}/${ragEntityType}/filter-metadata`
+    )
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : 'Failed to fetch RAG filter metadata'
     throw new Error(errorMessage)
   }
 }

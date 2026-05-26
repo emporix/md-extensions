@@ -1,29 +1,25 @@
-/* Tool Configuration Panel Styles - Matching Management Dashboard */
-
-/* Input Number - Matching Orders Quantity Field Style */
 .tool-config-panel .p-inputnumber {
   width: 100%;
-  border-radius: 4px !important;
+  border-radius: var(--radius-sm) !important;
 }
 
 .tool-config-panel .p-inputnumber .p-inputnumber-input,
 .tool-config-panel .p-inputnumber input,
 .tool-config-panel .p-inputnumber .p-inputnumber-input-wrapper input {
   border: 1px solid #c7cad1 !important;
-  border-radius: 8px !important;
-  padding: 8px !important;
-  font-size: 0.875rem !important;
+  border-radius: var(--radius-lg) !important;
+  padding: var(--space-sm) !important;
+  font-size: var(--font-size-sm) !important;
   line-height: 1 !important;
-  font-weight: normal !important;
+  font-weight: var(--font-weight-normal) !important;
   max-height: 34px !important;
-  transition: border-color 0.2s ease !important;
+  transition: border-color var(--transition-base) !important;
 }
 
-/* Ensure InputNumber wrapper and all nested elements use consistent border-radius */
 .tool-config-panel .p-inputnumber > *,
 .tool-config-panel .p-inputnumber .p-inputnumber-input-wrapper,
 .tool-config-panel .p-inputnumber .p-inputnumber-input-wrapper > * {
-  border-radius: 4px !important;
+  border-radius: var(--radius-sm) !important;
 }
 
 .tool-config-panel .p-inputnumber .p-inputnumber-input:enabled:hover {
@@ -51,7 +47,7 @@
   background: var(--color-interactive-accent) !important;
   box-shadow: none !important;
   border-radius: 2px !important;
-  transition: background 0.2s ease !important;
+  transition: background var(--transition-base) !important;
 }
 
 .tool-config-panel .p-inputnumber .p-inputnumber-button:hover:not(:disabled) {
@@ -75,49 +71,63 @@
 }
 
 .tool-config-panel .p-inputnumber .p-inputnumber-button .p-button-icon {
-  font-size: 0.875rem !important;
-  color: white !important;
+  font-size: var(--font-size-sm) !important;
+  color: var(--bg-primary) !important;
 }
 
-/* Indexed Fields Section - RAG Emporix */
 .indexed-field-delete-button {
   display: flex !important;
   align-items: center !important;
   padding-top: 0 !important;
-  margin-top: 24px !important;
+  margin-top: var(--space-xl) !important;
 }
 
-.indexed-field-delete-button .p-button {
-  width: 2rem;
-  height: 2rem;
+.indexed-field-delete-button .p-button.p-button-danger {
+  background: transparent !important;
+  border: none !important;
+  color: #3B64A0 !important;
+  font-size: 1.1rem !important;
+  cursor: pointer !important;
+  min-width: auto !important;
+  padding: var(--space-xs) var(--space-sm) !important;
+  border-radius: var(--radius-sm) !important;
+  transition: background var(--transition-base), color var(--transition-base) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 34px !important;
+  width: 34px !important;
 }
 
-/* Agent Config Icon Row - Add margin to separate from other fields */
+.indexed-field-delete-button .p-button.p-button-danger:hover:not(:disabled) {
+  background: rgba(59, 100, 160, 0.1) !important;
+  color: #3B64A0 !important;
+}
+
 .tool-config-panel .agent-config-icon-row {
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-2xl);
 }
 
-/* Tool Config Panel Field Styling */
 .tool-config-panel .form-field {
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-lg);
 }
 
 .tool-config-panel .field-label {
   color: #1b2029;
   font-style: normal;
-  font-weight: 400;
-  font-size: 0.875rem;
-  line-height: 1rem;
-  margin-bottom: 0.5rem;
+  font-weight: var(--font-weight-normal);
+  font-size: var(--font-size-sm);
+  line-height: var(--space-lg);
+  margin-bottom: var(--space-sm);
   display: block;
 }
 
 .tool-config-panel .p-inputtext,
 .tool-config-panel .p-dropdown,
 .tool-config-panel .p-inputtextarea {
-  border-radius: 8px !important;
-  padding: 8px !important;
-  font-size: 0.875rem !important;
+  border-radius: var(--radius-lg) !important;
+  padding: var(--space-sm) !important;
+  font-size: var(--font-size-sm) !important;
   line-height: 1 !important;
 }
 
@@ -139,7 +149,7 @@
   display: flex;
   align-items: center;
   height: 100%;
-  font-size: 0.875rem !important;
+  font-size: var(--font-size-sm) !important;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -148,7 +158,7 @@
 .tool-config-panel .p-inputtext::placeholder,
 .tool-config-panel .p-dropdown .p-dropdown-label.p-placeholder {
   color: #c7cad1 !important;
-  font-size: 0.875rem !important;
+  font-size: var(--font-size-sm) !important;
   opacity: 1 !important;
   font-style: italic !important;
 }
@@ -160,16 +170,118 @@
 
 .tool-config-panel .p-error {
   color: #e8615a !important;
-  font-size: 0.875rem !important;
+  font-size: var(--font-size-sm) !important;
 }
 
-.tool-config-panel .indexed-field-group {
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.75rem;
+.rag-field-group {
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-md);
   border-bottom: 1px solid #e8e9eb;
 }
 
-.tool-config-panel .indexed-field-group:last-child {
+.rag-field-group:last-child {
   border-bottom: none;
 }
 
+.tool-field-row {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+}
+
+.tool-field-row__name {
+  flex: 2;
+  min-width: 0;
+}
+
+.tool-field-row__key-wide {
+  flex: 3;
+  min-width: 0;
+}
+
+.field-hint {
+  display: block;
+  margin-bottom: var(--space-sm);
+}
+
+.field-list-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+.field-validation-message {
+  margin-top: var(--space-sm);
+  display: block;
+}
+
+.rag-field-description {
+  margin-top: var(--space-sm);
+  margin-bottom: 0;
+}
+
+.tool-config-panel .rag-field-description .rag-field-description-input {
+  min-height: 56px !important;
+  max-height: 72px !important;
+  resize: none;
+  overflow-y: auto;
+}
+
+.field-actions-spaced {
+  margin-top: var(--space-lg);
+}
+
+.form-field-spaced {
+  margin-bottom: var(--space-xl);
+}
+
+.tool-config-panel .rag-field-key-dropdown.p-dropdown {
+  padding: 0 !important;
+  align-items: center;
+  overflow: hidden;
+}
+
+.tool-config-panel .rag-field-key-dropdown .p-dropdown-label.p-inputtext {
+  display: block !important;
+  flex: 1 1 auto !important;
+  width: 1% !important;
+  min-width: 0 !important;
+  padding: var(--space-sm) !important;
+  padding-right: 1.25rem !important;
+  border: none !important;
+  max-height: 34px !important;
+  line-height: 1.125rem !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.tool-config-panel
+  .rag-field-key-dropdown.p-dropdown-clearable.p-inputwrapper-filled
+  .p-dropdown-label.p-inputtext {
+  padding-right: 2.25rem !important;
+}
+
+.tool-config-panel .rag-field-key-dropdown .p-dropdown-trigger {
+  width: 1.25rem !important;
+  padding: 0 !important;
+  flex-shrink: 0;
+}
+
+.tool-config-panel .rag-field-key-dropdown .p-dropdown-trigger-icon {
+  font-size: 0.65rem !important;
+}
+
+.tool-config-panel .rag-field-key-dropdown .p-dropdown-clear-icon {
+  top: 50% !important;
+  right: 1.25rem !important;
+  margin-top: 0 !important;
+  transform: translateY(-50%) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 0.875rem !important;
+  height: 0.875rem !important;
+  font-size: 0.65rem !important;
+  line-height: 1 !important;
+}

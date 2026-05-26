@@ -1,0 +1,3190 @@
+# Cursor Rules for COP Module (React TypeScript Project)
+
+## Project Overview
+This is a React TypeScript project using Vite, PrimeReact, GraphQL, and Module Federation. It's a digital process management application with component-based architecture.
+
+## File Organization & Naming Conventions
+
+### Components
+- Use PascalCase for component files: `ButtonPrimary.tsx`, `ProcessStep.tsx`
+- Place components in `src/components/` with subdirectories for feature areas
+- Use `.module.scss` for component-specific styles
+- Follow the pattern: `ComponentName.tsx` + `ComponentName.module.scss`
+
+### Models & Types
+- Use PascalCase for model files: `Process.model.ts`, `ExecutionTemplate.model.ts`
+- Place in `src/models/` directory
+- Export types with PascalCase: `Process`, `ProcessStatus`
+- Use descriptive type names that match the domain
+
+### Pages
+- Use PascalCase for page components: `Dashboard.tsx`, `ProcessEdit.tsx`
+- Place in `src/pages/` with feature subdirectories
+- Use `.module.scss` for page-specific styles
+
+### Helpers & Utilities
+- Use camelCase for helper files: `executionTemplate.helpers.ts`, `dateHelpers.ts`
+- Place in `src/helpers/` directory
+- Export functions with descriptive names
+- Group related helper functions in dedicated files (e.g., date calculations in `dateHelpers.ts`)
+
+## Business Logic Separation
+
+### Core Principles
+This project follows a clear separation between business logic and UI components. All ExecutionTemplate model manipulations should be done through helper functions in the `src/helpers` directory.
+
+#### 1. Model Manipulation in Helpers Only
+All ExecutionTemplate model manipulations must be done through helper functions, not directly in React components.
+
+**✅ Correct:**
+```typescript
+import { updateStepByDetails, addStep } from '../helpers/executionTemplate.helpers'
+
+// In component
+updateProcess(updateStepByDetails(process, step, activeStep.idx))
+updateProcess(addStep(process, step, idx))
+```
+
+**❌ Incorrect:**
+```typescript
+// Direct manipulation in component
+updateProcess({
+  ...process,
+  steps: process.steps.map((s, idx) => {
+    if (idx === stepIndex) return step
+    return s
+  })
+})
+```
+
+#### 2. Helper Function Usage
+Use these helper functions for all ExecutionTemplate manipulations:
+
+- `updateStep(process, step, stepIndex)` - Update step at specific index
+- `updateStepByDetails(process, step, idx)` - Update step using 1-based idx
+- `addStep(process, step, idx)` - Add step at specific index
+- `updateTrigger(process, trigger)` - Update trigger array
+- `addTriggerStep(process, trigger, idx)` - Add trigger as step
+- `updateProcessInfo(process, name, description)` - Update process metadata
+- `removeStep(process, idx)` - Remove step at index
+- `updateStepParameterValues(step, key, value)` - Update step parameter values
+- `createScenarioStep(scenarioId, stepType?)` - Create new step with scenario
+- `createReusableStepFromTemplate(reusableStep, stepType)` - Create step from reusable template
+- `updateStepWithScenario(step, scenarioId, stepType?)` - Update existing step with scenario
+- `updateStepWithReusableTemplate(step, reusableStep, stepType)` - Update existing step with reusable template
+- `createSubflowStep(executionTemplateId, stepType?)` - Create new step with subflow
+- `updateStepWithSubflow(step, executionTemplateId, stepType?)` - Update existing step with subflow
+
+#### 3. Component Responsibilities
+React components should only:
+- Handle UI state
+- Call helper functions
+- Pass data to helper functions
+- Update process state via `updateProcess()`
+
+#### 4. Immutability
+All helper functions return new objects without mutating the original:
+```typescript
+// Helper functions are pure and immutable
+const updatedProcess = updateStepByDetails(process, step, idx)
+// Original process is unchanged
+```
+
+### Import Pattern
+Always import helpers from the helpers directory:
+```typescript
+import { 
+  addStep, 
+  updateStepByDetails, 
+  updateTrigger,
+  updateStepWithScenario,
+  updateStepWithReusableTemplate,
+  updateStepWithSubflow
+} from '../helpers/executionTemplate.helpers'
+```
+
+## ExecutionTemplate Patterns
+
+### Model Structure
+The ExecutionTemplate is the core model for process automation. Key components:
+
+#### Core Types
+- `ExecutionTemplate` - Main process model with steps and triggers
+- `Step` - Individual process steps (scenarios, cloud functions, etc.)
+- `Trigger` - Process triggers (events, timers)
+- `StepDetails` - UI wrapper for steps with metadata
+
+#### Key Properties
+```typescript
+interface ExecutionTemplate {
+  steps: Step[]           // Process steps array
+  trigger: Trigger[]      // Process triggers
+  name: string           // Process name
+  description: string    // Process description
+  // ... other properties
+}
+```
+
+### Helper Function Patterns
+
+#### Step Manipulation
+```typescript
+// Update existing step
+updateStepByDetails(process, step, idx)  // idx is 1-based
+
+// Add new step
+addStep(process, step, idx)              // idx is 0-based
+
+// Remove step
+removeStep(process, idx)                 // idx is 0-based
+```
+
+#### Step Creation Patterns
+```typescript
+// Create scenario step
+const scenarioStep = createScenarioStep('scenario-123', StepType.SCENARIO)
+
+// Create reusable step from template
+const reusableStep = createReusableStepFromTemplate(templateStep, StepType.CLOUDFUNCTION)
+
+// Create subflow step
+const subflowStep = createSubflowStep('subflow-123', StepType.SUBFLOW)
+```
+
+#### Step Update Patterns
+```typescript
+// Update step with scenario
+const updatedStep = updateStepWithScenario(existingStep, 'scenario-123')
+
+// Update step with reusable template
+const updatedStep = updateStepWithReusableTemplate(existingStep, templateStep, StepType.CLOUDFUNCTION)
+
+// Update step with subflow
+const updatedStep = updateStepWithSubflow(existingStep, 'subflow-123')
+```
+
+#### Trigger Manipulation
+```typescript
+// Update main trigger
+updateTrigger(process, trigger)
+
+// Add trigger as step
+addTriggerStep(process, trigger, idx)
+```
+
+#### Process Metadata
+```typescript
+// Update name and description
+updateProcessInfo(process, name, description)
+```
+
+#### Step Parameter Values
+```typescript
+// Update step parameter values
+updateStepParameterValues(step, key, value)
+```
+
+### Component Integration
+
+#### ProcessEdit.tsx Pattern
+```typescript
+// Step editing
+onSave={async (step) => {
+  if (process) {
+    updateProcess(updateStepByDetails(process, step, activeStep.idx))
+  }
+}}
+
+// Step addition
+onAddStep={(idx, step) => {
+  if (process) {
+    updateProcess(addStep(process, step, idx))
+  }
+}}
+```
+
+#### Section Component Pattern
+```typescript
+// Scenario section
+const handleSetScenario = (scenarioId: string) => {
+  const newStep = {
+    ...step,
+    title: scenarios.find((s) => s.id === scenarioId)?.name ?? StepType.SCENARIO,
+    originalStep: updateStepWithScenario(step.originalStep!, scenarioId),
+  }
+  onChange(newStep)
+}
+
+// Subflow section
+const handleUpdateStep = (value: string) => {
+  const newStep = {
+    ...step,
+    title: subflowOptions.find(option => option.value === value)?.label,
+    originalStep: updateStepWithSubflow(step.originalStep!, value),
+  }
+  onChange(newStep)
+}
+```
+
+#### Dialog Pattern
+```typescript
+// Process info updates
+updateProcess(updateProcessInfo(process, processName, processDescription))
+```
+
+### Index Conventions
+
+#### 1-based vs 0-based Indexing
+- **1-based**: Used in UI components (`activeStep.idx`)
+- **0-based**: Used in array operations (`process.steps[index]`)
+
+#### Conversion Pattern
+```typescript
+// Convert 1-based UI index to 0-based array index
+const arrayIndex = uiIndex - 1
+
+// Helper functions handle this conversion internally
+updateStepByDetails(process, step, idx) // idx is 1-based, converts to 0-based
+```
+
+### Common Patterns
+
+#### Step Creation
+```typescript
+const newStep: Step = {
+  stepType: StepType.SCENARIO,
+  scenarios: [],
+  stepConfiguration: {
+    stepKind: StepKind.EMAIL,
+    stepName: { en: '', de: '' },
+    stepParameters: [],
+    stepParameterValues: [],
+  }
+}
+```
+
+#### Trigger Creation
+```typescript
+const newTrigger: Trigger = {
+  stepType: StepType.TRIGGER,
+  triggerType: 'webhook',
+  eventType: 'test-event',
+  timeExpression: null,
+  scenarios: []
+}
+```
+
+#### Process State Updates
+```typescript
+// Always use helper functions
+updateProcess(helperFunction(process, ...args))
+
+// Never manipulate directly
+// ❌ process.steps.push(newStep)
+// ✅ updateProcess(addStep(process, newStep, idx))
+```
+
+## Code Style & Patterns
+
+### React Components
+```typescript
+// Use functional components with TypeScript
+const ComponentName = (props: ComponentProps) => {
+  // Destructure props at the top
+  const { prop1, prop2 = defaultValue } = props
+  
+  return (
+    <div className={styles.container}>
+      {/* JSX content */}
+    </div>
+  )
+}
+
+export default ComponentName
+```
+
+### Nullish Coalescing vs Logical OR
+- **Prefer `??` for null/undefined checks**: Use nullish coalescing when you specifically want to check for `null` or `undefined`
+- **Use `||` for falsy checks**: Use logical OR when you want to check for any falsy value (empty string, 0, false, etc.)
+
+```typescript
+// ✅ Correct - nullish coalescing for null/undefined
+const value = someValue ?? defaultValue
+const name = user.name ?? 'Anonymous'
+const count = data?.items?.length ?? 0
+const className = `${styles.container} ${customClassName ?? ''}`
+
+// ❌ Incorrect - logical OR for null/undefined
+const value = someValue || defaultValue
+const name = user.name || 'Anonymous'
+const count = data?.items?.length || 0
+const className = `${styles.container} ${customClassName || ''}`
+
+// ✅ Correct - logical OR for falsy values
+const displayName = user.name || 'Anonymous' // If name is empty string
+const isEnabled = config.enabled || false
+const items = data?.items || []
+
+// ✅ Correct - specific use cases
+const message = user.message || 'No message' // If message can be empty string
+const status = user.status || 'pending' // If status can be empty string
+```
+
+### Props & Types
+```typescript
+// Use PropsWithChildren and PropsWithClassName helpers
+type ComponentProps = PropsWithChildren & 
+  PropsWithClassName & {
+    onClick?: () => unknown
+    disabled?: boolean
+    // Add specific props
+  }
+```
+
+### Styling
+- Use CSS Modules with `.module.scss` files
+- Import styles as `styles` object
+- Use template literals for className composition: `${styles.base} ${className}`
+- Follow BEM-like naming in SCSS files
+
+### State Management
+- Use React hooks for local state
+- Use context providers for global state (see `Dashboard.context.tsx`)
+- Prefer `useState` over `useReducer` for simple state
+
+### GraphQL
+- Place queries in `src/graphql/query/`
+- Place mutations in `src/graphql/mutations/`
+- Use descriptive names: `QUERY_DIGITAL_PROCESSES.ts`
+- Export as named exports
+
+### Internationalization
+- Use `react-i18next` for translations
+- Place translations in `src/translations/{locale}/index.ts`
+- Use translation keys that match component hierarchy
+
+## Import/Export Patterns
+
+### Imports Order
+1. React imports
+2. Third-party library imports
+3. Internal component imports
+4. Helper/utility imports
+5. Type imports
+6. Style imports
+
+```typescript
+import { useState } from 'react'
+import { Button, Card } from 'primereact'
+import { CgSpinner } from 'react-icons/cg'
+
+import ButtonPrimary from '../common/ButtonPrimary'
+import { useProcessContext } from '../../context/ProcessessProvider.context'
+import { Process } from '../../models/Process.model'
+
+import styles from './Component.module.scss'
+```
+
+### Exports
+- Use default exports for components
+- Use named exports for utilities, types, and constants
+- Export types from model files
+
+## Error Handling
+- Use try-catch blocks for async operations
+- Handle GraphQL errors gracefully
+- Use error boundaries for React components
+- Log errors appropriately (console.error allowed)
+
+## Performance Considerations
+- Use React.memo for expensive components
+- Implement proper dependency arrays in useEffect
+- Use useCallback for event handlers passed to child components
+- Lazy load components when appropriate
+
+## Testing
+- Write tests for helper functions
+- Use Vitest for unit testing
+- Place test files next to source files: `Component.test.tsx`
+- Use Storybook for component documentation
+
+### Helper Function Tests
+```typescript
+describe('Helper Function', () => {
+  it('should perform operation correctly', () => {
+    const result = helperFunction(mockProcess, ...args)
+    expect(result).toEqual(expectedResult)
+  })
+
+  it('should not modify the original', () => {
+    const result = helperFunction(mockProcess, ...args)
+    expect(result).not.toBe(mockProcess)
+    expect(mockProcess).toEqual(originalMockProcess)
+  })
+})
+```
+
+### Helper Function Test Requirements
+- **Test Coverage**: Every helper function must have comprehensive unit tests
+- **Test Cases**: Include happy path, edge cases, and immutability verification
+- **Pattern**: Test both functionality and that original objects are not modified
+- **Structure**: Use describe blocks for each helper function with multiple test cases
+- **Null Safety**: Test cases with undefined/null properties
+- **Edge Cases**: Test empty strings, missing properties, and boundary conditions
+
+## Module Federation
+- Expose components through `RemoteComponent.tsx`
+- Share common dependencies in federation config
+- Use proper external dependencies configuration
+
+## Code Quality Rules
+- Use TypeScript strict mode
+- Avoid `any` type (disabled in ESLint config)
+- Use descriptive variable names
+- Keep functions small and focused
+- Use proper TypeScript types for all props and state
+- Follow ESLint and Prettier configurations
+- Always run `npm run lint` before committing
+- Run `npx tsc --noEmit` to verify TypeScript compilation
+- Run `npm run build:dev` to ensure build passes
+- Update Storybook stories with new props and functionality
+- Test accessibility with proper ARIA attributes
+- Use event.stopPropagation() for nested click handlers
+- Implement state management for interactive menus
+- Test menu interactions to prevent unwanted side effects
+- Use multi-layered event prevention for robust interactions
+- Prefer `??` (nullish coalescing) over `||` for null/undefined checks
+
+## Common Patterns
+
+### Loading States
+```typescript
+const [isLoading, setIsLoading] = useState(false)
+
+// Use with ButtonPrimary
+<ButtonPrimary isLoading={isLoading} onClick={handleClick}>
+  Save
+</ButtonPrimary>
+```
+
+### Form Handling
+```typescript
+const [formData, setFormData] = useState(initialData)
+
+const handleInputChange = (field: string, value: string) => {
+  setFormData(prev => ({ ...prev, [field]: value }))
+}
+```
+
+### API Calls
+```typescript
+const { data, loading, error } = useQuery(QUERY_NAME, {
+  variables: { id },
+  skip: !id
+})
+```
+
+### Menu Component Implementation
+```typescript
+// Use PrimeReact Menu with proper event handling
+const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+const items = [
+  {
+    label: 'Action',
+    icon: <IconComponent className="mr-2" color="#3B64A0" />,
+    command: (event: any) => {
+      event?.stopPropagation?.()
+      if (onAction) {
+        onAction()
+      }
+    },
+    template: createMenuTemplate(),
+  },
+]
+
+return (
+  <button
+    onClick={(event) => {
+      event.stopPropagation()
+      setIsMenuOpen(true)
+      menu.current?.toggle(event)
+    }}
+    aria-haspopup
+    aria-label="Component options"
+  >
+    <Icon />
+    <Menu 
+      model={items} 
+      popup 
+      ref={menu} 
+      onClick={(e) => e.stopPropagation()}
+      onHide={() => setIsMenuOpen(false)}
+    />
+  </button>
+)
+```
+
+### Event Handling with State Management
+```typescript
+// Prevent parent clicks when child interactions are active
+const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+return (
+  <div onClick={(_e) => {
+    if (!isMenuOpen) {
+      handleParentClick()
+    }
+  }}>
+    <button onClick={(e) => {
+      e.stopPropagation()
+      setIsMenuOpen(true)
+      handleButtonClick()
+    }}>
+      Action
+    </button>
+    <Menu onHide={() => setIsMenuOpen(false)} />
+  </div>
+)
+```
+
+## Migration Guide
+When refactoring existing code:
+1. Identify direct model manipulation in components
+2. Create or use existing helper functions
+3. Replace inline logic with helper function calls
+4. Update tests to use helper functions
+5. Verify all functionality is preserved
+
+## Avoid
+- Using `any` type
+- Console.log (use console.error, console.info, console.warn instead)
+- Inline styles (use CSS Modules)
+- Large components (split into smaller ones)
+- Deep prop drilling (use context instead)
+- Mixing different styling approaches
+- Event bubbling without proper prevention
+- Menu interactions without state management
+- Parent-child click conflicts
+- Missing accessibility attributes on interactive elements
+- Direct model manipulation in components
+- Mutating original objects in helper functions
+- Non-null assertion operator (`!`) - use proper null checks instead
+- Unnecessary useMemo for static data structures
+- Generic confirmation messages
+- Inconsistent tile alignment
+- Keeping unused components in the codebase
+- Inline complex UI sections that could be extracted
+- Inconsistent component naming conventions
+- Poor component organization and file structure
+- Missing Storybook documentation for components
+- Complex callback prop chains for menu coordination
+- Multiple state management props for simple interactions
+- Custom ref interfaces when forwardRef is sufficient
+- Unnecessary useImperativeHandle for direct ref forwarding
+- Complex state management for menu visibility
+- Inconsistent ref patterns across components
+- Untyped ref access without proper guards
+- Performance overhead from unnecessary re-renders
+- Complex component APIs with too many props
+
+## Prefer
+- TypeScript strict mode
+- CSS Modules for styling
+- Functional components with hooks
+- Descriptive naming
+- Small, focused functions
+- Proper error handling
+- Component composition over inheritance
+- Multi-layered event prevention
+- State management for interactive elements
+- Accessibility-first design
+- Shared component patterns (like menuTemplate)
+- Helper function reuse over code duplication
+- Pure helper functions for model manipulation
+- Immutable data transformations
+- Nullish coalescing (`??`) for null/undefined checks over logical OR (`||`)
+- Static data outside components when possible
+- Specific confirmation messages
+- Consistent tile centering with CSS classes
+- Regular cleanup of unused components
+- Component extraction for complex UI sections
+- Consistent component naming and organization
+- Feature-based component organization
+- Comprehensive Storybook documentation for all components
+- Incremental component refactoring and migration
+- ForwardRef for menu coordination instead of callback props
+- Direct ref control for component interactions
+- Type-safe ref access with proper guards
+- Simplified component APIs with fewer props
+- Performance optimization through direct method calls
+- Consistent ref patterns across related components
+
+## Lessons from Recent Menu Coordination and Ref Implementation
+
+### ForwardRef for Menu Control
+- **Discovery**: Using `forwardRef` is much cleaner than passing multiple callback props for menu coordination
+- **Pattern**: Directly forward the Menu ref instead of creating custom ref interfaces
+- **Implementation**: Use `forwardRef<Menu, Props>` and pass the ref directly to the Menu component
+- **Benefit**: Eliminates the need for custom ref interfaces and `useImperativeHandle`
+
+### Menu Coordination Architecture
+- **Problem**: Multiple callback props (`isMenuOpen`, `onMenuOpen`, `onMenuClose`) create complex state management
+- **Solution**: Use `forwardRef` to directly control menu state from parent components
+- **Pattern**: Parent component holds ref to child menu, calls methods directly
+- **Benefit**: Simpler API, better performance, fewer props to manage
+
+### Ref Type Safety
+- **Challenge**: `forwardRef` can receive either ref object or ref callback function
+- **Solution**: Use proper type guards when accessing ref methods
+- **Pattern**: `if (ref && typeof ref === 'object' && ref.current)`
+- **Benefit**: Type-safe ref access without runtime errors
+
+### Menu Coordination Implementation
+```typescript
+// Before: Multiple callback props
+interface Props {
+  onClick: (type: 'trigger' | 'step') => unknown
+  isMenuOpen?: boolean
+  onMenuOpen?: () => void
+  onMenuClose?: () => void
+}
+
+// After: Simple ref forwarding
+interface Props {
+  onClick: (type: 'trigger' | 'step') => unknown
+}
+
+const StepLink = forwardRef<Menu, Props>((props, ref) => {
+  return (
+    <Menu model={items} popup ref={ref} />
+  )
+})
+```
+
+### Parent Component Integration
+```typescript
+// Parent component holds ref to child menu
+const stepLinkRef = useRef<Menu>(null)
+
+// Direct method calls for menu coordination
+const handleProcessStepMenuOpen = (event: any) => {
+  stepLinkRef.current?.hide(event) // Close child menu
+  menu.current?.toggle(event)      // Open parent menu
+}
+```
+
+### Build and Quality Assurance for Menu Coordination
+- **Type Checking**: Run `npx tsc --noEmit` to verify ref type safety
+- **Linting**: Use `npm run lint -- --fix` for consistent formatting
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Pattern**: Always verify complete build pipeline after ref changes
+
+### Menu Coordination Best Practices
+- **Direct Control**: Use refs for direct method calls instead of callback chains
+- **Type Safety**: Properly type refs and use type guards for safe access
+- **Performance**: Avoid unnecessary state management and useEffect hooks
+- **Simplicity**: Prefer fewer props and direct ref control over complex callback patterns
+- **Consistency**: Use consistent ref patterns across related components
+
+## Lessons from Recent Component Organization and Cleanup
+
+## Prefer
+- TypeScript strict mode
+- CSS Modules for styling
+- Functional components with hooks
+- Descriptive naming
+- Small, focused functions
+- Proper error handling
+- Component composition over inheritance
+- Multi-layered event prevention
+- State management for interactive elements
+- Accessibility-first design
+- Shared component patterns (like menuTemplate)
+- Helper function reuse over code duplication
+- Pure helper functions for model manipulation
+- Immutable data transformations
+- Nullish coalescing (`??`) for null/undefined checks over logical OR (`||`)
+- Static data outside components when possible
+- Specific confirmation messages
+- Consistent tile centering with CSS classes
+- Regular cleanup of unused components
+- Component extraction for complex UI sections
+- Consistent component naming and organization
+- Feature-based component organization
+- Comprehensive Storybook documentation for all components
+- Incremental component refactoring and migration
+
+### Component Extraction and Organization
+
+## Lessons from Delete Step Feature Implementation
+
+### Menu Interaction Challenges
+- **Problem**: Menu actions triggered parent click handlers, causing unwanted side effects
+- **Solution**: Implement multi-layered event prevention with state management
+- **Pattern**: Track menu visibility state and conditionally prevent parent interactions
+
+### Shared Component Patterns
+- **Discovery**: Menu templates can be shared across components
+- **Implementation**: Created `src/components/common/menuTemplate.tsx` with dedicated styles
+- **Benefit**: Consistent menu appearance and behavior across the application
+
+### Event Bubbling Complexity
+- **Finding**: Single `stopPropagation()` is often insufficient for complex interactions
+- **Best Practice**: Combine state management, event prevention, and conditional rendering
+- **Pattern**: Use `onHide` events to reset state when menus close
+
+### Accessibility Requirements
+- **Requirement**: All interactive elements need proper ARIA attributes
+- **Implementation**: `aria-haspopup` and `aria-label` for menu buttons
+- **Benefit**: Screen reader compatibility and keyboard navigation support
+
+### Testing Requirements
+- **Menu Interactions**: Test that menu actions don't trigger parent handlers
+- **State Management**: Verify menu state resets properly
+- **Event Prevention**: Ensure multi-layered event handling works correctly
+- **Build Verification**: Always run full build process before committing
+- **Helper Functions**: All helper functions must have unit tests verifying immutability
+
+## Lessons from Tabs Feature Implementation
+
+### Component Architecture Patterns
+- **Discovery**: Tabs should be implemented as separate, reusable components
+- **Pattern**: Create generic `Tab` component and specific `StepEditTabs` component
+- **Structure**: `Tab.tsx` (generic) → `StepEditTabs.tsx` (specific) → `StepEdit.tsx` (integration)
+- **Benefit**: Reusable tab components across different features
+
+### Border Resizing and Layout Shifts
+- **Problem**: Changing border width (1px to 3px) caused jarring layout shifts
+- **Solution**: Use consistent border width with color-only changes
+- **Implementation**: `border: 3px solid transparent` with `border-color` changes
+- **Pattern**: Always maintain consistent dimensions for interactive elements
+
+### SVG Icon Implementation
+- **Challenge**: SVG files imported as modules may not work in all Vite configurations
+- **Solution**: Use inline SVG for guaranteed compatibility
+- **Pattern**: Define SVG icons directly in component JSX
+- **Benefit**: No build issues, better tree-shaking, easier customization
+
+### State Management for Tabs
+- **Pattern**: Use enum-based state management for tab selection
+- **Implementation**: `StepEditTab` enum with `selectedTab` state
+- **Callback Pattern**: `onTabSelect: (tab: StepEditTab) => void`
+- **Benefit**: Type-safe tab selection with clear state transitions
+
+### File Organization for Tab Components
+- **Structure**: Place tab components in feature-specific directories
+- **Pattern**: `src/components/step-edit/tabs/StepEditTabs.tsx`
+- **Naming**: Use descriptive names that indicate purpose and scope
+- **Benefit**: Clear component hierarchy and easy maintenance
+
+### CSS Module Best Practices for Tabs
+- **Border Consistency**: Use `border: 3px solid transparent` as base
+- **State Classes**: `.selected` and `.unselected` for clear state management
+- **Transitions**: Use `transition: all 0.2s ease` for smooth interactions
+- **Hover States**: Implement hover effects for better UX
+
+### Component Integration Patterns
+- **Placement**: Place tabs at the top of parent components
+- **Props Interface**: Use clear, typed props for tab configuration
+- **Event Handling**: Implement proper click handlers with state updates
+- **Accessibility**: Ensure proper ARIA attributes and keyboard navigation
+
+### Build and Quality Assurance
+- **Linting**: Always run `npm run lint -- --fix` for automatic formatting
+- **TypeScript**: Verify compilation with `npx tsc --noEmit`
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Component Testing**: Test tab interactions and state changes
+
+### Icon Design Considerations
+- **Consistency**: Use consistent stroke width and color scheme
+- **Size**: Standardize on 24x24px for tab icons
+- **Color**: Use brand colors (`#3B64A0`) for consistency
+- **Accessibility**: Ensure icons have proper alt text and contrast
+
+### Naming Convention Evolution
+- **Initial**: `ProcessStepTab` and `ProcessStepTabs`
+- **Final**: `StepEditTab` and `StepEditTabs`
+- **Lesson**: Choose names that reflect the actual usage context
+- **Pattern**: Component names should indicate their specific purpose, not generic functionality
+
+## Lessons from Sections Feature Implementation
+
+### Component Architecture for Tabbed Interfaces
+- **Discovery**: Tabbed interfaces should use section-based architecture for better maintainability
+- **Pattern**: Create separate section components for each tab content area
+- **Structure**: `SectionComponent.tsx` → `ParentComponent.tsx` (with renderSection logic)
+- **Benefit**: Modular, focused components that are easier to maintain and test
+
+### Section Component Organization
+- **File Structure**: Place section components in feature-specific subdirectories
+- **Pattern**: `src/components/feature/sections/SectionName.tsx`
+- **Naming**: Use descriptive names ending with "Section" (e.g., `ScenariosSection`, `SubflowsSection`)
+- **Benefit**: Clear organization and easy discovery of related components
+
+### Section Component Interface Design
+- **Props Pattern**: Use consistent props interface across all sections
+- **Required Props**: `step: StepDetails` and `onChange: (step: StepDetails) => void`
+- **Optional Props**: Only add when section-specific functionality is needed
+- **Benefit**: Consistent API makes sections interchangeable and predictable
+
+### Render Section Logic Pattern
+- **Implementation**: Use switch statement in parent component to render appropriate section
+- **Pattern**: `renderSection()` function that switches based on `selectedTab` state
+- **Default Case**: Return `null` or appropriate fallback to avoid duplicate code
+- **Benefit**: Clean separation of concerns and easy to extend with new sections
+
+### Helper Function Extraction
+- **Discovery**: Complex inline logic in components should be extracted to helper functions
+- **Pattern**: Identify repeated logic patterns and create reusable helper functions
+- **Implementation**: Move logic to `src/helpers/` directory with comprehensive tests
+- **Benefit**: Improved testability, reusability, and maintainability
+
+### Helper Function Testing Requirements
+- **Test Coverage**: Every helper function must have comprehensive unit tests
+- **Test Cases**: Include happy path, edge cases, and immutability verification
+- **Pattern**: Test both functionality and that original objects are not modified
+- **Structure**: Use describe blocks for each helper function with multiple test cases
+
+### Helper Function Design Patterns
+- **Immutability**: All helper functions must return new objects without mutating originals
+- **Null Safety**: Handle cases where required properties might be undefined
+- **Type Safety**: Use proper TypeScript types and handle optional properties correctly
+- **Error Handling**: Return original object or appropriate fallback for invalid inputs
+
+### Component Refactoring Process
+- **Step 1**: Identify complex inline logic in components
+- **Step 2**: Create helper function with proper types and null safety
+- **Step 3**: Add comprehensive tests for the helper function
+- **Step 4**: Update component to use the helper function
+- **Step 5**: Verify all functionality is preserved and tests pass
+
+### Import Organization for Sections
+- **Direct Imports**: Use direct imports for section components instead of index files
+- **Pattern**: `import ScenariosSection from './sections/ScenariosSection'`
+- **Benefit**: Better tree-shaking and clearer dependency tracking
+- **Avoid**: Barrel exports that can cause circular dependencies
+
+### State Management for Sections
+- **Parent Responsibility**: Parent component manages tab selection and overall state
+- **Section Responsibility**: Sections handle their internal state and call onChange
+- **Data Flow**: Parent passes data down, sections call onChange to update parent
+- **Benefit**: Clear data flow and separation of concerns
+
+### Section Component Testing Strategy
+- **Unit Tests**: Test each section component in isolation
+- **Integration Tests**: Test parent component with all sections
+- **Helper Tests**: Comprehensive tests for all helper functions
+- **Pattern**: Mock dependencies and test component behavior, not implementation details
+
+### Code Duplication Prevention
+- **Problem**: Duplicate code in switch statement cases
+- **Solution**: Use different return values or extract common logic
+- **Pattern**: Default case should return `null` or appropriate fallback
+- **Benefit**: Cleaner code and easier maintenance
+
+### Build and Quality Assurance for Sections
+- **Linting**: Run `npm run lint -- --fix` to ensure consistent formatting
+- **TypeScript**: Verify compilation with `npx tsc --noEmit`
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Test Verification**: Run `npx vitest run` to ensure all tests pass
+- **Pattern**: Always verify the complete build and test pipeline
+
+## Lessons from Custom Tabs Implementation
+
+### Figma Design Integration
+- **Discovery**: Custom tabs should be implemented based on exact Figma specifications
+- **Pattern**: Use Figma data to extract colors, typography, spacing, and interactions
+- **Implementation**: Create custom components that match design pixel-perfectly
+- **Benefit**: Consistent design language and brand compliance
+
+### Custom Component vs PrimeReact Decision
+- **Problem**: PrimeReact TabView didn't match Figma design requirements
+- **Solution**: Create custom Tabs component with exact design specifications
+- **Pattern**: Use CSS modules with precise color codes and typography from Figma
+- **Benefit**: Full design control and better performance
+
+### Tab Component Architecture
+- **Structure**: Create reusable `Tabs` component with `TabItem` interface
+- **Props Design**: Use `tabs: TabItem[]`, `activeTabId: string`, `onTabChange: (tabId: string) => void`
+- **State Management**: Use string-based tab IDs instead of numeric indices
+- **Benefit**: More semantic and flexible tab management
+
+### CSS Module Implementation for Custom Tabs
+- **Design Fidelity**: Use exact colors from Figma (`#128AFB`, `#596168`, `#C0D0DF`)
+- **Typography**: Implement Lato font with proper weights (400 inactive, 700 active)
+- **Interactions**: Add hover effects with `rgba(18, 138, 251, 0.05)` background
+- **Transitions**: Use `transition: all 0.2s ease` for smooth state changes
+
+### Component Renaming Strategy
+- **Pattern**: When renaming components, create new files and update all references
+- **Process**: 
+  1. Create new component with new name
+  2. Update all imports and usages
+  3. Delete old files
+  4. Remove empty directories
+- **Benefit**: Clean migration without breaking existing functionality
+
+### Tab Content Duplication Prevention
+- **Problem**: Same content repeated in multiple tabs
+- **Solution**: Extract common functionality into shared components
+- **Pattern**: Use same `Filters`, `CommonSelect`, and `steps` in both tabs
+- **Benefit**: DRY principle and easier maintenance
+
+### Storybook Documentation for Custom Components
+- **Requirement**: Every custom component needs comprehensive Storybook stories
+- **Pattern**: Create multiple stories showing different states and configurations
+- **Examples**: Default, SecondTabActive, ThirdTabActive, TwoTabs
+- **Benefit**: Better component documentation and testing
+
+### Build and Quality Assurance for Custom Components
+- **Linting**: Always run `npm run lint -- --fix` after component changes
+- **TypeScript**: Verify compilation with `npx tsc --noEmit`
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Pattern**: Ensure all quality checks pass before finalizing changes
+
+### Component Naming Evolution
+- **Initial**: `CustomTabs` (descriptive but verbose)
+- **Final**: `Tabs` (concise and semantic)
+- **Lesson**: Choose names that are both descriptive and concise
+- **Pattern**: Component names should reflect their purpose without unnecessary prefixes
+
+### File Organization for Tab Components
+- **Structure**: Place tab components in `src/components/common/Tabs/`
+- **Files**: `Tabs.tsx`, `Tabs.module.scss`, `Tabs.stories.tsx`
+- **Naming**: Use consistent naming across all related files
+- **Benefit**: Clear organization and easy discovery
+
+### Import Path Updates
+- **Pattern**: Update all import statements when renaming components
+- **Process**: 
+  1. Update component file name
+  2. Update import paths in all consuming files
+  3. Update component usage in JSX
+  4. Verify all references are updated
+- **Benefit**: Maintains code consistency and prevents broken imports
+
+### CSS Class Naming for Custom Components
+- **Pattern**: Use descriptive class names that match component structure
+- **Examples**: `.tabsContainer`, `.tabsHeader`, `.tabItem`, `.tabContent`
+- **Benefit**: Clear CSS organization and easier debugging
+
+### State Management for Custom Tabs
+- **Pattern**: Use string-based tab IDs for better semantics
+- **Implementation**: `activeTabId: string` instead of `activeIndex: number`
+- **Callback**: `onTabChange: (tabId: string) => void`
+- **Benefit**: More readable and maintainable code
+
+### Accessibility for Custom Tab Components
+- **Requirements**: Ensure proper keyboard navigation and screen reader support
+- **Implementation**: Use semantic HTML and proper ARIA attributes
+- **Testing**: Verify accessibility with keyboard navigation and screen readers
+- **Benefit**: Inclusive design and compliance with accessibility standards
+
+## Lessons from ScenariosProvider Context Implementation
+
+### Data Fetching Architecture Patterns
+- **Discovery**: Complex data fetching logic should be moved to dedicated context providers
+- **Pattern**: Create context providers for domain-specific data (scenarios, processes, etc.)
+- **Structure**: `ScenariosProvider.context.tsx` → `useScenarios()` hook → component consumption
+- **Benefit**: Centralized data management, improved reusability, and separation of concerns
+
+### Context Provider Design Patterns
+- **Interface Design**: Define clear context types with all required properties
+- **Error Handling**: Implement comprehensive error handling with try-catch blocks
+- **Loading States**: Provide loading state management for better UX
+- **Memoization**: Use `useMemo` for expensive computations and context values
+- **Refresh Functionality**: Include manual refresh capabilities for data updates
+
+### Context Type Definition Best Practices
+- **Parameter Consistency**: Ensure function signatures in type definitions match implementations
+- **Default Values**: Provide meaningful default values for context initialization
+- **Optional Properties**: Handle optional properties with proper null safety
+- **Pattern**: Update both type definition and default context value simultaneously
+
+### Memoized Data Structures
+- **Performance**: Use `useMemo` for expensive data transformations
+- **Efficient Lookups**: Create Map structures for O(1) lookups (e.g., `scenarioNames: Map<string, string>`)
+- **Dependency Arrays**: Include all dependencies in memoization arrays
+- **Pattern**: Transform arrays to Maps for efficient ID-based lookups
+
+### GraphQL Integration in Context
+- **Query Organization**: Use `useLazyQuery` for manual data fetching
+- **Variable Management**: Pass dynamic variables (like `teamId`) to query functions
+- **Error Boundaries**: Handle GraphQL errors gracefully with proper error states
+- **Caching**: Leverage Apollo Client caching for improved performance
+
+### Component Refactoring Process
+- **Step 1**: Identify data fetching logic in components
+- **Step 2**: Create context provider with proper types and error handling
+- **Step 3**: Move GraphQL queries and state management to context
+- **Step 4**: Update components to use context hooks
+- **Step 5**: Remove local state and query logic from components
+- **Step 6**: Verify all functionality is preserved
+
+### Provider Hierarchy Management
+- **Placement**: Add context providers in the component tree where data is needed
+- **Order**: Place domain-specific providers inside feature providers
+- **Pattern**: `ProcesssProvider` → `ScenariosProvider` → `ProcessEdit`
+- **Benefit**: Clear data flow and proper provider scoping
+
+### Context Hook Usage Patterns
+- **Error Handling**: Always check for context existence with proper error messages
+- **Type Safety**: Use proper TypeScript types for all context values
+- **Destructuring**: Destructure only needed values from context
+- **Pattern**: `const { scenarios, scenarioNames } = useScenarios()`
+
+### Build and Quality Assurance for Context Providers
+- **Type Checking**: Run `npx tsc --noEmit` to verify type compatibility
+- **Linting**: Use `npm run lint -- --fix` for consistent formatting
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Pattern**: Always verify complete build pipeline after context changes
+
+### Context Provider Testing Strategy
+- **Unit Tests**: Test context provider logic in isolation
+- **Hook Tests**: Test custom hooks with proper mocking
+- **Integration Tests**: Test provider-consumer interactions
+- **Error Scenarios**: Test error handling and edge cases
+
+### Performance Optimization for Context
+- **Memoization**: Memoize expensive computations and context values
+- **Dependency Arrays**: Carefully manage useEffect and useMemo dependencies
+- **Avoid Re-renders**: Prevent unnecessary re-renders with proper memoization
+- **Pattern**: Use `useCallback` for functions passed in context values
+
+### Context Provider Naming Conventions
+- **Pattern**: Use `{Domain}Provider` for provider components
+- **Hook Pattern**: Use `use{Domain}` for context hooks
+- **File Naming**: Use `{Domain}Provider.context.tsx` for context files
+- **Benefit**: Clear naming that indicates purpose and scope
+
+### Data Transformation Patterns
+- **Map Creation**: Transform arrays to Maps for efficient lookups
+- **Type Safety**: Ensure all transformations maintain type safety
+- **Null Safety**: Handle undefined/null values gracefully
+- **Pattern**: `scenarios.forEach(scenario => map.set(scenario.id, scenario.name))`
+
+### Context Provider Migration Benefits
+- **Separation of Concerns**: Data logic separated from UI logic
+- **Reusability**: Context can be shared across multiple components
+- **Testability**: Easier to test data logic in isolation
+- **Maintainability**: Centralized data management reduces code duplication
+- **Performance**: Cached data reduces unnecessary API calls 
+
+## Lessons from Helper Function Implementation
+
+### Step Manipulation Patterns
+- **Discovery**: Complex step creation and update logic should be extracted to helper functions
+- **Pattern**: Create dedicated helper functions for each step type (scenarios, subflows, reusable templates)
+- **Structure**: `createXxxStep()` for creation, `updateStepWithXxx()` for updates
+- **Benefit**: Consistent step manipulation across components
+
+### Helper Function Design Principles
+- **Immutability**: All helper functions must return new objects without mutating originals
+- **Null Safety**: Handle cases where required properties might be undefined
+- **Type Safety**: Use proper TypeScript types and handle optional properties correctly
+- **Error Handling**: Return original object or appropriate fallback for invalid inputs
+- **Consistency**: Use consistent parameter order and naming conventions
+
+### Step Creation Patterns
+- **Scenario Steps**: Use `createScenarioStep(scenarioId, stepType?)` for new scenario steps
+- **Reusable Steps**: Use `createReusableStepFromTemplate(template, stepType)` for template-based steps
+- **Subflow Steps**: Use `createSubflowStep(executionTemplateId, stepType?)` for subflow steps
+- **Default Values**: Provide sensible defaults for optional parameters
+
+### Step Update Patterns
+- **Scenario Updates**: Use `updateStepWithScenario(step, scenarioId, stepType?)` for existing steps
+- **Reusable Updates**: Use `updateStepWithReusableTemplate(step, template, stepType)` for template updates
+- **Subflow Updates**: Use `updateStepWithSubflow(step, executionTemplateId, stepType?)` for subflow updates
+- **Preservation**: Maintain existing step properties while updating specific fields
+
+### Component Integration Patterns
+- **Section Components**: Use helper functions in section components for step manipulation
+- **Event Handlers**: Call helper functions in event handlers for step updates
+- **State Updates**: Use helper functions when updating process state
+- **Pattern**: `onChange(helperFunction(step, ...args))`
+
+### Testing Requirements for Helper Functions
+- **Comprehensive Coverage**: Every helper function must have unit tests
+- **Edge Cases**: Test with empty strings, undefined properties, and boundary conditions
+- **Immutability Verification**: Ensure original objects are not modified
+- **Null Safety**: Test with undefined/null scenarios and stepConfiguration
+- **Type Safety**: Verify proper TypeScript type handling
+
+### Helper Function Naming Conventions
+- **Creation Functions**: Use `createXxxStep()` pattern for new step creation
+- **Update Functions**: Use `updateStepWithXxx()` pattern for existing step updates
+- **Consistency**: Maintain consistent parameter order across similar functions
+- **Clarity**: Use descriptive names that indicate the function's purpose
+
+### Import Organization for Helper Functions
+- **Grouped Imports**: Import related helper functions together
+- **Pattern**: Import creation and update functions for the same step type together
+- **Benefit**: Clear dependencies and easier maintenance
+
+### Build and Quality Assurance for Helper Functions
+- **Type Checking**: Run `npx tsc --noEmit` to verify type safety
+- **Linting**: Use `npm run lint -- --fix` for consistent formatting
+- **Test Verification**: Run `npx vitest run` to ensure all tests pass
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Pattern**: Always verify complete build and test pipeline
+
+## CSS Style Management
+
+### Style Cleanup Best Practices
+- **Remove Unnecessary Comments**: Delete comments that don't add value or are redundant
+- **Keep Meaningful Comments**: Preserve comments that explain complex logic or design decisions
+- **Avoid Redundant Information**: Don't comment obvious values (e.g., `/* 100% */` for `line-height: 40px`)
+- **Maintain Consistency**: Use consistent commenting patterns across all CSS files
+
+### Commented Styles Guidelines
+- **Remove**: Comments that just repeat what the code already shows
+- **Remove**: Percentage comments on line-height values
+- **Remove**: State labels like "// Active state" when the class name is clear
+- **Keep**: Comments that explain design decisions or complex logic
+- **Keep**: Comments that explain why certain approaches were chosen
+
+### CSS File Organization
+- **Empty Classes**: Keep classes that are actually used in components, even if empty
+- **Meaningful Comments**: Add explanatory comments for empty classes that serve a purpose
+- **Consistent Formatting**: Use consistent spacing and formatting across all SCSS files
+- **Import Organization**: Keep imports at the top, followed by mixins, then styles
+
+### Style Cleanup Process
+1. **Identify Unnecessary Comments**: Look for comments that don't add value
+2. **Check Usage**: Verify that styles are actually used in components
+3. **Remove Redundancy**: Delete comments that repeat what the code shows
+4. **Add Meaning**: Replace removed comments with meaningful explanations where needed
+5. **Verify Functionality**: Run build and tests to ensure nothing breaks
+
+### Common Patterns to Remove
+```scss
+// ❌ Remove - redundant information
+line-height: 40px; /* 100% */
+
+// ❌ Remove - obvious state labels
+// Active state
+.active { ... }
+
+// ❌ Remove - commented out code
+// border-color: #3b64a0;
+// border-width: 1px;
+
+// ✅ Keep - meaningful explanation
+.transparentTabs {
+  // Custom tabs will inherit transparent background from the component
+  // No additional styling needed as the custom component handles its own styling
+}
+```
+
+### CSS Border and Styling Patterns
+- **Remove Unnecessary Borders**: Remove borders that don't add visual value
+- **Pattern**: Remove `border-bottom: 1px solid #C0D0DF;` when not needed
+- **Benefit**: Cleaner visual design and reduced CSS complexity
+- **Consideration**: Ensure removal doesn't affect visual hierarchy or spacing
+
+### Quality Assurance for Style Changes
+- **Linting**: Run `npm run lint -- --fix` to ensure consistent formatting
+- **Build Verification**: Run `npm run build:dev` to ensure styles compile correctly
+- **Visual Testing**: Verify that UI components still look correct
+- **Pattern**: Always test the complete build pipeline after style changes
+
+## Semantic HTML and Accessibility
+
+### Button Conversion Best Practices
+- **Convert Interactive Divs to Buttons**: Use semantic `<button>` elements for clickable items
+- **Maintain Styling**: Add CSS reset properties to preserve original appearance
+- **Focus Management**: Implement proper focus indicators for keyboard navigation
+- **Avoid ARIA Conflicts**: Remove problematic ARIA attributes until properly implemented
+
+### Button Styling Patterns
+```scss
+.buttonElement {
+  // Reset default button styles
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  
+  // Custom focus styles
+  &:focus {
+    outline: none;
+  }
+  
+  &:focus-visible {
+    outline: 2px solid #128AFB;
+    outline-offset: 2px;
+  }
+}
+```
+
+### Component Conversion Process
+1. **Identify Interactive Elements**: Find divs that handle click events
+2. **Convert to Semantic HTML**: Replace with appropriate elements (button, link, etc.)
+3. **Add Reset Styles**: Remove default browser styling
+4. **Preserve Functionality**: Ensure all event handlers work correctly
+5. **Test Accessibility**: Verify keyboard navigation and screen reader support
+
+### Nullish Coalescing Usage
+- **Prefer `??` over `||`**: Use nullish coalescing for className concatenation
+- **Pattern**: `className={styles.container} ${className ?? ''}`
+- **Benefit**: Only checks for null/undefined, not empty strings 
+
+## Avoiding Non-Null Assertion Operator (!)
+
+### Core Principle
+- **Avoid `!` operator**: The non-null assertion operator (`!`) bypasses TypeScript's type checking
+- **Use proper null checks**: Implement proper null/undefined checks instead of assertions
+- **Handle edge cases**: Always consider what happens when values are null/undefined
+
+### Problems with Non-Null Assertion
+```typescript
+// ❌ Dangerous - assumes value is never null/undefined
+const name = user!.name
+const step = step.originalStep!
+const scenarios = step.scenarios!
+
+// ❌ Can cause runtime errors
+const result = someFunction()!.someProperty
+```
+
+### Better Alternatives
+
+#### 1. Optional Chaining with Nullish Coalescing
+```typescript
+// ✅ Safe - handles null/undefined gracefully
+const name = user?.name ?? 'Anonymous'
+const step = step.originalStep ?? createDefaultStep()
+const scenarios = step?.scenarios ?? []
+
+// ✅ Safe - provides fallback
+const result = someFunction()?.someProperty ?? defaultValue
+```
+
+#### 2. Conditional Checks
+```typescript
+// ✅ Safe - explicit null check
+if (user && user.name) {
+  const name = user.name
+  // Use name safely
+}
+
+// ✅ Safe - type guard
+if (step.originalStep) {
+  const originalStep = step.originalStep
+  // Use originalStep safely
+}
+```
+
+#### 3. Early Returns
+```typescript
+// ✅ Safe - early return for invalid state
+const handleStepUpdate = (step: StepDetails) => {
+  if (!step.originalStep) {
+    return // Exit early if no original step
+  }
+  
+  const originalStep = step.originalStep
+  // Use originalStep safely
+}
+```
+
+#### 4. Default Values
+```typescript
+// ✅ Safe - provide sensible defaults
+const scenarios = step?.scenarios || []
+const name = user?.name || 'Unknown User'
+const config = step?.stepConfiguration || defaultConfig
+```
+
+### Component Patterns
+
+#### Safe Property Access
+```typescript
+// ❌ Dangerous
+const stepTitle = step.originalStep!.title
+
+// ✅ Safe
+const stepTitle = step.originalStep?.title ?? 'Untitled Step'
+```
+
+#### Safe Function Calls
+```typescript
+// ❌ Dangerous
+const result = helperFunction(step.originalStep!)
+
+// ✅ Safe
+const result = step.originalStep ? helperFunction(step.originalStep) : null
+```
+
+#### Safe Array Access
+```typescript
+// ❌ Dangerous
+const firstItem = array![0]
+
+// ✅ Safe
+const firstItem = array?.[0] ?? defaultValue
+```
+
+### Helper Function Patterns
+
+#### Input Validation
+```typescript
+// ✅ Safe - validate inputs
+export const updateStepWithScenario = (
+  step: Step,
+  scenarioId: string,
+  stepType: StepType = StepType.SCENARIO
+): Step => {
+  if (!step || !scenarioId) {
+    return step // Return original if invalid input
+  }
+  
+  // Safe to use step and scenarioId
+  return {
+    ...step,
+    // Update logic
+  }
+}
+```
+
+#### Null-Safe Transformations
+```typescript
+// ✅ Safe - handle null scenarios
+const scenarios = reusableStep?.scenarios?.map(scenario => ({
+  ...scenario,
+  // Transform safely
+})) ?? []
+```
+
+### Testing Null Safety
+```typescript
+describe('Helper Function', () => {
+  it('should handle null inputs gracefully', () => {
+    const result = helperFunction(null, 'test-id')
+    expect(result).toBeDefined()
+  })
+
+  it('should handle undefined properties', () => {
+    const step = { /* step without scenarios */ }
+    const result = helperFunction(step, 'test-id')
+    expect(result.scenarios).toEqual([])
+  })
+})
+```
+
+### Code Quality Rules Update
+- **Avoid `!` operator**: Never use non-null assertion operator
+- **Use optional chaining**: Prefer `?.` for safe property access
+- **Provide defaults**: Use `??` for null/undefined fallbacks
+- **Validate inputs**: Check for null/undefined before using values
+- **Test edge cases**: Include null/undefined scenarios in tests 
+
+## Lessons from Menu Coordination Implementation
+
+### ForwardRef for Menu Control
+- **Discovery**: Using `forwardRef` is much cleaner than passing multiple callback props for menu coordination
+- **Pattern**: Directly forward the Menu ref instead of creating custom ref interfaces
+- **Implementation**: Use `forwardRef<Menu, Props>` and pass the ref directly to the Menu component
+- **Benefit**: Eliminates the need for custom ref interfaces and `useImperativeHandle`
+
+### Menu Coordination Architecture
+- **Problem**: Multiple callback props (`isMenuOpen`, `onMenuOpen`, `onMenuClose`) create complex state management
+- **Solution**: Use `forwardRef` to directly control menu state from parent components
+- **Pattern**: Parent component holds ref to child menu, calls methods directly
+- **Benefit**: Simpler API, better performance, fewer props to manage
+
+### Ref Type Safety
+- **Challenge**: `forwardRef` can receive either ref object or ref callback function
+- **Solution**: Use proper type guards when accessing ref methods
+- **Pattern**: `if (ref && typeof ref === 'object' && ref.current)`
+- **Benefit**: Type-safe ref access without runtime errors
+
+### Menu Coordination Implementation
+```typescript
+// Before: Multiple callback props
+interface Props {
+  onClick: (type: 'trigger' | 'step') => unknown
+  isMenuOpen?: boolean
+  onMenuOpen?: () => void
+  onMenuClose?: () => void
+}
+
+// After: Simple ref forwarding
+interface Props {
+  onClick: (type: 'trigger' | 'step') => unknown
+}
+
+const StepLink = forwardRef<Menu, Props>((props, ref) => {
+  return (
+    <Menu model={items} popup ref={ref} />
+  )
+})
+```
+
+### Parent Component Integration
+```typescript
+// Parent component holds ref to child menu
+const stepLinkRef = useRef<Menu>(null)
+
+// Direct method calls for menu coordination
+const handleProcessStepMenuOpen = (event: any) => {
+  stepLinkRef.current?.hide(event) // Close child menu
+  menu.current?.toggle(event)      // Open parent menu
+}
+```
+
+### Build and Quality Assurance for Menu Coordination
+- **Type Checking**: Run `npx tsc --noEmit` to verify ref type safety
+- **Linting**: Use `npm run lint -- --fix` for consistent formatting
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Pattern**: Always verify complete build pipeline after ref changes
+
+### Menu Coordination Best Practices
+- **Direct Control**: Use refs for direct method calls instead of callback chains
+- **Type Safety**: Properly type refs and use type guards for safe access
+- **Performance**: Avoid unnecessary state management and useEffect hooks
+- **Simplicity**: Prefer fewer props and direct ref control over complex callback patterns
+- **Consistency**: Use consistent ref patterns across related components
+
+## Avoid
+- Using `any` type
+- Console.log (use console.error, console.info, console.warn instead)
+- Inline styles (use CSS Modules)
+- Large components (split into smaller ones)
+- Deep prop drilling (use context instead)
+- Mixing different styling approaches
+- Event bubbling without proper prevention
+- Menu interactions without state management
+- Parent-child click conflicts
+- Missing accessibility attributes on interactive elements
+- Direct model manipulation in components
+- Mutating original objects in helper functions
+- Non-null assertion operator (`!`) - use proper null checks instead
+
+## Prefer
+- TypeScript strict mode
+- CSS Modules for styling
+- Functional components with hooks
+- Descriptive naming
+- Small, focused functions
+- Proper error handling
+- Component composition over inheritance
+- Multi-layered event prevention
+- State management for interactive elements
+- Accessibility-first design
+- Shared component patterns (like menuTemplate)
+- Helper function reuse over code duplication
+- Pure helper functions for model manipulation
+- Immutable data transformations
+- Nullish coalescing (`??`) for null/undefined checks over logical OR (`||`)
+
+## Lessons from Delete Step Feature Implementation
+
+### Menu Interaction Challenges
+- **Problem**: Menu actions triggered parent click handlers, causing unwanted side effects
+- **Solution**: Implement multi-layered event prevention with state management
+- **Pattern**: Track menu visibility state and conditionally prevent parent interactions
+
+### Shared Component Patterns
+- **Discovery**: Menu templates can be shared across components
+- **Implementation**: Created `src/components/common/menuTemplate.tsx` with dedicated styles
+- **Benefit**: Consistent menu appearance and behavior across the application
+
+### Event Bubbling Complexity
+- **Finding**: Single `stopPropagation()` is often insufficient for complex interactions
+- **Best Practice**: Combine state management, event prevention, and conditional rendering
+- **Pattern**: Use `onHide` events to reset state when menus close
+
+### Accessibility Requirements
+- **Requirement**: All interactive elements need proper ARIA attributes
+- **Implementation**: `aria-haspopup` and `aria-label` for menu buttons
+- **Benefit**: Screen reader compatibility and keyboard navigation support
+
+### Testing Requirements
+- **Menu Interactions**: Test that menu actions don't trigger parent handlers
+- **State Management**: Verify menu state resets properly
+- **Event Prevention**: Ensure multi-layered event handling works correctly
+- **Build Verification**: Always run full build process before committing
+- **Helper Functions**: All helper functions must have unit tests verifying immutability
+
+## Lessons from Tabs Feature Implementation
+
+### Component Architecture Patterns
+- **Discovery**: Tabs should be implemented as separate, reusable components
+- **Pattern**: Create generic `Tab` component and specific `StepEditTabs` component
+- **Structure**: `Tab.tsx` (generic) → `StepEditTabs.tsx` (specific) → `StepEdit.tsx` (integration)
+- **Benefit**: Reusable tab components across different features
+
+### Border Resizing and Layout Shifts
+- **Problem**: Changing border width (1px to 3px) caused jarring layout shifts
+- **Solution**: Use consistent border width with color-only changes
+- **Implementation**: `border: 3px solid transparent` with `border-color` changes
+- **Pattern**: Always maintain consistent dimensions for interactive elements
+
+### SVG Icon Implementation
+- **Challenge**: SVG files imported as modules may not work in all Vite configurations
+- **Solution**: Use inline SVG for guaranteed compatibility
+- **Pattern**: Define SVG icons directly in component JSX
+- **Benefit**: No build issues, better tree-shaking, easier customization
+
+### State Management for Tabs
+- **Pattern**: Use enum-based state management for tab selection
+- **Implementation**: `StepEditTab` enum with `selectedTab` state
+- **Callback Pattern**: `onTabSelect: (tab: StepEditTab) => void`
+- **Benefit**: Type-safe tab selection with clear state transitions
+
+### File Organization for Tab Components
+- **Structure**: Place tab components in feature-specific directories
+- **Pattern**: `src/components/step-edit/tabs/StepEditTabs.tsx`
+- **Naming**: Use descriptive names that indicate purpose and scope
+- **Benefit**: Clear component hierarchy and easy maintenance
+
+### CSS Module Best Practices for Tabs
+- **Border Consistency**: Use `border: 3px solid transparent` as base
+- **State Classes**: `.selected` and `.unselected` for clear state management
+- **Transitions**: Use `transition: all 0.2s ease` for smooth interactions
+- **Hover States**: Implement hover effects for better UX
+
+### Component Integration Patterns
+- **Placement**: Place tabs at the top of parent components
+- **Props Interface**: Use clear, typed props for tab configuration
+- **Event Handling**: Implement proper click handlers with state updates
+- **Accessibility**: Ensure proper ARIA attributes and keyboard navigation
+
+### Build and Quality Assurance
+- **Linting**: Always run `npm run lint -- --fix` for automatic formatting
+- **TypeScript**: Verify compilation with `npx tsc --noEmit`
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Component Testing**: Test tab interactions and state changes
+
+### Icon Design Considerations
+- **Consistency**: Use consistent stroke width and color scheme
+- **Size**: Standardize on 24x24px for tab icons
+- **Color**: Use brand colors (`#3B64A0`) for consistency
+- **Accessibility**: Ensure icons have proper alt text and contrast
+
+### Naming Convention Evolution
+- **Initial**: `ProcessStepTab` and `ProcessStepTabs`
+- **Final**: `StepEditTab` and `StepEditTabs`
+- **Lesson**: Choose names that reflect the actual usage context
+- **Pattern**: Component names should indicate their specific purpose, not generic functionality
+
+## Lessons from Sections Feature Implementation
+
+### Component Architecture for Tabbed Interfaces
+- **Discovery**: Tabbed interfaces should use section-based architecture for better maintainability
+- **Pattern**: Create separate section components for each tab content area
+- **Structure**: `SectionComponent.tsx` → `ParentComponent.tsx` (with renderSection logic)
+- **Benefit**: Modular, focused components that are easier to maintain and test
+
+### Section Component Organization
+- **File Structure**: Place section components in feature-specific subdirectories
+- **Pattern**: `src/components/feature/sections/SectionName.tsx`
+- **Naming**: Use descriptive names ending with "Section" (e.g., `ScenariosSection`, `SubflowsSection`)
+- **Benefit**: Clear organization and easy discovery of related components
+
+### Section Component Interface Design
+- **Props Pattern**: Use consistent props interface across all sections
+- **Required Props**: `step: StepDetails` and `onChange: (step: StepDetails) => void`
+- **Optional Props**: Only add when section-specific functionality is needed
+- **Benefit**: Consistent API makes sections interchangeable and predictable
+
+### Render Section Logic Pattern
+- **Implementation**: Use switch statement in parent component to render appropriate section
+- **Pattern**: `renderSection()` function that switches based on `selectedTab` state
+- **Default Case**: Return `null` or appropriate fallback to avoid duplicate code
+- **Benefit**: Clean separation of concerns and easy to extend with new sections
+
+### Helper Function Extraction
+- **Discovery**: Complex inline logic in components should be extracted to helper functions
+- **Pattern**: Identify repeated logic patterns and create reusable helper functions
+- **Implementation**: Move logic to `src/helpers/` directory with comprehensive tests
+- **Benefit**: Improved testability, reusability, and maintainability
+
+### Helper Function Testing Requirements
+- **Test Coverage**: Every helper function must have comprehensive unit tests
+- **Test Cases**: Include happy path, edge cases, and immutability verification
+- **Pattern**: Test both functionality and that original objects are not modified
+- **Structure**: Use describe blocks for each helper function with multiple test cases
+
+### Helper Function Design Patterns
+- **Immutability**: All helper functions must return new objects without mutating originals
+- **Null Safety**: Handle cases where required properties might be undefined
+- **Type Safety**: Use proper TypeScript types and handle optional properties correctly
+- **Error Handling**: Return original object or appropriate fallback for invalid inputs
+
+### Component Refactoring Process
+- **Step 1**: Identify complex inline logic in components
+- **Step 2**: Create helper function with proper types and null safety
+- **Step 3**: Add comprehensive tests for the helper function
+- **Step 4**: Update component to use the helper function
+- **Step 5**: Verify all functionality is preserved and tests pass
+
+### Import Organization for Sections
+- **Direct Imports**: Use direct imports for section components instead of index files
+- **Pattern**: `import ScenariosSection from './sections/ScenariosSection'`
+- **Benefit**: Better tree-shaking and clearer dependency tracking
+- **Avoid**: Barrel exports that can cause circular dependencies
+
+### State Management for Sections
+- **Parent Responsibility**: Parent component manages tab selection and overall state
+- **Section Responsibility**: Sections handle their internal state and call onChange
+- **Data Flow**: Parent passes data down, sections call onChange to update parent
+- **Benefit**: Clear data flow and separation of concerns
+
+### Section Component Testing Strategy
+- **Unit Tests**: Test each section component in isolation
+- **Integration Tests**: Test parent component with all sections
+- **Helper Tests**: Comprehensive tests for all helper functions
+- **Pattern**: Mock dependencies and test component behavior, not implementation details
+
+### Code Duplication Prevention
+- **Problem**: Duplicate code in switch statement cases
+- **Solution**: Use different return values or extract common logic
+- **Pattern**: Default case should return `null` or appropriate fallback
+- **Benefit**: Cleaner code and easier maintenance
+
+### Build and Quality Assurance for Sections
+- **Linting**: Run `npm run lint -- --fix` to ensure consistent formatting
+- **TypeScript**: Verify compilation with `npx tsc --noEmit`
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Test Verification**: Run `npx vitest run` to ensure all tests pass
+- **Pattern**: Always verify the complete build and test pipeline
+
+## Lessons from Custom Tabs Implementation
+
+### Figma Design Integration
+- **Discovery**: Custom tabs should be implemented based on exact Figma specifications
+- **Pattern**: Use Figma data to extract colors, typography, spacing, and interactions
+- **Implementation**: Create custom components that match design pixel-perfectly
+- **Benefit**: Consistent design language and brand compliance
+
+### Custom Component vs PrimeReact Decision
+- **Problem**: PrimeReact TabView didn't match Figma design requirements
+- **Solution**: Create custom Tabs component with exact design specifications
+- **Pattern**: Use CSS modules with precise color codes and typography from Figma
+- **Benefit**: Full design control and better performance
+
+### Tab Component Architecture
+- **Structure**: Create reusable `Tabs` component with `TabItem` interface
+- **Props Design**: Use `tabs: TabItem[]`, `activeTabId: string`, `onTabChange: (tabId: string) => void`
+- **State Management**: Use string-based tab IDs instead of numeric indices
+- **Benefit**: More semantic and flexible tab management
+
+### CSS Module Implementation for Custom Tabs
+- **Design Fidelity**: Use exact colors from Figma (`#128AFB`, `#596168`, `#C0D0DF`)
+- **Typography**: Implement Lato font with proper weights (400 inactive, 700 active)
+- **Interactions**: Add hover effects with `rgba(18, 138, 251, 0.05)` background
+- **Transitions**: Use `transition: all 0.2s ease` for smooth state changes
+
+### Component Renaming Strategy
+- **Pattern**: When renaming components, create new files and update all references
+- **Process**: 
+  1. Create new component with new name
+  2. Update all imports and usages
+  3. Delete old files
+  4. Remove empty directories
+- **Benefit**: Clean migration without breaking existing functionality
+
+### Tab Content Duplication Prevention
+- **Problem**: Same content repeated in multiple tabs
+- **Solution**: Extract common functionality into shared components
+- **Pattern**: Use same `Filters`, `CommonSelect`, and `steps` in both tabs
+- **Benefit**: DRY principle and easier maintenance
+
+### Storybook Documentation for Custom Components
+- **Requirement**: Every custom component needs comprehensive Storybook stories
+- **Pattern**: Create multiple stories showing different states and configurations
+- **Examples**: Default, SecondTabActive, ThirdTabActive, TwoTabs
+- **Benefit**: Better component documentation and testing
+
+### Build and Quality Assurance for Custom Components
+- **Linting**: Always run `npm run lint -- --fix` after component changes
+- **TypeScript**: Verify compilation with `npx tsc --noEmit`
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Pattern**: Ensure all quality checks pass before finalizing changes
+
+### Component Naming Evolution
+- **Initial**: `CustomTabs` (descriptive but verbose)
+- **Final**: `Tabs` (concise and semantic)
+- **Lesson**: Choose names that are both descriptive and concise
+- **Pattern**: Component names should reflect their purpose without unnecessary prefixes
+
+### File Organization for Tab Components
+- **Structure**: Place tab components in `src/components/common/Tabs/`
+- **Files**: `Tabs.tsx`, `Tabs.module.scss`, `Tabs.stories.tsx`
+- **Naming**: Use consistent naming across all related files
+- **Benefit**: Clear organization and easy discovery
+
+### Import Path Updates
+- **Pattern**: Update all import statements when renaming components
+- **Process**: 
+  1. Update component file name
+  2. Update import paths in all consuming files
+  3. Update component usage in JSX
+  4. Verify all references are updated
+- **Benefit**: Maintains code consistency and prevents broken imports
+
+### CSS Class Naming for Custom Components
+- **Pattern**: Use descriptive class names that match component structure
+- **Examples**: `.tabsContainer`, `.tabsHeader`, `.tabItem`, `.tabContent`
+- **Benefit**: Clear CSS organization and easier debugging
+
+### State Management for Custom Tabs
+- **Pattern**: Use string-based tab IDs for better semantics
+- **Implementation**: `activeTabId: string` instead of `activeIndex: number`
+- **Callback**: `onTabChange: (tabId: string) => void`
+- **Benefit**: More readable and maintainable code
+
+### Accessibility for Custom Tab Components
+- **Requirements**: Ensure proper keyboard navigation and screen reader support
+- **Implementation**: Use semantic HTML and proper ARIA attributes
+- **Testing**: Verify accessibility with keyboard navigation and screen readers
+- **Benefit**: Inclusive design and compliance with accessibility standards
+
+## Lessons from ScenariosProvider Context Implementation
+
+### Data Fetching Architecture Patterns
+- **Discovery**: Complex data fetching logic should be moved to dedicated context providers
+- **Pattern**: Create context providers for domain-specific data (scenarios, processes, etc.)
+- **Structure**: `ScenariosProvider.context.tsx` → `useScenarios()` hook → component consumption
+- **Benefit**: Centralized data management, improved reusability, and separation of concerns
+
+### Context Provider Design Patterns
+- **Interface Design**: Define clear context types with all required properties
+- **Error Handling**: Implement comprehensive error handling with try-catch blocks
+- **Loading States**: Provide loading state management for better UX
+- **Memoization**: Use `useMemo` for expensive computations and context values
+- **Refresh Functionality**: Include manual refresh capabilities for data updates
+
+### Context Type Definition Best Practices
+- **Parameter Consistency**: Ensure function signatures in type definitions match implementations
+- **Default Values**: Provide meaningful default values for context initialization
+- **Optional Properties**: Handle optional properties with proper null safety
+- **Pattern**: Update both type definition and default context value simultaneously
+
+### Memoized Data Structures
+- **Performance**: Use `useMemo` for expensive data transformations
+- **Efficient Lookups**: Create Map structures for O(1) lookups (e.g., `scenarioNames: Map<string, string>`)
+- **Dependency Arrays**: Include all dependencies in memoization arrays
+- **Pattern**: Transform arrays to Maps for efficient ID-based lookups
+
+### GraphQL Integration in Context
+- **Query Organization**: Use `useLazyQuery` for manual data fetching
+- **Variable Management**: Pass dynamic variables (like `teamId`) to query functions
+- **Error Boundaries**: Handle GraphQL errors gracefully with proper error states
+- **Caching**: Leverage Apollo Client caching for improved performance
+
+### Component Refactoring Process
+- **Step 1**: Identify data fetching logic in components
+- **Step 2**: Create context provider with proper types and error handling
+- **Step 3**: Move GraphQL queries and state management to context
+- **Step 4**: Update components to use context hooks
+- **Step 5**: Remove local state and query logic from components
+- **Step 6**: Verify all functionality is preserved
+
+### Provider Hierarchy Management
+- **Placement**: Add context providers in the component tree where data is needed
+- **Order**: Place domain-specific providers inside feature providers
+- **Pattern**: `ProcesssProvider` → `ScenariosProvider` → `ProcessEdit`
+- **Benefit**: Clear data flow and proper provider scoping
+
+### Context Hook Usage Patterns
+- **Error Handling**: Always check for context existence with proper error messages
+- **Type Safety**: Use proper TypeScript types for all context values
+- **Destructuring**: Destructure only needed values from context
+- **Pattern**: `const { scenarios, scenarioNames } = useScenarios()`
+
+### Build and Quality Assurance for Context Providers
+- **Type Checking**: Run `npx tsc --noEmit` to verify type compatibility
+- **Linting**: Use `npm run lint -- --fix` for consistent formatting
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Pattern**: Always verify complete build pipeline after context changes
+
+### Context Provider Testing Strategy
+- **Unit Tests**: Test context provider logic in isolation
+- **Hook Tests**: Test custom hooks with proper mocking
+- **Integration Tests**: Test provider-consumer interactions
+- **Error Scenarios**: Test error handling and edge cases
+
+### Performance Optimization for Context
+- **Memoization**: Memoize expensive computations and context values
+- **Dependency Arrays**: Carefully manage useEffect and useMemo dependencies
+- **Avoid Re-renders**: Prevent unnecessary re-renders with proper memoization
+- **Pattern**: Use `useCallback` for functions passed in context values
+
+### Context Provider Naming Conventions
+- **Pattern**: Use `{Domain}Provider` for provider components
+- **Hook Pattern**: Use `use{Domain}` for context hooks
+- **File Naming**: Use `{Domain}Provider.context.tsx` for context files
+- **Benefit**: Clear naming that indicates purpose and scope
+
+### Data Transformation Patterns
+- **Map Creation**: Transform arrays to Maps for efficient lookups
+- **Type Safety**: Ensure all transformations maintain type safety
+- **Null Safety**: Handle undefined/null values gracefully
+- **Pattern**: `scenarios.forEach(scenario => map.set(scenario.id, scenario.name))`
+
+### Context Provider Migration Benefits
+- **Separation of Concerns**: Data logic separated from UI logic
+- **Reusability**: Context can be shared across multiple components
+- **Testability**: Easier to test data logic in isolation
+- **Maintainability**: Centralized data management reduces code duplication
+- **Performance**: Cached data reduces unnecessary API calls 
+
+## Lessons from Helper Function Implementation
+
+### Step Manipulation Patterns
+- **Discovery**: Complex step creation and update logic should be extracted to helper functions
+- **Pattern**: Create dedicated helper functions for each step type (scenarios, subflows, reusable templates)
+- **Structure**: `createXxxStep()` for creation, `updateStepWithXxx()` for updates
+- **Benefit**: Consistent step manipulation across components
+
+### Helper Function Design Principles
+- **Immutability**: All helper functions must return new objects without mutating originals
+- **Null Safety**: Handle cases where required properties might be undefined
+- **Type Safety**: Use proper TypeScript types and handle optional properties correctly
+- **Error Handling**: Return original object or appropriate fallback for invalid inputs
+- **Consistency**: Use consistent parameter order and naming conventions
+
+### Step Creation Patterns
+- **Scenario Steps**: Use `createScenarioStep(scenarioId, stepType?)` for new scenario steps
+- **Reusable Steps**: Use `createReusableStepFromTemplate(template, stepType)` for template-based steps
+- **Subflow Steps**: Use `createSubflowStep(executionTemplateId, stepType?)` for subflow steps
+- **Default Values**: Provide sensible defaults for optional parameters
+
+### Step Update Patterns
+- **Scenario Updates**: Use `updateStepWithScenario(step, scenarioId, stepType?)` for existing steps
+- **Reusable Updates**: Use `updateStepWithReusableTemplate(step, template, stepType)` for template updates
+- **Subflow Updates**: Use `updateStepWithSubflow(step, executionTemplateId, stepType?)` for subflow updates
+- **Preservation**: Maintain existing step properties while updating specific fields
+
+### Component Integration Patterns
+- **Section Components**: Use helper functions in section components for step manipulation
+- **Event Handlers**: Call helper functions in event handlers for step updates
+- **State Updates**: Use helper functions when updating process state
+- **Pattern**: `onChange(helperFunction(step, ...args))`
+
+### Testing Requirements for Helper Functions
+- **Comprehensive Coverage**: Every helper function must have unit tests
+- **Edge Cases**: Test with empty strings, undefined properties, and boundary conditions
+- **Immutability Verification**: Ensure original objects are not modified
+- **Null Safety**: Test with undefined/null scenarios and stepConfiguration
+- **Type Safety**: Verify proper TypeScript type handling
+
+### Helper Function Naming Conventions
+- **Creation Functions**: Use `createXxxStep()` pattern for new step creation
+- **Update Functions**: Use `updateStepWithXxx()` pattern for existing step updates
+- **Consistency**: Maintain consistent parameter order across similar functions
+- **Clarity**: Use descriptive names that indicate the function's purpose
+
+### Import Organization for Helper Functions
+- **Grouped Imports**: Import related helper functions together
+- **Pattern**: Import creation and update functions for the same step type together
+- **Benefit**: Clear dependencies and easier maintenance
+
+### Build and Quality Assurance for Helper Functions
+- **Type Checking**: Run `npx tsc --noEmit` to verify type safety
+- **Linting**: Use `npm run lint -- --fix` for consistent formatting
+- **Test Verification**: Run `npx vitest run` to ensure all tests pass
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Pattern**: Always verify complete build and test pipeline
+
+## CSS Style Management
+
+### Style Cleanup Best Practices
+- **Remove Unnecessary Comments**: Delete comments that don't add value or are redundant
+- **Keep Meaningful Comments**: Preserve comments that explain complex logic or design decisions
+- **Avoid Redundant Information**: Don't comment obvious values (e.g., `/* 100% */` for `line-height: 40px`)
+- **Maintain Consistency**: Use consistent commenting patterns across all CSS files
+
+### Commented Styles Guidelines
+- **Remove**: Comments that just repeat what the code already shows
+- **Remove**: Percentage comments on line-height values
+- **Remove**: State labels like "// Active state" when the class name is clear
+- **Keep**: Comments that explain design decisions or complex logic
+- **Keep**: Comments that explain why certain approaches were chosen
+
+### CSS File Organization
+- **Empty Classes**: Keep classes that are actually used in components, even if empty
+- **Meaningful Comments**: Add explanatory comments for empty classes that serve a purpose
+- **Consistent Formatting**: Use consistent spacing and formatting across all SCSS files
+- **Import Organization**: Keep imports at the top, followed by mixins, then styles
+
+### Style Cleanup Process
+1. **Identify Unnecessary Comments**: Look for comments that don't add value
+2. **Check Usage**: Verify that styles are actually used in components
+3. **Remove Redundancy**: Delete comments that repeat what the code shows
+4. **Add Meaning**: Replace removed comments with meaningful explanations where needed
+5. **Verify Functionality**: Run build and tests to ensure nothing breaks
+
+### Common Patterns to Remove
+```scss
+// ❌ Remove - redundant information
+line-height: 40px; /* 100% */
+
+// ❌ Remove - obvious state labels
+// Active state
+.active { ... }
+
+// ❌ Remove - commented out code
+// border-color: #3b64a0;
+// border-width: 1px;
+
+// ✅ Keep - meaningful explanation
+.transparentTabs {
+  // Custom tabs will inherit transparent background from the component
+  // No additional styling needed as the custom component handles its own styling
+}
+```
+
+### CSS Border and Styling Patterns
+- **Remove Unnecessary Borders**: Remove borders that don't add visual value
+- **Pattern**: Remove `border-bottom: 1px solid #C0D0DF;` when not needed
+- **Benefit**: Cleaner visual design and reduced CSS complexity
+- **Consideration**: Ensure removal doesn't affect visual hierarchy or spacing
+
+### Quality Assurance for Style Changes
+- **Linting**: Run `npm run lint -- --fix` to ensure consistent formatting
+- **Build Verification**: Run `npm run build:dev` to ensure styles compile correctly
+- **Visual Testing**: Verify that UI components still look correct
+- **Pattern**: Always test the complete build pipeline after style changes
+
+## Semantic HTML and Accessibility
+
+### Button Conversion Best Practices
+- **Convert Interactive Divs to Buttons**: Use semantic `<button>` elements for clickable items
+- **Maintain Styling**: Add CSS reset properties to preserve original appearance
+- **Focus Management**: Implement proper focus indicators for keyboard navigation
+- **Avoid ARIA Conflicts**: Remove problematic ARIA attributes until properly implemented
+
+### Button Styling Patterns
+```scss
+.buttonElement {
+  // Reset default button styles
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  
+  // Custom focus styles
+  &:focus {
+    outline: none;
+  }
+  
+  &:focus-visible {
+    outline: 2px solid #128AFB;
+    outline-offset: 2px;
+  }
+}
+```
+
+### Component Conversion Process
+1. **Identify Interactive Elements**: Find divs that handle click events
+2. **Convert to Semantic HTML**: Replace with appropriate elements (button, link, etc.)
+3. **Add Reset Styles**: Remove default browser styling
+4. **Preserve Functionality**: Ensure all event handlers work correctly
+5. **Test Accessibility**: Verify keyboard navigation and screen reader support
+
+### Nullish Coalescing Usage
+- **Prefer `??` over `||`**: Use nullish coalescing for className concatenation
+- **Pattern**: `className={styles.container} ${className ?? ''}`
+- **Benefit**: Only checks for null/undefined, not empty strings 
+
+## Avoiding Non-Null Assertion Operator (!)
+
+### Core Principle
+- **Avoid `!` operator**: The non-null assertion operator (`!`) bypasses TypeScript's type checking
+- **Use proper null checks**: Implement proper null/undefined checks instead of assertions
+- **Handle edge cases**: Always consider what happens when values are null/undefined
+
+### Problems with Non-Null Assertion
+```typescript
+// ❌ Dangerous - assumes value is never null/undefined
+const name = user!.name
+const step = step.originalStep!
+const scenarios = step.scenarios!
+
+// ❌ Can cause runtime errors
+const result = someFunction()!.someProperty
+```
+
+### Better Alternatives
+
+#### 1. Optional Chaining with Nullish Coalescing
+```typescript
+// ✅ Safe - handles null/undefined gracefully
+const name = user?.name ?? 'Anonymous'
+const step = step.originalStep ?? createDefaultStep()
+const scenarios = step?.scenarios ?? []
+
+// ✅ Safe - provides fallback
+const result = someFunction()?.someProperty ?? defaultValue
+```
+
+#### 2. Conditional Checks
+```typescript
+// ✅ Safe - explicit null check
+if (user && user.name) {
+  const name = user.name
+  // Use name safely
+}
+
+// ✅ Safe - type guard
+if (step.originalStep) {
+  const originalStep = step.originalStep
+  // Use originalStep safely
+}
+```
+
+#### 3. Early Returns
+```typescript
+// ✅ Safe - early return for invalid state
+const handleStepUpdate = (step: StepDetails) => {
+  if (!step.originalStep) {
+    return // Exit early if no original step
+  }
+  
+  const originalStep = step.originalStep
+  // Use originalStep safely
+}
+```
+
+#### 4. Default Values
+```typescript
+// ✅ Safe - provide sensible defaults
+const scenarios = step?.scenarios || []
+const name = user?.name || 'Unknown User'
+const config = step?.stepConfiguration || defaultConfig
+```
+
+### Component Patterns
+
+#### Safe Property Access
+```typescript
+// ❌ Dangerous
+const stepTitle = step.originalStep!.title
+
+// ✅ Safe
+const stepTitle = step.originalStep?.title ?? 'Untitled Step'
+```
+
+#### Safe Function Calls
+```typescript
+// ❌ Dangerous
+const result = helperFunction(step.originalStep!)
+
+// ✅ Safe
+const result = step.originalStep ? helperFunction(step.originalStep) : null
+```
+
+#### Safe Array Access
+```typescript
+// ❌ Dangerous
+const firstItem = array![0]
+
+// ✅ Safe
+const firstItem = array?.[0] ?? defaultValue
+```
+
+### Helper Function Patterns
+
+#### Input Validation
+```typescript
+// ✅ Safe - validate inputs
+export const updateStepWithScenario = (
+  step: Step,
+  scenarioId: string,
+  stepType: StepType = StepType.SCENARIO
+): Step => {
+  if (!step || !scenarioId) {
+    return step // Return original if invalid input
+  }
+  
+  // Safe to use step and scenarioId
+  return {
+    ...step,
+    // Update logic
+  }
+}
+```
+
+#### Null-Safe Transformations
+```typescript
+// ✅ Safe - handle null scenarios
+const scenarios = reusableStep?.scenarios?.map(scenario => ({
+  ...scenario,
+  // Transform safely
+})) ?? []
+```
+
+### Testing Null Safety
+```typescript
+describe('Helper Function', () => {
+  it('should handle null inputs gracefully', () => {
+    const result = helperFunction(null, 'test-id')
+    expect(result).toBeDefined()
+  })
+
+  it('should handle undefined properties', () => {
+    const step = { /* step without scenarios */ }
+    const result = helperFunction(step, 'test-id')
+    expect(result.scenarios).toEqual([])
+  })
+})
+```
+
+### Code Quality Rules Update
+- **Avoid `!` operator**: Never use non-null assertion operator
+- **Use optional chaining**: Prefer `?.` for safe property access
+- **Provide defaults**: Use `??` for null/undefined fallbacks
+- **Validate inputs**: Check for null/undefined before using values
+- **Test edge cases**: Include null/undefined scenarios in tests 
+
+## Lessons from Icon Extraction Implementation
+
+### Icon Component Architecture Patterns
+- **Discovery**: Inline SVGs in components should be extracted to separate, reusable icon components
+- **Pattern**: Create dedicated icon components with configurable props for size and color
+- **Structure**: `IconName.tsx` → `index.ts` → component consumption
+- **Benefit**: Improved reusability, maintainability, and code organization
+
+### Icon Component Design Principles
+- **Configurable Props**: Include `width`, `height`, and `color` props with sensible defaults
+- **Type Safety**: Use proper TypeScript interfaces for all icon component props
+- **Default Values**: Provide consistent defaults (24x24px, brand color `#3B64A0`)
+- **Consistency**: Maintain consistent prop patterns across all icon components
+
+### Icon Component Implementation
+```typescript
+interface IconNameProps {
+  width?: number
+  height?: number
+  color?: string
+}
+
+const IconName: React.FC<IconNameProps> = ({
+  width = 24,
+  height = 24,
+  color = '#3B64A0',
+}) => {
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {/* SVG content */}
+    </svg>
+  )
+}
+```
+
+### Icon Directory Organization
+- **File Structure**: Place icons in feature-specific subdirectories
+- **Pattern**: `src/components/feature/icons/IconName.tsx`
+- **Naming**: Use descriptive names ending with "Icon" (e.g., `EventsIcon`, `TimerEventsIcon`)
+- **Index File**: Create `index.ts` for clean imports and exports
+- **Benefit**: Clear organization and easy discovery of related icons
+
+### Icon Import/Export Patterns
+- **Index File**: Export all icons from a single index file
+- **Clean Imports**: Use grouped imports for better readability
+- **Pattern**: `import { EventsIcon, ConfigurableStepIcon, TimerEventsIcon } from './icons'`
+- **Benefit**: Simplified imports and better tree-shaking
+
+### Component Refactoring Process for Icons
+- **Step 1**: Identify inline SVGs in components
+- **Step 2**: Create dedicated icon components with proper interfaces
+- **Step 3**: Extract SVG content to new icon components
+- **Step 4**: Update component to use icon components instead of inline SVGs
+- **Step 5**: Update imports and remove unused dependencies
+- **Step 6**: Verify all functionality is preserved
+
+### Icon Component Benefits
+- **Reusability**: Icons can be used across multiple components
+- **Maintainability**: Easier to update and modify individual icons
+- **Consistency**: Ensures consistent styling and behavior
+- **Performance**: Better tree-shaking and bundling optimization
+- **Type Safety**: Proper TypeScript support with configurable props
+
+### Icon Component Testing Strategy
+- **Visual Testing**: Verify icons render correctly with different props
+- **Props Testing**: Test icon components with various width, height, and color values
+- **Integration Testing**: Ensure icons work correctly in parent components
+- **Accessibility**: Verify icons have proper alt text and contrast
+
+### Build and Quality Assurance for Icon Components
+- **Linting**: Run `npm run lint -- --fix` after icon extraction
+- **TypeScript**: Verify compilation with `npx tsc --noEmit`
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Pattern**: Always verify complete build pipeline after icon changes
+
+### Icon Component Naming Conventions
+- **Pattern**: Use `{Purpose}Icon` for descriptive naming
+- **Examples**: `EventsIcon`, `ConfigurableStepIcon`, `TimerEventsIcon`
+- **Consistency**: Maintain consistent naming across all icon components
+- **Benefit**: Clear indication of icon purpose and usage
+
+### Icon Component File Organization
+- **Structure**: Place icon components in dedicated `icons/` subdirectories
+- **Files**: `IconName.tsx`, `index.ts`
+- **Naming**: Use consistent naming across all related files
+- **Benefit**: Clear organization and easy discovery
+
+### Icon Component Migration Benefits
+- **Code Organization**: Cleaner component files without large inline SVGs
+- **Reusability**: Icons can be shared across the application
+- **Maintainability**: Easier to update and modify individual icons
+- **Performance**: Better bundling and tree-shaking optimization
+- **Type Safety**: Proper TypeScript support with configurable interfaces
+
+## Lessons from Component Extraction and Organization
+
+### Component Extraction Patterns
+- **Discovery**: Complex UI sections should be extracted into separate, reusable components
+- **Pattern**: Identify self-contained UI elements and create dedicated components
+- **Structure**: `ParentComponent.tsx` → `ExtractedComponent.tsx` → component consumption
+- **Benefit**: Improved maintainability, testability, and reusability
+
+### Component Extraction Process
+- **Step 1**: Identify self-contained UI sections in components
+- **Step 2**: Create new component with proper TypeScript interfaces
+- **Step 3**: Extract logic and JSX to new component
+- **Step 4**: Update parent component to use new component
+- **Step 5**: Update imports and remove unused dependencies
+- **Step 6**: Create Storybook documentation for new component
+- **Step 7**: Verify all functionality is preserved
+
+### Component Organization Patterns
+- **Feature-Based Organization**: Group related components in feature-specific folders
+- **Pattern**: `src/components/feature/subcategory/ComponentName.tsx`
+- **Examples**: `trigger-sections/EventTrigger.tsx`, `tabs/TriggerTabs.tsx`
+- **Benefit**: Clear organization and easy discovery of related components
+
+### Component Naming Evolution
+- **Initial**: Descriptive but verbose names (e.g., `EventTypeDropdown`)
+- **Final**: Concise and semantic names (e.g., `EventTrigger`)
+- **Lesson**: Choose names that reflect the component's purpose and location
+- **Pattern**: Component names should indicate their specific purpose without unnecessary prefixes
+
+### Component Renaming and Relocation Strategy
+- **Pattern**: When renaming components, create new files and update all references
+- **Process**: 
+  1. Create new component with new name in correct location
+  2. Update all imports and usages in consuming files
+  3. Update component usage with new prop names if needed
+  4. Create new Storybook stories with updated naming
+  5. Delete old files and clean up empty directories
+- **Benefit**: Clean migration without breaking existing functionality
+
+### Component Interface Design
+- **Props Pattern**: Use consistent props interface across similar components
+- **Required Props**: Only include props that are essential for component functionality
+- **Optional Props**: Add optional props when component-specific functionality is needed
+- **Callback Props**: Use descriptive names for event handlers (e.g., `onTabSelect`, `onChange`)
+- **Benefit**: Consistent API makes components interchangeable and predictable
+
+### Component File Organization
+- **Structure**: Place components in appropriate subdirectories based on functionality
+- **Pattern**: `src/components/feature/subcategory/ComponentName.tsx`
+- **Files**: `ComponentName.tsx`, `ComponentName.stories.tsx`
+- **Naming**: Use consistent naming across all related files
+- **Benefit**: Clear organization and easy discovery
+
+### Component Import/Export Patterns
+- **Direct Imports**: Use direct imports for components instead of index files
+- **Pattern**: `import EventTrigger from './trigger-sections/EventTrigger'`
+- **Benefit**: Better tree-shaking and clearer dependency tracking
+- **Avoid**: Barrel exports that can cause circular dependencies
+
+### Component Testing and Documentation
+- **Storybook Stories**: Every extracted component needs comprehensive Storybook stories
+- **Multiple Stories**: Create stories for different states and configurations
+- **Action Handling**: Include proper action handlers for interactive components
+- **Pattern**: Use descriptive story names that indicate the component state
+
+### Component Extraction Benefits
+- **Reusability**: Extracted components can be used across multiple parent components
+- **Maintainability**: Easier to maintain and update individual component functionality
+- **Testability**: Components can be tested in isolation
+- **Documentation**: Better component documentation through Storybook stories
+- **Code Organization**: Cleaner separation of concerns and improved readability
+
+### Build and Quality Assurance for Component Extraction
+- **Linting**: Run `npm run lint -- --fix` after component extraction
+- **TypeScript**: Verify compilation with `npx tsc --noEmit`
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Pattern**: Always verify complete build pipeline after component changes
+
+### Component Migration Best Practices
+- **Incremental Changes**: Make small, incremental changes to avoid breaking functionality
+- **Type Safety**: Ensure all TypeScript types are properly updated
+- **Import Updates**: Update all import statements when moving components
+- **Prop Updates**: Update component usage with new prop names if interfaces change
+- **Documentation**: Update Storybook stories to reflect new component structure
+
+### Unused Component Cleanup
+- **Discovery**: Regularly identify and remove unused components to maintain codebase cleanliness
+- **Pattern**: Search for component imports and usage across the entire codebase
+- **Tools**: Use grep/search tools to find component references
+- **Benefit**: Reduces bundle size and improves maintainability
+
+### Unused Component Detection Process
+- **Step 1**: Search for component imports in all files
+- **Step 2**: Check if components are used in main application files
+- **Step 3**: Verify components are not used in dynamic imports or conditional rendering
+- **Step 4**: Confirm components are not exported from index files
+- **Step 5**: Remove unused components and associated files
+
+### Unused Component Cleanup Strategy
+- **Comprehensive Search**: Search for component names in imports, exports, and usage
+- **File Association**: Remove both component files and associated style files
+- **Storybook Cleanup**: Remove associated Storybook stories for unused components
+- **Import Cleanup**: Remove any remaining imports of deleted components
+- **Verification**: Run build and tests to ensure nothing breaks
+
+### Unused Component Cleanup Benefits
+- **Reduced Bundle Size**: Smaller bundle size leads to faster loading times
+- **Cleaner Codebase**: Eliminates dead code that could confuse developers
+- **Better Maintainability**: Fewer files to maintain and fewer potential sources of bugs
+- **Improved Performance**: Reduced bundle size and faster compilation times
+
+### Quality Assurance for Component Cleanup
+- **Linting**: Run `npm run lint -- --fix` to ensure no linting errors
+- **TypeScript**: Verify compilation with `npx tsc --noEmit`
+- **Build Verification**: Run `npm run build:dev` to ensure build completes successfully
+- **Functionality Verification**: Ensure no functionality is lost during cleanup
+- **Pattern**: Always verify complete build pipeline after removing components
+
+### Component Cleanup Best Practices
+- **Thorough Analysis**: Ensure components are truly unused before removal
+- **Associated Files**: Remove all related files (component, styles, stories, tests)
+- **Import Cleanup**: Remove any remaining imports of deleted components
+- **Documentation**: Update any documentation that references removed components
+- **Version Control**: Use descriptive commit messages for cleanup operations
+
+## Lessons from Recent Trigger Helper Functions and Performance Optimizations
+
+### Trigger Helper Functions Implementation
+- **Discovery**: Trigger creation logic should be extracted to dedicated helper functions
+- **Pattern**: Create specific helper functions for different trigger types (events, timers)
+- **Structure**: `createTriggerWithEvent()` for webhook triggers, `createTriggerWithTimer()` for timer triggers
+- **Benefit**: Consistent trigger creation across components and improved maintainability
+
+### Trigger Helper Function Design
+- **Specific Functions**: Create dedicated functions for each trigger type instead of generic ones
+- **Default Values**: Use sensible defaults (e.g., 'webhook' for events, '* * * * *' for timers)
+- **Type Safety**: Use proper TypeScript types for trigger parameters
+- **Immutability**: All helper functions return new objects without mutating originals
+
+### Trigger Helper Function Implementation
+```typescript
+// Event triggers (default to webhook)
+export const createTriggerWithEvent = (
+  eventType: string,
+  triggerType: 'webhook' | 'timer' = 'webhook',
+  timeExpression?: string
+): Trigger => {
+  return {
+    eventType,
+    scenarios: [],
+    scenariosBlueprints: undefined,
+    timeExpression:
+      triggerType === 'timer' ? (timeExpression ?? '* * * * *') : null,
+    triggerType,
+    stepType: StepType.TRIGGER,
+  }
+}
+
+// Timer triggers (specific to timer type)
+export const createTriggerWithTimer = (
+  timeExpression: string = '* * * * *'
+): Trigger => {
+  return {
+    eventType: '_timer-event',
+    scenarios: [],
+    scenariosBlueprints: undefined,
+    timeExpression,
+    triggerType: 'timer',
+    stepType: StepType.TRIGGER,
+  }
+}
+```
+
+### Component Integration for Trigger Helpers
+- **Import Pattern**: Import related trigger helper functions together
+- **Usage Pattern**: Use helper functions in event handlers for trigger creation
+- **Default Parameters**: Leverage default parameters to simplify function calls
+- **Pattern**: `onSave(step.idx, createTriggerWithEvent(selectedEventType))`
+
+### Trigger Helper Function Benefits
+- **Consistency**: Ensures all triggers are created with the same structure
+- **Maintainability**: Centralized trigger creation logic
+- **Type Safety**: Proper TypeScript types prevent runtime errors
+- **Testability**: Easy to test trigger creation logic in isolation
+- **Reusability**: Can be used across different components
+
+### Testing Requirements for Trigger Helpers
+- **Test Coverage**: Every trigger helper function must have comprehensive unit tests
+- **Edge Cases**: Test with empty strings, undefined properties, and boundary conditions
+- **Immutability Verification**: Ensure original objects are not modified
+- **Default Values**: Test that default parameters work correctly
+- **Type Safety**: Verify proper TypeScript type handling
+
+### UseMemo Optimization Patterns
+- **Discovery**: Static data structures don't need useMemo when they don't depend on props or state
+- **Pattern**: Move static arrays and objects outside components when possible
+- **Benefit**: Reduces unnecessary re-computation and improves performance
+
+### Static Data Structure Patterns
+```typescript
+// ❌ Unnecessary useMemo for static data
+const tiles = useMemo(() => [
+  { id: 'events', label: 'Events', icon: <EventsIcon /> },
+  { id: 'timer', label: 'Timer Events', icon: <TimerEventsIcon /> },
+], [])
+
+// ✅ Static data outside component
+const tiles = [
+  { id: 'events', label: 'Events', icon: <EventsIcon /> },
+  { id: 'timer', label: 'Timer Events', icon: <TimerEventsIcon /> },
+]
+```
+
+### When to Use UseMemo
+- **Use**: When data depends on props, state, or other reactive values
+- **Don't Use**: For static data that never changes
+- **Pattern**: Only memoize expensive computations or data that changes based on dependencies
+
+### Component Optimization Process
+- **Step 1**: Identify static data structures in components
+- **Step 2**: Move static data outside component when possible
+- **Step 3**: Remove unnecessary useMemo hooks
+- **Step 4**: Keep useMemo only for truly dynamic data
+- **Step 5**: Verify performance improvements
+
+### Import Organization After Optimization
+- **Keep useMemo**: Only import when actually needed for dynamic data
+- **Pattern**: Import useMemo only when data depends on props/state
+- **Benefit**: Cleaner imports and better performance
+
+### Confirmation Message Updates
+- **Discovery**: Confirmation messages should be specific to the action being performed
+- **Pattern**: Use descriptive messages that match the user's action
+- **Benefit**: Better user experience and clearer feedback
+
+### Confirmation Message Implementation
+```typescript
+// ❌ Generic message
+<Confirmation title="Step Updated!" />
+
+// ✅ Specific message
+<Confirmation title="Trigger updated!" />
+```
+
+### Confirmation Message Best Practices
+- **Specificity**: Use specific messages that match the action (e.g., "Trigger updated!" vs "Step Updated!")
+- **Consistency**: Use consistent messaging patterns across similar actions
+- **Clarity**: Make messages clear and actionable
+- **Localization**: Consider internationalization for user-facing messages
+
+### Component Integration for Confirmations
+- **Conditional Rendering**: Show confirmation messages based on action type
+- **Timing**: Use appropriate timing for confirmation display
+- **State Management**: Manage confirmation state properly
+- **Pattern**: `{showConfirmation && <Confirmation title="Specific Message" />}`
+
+### Merge Conflict Resolution
+- **Discovery**: Merge conflicts should be resolved by combining functionality from both branches
+- **Pattern**: Keep all functions and imports from both branches when possible
+- **Benefit**: Preserves functionality from both branches
+
+### Merge Conflict Resolution Strategy
+- **Combine Imports**: Merge import statements from both branches
+- **Preserve Functions**: Keep all helper functions from both branches
+- **Maintain Types**: Ensure all TypeScript types are preserved
+- **Test Integration**: Verify that combined code works correctly
+
+### Quality Assurance After Merge Resolution
+- **Linting**: Run `npm run lint -- --fix` to ensure consistent formatting
+- **TypeScript**: Verify compilation with `npx tsc --noEmit`
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Test Verification**: Run `npx vitest run` to ensure all tests pass
+- **Pattern**: Always verify complete build and test pipeline after merge resolution
+
+### Git Workflow Best Practices
+- **Commit Resolution**: Commit resolved conflicts with descriptive messages
+- **Status Verification**: Check git status to ensure all conflicts are resolved
+- **Build Verification**: Always run full build process before committing
+- **Pattern**: `git add <files> && git commit -m "Resolve merge conflicts"`
+
+### Tile Centering Implementation
+- **Discovery**: Use `justify-content-center` for flex containers to center tiles
+- **Pattern**: Apply centering classes to tile containers
+- **Benefit**: Consistent visual alignment across the application
+
+### Tile Centering Implementation
+```typescript
+// ❌ Not centered
+<div className="flex flex-wrap gap-4 w-full">
+
+// ✅ Centered
+<div className="flex flex-wrap justify-content-center gap-4 w-full">
+```
+
+### CSS Module Centering
+```scss
+// SCSS centering for tile containers
+.tilesContainer {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+```
+
+### Centering Best Practices
+- **Consistency**: Apply centering consistently across all tile containers
+- **Responsive**: Ensure centering works on different screen sizes
+- **Performance**: Use CSS classes instead of inline styles
+- **Maintainability**: Keep centering logic in CSS modules
+
+### Component Integration for Centering
+- **Apply to All Tiles**: Center tiles in ProcessTemplates, SummaryTiles, and TriggerStepEdit
+- **Consistent Pattern**: Use same centering approach across components
+- **Visual Testing**: Verify that tiles appear centered in the UI
+- **Pattern**: Add `justify-content-center` to flex containers
+
+## Updated Helper Function List
+
+### Trigger Helper Functions
+- `createTriggerWithEvent(eventType, triggerType?, timeExpression?)` - Create trigger with event
+- `createTriggerWithTimer(timeExpression?)` - Create timer trigger
+- `updateTrigger(process, trigger, triggerIdx)` - Update trigger array
+- `addTriggerStep(process, trigger, idx)` - Add trigger as step
+
+### Step Helper Functions
+- `createScenarioStep(scenarioId, stepType?)` - Create new step with scenario
+- `createReusableStepFromTemplate(reusableStep, stepType)` - Create step from reusable template
+- `createSubflowStep(executionTemplateId, stepType?)` - Create new step with subflow
+- `updateStepWithScenario(step, scenarioId, stepType?)` - Update existing step with scenario
+- `updateStepWithReusableTemplate(step, reusableStep, stepType)` - Update existing step with reusable template
+- `updateStepWithSubflow(step, executionTemplateId, stepType?)` - Update existing step with subflow
+
+### Process Helper Functions
+- `updateStep(process, step, stepIndex)` - Update step at specific index
+- `updateStepByDetails(process, step, idx)` - Update step using 1-based idx
+- `addStep(process, step, idx)` - Add step at specific index
+- `removeStep(process, idx)` - Remove step at index
+- `updateProcessInfo(process, name, description)` - Update process metadata
+- `updateStepParameterValues(step, key, value)` - Update step parameter values
+- `updateCondition(step, condition)` - Update step condition
+- `validate(process)` - Validate execution template
+
+### Import Pattern for Helper Functions
+```typescript
+import {
+  // Trigger helpers
+  createTriggerWithEvent,
+  createTriggerWithTimer,
+  updateTrigger,
+  
+  // Step helpers
+  createScenarioStep,
+  createReusableStepFromTemplate,
+  createSubflowStep,
+  updateStepWithScenario,
+  updateStepWithReusableTemplate,
+  updateStepWithSubflow,
+  
+  // Process helpers
+  updateStep,
+  updateStepByDetails,
+  addStep,
+  removeStep,
+  updateProcessInfo,
+  updateStepParameterValues,
+  updateCondition,
+  validate,
+} from '../helpers/executionTemplate.helpers'
+```
+
+## Updated Code Quality Rules
+
+### Performance Optimization
+- **Remove Unnecessary useMemo**: Don't use useMemo for static data structures
+- **Move Static Data Outside**: Place static arrays and objects outside components
+- **Optimize Imports**: Only import hooks that are actually used
+- **Pattern**: Evaluate whether data truly needs memoization
+
+### User Experience
+- **Specific Confirmation Messages**: Use descriptive confirmation messages
+- **Consistent Messaging**: Maintain consistent message patterns
+- **Clear Feedback**: Provide clear and actionable user feedback
+- **Pattern**: Match confirmation messages to the actual action performed
+
+### Merge Conflict Resolution
+- **Combine Functionality**: Preserve functionality from both branches
+- **Maintain Types**: Ensure all TypeScript types are preserved
+- **Test Integration**: Verify combined code works correctly
+- **Pattern**: Always run full build and test pipeline after resolution
+
+### Visual Design
+- **Center Tiles**: Use `justify-content-center` for tile containers
+- **Consistent Alignment**: Apply centering consistently across components
+- **Responsive Design**: Ensure centering works on all screen sizes
+- **Pattern**: Use CSS classes for consistent visual alignment
+
+## File Maintenance and Cleanup Rules
+
+### CursorRules File Maintenance
+- **Prevent Duplications**: Never add duplicate sections or content to `.cursorrules`
+- **Search Before Adding**: Always search for existing content before adding new rules or sections
+- **Consolidate Similar Content**: Merge similar patterns into existing sections instead of creating new ones
+- **Regular Cleanup**: Review and clean up `.cursorrules` after each major update
+
+### Duplication Prevention Guidelines
+- **Search Existing Sections**: Use `grep_search` or `codebase_search` to find existing content before adding new rules
+- **Check Section Names**: Verify no duplicate section headers exist (e.g., "## Lessons from...")
+- **Consolidate Patterns**: Add new patterns to existing relevant sections rather than creating new sections
+- **Update Existing Content**: Modify existing sections to include new learnings instead of duplicating
+
+### Content Organization Rules
+- **Single Source of Truth**: Each pattern, rule, or lesson should appear only once in the file
+- **Logical Grouping**: Group related content under appropriate existing sections
+- **Consistent Structure**: Maintain consistent formatting and structure across all sections
+- **Clear Hierarchy**: Use proper heading levels and maintain logical content flow
+
+### Update Process for CursorRules
+1. **Search First**: Search for existing content related to the new rule/pattern
+2. **Identify Location**: Find the most appropriate existing section for the new content
+3. **Integrate Content**: Add new content to existing sections rather than creating duplicates
+4. **Update Examples**: Modify existing examples to include new patterns when relevant
+5. **Clean Up**: Remove any redundant or obsolete content during updates
+6. **Verify Structure**: Ensure proper heading hierarchy and content organization
+
+### Quality Assurance for CursorRules Updates
+- **No Duplicate Sections**: Verify no duplicate section headers exist
+- **No Redundant Content**: Ensure each pattern appears only once
+- **Consistent Formatting**: Maintain consistent markdown formatting throughout
+- **Logical Flow**: Ensure content flows logically from section to section
+- **Complete Coverage**: Verify all current patterns and rules are included without duplication
+
+### Maintenance Checklist
+- [ ] Search for existing content before adding new rules
+- [ ] Consolidate similar patterns into existing sections
+- [ ] Remove any duplicate sections or content
+- [ ] Update existing examples with new patterns when relevant
+- [ ] Maintain consistent formatting and structure
+- [ ] Verify logical content organization
+- [ ] Remove obsolete or outdated content
+- [ ] Ensure single source of truth for each pattern
+
+## Lessons from Filter Feature Implementation
+
+### Filter Component Architecture Patterns
+- **Discovery**: Filter functionality should be implemented as a dedicated component separate from general step editing
+- **Pattern**: Create `FilterStepEdit` component specifically for filter operations
+- **Structure**: `FilterStepEdit.tsx` → `FilterSection.tsx` → component consumption
+- **Benefit**: Focused component responsibility and better maintainability
+
+### Filter Component Design Principles
+- **Single Responsibility**: Focus only on filter logic, not general step editing
+- **Conditional Rendering**: Show filter menu item only for non-trigger steps (`idx > 0`)
+- **Form Reset Capability**: Implement reset functionality for form fields
+- **Remove Functionality**: Include "Remove Filter" button with proper state management
+
+### Filter Component Implementation
+```typescript
+// Conditional menu item rendering
+const items: MenuItem[] = [
+  ...(idx > 0
+    ? [
+        {
+          label: 'Condition',
+          icon: <FiFilter className="mr-2" color="#3B64A0" size={18} />,
+          command: (event: MenuItemCommandParams) => {
+            event?.originalEvent.stopPropagation()
+            if (onUpdateFilter) {
+              onUpdateFilter(idx)
+            }
+          },
+          template,
+        },
+      ]
+    : []),
+  // Other menu items...
+]
+
+// Form reset implementation
+const [resetTrigger, setResetTrigger] = useState(0)
+
+const handleRemoveCondition = () => {
+  if (!updatedStep.originalStep) return
+
+  const updatedOriginalStep = {
+    ...updatedStep.originalStep,
+    condition: undefined,
+  }
+
+  const newStep = {
+    ...updatedStep,
+    originalStep: updatedOriginalStep,
+  }
+
+  setUpdatedStep(newStep)
+  setResetTrigger((prev) => prev + 1)
+}
+```
+
+### Filter Component Integration
+- **ProcessEdit Integration**: Use `isFilterEdit` state to control filter component rendering
+- **Drawer Title**: Display "Step Filter" when editing filters
+- **Callback Pattern**: Use `onUpdateFilter` and `handleUpdateFilter` for consistent naming
+- **State Management**: Manage filter editing state separately from general step editing
+
+### Filter Component Naming Conventions
+- **Props Pattern**: Use `onUpdateFilter` instead of `onCondition` for clarity
+- **Function Names**: Use `handleUpdateFilter` for consistency
+- **Component Names**: Use descriptive names that indicate filter-specific functionality
+- **Benefit**: Clear indication of component purpose and scope
+
+### Filter Component File Organization
+- **Structure**: Place filter components in `src/components/step-edit/`
+- **Files**: `FilterStepEdit.tsx`, `logic-sections/FilterSection.tsx`
+- **Naming**: Use consistent naming across all related files
+- **Benefit**: Clear organization and easy discovery
+
+### Filter Component Testing Strategy
+- **Unit Tests**: Test filter component logic in isolation
+- **Integration Tests**: Test filter component with ProcessEdit integration
+- **State Management**: Verify filter state resets properly
+- **Conditional Rendering**: Test that filter menu only appears for appropriate steps
+
+### Build and Quality Assurance for Filter Components
+- **Type Checking**: Run `npx tsc --noEmit` to verify type safety
+- **Linting**: Use `npm run lint -- --fix` for consistent formatting
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Pattern**: Always verify complete build pipeline after filter component changes
+
+### Filter Component Benefits
+- **Separation of Concerns**: Filter logic separated from general step editing
+- **Reusability**: Filter components can be used across different step types
+- **Maintainability**: Easier to maintain and update filter-specific functionality
+- **User Experience**: Clear distinction between filter editing and general step editing
+- **Performance**: Focused components with minimal unnecessary re-renders
+
+## Lessons from Dashboard Feature Implementation
+
+### Date Helper Functions Patterns
+- **Discovery**: Date range calculations should be extracted to dedicated helper functions
+- **Pattern**: Create `dateHelpers.ts` with date range calculations and validation functions
+- **Structure**: Enum-based date ranges (`DateRange.NOW`, `DateRange.WEEK`, `DateRange.MONTH`) with calculation functions
+- **Benefit**: Reusable date logic across components and consistent date handling
+
+### Date Helper Function Implementation
+```typescript
+// Date range enum
+export enum DateRange {
+  NOW = 'now',
+  WEEK = 'week',
+  MONTH = 'month',
+}
+
+// Date range calculation
+export const calculateDateRange = (range: DateRange): DateRangeResult => {
+  const now = new Date()
+  const endDate = now.toISOString()
+
+  let startDate: string
+  switch (range) {
+    case DateRange.NOW:
+      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+      startDate = yesterday.toISOString()
+      break
+    case DateRange.WEEK:
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      startDate = weekAgo.toISOString()
+      break
+    case DateRange.MONTH:
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      startDate = monthAgo.toISOString()
+      break
+    default:
+      startDate = now.toISOString()
+  }
+
+  return { startDate, endDate }
+}
+```
+
+### Date Helper Function Design Principles
+- **RFC 3339 Format**: Return dates in ISO string format (RFC 3339) for GraphQL queries
+- **Validation Functions**: Include validation functions for date format checking
+- **Utility Functions**: Add utility functions for date calculations (e.g., `getDaysBetween`)
+- **Type Safety**: Use proper TypeScript types for all date functions
+- **Documentation**: Include JSDoc comments explaining date calculations
+
+### Enum Mapping Patterns for Tabs
+- **Discovery**: Tab enums should be mapped to date range enums for consistent date handling
+- **Pattern**: Create component-specific tab enums that map to shared date range enums
+- **Implementation**: Use `Record` type for type-safe enum mapping
+- **Benefit**: Type-safe date range selection based on tab selection
+
+### Enum Mapping Implementation
+```typescript
+// Component-specific tab enum
+enum DashboardTabId {
+  NOW = 'now',
+  WEEK = 'week',
+  MONTH = 'month',
+}
+
+// Map tab enum to date range enum
+const dateRangeMap: Record<DashboardTabId, DateRange> = {
+  [DashboardTabId.NOW]: DateRange.NOW,
+  [DashboardTabId.WEEK]: DateRange.WEEK,
+  [DashboardTabId.MONTH]: DateRange.MONTH,
+}
+
+// Use in tab change handler
+const handleTabChange = (tabId: DashboardTabId) => {
+  const { startDate, endDate } = calculateDateRange(dateRangeMap[tabId])
+  refetch({ startDate, endDate })
+}
+```
+
+### GraphQL Query Integration with Date Ranges
+- **Discovery**: Date range calculations should integrate seamlessly with GraphQL queries
+- **Pattern**: Use `refetch` with calculated date ranges when tabs change
+- **Initial Query**: Start with `null` values for date ranges, calculate when needed
+- **Benefit**: Dynamic date range queries based on user selection
+
+### GraphQL Query Pattern
+```typescript
+// Initial query with null date ranges
+const { data, loading, refetch } = useQuery<{
+  dashboard: DashboardType
+}>(QUERY_DASHBOARD, {
+  variables: {
+    startDate: null,
+    endDate: null,
+  },
+})
+
+// Refetch with calculated date ranges
+const handleTabChange = (tabId: DashboardTabId) => {
+  const { startDate, endDate } = calculateDateRange(dateRangeMap[tabId])
+  refetch({
+    startDate,
+    endDate,
+  })
+}
+```
+
+### Dashboard Model Patterns
+- **Discovery**: Dashboard data structures should be defined in dedicated model files
+- **Pattern**: Create `Dashboard.model.ts` with interfaces for dashboard data
+- **Structure**: Separate interfaces for different data levels (e.g., `InstancesState`, `ProcessState`, `Dashboard`)
+- **Benefit**: Type-safe dashboard data handling and clear data structure
+
+### Dashboard Model Structure
+```typescript
+export interface InstancesState {
+  running: number
+  failed: number
+  stopped: number
+  finished: number
+}
+
+export interface ProcessState {
+  id: string
+  instanceState: InstancesState
+  alerts: number
+  processName: string
+  numberOfInstances: number
+  validationErrors?: string
+}
+
+export interface Dashboard {
+  instancesState: InstancesState
+  processStates: ProcessState[]
+}
+```
+
+### GraphQL Query Organization
+- **Discovery**: Dashboard queries should be organized in dedicated query files
+- **Pattern**: Create `QUERY_DASHBOARD.ts` and `QUERY_EXECUTION_TEMPLATE_RUNS.ts` for dashboard queries
+- **Naming**: Use descriptive query names that match their purpose
+- **Variables**: Define clear variable types for date ranges and filters
+- **Benefit**: Organized query structure and easy maintenance
+
+### GraphQL Query File Structure
+```typescript
+// QUERY_DASHBOARD.ts
+export const QUERY_DASHBOARD = gql`
+  query Dashboard($startDate: String, $endDate: String) {
+    dashboard(startDate: $startDate, endDate: $endDate) {
+      instancesState {
+        running
+        failed
+        stopped
+        finished
+      }
+      processStates {
+        id
+        processName
+        numberOfInstances
+        alerts
+        instanceState {
+          running
+          failed
+          stopped
+          finished
+        }
+      }
+    }
+  }
+`
+```
+
+### Component Integration for Dashboard
+- **Tab State Management**: Use component-specific tab enums for tab selection
+- **Date Calculation**: Calculate dates using helper functions when tabs change
+- **Query Refetch**: Refetch GraphQL queries with calculated date ranges
+- **Loading States**: Handle loading states during data fetching
+- **Error Handling**: Implement proper error handling for GraphQL queries
+
+### Dashboard Component Pattern
+```typescript
+const Dashboard = () => {
+  const [activeTabId, setActiveTabId] = useState<DashboardTabId>(
+    DashboardTabId.NOW
+  )
+
+  const { data, loading, refetch } = useQuery<{
+    dashboard: DashboardType
+  }>(QUERY_DASHBOARD, {
+    variables: {
+      startDate: null,
+      endDate: null,
+    },
+  })
+
+  const handleTabChange = (tabId: DashboardTabId) => {
+    setActiveTabId(tabId)
+    const { startDate, endDate } = calculateDateRange(dateRangeMap[tabId])
+    refetch({ startDate, endDate })
+  }
+
+  // Component rendering
+}
+```
+
+### Test File Cleanup
+- **Discovery**: Test files that are no longer needed should be removed
+- **Pattern**: Remove test files when components are refactored or removed
+- **Benefit**: Cleaner codebase and reduced maintenance overhead
+- **Note**: Ensure functionality is preserved when removing test files
+
+### Build and Quality Assurance for Dashboard Features
+- **Type Checking**: Run `npx tsc --noEmit` to verify type safety
+- **Linting**: Use `npm run lint -- --fix` for consistent formatting
+- **Build Verification**: Run `npm run build:dev` before committing
+- **Date Validation**: Verify date calculations return valid RFC 3339 dates
+- **GraphQL Testing**: Test queries with different date ranges
+- **Pattern**: Always verify complete build pipeline after dashboard changes
+
+### Dashboard Feature Benefits
+- **Reusable Date Logic**: Date helpers can be used across multiple components
+- **Type Safety**: Enum-based date ranges ensure type-safe date handling
+- **Consistent Data Structure**: Dashboard models provide clear data contracts
+- **Maintainability**: Organized query files make queries easy to maintain
+- **User Experience**: Dynamic date range queries provide flexible data views
+
+## Git Naming Conventions
+
+### Branch Naming Rules
+- **Format**: `{PREFIX}/{JIRA_TICKET}-{descriptive-name}`
+- **Prefix**: Must start with one of: `feature/`, `fix/`, or `release/`
+- **Jira Ticket**: Always include Jira ticket number (e.g., `COP-123`, `COP-456`)
+- **Descriptive Name**: Use kebab-case for descriptive part
+- **Examples**: 
+  - `feature/COP-123-add-filter-functionality`
+  - `fix/COP-456-fix-step-deletion-bug`
+  - `feature/COP-789-implement-custom-tabs`
+  - `feature/COP-101-refactor-helper-functions`
+  - `release/COP-202-v1.2.3-release`
+
+### Branch Prefix Guidelines
+- **`feature/`**: Use for new features, enhancements, refactoring, and component extraction
+- **`fix/`**: Use for bug fixes, hotfixes, and issue resolutions
+- **`release/`**: Use for release preparation, version bumps, and release-related changes
+
+### Commit Message Rules
+- **Format**: `{JIRA_TICKET} {Brief description of changes}`
+- **Jira Ticket**: Always start with Jira ticket number (e.g., `COP-123`, `COP-456`)
+- **Description**: One sentence briefly explaining what was done
+- **Capitalization**: Use sentence case (first word capitalized, rest lowercase)
+- **Examples**:
+  - `COP-123 Add filter functionality to step editing`
+  - `COP-456 Fix step deletion bug in process editor`
+  - `COP-789 Implement custom tabs component with Figma design`
+  - `COP-101 Refactor helper functions for better maintainability`
+  - `COP-202 Update confirmation messages to be more specific`
+  - `COP-303 Extract icon components for better reusability`
+
+### Commit Message Best Practices
+- **Be Specific**: Clearly describe what was changed or added
+- **Use Present Tense**: "Add feature" not "Added feature"
+- **Keep It Concise**: One sentence, under 72 characters when possible
+- **Focus on What**: Describe what was done, not why (unless critical)
+- **Avoid Generic Messages**: Don't use "Update files" or "Fix bugs"
+
+### Branch and Commit Examples
+
+#### Feature Development
+```bash
+# Branch
+feature/COP-123-add-user-authentication
+
+# Commits
+COP-123 Add login form component with validation
+COP-123 Implement authentication context provider
+COP-123 Add protected route wrapper component
+COP-123 Update navigation to show user status
+```
+
+#### Bug Fixes
+```bash
+# Branch
+fix/COP-456-fix-step-deletion-issue
+
+# Commits
+COP-456 Fix step deletion causing process corruption
+COP-456 Add validation to prevent invalid step removal
+COP-456 Update tests for step deletion scenarios
+```
+
+#### Refactoring
+```bash
+# Branch
+feature/COP-789-refactor-helper-functions
+
+# Commits
+COP-789 Extract step manipulation logic to helper functions
+COP-789 Add comprehensive tests for helper functions
+COP-789 Update components to use new helper functions
+COP-789 Remove duplicate code from components
+```
+
+#### Component Extraction
+```bash
+# Branch
+feature/COP-101-extract-icon-components
+
+# Commits
+COP-101 Extract inline SVGs to reusable icon components
+COP-101 Create icon component index file for clean imports
+COP-101 Update components to use extracted icon components
+COP-101 Add Storybook stories for icon components
+```
+
+#### Release Branches
+```bash
+# Branch
+release/COP-202-v1.2.3-release
+
+# Commits
+COP-202 Prepare release v1.2.3 with new features
+COP-202 Update version numbers and changelog
+COP-202 Final testing and bug fixes for release
+```
+
+### Git Workflow Integration
+- **Branch Creation**: Always create branches from `master` with proper naming
+- **Commit Frequency**: Make small, focused commits with clear messages
+- **Pull Request**: Use branch name as PR title, expand in description
+- **Merge Strategy**: Use squash and merge to maintain clean history
+- **Release Tags**: Tag releases with version numbers (e.g., `v1.2.3`)
+
+### Quality Assurance for Git Operations
+- **Pre-commit Checks**: Run linting and type checking before committing
+- **Build Verification**: Ensure build passes before pushing
+- **Test Verification**: Run tests to ensure functionality works
+- **Message Review**: Verify commit message follows naming conventions
+- **Branch Naming**: Confirm branch name includes Jira ticket number
+
+### Common Patterns to Avoid
+```bash
+# ❌ Avoid - No Jira ticket
+git commit -m "Fix bug in step editing"
+git commit -m "Add new feature"
+
+# ❌ Avoid - Generic messages
+git commit -m "COP-123 Update files"
+git commit -m "COP-123 Fix issues"
+
+# ❌ Avoid - Past tense
+git commit -m "COP-123 Added filter functionality"
+
+# ❌ Avoid - Too verbose
+git commit -m "COP-123 Implemented comprehensive filter functionality with multiple options and validation"
+
+# ✅ Correct - Clear and specific
+git commit -m "COP-123 Add filter functionality to step editing"
+git commit -m "COP-123 Fix step deletion causing process corruption"
+git commit -m "COP-123 Extract icon components for better reusability"
+```
+
+### Branch Naming Patterns to Avoid
+```bash
+# ❌ Avoid - No Jira ticket
+feature/add-filters
+bugfix/step-deletion
+hotfix/critical-issue
+
+# ❌ Avoid - No prefix
+COP-123-add-filter-functionality
+COP-123-fix-step-deletion-bug
+COP-123-implement-custom-tabs
+
+# ❌ Avoid - Unclear naming
+feature/COP-123-fix
+fix/COP-123-update
+feature/COP-123-changes
+
+# ❌ Avoid - Wrong prefix for the type of work
+fix/COP-123-add-new-feature  # Should be feature/
+feature/COP-123-fix-bug      # Should be fix/
+
+# ✅ Correct - Clear and descriptive with proper prefix
+feature/COP-123-add-filter-functionality
+fix/COP-123-fix-step-deletion-bug
+feature/COP-123-implement-custom-tabs
+release/COP-202-v1.2.3-release
+```
+
+### Integration with Development Workflow
+- **Jira Integration**: Link commits to Jira tickets for better tracking
+- **Code Review**: Use commit messages to understand changes quickly
+- **Release Notes**: Generate release notes from commit messages
+- **Bug Tracking**: Easily trace bugs back to specific commits
+- **Feature History**: Track feature development through commit history
+
+### Tools and Automation
+- **Commit Hooks**: Use pre-commit hooks to enforce message format
+- **Branch Protection**: Protect main branches and require PR reviews
+- **Automated Testing**: Run tests on all commits and PRs
+- **Release Automation**: Automate releases based on commit messages
+- **Changelog Generation**: Auto-generate changelogs from commit messages
