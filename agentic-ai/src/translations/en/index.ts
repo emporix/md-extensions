@@ -432,7 +432,8 @@ const TRANSLATIONS_EN = {
     'All values in the list must be strings.',
   commerce_filter_parse_scalar_required:
     'A non-empty value is required for this operator.',
-  commerce_filter_parse_scalar_type: 'Value must be a string or number.',
+  commerce_filter_parse_scalar_type:
+    'Value must be a string, number, or boolean.',
   commerce_filter_parse_filter_must_be_object: 'Filter must be a JSON object.',
   commerce_filter_parse_compound_op_invalid:
     'Compound filter must use op "$and" or "$or".',

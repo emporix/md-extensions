@@ -323,6 +323,38 @@ describe('agentFilterDslHelpers', () => {
     ).toBeNull()
   })
 
+  it('parses nested $and with $or leaf group and boolean right', () => {
+    const compound = {
+      op: '$and',
+      conditions: [
+        {
+          op: '$or',
+          conditions: [
+            { left: 'siteCode', op: '$eq', right: 'main' },
+            { left: 'siteCode', op: '$eq', right: 'de' },
+          ],
+        },
+        { left: 'published', op: '$eq', right: true },
+      ],
+    }
+    const { dsl, error } = parseAgentCommerceFilterDsl(compound)
+    expect(error).toBeUndefined()
+    expect(dsl).toEqual(compound)
+    expect(isCommerceFilterValid(dsl!)).toBe(true)
+  })
+
+  it('extractFilterDslJsonFromAgentMessage unwraps JSON string containing filter object', () => {
+    const inner =
+      '{"op":"$and","conditions":[{"left":"siteCode","op":"$eq","right":"main"}]}'
+    const doubleEncoded = JSON.stringify(inner)
+    const r = extractFilterDslJsonFromAgentMessage(doubleEncoded)
+    expect(r).not.toBeNull()
+    expect(parseAgentCommerceFilterDsl(r!.parsed).dsl).toEqual({
+      op: '$and',
+      conditions: [{ left: 'siteCode', op: '$eq', right: 'main' }],
+    })
+  })
+
   it('extractFilterDslJsonFromAgentMessage parses compound $and matching agent output', () => {
     const reply =
       '{"op":"$and","conditions":[{"left":"order.currency","op":"$eq","right":"EUR"},{"left":"cart.siteCode","op":"$in","right":["main","outlet"]}]}'

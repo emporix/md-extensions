@@ -439,7 +439,7 @@ const TRANSLATIONS_DE = {
   commerce_filter_parse_scalar_required:
     'Für diesen Operator ist ein nicht-leerer Wert erforderlich.',
   commerce_filter_parse_scalar_type:
-    'Der Wert muss eine Zeichenkette oder Zahl sein.',
+    'Der Wert muss eine Zeichenkette, Zahl oder ein boolescher Wert sein.',
   commerce_filter_parse_filter_must_be_object:
     'Der Filter muss ein JSON-Objekt sein.',
   commerce_filter_parse_compound_op_invalid:

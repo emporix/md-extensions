@@ -206,7 +206,11 @@ const parseLeafInner = (
       error: COMMERCE_FILTER_PARSE_I18N_KEYS.scalarRequired,
     }
   }
-  if (typeof right !== 'string' && typeof right !== 'number') {
+  if (
+    typeof right !== 'string' &&
+    typeof right !== 'number' &&
+    typeof right !== 'boolean'
+  ) {
     return {
       dsl: null,
       error: COMMERCE_FILTER_PARSE_I18N_KEYS.scalarType,
@@ -405,7 +409,10 @@ const tryParseTopLevelJsonObject = (
   text: string
 ): Record<string, unknown> | null => {
   try {
-    const parsed: unknown = JSON.parse(text)
+    let parsed: unknown = JSON.parse(text)
+    if (typeof parsed === 'string') {
+      parsed = JSON.parse(parsed.trim())
+    }
     if (
       parsed !== null &&
       typeof parsed === 'object' &&
