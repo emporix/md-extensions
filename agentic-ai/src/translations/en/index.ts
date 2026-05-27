@@ -132,6 +132,7 @@ const TRANSLATIONS_EN = {
   entity_type_missing: 'Entity type is missing in tool configuration',
   reindex_tool: 'Reindex Tool',
   reindex: 'Reindex',
+  reindex_only_available_for_product: 'Reindex is only available for Product entity type',
   reindex_triggered_successfully: 'Reindex triggered successfully!',
   error_triggering_reindex: 'Error triggering reindex',
   reindex_confirmation:

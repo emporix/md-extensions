@@ -130,6 +130,7 @@ const TRANSLATIONS_DE = {
   entity_type_missing: 'Entity-Typ fehlt in der Tool-Konfiguration',
   reindex_tool: 'Tool neu indizieren',
   reindex: 'Neu indizieren',
+  reindex_only_available_for_product: 'Neuindizierung ist nur für den Entitätstyp Produkt verfügbar',
   reindex_triggered_successfully: 'Neuindizierung erfolgreich gestartet!',
   error_triggering_reindex: 'Fehler beim Starten der Neuindizierung',
   reindex_confirmation:
