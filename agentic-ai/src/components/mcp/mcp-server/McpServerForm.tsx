@@ -160,9 +160,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(
               />
             </div>
             <div className="form-field">
-              <label className="field-label">
-                {t('transport_layer')}
-              </label>
+              <label className="field-label">{t('transport_layer')}</label>
               <Dropdown
                 value={newCustomTransport}
                 options={[

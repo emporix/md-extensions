@@ -133,8 +133,8 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       <div className="form-field">
         <label className="field-label">
           {t('required_scopes', 'Required Scopes')}
-          <i 
-            className="pi pi-info-circle" 
+          <i
+            className="pi pi-info-circle"
             data-pr-tooltip={t('required_scopes_tooltip')}
             data-pr-position="top"
             style={{ marginLeft: '8px', color: '#6b7280', cursor: 'help' }}

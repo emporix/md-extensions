@@ -4,14 +4,16 @@ import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
 import {
   RagCustomDatabase,
+  RagCustomDatabaseConfig,
+  RagCustomEmbeddingConfig,
   RagEmporixFieldConfig,
   RagEmporixFilterFieldConfig,
-  RagEntityType,
   RagLlmProvider,
   RagEmporixEmbeddingConfig,
   Tool,
   ToolConfig,
   ToolConfigPanelProps,
+  PRODUCT_ENTITY_TYPE,
 } from '../../types/Tool'
 import {
   getTokens,
@@ -28,11 +30,17 @@ import {
   getRagMetadata,
   RagFilterMetadataField,
 } from '../../services/aiRagIndexerService'
+import {
+  buildRagEmporixEntityTypeOptions,
+  getCustomSchemaTypes,
+} from '../../services/schemaService'
+import { CustomSchemaType } from '../../types/Schema'
 import { sanitizeIdInput } from '../../utils/validation'
 import {
   areRagEmporixFilterFieldsValid,
   createEmptyFilterField,
   isValidRagFieldKey,
+  resolveRagEntityType,
   toRagEmporixToolConfig,
 } from '../../utils/ragEmporixToolHelpers'
 import RagFieldRowLayout from './RagFieldRowLayout'
@@ -41,25 +49,6 @@ import RagFilterFieldsSection from './RagFilterFieldsSection'
 const MIXINS_PREFIX = 'mixins.'
 const isValidCustomFieldKey = (key?: string) =>
   !!key?.startsWith(MIXINS_PREFIX) && key.length > MIXINS_PREFIX.length
-
-const normalizeEntityType = (
-  value?: RagEntityType | string
-): RagEntityType | undefined => {
-  if (!value) return undefined
-
-  if (value === RagEntityType.PRODUCT || value === 'PRODUCT') {
-    return RagEntityType.PRODUCT
-  }
-
-  if (value === RagEntityType.INVALID || value === 'INVALID') {
-    return RagEntityType.INVALID
-  }
-
-  return value as RagEntityType
-}
-
-const getRagEntityTypePath = (entityType?: RagEntityType | string) =>
-  normalizeEntityType(entityType) ?? RagEntityType.PRODUCT
 
 const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   visible,
@@ -99,6 +88,29 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
   const [availableFilterFields, setAvailableFilterFields] = useState<
     RagFilterMetadataField[]
   >([])
+  const [customSchemaTypes, setCustomSchemaTypes] = useState<
+    CustomSchemaType[]
+  >([])
+  const [customSchemaTypesLoading, setCustomSchemaTypesLoading] =
+    useState(false)
+
+  const ragEmporixEntityTypeOptions = useMemo(() => {
+    const options = buildRagEmporixEntityTypeOptions(
+      customSchemaTypes,
+      t('product'),
+      appState.contentLanguage
+    )
+    const currentValue = resolveRagEntityType(config.entityType)
+
+    if (
+      currentValue !== PRODUCT_ENTITY_TYPE &&
+      !options.some((option) => option.value === currentValue)
+    ) {
+      return [...options, { label: currentValue, value: currentValue }]
+    }
+
+    return options
+  }, [customSchemaTypes, appState.contentLanguage, config.entityType, t])
 
   const getToolTypeDisplayValue = (type: string): string => {
     switch (type) {
@@ -135,35 +147,21 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
     }
   }, [appState, showError, t])
 
-  const loadAvailableFields = useCallback(async () => {
-    if (!appState) return
+  const loadCustomSchemaTypes = useCallback(async () => {
+    if (!appState?.tenant || !appState?.token) return
 
+    setCustomSchemaTypesLoading(true)
     try {
-      const fields = await getRagMetadata(
-        appState,
-        getRagEntityTypePath(config.entityType)
-      )
-      setAvailableFields(fields)
+      const types = await getCustomSchemaTypes(appState)
+      setCustomSchemaTypes(types)
     } catch (error) {
-      console.error('Failed to load fields:', error)
-      showError(t('error_loading_fields'))
+      console.error('Failed to load custom schema types:', error)
+      setCustomSchemaTypes([])
+      showError(t('error_loading_entity_types'))
+    } finally {
+      setCustomSchemaTypesLoading(false)
     }
-  }, [appState, config.entityType, showError, t])
-
-  const loadAvailableFilterFields = useCallback(async () => {
-    if (!appState) return
-
-    try {
-      const fields = await getRagFilterMetadata(
-        appState,
-        getRagEntityTypePath(config.entityType)
-      )
-      setAvailableFilterFields(fields)
-    } catch (error) {
-      console.error('Failed to load filter fields:', error)
-      showError(t('error_loading_filter_fields'))
-    }
-  }, [appState, config.entityType, showError, t])
+  }, [appState, showError, t])
 
   useEffect(() => {
     if ((toolType === 'rag_custom' || toolType === 'rag_emporix') && appState) {
@@ -173,50 +171,101 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
   useEffect(() => {
     if (toolType === 'rag_emporix' && appState) {
-      loadAvailableFields()
-      loadAvailableFilterFields()
+      loadCustomSchemaTypes()
+    } else {
+      setCustomSchemaTypes([])
     }
-  }, [toolType, appState, loadAvailableFields, loadAvailableFilterFields])
+  }, [toolType, appState, loadCustomSchemaTypes])
 
   useEffect(() => {
-    if (toolType === 'rag_emporix') {
-      const embeddingConfig =
-        (config.embeddingConfig as RagEmporixEmbeddingConfig) || {}
-      const needsUpdate = !config.entityType || !embeddingConfig.provider
+    if (toolType !== 'rag_emporix' || !appState) {
+      return
+    }
 
-      if (needsUpdate) {
-        setConfig((prev) => ({
-          ...prev,
-          entityType:
-            normalizeEntityType(config.entityType) || RagEntityType.PRODUCT,
-          embeddingConfig: {
-            ...embeddingConfig,
-            provider: embeddingConfig.provider || RagLlmProvider.EMPORIX_OPENAI,
-          },
-        }))
+    const entityType = resolveRagEntityType(config.entityType)
+    let cancelled = false
+
+    const loadRagMetadata = async () => {
+      const [fieldsResult, filterFieldsResult] = await Promise.allSettled([
+        getRagMetadata(appState, entityType),
+        getRagFilterMetadata(appState, entityType),
+      ])
+
+      if (cancelled) {
+        return
+      }
+
+      if (fieldsResult.status === 'fulfilled') {
+        setAvailableFields(fieldsResult.value)
+      } else {
+        console.error('Failed to load fields:', fieldsResult.reason)
+        showError(t('error_loading_fields'))
+      }
+
+      if (filterFieldsResult.status === 'fulfilled') {
+        setAvailableFilterFields(filterFieldsResult.value)
+      } else {
+        console.error(
+          'Failed to load filter fields:',
+          filterFieldsResult.reason
+        )
+        showError(t('error_loading_filter_fields'))
       }
     }
+
+    void loadRagMetadata()
+
+    return () => {
+      cancelled = true
+    }
+  }, [toolType, appState, config.entityType, showError, t])
+
+  useEffect(() => {
+    if (toolType !== 'rag_emporix') {
+      return
+    }
+
+    const embeddingConfig =
+      (config.embeddingConfig as RagEmporixEmbeddingConfig) || {}
+    const needsUpdate =
+      !config.entityType?.trim() || !embeddingConfig.provider
+
+    if (!needsUpdate) {
+      return
+    }
+
+    setConfig((prev) => ({
+      ...prev,
+      entityType: resolveRagEntityType(prev.entityType),
+      embeddingConfig: {
+        ...((prev.embeddingConfig as RagEmporixEmbeddingConfig) || {}),
+        provider:
+          (prev.embeddingConfig as RagEmporixEmbeddingConfig | undefined)
+            ?.provider || RagLlmProvider.EMPORIX_OPENAI,
+      },
+    }))
   }, [toolType, config.entityType, config.embeddingConfig])
 
   useEffect(() => {
-    if (toolType === 'rag_custom') {
-      const databaseConfig = config.databaseConfig || {}
-      const normalizedEntityType = normalizeEntityType(
-        databaseConfig.entityType
-      )
-      const needsUpdate = !databaseConfig.type || !normalizedEntityType
-
-      if (needsUpdate) {
-        setConfig((prev) => ({
-          ...prev,
-          databaseConfig: {
-            ...databaseConfig,
-            type: databaseConfig.type || RagCustomDatabase.QDRANT,
-            entityType: normalizedEntityType || RagEntityType.PRODUCT,
-          },
-        }))
-      }
+    if (toolType !== 'rag_custom') {
+      return
     }
+
+    const needsUpdate =
+      !config.databaseConfig?.type || !config.databaseConfig?.entityType?.trim()
+
+    if (!needsUpdate) {
+      return
+    }
+
+    setConfig((prev) => ({
+      ...prev,
+      databaseConfig: {
+        ...(prev.databaseConfig ?? {}),
+        type: prev.databaseConfig?.type || RagCustomDatabase.QDRANT,
+        entityType: resolveRagEntityType(prev.databaseConfig?.entityType),
+      },
+    }))
   }, [toolType, config.databaseConfig])
 
   const handleSave = async () => {
@@ -248,6 +297,22 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       ...prev,
       [key]: value,
     }))
+  }
+
+  const handleRagEmporixEntityTypeChange = (entityType: string) => {
+    setConfig((prev) => {
+      const currentEntityType = prev.entityType
+      if (currentEntityType === entityType) {
+        return prev
+      }
+
+      return {
+        ...prev,
+        entityType,
+        indexedFields: [],
+        filterFields: [],
+      }
+    })
   }
 
   const updateNestedConfig = (
@@ -428,7 +493,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
     // Enums
     const databaseTypes = [{ label: 'Qdrant', value: 'qdrant' }]
-    const entityTypes = [{ label: t('product'), value: RagEntityType.PRODUCT }]
+    const entityTypes = [{ label: t('product'), value: PRODUCT_ENTITY_TYPE }]
 
     return (
       <>
@@ -544,7 +609,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
               <span className="field-required-mark"> *</span>
             </label>
             <Dropdown
-              value={databaseConfig.entityType || RagEntityType.PRODUCT}
+              value={databaseConfig.entityType || PRODUCT_ENTITY_TYPE}
               options={entityTypes}
               onChange={(e) =>
                 updateNestedConfig('databaseConfig', 'entityType', e.value)
@@ -667,8 +732,6 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       embeddingConfig.dimensions === undefined ||
       dimensionsValue < 128 ||
       dimensionsValue > 4096
-    const entityTypes = [{ label: t('product'), value: RagEntityType.PRODUCT }]
-
     const addIndexedField = () => {
       const newFields = [...indexedFields, { name: '', key: '' }]
       setConfig((prev) => ({
@@ -764,7 +827,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         newFields[index] = createEmptyFilterField()
       } else {
         newFields[index] = {
-          key
+          key,
         }
       }
 
@@ -958,14 +1021,16 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
             <span className="field-required-mark"> *</span>
           </label>
           <Dropdown
-            value={
-              normalizeEntityType(config.entityType) || RagEntityType.PRODUCT
-            }
-            options={entityTypes}
-            onChange={(e) => updateConfig('entityType', e.value)}
+            value={resolveRagEntityType(config.entityType)}
+            options={ragEmporixEntityTypeOptions}
+            onChange={(e) => handleRagEmporixEntityTypeChange(e.value)}
             className="w-full"
-            disabled
+            placeholder={t('select_entity_type')}
+            disabled={!!tool?.id}
           />
+          {customSchemaTypesLoading && (
+            <small className="text-muted">{t('loading_entity_types')}</small>
+          )}
         </div>
 
         <div className="form-field">
@@ -1030,9 +1095,10 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
                     <>
                       <Dropdown
                         value={field.key || ''}
-                        options={getAvailableFieldsForIndex(index).map(
-                          (f) => ({ label: f, value: f })
-                        )}
+                        options={getAvailableFieldsForIndex(index).map((f) => ({
+                          label: f,
+                          value: f,
+                        }))}
                         onChange={(e) =>
                           updateIndexedField(index, 'key', e.value)
                         }
@@ -1104,9 +1170,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
       default:
         return (
           <div className="form-field">
-            <label className="field-label">
-              {t('configuration')}
-            </label>
+            <label className="field-label">{t('configuration')}</label>
             <pre className="config-json">{JSON.stringify(config, null, 2)}</pre>
           </div>
         )
@@ -1141,8 +1205,10 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
         )
 
       case 'rag_custom': {
-        const databaseConfig = config.databaseConfig || {}
-        const embeddingConfig = config.embeddingConfig || {}
+        const databaseConfig: RagCustomDatabaseConfig =
+          config.databaseConfig ?? ({} as RagCustomDatabaseConfig)
+        const embeddingConfig: RagCustomEmbeddingConfig =
+          (config.embeddingConfig as RagCustomEmbeddingConfig) ?? {}
         const maxResults = config.maxResults ?? 5
         return (
           !!config.prompt?.trim() &&
@@ -1252,8 +1318,19 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
               },
             ]}
             onChange={(e) => {
-              setToolType(e.value)
-              setConfig({})
+              const selectedType = e.value
+              setToolType(selectedType)
+
+              if (selectedType === 'rag_emporix') {
+                setConfig({
+                  entityType: PRODUCT_ENTITY_TYPE,
+                  embeddingConfig: {
+                    provider: RagLlmProvider.EMPORIX_OPENAI,
+                  },
+                })
+              } else {
+                setConfig({})
+              }
             }}
             className={`w-full ${!toolType ? 'p-invalid' : ''}`}
             placeholder={t('select_tool_type')}

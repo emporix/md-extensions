@@ -46,9 +46,7 @@ export const McpServerList: React.FC<McpServerListProps> = React.memo(
               <>
                 <div className="mcp-server-row-top">
                   <span className="mcp-server-type">
-                    {server.type === 'predefined'
-                      ? t('emporix')
-                      : t('custom')}
+                    {server.type === 'predefined' ? t('emporix') : t('custom')}
                   </span>
                   {server.type === 'predefined' && server.domain && (
                     <span className="mcp-server-mcp">

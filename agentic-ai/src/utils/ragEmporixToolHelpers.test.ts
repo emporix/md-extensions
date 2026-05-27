@@ -1,11 +1,25 @@
 import { describe, expect, it } from 'vitest'
 
+import { PRODUCT_ENTITY_TYPE } from '../types/Tool'
 import {
   getRagFilterFieldDisplayLabel,
   isValidRagFieldKey,
+  resolveRagEntityType,
   sanitizeRagEmporixFilterFields,
   sanitizeRagEmporixIndexedFields,
 } from './ragEmporixToolHelpers'
+
+describe('resolveRagEntityType', () => {
+  it('returns product for undefined, empty, and whitespace-only values', () => {
+    expect(resolveRagEntityType(undefined)).toBe(PRODUCT_ENTITY_TYPE)
+    expect(resolveRagEntityType('')).toBe(PRODUCT_ENTITY_TYPE)
+    expect(resolveRagEntityType('   ')).toBe(PRODUCT_ENTITY_TYPE)
+  })
+
+  it('returns trimmed custom entity type', () => {
+    expect(resolveRagEntityType('  CUSTOM_PRODUCT  ')).toBe('CUSTOM_PRODUCT')
+  })
+})
 
 describe('isValidRagFieldKey', () => {
   it('accepts valid keys with surrounding whitespace', () => {
@@ -79,5 +93,3 @@ describe('getRagFilterFieldDisplayLabel', () => {
     expect(label).toBe('custom.field (Custom Field)')
   })
 })
-
-

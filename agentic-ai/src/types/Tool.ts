@@ -6,10 +6,7 @@ export enum RagCustomDatabase {
   INVALID = 'invalid',
 }
 
-export enum RagEntityType {
-  PRODUCT = 'product',
-  INVALID = 'invalid',
-}
+export const PRODUCT_ENTITY_TYPE = 'product'
 
 export enum RagLlmProvider {
   OPENAI = 'openai',
@@ -39,7 +36,7 @@ export interface RagCustomEmbeddingConfig {
 export interface RagCustomDatabaseConfig {
   url?: string
   type?: RagCustomDatabase
-  entityType?: RagEntityType
+  entityType?: string
   collectionName?: string
   token?: Token
 }
@@ -59,7 +56,7 @@ export interface ToolConfig {
   maxResults?: number
   databaseConfig?: RagCustomDatabaseConfig
   embeddingConfig?: RagCustomEmbeddingConfig | RagEmporixEmbeddingConfig
-  entityType?: RagEntityType
+  entityType?: string
   indexedFields?: RagEmporixFieldConfig[]
   filterFields?: RagEmporixFilterFieldConfig[]
 }
