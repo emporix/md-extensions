@@ -809,7 +809,7 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
     const updateFilterField = (
       index: number,
-      field: keyof Pick<RagEmporixFilterFieldConfig, 'name' | 'description'>,
+      field: keyof Pick<RagEmporixFilterFieldConfig, 'description'>,
       value: string
     ) => {
       const newFields = [...filterFields]

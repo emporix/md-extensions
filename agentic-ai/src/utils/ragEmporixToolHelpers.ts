@@ -46,7 +46,6 @@ export const sanitizeRagEmporixFilterFields = (
     return [
       {
         key,
-        ...(field.name?.trim() ? { name: field.name.trim() } : {}),
         ...(field.description?.trim()
           ? { description: field.description.trim() }
           : {}),
@@ -69,14 +68,12 @@ export const areRagEmporixFilterFieldsValid = (
 ): boolean =>
   fields.length > 0 && fields.every((field) => isValidRagFieldKey(field.key))
 
-export const getRagFilterFieldLabel = (field: {
-  key: string
-  name?: string
-}): string => (field.name?.trim() ? `${field.key} (${field.name})` : field.key)
+export const getRagFilterFieldLabel = (field: { key: string }): string =>
+  field.key
 
 export const getRagFilterFieldDisplayLabel = (
   field: RagEmporixFilterFieldConfig,
-  availableFilterFields: Array<{ key: string; name?: string }>
+  availableFilterFields: Array<{ key: string }>
 ): string | undefined => {
   const key = field.key?.trim()
   if (!key) {
@@ -87,14 +84,14 @@ export const getRagFilterFieldDisplayLabel = (
     (availableField) => availableField.key === key
   )
 
-  return getRagFilterFieldLabel(metadata ?? { key, name: field.name })
+  return getRagFilterFieldLabel(metadata ?? { key })
 }
 
 export const getAvailableFilterFieldsForIndex = (
-  allFields: Array<{ key: string; name?: string; description?: string }>,
+  allFields: Array<{ key: string; description?: string }>,
   selectedFields: RagEmporixFilterFieldConfig[],
   currentIndex: number
-): Array<{ key: string; name?: string; description?: string }> => {
+): Array<{ key: string; description?: string }> => {
   const selectedKeys = selectedFields
     .map((field, index) =>
       index !== currentIndex && field.key?.trim() ? field.key : null
@@ -112,7 +109,6 @@ export const getAvailableFilterFieldsForIndex = (
     return [
       {
         key: currentKey,
-        name: currentField?.name,
         description: currentField?.description,
       },
       ...options,
@@ -124,6 +120,5 @@ export const getAvailableFilterFieldsForIndex = (
 
 export const createEmptyFilterField = (): RagEmporixFilterFieldConfig => ({
   key: '',
-  name: '',
   description: '',
 })
