@@ -2,7 +2,7 @@ import React from 'react'
 import { Button } from 'primereact/button'
 
 type RagFieldRowLayoutProps = {
-  primaryField: React.ReactNode
+  primaryField?: React.ReactNode
   secondaryField: React.ReactNode
   onRemove: () => void
   footer?: React.ReactNode
@@ -24,7 +24,9 @@ const RagFieldRowLayout: React.FC<RagFieldRowLayoutProps> = ({
 }) => (
   <div className="rag-field-group">
     <div className="tool-field-row">
-      <div className={`form-field ${primaryClassName}`}>{primaryField}</div>
+      {primaryField !== undefined && (
+        <div className={`form-field ${primaryClassName}`}>{primaryField}</div>
+      )}
       <div className={`form-field ${secondaryClassName}`}>{secondaryField}</div>
       <div className="indexed-field-delete-button">
         <Button
