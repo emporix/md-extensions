@@ -228,11 +228,17 @@
   color: #374151;
 }
 
-.configure-button:hover,
+.configure-button:hover:not(:disabled),
 .view-logs-button:hover:not(:disabled),
 .export-button:hover:not(:disabled),
 .reindex-button:hover:not(:disabled) {
   color: var(--color-interactive-accent-hover);
+}
+
+.configure-button:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .export-button {

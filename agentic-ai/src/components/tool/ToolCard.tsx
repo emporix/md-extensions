@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { ToolCardProps } from '../../types/Tool'
+import { ToolCardProps, PRODUCT_ENTITY_TYPE } from '../../types/Tool'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSlack, faMicrosoft } from '@fortawesome/free-brands-svg-icons'
 import { faTools } from '@fortawesome/free-solid-svg-icons'
@@ -69,6 +69,8 @@ const ToolCard: React.FC<ToolCardProps> = ({
     ]
 
     if (tool.type === 'rag_emporix' && onReindex) {
+      const isProductEntityType =
+        tool.config?.entityType === PRODUCT_ENTITY_TYPE
       actions.push({
         icon: 'pi pi-refresh',
         label: t('reindex'),
@@ -76,7 +78,11 @@ const ToolCard: React.FC<ToolCardProps> = ({
           e.stopPropagation()
           onReindex(tool)
         },
-        className: 'reindex-button',
+        className: 'configure-button',
+        disabled: !isProductEntityType,
+        title: !isProductEntityType
+          ? t('reindex_only_available_for_product')
+          : undefined,
       })
     }
 

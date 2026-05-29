@@ -143,6 +143,7 @@ const TRANSLATIONS_EN = {
   entity_type_missing: 'Entity type is missing in tool configuration',
   reindex_tool: 'Reindex Tool',
   reindex: 'Reindex',
+  reindex_only_available_for_product: 'Reindex is only available for Product entity type',
   reindex_triggered_successfully: 'Reindex triggered successfully!',
   error_triggering_reindex: 'Error triggering reindex',
   failed_to_trigger_reindex: 'Failed to trigger reindex',
@@ -157,6 +158,8 @@ const TRANSLATIONS_EN = {
   database_url_required: 'Database URL is required',
   database_type: 'Database Type',
   entity_type: 'Entity Type',
+  select_entity_type: 'Select entity type',
+  loading_entity_types: 'Loading entity types...',
   product: 'Product',
   collection_name: 'Collection Name',
   enter_collection_name: 'Enter collection name',
@@ -197,6 +200,8 @@ const TRANSLATIONS_EN = {
   tool_disabled: 'This tool is currently disabled',
   error_loading_tokens: 'Failed to load available tokens',
   error_loading_fields: 'Failed to load available fields',
+  error_loading_entity_types:
+    'Failed to load entity types. Product is still available.',
   failed_to_save_tool: 'Failed to save tool',
 
   // Tokens
