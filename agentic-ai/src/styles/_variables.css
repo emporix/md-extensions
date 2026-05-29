@@ -84,12 +84,35 @@
   --text-secondary: var(--color-gray-700);
   --text-muted: var(--color-gray-500);
   --text-disabled: var(--color-gray-400);
+  --text-section-title: var(--grey-5);
+  --text-heading: var(--grey-8);
+  --text-body-secondary: var(--grey-6);
+  --color-brand-primary: var(--blue-5);
+  --color-invalid-border: var(--color-md-red);
+  --color-surface-white: #ffffff;
+  --color-code-bg: var(--grey-1);
+
+  /* MD design system palette (management-dashboard) */
+  --grey-0: #fcfcfc;
+  --grey-1: #f2f3f5;
+  --grey-2: #e8e9eb;
+  --grey-3: #dee1e5;
+  --grey-4: #c7cad1;
+  --grey-5: #828a99;
+  --grey-6: #3e4759;
+  --grey-8: #1b2029;
+  --blue-5: #3b73bb;
+  --color-md-red: #e8615a;
+  --color-md-green: #2fbea9;
+  --blue-0: #f3f7fb;
+  --New-Blue-0: var(--blue-0);
 
   /* Background Colors */
-  --bg-primary: #ffffff;
-  --bg-secondary: var(--color-gray-50);
-  --bg-tertiary: var(--color-gray-100);
-  --bg-hover: #f8fafc;
+  --bg-primary: var(--grey-0);
+  --bg-secondary: var(--grey-1);
+  --bg-muted: var(--grey-1);
+  --bg-tertiary: var(--grey-2);
+  --bg-hover: var(--grey-1);
 
   /* Border Colors */
   --border-light: var(--color-gray-200);
@@ -143,6 +166,7 @@
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-inset-sm: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 
   /* Transitions */
   --transition-fast: 0.15s ease;

@@ -9,14 +9,19 @@ import { getLocalizedValue } from '../../../utils/agentHelpers'
 import { iconMap } from '../../../utils/agentHelpers'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { AppState } from '../../../types/common'
+import {
+  buildCollaboration,
+  isCollaborationRowValid,
+} from '../../../utils/agentCollaborationHelpers'
 
 interface AgentCollaborationFormProps {
   onAdd: (collaboration: AgentCollaboration) => void
   onCancel: () => void
   availableAgents: CustomAgent[]
   editingCollaboration?: AgentCollaboration
-  currentAgentType?: string
   appState: AppState
+  variant?: 'default' | 'detail'
+  className?: string
 }
 
 export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({
@@ -24,28 +29,23 @@ export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({
   onCancel,
   availableAgents,
   editingCollaboration,
-  currentAgentType,
   appState,
+  variant = 'default',
+  className,
 }) => {
   const { t } = useTranslation()
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(
-    editingCollaboration?.agentId || null
+    editingCollaboration?.agentId ?? null
   )
-  const [description, setDescription] = useState(
-    editingCollaboration?.description || ''
-  )
+  const [prompt, setPrompt] = useState(editingCollaboration?.description ?? '')
+  const [showPromptError, setShowPromptError] = useState(false)
 
   const agentOptions = availableAgents
-    .filter((agent) =>
-      agent.id === 'emporix--collaboration'
-        ? currentAgentType === 'complaint' || currentAgentType === 'anti_fraud'
-        : true
-    )
     .map((agent) => ({
       label: (
         <div className="agent-option">
           <FontAwesomeIcon
-            icon={iconMap[agent.icon || 'robot'] || iconMap.robot}
+            icon={iconMap[agent.icon ?? 'robot'] ?? iconMap.robot}
             className="agent-option-icon"
           />
           <span>{getLocalizedValue(agent.name, appState.contentLanguage)}</span>
@@ -56,58 +56,110 @@ export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({
     }))
     .sort((a, b) => a.sortName.localeCompare(b.sortName))
 
-  const isFormValid = () => {
-    return selectedAgentId && description.trim()
-  }
+  const isValid = isCollaborationRowValid(selectedAgentId, prompt)
 
   const handleAdd = () => {
-    if (!isFormValid() || !selectedAgentId) return
-
-    const collaboration: AgentCollaboration = {
-      agentId: selectedAgentId,
-      description: description.trim(),
+    if (!selectedAgentId) {
+      return
     }
 
-    onAdd(collaboration)
+    if (!prompt.trim()) {
+      setShowPromptError(true)
+      return
+    }
+
+    onAdd(buildCollaboration(selectedAgentId, prompt))
   }
 
+  const handleAgentChange = (agentId: string | null) => {
+    setSelectedAgentId(agentId)
+    setShowPromptError(false)
+  }
+
+  const handlePromptChange = (value: string) => {
+    setPrompt(value)
+    if (value.trim()) {
+      setShowPromptError(false)
+    }
+  }
+
+  const isDetailVariant = variant === 'detail'
+  const formClassName = [
+    isDetailVariant
+      ? 'agent-detail-collaboration-form'
+      : 'agent-collaboration-form',
+    className ?? '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  const fieldsClassName = isDetailVariant
+    ? 'agent-detail-collaboration-row-fields'
+    : undefined
+
+  const promptPlaceholder = isDetailVariant
+    ? selectedAgentId
+      ? t('collaboration_prompt_placeholder')
+      : t('collaboration_please_select')
+    : t('enter_description')
+
+  const promptLabel = isDetailVariant
+    ? t('collaboration_prompt')
+    : t('description')
+
   return (
-    <div className="agent-collaboration-form">
-      <div className="form-field">
-        <label className="field-label">{t('agent')}</label>
-        <Dropdown
-          value={selectedAgentId}
-          options={agentOptions}
-          onChange={(e) => setSelectedAgentId(e.value)}
-          placeholder={t('select_agent')}
-          className="w-full"
-          appendTo="self"
-        />
+    <div className={formClassName}>
+      <div className={fieldsClassName}>
+        <div className="form-field">
+          <label className="field-label">{t('agent')}</label>
+          <Dropdown
+            value={selectedAgentId}
+            options={agentOptions}
+            onChange={(event) => handleAgentChange(event.value)}
+            placeholder={t('select_an_option')}
+            className="w-full"
+            appendTo="self"
+          />
+        </div>
+
+        <div className="form-field">
+          <label className="field-label">{promptLabel}</label>
+          <InputTextarea
+            value={prompt}
+            onChange={(event) => handlePromptChange(event.target.value)}
+            placeholder={promptPlaceholder}
+            className={`w-full${showPromptError && isDetailVariant ? ' p-invalid' : ''}`}
+            rows={isDetailVariant ? 1 : 3}
+            disabled={isDetailVariant && !selectedAgentId}
+          />
+        </div>
       </div>
 
-      <div className="form-field">
-        <label className="field-label">{t('description')}</label>
-        <InputTextarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder={t('enter_description')}
-          className="w-full"
-          rows={3}
-        />
-      </div>
-
-      <div className="form-actions">
+      <div
+        className={
+          isDetailVariant
+            ? 'agent-detail-collaboration-form-actions'
+            : 'form-actions'
+        }
+      >
         <Button
           type="button"
           label={t('cancel')}
           onClick={onCancel}
-          className="p-button-secondary"
+          className={
+            isDetailVariant
+              ? 'p-button-outlined agent-detail-discard-btn'
+              : 'p-button-secondary'
+          }
         />
         <Button
           type="button"
           label={editingCollaboration ? t('update') : t('add')}
           onClick={handleAdd}
-          disabled={!isFormValid()}
+          disabled={!isValid}
+          className={
+            isDetailVariant ? 'agent-detail-save-btn p-button' : undefined
+          }
         />
       </div>
     </div>

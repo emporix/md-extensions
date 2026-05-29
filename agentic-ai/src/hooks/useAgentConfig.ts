@@ -20,6 +20,10 @@ import {
   mergeCommerceTriggerPersistedConfig,
   isCommerceFilterValid,
 } from '../utils/agentFilterDslHelpers'
+import {
+  getValidCollaborations,
+  areCollaborationsValid,
+} from '../utils/agentCollaborationHelpers'
 
 interface UseAgentConfigProps {
   agent: CustomAgent | null
@@ -223,7 +227,7 @@ export const useAgentConfig = ({
       enableMemory: state.enableMemory,
       mcpServers: state.mcpServers || [],
       nativeTools: state.nativeTools || [],
-      agentCollaborations: state.agentCollaborations || [],
+      agentCollaborations: getValidCollaborations(state.agentCollaborations),
       enabled: agent.enabled || false,
       type: agent.type,
       metadata: agent.metadata || {
@@ -356,11 +360,16 @@ export const useAgentConfig = ({
         (!state.commerceEventFilter ||
           isCommerceFilterValid(state.commerceEventFilter)))
 
+    const collaborationValidation = areCollaborationsValid(
+      state.agentCollaborations
+    )
+
     return (
       basicValidation &&
       tokenValidation &&
       selfHostedValidation &&
-      commerceFilterValidation
+      commerceFilterValidation &&
+      collaborationValidation
     )
   }, [state, agent?.id])
 

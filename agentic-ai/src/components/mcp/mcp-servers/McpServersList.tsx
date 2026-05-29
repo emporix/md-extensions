@@ -40,30 +40,35 @@ export const McpServersList: React.FC<McpServersListProps> = ({
     if (mcpServer.type === 'predefined' && mcpServer.domain) {
       const predefinedServer = MCP_SERVERS[mcpServer.domain as McpKey]
       return {
-        name: predefinedServer?.name || mcpServer.domain,
+        name: predefinedServer?.name ?? mcpServer.domain,
         icon: faServer,
-        type: 'predefined',
-        details: `${mcpServer.tools?.length || 0} tools selected`,
+        type: 'predefined' as const,
+        details: t('mcp_tools_selected', {
+          count: mcpServer.tools?.length ?? 0,
+        }),
         enabled: true,
       }
-    } else if (mcpServer.type === 'custom' && mcpServer.mcpServer?.id) {
+    }
+
+    const customServerId = mcpServer.mcpServer?.id
+    if (mcpServer.type === 'custom' && customServerId) {
       const customServer = availableMcpServers.find(
-        (s) => s.id === mcpServer.mcpServer!.id
+        (server) => server.id === customServerId
       )
       return {
-        name: customServer?.name || mcpServer.mcpServer!.id,
+        name: customServer?.name ?? customServerId,
         icon: faServer,
-        type: 'custom',
-        details: customServer?.config.url || 'Custom MCP Server',
+        type: 'custom' as const,
+        details: customServer?.config.url ?? t('custom_mcp_server'),
         enabled: customServer?.enabled !== false,
       }
     }
 
     return {
-      name: 'Unknown Server',
+      name: t('unknown_mcp_server'),
       icon: faCog,
-      type: 'unknown',
-      details: 'Invalid configuration',
+      type: 'unknown' as const,
+      details: t('invalid_mcp_configuration'),
       enabled: false,
     }
   }
@@ -78,14 +83,7 @@ export const McpServersList: React.FC<McpServersListProps> = ({
           <div
             className={`mcp-server-row ${isDisabled ? 'mcp-server-disabled' : ''}`}
             key={idx}
-            title={
-              isDisabled
-                ? t(
-                    'mcp_server_disabled',
-                    'This MCP server is currently disabled'
-                  )
-                : undefined
-            }
+            title={isDisabled ? t('mcp_server_disabled') : undefined}
           >
             {editingIndex === idx ? (
               <McpServerForm
@@ -108,14 +106,8 @@ export const McpServersList: React.FC<McpServersListProps> = ({
                       <span className="mcp-server-name">
                         {serverInfo.name}
                         {isDisabled && (
-                          <span
-                            style={{
-                              marginLeft: '8px',
-                              fontSize: '0.85em',
-                              color: '#f44336',
-                            }}
-                          >
-                            (Disabled)
+                          <span className="mcp-server-disabled-label">
+                            ({t('disabled')})
                           </span>
                         )}
                       </span>

@@ -1,3 +1,4 @@
+import { TFunction } from 'i18next'
 import { LlmProvider } from '../types/Agent'
 
 export const MCP_SERVERS = {
@@ -127,42 +128,49 @@ export const MCP_SERVERS = {
 
 export type McpKey = keyof typeof MCP_SERVERS
 
-export const TRIGGER_TYPES = [
-  { label: 'API', value: 'endpoint', disabled: false },
-  { label: 'Commerce Event', value: 'commerce_events', disabled: false },
-  { label: 'Slack', value: 'slack', disabled: false },
-  { label: 'Time trigger', value: 'time', disabled: true },
+export const MCP_DOMAIN_TAGS: Record<McpKey, readonly string[]> = {
+  order: ['Order', 'Return', 'Invoice'],
+  product: [
+    'Product',
+    'Catalog',
+    'Brand',
+    'Label',
+    'Category',
+    'Price',
+    'Availability',
+  ],
+  frontend: ['Cart', 'Checkout', 'Quote', 'Return', 'Customer'],
+  extensibility: ['Custom Type', 'Custom Instance'],
+  customer: ['Customer', 'Legal Entity', 'Location', 'Email'],
+}
+
+export const getTriggerTypes = (t: TFunction) => [
+  { label: t('trigger_type_api'), value: 'endpoint', disabled: false },
+  {
+    label: t('trigger_type_commerce'),
+    value: 'commerce_events',
+    disabled: false,
+  },
+  { label: t('trigger_type_slack'), value: 'slack', disabled: false },
 ]
 
-export const LLM_PROVIDERS = [
-  { label: 'Claude', value: LlmProvider.ANTHROPIC },
-  { label: 'Emporix OpenAI', value: LlmProvider.EMPORIX_OPENAI },
-  { label: 'Gemini', value: LlmProvider.GOOGLE },
-  { label: 'OpenAI', value: LlmProvider.OPENAI },
-  { label: 'Self-hosted Ollama', value: LlmProvider.SELF_HOSTED_OLLAMA },
-  { label: 'Self-hosted VLLM', value: LlmProvider.SELF_HOSTED_VLLM },
+export const getLlmProviders = (t: TFunction) => [
+  { label: t('llm_provider_anthropic'), value: LlmProvider.ANTHROPIC },
+  {
+    label: t('llm_provider_emporix_openai'),
+    value: LlmProvider.EMPORIX_OPENAI,
+  },
+  { label: t('llm_provider_google'), value: LlmProvider.GOOGLE },
+  { label: t('llm_provider_openai'), value: LlmProvider.OPENAI },
+  {
+    label: t('llm_provider_self_hosted_ollama'),
+    value: LlmProvider.SELF_HOSTED_OLLAMA,
+  },
+  {
+    label: t('llm_provider_self_hosted_vllm'),
+    value: LlmProvider.SELF_HOSTED_VLLM,
+  },
 ]
-
-export const API_ENDPOINTS = {
-  TEMPLATES: '/ai-service/{tenant}/agentic/templates',
-  AGENTS: '/ai-service/{tenant}/agentic/agents',
-  AGENT_BY_ID: '/ai-service/{tenant}/agentic/agents/{id}',
-  COPY_TEMPLATE: '/ai-service/{tenant}/agentic/templates/{templateId}/agents',
-} as const
-
-export const API_HEADERS = {
-  CONTENT_TYPE: 'application/json',
-  AUTHORIZATION: 'Authorization',
-  EMPORIX_TENANT: 'Emporix-tenant',
-} as const
-
-export const DEFAULT_VALUES = {
-  RECURSION_LIMIT: 20,
-  ENABLE_MEMORY: true,
-  TEMPERATURE: 0,
-  MAX_TOKENS: 0,
-  PROVIDER: 'emporix_openai',
-} as const
 
 export const AVAILABLE_TAGS = [
   'Productivity',
@@ -171,12 +179,5 @@ export const AVAILABLE_TAGS = [
   'Personal Assistance',
   'Customer Service',
 ] as const
-
-export const VALIDATION = {
-  MIN_NAME_LENGTH: 1,
-  MIN_DESCRIPTION_LENGTH: 1,
-  MIN_PROMPT_LENGTH: 1,
-  MIN_MODEL_LENGTH: 1,
-} as const
 
 export const CACHE_TTL = 5 * 60 * 1000

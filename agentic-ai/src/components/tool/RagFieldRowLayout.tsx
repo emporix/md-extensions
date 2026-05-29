@@ -1,43 +1,38 @@
 import React from 'react'
-import { Button } from 'primereact/button'
 
 type RagFieldRowLayoutProps = {
   primaryField: React.ReactNode
   secondaryField: React.ReactNode
   onRemove: () => void
+  removeAriaLabel: string
   footer?: React.ReactNode
-  primaryClassName?: string
-  secondaryClassName?: string
-  removeAriaLabel?: string
-  removeTooltip?: string
 }
 
 const RagFieldRowLayout: React.FC<RagFieldRowLayoutProps> = ({
   primaryField,
   secondaryField,
   onRemove,
+  removeAriaLabel,
   footer,
-  primaryClassName = 'tool-field-row__primary',
-  secondaryClassName = 'tool-field-row__secondary',
-  removeAriaLabel = 'Remove field',
-  removeTooltip,
 }) => (
-  <div className="rag-field-group">
-    <div className="tool-field-row">
-      <div className={`form-field ${primaryClassName}`}>{primaryField}</div>
-      <div className={`form-field ${secondaryClassName}`}>{secondaryField}</div>
-      <div className="indexed-field-delete-button">
-        <Button
-          icon="pi pi-trash"
-          className="p-button-danger"
-          onClick={onRemove}
-          aria-label={removeAriaLabel}
-          tooltip={removeTooltip}
-          tooltipOptions={{ position: 'top' }}
-        />
-      </div>
+  <div className="tool-detail-field-row">
+    <div className="tool-detail-field-row-fields">
+      <div className="form-field">{primaryField}</div>
+      <div className="form-field">{secondaryField}</div>
+      {footer && (
+        <div className="form-field tool-detail-field-row-footer">{footer}</div>
+      )}
     </div>
-    {footer}
+    <div className="tool-detail-field-row-actions">
+      <button
+        type="button"
+        className="tool-detail-field-row-action-btn tool-detail-field-row-action-btn--delete"
+        aria-label={removeAriaLabel}
+        onClick={onRemove}
+      >
+        <i className="pi pi-trash" />
+      </button>
+    </div>
   </div>
 )
 

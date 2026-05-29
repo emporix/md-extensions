@@ -1,9 +1,10 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { CustomMcpServerTransportType, McpCardProps } from '../../types/Mcp'
+import { McpCardProps } from '../../types/Mcp'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faServer } from '@fortawesome/free-solid-svg-icons'
 import BaseCard from '../shared/BaseCard'
+import { getMcpTransportLabel } from '../../utils/mcpHelpers'
 
 const McpCard: React.FC<McpCardProps> = ({
   mcpServer,
@@ -13,21 +14,12 @@ const McpCard: React.FC<McpCardProps> = ({
 }) => {
   const { t } = useTranslation()
 
-  const getTransportLabel = () => {
-    switch (mcpServer.transport) {
-      case CustomMcpServerTransportType.SSE:
-        return t('mcp_transport_sse')
-      case CustomMcpServerTransportType.STREAMABLE_HTTP:
-        return t('mcp_transport_streamable_http')
-      default:
-        return String(mcpServer.transport).toUpperCase()
-    }
-  }
-
   const getDescription = () => {
-    const parts: string[] = [`URL: ${mcpServer.config.url}`]
+    const parts: string[] = [`${t('url')}: ${mcpServer.config.url}`]
     if (mcpServer.config.authorizationHeaderName) {
-      parts.push(`Auth: ${mcpServer.config.authorizationHeaderName}`)
+      parts.push(
+        `${t('authorization_header_name')}: ${mcpServer.config.authorizationHeaderName}`
+      )
     }
     return parts.join('\n')
   }
@@ -38,7 +30,7 @@ const McpCard: React.FC<McpCardProps> = ({
       title={mcpServer.name}
       description={getDescription()}
       icon={<FontAwesomeIcon icon={faServer} />}
-      badge={getTransportLabel()}
+      badge={getMcpTransportLabel(t, mcpServer.transport)}
       enabled={mcpServer.enabled}
       onToggleActive={onToggleActive}
       actions={[

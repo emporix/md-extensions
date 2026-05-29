@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Dropdown } from 'primereact/dropdown'
 import { MultiSelect } from 'primereact/multiselect'
 import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
 import { MCP_SERVERS, McpKey } from '../../../utils/constants'
+import { getMcpTransportOptions } from '../../../utils/mcpHelpers'
 import { CustomHeaders } from '../../shared/CustomHeaders'
 
 interface McpServer {
@@ -29,6 +30,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(
   ({ onAdd, onCancel, editingServer }) => {
     const { t } = useTranslation()
     const isEditing = !!editingServer
+    const transportOptions = useMemo(() => getMcpTransportOptions(t), [t])
 
     const [newMcpType, setNewMcpType] = useState<'predefined' | 'custom'>(
       editingServer?.type || 'predefined'
@@ -163,14 +165,9 @@ export const McpServerForm: React.FC<McpServerFormProps> = React.memo(
               <label className="field-label">{t('transport_layer')}</label>
               <Dropdown
                 value={newCustomTransport}
-                options={[
-                  { label: 'SSE', value: 'sse', disabled: false },
-                  { label: 'WebSocket', value: 'ws', disabled: true },
-                  { label: 'HTTP', value: 'http', disabled: true },
-                ]}
+                options={transportOptions}
                 onChange={(e) => setNewCustomTransport(e.value)}
                 className="w-full"
-                optionDisabled="disabled"
                 appendTo="self"
               />
             </div>

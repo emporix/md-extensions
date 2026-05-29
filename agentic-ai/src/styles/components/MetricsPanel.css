@@ -19,7 +19,7 @@
 
 /* Metrics Card */
 .metrics-card {
-  background: linear-gradient(to bottom, #ffffff, #f9fafb);
+  background: linear-gradient(to bottom, #ffffff, var(--bg-secondary));
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 1.5rem;
@@ -130,7 +130,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0.75rem;
-  background: #f9fafb;
+  background: var(--bg-secondary);
   border-radius: 6px;
   transition: background 0.2s ease;
 }
@@ -182,7 +182,7 @@
 .metrics-efficiency-hint {
   margin-top: 0.75rem;
   padding: 0.5rem;
-  background: #f9fafb;
+  background: var(--bg-secondary);
   border-radius: 6px;
   font-size: 0.75rem;
   color: #6b7280;
