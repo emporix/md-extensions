@@ -6,6 +6,7 @@ import {
   commerceTriggerExtractFilter,
   composeConditions,
   defaultCommerceFilterDsl,
+  extractFilterDslJsonFromAgentMessage,
   isCommerceFilterValid,
   isCompoundFilter,
   mergeCommerceTriggerPersistedConfig,
@@ -203,7 +204,9 @@ describe('agentFilterDslHelpers', () => {
       right: [],
     })
     expect(inResult.dsl).toBeNull()
-    expect(inResult.error).toBe(COMMERCE_FILTER_PARSE_I18N_KEYS.valueListRequired)
+    expect(inResult.error).toBe(
+      COMMERCE_FILTER_PARSE_I18N_KEYS.valueListRequired
+    )
 
     const notInResult = parseAgentCommerceFilterDsl({
       left: '$eventTypes',
@@ -211,7 +214,9 @@ describe('agentFilterDslHelpers', () => {
       right: [],
     })
     expect(notInResult.dsl).toBeNull()
-    expect(notInResult.error).toBe(COMMERCE_FILTER_PARSE_I18N_KEYS.valueListRequired)
+    expect(notInResult.error).toBe(
+      COMMERCE_FILTER_PARSE_I18N_KEYS.valueListRequired
+    )
   })
 
   it('isCommerceFilterValid false for empty in list', () => {
@@ -228,7 +233,9 @@ describe('agentFilterDslHelpers', () => {
       right: '',
     })
     expect(invalidEquals.dsl).toBeNull()
-    expect(invalidEquals.error).toBe(COMMERCE_FILTER_PARSE_I18N_KEYS.scalarRequired)
+    expect(invalidEquals.error).toBe(
+      COMMERCE_FILTER_PARSE_I18N_KEYS.scalarRequired
+    )
   })
 
   it('stringifyFilterDsl omits right when undefined', () => {
@@ -289,5 +296,78 @@ describe('agentFilterDslHelpers', () => {
     })
     expect(dsl).toBeNull()
     expect(error).toBe(COMMERCE_FILTER_PARSE_I18N_KEYS.fieldLeftRequired)
+  })
+
+  it('extractFilterDslJsonFromAgentMessage parses plain JSON object', () => {
+    const raw = '{"left":"cart.siteCode","op":"$eq","right":"main"}'
+    const r = extractFilterDslJsonFromAgentMessage(raw)
+    expect(r).not.toBeNull()
+    expect(r?.rawSnippet).toBe(raw)
+    expect(parseAgentCommerceFilterDsl(r!.parsed).dsl).toEqual({
+      left: 'cart.siteCode',
+      op: '$eq',
+      right: 'main',
+    })
+  })
+
+  it('extractFilterDslJsonFromAgentMessage returns null unless message is a single JSON object', () => {
+    expect(
+      extractFilterDslJsonFromAgentMessage(
+        'Sure.\n```json\n{"left":"x","op":"$exists"}\n```'
+      )
+    ).toBeNull()
+    expect(
+      extractFilterDslJsonFromAgentMessage(
+        'Use this filter: {"op":"$and","conditions":[{"left":"a","op":"$eq","right":"1"},{"left":"b","op":"$eq","right":"2"}]} thanks'
+      )
+    ).toBeNull()
+  })
+
+  it('parses nested $and with $or leaf group and boolean right', () => {
+    const compound = {
+      op: '$and',
+      conditions: [
+        {
+          op: '$or',
+          conditions: [
+            { left: 'siteCode', op: '$eq', right: 'main' },
+            { left: 'siteCode', op: '$eq', right: 'de' },
+          ],
+        },
+        { left: 'published', op: '$eq', right: true },
+      ],
+    }
+    const { dsl, error } = parseAgentCommerceFilterDsl(compound)
+    expect(error).toBeUndefined()
+    expect(dsl).toEqual(compound)
+    expect(isCommerceFilterValid(dsl!)).toBe(true)
+  })
+
+  it('extractFilterDslJsonFromAgentMessage unwraps JSON string containing filter object', () => {
+    const inner =
+      '{"op":"$and","conditions":[{"left":"siteCode","op":"$eq","right":"main"}]}'
+    const doubleEncoded = JSON.stringify(inner)
+    const r = extractFilterDslJsonFromAgentMessage(doubleEncoded)
+    expect(r).not.toBeNull()
+    expect(parseAgentCommerceFilterDsl(r!.parsed).dsl).toEqual({
+      op: '$and',
+      conditions: [{ left: 'siteCode', op: '$eq', right: 'main' }],
+    })
+  })
+
+  it('extractFilterDslJsonFromAgentMessage parses compound $and matching agent output', () => {
+    const reply =
+      '{"op":"$and","conditions":[{"left":"order.currency","op":"$eq","right":"EUR"},{"left":"cart.siteCode","op":"$in","right":["main","outlet"]}]}'
+    const r = extractFilterDslJsonFromAgentMessage(reply)
+    expect(r).not.toBeNull()
+    expect(
+      isCommerceFilterValid(parseAgentCommerceFilterDsl(r!.parsed).dsl!)
+    ).toBe(true)
+  })
+
+  it('extractFilterDslJsonFromAgentMessage returns null for no JSON object', () => {
+    expect(extractFilterDslJsonFromAgentMessage('')).toBeNull()
+    expect(extractFilterDslJsonFromAgentMessage('not json')).toBeNull()
+    expect(extractFilterDslJsonFromAgentMessage('[]')).toBeNull()
   })
 })

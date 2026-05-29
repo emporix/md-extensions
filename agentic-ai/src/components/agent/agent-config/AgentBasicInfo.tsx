@@ -76,23 +76,17 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       <div className="form-field">
         <label className="field-label">
           {t('agent_id')}
-          {!isEditing && (
-            <span className="field-required-mark"> *</span>
-          )}
+          {!isEditing && <span className="field-required-mark"> *</span>}
         </label>
         <InputText
           value={agentId}
           onChange={(e) => handleAgentIdChange(e.target.value)}
           className={`w-full ${!isEditing && !agentId.trim() ? 'p-invalid' : ''}`}
           disabled={isEditing}
-          placeholder={
-            !isEditing ? t('enter_agent_id') : undefined
-          }
+          placeholder={!isEditing ? t('enter_agent_id') : undefined}
         />
         {!isEditing && !agentId.trim() && (
-          <small className="p-error">
-            {t('agent_id_required')}
-          </small>
+          <small className="p-error">{t('agent_id_required')}</small>
         )}
       </div>
 
@@ -154,9 +148,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       </div>
 
       <div className="form-field">
-        <label className="field-label">
-          {t('trigger_types')}
-        </label>
+        <label className="field-label">{t('trigger_types')}</label>
         <MultiSelect
           value={triggerTypes}
           options={availableTriggerTypes}
@@ -218,9 +210,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
               <small className="p-error">{commerceCatalogError}</small>
             ) : null}
             {commerceEvents.length === 0 ? (
-              <small className="p-error">
-                {t('commerce_events_required')}
-              </small>
+              <small className="p-error">{t('commerce_events_required')}</small>
             ) : null}
           </div>
           <div className="form-field">
@@ -234,6 +224,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
             <AgentFilterDslEditor
               value={commerceEventFilter}
               onChange={(v) => onFieldChange('commerceEventFilter', v)}
+              appState={appState}
             />
           </div>
         </>
@@ -241,9 +232,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
 
       {templatePrompt && (
         <div className="form-field">
-          <label className="field-label">
-            {t('template_prompt')}
-          </label>
+          <label className="field-label">{t('template_prompt')}</label>
           <InputTextarea
             value={templatePrompt}
             rows={15}
@@ -267,9 +256,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
           placeholder={t('enter_prompt')}
         />
         {!prompt.trim() && (
-          <small className="p-error">
-            {t('prompt_required')}
-          </small>
+          <small className="p-error">{t('prompt_required')}</small>
         )}
       </div>
     </>

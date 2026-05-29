@@ -92,9 +92,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
     if (!toolToReindex) return
 
     if (!toolToReindex.config.entityType) {
-      showError(
-        t('entity_type_missing')
-      )
+      showError(t('entity_type_missing'))
       hideReindexConfirm()
       return
     }
@@ -103,15 +101,11 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
 
     try {
       await reindex(appState, toolToReindex.config.entityType)
-      showSuccess(
-        t('reindex_triggered_successfully')
-      )
+      showSuccess(t('reindex_triggered_successfully'))
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : t('failed_to_trigger_reindex')
-      showError(
-        `${t('error_triggering_reindex')}: ${errorMessage}`
-      )
+      showError(`${t('error_triggering_reindex')}: ${errorMessage}`)
     }
   }
 
@@ -124,9 +118,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
       onAdd={handleAddNewTool}
       deleteConfirmVisible={deleteConfirmVisible}
       deleteConfirmTitle={t('delete_tool')}
-      deleteConfirmMessage={t(
-        'delete_tool_confirmation',
-      )}
+      deleteConfirmMessage={t('delete_tool_confirmation')}
       onDeleteConfirm={confirmDelete}
       onDeleteCancel={hideDeleteConfirm}
       className="tools"
@@ -163,9 +155,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
         onHide={hideReindexConfirm}
         onConfirm={confirmReindex}
         title={t('reindex_tool')}
-        message={t(
-          'reindex_confirmation',
-        )}
+        message={t('reindex_confirmation')}
         confirmLabel={t('reindex')}
         severity="primary"
       />
@@ -173,9 +163,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
       <ConfirmDialog
         visible={forceDeleteConfirmVisible}
         title={t('force_delete_tool')}
-        message={t(
-          'force_delete_tool_message',
-        )}
+        message={t('force_delete_tool_message')}
         onConfirm={confirmForceDelete}
         onHide={hideForceDeleteConfirm}
         confirmLabel={t('force_delete')}
@@ -185,9 +173,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
       <ConfirmDialog
         visible={forceToggleConfirmVisible}
         title={t('force_disable_tool')}
-        message={t(
-          'force_disable_tool_message',
-        )}
+        message={t('force_disable_tool_message')}
         onConfirm={confirmForceToggle}
         onHide={hideForceToggleConfirm}
         confirmLabel={t('force_disable')}
