@@ -23,11 +23,11 @@
 }
 
 .tool-config-panel .p-inputnumber .p-inputnumber-input:enabled:hover {
-  border-color: #3b73bb !important;
+  border-color: var(--color-interactive-accent) !important;
 }
 
 .tool-config-panel .p-inputnumber .p-inputnumber-input:focus {
-  border-color: #3b73bb !important;
+  border-color: var(--color-interactive-accent) !important;
   box-shadow: none !important;
 }
 
@@ -44,7 +44,7 @@
   width: 24px !important;
   max-height: 34px !important;
   border: none !important;
-  background: #3b73bb !important;
+  background: var(--color-interactive-accent) !important;
   box-shadow: none !important;
   border-radius: 2px !important;
   transition: background var(--transition-base) !important;
@@ -134,7 +134,7 @@
 .tool-config-panel .p-inputtext:enabled:hover,
 .tool-config-panel .p-dropdown:not(.p-disabled):hover,
 .tool-config-panel .p-inputtextarea:enabled:hover {
-  border-color: #3b73bb !important;
+  border-color: var(--color-interactive-accent) !important;
 }
 
 .tool-config-panel .p-inputtext:not(.p-inputtextarea) {

@@ -14,6 +14,7 @@ import { AgentBasicInfo } from './agent-config/AgentBasicInfo'
 import { LlmConfigSection } from './agent-config/LlmConfigSection'
 import { useAgentConfig } from '../../hooks/useAgentConfig'
 import { usePanelAnimation } from '../../hooks/usePanelAnimation'
+import type { AgentCommerceFilterDsl } from '../../utils/agentFilterDslHelpers'
 
 interface AgentConfigPanelProps {
   visible: boolean
@@ -63,7 +64,13 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
 
   const handleFieldChange = (
     field: string,
-    value: string | boolean | string[] | LocalizedString
+    value:
+      | string
+      | boolean
+      | string[]
+      | LocalizedString
+      | AgentCommerceFilterDsl
+      | null
   ) => {
     updateField(field, value)
   }
@@ -94,6 +101,7 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
             triggerTypes={state.triggerTypes}
             prompt={state.prompt}
             commerceEvents={state.commerceEvents}
+            commerceEventFilter={state.commerceEventFilter}
             templatePrompt={state.templatePrompt}
             requiredScopes={state.requiredScopes}
             isEditing={!!agent?.id}
@@ -141,13 +149,14 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
 
           <div className="panel-actions">
             <Button
-              label={t('cancel', 'Cancel')}
-              className="discard-button"
+              type="button"
+              label={t('cancel')}
+              className="p-button-secondary"
               onClick={handleClose}
             />
             <Button
-              label={t('save', 'Save')}
-              className="save-agent-button"
+              type="button"
+              label={t('save')}
               onClick={() => handleSave()}
               disabled={saving || !isFormValid}
             />
@@ -171,13 +180,12 @@ const AgentConfigPanel: React.FC<AgentConfigPanelProps> = ({
 
       <ConfirmDialog
         visible={showDisableConfirm}
-        title={t('confirm_save_agent', 'Save and Deactivate Agent')}
-        message={
-          'You can not save the enabled agent with the errors. You can save the agent by disabling it first.\n\n' +
-          disableConfirmMessage
-        }
-        confirmLabel={t('save_and_deactivate', 'Save and Deactivate')}
-        cancelLabel={t('cancel', 'Cancel')}
+        title={t('confirm_save_agent')}
+        message={t('confirm_disable_agent_message', {
+          detail: disableConfirmMessage,
+        })}
+        confirmLabel={t('save_and_deactivate')}
+        cancelLabel={t('cancel')}
         onConfirm={handleConfirmDisable}
         onHide={handleCancelDisable}
         severity="warning"

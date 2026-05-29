@@ -57,6 +57,10 @@ const TRANSLATIONS_EN = {
   agents: 'Agents',
   being_copied: 'Being Copied',
   please_wait: 'Please wait while we copy the agent template...',
+  error_creating_agent: 'Error Creating Agent',
+  agent_creation_failed:
+    'There was an error creating your agent. Please try again.',
+  select_agent: 'Select agent',
 
   // Add Agent Dialog
   customize_agent_subtitle:
@@ -85,6 +89,13 @@ const TRANSLATIONS_EN = {
   agent_config_panel_title: 'Agent Configuration',
   agent_config_panel_subtitle:
     'Tailor the name and description to better align with your specific needs.',
+  agent_id_required: 'Agent ID is required',
+  trigger_types: 'Trigger Types',
+  select_trigger_types: 'Select trigger types',
+  confirm_save_agent: 'Save and Deactivate Agent',
+  save_and_deactivate: 'Save and Deactivate',
+  confirm_disable_agent_message:
+    'You cannot save an enabled agent while it has validation errors. You can save the agent by disabling it first.\n\n{{detail}}',
   close: 'Close',
   trigger_type: 'Trigger Type',
   trigger_type_endpoint: 'ENDPOINT',
@@ -135,6 +146,7 @@ const TRANSLATIONS_EN = {
   reindex_only_available_for_product: 'Reindex is only available for Product entity type',
   reindex_triggered_successfully: 'Reindex triggered successfully!',
   error_triggering_reindex: 'Error triggering reindex',
+  failed_to_trigger_reindex: 'Failed to trigger reindex',
   reindex_confirmation:
     'This is a time-consuming operation that will regenerate all embeddings. Please proceed with caution. Are you sure you want to continue?',
   max_results: 'Max Results',
@@ -355,6 +367,98 @@ const TRANSLATIONS_EN = {
   loading_events: 'Loading events...',
   no_events_available: 'No events available',
   commerce_events_required: 'At least one commerce event is required',
+  commerce_event_filter: 'Commerce Events constraints',
+  commerce_event_filter_optional: '(optional)',
+
+  commerce_filter_tab_form: 'Filter',
+  commerce_filter_tab_json: 'Condition',
+  commerce_filter_tab_assistant: 'Assistant',
+  commerce_filter_payload_field: 'Payload path',
+  commerce_filter_payload_placeholder: 'e.g. cart.siteCode',
+  commerce_filter_values: 'Values',
+  commerce_filter_single_value_placeholder: 'e.g. DE',
+  commerce_filter_operator: 'Operator',
+  commerce_filter_value: 'Value',
+  commerce_filter_csv_placeholder: 'Comma-separated values',
+  commerce_filter_invalid: 'Complete the filter or fix validation errors.',
+  commerce_filter_apply_json: 'Apply JSON',
+  commerce_filter_invalid_json: 'Invalid filter',
+  commerce_filter_json_parse_error: 'Could not parse JSON',
+  commerce_filter_reset: 'Reset',
+  commerce_filter_remove: 'Remove filter',
+  commerce_filter_none:
+    'No filter is configured. Click Add filter to get started.',
+  commerce_filter_add: 'Add filter',
+  copy: 'Copy',
+
+  commerce_filter_op_equals: 'Equals',
+  commerce_filter_op_notEquals: 'Not equals',
+  commerce_filter_op_in: 'In',
+  commerce_filter_op_notIn: 'Not in',
+  commerce_filter_op_exists: 'Exists',
+  commerce_filter_op_notExists: 'Not exists',
+  commerce_filter_op_isEmpty: 'Is empty',
+  commerce_filter_op_notEmpty: 'Not empty',
+
+  commerce_filter_combine: 'How should conditions be combined?',
+  commerce_filter_match_all: 'All conditions (AND)',
+  commerce_filter_match_any: 'Any condition (OR)',
+  commerce_filter_need_two_for_logic:
+    'Add a second condition to enable AND/OR between rules.',
+  commerce_filter_add_condition: 'Add condition',
+  commerce_filter_remove_condition: 'Remove condition',
+  commerce_filter_rule_label: 'Condition {{n}}',
+  commerce_filter_complex_use_json:
+    'This filter uses nested logic. Edit it in the Condition (JSON) tab.',
+
+  commerce_filter_assistant_checking:
+    'Checking whether the helper agent is available…',
+  commerce_filter_assistant_intro:
+    'Use a dedicated helper agent to describe filters in plain language and get JSON for this tab. The helper agent is disabled until you create it once from our predefined templates.',
+  commerce_filter_assistant_enable: 'Enable helper agent',
+  commerce_filter_assistant_agent_created: 'Helper agent created.',
+  commerce_filter_assistant_agent_exists:
+    'Helper agent already exists. You can describe your filter below.',
+  commerce_filter_assistant_prompt_label: 'Describe the filter',
+  commerce_filter_assistant_prompt_placeholder:
+    'e.g. Trigger only when siteCode is main and currency is EUR',
+  commerce_filter_assistant_generate: 'Generate condition JSON',
+  commerce_filter_assistant_extract_failed:
+    'Could not find valid JSON in the agent response. Ask for JSON only or try again.',
+  commerce_filter_assistant_applied:
+    'Condition JSON was applied. Review the Condition tab.',
+  commerce_filter_assistant_create_failed:
+    'Could not create or enable the helper agent.',
+  commerce_filter_assistant_chat_failed:
+    'The helper agent did not return a usable response.',
+  commerce_filter_assistant_empty_response:
+    'The helper agent returned an empty message.',
+  commerce_filter_assistant_template_not_found:
+    'The commerce filter helper template is not available for this tenant.',
+  commerce_filter_assistant_enable_failed:
+    'Could not enable the existing helper agent.',
+
+  commerce_filter_parse_unsupported_operator:
+    'Unsupported or missing operator for this condition.',
+  commerce_filter_parse_field_left_required:
+    'Field (payload path) is required for each condition.',
+  commerce_filter_parse_value_list_required:
+    'A non-empty list of values is required for this operator.',
+  commerce_filter_parse_value_must_be_array:
+    'Values must be a JSON array for this operator.',
+  commerce_filter_parse_list_strings_only:
+    'All values in the list must be strings.',
+  commerce_filter_parse_scalar_required:
+    'A non-empty value is required for this operator.',
+  commerce_filter_parse_scalar_type:
+    'Value must be a string, number, or boolean.',
+  commerce_filter_parse_filter_must_be_object: 'Filter must be a JSON object.',
+  commerce_filter_parse_compound_op_invalid:
+    'Compound filter must use op "$and" or "$or".',
+  commerce_filter_parse_conditions_non_empty:
+    'conditions must be a non-empty array.',
+  commerce_filter_parse_invalid_condition_at_position:
+    'Invalid condition at position {{position}}.',
 
   // Logs
   agent_logs: 'Agent Logs',

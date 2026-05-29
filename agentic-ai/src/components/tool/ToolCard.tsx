@@ -68,7 +68,6 @@ const ToolCard: React.FC<ToolCardProps> = ({
       },
     ]
 
-    // Add reindex button for rag_emporix tools
     if (tool.type === 'rag_emporix' && onReindex) {
       const isProductEntityType =
         tool.config?.entityType === PRODUCT_ENTITY_TYPE
@@ -87,18 +86,15 @@ const ToolCard: React.FC<ToolCardProps> = ({
       })
     }
 
-    // Add remove button
     actions.push({
       icon: 'pi pi-trash',
-      label: t('remove', 'Remove'),
+      label: t('remove'),
       onClick: (e: React.MouseEvent) => {
         e.stopPropagation()
         onRemove(tool.id)
       },
       disabled: tool.enabled,
-      title: tool.enabled
-        ? t('cannot_delete_active_tool', 'Cannot delete active tool')
-        : t('remove_tool', 'Remove tool'),
+      title: tool.enabled ? t('cannot_delete_active_tool') : t('remove_tool'),
       className: 'remove-button',
     })
 

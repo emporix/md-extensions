@@ -1123,12 +1123,14 @@ const ToolConfigPanel: React.FC<ToolConfigPanelProps> = ({
 
           <div className="field-list-actions">
             <Button
+              type="button"
               icon="pi pi-plus"
               label={t('add_indexed_field')}
               onClick={addIndexedField}
               className="p-button-secondary"
             />
             <Button
+              type="button"
               icon="pi pi-plus"
               label={t('add_custom_field')}
               onClick={addCustomIndexedField}

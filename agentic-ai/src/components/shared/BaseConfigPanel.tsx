@@ -88,15 +88,16 @@ export const BaseConfigPanel: React.FC<BaseConfigPanelProps> = ({
 
           <div className="panel-actions">
             <Button
-              label={cancelLabel || t('cancel', 'Cancel')}
-              className="p-button-text"
+              type="button"
+              label={cancelLabel || t('cancel')}
+              className="p-button-secondary"
               onClick={handleCancelClick}
               disabled={saving}
             />
             {onSave && (
               <Button
-                label={saveLabel || t('save', 'Save')}
-                className="p-button-primary"
+                type="button"
+                label={saveLabel || t('save')}
                 onClick={handleSaveClick}
                 disabled={!canSave || saving}
                 loading={saving}
