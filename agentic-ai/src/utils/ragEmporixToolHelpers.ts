@@ -66,8 +66,7 @@ export const toRagEmporixToolConfig = (config: ToolConfig): ToolConfig => ({
 
 export const areRagEmporixFilterFieldsValid = (
   fields: RagEmporixFilterFieldConfig[]
-): boolean =>
-  fields.length > 0 && fields.every((field) => isValidRagFieldKey(field.key))
+): boolean => fields.every((field) => isValidRagFieldKey(field.key))
 
 export const getRagFilterFieldLabel = (field: {
   key: string
@@ -127,3 +126,24 @@ export const createEmptyFilterField = (): RagEmporixFilterFieldConfig => ({
   name: '',
   description: '',
 })
+
+export const getAvailableIndexedFieldsForIndex = (
+  allFields: string[],
+  selectedFields: RagEmporixFieldConfig[],
+  currentIndex: number
+): string[] => {
+  const selectedKeys = selectedFields
+    .map((field, index) =>
+      index !== currentIndex && field.key?.trim() ? field.key : null
+    )
+    .filter((key): key is string => !!key)
+
+  return allFields.filter((field) => {
+    return !selectedKeys.some((selectedKey) => {
+      const isExactMatch = field === selectedKey
+      const isParentOfSelected = selectedKey.startsWith(`${field}.`)
+      const isChildOfSelected = field.startsWith(`${selectedKey}.`)
+      return isExactMatch || isParentOfSelected || isChildOfSelected
+    })
+  })
+}

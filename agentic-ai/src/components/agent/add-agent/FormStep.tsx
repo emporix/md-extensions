@@ -81,9 +81,6 @@ export const FormStep: React.FC<FormStepProps> = ({
             className={`w-full ${!agentId.trim() ? 'p-invalid' : ''}`}
             placeholder={t('enter_agent_id')}
           />
-          {!agentId.trim() && (
-            <small className="p-error">{t('agent_id_required')}</small>
-          )}
         </div>
         <div className="form-field">
           <label htmlFor="agent-name" className="field-label">
@@ -94,11 +91,7 @@ export const FormStep: React.FC<FormStepProps> = ({
             onChange={(value) => setAgentName(value)}
             appState={appState}
             placeholder={t('enter_agent_name')}
-            error={
-              !hasAnyLocalizedValue(agentName)
-                ? t('agent_name_required')
-                : undefined
-            }
+            invalid={!hasAnyLocalizedValue(agentName)}
           />
         </div>
         <div className="form-field">
@@ -110,11 +103,7 @@ export const FormStep: React.FC<FormStepProps> = ({
             onChange={(value) => setDescription(value)}
             appState={appState}
             placeholder={t('enter_description')}
-            error={
-              !hasAnyLocalizedValue(description)
-                ? t('description_required')
-                : undefined
-            }
+            invalid={!hasAnyLocalizedValue(description)}
           />
         </div>
         <div className="form-field">
@@ -129,9 +118,6 @@ export const FormStep: React.FC<FormStepProps> = ({
             className={`w-full ${!userPrompt.trim() ? 'p-invalid' : ''}`}
             placeholder={t('user_prompt_placeholder')}
           />
-          {!userPrompt.trim() && (
-            <small className="p-error">{t('user_prompt_required')}</small>
-          )}
         </div>
         {templatePrompt && (
           <div className="form-field">

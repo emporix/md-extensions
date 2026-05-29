@@ -6,14 +6,38 @@
 @import './_shared.css';
 @import './components/AgentCard.css';
 @import './components/AddAgentDialog.css';
-@import './components/AgentConfigPanel.css';
+@import './components/AgentDetailPage.css';
+@import './components/TokenDetailPage.css';
+@import './components/McpDetailPage.css';
 @import './components/AgentFilterDslEditor.css';
-@import './components/ToolConfigPanel.css';
+@import './components/ToolDetailPage.css';
 @import './components/LogCard.css';
 @import './components/ToolCard.css';
 @import './components/ImportAgentDialog.css';
 @import './components/McpPage.css';
+@import './components/TokensPage.css';
 @import 'font-awesome/css/font-awesome.min.css';
+
+/* ========================================
+   Extension canvas (MD-aligned)
+   ======================================== */
+
+html,
+body,
+#root {
+  background-color: var(--bg-primary);
+  min-height: 100%;
+}
+
+.agents-view,
+.agent-detail-page,
+.token-detail-page,
+.mcp-detail-page,
+.tool-detail-page,
+.base-page-container {
+  background: var(--bg-primary);
+  box-shadow: inset 72px 0 72px -72px #5a606b1c;
+}
 
 /* ========================================
    Agents View Layout
@@ -59,7 +83,7 @@
 }
 
 .import-action-button:hover {
-  background: #f9fafb;
+  background: var(--bg-hover);
   border-color: #9ca3af;
   color: #1f2937;
 }
@@ -77,7 +101,7 @@
 .section-title {
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
+  color: var(--text-section-title);
   margin: 0 0 var(--space-lg) 0;
 }
 
@@ -109,7 +133,7 @@
 }
 
 .import-agent-button:hover {
-  background: #f1f5f9;
+  background: var(--bg-hover);
   color: #475569;
 }
 
