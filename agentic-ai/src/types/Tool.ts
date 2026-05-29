@@ -1,4 +1,3 @@
-import { AppState } from './common'
 import { Token } from './Token'
 
 export enum RagCustomDatabase {
@@ -7,6 +6,11 @@ export enum RagCustomDatabase {
 }
 
 export const PRODUCT_ENTITY_TYPE = 'product'
+
+export enum RagEntityType {
+  PRODUCT = 'product',
+  INVALID = 'invalid',
+}
 
 export enum RagLlmProvider {
   OPENAI = 'openai',
@@ -49,6 +53,14 @@ export interface RagEmporixEmbeddingConfig {
   token?: Token
 }
 
+export interface RagEmporixNativeToolConfig {
+  prompt?: string
+  entityType?: string
+  indexedFields?: RagEmporixFieldConfig[]
+  filterFields?: RagEmporixFilterFieldConfig[]
+  embeddingConfig?: RagEmporixEmbeddingConfig
+}
+
 export interface ToolConfig {
   teamId?: string
   botToken?: string
@@ -59,6 +71,7 @@ export interface ToolConfig {
   entityType?: string
   indexedFields?: RagEmporixFieldConfig[]
   filterFields?: RagEmporixFilterFieldConfig[]
+  emporixNativeToolConfig?: RagEmporixNativeToolConfig
 }
 
 export interface Tool {
@@ -75,12 +88,4 @@ export interface ToolCardProps {
   onConfigure: (tool: Tool) => void
   onRemove: (toolId: string) => void
   onReindex?: (tool: Tool) => void
-}
-
-export interface ToolConfigPanelProps {
-  visible: boolean
-  tool: Tool | null
-  onHide: () => void
-  onSave: (tool: Tool) => void
-  appState: AppState
 }

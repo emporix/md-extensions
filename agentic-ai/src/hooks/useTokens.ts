@@ -32,11 +32,8 @@ export const useTokens = (appState: AppState) => {
     onSuccess: (tokenId: string) => {
       setTokens((prev) => prev.filter((token) => token.id !== tokenId))
     },
-    successMessage: t(
-      'token_deleted_successfully',
-      'Token deleted successfully!'
-    ),
-    errorMessage: 'Failed to delete token',
+    successMessage: t('token_deleted_successfully'),
+    errorMessage: t('failed_to_delete_token'),
   })
 
   const upsertToken = useUpsertItem({
@@ -53,12 +50,12 @@ export const useTokens = (appState: AppState) => {
       const fetchedTokens = await getTokens(appState)
       setTokens(fetchedTokens)
     } catch (err) {
-      const message = formatApiError(err, 'Failed to load tokens')
+      const message = formatApiError(err, t('error_loading_tokens'))
       setError(message)
     } finally {
       setLoading(false)
     }
-  }, [appState])
+  }, [appState, t])
 
   const refreshTokens = useCallback(() => {
     loadTokens()

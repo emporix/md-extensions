@@ -1,7 +1,8 @@
 import { AgentsView } from './components/agent'
-import { ToolsPage } from './components/tool'
-import { TokensPage } from './components/token'
-import { McpPage } from './components/mcp'
+import AgentDetailPage from './components/agent/AgentDetailPage'
+import { ToolsPage, ToolDetailPage } from './components/tool'
+import { TokensPage, TokenDetailPage } from './components/token'
+import { McpPage, McpDetailPage } from './components/mcp'
 import LogsPage from './components/log/LogsPage'
 import SessionFlowPage from './components/log/SessionFlowPage'
 import LogDetailsPage from './components/log/LogDetailsPage'
@@ -45,9 +46,41 @@ const RemoteComponent = ({
       <HashRouter>
         <Routes>
           <Route path="/agents" element={<AgentsView appState={appState} />} />
+          <Route
+            path="/agents/add"
+            element={<AgentDetailPage appState={appState} />}
+          />
+          <Route
+            path="/agents/:agentId/edit"
+            element={<AgentDetailPage appState={appState} />}
+          />
           <Route path="/tools" element={<ToolsPage appState={appState} />} />
+          <Route
+            path="/tools/add"
+            element={<ToolDetailPage appState={appState} />}
+          />
+          <Route
+            path="/tools/:toolId/edit"
+            element={<ToolDetailPage appState={appState} />}
+          />
           <Route path="/tokens" element={<TokensPage appState={appState} />} />
+          <Route
+            path="/tokens/add"
+            element={<TokenDetailPage appState={appState} />}
+          />
+          <Route
+            path="/tokens/:tokenId/edit"
+            element={<TokenDetailPage appState={appState} />}
+          />
           <Route path="/mcp" element={<McpPage appState={appState} />} />
+          <Route
+            path="/mcp/add"
+            element={<McpDetailPage appState={appState} />}
+          />
+          <Route
+            path="/mcp/:mcpServerId/edit"
+            element={<McpDetailPage appState={appState} />}
+          />
           <Route
             path="/logs"
             element={<Navigate to="/logs/requests" replace />}

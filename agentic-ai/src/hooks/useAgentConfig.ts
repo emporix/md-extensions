@@ -13,6 +13,17 @@ import { useToast } from '../contexts/ToastContext'
 import { ApiClientError } from '../services/apiClient'
 import { formatApiError } from '../utils/errorHelpers'
 import { hasAnyLocalizedValue } from '../utils/agentHelpers'
+import {
+  AgentCommerceFilterDsl,
+  commerceTriggerExtractEvents,
+  commerceTriggerExtractFilter,
+  mergeCommerceTriggerPersistedConfig,
+  isCommerceFilterValid,
+} from '../utils/agentFilterDslHelpers'
+import {
+  getValidCollaborations,
+  areCollaborationsValid,
+} from '../utils/agentCollaborationHelpers'
 
 interface UseAgentConfigProps {
   agent: CustomAgent | null
@@ -47,12 +58,11 @@ interface AgentConfigState {
   agentCollaborations: AgentCollaboration[]
   tags: string[]
   requiredScopes: string[]
-  // Self-hosted LLM parameters
   selfHostedUrl: string
   selfHostedAuthHeaderName: string
   selfHostedTokenId: string
-  // Commerce events
   commerceEvents: string[]
+  commerceEventFilter: AgentCommerceFilterDsl | null
 }
 
 export const useAgentConfig = ({
@@ -87,12 +97,11 @@ export const useAgentConfig = ({
     agentCollaborations: [],
     tags: [],
     requiredScopes: [],
-    // Self-hosted LLM parameters
     selfHostedUrl: '',
     selfHostedAuthHeaderName: '',
     selfHostedTokenId: '',
-    // Commerce events
     commerceEvents: [],
+    commerceEventFilter: null,
   })
 
   const [saving, setSaving] = useState(false)
@@ -126,7 +135,6 @@ export const useAgentConfig = ({
         agentCollaborations: agent.agentCollaborations || [],
         tags: agent.tags || [],
         requiredScopes: agent.requiredScopes || [],
-        // Self-hosted LLM parameters
         selfHostedUrl: agent.llmConfig?.selfHostedParams?.url || '',
         selfHostedAuthHeaderName:
           agent.llmConfig?.selfHostedParams?.authorizationHeaderName || '',
@@ -136,10 +144,15 @@ export const useAgentConfig = ({
             ? agent.llmConfig.selfHostedParams.authorizationHeaderToken.id
             : agent.llmConfig?.selfHostedParams?.authorizationHeaderToken) ||
           '',
-        // Commerce events
-        commerceEvents:
-          (agent.triggers?.find((trigger) => trigger.type === 'commerce_events')
-            ?.config?.events as string[]) || [],
+        ...(() => {
+          const raw = agent.triggers?.find(
+            (trigger) => trigger.type === 'commerce_events'
+          )?.config as Record<string, unknown> | null | undefined
+          return {
+            commerceEvents: commerceTriggerExtractEvents(raw ?? null),
+            commerceEventFilter: commerceTriggerExtractFilter(raw ?? null),
+          }
+        })(),
       })
     }
   }, [agent])
@@ -151,12 +164,14 @@ export const useAgentConfig = ({
   const buildAgentFromState = useCallback(() => {
     if (!agent) return null
 
-    // Create triggers array from selected trigger types
     const triggers = state.triggerTypes.map((triggerType) => ({
       type: triggerType,
       config:
         triggerType === 'commerce_events'
-          ? { events: state.commerceEvents }
+          ? mergeCommerceTriggerPersistedConfig(
+              state.commerceEvents,
+              state.commerceEventFilter
+            )
           : null,
     }))
 
@@ -177,7 +192,6 @@ export const useAgentConfig = ({
           additionalParams: agent.llmConfig?.additionalParams || null,
         }
 
-        // Add regular token for non-emporix and non-self-hosted providers
         if (
           state.provider !== LlmProvider.EMPORIX_OPENAI &&
           state.provider !== LlmProvider.SELF_HOSTED_OLLAMA &&
@@ -187,7 +201,6 @@ export const useAgentConfig = ({
           baseConfig.token = { id: state.tokenId }
         }
 
-        // Add selfHostedParams for self-hosted providers
         if (
           state.provider === LlmProvider.SELF_HOSTED_OLLAMA ||
           state.provider === LlmProvider.SELF_HOSTED_VLLM
@@ -214,7 +227,7 @@ export const useAgentConfig = ({
       enableMemory: state.enableMemory,
       mcpServers: state.mcpServers || [],
       nativeTools: state.nativeTools || [],
-      agentCollaborations: state.agentCollaborations || [],
+      agentCollaborations: getValidCollaborations(state.agentCollaborations),
       enabled: agent.enabled || false,
       type: agent.type,
       metadata: agent.metadata || {
@@ -336,27 +349,27 @@ export const useAgentConfig = ({
       state.model.trim() &&
       (isCreating ? state.agentId.trim() : true)
 
-    // Token validation:
-    // - Never required for emporix_openai or self_hosted_ollama or self_hosted_vllm
-    // - Only required when creating (not updating) for other providers
     const tokenValidation =
       isEmporixProvider || isSelfHosted || !isCreating || state.tokenId.trim()
 
-    // Self-hosted validation:
-    // - URL is always required for self-hosted
     const selfHostedValidation = !isSelfHosted || state.selfHostedUrl.trim()
 
-    // Commerce events validation:
-    // - Events are required when trigger type is commerce_events
-    const commerceEventsValidation =
+    const commerceFilterValidation =
       !state.triggerTypes.includes('commerce_events') ||
-      (state.commerceEvents && state.commerceEvents.length > 0)
+      (state.commerceEvents.length > 0 &&
+        (!state.commerceEventFilter ||
+          isCommerceFilterValid(state.commerceEventFilter)))
+
+    const collaborationValidation = areCollaborationsValid(
+      state.agentCollaborations
+    )
 
     return (
       basicValidation &&
       tokenValidation &&
       selfHostedValidation &&
-      commerceEventsValidation
+      commerceFilterValidation &&
+      collaborationValidation
     )
   }, [state, agent?.id])
 

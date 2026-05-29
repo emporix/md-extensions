@@ -12,6 +12,7 @@ export interface LocalizedInputProps {
   onChange: (value: LocalizedString) => void
   displayOnly?: boolean
   error?: string
+  invalid?: boolean
   className?: string
   dataTestId?: string
   appState: AppState
@@ -23,6 +24,7 @@ export const LocalizedInput: React.FC<LocalizedInputProps> = ({
   onChange,
   displayOnly = false,
   error,
+  invalid = false,
   className = '',
   dataTestId,
   appState,
@@ -69,6 +71,8 @@ export const LocalizedInput: React.FC<LocalizedInputProps> = ({
     [state, onChange]
   )
 
+  const showInvalidState = invalid || Boolean(error)
+
   return (
     <div className={className} data-test-id="localized-inputs">
       {sortedLanguages?.map((language, index) => {
@@ -80,13 +84,18 @@ export const LocalizedInput: React.FC<LocalizedInputProps> = ({
             <div className="mb-2" key={language.id}>
               <div className="p-inputgroup">
                 <span
-                  style={{ borderColor: error ? 'var(--red-500)' : '' }}
+                  style={{
+                    borderColor: showInvalidState ? 'var(--red-500)' : '',
+                  }}
                   className="p-inputgroup-addon font-bold"
                 >
                   {language.id.toUpperCase()}
                 </span>
                 <InputText
-                  style={{ borderColor: error ? 'var(--red-500)' : '' }}
+                  style={{
+                    borderColor: showInvalidState ? 'var(--red-500)' : '',
+                  }}
+                  className={showInvalidState ? 'p-invalid' : ''}
                   disabled={displayOnly}
                   data-test-id={dataTestId}
                   value={fieldValue}
@@ -100,11 +109,11 @@ export const LocalizedInput: React.FC<LocalizedInputProps> = ({
           )
         )
       })}
-      {error && (
+      {error ? (
         <small style={{ marginTop: '-.25rem' }} className="p-error block mb-2">
           {error}
         </small>
-      )}
+      ) : null}
       {sortedLanguages && sortedLanguages.length > 1 && (
         <div
           className="flex align-items-center text-sm"

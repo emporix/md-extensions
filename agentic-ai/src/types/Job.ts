@@ -26,7 +26,7 @@ export interface ExportResult {
 
 export interface Job {
   id: string
-  status: 'success' | 'failure' | 'in_progress'
+  status: 'success' | 'failure' | 'in_progress' | 'skipped'
   requestId?: string
   sessionId?: string
   agentType?: string
@@ -41,7 +41,7 @@ export interface Job {
 
 export interface JobSummary {
   id: string
-  status: 'success' | 'failure' | 'in_progress'
+  status: 'success' | 'failure' | 'in_progress' | 'skipped'
   requestId?: string
   sessionId?: string
   agentType?: string

@@ -9,10 +9,3 @@ export interface TokenCardProps {
   onConfigure: (token: Token) => void
   onRemove: (tokenId: string) => void
 }
-
-export interface TokenConfigPanelProps {
-  visible: boolean
-  token: Token | null
-  onHide: () => void
-  onSave: (token: Token) => void
-}

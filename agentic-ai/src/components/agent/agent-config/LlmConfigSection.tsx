@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { InputText } from 'primereact/inputtext'
 import { Dropdown } from 'primereact/dropdown'
 import { InputSwitch } from 'primereact/inputswitch'
-import { LLM_PROVIDERS } from '../../../utils/constants'
+import { getLlmProviders } from '../../../utils/constants'
 import { getTokens } from '../../../services/tokensService'
 import { Token } from '../../../types/Token'
 import { AppState } from '../../../types/common'
@@ -42,6 +42,7 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
   selfHostedTokenId = '',
 }) => {
   const { t } = useTranslation()
+  const llmProviderOptions = useMemo(() => getLlmProviders(t), [t])
   const [tokens, setTokens] = useState<Token[]>([])
   const [tokensLoading, setTokensLoading] = useState(false)
 
@@ -84,7 +85,7 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
           <label className="field-label">{t('provider', 'Provider')}</label>
           <Dropdown
             value={provider}
-            options={LLM_PROVIDERS}
+            options={llmProviderOptions}
             onChange={(e) => onFieldChange('provider', e.value)}
             className="w-full"
             appendTo="self"
@@ -98,11 +99,6 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
             className={`w-full ${!model.trim() ? 'p-invalid' : ''}`}
             placeholder={t('enter_model', 'Enter model name')}
           />
-          {!model.trim() && (
-            <small className="p-error">
-              {t('model_required', 'Model is required')}
-            </small>
-          )}
         </div>
         <div className="form-field">
           <label className="field-label">
@@ -168,11 +164,6 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
                 disabled={tokensLoading}
                 appendTo="self"
               />
-              {!isEditing && !tokenId.trim() && (
-                <small className="p-error">
-                  {t('token_required', 'Token is required')}
-                </small>
-              )}
             </div>
           )}
 
@@ -193,11 +184,6 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
                   'Enter self-hosted URL'
                 )}
               />
-              {!selfHostedUrl.trim() && (
-                <small className="p-error">
-                  {t('self_hosted_url_required', 'Self-hosted URL is required')}
-                </small>
-              )}
             </div>
 
             <div className="form-field">
