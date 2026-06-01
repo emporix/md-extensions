@@ -98,6 +98,7 @@ const TRANSLATIONS_EN = {
   triggers_section_title: 'Triggers',
   trigger: 'Trigger',
   generate_condition: 'Generate Condition',
+  generate_condition_working: 'Generating condition…',
   generate_condition_prompt_placeholder:
     'e.g. Trigger an agent when siteCode is DE and published is true',
   select_an_option: 'Select an option',

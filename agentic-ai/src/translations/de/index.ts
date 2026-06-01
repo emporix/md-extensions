@@ -100,6 +100,7 @@ const TRANSLATIONS_DE = {
   triggers_section_title: 'Trigger',
   trigger: 'Trigger',
   generate_condition: 'Bedingung generieren',
+  generate_condition_working: 'Bedingung wird generiert…',
   generate_condition_prompt_placeholder:
     'z. B. Trigger einen Agenten, wenn siteCode DE ist und published true ist',
   select_an_option: 'Option auswählen',

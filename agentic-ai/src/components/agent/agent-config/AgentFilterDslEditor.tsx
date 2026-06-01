@@ -641,6 +641,15 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
     <div
       className={`commerce-filter-assistant-panel${inDialog ? ' commerce-filter-assistant-panel--dialog' : ''}`}
     >
+      {inDialog && assistantWorking && (
+        <div
+          className="generate-condition-dialog-blocker"
+          role="status"
+          aria-live="polite"
+        >
+          <ProgressSpinner aria-label={t('generate_condition_working')} />
+        </div>
+      )}
       {helperAgentPresent === null && (
         <div
           className="commerce-filter-assistant-loading state-loading"
@@ -785,7 +794,6 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
                 type="button"
                 label={t('apply')}
                 className="generate-condition-apply-btn"
-                loading={assistantWorking}
                 disabled={
                   assistantWorking ||
                   helperAgentPresent !== true ||

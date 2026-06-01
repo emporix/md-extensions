@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { InputText } from 'primereact/inputtext'
 import { InputTextarea } from 'primereact/inputtextarea'
@@ -33,97 +33,108 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   appState,
 }) => {
   const { t } = useTranslation()
-  const templatePromptRef = useRef<HTMLTextAreaElement>(null)
-
-  useLayoutEffect(() => {
-    const textarea = templatePromptRef.current
-    if (!textarea) {
-      return
-    }
-
-    textarea.style.height = 'auto'
-    textarea.style.height = `${textarea.scrollHeight}px`
-  }, [templatePrompt])
 
   const handleAgentIdChange = (value: string) => {
     const sanitized = sanitizeIdInput(value)
     onFieldChange('agentId', sanitized)
   }
 
+  const hasTemplatePrompt = Boolean(templatePrompt)
+
+  const idField = (
+    <div className="form-field">
+      <label className="field-label">
+        {t('agent_id')}
+        {!isEditing && <span className="field-required-mark"> *</span>}
+      </label>
+      <InputText
+        value={agentId}
+        onChange={(e) => handleAgentIdChange(e.target.value)}
+        className={`w-full ${!isEditing && !agentId.trim() ? 'p-invalid' : ''}`}
+        disabled={isEditing}
+        placeholder={!isEditing ? t('enter_agent_id') : undefined}
+      />
+    </div>
+  )
+
+  const nameField = (
+    <div className="form-field">
+      <label className="field-label">
+        {t('agent_name')}
+        <span className="field-required-mark"> *</span>
+      </label>
+      <LocalizedInput
+        value={agentName}
+        onChange={(value) => onFieldChange('agentName', value)}
+        appState={appState}
+        placeholder={t('enter_agent_name')}
+        invalid={!hasAnyLocalizedValue(agentName)}
+      />
+    </div>
+  )
+
+  const descriptionField = (
+    <div className="form-field">
+      <label className="field-label">
+        {t('description')}
+        <span className="field-required-mark"> *</span>
+      </label>
+      <LocalizedInput
+        value={description}
+        onChange={(value) => onFieldChange('description', value)}
+        appState={appState}
+        placeholder={t('enter_description')}
+        invalid={!hasAnyLocalizedValue(description)}
+      />
+    </div>
+  )
+
+  const templatePromptField = (
+    <div className="form-field agent-detail-template-prompt-field">
+      <label className="field-label">{t('template_prompt')}</label>
+      <InputTextarea
+        value={templatePrompt}
+        rows={12}
+        className="w-full readonly-textarea"
+        readOnly
+        placeholder={t('template_prompt_placeholder')}
+      />
+    </div>
+  )
+
+  const userPromptField = (
+    <div className="form-field agent-detail-user-prompt-field">
+      <label className="field-label">
+        {t('user_prompt')}
+        <span className="field-required-mark"> *</span>
+      </label>
+      <InputTextarea
+        value={prompt}
+        onChange={(e) => onFieldChange('prompt', e.target.value)}
+        rows={12}
+        className={`w-full ${!prompt.trim() ? 'p-invalid' : ''}`}
+        placeholder={t('enter_prompt')}
+      />
+    </div>
+  )
+
   return (
-    <>
-      <div className="agent-detail-form-row">
-        <div className="form-field">
-          <label className="field-label">
-            {t('agent_id')}
-            {!isEditing && <span className="field-required-mark"> *</span>}
-          </label>
-          <InputText
-            value={agentId}
-            onChange={(e) => handleAgentIdChange(e.target.value)}
-            className={`w-full ${!isEditing && !agentId.trim() ? 'p-invalid' : ''}`}
-            disabled={isEditing}
-            placeholder={!isEditing ? t('enter_agent_id') : undefined}
-          />
-        </div>
-
-        <div className="form-field">
-          <label className="field-label">
-            {t('agent_name')}
-            <span className="field-required-mark"> *</span>
-          </label>
-          <LocalizedInput
-            value={agentName}
-            onChange={(value) => onFieldChange('agentName', value)}
-            appState={appState}
-            placeholder={t('enter_agent_name')}
-            invalid={!hasAnyLocalizedValue(agentName)}
-          />
-        </div>
+    <div
+      className={`agent-basic-info ${
+        hasTemplatePrompt
+          ? 'agent-basic-info--with-template'
+          : 'agent-basic-info--single'
+      }`}
+    >
+      <div className="agent-basic-info-fields">
+        {idField}
+        {nameField}
+        {descriptionField}
       </div>
-
-      <div className="form-field">
-        <label className="field-label">
-          {t('description')}
-          <span className="field-required-mark"> *</span>
-        </label>
-        <LocalizedInput
-          value={description}
-          onChange={(value) => onFieldChange('description', value)}
-          appState={appState}
-          placeholder={t('enter_description')}
-          invalid={!hasAnyLocalizedValue(description)}
-        />
+      <div className="agent-basic-info-prompts">
+        {hasTemplatePrompt && templatePromptField}
+        {userPromptField}
       </div>
-
-      {templatePrompt && (
-        <div className="form-field agent-detail-template-prompt-field">
-          <label className="field-label">{t('template_prompt')}</label>
-          <InputTextarea
-            ref={templatePromptRef}
-            value={templatePrompt}
-            rows={1}
-            autoResize
-            className="w-full readonly-textarea"
-            readOnly
-            placeholder={t('template_prompt_placeholder')}
-          />
-        </div>
-      )}
-
-      <div className="form-field agent-detail-user-prompt-field">
-        <label className="field-label">
-          {t('user_prompt')}
-          <span className="field-required-mark"> *</span>
-        </label>
-        <InputTextarea
-          value={prompt}
-          onChange={(e) => onFieldChange('prompt', e.target.value)}
-          rows={12}
-          className={`w-full ${!prompt.trim() ? 'p-invalid' : ''}`}
-          placeholder={t('enter_prompt')}
-        />
-      </div>
-    </>
+    </div>
   )
 }

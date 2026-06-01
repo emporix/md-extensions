@@ -193,12 +193,65 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
+  container-type: inline-size;
 }
 
 .agent-detail-form-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-lg);
+}
+
+/* ========================================
+   AgentBasicInfo (General tab) layouts
+   ======================================== */
+
+.agent-basic-info {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.agent-basic-info-fields,
+.agent-basic-info-prompts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* Mode A — without template prompt:
+   basic fields stacked on the left, user prompt fills the right column. */
+.agent-basic-info--single {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+/* Mode B — with template prompt.
+   Small: basic fields in a horizontal row on top, prompts side by side below. */
+.agent-basic-info--with-template {
+  grid-template-columns: 1fr;
+}
+
+.agent-basic-info--with-template .agent-basic-info-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+}
+
+.agent-basic-info--with-template .agent-basic-info-prompts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Large: basic fields stack into a narrow left column beside the prompts. */
+@container (min-width: 1200px) {
+  .agent-basic-info--with-template {
+    grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .agent-basic-info--with-template .agent-basic-info-fields {
+    grid-template-columns: 1fr;
+  }
 }
 
 .agent-detail-section .form-field {
@@ -237,9 +290,9 @@
 }
 
 .agent-detail-template-prompt-field .p-inputtextarea {
-  min-height: unset;
+  min-height: 480px;
   resize: none;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .agent-detail-user-prompt-field .p-inputtextarea {
@@ -432,6 +485,11 @@
 }
 
 .agent-detail-tools-accordion {
+  --agent-detail-tools-left-width: 240px;
+  --agent-detail-tools-right-column-start: calc(
+    var(--space-xl) + var(--font-size-base) + var(--space-lg) +
+      var(--agent-detail-tools-left-width) + var(--space-lg)
+  );
   border: 1px solid #dee1e5;
   border-radius: var(--radius-sm);
   background: var(--color-surface-white);
@@ -484,7 +542,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
-  width: 240px;
+  width: var(--agent-detail-tools-left-width);
   flex-shrink: 0;
   --agent-detail-tools-tag-row-height: calc(4px + var(--font-size-sm) * 1.285);
 }
@@ -585,7 +643,7 @@
 
 .agent-detail-tools-accordion-body-inner {
   padding: var(--space-sm) var(--space-xl) var(--space-xl);
-  padding-left: 332px;
+  padding-left: var(--agent-detail-tools-right-column-start);
 }
 
 .agent-detail-tools-available-heading {
@@ -611,7 +669,7 @@
   align-items: center;
   gap: var(--space-lg);
   min-height: 36px;
-  padding: var(--space-sm) var(--space-lg);
+  padding: var(--space-sm) 0;
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
@@ -1175,6 +1233,13 @@
   }
 
   .agent-detail-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-basic-info--single,
+  .agent-basic-info--with-template,
+  .agent-basic-info--with-template .agent-basic-info-fields,
+  .agent-basic-info--with-template .agent-basic-info-prompts {
     grid-template-columns: 1fr;
   }
 
