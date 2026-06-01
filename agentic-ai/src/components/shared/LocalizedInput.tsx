@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { InputText } from 'primereact/inputtext'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { useTranslation } from 'react-i18next'
@@ -39,6 +39,10 @@ export const LocalizedInput: React.FC<LocalizedInputProps> = ({
   const [state, setState] = useState<LocalizedString>(value)
   const [showLanguages, setShowLanguages] = useState(false)
   const { languages } = useLanguages()
+
+  useEffect(() => {
+    setState(value)
+  }, [value])
 
   const toggleLanguages = useCallback(() => {
     setShowLanguages(!showLanguages)
