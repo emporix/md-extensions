@@ -36,7 +36,7 @@ export const COMMERCE_FILTER_DSL_AGENT_TEMPLATE_ID =
   'commerce-filter-dsl-assistant'
 
 export const COMMERCE_FILTER_DSL_AGENT_ID =
-  'commerce-filter-dsl-assistant-agent'
+  'agentic-commerce-events-filters-creator-assistant'
 
 export interface AgenticChatResponseItem {
   agentId: string

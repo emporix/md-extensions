@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { InputText } from 'primereact/inputtext'
+import { InputTextarea } from 'primereact/inputtextarea'
 import { useTranslation } from 'react-i18next'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGlobe } from '@fortawesome/free-solid-svg-icons'
@@ -17,6 +18,8 @@ export interface LocalizedInputProps {
   dataTestId?: string
   appState: AppState
   placeholder?: string
+  multiline?: boolean
+  rows?: number
 }
 
 export const LocalizedInput: React.FC<LocalizedInputProps> = ({
@@ -29,6 +32,8 @@ export const LocalizedInput: React.FC<LocalizedInputProps> = ({
   dataTestId,
   appState,
   placeholder,
+  multiline = false,
+  rows = 2,
 }) => {
   const { t } = useTranslation()
   const [state, setState] = useState<LocalizedString>(value)
@@ -91,19 +96,36 @@ export const LocalizedInput: React.FC<LocalizedInputProps> = ({
                 >
                   {language.id.toUpperCase()}
                 </span>
-                <InputText
-                  style={{
-                    borderColor: showInvalidState ? 'var(--red-500)' : '',
-                  }}
-                  className={showInvalidState ? 'p-invalid' : ''}
-                  disabled={displayOnly}
-                  data-test-id={dataTestId}
-                  value={fieldValue}
-                  onChange={(event) =>
-                    setLocalizedValue(languageKey, event.target.value)
-                  }
-                  placeholder={placeholder}
-                />
+                {multiline ? (
+                  <InputTextarea
+                    style={{
+                      borderColor: showInvalidState ? 'var(--red-500)' : '',
+                    }}
+                    className={showInvalidState ? 'p-invalid' : ''}
+                    disabled={displayOnly}
+                    data-test-id={dataTestId}
+                    value={fieldValue}
+                    onChange={(event) =>
+                      setLocalizedValue(languageKey, event.target.value)
+                    }
+                    placeholder={placeholder}
+                    rows={rows}
+                  />
+                ) : (
+                  <InputText
+                    style={{
+                      borderColor: showInvalidState ? 'var(--red-500)' : '',
+                    }}
+                    className={showInvalidState ? 'p-invalid' : ''}
+                    disabled={displayOnly}
+                    data-test-id={dataTestId}
+                    value={fieldValue}
+                    onChange={(event) =>
+                      setLocalizedValue(languageKey, event.target.value)
+                    }
+                    placeholder={placeholder}
+                  />
+                )}
               </div>
             </div>
           )

@@ -85,6 +85,8 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
         appState={appState}
         placeholder={t('enter_description')}
         invalid={!hasAnyLocalizedValue(description)}
+        multiline
+        rows={2}
       />
     </div>
   )
