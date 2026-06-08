@@ -6,7 +6,9 @@ interface DetailStatusDotProps {
   enabled: boolean
 }
 
-export const DetailStatusDot: React.FC<DetailStatusDotProps> = ({ enabled }) => {
+export const DetailStatusDot: React.FC<DetailStatusDotProps> = ({
+  enabled,
+}) => {
   const { t } = useTranslation()
   const label = enabled ? t('enabled') : t('disabled')
 

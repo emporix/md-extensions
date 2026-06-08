@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { McpServer } from '../types/Mcp'
 import { Tool } from '../types/Tool'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import { getMcpServers } from '../services/mcpService'
 import { getTools } from '../services/toolsService'
 
-export const useAgentToolsCatalog = (appState: AppState) => {
+export const useAgentToolsCatalog = () => {
+  const appState = useAppState()
   const [tools, setTools] = useState<Tool[]>([])
   const [mcpServers, setMcpServers] = useState<McpServer[]>([])
   const [toolsLoading, setToolsLoading] = useState(true)

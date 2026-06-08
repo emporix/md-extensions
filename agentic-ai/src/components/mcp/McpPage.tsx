@@ -5,21 +5,9 @@ import McpCard from './McpCard'
 import { BasePage } from '../shared/BasePage'
 import { McpServer } from '../../types/Mcp'
 import { useMcp } from '../../hooks/useMcp'
-import { AppState } from '../../types/common'
 import { ConfirmDialog } from '../shared/ConfirmDialog'
 
-interface McpPageProps {
-  appState?: AppState
-}
-
-const McpPage: React.FC<McpPageProps> = ({
-  appState = {
-    tenant: 'default',
-    language: 'default',
-    token: 'default',
-    contentLanguage: 'en',
-  },
-}) => {
+const McpPage: React.FC = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const {
@@ -37,7 +25,7 @@ const McpPage: React.FC<McpPageProps> = ({
     forceToggleConfirmVisible,
     hideForceToggleConfirm,
     confirmForceToggle,
-  } = useMcp(appState)
+  } = useMcp()
 
   const handleConfigure = useCallback(
     (mcpServer: McpServer) => {

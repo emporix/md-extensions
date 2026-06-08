@@ -9,15 +9,10 @@ import ImportAgentDialog from './ImportAgentDialog'
 import { ErrorBoundary } from '../shared/ErrorBoundary'
 import { BasePage } from '../shared/BasePage'
 import { ConfirmDialog } from '../shared/ConfirmDialog'
-import { AppState } from '../../types/common'
 import { useAgents } from '../../hooks/useAgents'
 import { AgentTemplate, CustomAgent } from '../../types/Agent'
 
-interface AgentsViewProps {
-  appState: AppState
-}
-
-const AgentsView = memo(({ appState }: AgentsViewProps) => {
+const AgentsView = memo(() => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
@@ -43,7 +38,7 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
     forceDeleteConfirmVisible,
     hideForceDeleteConfirm,
     confirmForceDelete,
-  } = useAgents(appState)
+  } = useAgents()
 
   const handleAddAgent = useCallback(
     (agentId: string) => {
@@ -132,7 +127,6 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
                 <CustomAgentCard
                   key={agent.id}
                   agent={agent}
-                  appState={appState}
                   onToggleActive={toggleCustomAgentActive}
                   onConfigure={handleConfigure}
                   onRemove={removeCustomAgent}
@@ -170,7 +164,6 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
                 agent={agent}
                 onToggleActive={toggleAgentActive}
                 onAddAgent={handleAddAgent}
-                appState={appState}
               />
             ))}
           </div>
@@ -182,14 +175,12 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
         agentTemplate={selectedAgentTemplate}
         onHide={handleCloseDialog}
         onSave={handleSaveAgent}
-        appState={appState}
       />
 
       <ImportAgentDialog
         visible={showImportDialog}
         onHide={() => setShowImportDialog(false)}
         onImport={handleImportSuccess}
-        appState={appState}
       />
 
       <ErrorBoundary>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Token } from '../types/Token'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
 import { upsertToken as upsertTokenApi } from '../services/tokensService'
 import { formatApiError } from '../utils/errorHelpers'
@@ -10,7 +10,6 @@ import { sanitizeIdInput } from '../utils/validation'
 interface UseTokenConfigProps {
   token: Token | null
   isCreating: boolean
-  appState: AppState
   onSave: () => void
 }
 
@@ -25,9 +24,9 @@ export type TokenConfigField = keyof TokenConfigState
 export const useTokenConfig = ({
   token,
   isCreating,
-  appState,
   onSave,
 }: UseTokenConfigProps) => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
   const [state, setState] = useState<TokenConfigState>({

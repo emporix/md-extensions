@@ -6,23 +6,13 @@ import { BasePage } from '../shared/BasePage'
 import { ConfirmDialog } from '../shared/ConfirmDialog'
 import { Tool } from '../../types/Tool'
 import { useTools } from '../../hooks/useTools'
-import { AppState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../contexts/ToastContext'
 import { reindex } from '../../services/aiRagIndexerService'
 import { resolveRagEntityType } from '../../utils/ragEmporixToolHelpers'
 
-interface ToolsPageProps {
-  appState?: AppState
-}
-
-const ToolsPage: React.FC<ToolsPageProps> = ({
-  appState = {
-    tenant: 'default',
-    language: 'default',
-    token: 'default',
-    contentLanguage: 'en',
-  },
-}) => {
+const ToolsPage: React.FC = () => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { showSuccess, showError } = useToast()
@@ -42,7 +32,7 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
     forceToggleConfirmVisible,
     hideForceToggleConfirm,
     confirmForceToggle,
-  } = useTools(appState)
+  } = useTools()
   const [reindexConfirmVisible, setReindexConfirmVisible] = useState(false)
   const [toolToReindex, setToolToReindex] = useState<Tool | null>(null)
 

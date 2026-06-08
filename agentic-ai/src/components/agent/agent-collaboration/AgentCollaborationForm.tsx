@@ -8,7 +8,7 @@ import { CustomAgent } from '../../../types/Agent'
 import { getLocalizedValue } from '../../../utils/agentHelpers'
 import { iconMap } from '../../../utils/agentHelpers'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { AppState } from '../../../types/common'
+import { useAppState } from '../../../contexts/AppStateContext'
 import {
   buildCollaboration,
   isCollaborationRowValid,
@@ -19,7 +19,6 @@ interface AgentCollaborationFormProps {
   onCancel: () => void
   availableAgents: CustomAgent[]
   editingCollaboration?: AgentCollaboration
-  appState: AppState
   variant?: 'default' | 'detail'
   className?: string
 }
@@ -29,11 +28,11 @@ export const AgentCollaborationForm: React.FC<AgentCollaborationFormProps> = ({
   onCancel,
   availableAgents,
   editingCollaboration,
-  appState,
   variant = 'default',
   className,
 }) => {
   const { t } = useTranslation()
+  const appState = useAppState()
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(
     editingCollaboration?.agentId ?? null
   )

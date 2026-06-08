@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import { getCommerceEvents } from '../services/agentService'
 import { formatApiError } from '../utils/errorHelpers'
 
@@ -10,7 +10,8 @@ export interface CommerceEventsState {
   error: string | null
 }
 
-export const useCommerceEvents = (appState: AppState) => {
+export const useCommerceEvents = () => {
+  const appState = useAppState()
   const { t } = useTranslation()
 
   const [state, setState] = useState<CommerceEventsState>({

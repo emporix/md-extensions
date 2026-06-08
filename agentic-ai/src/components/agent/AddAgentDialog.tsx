@@ -2,7 +2,6 @@ import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Dialog } from 'primereact/dialog'
 import { AgentTemplate, LocalizedString } from '../../types/Agent'
-import { AppState } from '../../types/common'
 import { FormStep } from './add-agent/FormStep'
 import { LoadingStep } from './add-agent/LoadingStep'
 import { SuccessStep } from './add-agent/SuccessStep'
@@ -18,11 +17,10 @@ interface AddAgentDialogProps {
     description: LocalizedString,
     templateId: string
   ) => void
-  appState: AppState
 }
 
 const AddAgentDialog: React.FC<AddAgentDialogProps> = memo(
-  ({ visible, agentTemplate, onHide, onSave, appState }) => {
+  ({ visible, agentTemplate, onHide, onSave }) => {
     const { t } = useTranslation()
 
     const {
@@ -44,7 +42,6 @@ const AddAgentDialog: React.FC<AddAgentDialogProps> = memo(
       resetForm,
     } = useAddAgentDialog({
       agentTemplate,
-      appState,
       onSave,
       onHide,
     })
@@ -57,7 +54,6 @@ const AddAgentDialog: React.FC<AddAgentDialogProps> = memo(
               agentId={agentId}
               setAgentId={setAgentId}
               agentName={agentName}
-              appState={appState}
               setUserPrompt={setUserPrompt}
               setAgentName={setAgentName}
               description={description}
@@ -74,7 +70,6 @@ const AddAgentDialog: React.FC<AddAgentDialogProps> = memo(
               agentName={agentName}
               progress={progress}
               onDiscard={handleDiscard}
-              appState={appState}
             />
           )
         case 'success':

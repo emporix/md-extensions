@@ -6,7 +6,7 @@ import { Button } from 'primereact/button'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHeadset } from '@fortawesome/free-solid-svg-icons'
 import { LocalizedString } from '../../../types/Agent'
-import { AppState } from '../../../types/common'
+import { useAppState } from '../../../contexts/AppStateContext'
 import {
   getLocalizedValue,
   hasAnyLocalizedValue,
@@ -26,7 +26,6 @@ interface FormStepProps {
   templatePrompt: string
   onDiscard: () => void
   onSave: () => void
-  appState: AppState
 }
 
 export const FormStep: React.FC<FormStepProps> = ({
@@ -41,8 +40,8 @@ export const FormStep: React.FC<FormStepProps> = ({
   templatePrompt,
   onDiscard,
   onSave,
-  appState,
 }) => {
+  const appState = useAppState()
   const { t } = useTranslation()
 
   const handleAgentIdChange = (value: string) => {
@@ -89,7 +88,6 @@ export const FormStep: React.FC<FormStepProps> = ({
           <LocalizedInput
             value={agentName}
             onChange={(value) => setAgentName(value)}
-            appState={appState}
             placeholder={t('enter_agent_name')}
             invalid={!hasAnyLocalizedValue(agentName)}
           />
@@ -101,7 +99,6 @@ export const FormStep: React.FC<FormStepProps> = ({
           <LocalizedInput
             value={description}
             onChange={(value) => setDescription(value)}
-            appState={appState}
             placeholder={t('enter_description')}
             invalid={!hasAnyLocalizedValue(description)}
           />

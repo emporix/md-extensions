@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { LogMessage, SessionLogs } from '../types/Log'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import { LogService } from '../services/logService'
 
 export interface SessionFlowNode {
@@ -18,7 +18,8 @@ export interface SessionFlowGroup {
   nodes: SessionFlowNode[]
 }
 
-export const useSessionFlow = (appState: AppState) => {
+export const useSessionFlow = () => {
+  const appState = useAppState()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [flows, setFlows] = useState<SessionFlowGroup[]>([])

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { fetchLlmModels } from '../services/modelsService'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import {
   isEmptyModelsCatalog,
   ModelsByProviderMap,
@@ -20,9 +20,9 @@ type UseLlmModelsCatalogOptions = {
 }
 
 export const useLlmModelsCatalog = (
-  appState: AppState,
   options: UseLlmModelsCatalogOptions = {}
 ) => {
+  const appState = useAppState()
   const { enabled = true } = options
   const tenant = appState.tenant?.trim() ?? ''
   const token = appState.token?.trim() ?? ''

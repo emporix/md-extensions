@@ -5,18 +5,15 @@ import { Button } from 'primereact/button'
 import { Message } from 'primereact/message'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { Token } from '../../types/Token'
-import { AppState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import { getTokens } from '../../services/tokensService'
 import { createEmptyToken } from '../../utils/tokenHelpers'
 import { useTokenConfig } from '../../hooks/useTokenConfig'
 import { TokenGeneralSection } from './TokenGeneralSection'
 import { TokenDetailSection } from './TokenDetailSection'
 
-interface TokenDetailPageProps {
-  appState: AppState
-}
-
-const TokenDetailPage: React.FC<TokenDetailPageProps> = ({ appState }) => {
+const TokenDetailPage: React.FC = () => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
@@ -88,7 +85,6 @@ const TokenDetailPage: React.FC<TokenDetailPageProps> = ({ appState }) => {
     useTokenConfig({
       token,
       isCreating,
-      appState,
       onSave: handleSaveSuccess,
     })
 

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Token } from '../types/Token'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import { formatApiError } from '../utils/errorHelpers'
 import {
   deleteToken,
@@ -11,7 +11,8 @@ import {
 import { useDeleteConfirmation } from './useDeleteConfirmation'
 import { useUpsertItem } from './useUpsertItem'
 
-export const useTokens = (appState: AppState) => {
+export const useTokens = () => {
+  const appState = useAppState()
   const [tokens, setTokens] = useState<Token[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

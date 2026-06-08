@@ -1,17 +1,14 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useLocation } from 'react-router'
-import { AppState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import UnifiedDetailsView from '../shared/UnifiedDetailsView'
 import { useJobs } from '../../hooks/useJobs'
 import { RequestLogs } from '../../types/Log'
 import { LogService } from '../../services/logService'
 
-interface JobDetailsPageProps {
-  appState: AppState
-}
-
-const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ appState }) => {
+const JobDetailsPage: React.FC = () => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const { jobId } = useParams<{ jobId: string }>()
   const navigate = useNavigate()
@@ -23,7 +20,7 @@ const JobDetailsPage: React.FC<JobDetailsPageProps> = ({ appState }) => {
   >(null)
 
   const { selectedJob, detailsLoading, detailsError, fetchJobDetails } =
-    useJobs(appState)
+    useJobs()
 
   useEffect(() => {
     // Get agentId from URL parameters

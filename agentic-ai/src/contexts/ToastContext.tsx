@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, {
   createContext,
   useContext,
@@ -16,27 +17,27 @@ interface ToastContextType {
   showWarning: (message: string) => void
 }
 
-const ToastContext = createContext<ToastContextType | undefined>(undefined)
+const Context = createContext<ToastContextType | undefined>(undefined)
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const useToast = () => {
-  const context = useContext(ToastContext)
+const useToast = () => {
+  const context = useContext(Context)
   if (!context) {
     throw new Error('useToast must be used within a ToastProvider')
   }
   return context
 }
 
+export { useToast }
+
 interface ToastProviderProps {
   children: React.ReactNode
 }
 
-export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
+const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const toast = useRef<Toast>(null)
   const [appendTo, setAppendTo] = useState<HTMLElement | undefined>(undefined)
 
   useEffect(() => {
-    // Append to document.body to escape stacking contexts when embedded
     if (typeof document !== 'undefined') {
       setAppendTo(document.body)
     }
@@ -79,11 +80,11 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   }
 
   return (
-    <ToastContext.Provider
-      value={{ showSuccess, showError, showInfo, showWarning }}
-    >
+    <Context.Provider value={{ showSuccess, showError, showInfo, showWarning }}>
       <Toast ref={toast} appendTo={appendTo} />
       {children}
-    </ToastContext.Provider>
+    </Context.Provider>
   )
 }
+
+export { ToastProvider }

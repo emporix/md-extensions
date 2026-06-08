@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { McpServer } from '../types/Mcp'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import { formatApiError } from '../utils/errorHelpers'
 import {
   deleteMcpServer,
@@ -14,7 +14,8 @@ import { useUpsertItem } from './useUpsertItem'
 import { useToast } from '../contexts/ToastContext'
 import { ApiClientError } from '../services/apiClient'
 
-export const useMcp = (appState: AppState) => {
+export const useMcp = () => {
+  const appState = useAppState()
   const [mcpServers, setMcpServers] = useState<McpServer[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

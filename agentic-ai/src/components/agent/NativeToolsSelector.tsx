@@ -3,22 +3,21 @@ import { useTranslation } from 'react-i18next'
 import { NativeTool } from '../../types/Agent'
 import { Tool } from '../../types/Tool'
 import { getTools } from '../../services/toolsService'
-import { AppState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import { NativeToolsList } from '../shared/native-tools/NativeToolsList'
 import { NativeToolForm } from '../shared/native-tools/NativeToolForm'
 
 interface NativeToolsSelectorProps {
   nativeTools: NativeTool[]
   onChange: (nativeTools: NativeTool[]) => void
-  appState: AppState
 }
 
 export const NativeToolsSelector: React.FC<NativeToolsSelectorProps> = ({
   nativeTools,
   onChange,
-  appState,
 }) => {
   const { t } = useTranslation()
+  const appState = useAppState()
   const [availableTools, setAvailableTools] = useState<Tool[]>([])
   const [toolsLoading, setToolsLoading] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)

@@ -6,7 +6,7 @@ import { InputSwitch } from 'primereact/inputswitch'
 import { getLlmProviders } from '../../../utils/constants'
 import { getTokens } from '../../../services/tokensService'
 import { Token } from '../../../types/Token'
-import { AppState } from '../../../types/common'
+import { useAppState } from '../../../contexts/AppStateContext'
 import { LlmProvider } from '../../../types/Agent'
 
 interface LlmConfigSectionProps {
@@ -18,7 +18,6 @@ interface LlmConfigSectionProps {
   recursionLimit: string
   enableMemory: boolean
   isEditing: boolean
-  appState: AppState
   onFieldChange: (field: string, value: string | boolean) => void
   // Self-hosted LLM parameters
   selfHostedUrl?: string
@@ -35,13 +34,13 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
   recursionLimit,
   enableMemory,
   isEditing,
-  appState,
   onFieldChange,
   selfHostedUrl = '',
   selfHostedAuthHeaderName = '',
   selfHostedTokenId = '',
 }) => {
   const { t } = useTranslation()
+  const appState = useAppState()
   const llmProviderOptions = useMemo(() => getLlmProviders(t), [t])
   const [tokens, setTokens] = useState<Token[]>([])
   const [tokensLoading, setTokensLoading] = useState(false)

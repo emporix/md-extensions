@@ -5,7 +5,7 @@ import { Button } from 'primereact/button'
 import { Message } from 'primereact/message'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { McpServer } from '../../types/Mcp'
-import { AppState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import { getMcpServers } from '../../services/mcpService'
 import { createEmptyMcpServer } from '../../utils/mcpHelpers'
 import { useMcpConfig } from '../../hooks/useMcpConfig'
@@ -15,11 +15,8 @@ import { McpConnectionSection } from './McpConnectionSection'
 import { McpDetailSection } from './McpDetailSection'
 import { DetailStatusDot } from '../shared/DetailStatusDot'
 
-interface McpDetailPageProps {
-  appState: AppState
-}
-
-const McpDetailPage: React.FC<McpDetailPageProps> = ({ appState }) => {
+const McpDetailPage: React.FC = () => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
@@ -31,7 +28,7 @@ const McpDetailPage: React.FC<McpDetailPageProps> = ({ appState }) => {
   const [error, setError] = useState<string | null>(null)
 
   const { tokens: catalogTokens, loading: tokensLoading } =
-    useAgentTokensCatalog(appState)
+    useAgentTokensCatalog()
 
   useEffect(() => {
     if (isCreating) {
@@ -93,7 +90,6 @@ const McpDetailPage: React.FC<McpDetailPageProps> = ({ appState }) => {
   const { state, saving, updateField, handleSave, isFormValid } = useMcpConfig({
     mcpServer,
     isCreating,
-    appState,
     onSave: handleSaveSuccess,
   })
 

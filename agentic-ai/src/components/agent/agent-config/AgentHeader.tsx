@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRobot } from '@fortawesome/free-solid-svg-icons'
 import { iconMap, getLocalizedValue } from '../../../utils/agentHelpers'
 import { LocalizedString } from '../../../types/Agent'
-import { AppState } from '../../../types/common'
+import { useAppState } from '../../../contexts/AppStateContext'
 
 interface AgentHeaderProps {
   agentName: LocalizedString
@@ -12,7 +12,6 @@ interface AgentHeaderProps {
   selectedTag: string | null
   onIconClick: () => void
   onTagClick: () => void
-  appState: AppState
 }
 
 export const AgentHeader: React.FC<AgentHeaderProps> = ({
@@ -21,9 +20,9 @@ export const AgentHeader: React.FC<AgentHeaderProps> = ({
   selectedTag,
   onIconClick,
   onTagClick,
-  appState,
 }) => {
   const { t } = useTranslation()
+  const appState = useAppState()
   const agentDisplayName = getLocalizedValue(
     agentName,
     appState.contentLanguage

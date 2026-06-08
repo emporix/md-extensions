@@ -5,7 +5,6 @@ import { Dropdown } from 'primereact/dropdown'
 import { MultiSelect } from 'primereact/multiselect'
 import { Tooltip } from 'primereact/tooltip'
 import { getTriggerTypes } from '../../../utils/constants'
-import { AppState } from '../../../types/common'
 import { type AgentCommerceFilterDsl } from '../../../utils/agentFilterDslHelpers'
 import { AgentFilterDslEditor } from './AgentFilterDslEditor'
 import starsIcon from '../../../assets/stars_icon.svg'
@@ -20,7 +19,6 @@ interface TriggersSectionProps {
     field: string,
     value: string[] | AgentCommerceFilterDsl | null
   ) => void
-  appState: AppState
   variant?: 'detail' | 'inline'
   commerceEventCatalog: string[]
   commerceCatalogLoading: boolean
@@ -34,7 +32,6 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
   commerceEventFilter,
   requiredScopes,
   onFieldChange,
-  appState,
   variant = 'detail',
   commerceEventCatalog,
   commerceCatalogLoading,
@@ -217,7 +214,6 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
             <AgentFilterDslEditor
               value={commerceEventFilter}
               onChange={(value) => onFieldChange('commerceEventFilter', value)}
-              appState={appState}
               layout="split"
               assistantDialogVisible={assistantDialogVisible}
               onAssistantDialogVisibleChange={setAssistantDialogVisible}
@@ -233,7 +229,6 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
         <AgentFilterDslEditor
           value={commerceEventFilter}
           onChange={(value) => onFieldChange('commerceEventFilter', value)}
-          appState={appState}
         />
       </div>
     )

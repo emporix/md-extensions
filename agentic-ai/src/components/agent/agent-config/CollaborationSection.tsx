@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'primereact/button'
 import { AgentCollaboration, CustomAgent } from '../../../types/Agent'
-import { AppState } from '../../../types/common'
+import { useAppState } from '../../../contexts/AppStateContext'
 import { getLocalizedValue } from '../../../utils/agentHelpers'
 import { iconMap } from '../../../utils/agentHelpers'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -18,7 +18,6 @@ interface CollaborationSectionProps {
   availableAgents: CustomAgent[]
   currentAgentId?: string
   currentAgentType?: string
-  appState: AppState
 }
 
 export const CollaborationSection: React.FC<CollaborationSectionProps> = ({
@@ -27,8 +26,8 @@ export const CollaborationSection: React.FC<CollaborationSectionProps> = ({
   availableAgents,
   currentAgentId,
   currentAgentType,
-  appState,
 }) => {
+  const appState = useAppState()
   const { t } = useTranslation()
 
   const rows = collaborations

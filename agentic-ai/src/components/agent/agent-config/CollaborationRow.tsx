@@ -48,9 +48,7 @@ export const CollaborationRow: React.FC<CollaborationRowProps> = ({
         </div>
 
         <div className="form-field">
-          <label className="field-label">
-            {t('collaboration_prompt')}
-          </label>
+          <label className="field-label">{t('collaboration_prompt')}</label>
           <InputTextarea
             value={collaboration.description}
             onChange={(event) =>

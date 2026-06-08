@@ -9,7 +9,7 @@ import {
   ToolConfig,
 } from '../types/Tool'
 import { CustomSchemaType } from '../types/Schema'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
 import {
   getTokens,
@@ -42,7 +42,6 @@ import {
 interface UseToolConfigProps {
   tool: Tool | null
   isCreating: boolean
-  appState: AppState
   onSave: () => void
 }
 
@@ -58,9 +57,9 @@ export type ToolConfigField = 'toolId' | 'toolName' | 'toolType'
 export const useToolConfig = ({
   tool,
   isCreating,
-  appState,
   onSave,
 }: UseToolConfigProps) => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
   const [state, setState] = useState<ToolConfigState>({

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CustomMcpServerTransportType, McpServer } from '../types/Mcp'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
 import { upsertMcpServer as upsertMcpServerApi } from '../services/mcpService'
 import { formatApiError } from '../utils/errorHelpers'
@@ -10,7 +10,6 @@ import { sanitizeIdInput, validateMcpServer } from '../utils/validation'
 interface UseMcpConfigProps {
   mcpServer: McpServer | null
   isCreating: boolean
-  appState: AppState
   onSave: () => void
 }
 
@@ -28,9 +27,9 @@ export type McpConfigField = keyof McpConfigState
 export const useMcpConfig = ({
   mcpServer,
   isCreating,
-  appState,
   onSave,
 }: UseMcpConfigProps) => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
   const [state, setState] = useState<McpConfigState>({

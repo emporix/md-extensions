@@ -3,22 +3,21 @@ import { useTranslation } from 'react-i18next'
 import { McpServer } from '../../types/Agent'
 import { McpServer as ManagedMcpServer } from '../../types/Mcp'
 import { getMcpServers } from '../../services/mcpService'
-import { AppState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import { McpServersList } from '../mcp/mcp-servers/McpServersList'
 import { McpServerForm } from '../mcp/mcp-servers/McpServerForm'
 
 interface McpServersSelectorProps {
   mcpServers: McpServer[]
   onChange: (mcpServers: McpServer[]) => void
-  appState: AppState
 }
 
 export const McpServersSelector: React.FC<McpServersSelectorProps> = ({
   mcpServers,
   onChange,
-  appState,
 }) => {
   const { t } = useTranslation()
+  const appState = useAppState()
   const [availableMcpServers, setAvailableMcpServers] = useState<
     ManagedMcpServer[]
   >([])

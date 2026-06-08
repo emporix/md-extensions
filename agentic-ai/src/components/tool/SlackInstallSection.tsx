@@ -1,18 +1,13 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'primereact/button'
-import { AppState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import { getSlackInstallationData } from '../../services/toolsService'
 import { useToast } from '../../contexts/ToastContext'
 import slackIcon from '../../assets/slack_icon.svg'
 
-interface SlackInstallSectionProps {
-  appState: AppState
-}
-
-export const SlackInstallSection: React.FC<SlackInstallSectionProps> = ({
-  appState,
-}) => {
+export const SlackInstallSection: React.FC = () => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const { showError } = useToast()
   const [slackInstallLoading, setSlackInstallLoading] = useState(false)

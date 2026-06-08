@@ -5,7 +5,7 @@ import { Timeline } from 'primereact/timeline'
 import { Checkbox } from 'primereact/checkbox'
 import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
-import { AppState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import { BasePage } from '../shared/BasePage'
 import { SeverityBadge } from '../shared/SeverityBadge'
 import { useSessionFlow } from '../../hooks/useSessionFlow'
@@ -13,11 +13,8 @@ import { LogService } from '../../services/logService'
 import '../../styles/components/SessionFlowPage.css'
 import { LogMessage } from '../../types/Log'
 
-interface SessionFlowPageProps {
-  appState: AppState
-}
-
-const SessionFlowPage: React.FC<SessionFlowPageProps> = ({ appState }) => {
+const SessionFlowPage: React.FC = () => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const { sessionId } = useParams<{ sessionId: string }>()
   const navigate = useNavigate()
@@ -26,7 +23,7 @@ const SessionFlowPage: React.FC<SessionFlowPageProps> = ({ appState }) => {
   const [selectedAgents, setSelectedAgents] = useState<Set<string>>(new Set())
   const [searchTerm, setSearchTerm] = useState('')
   const [isControlExpanded, setIsControlExpanded] = useState(false)
-  const { flows, loading, error, fetchBySessionId } = useSessionFlow(appState)
+  const { flows, loading, error, fetchBySessionId } = useSessionFlow()
   const logService = useMemo(() => new LogService(appState), [appState])
 
   useEffect(() => {

@@ -26,13 +26,11 @@ import {
   parseAgentCommerceFilterDsl,
   stringifyFilterDsl,
 } from '../../../utils/agentFilterDslHelpers'
-import type { AppState } from '../../../types/common'
 import { useCommerceFilterDslAssistant } from '../../../hooks/useCommerceFilterDslAssistant'
 
 export interface AgentFilterDslEditorProps {
   value: AgentCommerceFilterDsl | null
   onChange: (value: AgentCommerceFilterDsl | null) => void
-  appState?: AppState
   layout?: 'tabs' | 'split'
   assistantDialogVisible?: boolean
   onAssistantDialogVisibleChange?: (visible: boolean) => void
@@ -82,7 +80,6 @@ const patchLeafFields = (
 export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
   value,
   onChange,
-  appState,
   layout = 'tabs',
   assistantDialogVisible = false,
   onAssistantDialogVisibleChange,
@@ -97,11 +94,10 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
   const fallbackLeaf = defaultCommerceFilterDsl()
   const effectiveRoot = value ?? fallbackLeaf
 
-  const tabIds = useMemo((): EditorTab[] => {
-    return appState
-      ? (['form', 'json', 'assistant'] as const)
-      : (['form', 'json'] as const)
-  }, [appState])
+  const tabIds = useMemo(
+    (): EditorTab[] => ['form', 'json', 'assistant'] as const,
+    []
+  )
 
   const [pendingLogic, setPendingLogic] = useState<DslLogicalOperator>('$and')
   useEffect(() => {
@@ -192,7 +188,6 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
     handleEnableHelperAgent,
     handleAssistantGenerate,
   } = useCommerceFilterDslAssistant({
-    appState,
     activeTab: assistantHookTab,
     tryCommitParsedFilter,
     onApplyGeneratedDsl,
@@ -832,7 +827,7 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
 
         {activeTab === 'json' && renderJsonPanel()}
 
-        {activeTab === 'assistant' && appState && renderAssistantContent()}
+        {activeTab === 'assistant' && renderAssistantContent()}
       </div>
 
       <div className="agent-filter-dsl-actions">

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useLocation } from 'react-router'
-import { AppState } from '../../types/common'
 import UnifiedDetailsView from '../shared/UnifiedDetailsView'
 import { useAgentLogs } from '../../hooks/useAgentLogs'
 import {
@@ -9,11 +8,7 @@ import {
   extractResponseFromLog,
 } from '../../utils/logHelpers'
 
-interface LogDetailsPageProps {
-  appState: AppState
-}
-
-const LogDetailsPage: React.FC<LogDetailsPageProps> = ({ appState }) => {
+const LogDetailsPage: React.FC = () => {
   const { t } = useTranslation()
   const { logId } = useParams<{ logId: string }>()
   const navigate = useNavigate()
@@ -21,7 +16,7 @@ const LogDetailsPage: React.FC<LogDetailsPageProps> = ({ appState }) => {
   const [agentId, setAgentId] = useState<string | undefined>()
 
   const { selectedLog, detailsLoading, detailsError, fetchLogDetails } =
-    useAgentLogs(appState)
+    useAgentLogs()
 
   useEffect(() => {
     // Get agentId from URL parameters

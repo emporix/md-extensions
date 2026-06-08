@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGlobe } from '@fortawesome/free-solid-svg-icons'
 import { LocalizedString } from '../../types/Agent'
-import { AppState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import { useLanguages } from '../../hooks/useLanguages'
 
 export interface LocalizedInputProps {
@@ -16,7 +16,6 @@ export interface LocalizedInputProps {
   invalid?: boolean
   className?: string
   dataTestId?: string
-  appState: AppState
   placeholder?: string
   multiline?: boolean
   rows?: number
@@ -30,11 +29,11 @@ export const LocalizedInput: React.FC<LocalizedInputProps> = ({
   invalid = false,
   className = '',
   dataTestId,
-  appState,
   placeholder,
   multiline = false,
   rows = 2,
 }) => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const [state, setState] = useState<LocalizedString>(value)
   const [showLanguages, setShowLanguages] = useState(false)

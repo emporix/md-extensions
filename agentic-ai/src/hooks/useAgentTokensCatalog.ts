@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getTokens } from '../services/tokensService'
 import { Token } from '../types/Token'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 
-export const useAgentTokensCatalog = (appState: AppState) => {
+export const useAgentTokensCatalog = () => {
+  const appState = useAppState()
   const [tokens, setTokens] = useState<Token[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

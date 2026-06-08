@@ -5,7 +5,7 @@ import { Button } from 'primereact/button'
 import { Message } from 'primereact/message'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { Tool } from '../../types/Tool'
-import { AppState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import { getTools } from '../../services/toolsService'
 import { createEmptyTool } from '../../utils/toolHelpers'
 import { useToolConfig } from '../../hooks/useToolConfig'
@@ -21,10 +21,6 @@ import { RagEmporixToolSection } from './RagEmporixToolSection'
 import { RagEmporixIndexedFieldsSection } from './RagEmporixIndexedFieldsSection'
 import { RagFilterFieldsSection } from './RagFilterFieldsSection'
 
-interface ToolDetailPageProps {
-  appState: AppState
-}
-
 type ToolDetailTab = 'general' | 'settings'
 
 const TABS: Array<{ key: ToolDetailTab; labelKey: string }> = [
@@ -32,7 +28,8 @@ const TABS: Array<{ key: ToolDetailTab; labelKey: string }> = [
   { key: 'settings', labelKey: 'settings' },
 ]
 
-const ToolDetailPage: React.FC<ToolDetailPageProps> = ({ appState }) => {
+const ToolDetailPage: React.FC = () => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
@@ -128,7 +125,6 @@ const ToolDetailPage: React.FC<ToolDetailPageProps> = ({ appState }) => {
   } = useToolConfig({
     tool,
     isCreating,
-    appState,
     onSave: handleSaveSuccess,
   })
 
@@ -199,7 +195,7 @@ const ToolDetailPage: React.FC<ToolDetailPageProps> = ({ appState }) => {
 
           {state.toolType === 'slack' && isCreating && (
             <ToolDetailSection titleKey="install_slack">
-              <SlackInstallSection appState={appState} />
+              <SlackInstallSection />
             </ToolDetailSection>
           )}
         </div>

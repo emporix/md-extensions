@@ -2,7 +2,6 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { InputText } from 'primereact/inputtext'
 import { InputTextarea } from 'primereact/inputtextarea'
-import { AppState } from '../../../types/common'
 import { LocalizedString } from '../../../types/Agent'
 import { LocalizedInput } from '../../shared/LocalizedInput'
 import { hasAnyLocalizedValue } from '../../../utils/agentHelpers'
@@ -18,7 +17,6 @@ interface AgentBasicInfoProps {
     field: string,
     value: string | string[] | LocalizedString
   ) => void
-  appState: AppState
   templatePrompt: string
 }
 
@@ -30,7 +28,6 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   templatePrompt,
   isEditing,
   onFieldChange,
-  appState,
 }) => {
   const { t } = useTranslation()
 
@@ -66,7 +63,6 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       <LocalizedInput
         value={agentName}
         onChange={(value) => onFieldChange('agentName', value)}
-        appState={appState}
         placeholder={t('enter_agent_name')}
         invalid={!hasAnyLocalizedValue(agentName)}
       />
@@ -82,7 +78,6 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       <LocalizedInput
         value={description}
         onChange={(value) => onFieldChange('description', value)}
-        appState={appState}
         placeholder={t('enter_description')}
         invalid={!hasAnyLocalizedValue(description)}
         multiline

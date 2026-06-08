@@ -6,20 +6,8 @@ import { BasePage } from '../shared/BasePage'
 import { ConfirmDialog } from '../shared/ConfirmDialog'
 import { Token } from '../../types/Token'
 import { useTokens } from '../../hooks/useTokens'
-import { AppState } from '../../types/common'
 
-interface TokensPageProps {
-  appState?: AppState
-}
-
-const TokensPage: React.FC<TokensPageProps> = ({
-  appState = {
-    tenant: 'default',
-    language: 'default',
-    token: 'default',
-    contentLanguage: 'en',
-  },
-}) => {
+const TokensPage: React.FC = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const {
@@ -33,7 +21,7 @@ const TokensPage: React.FC<TokensPageProps> = ({
     forceDeleteConfirmVisible,
     hideForceDeleteConfirm,
     confirmForceDelete,
-  } = useTokens(appState)
+  } = useTokens()
 
   const handleConfigure = useCallback(
     (token: Token) => {

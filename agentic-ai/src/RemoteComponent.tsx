@@ -12,6 +12,7 @@ import { useEffect } from 'react'
 import { HashRouter, Routes, Route, Navigate } from 'react-router'
 import { AppState } from './types/common'
 import { ToastProvider } from './contexts/ToastContext'
+import { AppStateProvider } from './contexts/AppStateContext'
 import './translations/i18n'
 import './styles/agents.css'
 import './styles/components/AddAgentDialog.css'
@@ -42,74 +43,40 @@ const RemoteComponent = ({
   }, [appState.language, i18n])
 
   return (
-    <ToastProvider>
-      <HashRouter>
-        <Routes>
-          <Route path="/agents" element={<AgentsView appState={appState} />} />
-          <Route
-            path="/agents/add"
-            element={<AgentDetailPage appState={appState} />}
-          />
-          <Route
-            path="/agents/:agentId/edit"
-            element={<AgentDetailPage appState={appState} />}
-          />
-          <Route path="/tools" element={<ToolsPage appState={appState} />} />
-          <Route
-            path="/tools/add"
-            element={<ToolDetailPage appState={appState} />}
-          />
-          <Route
-            path="/tools/:toolId/edit"
-            element={<ToolDetailPage appState={appState} />}
-          />
-          <Route path="/tokens" element={<TokensPage appState={appState} />} />
-          <Route
-            path="/tokens/add"
-            element={<TokenDetailPage appState={appState} />}
-          />
-          <Route
-            path="/tokens/:tokenId/edit"
-            element={<TokenDetailPage appState={appState} />}
-          />
-          <Route path="/mcp" element={<McpPage appState={appState} />} />
-          <Route
-            path="/mcp/add"
-            element={<McpDetailPage appState={appState} />}
-          />
-          <Route
-            path="/mcp/:mcpServerId/edit"
-            element={<McpDetailPage appState={appState} />}
-          />
-          <Route
-            path="/logs"
-            element={<Navigate to="/logs/requests" replace />}
-          />
-          <Route
-            path="/logs/requests"
-            element={<LogsPage appState={appState} />}
-          />
-          <Route path="/logs/jobs" element={<LogsPage appState={appState} />} />
-          <Route
-            path="/logs/sessions"
-            element={<LogsPage appState={appState} />}
-          />
-          <Route
-            path="/logs/requests/:logId"
-            element={<LogDetailsPage appState={appState} />}
-          />
-          <Route
-            path="/logs/jobs/:jobId"
-            element={<JobDetailsPage appState={appState} />}
-          />
-          <Route
-            path="/logs/sessions/:sessionId"
-            element={<SessionFlowPage appState={appState} />}
-          />
-          <Route path="/" element={<Navigate to="/agents" replace />} />
-        </Routes>
-      </HashRouter>
-    </ToastProvider>
+    <AppStateProvider appState={appState}>
+      <ToastProvider>
+        <HashRouter>
+          <Routes>
+            <Route path="/agents" element={<AgentsView />} />
+            <Route path="/agents/add" element={<AgentDetailPage />} />
+            <Route path="/agents/:agentId/edit" element={<AgentDetailPage />} />
+            <Route path="/tools" element={<ToolsPage />} />
+            <Route path="/tools/add" element={<ToolDetailPage />} />
+            <Route path="/tools/:toolId/edit" element={<ToolDetailPage />} />
+            <Route path="/tokens" element={<TokensPage />} />
+            <Route path="/tokens/add" element={<TokenDetailPage />} />
+            <Route path="/tokens/:tokenId/edit" element={<TokenDetailPage />} />
+            <Route path="/mcp" element={<McpPage />} />
+            <Route path="/mcp/add" element={<McpDetailPage />} />
+            <Route path="/mcp/:mcpServerId/edit" element={<McpDetailPage />} />
+            <Route
+              path="/logs"
+              element={<Navigate to="/logs/requests" replace />}
+            />
+            <Route path="/logs/requests" element={<LogsPage />} />
+            <Route path="/logs/jobs" element={<LogsPage />} />
+            <Route path="/logs/sessions" element={<LogsPage />} />
+            <Route path="/logs/requests/:logId" element={<LogDetailsPage />} />
+            <Route path="/logs/jobs/:jobId" element={<JobDetailsPage />} />
+            <Route
+              path="/logs/sessions/:sessionId"
+              element={<SessionFlowPage />}
+            />
+            <Route path="/" element={<Navigate to="/agents" replace />} />
+          </Routes>
+        </HashRouter>
+      </ToastProvider>
+    </AppStateProvider>
   )
 }
 

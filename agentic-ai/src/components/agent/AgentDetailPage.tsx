@@ -12,7 +12,7 @@ import {
   NativeTool,
   AgentCollaboration,
 } from '../../types/Agent'
-import { AppState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import { ConfirmDialog } from '../shared/ConfirmDialog'
 import { AgentBasicInfo } from './agent-config/AgentBasicInfo'
 import { TriggersSection } from './agent-config/TriggersSection'
@@ -32,10 +32,6 @@ import {
 import { getCustomAgents } from '../../services/agentService'
 import type { AgentCommerceFilterDsl } from '../../utils/agentFilterDslHelpers'
 
-interface AgentDetailPageProps {
-  appState: AppState
-}
-
 const TABS = [
   { key: 'general', labelKey: 'general' },
   { key: 'model', labelKey: 'model' },
@@ -46,7 +42,8 @@ const TABS = [
 
 type AgentDetailTab = (typeof TABS)[number]['key']
 
-const AgentDetailPage: React.FC<AgentDetailPageProps> = ({ appState }) => {
+const AgentDetailPage: React.FC = () => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
@@ -137,23 +134,23 @@ const AgentDetailPage: React.FC<AgentDetailPageProps> = ({ appState }) => {
     mcpServers: catalogMcpServers,
     toolsLoading,
     mcpServersLoading,
-  } = useAgentToolsCatalog(appState)
+  } = useAgentToolsCatalog()
 
   const { tokens: catalogTokens, loading: tokensLoading } =
-    useAgentTokensCatalog(appState)
+    useAgentTokensCatalog()
 
   const {
     modelsByProvider,
     loading: modelsLoading,
     error: modelsError,
     hasFetched: modelsFetched,
-  } = useLlmModelsCatalog(appState)
+  } = useLlmModelsCatalog()
 
   const {
     events: commerceEventCatalog,
     loading: commerceCatalogLoading,
     error: commerceCatalogError,
-  } = useCommerceEvents(appState)
+  } = useCommerceEvents()
 
   const handleNavigateBack = useCallback(() => {
     navigate('/agents')
@@ -175,7 +172,6 @@ const AgentDetailPage: React.FC<AgentDetailPageProps> = ({ appState }) => {
     handleCancelDisable,
   } = useAgentConfig({
     agent,
-    appState,
     onSave: handleSaveSuccess,
     onHide: handleNavigateBack,
   })
@@ -221,7 +217,6 @@ const AgentDetailPage: React.FC<AgentDetailPageProps> = ({ appState }) => {
               templatePrompt={state.templatePrompt}
               isEditing={!isCreating && !!agent?.id}
               onFieldChange={handleFieldChange}
-              appState={appState}
             />
           </section>
         </div>
@@ -237,7 +232,6 @@ const AgentDetailPage: React.FC<AgentDetailPageProps> = ({ appState }) => {
           commerceEventFilter={state.commerceEventFilter}
           requiredScopes={state.requiredScopes}
           onFieldChange={handleFieldChange}
-          appState={appState}
           commerceEventCatalog={commerceEventCatalog}
           commerceCatalogLoading={commerceCatalogLoading}
           commerceCatalogError={commerceCatalogError}
@@ -294,7 +288,6 @@ const AgentDetailPage: React.FC<AgentDetailPageProps> = ({ appState }) => {
           availableAgents={availableAgents}
           currentAgentId={state.agentId || agent?.id}
           currentAgentType={state.agentType}
-          appState={appState}
         />
       )
     }

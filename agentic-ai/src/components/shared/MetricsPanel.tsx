@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { useLocation } from 'react-router'
-import { AppState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import {
   AnalyticsService,
   SessionSeverityDistribution,
@@ -13,14 +13,11 @@ import SessionErrorTrendChart from './SessionErrorTrendChart'
 import '../../styles/components/MetricsPanel.css'
 
 interface MetricsPanelProps {
-  appState: AppState
   refreshTrigger?: number
 }
 
-const MetricsPanel: React.FC<MetricsPanelProps> = ({
-  appState,
-  refreshTrigger,
-}) => {
+const MetricsPanel: React.FC<MetricsPanelProps> = ({ refreshTrigger }) => {
+  const appState = useAppState()
   const location = useLocation()
   const [resolutionEfficiency, setResolutionEfficiency] =
     useState<ResolutionEfficiencyMetrics | null>(null)
