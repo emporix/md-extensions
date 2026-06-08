@@ -160,7 +160,17 @@
 }
 
 .readonly-textarea {
-  background-color: #f5f5f5 !important; 
-  color: #555 !important;             
-  cursor: default !important;        
+  background-color: #f5f5f5 !important;
+  color: #555 !important;
+  cursor: default !important;
+  border-color: #c7cad1 !important;
+}
+
+.readonly-textarea:hover,
+.readonly-textarea:enabled:hover,
+.readonly-textarea:focus,
+.readonly-textarea:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: #c7cad1 !important;
 }

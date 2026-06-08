@@ -438,7 +438,7 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
         aria-label={t('search_for_tools')}
       />
 
-      <h2 className="agent-detail-tools-heading">{t('available_tools')}</h2>
+      <h2 className="agent-detail-section-title">{t('available_tools')}</h2>
 
       <div className="agent-detail-tools-sections">
         {domainSections}

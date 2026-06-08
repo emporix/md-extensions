@@ -10,88 +10,51 @@ export interface CommerceEventsState {
   error: string | null
 }
 
-type CommerceEventsCacheEntry = {
-  events: string[]
-  error: string | null
-}
-
-const commerceEventsCache = new Map<string, CommerceEventsCacheEntry>()
-
-const getCommerceEventsCacheKey = (appState: AppState): string | null => {
-  if (!appState.tenant) {
-    return null
-  }
-  return appState.tenant
-}
-
 export const useCommerceEvents = (appState: AppState) => {
   const { t } = useTranslation()
-  const cacheKey = getCommerceEventsCacheKey(appState)
-  const cached = cacheKey ? commerceEventsCache.get(cacheKey) : undefined
 
-  const [state, setState] = useState<CommerceEventsState>(() => ({
-    events: cached?.events ?? [],
-    loading: !cached,
-    error: cached?.error ?? null,
-  }))
+  const [state, setState] = useState<CommerceEventsState>({
+    events: [],
+    loading: true,
+    error: null,
+  })
 
-  const fetchEvents = useCallback(
-    async (options?: { silent?: boolean }) => {
-      if (!appState.tenant || !appState.token) {
-        return
-      }
+  const fetchEvents = useCallback(async () => {
+    if (!appState.tenant || !appState.token) {
+      setState({
+        events: [],
+        loading: false,
+        error: null,
+      })
+      return
+    }
 
-      const hasCachedData = Boolean(
-        cacheKey && commerceEventsCache.has(cacheKey)
+    setState((prev) => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const response = await getCommerceEvents(appState)
+      const sortedEvents = (response.events || []).sort((a, b) =>
+        a.localeCompare(b)
       )
-      const silent = options?.silent ?? hasCachedData
 
-      if (!silent) {
-        setState((prev) => ({ ...prev, loading: true, error: null }))
-      }
+      setState({
+        events: sortedEvents,
+        loading: false,
+        error: null,
+      })
+    } catch (error) {
+      const errorMessage = formatApiError(
+        error,
+        t('error_loading_commerce_events')
+      )
 
-      try {
-        const response = await getCommerceEvents(appState)
-        const sortedEvents = (response.events || []).sort((a, b) =>
-          a.localeCompare(b)
-        )
-        const nextEntry: CommerceEventsCacheEntry = {
-          events: sortedEvents,
-          error: null,
-        }
-
-        if (cacheKey) {
-          commerceEventsCache.set(cacheKey, nextEntry)
-        }
-
-        setState({
-          events: sortedEvents,
-          loading: false,
-          error: null,
-        })
-      } catch (error) {
-        const errorMessage = formatApiError(
-          error,
-          t('error_loading_commerce_events')
-        )
-        const nextEntry: CommerceEventsCacheEntry = {
-          events: [],
-          error: errorMessage,
-        }
-
-        if (cacheKey) {
-          commerceEventsCache.set(cacheKey, nextEntry)
-        }
-
-        setState({
-          events: [],
-          error: errorMessage,
-          loading: false,
-        })
-      }
-    },
-    [appState, cacheKey, t]
-  )
+      setState({
+        events: [],
+        error: errorMessage,
+        loading: false,
+      })
+    }
+  }, [appState, t])
 
   useEffect(() => {
     void fetchEvents()

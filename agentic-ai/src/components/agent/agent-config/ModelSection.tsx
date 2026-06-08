@@ -9,6 +9,7 @@ import { LlmProvider } from '../../../types/Agent'
 import { LlmModel, LlmModelProvider } from '../../../types/Model'
 import { Token } from '../../../types/Token'
 import { getLlmProviders } from '../../../utils/constants'
+import { ModelListItem } from './ModelListItem'
 import {
   findCatalogModel,
   getModelsForProvider,
@@ -313,36 +314,12 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
                 model === item.id ||
                 (model.trim() !== '' && model === item.name)
               return (
-                <button
+                <ModelListItem
                   key={item.id}
-                  type="button"
-                  data-model-id={item.id}
-                  className={`agent-detail-model-list-item${isSelected ? ' agent-detail-model-list-item--selected' : ''}`}
-                  onClick={() => onFieldChange('model', item.id)}
-                  aria-pressed={isSelected}
-                >
-                  <span
-                    className={`agent-detail-model-radio${isSelected ? ' agent-detail-model-radio--selected' : ''}`}
-                    aria-hidden="true"
-                  />
-                  <span className="agent-detail-model-list-content">
-                    <span className="agent-detail-model-list-title-row">
-                      <span className="agent-detail-model-list-title">
-                        {item.name}
-                      </span>
-                      {item.thinking && (
-                        <span className="agent-detail-model-thinking-badge">
-                          {t('model_thinking_badge')}
-                        </span>
-                      )}
-                    </span>
-                    {item.description && (
-                      <span className="agent-detail-model-list-description">
-                        {item.description}
-                      </span>
-                    )}
-                  </span>
-                </button>
+                  model={item}
+                  isSelected={isSelected}
+                  onSelect={(modelId) => onFieldChange('model', modelId)}
+                />
               )
             })}
         </div>

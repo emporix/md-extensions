@@ -548,7 +548,7 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
                   </span>
                   <Button
                     type="button"
-                    icon="pi pi-times-circle"
+                    icon="pi pi-trash"
                     className="p-button-text p-button-rounded agent-filter-dsl-rule-remove"
                     aria-label={t('commerce_filter_remove_condition')}
                     onClick={() => removeRuleAt(idx)}

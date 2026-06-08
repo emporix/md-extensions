@@ -8,7 +8,6 @@ import { getTriggerTypes } from '../../../utils/constants'
 import { AppState } from '../../../types/common'
 import { type AgentCommerceFilterDsl } from '../../../utils/agentFilterDslHelpers'
 import { AgentFilterDslEditor } from './AgentFilterDslEditor'
-import { useCommerceEvents } from '../../../hooks/useCommerceEvents'
 import starsIcon from '../../../assets/stars_icon.svg'
 
 interface TriggersSectionProps {
@@ -23,6 +22,9 @@ interface TriggersSectionProps {
   ) => void
   appState: AppState
   variant?: 'detail' | 'inline'
+  commerceEventCatalog: string[]
+  commerceCatalogLoading: boolean
+  commerceCatalogError: string | null
 }
 
 export const TriggersSection: React.FC<TriggersSectionProps> = ({
@@ -34,15 +36,13 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
   onFieldChange,
   appState,
   variant = 'detail',
+  commerceEventCatalog,
+  commerceCatalogLoading,
+  commerceCatalogError,
 }) => {
   const { t } = useTranslation()
   const [assistantDialogVisible, setAssistantDialogVisible] = useState(false)
   const isDetailVariant = variant === 'detail'
-  const {
-    events: commerceEventCatalog,
-    loading: commerceCatalogLoading,
-    error: commerceCatalogError,
-  } = useCommerceEvents(appState)
 
   const scopeOptions = useMemo(
     () => [

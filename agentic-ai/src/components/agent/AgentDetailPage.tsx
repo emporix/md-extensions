@@ -23,6 +23,7 @@ import { useAgentConfig } from '../../hooks/useAgentConfig'
 import { useAgentToolsCatalog } from '../../hooks/useAgentToolsCatalog'
 import { useAgentTokensCatalog } from '../../hooks/useAgentTokensCatalog'
 import { useLlmModelsCatalog } from '../../hooks/useLlmModelsCatalog'
+import { useCommerceEvents } from '../../hooks/useCommerceEvents'
 import {
   cleanAgentForConfig,
   createEmptyAgent,
@@ -148,6 +149,12 @@ const AgentDetailPage: React.FC<AgentDetailPageProps> = ({ appState }) => {
     hasFetched: modelsFetched,
   } = useLlmModelsCatalog(appState)
 
+  const {
+    events: commerceEventCatalog,
+    loading: commerceCatalogLoading,
+    error: commerceCatalogError,
+  } = useCommerceEvents(appState)
+
   const handleNavigateBack = useCallback(() => {
     navigate('/agents')
   }, [navigate])
@@ -231,6 +238,9 @@ const AgentDetailPage: React.FC<AgentDetailPageProps> = ({ appState }) => {
           requiredScopes={state.requiredScopes}
           onFieldChange={handleFieldChange}
           appState={appState}
+          commerceEventCatalog={commerceEventCatalog}
+          commerceCatalogLoading={commerceCatalogLoading}
+          commerceCatalogError={commerceCatalogError}
         />
       )
     }
