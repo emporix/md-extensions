@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Tool } from '../types/Tool'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import { formatApiError } from '../utils/errorHelpers'
 import {
   deleteTool,
@@ -14,7 +14,8 @@ import { useUpsertItem } from './useUpsertItem'
 import { useToast } from '../contexts/ToastContext'
 import { ApiClientError } from '../services/apiClient'
 
-export const useTools = (appState: AppState) => {
+export const useTools = () => {
+  const appState = useAppState()
   const [tools, setTools] = useState<Tool[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

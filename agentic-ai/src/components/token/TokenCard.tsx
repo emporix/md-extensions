@@ -4,6 +4,7 @@ import { TokenCardProps } from '../../types/Token'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faKey } from '@fortawesome/free-solid-svg-icons'
 import BaseCard from '../shared/BaseCard'
+import { getTokenTypeLabel } from '../../utils/tokenHelpers'
 
 const TokenCard: React.FC<TokenCardProps> = ({
   token,
@@ -12,24 +13,13 @@ const TokenCard: React.FC<TokenCardProps> = ({
 }) => {
   const { t } = useTranslation()
 
-  const getTokenTypeLabel = () => {
-    if (token.id.includes('openai')) {
-      return 'OpenAI'
-    } else if (token.id.includes('anthropic')) {
-      return 'Anthropic'
-    } else if (token.id.includes('emporix')) {
-      return 'Emporix'
-    }
-    return 'API Token'
-  }
-
   return (
     <BaseCard
       id={token.id}
       title={token.name}
       description=""
       icon={<FontAwesomeIcon icon={faKey} />}
-      badge={getTokenTypeLabel()}
+      badge={getTokenTypeLabel(t, token.id)}
       enabled={true}
       actions={[
         {
@@ -40,9 +30,9 @@ const TokenCard: React.FC<TokenCardProps> = ({
         },
         {
           icon: 'pi pi-trash',
-          label: t('remove', 'Remove'),
+          label: t('remove'),
           onClick: () => onRemove(token.id),
-          title: t('remove_token', 'Remove token'),
+          title: t('remove_token'),
           className: 'remove-button',
         },
       ]}

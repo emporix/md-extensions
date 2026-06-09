@@ -38,7 +38,6 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
     editingMcpServer?.mcpServer?.id || ''
   )
 
-  // Filter out custom servers that are already selected
   const availableCustomServers = availableMcpServers
     .filter((server) => !existingServerIds.includes(server.id))
     .map((server) => ({
@@ -98,7 +97,6 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
             ]}
             onChange={(e) => {
               setServerType(e.value)
-              // Reset selections when changing type
               setSelectedTools([])
               setSelectedCustomServerId('')
             }}
@@ -116,7 +114,7 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
                 options={predefinedOptions}
                 onChange={(e) => {
                   setSelectedDomain(e.value)
-                  setSelectedTools([]) // Reset tools when domain changes
+                  setSelectedTools([])
                 }}
                 className="w-full"
                 appendTo="self"
@@ -155,15 +153,16 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
 
         <div className="mcp-server-form-actions">
           <Button
+            type="button"
             label={editingMcpServer ? t('update') : t('add')}
             onClick={handleAdd}
             disabled={!isFormValid()}
-            className="p-button-sm"
           />
           <Button
+            type="button"
             label={t('cancel')}
             onClick={onCancel}
-            className="p-button-outlined p-button-sm"
+            className="p-button-secondary"
           />
         </div>
       </div>

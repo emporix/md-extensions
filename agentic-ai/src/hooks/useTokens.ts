@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Token } from '../types/Token'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import { formatApiError } from '../utils/errorHelpers'
 import {
   deleteToken,
@@ -11,7 +11,8 @@ import {
 import { useDeleteConfirmation } from './useDeleteConfirmation'
 import { useUpsertItem } from './useUpsertItem'
 
-export const useTokens = (appState: AppState) => {
+export const useTokens = () => {
+  const appState = useAppState()
   const [tokens, setTokens] = useState<Token[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -32,11 +33,8 @@ export const useTokens = (appState: AppState) => {
     onSuccess: (tokenId: string) => {
       setTokens((prev) => prev.filter((token) => token.id !== tokenId))
     },
-    successMessage: t(
-      'token_deleted_successfully',
-      'Token deleted successfully!'
-    ),
-    errorMessage: 'Failed to delete token',
+    successMessage: t('token_deleted_successfully'),
+    errorMessage: t('failed_to_delete_token'),
   })
 
   const upsertToken = useUpsertItem({
@@ -53,12 +51,12 @@ export const useTokens = (appState: AppState) => {
       const fetchedTokens = await getTokens(appState)
       setTokens(fetchedTokens)
     } catch (err) {
-      const message = formatApiError(err, 'Failed to load tokens')
+      const message = formatApiError(err, t('error_loading_tokens'))
       setError(message)
     } finally {
       setLoading(false)
     }
-  }, [appState])
+  }, [appState, t])
 
   const refreshTokens = useCallback(() => {
     loadTokens()

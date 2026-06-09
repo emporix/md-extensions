@@ -4,44 +4,37 @@ import { ProgressBar } from 'primereact/progressbar'
 import { Button } from 'primereact/button'
 import { LocalizedString } from '../../../types/Agent'
 import { getLocalizedValue } from '../../../utils/agentHelpers'
-import { AppState } from '../../../types/common'
+import { useAppState } from '../../../contexts/AppStateContext'
 
 interface LoadingStepProps {
   agentName: LocalizedString
   progress: number
   onDiscard: () => void
-  appState: AppState
 }
 
 export const LoadingStep: React.FC<LoadingStepProps> = ({
   agentName,
   progress,
   onDiscard,
-  appState,
 }) => {
+  const appState = useAppState()
   const { t } = useTranslation()
 
   return (
     <div className="add-agent-loading-state">
-      <div className="agent-icon" style={{ margin: '2rem auto 1.5rem auto' }}>
-        🎧
-      </div>
-      <h2
-        className="dialog-title"
-        style={{ textAlign: 'center', marginBottom: '2rem' }}
-      >
+      <div className="agent-icon">🎧</div>
+      <h2 className="dialog-title">
         {getLocalizedValue(agentName, appState.contentLanguage)}{' '}
         {t('being_copied')}
       </h2>
-      <ProgressBar value={progress} style={{ height: '6px' }} />
-      <p style={{ textAlign: 'center', marginTop: '1rem', color: '#666' }}>
-        {t('please_wait', 'Please wait while we copy the agent template...')}
-      </p>
-      <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+      <ProgressBar value={progress} />
+      <p className="loading-hint">{t('please_wait')}</p>
+      <div className="loading-actions">
         <Button
+          type="button"
           label={t('cancel')}
           onClick={onDiscard}
-          className="discard-button"
+          className="p-button-secondary"
         />
       </div>
     </div>

@@ -20,6 +20,7 @@ export const JOB_STATUS_OPTIONS = [
   { label: 'FINISHED', value: 'success' },
   { label: 'FAILURE', value: 'failure' },
   { label: 'IN PROGRESS', value: 'in_progress' },
+  { label: 'SKIPPED', value: 'skipped' },
 ]
 
 export const getJobTypeDisplay = (type: string): string => {

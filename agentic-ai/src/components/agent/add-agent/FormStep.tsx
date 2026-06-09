@@ -6,7 +6,7 @@ import { Button } from 'primereact/button'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHeadset } from '@fortawesome/free-solid-svg-icons'
 import { LocalizedString } from '../../../types/Agent'
-import { AppState } from '../../../types/common'
+import { useAppState } from '../../../contexts/AppStateContext'
 import {
   getLocalizedValue,
   hasAnyLocalizedValue,
@@ -26,7 +26,6 @@ interface FormStepProps {
   templatePrompt: string
   onDiscard: () => void
   onSave: () => void
-  appState: AppState
 }
 
 export const FormStep: React.FC<FormStepProps> = ({
@@ -41,8 +40,8 @@ export const FormStep: React.FC<FormStepProps> = ({
   templatePrompt,
   onDiscard,
   onSave,
-  appState,
 }) => {
+  const appState = useAppState()
   const { t } = useTranslation()
 
   const handleAgentIdChange = (value: string) => {
@@ -58,80 +57,56 @@ export const FormStep: React.FC<FormStepProps> = ({
 
   return (
     <div className="add-agent-form">
-      {/* Agent Icon and Title Section */}
       <div className="add-agent-header">
         <div className="agent-icon">
           <FontAwesomeIcon icon={faHeadset} />
         </div>
         <h2 className="agent-title">
           {getLocalizedValue(agentName, appState.contentLanguage) ||
-            t('add_agent', 'Add Agent')}
+            t('add_agent')}
         </h2>
-        <p className="agent-subtitle">
-          {t(
-            'customize_agent_description',
-            'Customize name and description to suit it better to your task.'
-          )}
-        </p>
+        <p className="agent-subtitle">{t('customize_agent_subtitle')}</p>
       </div>
 
-      {/* Form Fields */}
       <div className="form-fields-section">
         <div className="form-field">
           <label htmlFor="agent-id" className="field-label">
-            {t('agent_id', 'ID')} <span style={{ color: 'red' }}>*</span>
+            {t('agent_id')} <span className="field-required-mark">*</span>
           </label>
           <InputText
             id="agent-id"
             value={agentId}
             onChange={(e) => handleAgentIdChange(e.target.value)}
             className={`w-full ${!agentId.trim() ? 'p-invalid' : ''}`}
-            placeholder={t('enter_agent_id', 'Enter agent id')}
+            placeholder={t('enter_agent_id')}
+            autoFocus
           />
-          {!agentId.trim() && (
-            <small className="p-error">
-              {t('agent_id_required', 'Agent ID is required')}
-            </small>
-          )}
         </div>
         <div className="form-field">
           <label htmlFor="agent-name" className="field-label">
-            {t('agent_name', 'Agent Name')}{' '}
-            <span style={{ color: 'red' }}>*</span>
+            {t('agent_name')} <span className="field-required-mark">*</span>
           </label>
           <LocalizedInput
             value={agentName}
             onChange={(value) => setAgentName(value)}
-            appState={appState}
-            placeholder={t('enter_agent_name', 'Enter agent name')}
-            error={
-              !hasAnyLocalizedValue(agentName)
-                ? t('agent_name_required', 'Agent name is required')
-                : undefined
-            }
+            placeholder={t('enter_agent_name')}
+            invalid={!hasAnyLocalizedValue(agentName)}
           />
         </div>
         <div className="form-field">
           <label htmlFor="agent-description" className="field-label">
-            {t('description', 'Description')}{' '}
-            <span style={{ color: 'red' }}>*</span>
+            {t('description')} <span className="field-required-mark">*</span>
           </label>
           <LocalizedInput
             value={description}
             onChange={(value) => setDescription(value)}
-            appState={appState}
-            placeholder={t('enter_description', 'Enter description')}
-            error={
-              !hasAnyLocalizedValue(description)
-                ? t('description_required', 'Description is required')
-                : undefined
-            }
+            placeholder={t('enter_description')}
+            invalid={!hasAnyLocalizedValue(description)}
           />
         </div>
         <div className="form-field">
           <label htmlFor="user-prompt" className="field-label">
-            {t('user_prompt', 'User Prompt')}{' '}
-            <span style={{ color: 'red' }}>*</span>
+            {t('user_prompt')} <span className="field-required-mark">*</span>
           </label>
           <InputTextarea
             id="user-prompt"
@@ -139,21 +114,13 @@ export const FormStep: React.FC<FormStepProps> = ({
             rows={4}
             onChange={(e) => setUserPrompt(e.target.value)}
             className={`w-full ${!userPrompt.trim() ? 'p-invalid' : ''}`}
-            placeholder={t(
-              'user_prompt_placeholder',
-              'User prompt will appear here'
-            )}
+            placeholder={t('user_prompt_placeholder')}
           />
-          {!userPrompt.trim() && (
-            <small className="p-error">
-              {t('user_prompt_required', 'User prompt is required')}
-            </small>
-          )}
         </div>
         {templatePrompt && (
           <div className="form-field">
             <label htmlFor="template-prompt" className="field-label">
-              {t('template_prompt', 'Template Prompt')}
+              {t('template_prompt')}
             </label>
             <InputTextarea
               id="template-prompt"
@@ -161,27 +128,24 @@ export const FormStep: React.FC<FormStepProps> = ({
               readOnly
               rows={4}
               className="w-full readonly-textarea"
-              placeholder={t(
-                'template_prompt_placeholder',
-                'Template prompt will appear here'
-              )}
+              placeholder={t('template_prompt_placeholder')}
             />
           </div>
         )}
       </div>
 
-      {/* Action Buttons */}
       <div className="dialog-actions">
         <Button
-          label={t('discard', 'DISCARD')}
+          type="button"
+          label={t('discard')}
           onClick={onDiscard}
-          className="discard-button"
+          className="p-button-secondary"
         />
         <Button
-          label={t('save_agent', 'SAVE AGENT')}
+          type="button"
+          label={t('save_agent')}
           onClick={onSave}
           disabled={!isFormValid}
-          className="save-agent-button"
         />
       </div>
     </div>

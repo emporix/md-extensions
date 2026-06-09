@@ -21,7 +21,7 @@ import { JobSummary } from '../../types/Job'
 import { useAgentLogs } from '../../hooks/useAgentLogs'
 import { useJobs } from '../../hooks/useJobs'
 import { useSessions } from '../../hooks/useSessions'
-import { AppState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import { getCustomAgents } from '../../services/agentService'
 import { getLocalizedValue } from '../../utils/agentHelpers'
 import {
@@ -37,11 +37,8 @@ import {
   handleDataTablePage,
 } from '../../utils/dataTableHelpers'
 
-interface LogsPageProps {
-  appState: AppState
-}
-
-const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
+const LogsPage: React.FC = () => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
@@ -107,7 +104,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     changePage: changeLogsPage,
     changePageSize: changeLogsPageSize,
     updateFilters: updateLogFilters,
-  } = useAgentLogs(appState)
+  } = useAgentLogs()
 
   const {
     jobs,
@@ -121,7 +118,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     changePage: changeJobsPage,
     changePageSize: changeJobsPageSize,
     updateFilters: updateJobFilters,
-  } = useJobs(appState)
+  } = useJobs()
 
   const {
     sessions,
@@ -135,7 +132,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
     changePage: changeSessionsPage,
     changePageSize: changeSessionsPageSize,
     updateFilters: updateSessionFilters,
-  } = useSessions(appState)
+  } = useSessions()
 
   // PrimeReact filter state for logs
   const [logFilters, setLogFilters] = useState<DataTableFilterMeta>({
@@ -761,10 +758,7 @@ const LogsPage: React.FC<LogsPageProps> = ({ appState }) => {
       className="logs"
     >
       {/* Metrics Panel - Show on all tabs */}
-      <MetricsPanel
-        appState={appState}
-        refreshTrigger={metricsRefreshTrigger}
-      />
+      <MetricsPanel refreshTrigger={metricsRefreshTrigger} />
 
       <TabView activeIndex={activeTabIndex} onTabChange={handleTabChange}>
         <TabPanel header={t('requests', 'Requests')}>

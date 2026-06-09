@@ -1,33 +1,24 @@
 import { useState, useCallback, memo } from 'react'
+import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { Message } from 'primereact/message'
 import CustomAgentCard from './CustomAgentCard'
 import PredefinedAgentCard from './PredefinedAgentCard'
 import AddAgentDialog from './AddAgentDialog'
 import ImportAgentDialog from './ImportAgentDialog'
-import AgentConfigPanel from './AgentConfigPanel'
 import { ErrorBoundary } from '../shared/ErrorBoundary'
 import { BasePage } from '../shared/BasePage'
 import { ConfirmDialog } from '../shared/ConfirmDialog'
-import { AppState } from '../../types/common'
 import { useAgents } from '../../hooks/useAgents'
-import { AgentTemplate } from '../../types/Agent'
-import { CustomAgent } from '../../types/Agent'
-import { cleanAgentForConfig, createEmptyAgent } from '../../utils/agentHelpers'
+import { AgentTemplate, CustomAgent } from '../../types/Agent'
 
-interface AgentsViewProps {
-  appState: AppState
-}
-
-const AgentsView = memo(({ appState }: AgentsViewProps) => {
+const AgentsView = memo(() => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   const [showAddAgentDialog, setShowAddAgentDialog] = useState(false)
   const [selectedAgentTemplate, setSelectedAgentTemplate] =
     useState<AgentTemplate | null>(null)
-  const [showConfigPanel, setShowConfigPanel] = useState(false)
-  const [selectedCustomAgent, setSelectedCustomAgent] =
-    useState<CustomAgent | null>(null)
   const [showImportDialog, setShowImportDialog] = useState(false)
 
   const {
@@ -40,7 +31,6 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
     toggleAgentActive,
     toggleCustomAgentActive,
     removeCustomAgent,
-    setCustomAgents,
     refreshCustomAgents,
     deleteConfirmVisible,
     hideDeleteConfirm,
@@ -48,7 +38,7 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
     forceDeleteConfirmVisible,
     hideForceDeleteConfirm,
     confirmForceDelete,
-  } = useAgents(appState)
+  } = useAgents()
 
   const handleAddAgent = useCallback(
     (agentId: string) => {
@@ -78,36 +68,15 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
   }
 
   const handleAddNewAgent = useCallback(() => {
-    setSelectedCustomAgent(createEmptyAgent(appState.contentLanguage))
-    setShowConfigPanel(true)
-  }, [appState.contentLanguage])
+    navigate('/agents/add')
+  }, [navigate])
 
-  const handleConfigure = useCallback((agent: CustomAgent) => {
-    const cleanAgent = cleanAgentForConfig(agent)
-    setSelectedCustomAgent(cleanAgent)
-    setShowConfigPanel(true)
-  }, [])
-
-  const handleConfigSave = async (updatedAgent: CustomAgent) => {
-    try {
-      await refreshCustomAgents()
-      setShowConfigPanel(false)
-      setSelectedCustomAgent(null)
-    } catch (error) {
-      console.error(error)
-      const cleanAgent = cleanAgentForConfig(updatedAgent)
-      setCustomAgents((prev: CustomAgent[]) =>
-        prev.map((a: CustomAgent) => (a.id === cleanAgent.id ? cleanAgent : a))
-      )
-      setShowConfigPanel(false)
-      setSelectedCustomAgent(null)
-    }
-  }
-
-  const handleConfigClose = useCallback(() => {
-    setShowConfigPanel(false)
-    setSelectedCustomAgent(null)
-  }, [])
+  const handleConfigure = useCallback(
+    (agent: CustomAgent) => {
+      navigate(`/agents/${agent.id}/edit`)
+    },
+    [navigate]
+  )
 
   const handleImportSuccess = useCallback(async () => {
     await refreshCustomAgents()
@@ -158,7 +127,6 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
                 <CustomAgentCard
                   key={agent.id}
                   agent={agent}
-                  appState={appState}
                   onToggleActive={toggleCustomAgentActive}
                   onConfigure={handleConfigure}
                   onRemove={removeCustomAgent}
@@ -196,7 +164,6 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
                 agent={agent}
                 onToggleActive={toggleAgentActive}
                 onAddAgent={handleAddAgent}
-                appState={appState}
               />
             ))}
           </div>
@@ -208,39 +175,28 @@ const AgentsView = memo(({ appState }: AgentsViewProps) => {
         agentTemplate={selectedAgentTemplate}
         onHide={handleCloseDialog}
         onSave={handleSaveAgent}
-        appState={appState}
       />
 
       <ImportAgentDialog
         visible={showImportDialog}
         onHide={() => setShowImportDialog(false)}
         onImport={handleImportSuccess}
-        appState={appState}
       />
 
       <ErrorBoundary>
-        <AgentConfigPanel
-          visible={showConfigPanel}
-          agent={selectedCustomAgent}
-          onHide={handleConfigClose}
-          onSave={handleConfigSave}
-          appState={appState}
-          availableAgents={customAgents}
+        <ConfirmDialog
+          visible={forceDeleteConfirmVisible}
+          title={t('force_delete_agent', 'Force Delete Agent')}
+          message={t(
+            'force_delete_agent_message',
+            'Agent is used by other agents or has active collaborations.\nBy deleting it, the agent will be removed from collaborations and related agents may be affected.'
+          )}
+          onConfirm={confirmForceDelete}
+          onHide={hideForceDeleteConfirm}
+          confirmLabel={t('force_delete', 'Force Delete')}
+          severity="warning"
         />
       </ErrorBoundary>
-
-      <ConfirmDialog
-        visible={forceDeleteConfirmVisible}
-        title={t('force_delete_agent', 'Force Delete Agent')}
-        message={t(
-          'force_delete_agent_message',
-          'Agent is used by other agents or has active collaborations.\nBy deleting it, the agent will be removed from collaborations and related agents may be affected.'
-        )}
-        onConfirm={confirmForceDelete}
-        onHide={hideForceDeleteConfirm}
-        confirmLabel={t('force_delete', 'Force Delete')}
-        severity="warning"
-      />
     </BasePage>
   )
 })

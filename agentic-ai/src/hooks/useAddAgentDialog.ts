@@ -1,14 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { AgentTemplate, LocalizedString } from '../types/Agent'
 import { copyTemplate } from '../services/agentService'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
 
 type Step = 'form' | 'loading' | 'success' | 'error'
 
 interface UseAddAgentDialogProps {
   agentTemplate: AgentTemplate | null
-  appState: AppState
   onSave: (
     name: LocalizedString,
     description: LocalizedString,
@@ -19,10 +18,10 @@ interface UseAddAgentDialogProps {
 
 export const useAddAgentDialog = ({
   agentTemplate,
-  appState,
   onSave,
   onHide,
 }: UseAddAgentDialogProps) => {
+  const appState = useAppState()
   const { showSuccess, showError } = useToast()
   const [step, setStep] = useState<Step>('form')
   const [agentId, setAgentId] = useState('')

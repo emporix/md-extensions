@@ -4,8 +4,11 @@ import { AgentCollaborationList } from './agent-collaboration/AgentCollaboration
 import { AgentCollaborationForm } from './agent-collaboration/AgentCollaborationForm'
 import { AgentCollaboration } from '../../types/Agent'
 import { CustomAgent } from '../../types/Agent'
-import { getLocalizedValue } from '../../utils/agentHelpers'
-import { AppState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
+import {
+  filterCollaborationAgentOptions,
+  getUsedCollaborationAgentIds,
+} from '../../utils/agentCollaborationHelpers'
 
 interface AgentCollaborationManagerProps {
   collaborations: AgentCollaboration[]
@@ -13,7 +16,6 @@ interface AgentCollaborationManagerProps {
   availableAgents: CustomAgent[]
   currentAgentId?: string
   currentAgentType?: string
-  appState: AppState
 }
 
 export const AgentCollaborationManager: React.FC<
@@ -24,29 +26,27 @@ export const AgentCollaborationManager: React.FC<
   availableAgents,
   currentAgentId,
   currentAgentType,
-  appState,
 }) => {
   const { t } = useTranslation()
+  const appState = useAppState()
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | undefined>(
     undefined
   )
 
-  const filteredAgents = (
-    currentAgentId
-      ? availableAgents.filter((agent) => agent.id !== currentAgentId)
-      : availableAgents
-  ).sort((a, b) => {
-    const nameA = getLocalizedValue(
-      a.name,
-      appState.contentLanguage
-    ).toLowerCase()
-    const nameB = getLocalizedValue(
-      b.name,
-      appState.contentLanguage
-    ).toLowerCase()
-    return nameA.localeCompare(nameB)
-  })
+  const editingAgentId =
+    editingIndex !== undefined
+      ? collaborations[editingIndex]?.agentId
+      : undefined
+
+  const filteredAgents = filterCollaborationAgentOptions(
+    availableAgents,
+    currentAgentId,
+    getUsedCollaborationAgentIds(collaborations),
+    currentAgentType,
+    editingAgentId,
+    appState.contentLanguage
+  )
 
   const handleAddCollaboration = useCallback(
     (collaboration: AgentCollaboration) => {
@@ -110,8 +110,6 @@ export const AgentCollaborationManager: React.FC<
         onCancelEdit={handleCancelEdit}
         editingIndex={editingIndex}
         availableAgents={filteredAgents}
-        currentAgentType={currentAgentType}
-        appState={appState}
       />
 
       {showAddForm && (
@@ -119,8 +117,6 @@ export const AgentCollaborationManager: React.FC<
           onAdd={handleAddCollaboration}
           onCancel={handleCancelAdd}
           availableAgents={filteredAgents}
-          currentAgentType={currentAgentType}
-          appState={appState}
         />
       )}
     </div>

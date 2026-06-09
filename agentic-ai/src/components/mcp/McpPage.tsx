@@ -1,35 +1,19 @@
-import React, { useState, useCallback } from 'react'
+import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import McpCard from './McpCard'
-import McpConfigPanel from './McpConfigPanel'
 import { BasePage } from '../shared/BasePage'
 import { McpServer } from '../../types/Mcp'
 import { useMcp } from '../../hooks/useMcp'
-import { AppState } from '../../types/common'
-import { createEmptyMcpServer } from '../../utils/mcpHelpers'
-import { useToast } from '../../contexts/ToastContext'
 import { ConfirmDialog } from '../shared/ConfirmDialog'
 
-interface McpPageProps {
-  appState?: AppState
-}
-
-const McpPage: React.FC<McpPageProps> = ({
-  appState = {
-    tenant: 'default',
-    language: 'default',
-    token: 'default',
-    contentLanguage: 'en',
-  },
-}) => {
+const McpPage: React.FC = () => {
   const { t } = useTranslation()
-  const { showSuccess, showError } = useToast()
+  const navigate = useNavigate()
   const {
     mcpServers,
     loading,
     error,
-    upsertMcpServer,
-    refreshMcpServers,
     removeMcpServer,
     toggleMcpServerActive,
     deleteConfirmVisible,
@@ -41,40 +25,18 @@ const McpPage: React.FC<McpPageProps> = ({
     forceToggleConfirmVisible,
     hideForceToggleConfirm,
     confirmForceToggle,
-  } = useMcp(appState)
-  const [showConfigPanel, setShowConfigPanel] = useState(false)
-  const [selectedMcpServer, setSelectedMcpServer] = useState<McpServer | null>(
-    null
+  } = useMcp()
+
+  const handleConfigure = useCallback(
+    (mcpServer: McpServer) => {
+      navigate(`/mcp/${mcpServer.id}/edit`)
+    },
+    [navigate]
   )
 
-  const handleConfigure = (mcpServer: McpServer) => {
-    setSelectedMcpServer(mcpServer)
-    setShowConfigPanel(true)
-  }
-
   const handleAddNewMcpServer = useCallback(() => {
-    setSelectedMcpServer(createEmptyMcpServer())
-    setShowConfigPanel(true)
-  }, [])
-
-  const handleConfigSave = async (updatedMcpServer: McpServer) => {
-    try {
-      await upsertMcpServer(updatedMcpServer)
-      showSuccess(t('mcp_server_updated_successfully'))
-      await refreshMcpServers()
-      setShowConfigPanel(false)
-      setSelectedMcpServer(null)
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : t('error_saving_mcp_server')
-      showError(`${t('error_saving_mcp_server')}: ${errorMessage}`)
-    }
-  }
-
-  const handleConfigClose = () => {
-    setShowConfigPanel(false)
-    setSelectedMcpServer(null)
-  }
+    navigate('/mcp/add')
+  }, [navigate])
 
   return (
     <BasePage
@@ -107,14 +69,6 @@ const McpPage: React.FC<McpPageProps> = ({
           ))}
         </div>
       )}
-
-      <McpConfigPanel
-        visible={showConfigPanel}
-        mcpServer={selectedMcpServer}
-        onHide={handleConfigClose}
-        onSave={handleConfigSave}
-        appState={appState}
-      />
 
       <ConfirmDialog
         visible={forceDeleteConfirmVisible}

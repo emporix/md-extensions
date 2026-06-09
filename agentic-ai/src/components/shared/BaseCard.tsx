@@ -129,6 +129,7 @@ const BaseCard: React.FC<BaseCardProps> = ({
         {actions.map((action, index) => (
           <button
             key={index}
+            type="button"
             className={`text-button ${action.className || ''}`}
             onClick={(e) => {
               e.stopPropagation()

@@ -12,7 +12,7 @@ interface ConfirmDialogProps {
   message: string
   confirmLabel?: string
   cancelLabel?: string
-  severity?: 'danger' | 'warning' | 'info'
+  severity?: 'danger' | 'warning' | 'info' | 'primary'
 }
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -49,14 +49,16 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   const footer = (
     <div className="dialog-actions">
       <Button
-        label={cancelLabel || t('cancel', 'Cancel')}
+        type="button"
+        label={cancelLabel || t('cancel')}
         onClick={onHide}
-        className="discard-button"
+        className="p-button-secondary"
       />
       <Button
-        label={confirmLabel || t('delete', 'Delete')}
+        type="button"
+        label={confirmLabel || t('delete')}
         onClick={onConfirm}
-        className={`save-agent-button ${confirmButtonClass}`}
+        className={confirmButtonClass}
       />
     </div>
   )

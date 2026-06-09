@@ -1,7 +1,8 @@
 import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CustomAgent } from '../../types/Agent'
-import { AgentCardBaseProps, AppState } from '../../types/common'
+import { AgentCardBaseProps } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import { getLocalizedValue, iconMap } from '../../utils/agentHelpers'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRobot } from '@fortawesome/free-solid-svg-icons'
@@ -11,19 +12,13 @@ import { useToast } from '../../contexts/ToastContext'
 
 interface CustomAgentCardProps extends AgentCardBaseProps {
   agent: CustomAgent
-  appState: AppState
   onConfigure: (agent: CustomAgent) => void
   onRemove: (agentId: string) => void
 }
 
 const CustomAgentCard = memo(
-  ({
-    agent,
-    appState,
-    onToggleActive,
-    onConfigure,
-    onRemove,
-  }: CustomAgentCardProps) => {
+  ({ agent, onToggleActive, onConfigure, onRemove }: CustomAgentCardProps) => {
+    const appState = useAppState()
     const { t } = useTranslation()
     const { showSuccess, showError } = useToast()
     const [isExporting, setIsExporting] = useState(false)

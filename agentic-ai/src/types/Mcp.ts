@@ -1,5 +1,3 @@
-import { AppState } from './common'
-
 export interface McpTokenRef {
   id: string
 }
@@ -31,12 +29,4 @@ export interface McpCardProps {
   ) => void | Promise<void>
   onConfigure: (mcpServer: McpServer) => void
   onRemove: (mcpServerId: string) => void
-}
-
-export interface McpConfigPanelProps {
-  visible: boolean
-  mcpServer: McpServer | null
-  onHide: () => void
-  onSave: (mcpServer: McpServer) => void
-  appState?: AppState
 }

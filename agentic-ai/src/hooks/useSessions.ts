@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import { LogService } from '../services/logService'
 import { SessionLogs } from '../types/Log'
 
-export const useSessions = (appState: AppState) => {
+export const useSessions = () => {
+  const appState = useAppState()
   const location = useLocation()
   const [sessions, setSessions] = useState<SessionLogs[]>([])
   const [loading, setLoading] = useState(true)

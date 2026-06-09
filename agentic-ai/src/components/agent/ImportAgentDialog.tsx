@@ -7,22 +7,22 @@ import { Badge } from 'primereact/badge'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import { importAgents } from '../../services/agentService'
-import { AppState, ImportSummaryState } from '../../types/common'
+import { ImportSummaryState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../contexts/ToastContext'
 
 interface ImportAgentDialogProps {
   visible: boolean
   onHide: () => void
   onImport: () => void
-  appState: AppState
 }
 
 const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
   visible,
   onHide,
   onImport,
-  appState,
 }) => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
   const [isDragOver, setIsDragOver] = useState(false)
@@ -159,25 +159,23 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
   const footer = isImporting ? (
     <div className="dialog-actions">
       <Button
+        type="button"
         label={t('cancel', 'Cancel')}
         onClick={handleHide}
-        className="discard-button"
+        className="p-button-secondary"
       />
     </div>
   ) : importResult ? (
     <div className="dialog-actions">
-      <Button
-        label={t('ok', 'OK')}
-        onClick={handleSummaryOk}
-        className="p-button-primary"
-      />
+      <Button type="button" label={t('ok', 'OK')} onClick={handleSummaryOk} />
     </div>
   ) : (
     <div className="dialog-actions">
       <Button
+        type="button"
         label={t('cancel', 'Cancel')}
         onClick={handleHide}
-        className="discard-button"
+        className="p-button-secondary"
       />
       <Button
         label={t('browse_files', 'Browse Files')}

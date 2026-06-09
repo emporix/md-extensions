@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { PRODUCT_ENTITY_TYPE } from '../types/Tool'
 import {
+  areRagEmporixFilterFieldsValid,
   getRagFilterFieldDisplayLabel,
   isValidRagFieldKey,
   resolveRagEntityType,
@@ -68,6 +69,23 @@ describe('sanitizeRagEmporixFilterFields', () => {
         description: 'Filter by category',
       },
     ])
+  })
+})
+
+describe('areRagEmporixFilterFieldsValid', () => {
+  it('accepts an empty filter field list', () => {
+    expect(areRagEmporixFilterFieldsValid([])).toBe(true)
+  })
+
+  it('accepts filter fields with valid keys', () => {
+    expect(areRagEmporixFilterFieldsValid([{ key: 'product.category' }])).toBe(
+      true
+    )
+  })
+
+  it('rejects filter fields with missing or invalid keys', () => {
+    expect(areRagEmporixFilterFieldsValid([{ key: '' }])).toBe(false)
+    expect(areRagEmporixFilterFieldsValid([{ key: 'invalid key' }])).toBe(false)
   })
 })
 

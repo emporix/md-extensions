@@ -1,7 +1,8 @@
 import { AgentTemplate, CustomAgent, LocalizedString } from '../types/Agent'
 import { AppState, ImportSummaryState } from '../types/common'
-import { ApiClient } from './apiClient'
 import { getLanguagesFromStorage } from '../hooks/useLanguages'
+import { COMMERCE_FILTER_ASSISTANT_I18N_KEYS } from '../utils/agentFilterDslHelpers'
+import { ApiClient } from './apiClient'
 
 const filterLocalizedString = (
   localizedString: LocalizedString
@@ -29,6 +30,60 @@ export interface PatchOperation {
 
 const getApiClient = (appState: AppState): ApiClient => {
   return new ApiClient(appState)
+}
+
+export const COMMERCE_FILTER_DSL_AGENT_TEMPLATE_ID =
+  'commerce-filter-dsl-assistant'
+
+export const COMMERCE_FILTER_DSL_AGENT_ID =
+  'agentic-commerce-events-filters-creator-assistant'
+
+export interface AgenticChatResponseItem {
+  agentId: string
+  message: string
+}
+
+export const chatWithAgent = async (
+  appState: AppState,
+  agentId: string,
+  message: string
+): Promise<string> => {
+  const api = getApiClient(appState)
+  const body = { agentId, message }
+  const res = await api.post<AgenticChatResponseItem>(
+    `/ai-service/${appState.tenant}/agentic/chat`,
+    body
+  )
+  const text = res.message.trim()
+
+  if (!text) {
+    throw new Error(COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse)
+  }
+  return text
+}
+
+export const createCommerceFilterDslAgent = async (
+  appState: AppState
+): Promise<{ success: boolean }> => {
+  const templates = await getAgentTemplates(appState)
+  const template = templates.find(
+    (t) => t.id === COMMERCE_FILTER_DSL_AGENT_TEMPLATE_ID
+  )
+  if (!template) {
+    throw new Error(COMMERCE_FILTER_ASSISTANT_I18N_KEYS.templateNotFound)
+  }
+  const result = await copyTemplate(
+    appState,
+    COMMERCE_FILTER_DSL_AGENT_TEMPLATE_ID,
+    COMMERCE_FILTER_DSL_AGENT_ID,
+    { ...template.name },
+    { ...template.description },
+    template.userPrompt
+  )
+  await patchCustomAgent(appState, COMMERCE_FILTER_DSL_AGENT_ID, [
+    { op: 'REPLACE', path: '/enabled', value: true },
+  ])
+  return result
 }
 
 export const getAgentTemplates = async (

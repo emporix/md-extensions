@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router'
 import { JobSummary, Job } from '../types/Job'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import { JobService } from '../services/jobService'
 
-export const useJobs = (appState: AppState) => {
+export const useJobs = () => {
+  const appState = useAppState()
   const location = useLocation()
   const [jobs, setJobs] = useState<JobSummary[]>([])
   const [loading, setLoading] = useState(true)
