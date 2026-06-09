@@ -237,6 +237,11 @@
   align-items: start;
 }
 
+.agent-basic-info--with-template .agent-basic-info-fields .agent-detail-tags-field,
+.agent-basic-info--with-template .agent-basic-info-fields .agent-detail-icon-field {
+  grid-column: 1 / -1;
+}
+
 .agent-basic-info--with-template .agent-basic-info-prompts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

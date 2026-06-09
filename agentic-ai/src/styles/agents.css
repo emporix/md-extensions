@@ -6,6 +6,7 @@
 @import './_shared.css';
 @import './components/AgentCard.css';
 @import './components/AddAgentDialog.css';
+@import './components/IconPicker.css';
 @import './components/AgentDetailPage.css';
 @import './components/TokenDetailPage.css';
 @import './components/McpDetailPage.css';

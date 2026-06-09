@@ -1,10 +1,15 @@
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faRobot } from '@fortawesome/free-solid-svg-icons'
 import { InputText } from 'primereact/inputtext'
 import { InputTextarea } from 'primereact/inputtextarea'
+import { MultiSelect } from 'primereact/multiselect'
 import { LocalizedString } from '../../../types/Agent'
 import { LocalizedInput } from '../../shared/LocalizedInput'
-import { hasAnyLocalizedValue } from '../../../utils/agentHelpers'
+import { IconPicker } from '../../shared/IconPicker'
+import { hasAnyLocalizedValue, iconMap } from '../../../utils/agentHelpers'
+import { AVAILABLE_TAGS } from '../../../utils/constants'
 import { sanitizeIdInput } from '../../../utils/validation'
 
 interface AgentBasicInfoProps {
@@ -12,6 +17,8 @@ interface AgentBasicInfoProps {
   agentName: LocalizedString
   description: LocalizedString
   prompt: string
+  tags: string[]
+  selectedIcon: string
   isEditing: boolean
   onFieldChange: (
     field: string,
@@ -25,11 +32,23 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   agentName,
   description,
   prompt,
+  tags,
+  selectedIcon,
   templatePrompt,
   isEditing,
   onFieldChange,
 }) => {
   const { t } = useTranslation()
+  const [showIconPicker, setShowIconPicker] = useState(false)
+
+  const tagOptions = useMemo(
+    () =>
+      AVAILABLE_TAGS.map((tag) => ({
+        label: tag,
+        value: tag,
+      })),
+    []
+  )
 
   const handleAgentIdChange = (value: string) => {
     const sanitized = sanitizeIdInput(value)
@@ -87,6 +106,41 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
     </div>
   )
 
+  const tagsField = (
+    <div className="form-field agent-detail-tags-field">
+      <label className="field-label">{t('tags')}</label>
+      <MultiSelect
+        value={tags}
+        options={tagOptions}
+        onChange={(e) => onFieldChange('tags', (e.value as string[]) ?? [])}
+        className="w-full"
+        display="chip"
+        showClear
+        maxSelectedLabels={3}
+        placeholder={t('select_tags')}
+        appendTo="self"
+      />
+    </div>
+  )
+
+  const iconField = (
+    <div className="form-field agent-detail-icon-field">
+      <label className="field-label">{t('icon')}</label>
+      <button
+        type="button"
+        className="agent-detail-icon-btn"
+        onClick={() => setShowIconPicker(true)}
+        aria-label={t('select_icon')}
+      >
+        {selectedIcon && iconMap[selectedIcon] ? (
+          <FontAwesomeIcon icon={iconMap[selectedIcon]} />
+        ) : (
+          <FontAwesomeIcon icon={faRobot} />
+        )}
+      </button>
+    </div>
+  )
+
   const templatePromptField = (
     <div className="form-field agent-detail-template-prompt-field">
       <label className="field-label">{t('template_prompt')}</label>
@@ -128,11 +182,20 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
         {idField}
         {nameField}
         {descriptionField}
+        {tagsField}
+        {iconField}
       </div>
       <div className="agent-basic-info-prompts">
         {hasTemplatePrompt && templatePromptField}
         {userPromptField}
       </div>
+
+      <IconPicker
+        visible={showIconPicker}
+        selectedIcon={selectedIcon}
+        onIconSelect={(icon) => onFieldChange('selectedIcon', icon)}
+        onClose={() => setShowIconPicker(false)}
+      />
     </div>
   )
 }

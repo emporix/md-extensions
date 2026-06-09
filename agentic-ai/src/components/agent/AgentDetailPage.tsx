@@ -214,6 +214,8 @@ const AgentDetailPage: React.FC = () => {
               agentName={state.agentName}
               description={state.description}
               prompt={state.prompt}
+              tags={state.tags}
+              selectedIcon={state.selectedIcon}
               templatePrompt={state.templatePrompt}
               isEditing={!isCreating && !!agent?.id}
               onFieldChange={handleFieldChange}
