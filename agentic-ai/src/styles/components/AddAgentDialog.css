@@ -67,7 +67,7 @@
   & .agent-icon {
     width: 64px;
     height: 64px;
-    background: #f8fafc;
+    background: var(--bg-hover);
     border: 1px solid #d1d5db;
     border-radius: 8px;
     display: flex;
@@ -203,7 +203,7 @@
 .add-agent-loading-state .agent-icon {
   width: 64px;
   height: 64px;
-  background: #f8fafc;
+  background: var(--bg-hover);
   border: 1px solid #d1d5db;
   border-radius: 8px;
   display: flex;

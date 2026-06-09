@@ -8,7 +8,7 @@ import {
   LlmProvider,
 } from '../types/Agent'
 import { upsertCustomAgent } from '../services/agentService'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
 import { ApiClientError } from '../services/apiClient'
 import { formatApiError } from '../utils/errorHelpers'
@@ -20,10 +20,13 @@ import {
   mergeCommerceTriggerPersistedConfig,
   isCommerceFilterValid,
 } from '../utils/agentFilterDslHelpers'
+import {
+  getValidCollaborations,
+  areCollaborationsValid,
+} from '../utils/agentCollaborationHelpers'
 
 interface UseAgentConfigProps {
   agent: CustomAgent | null
-  appState: AppState
   onSave: (agent: CustomAgent) => void
   onHide: () => void
 }
@@ -63,10 +66,10 @@ interface AgentConfigState {
 
 export const useAgentConfig = ({
   agent,
-  appState,
   onSave,
   onHide,
 }: UseAgentConfigProps) => {
+  const appState = useAppState()
   const { showSuccess, showError } = useToast()
   const [showDisableConfirm, setShowDisableConfirm] = useState(false)
   const [disableConfirmMessage, setDisableConfirmMessage] = useState('')
@@ -223,7 +226,7 @@ export const useAgentConfig = ({
       enableMemory: state.enableMemory,
       mcpServers: state.mcpServers || [],
       nativeTools: state.nativeTools || [],
-      agentCollaborations: state.agentCollaborations || [],
+      agentCollaborations: getValidCollaborations(state.agentCollaborations),
       enabled: agent.enabled || false,
       type: agent.type,
       metadata: agent.metadata || {
@@ -356,11 +359,16 @@ export const useAgentConfig = ({
         (!state.commerceEventFilter ||
           isCommerceFilterValid(state.commerceEventFilter)))
 
+    const collaborationValidation = areCollaborationsValid(
+      state.agentCollaborations
+    )
+
     return (
       basicValidation &&
       tokenValidation &&
       selfHostedValidation &&
-      commerceFilterValidation
+      commerceFilterValidation &&
+      collaborationValidation
     )
   }, [state, agent?.id])
 

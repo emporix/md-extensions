@@ -333,7 +333,7 @@ h1 .details-title-with-back {
 }
 
 .details-back-button:hover {
-  background: #f9fafb;
+  background: var(--bg-secondary);
   border-color: #d1d5db;
 }
 
@@ -344,6 +344,22 @@ h1 .details-title-with-back {
 .details-back-button i {
   font-size: 0.875rem;
   color: #374151;
+}
+
+.detail-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  cursor: help;
+}
+
+.detail-status-dot--enabled {
+  background-color: var(--color-md-green);
+}
+
+.detail-status-dot--disabled {
+  background-color: var(--color-md-red);
 }
 
 .details-title-text {
@@ -393,7 +409,7 @@ h1 .details-title-with-back {
 }
 
 .info-card {
-  background: linear-gradient(to bottom, #ffffff, #f9fafb);
+  background: linear-gradient(to bottom, #ffffff, var(--bg-secondary));
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 1rem;
@@ -464,12 +480,12 @@ h1 .details-title-with-back {
 .section-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-section-title);
   margin: 0;
 }
 
 .content-box {
-  background: linear-gradient(to bottom, #ffffff, #f9fafb);
+  background: linear-gradient(to bottom, #ffffff, var(--bg-secondary));
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 1.25rem;
@@ -551,7 +567,7 @@ h1 .details-title-with-back {
   gap: 0.25rem;
   padding: 0.75rem;
   margin-bottom: 0.5rem;
-  background: #f9fafb;
+  background: var(--bg-secondary);
   border-radius: 4px;
   transition: background 0.2s ease;
 }
@@ -639,7 +655,7 @@ h1 .details-title-with-back {
   color: #111827;
   font-family: 'SF Mono', Monaco, monospace;
   padding: 0.5rem 0.75rem;
-  background: #f9fafb;
+  background: var(--bg-secondary);
   border-radius: 4px;
   word-break: break-all;
 }
@@ -770,7 +786,7 @@ h1 .details-title-with-back {
 }
 
 .p-tabview .p-tabview-nav-container .p-tabview-nav-btn {
-  background-color: #fcfcfc;
+  background-color: var(--bg-primary);
   color: #3e4759;
 }
 

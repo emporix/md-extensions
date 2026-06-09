@@ -1,0 +1,129 @@
+/* ========================================
+   Icon picker trigger (General tab)
+   ======================================== */
+
+.agent-detail-icon-btn {
+  width: 64px;
+  height: 64px;
+  background: var(--bg-hover);
+  border: 1px solid #a1bddc;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  transition: all var(--transition-base);
+}
+
+.agent-detail-icon-btn:hover {
+  border-color: #3b73bb;
+  color: #3b73bb;
+}
+
+.agent-detail-icon-btn:focus {
+  outline: none;
+}
+
+.agent-detail-icon-btn:focus-visible {
+  outline: 2px solid #128afb;
+  outline-offset: 2px;
+}
+
+/* ========================================
+   Icon picker overlay & grid
+   ======================================== */
+
+.icon-picker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-picker-popup {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: 400px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+.icon-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg);
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.icon-picker-header h3 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.icon-picker-close {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-base), color var(--transition-base);
+}
+
+.icon-picker-close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.icon-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.icon-picker-item {
+  width: 64px;
+  height: 64px;
+  background: var(--bg-hover);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: #64748b;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.icon-picker-item:hover {
+  background: #f1f5f9;
+  border-color: #d1d5db;
+  color: var(--text-primary);
+}
+
+.icon-picker-item.selected {
+  background: #dbeafe;
+  border-color: #2563eb;
+  color: #2563eb;
+}

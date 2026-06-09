@@ -1,10 +1,11 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { InputText } from 'primereact/inputtext'
+import { InputTextarea } from 'primereact/inputtextarea'
 import { useTranslation } from 'react-i18next'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGlobe } from '@fortawesome/free-solid-svg-icons'
 import { LocalizedString } from '../../types/Agent'
-import { AppState } from '../../types/common'
+import { useAppState } from '../../contexts/AppStateContext'
 import { useLanguages } from '../../hooks/useLanguages'
 
 export interface LocalizedInputProps {
@@ -12,10 +13,12 @@ export interface LocalizedInputProps {
   onChange: (value: LocalizedString) => void
   displayOnly?: boolean
   error?: string
+  invalid?: boolean
   className?: string
   dataTestId?: string
-  appState: AppState
   placeholder?: string
+  multiline?: boolean
+  rows?: number
 }
 
 export const LocalizedInput: React.FC<LocalizedInputProps> = ({
@@ -23,15 +26,22 @@ export const LocalizedInput: React.FC<LocalizedInputProps> = ({
   onChange,
   displayOnly = false,
   error,
+  invalid = false,
   className = '',
   dataTestId,
-  appState,
   placeholder,
+  multiline = false,
+  rows = 2,
 }) => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const [state, setState] = useState<LocalizedString>(value)
   const [showLanguages, setShowLanguages] = useState(false)
   const { languages } = useLanguages()
+
+  useEffect(() => {
+    setState(value)
+  }, [value])
 
   const toggleLanguages = useCallback(() => {
     setShowLanguages(!showLanguages)
@@ -69,6 +79,8 @@ export const LocalizedInput: React.FC<LocalizedInputProps> = ({
     [state, onChange]
   )
 
+  const showInvalidState = invalid || Boolean(error)
+
   return (
     <div className={className} data-test-id="localized-inputs">
       {sortedLanguages?.map((language, index) => {
@@ -80,31 +92,53 @@ export const LocalizedInput: React.FC<LocalizedInputProps> = ({
             <div className="mb-2" key={language.id}>
               <div className="p-inputgroup">
                 <span
-                  style={{ borderColor: error ? 'var(--red-500)' : '' }}
+                  style={{
+                    borderColor: showInvalidState ? 'var(--red-500)' : '',
+                  }}
                   className="p-inputgroup-addon font-bold"
                 >
                   {language.id.toUpperCase()}
                 </span>
-                <InputText
-                  style={{ borderColor: error ? 'var(--red-500)' : '' }}
-                  disabled={displayOnly}
-                  data-test-id={dataTestId}
-                  value={fieldValue}
-                  onChange={(event) =>
-                    setLocalizedValue(languageKey, event.target.value)
-                  }
-                  placeholder={placeholder}
-                />
+                {multiline ? (
+                  <InputTextarea
+                    style={{
+                      borderColor: showInvalidState ? 'var(--red-500)' : '',
+                    }}
+                    className={showInvalidState ? 'p-invalid' : ''}
+                    disabled={displayOnly}
+                    data-test-id={dataTestId}
+                    value={fieldValue}
+                    onChange={(event) =>
+                      setLocalizedValue(languageKey, event.target.value)
+                    }
+                    placeholder={placeholder}
+                    rows={rows}
+                  />
+                ) : (
+                  <InputText
+                    style={{
+                      borderColor: showInvalidState ? 'var(--red-500)' : '',
+                    }}
+                    className={showInvalidState ? 'p-invalid' : ''}
+                    disabled={displayOnly}
+                    data-test-id={dataTestId}
+                    value={fieldValue}
+                    onChange={(event) =>
+                      setLocalizedValue(languageKey, event.target.value)
+                    }
+                    placeholder={placeholder}
+                  />
+                )}
               </div>
             </div>
           )
         )
       })}
-      {error && (
+      {error ? (
         <small style={{ marginTop: '-.25rem' }} className="p-error block mb-2">
           {error}
         </small>
-      )}
+      ) : null}
       {sortedLanguages && sortedLanguages.length > 1 && (
         <div
           className="flex align-items-center text-sm"

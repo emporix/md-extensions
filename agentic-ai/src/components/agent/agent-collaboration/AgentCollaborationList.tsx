@@ -6,7 +6,7 @@ import { AgentCollaborationForm } from './AgentCollaborationForm'
 import { getLocalizedValue } from '../../../utils/agentHelpers'
 import { iconMap } from '../../../utils/agentHelpers'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { AppState } from '../../../types/common'
+import { useAppState } from '../../../contexts/AppStateContext'
 
 interface AgentCollaborationListProps {
   collaborations: AgentCollaboration[]
@@ -16,8 +16,6 @@ interface AgentCollaborationListProps {
   onCancelEdit: () => void
   editingIndex?: number
   availableAgents: CustomAgent[]
-  currentAgentType?: string
-  appState: AppState
 }
 
 export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({
@@ -28,10 +26,9 @@ export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({
   onCancelEdit,
   editingIndex,
   availableAgents,
-  currentAgentType,
-  appState,
 }) => {
   const { t } = useTranslation()
+  const appState = useAppState()
 
   if (collaborations.length === 0) {
     return null
@@ -60,8 +57,6 @@ export const AgentCollaborationList: React.FC<AgentCollaborationListProps> = ({
               onCancel={onCancelEdit}
               availableAgents={availableAgents}
               editingCollaboration={collaboration}
-              currentAgentType={currentAgentType}
-              appState={appState}
             />
           ) : (
             <>

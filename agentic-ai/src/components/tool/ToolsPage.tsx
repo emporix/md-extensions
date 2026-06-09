@@ -1,38 +1,26 @@
 import React, { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import ToolCard from './ToolCard'
-import ToolConfigPanel from './ToolConfigPanel'
 import { BasePage } from '../shared/BasePage'
 import { ConfirmDialog } from '../shared/ConfirmDialog'
 import { Tool } from '../../types/Tool'
 import { useTools } from '../../hooks/useTools'
-import { AppState } from '../../types/common'
-import { createEmptyTool } from '../../utils/toolHelpers'
+import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../contexts/ToastContext'
 import { reindex } from '../../services/aiRagIndexerService'
 import { resolveRagEntityType } from '../../utils/ragEmporixToolHelpers'
 
-interface ToolsPageProps {
-  appState?: AppState
-}
-
-const ToolsPage: React.FC<ToolsPageProps> = ({
-  appState = {
-    tenant: 'default',
-    language: 'default',
-    token: 'default',
-    contentLanguage: 'en',
-  },
-}) => {
+const ToolsPage: React.FC = () => {
+  const appState = useAppState()
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { showSuccess, showError } = useToast()
 
   const {
     tools,
     loading,
     error,
-    updateTool,
-    refreshTools,
     removeTool,
     toggleToolActive,
     deleteConfirmVisible,
@@ -44,40 +32,20 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
     forceToggleConfirmVisible,
     hideForceToggleConfirm,
     confirmForceToggle,
-  } = useTools(appState)
-  const [showConfigPanel, setShowConfigPanel] = useState(false)
-  const [selectedTool, setSelectedTool] = useState<Tool | null>(null)
+  } = useTools()
   const [reindexConfirmVisible, setReindexConfirmVisible] = useState(false)
   const [toolToReindex, setToolToReindex] = useState<Tool | null>(null)
 
-  const handleConfigure = (tool: Tool) => {
-    setSelectedTool(tool)
-    setShowConfigPanel(true)
-  }
+  const handleConfigure = useCallback(
+    (tool: Tool) => {
+      navigate(`/tools/${tool.id}/edit`)
+    },
+    [navigate]
+  )
 
   const handleAddNewTool = useCallback(() => {
-    setSelectedTool(createEmptyTool())
-    setShowConfigPanel(true)
-  }, [])
-
-  const handleConfigSave = async (updatedTool: Tool) => {
-    try {
-      await updateTool(updatedTool)
-      await refreshTools()
-      showSuccess(t('tool_updated_successfully'))
-      setShowConfigPanel(false)
-      setSelectedTool(null)
-    } catch (error) {
-      console.error(error)
-      setShowConfigPanel(false)
-      setSelectedTool(null)
-    }
-  }
-
-  const handleConfigClose = () => {
-    setShowConfigPanel(false)
-    setSelectedTool(null)
-  }
+    navigate('/tools/add')
+  }, [navigate])
 
   const handleReindex = (tool: Tool) => {
     setToolToReindex(tool)
@@ -145,14 +113,6 @@ const ToolsPage: React.FC<ToolsPageProps> = ({
           ))}
         </div>
       )}
-
-      <ToolConfigPanel
-        visible={showConfigPanel}
-        tool={selectedTool}
-        onHide={handleConfigClose}
-        onSave={handleConfigSave}
-        appState={appState}
-      />
 
       <ConfirmDialog
         visible={reindexConfirmVisible}

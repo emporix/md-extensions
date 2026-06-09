@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSlack, faMicrosoft } from '@fortawesome/free-brands-svg-icons'
 import { faTools } from '@fortawesome/free-solid-svg-icons'
 import BaseCard, { CardAction } from '../shared/BaseCard'
+import { getToolTypeLabel } from '../../utils/toolHelpers'
 
 const ToolCard: React.FC<ToolCardProps> = ({
   tool,
@@ -26,33 +27,23 @@ const ToolCard: React.FC<ToolCardProps> = ({
     }
   }
 
-  const getToolTypeLabel = () => {
-    switch (tool.type) {
-      case 'slack':
-        return 'Slack'
-      case 'teams':
-        return 'Microsoft Teams'
-      case 'rag_emporix':
-        return 'RAG Emporix'
-      case 'rag_custom':
-        return 'RAG Custom'
-      default:
-        return tool.type
-    }
-  }
-
   const getDescription = () => {
+    const typeLabel = getToolTypeLabel(t, tool.type)
+
     if (tool.type === 'slack' || tool.type === 'teams') {
       const parts: string[] = []
       if (tool.config?.teamId) {
-        parts.push(`Team ID: ${tool.config?.teamId}`)
+        parts.push(`${t('team_id')}: ${tool.config.teamId}`)
       }
       if (tool.config?.botToken) {
-        parts.push(`Bot Token: ${'•'.repeat(8)}`)
+        parts.push(`${t('bot_token')}: ${'•'.repeat(8)}`)
       }
-      return parts.length > 0 ? parts.join('\n') : `${getToolTypeLabel()} Tool`
+      return parts.length > 0
+        ? parts.join('\n')
+        : t('tool_type_tool', { type: typeLabel })
     }
-    return `${getToolTypeLabel()} Tool`
+
+    return t('tool_type_tool', { type: typeLabel })
   }
 
   const getActions = (): CardAction[] => {
@@ -107,7 +98,7 @@ const ToolCard: React.FC<ToolCardProps> = ({
       title={tool.name}
       description={getDescription()}
       icon={<FontAwesomeIcon icon={getToolIcon()} />}
-      badge={getToolTypeLabel()}
+      badge={getToolTypeLabel(t, tool.type)}
       enabled={tool.enabled ?? true}
       onToggleActive={onToggleActive}
       actions={getActions()}

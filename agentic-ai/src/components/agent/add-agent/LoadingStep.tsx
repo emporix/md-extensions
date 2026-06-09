@@ -4,21 +4,20 @@ import { ProgressBar } from 'primereact/progressbar'
 import { Button } from 'primereact/button'
 import { LocalizedString } from '../../../types/Agent'
 import { getLocalizedValue } from '../../../utils/agentHelpers'
-import { AppState } from '../../../types/common'
+import { useAppState } from '../../../contexts/AppStateContext'
 
 interface LoadingStepProps {
   agentName: LocalizedString
   progress: number
   onDiscard: () => void
-  appState: AppState
 }
 
 export const LoadingStep: React.FC<LoadingStepProps> = ({
   agentName,
   progress,
   onDiscard,
-  appState,
 }) => {
+  const appState = useAppState()
   const { t } = useTranslation()
 
   return (

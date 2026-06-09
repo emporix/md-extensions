@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { AppState } from '../types/common'
+import { useTranslation } from 'react-i18next'
+import { useAppState } from '../contexts/AppStateContext'
 import { getCommerceEvents } from '../services/agentService'
 import { formatApiError } from '../utils/errorHelpers'
 
@@ -9,15 +10,23 @@ export interface CommerceEventsState {
   error: string | null
 }
 
-export const useCommerceEvents = (appState: AppState) => {
+export const useCommerceEvents = () => {
+  const appState = useAppState()
+  const { t } = useTranslation()
+
   const [state, setState] = useState<CommerceEventsState>({
     events: [],
-    loading: false,
+    loading: true,
     error: null,
   })
 
   const fetchEvents = useCallback(async () => {
     if (!appState.tenant || !appState.token) {
+      setState({
+        events: [],
+        loading: false,
+        error: null,
+      })
       return
     }
 
@@ -28,27 +37,28 @@ export const useCommerceEvents = (appState: AppState) => {
       const sortedEvents = (response.events || []).sort((a, b) =>
         a.localeCompare(b)
       )
-      setState((prev) => ({
-        ...prev,
+
+      setState({
         events: sortedEvents,
         loading: false,
-      }))
+        error: null,
+      })
     } catch (error) {
       const errorMessage = formatApiError(
         error,
-        'Failed to fetch commerce events'
+        t('error_loading_commerce_events')
       )
-      setState((prev) => ({
-        ...prev,
+
+      setState({
+        events: [],
         error: errorMessage,
         loading: false,
-        events: [],
-      }))
+      })
     }
-  }, [appState])
+  }, [appState, t])
 
   useEffect(() => {
-    fetchEvents()
+    void fetchEvents()
   }, [fetchEvents])
 
   return {

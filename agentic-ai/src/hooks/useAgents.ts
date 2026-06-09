@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { PatchOperation } from '../services/agentService'
 import { AgentTemplate, CustomAgent } from '../types/Agent'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
 import { formatApiError } from '../utils/errorHelpers'
 import {
@@ -40,7 +40,8 @@ interface UseAgentsResult {
   confirmForceDelete: () => Promise<void>
 }
 
-export const useAgents = (appState: AppState): UseAgentsResult => {
+export const useAgents = (): UseAgentsResult => {
+  const appState = useAppState()
   const { showSuccess, showError } = useToast()
   const [agents, setAgents] = useState<AgentTemplate[]>([])
   const [loading, setLoading] = useState(true)

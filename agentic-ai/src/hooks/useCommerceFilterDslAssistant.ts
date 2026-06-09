@@ -6,7 +6,7 @@ import {
   type AgentCommerceFilterDsl,
   extractFilterDslJsonFromAgentMessage,
 } from '../utils/agentFilterDslHelpers'
-import type { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 import {
   COMMERCE_FILTER_DSL_AGENT_ID,
   chatWithAgent,
@@ -23,7 +23,6 @@ const isAssistantServiceI18nMessage = (message: string): boolean =>
   COMMERCE_FILTER_ASSISTANT_I18N_MESSAGES.includes(message)
 
 export interface UseCommerceFilterDslAssistantParams {
-  appState: AppState | undefined
   activeTab: EditorTab
   tryCommitParsedFilter: (
     parsed: unknown,
@@ -33,11 +32,11 @@ export interface UseCommerceFilterDslAssistantParams {
 }
 
 export const useCommerceFilterDslAssistant = ({
-  appState,
   activeTab,
   tryCommitParsedFilter,
   onApplyGeneratedDsl,
 }: UseCommerceFilterDslAssistantParams) => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const { showSuccess, showError, showInfo } = useToast()
 
@@ -61,10 +60,10 @@ export const useCommerceFilterDslAssistant = ({
 
   useEffect(() => {
     setHelperAgentPresent(null)
-  }, [appState?.tenant])
+  }, [appState.tenant])
 
   useEffect(() => {
-    if (activeTab !== 'assistant' || !appState || helperAgentPresent !== null) {
+    if (activeTab !== 'assistant' || helperAgentPresent !== null) {
       return
     }
     let cancelled = false
@@ -91,7 +90,6 @@ export const useCommerceFilterDslAssistant = ({
   }, [activeTab, appState, helperAgentPresent, showError])
 
   const handleEnableHelperAgent = useCallback(async () => {
-    if (!appState) return
     setProvisioningAgent(true)
     setAssistantError(null)
     try {
@@ -135,7 +133,7 @@ export const useCommerceFilterDslAssistant = ({
   ])
 
   const handleAssistantGenerate = useCallback(async () => {
-    if (!appState || !assistantPrompt.trim()) return
+    if (!assistantPrompt.trim()) return
     setAssistantWorking(true)
     setAssistantError(null)
     try {

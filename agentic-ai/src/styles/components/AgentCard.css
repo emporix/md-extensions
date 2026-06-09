@@ -52,7 +52,7 @@
 .agent-icon {
   width: 64px;
   height: 64px;
-  background: #f8fafc;
+  background: var(--bg-hover);
   border: 1px solid #A1BDDC;
   border-radius: 8px;
   display: flex;

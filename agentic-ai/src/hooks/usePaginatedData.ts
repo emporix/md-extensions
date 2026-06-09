@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router'
-import { AppState } from '../types/common'
+import { useAppState } from '../contexts/AppStateContext'
 
 export interface PaginatedResponse<T> {
   data: T[]
@@ -17,11 +17,11 @@ export type FetchFunction<T> = (
 ) => Promise<PaginatedResponse<T>>
 
 export const usePaginatedData = <T>(
-  appState: AppState,
   fetchFunction: FetchFunction<T>,
   defaultSort: string = 'metadata.createdAt',
   defaultSortOrder: 'ASC' | 'DESC' = 'DESC'
 ) => {
+  const appState = useAppState()
   const location = useLocation()
   const [data, setData] = useState<T[]>([])
   const [loading, setLoading] = useState(true)
