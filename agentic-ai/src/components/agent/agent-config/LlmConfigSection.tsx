@@ -8,6 +8,7 @@ import { getTokens } from '../../../services/tokensService'
 import { Token } from '../../../types/Token'
 import { useAppState } from '../../../contexts/AppStateContext'
 import { LlmProvider } from '../../../types/Agent'
+import { getSliderThumbLeftCss } from '../../../utils/sliderHelpers'
 
 interface LlmConfigSectionProps {
   model: string
@@ -121,7 +122,11 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
               <div
                 className="slider-tooltip"
                 style={{
-                  left: `calc(${((parseFloat(temperature || '0.5') * 10) / 10) * 100}% - 15px)`,
+                  left: getSliderThumbLeftCss(
+                    Math.round(parseFloat(temperature || '0.5') * 10),
+                    0,
+                    10
+                  ),
                 }}
               >
                 {temperature}
@@ -248,7 +253,11 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
               <div
                 className="slider-tooltip"
                 style={{
-                  left: `calc(${((parseInt(recursionLimit) - 1) / 99) * 100}% - 15px)`,
+                  left: getSliderThumbLeftCss(
+                    parseInt(recursionLimit, 10),
+                    1,
+                    100
+                  ),
                 }}
               >
                 {recursionLimit}

@@ -20,6 +20,7 @@ import {
   usesModelCatalog,
   type ProviderModelMemory,
 } from '../../../utils/llmModelHelpers'
+import { getSliderThumbLeftCss } from '../../../utils/sliderHelpers'
 
 type ModelInputMode = 'list' | 'custom'
 
@@ -500,7 +501,11 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
                   <div
                     className="slider-tooltip"
                     style={{
-                      left: `calc(${((parseFloat(temperature || '0') * 10) / 10) * 100}% - 15px)`,
+                      left: getSliderThumbLeftCss(
+                        Math.round(parseFloat(temperature || '0') * 10),
+                        0,
+                        10
+                      ),
                     }}
                   >
                     {temperature}
@@ -533,7 +538,11 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
                   <div
                     className="slider-tooltip"
                     style={{
-                      left: `calc(${((parseInt(recursionLimit, 10) - 1) / 99) * 100}% - 15px)`,
+                      left: getSliderThumbLeftCss(
+                        parseInt(recursionLimit, 10),
+                        1,
+                        100
+                      ),
                     }}
                   >
                     {recursionLimit}
