@@ -403,7 +403,7 @@ export const useToolConfig = ({
   const updateFilterField = useCallback(
     (
       index: number,
-      field: keyof Pick<RagEmporixFilterFieldConfig, 'name' | 'description'>,
+      field: keyof Pick<RagEmporixFilterFieldConfig, 'description'>,
       value: string
     ) => {
       setState((prev) => {

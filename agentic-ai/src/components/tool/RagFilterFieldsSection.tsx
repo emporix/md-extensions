@@ -1,6 +1,5 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { InputText } from 'primereact/inputtext'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { Button } from 'primereact/button'
 import { Dropdown } from 'primereact/dropdown'
@@ -21,7 +20,7 @@ type RagFilterFieldsSectionProps = {
   onRemove: (index: number) => void
   onUpdateField: (
     index: number,
-    field: keyof Pick<RagEmporixFilterFieldConfig, 'name' | 'description'>,
+    field: keyof Pick<RagEmporixFilterFieldConfig, 'description'>,
     value: string
   ) => void
   onSelectKey: (index: number, key?: string | null) => void
@@ -49,17 +48,6 @@ export const RagFilterFieldsSection: React.FC<RagFilterFieldsSectionProps> = ({
             key={index}
             onRemove={() => onRemove(index)}
             removeAriaLabel={t('remove_filter_field')}
-            primaryField={
-              <>
-                <label className="field-label">{t('field_name')}</label>
-                <InputText
-                  value={field.name || ''}
-                  onChange={(e) => onUpdateField(index, 'name', e.target.value)}
-                  className="w-full"
-                  placeholder={t('enter_field_name')}
-                />
-              </>
-            }
             secondaryField={
               <>
                 <label className="field-label">
@@ -88,6 +76,9 @@ export const RagFilterFieldsSection: React.FC<RagFilterFieldsSectionProps> = ({
                   showClear
                   appendTo="self"
                 />
+                {!field.key?.trim() && (
+                  <small className="p-error">{t('field_key_required')}</small>
+                )}
               </>
             }
             footer={

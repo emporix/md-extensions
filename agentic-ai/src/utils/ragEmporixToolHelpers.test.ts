@@ -51,16 +51,14 @@ describe('sanitizeRagEmporixIndexedFields', () => {
 })
 
 describe('sanitizeRagEmporixFilterFields', () => {
-  it('keeps valid keys and trims key/name/description values', () => {
+  it('keeps valid keys and trims key/description values', () => {
     const fields = [
       {
         key: '  product.category  ',
-        name: '  Category  ',
         description: '  Filter by category  ',
       },
       {
         key: ' bad key ',
-        name: 'Invalid',
         description: 'Should be removed',
       },
     ]
@@ -68,7 +66,6 @@ describe('sanitizeRagEmporixFilterFields', () => {
     expect(sanitizeRagEmporixFilterFields(fields)).toEqual([
       {
         key: 'product.category',
-        name: 'Category',
         description: 'Filter by category',
       },
     ])
@@ -96,18 +93,15 @@ describe('getRagFilterFieldDisplayLabel', () => {
   it('matches metadata using a trimmed key', () => {
     const label = getRagFilterFieldDisplayLabel(
       { key: '  product.category  ' },
-      [{ key: 'product.category', name: 'Category' }]
+      [{ key: 'product.category' }]
     )
 
-    expect(label).toBe('product.category (Category)')
+    expect(label).toBe('product.category')
   })
 
   it('uses a trimmed key in fallback label when metadata is missing', () => {
-    const label = getRagFilterFieldDisplayLabel(
-      { key: '  custom.field  ', name: 'Custom Field' },
-      []
-    )
+    const label = getRagFilterFieldDisplayLabel({ key: '  custom.field  ' }, [])
 
-    expect(label).toBe('custom.field (Custom Field)')
+    expect(label).toBe('custom.field')
   })
 })

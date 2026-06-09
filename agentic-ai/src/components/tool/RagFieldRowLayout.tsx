@@ -1,7 +1,7 @@
 import React from 'react'
 
 type RagFieldRowLayoutProps = {
-  primaryField: React.ReactNode
+  primaryField?: React.ReactNode
   secondaryField: React.ReactNode
   onRemove: () => void
   removeAriaLabel: string
@@ -17,7 +17,9 @@ const RagFieldRowLayout: React.FC<RagFieldRowLayoutProps> = ({
 }) => (
   <div className="tool-detail-field-row">
     <div className="tool-detail-field-row-fields">
-      <div className="form-field">{primaryField}</div>
+      {primaryField !== undefined && (
+        <div className="form-field">{primaryField}</div>
+      )}
       <div className="form-field">{secondaryField}</div>
       {footer && (
         <div className="form-field tool-detail-field-row-footer">{footer}</div>

@@ -28,7 +28,6 @@ export interface RagEmporixFieldConfig {
 
 export interface RagEmporixFilterFieldConfig {
   key?: string
-  name?: string
   description?: string
 }
 
