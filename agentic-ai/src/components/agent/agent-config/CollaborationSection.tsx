@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'primereact/button'
 import { AgentCollaboration, CustomAgent } from '../../../types/Agent'
@@ -29,6 +29,7 @@ export const CollaborationSection: React.FC<CollaborationSectionProps> = ({
 }) => {
   const appState = useAppState()
   const { t } = useTranslation()
+  const [focusRowIndex, setFocusRowIndex] = useState<number | null>(null)
 
   const rows = collaborations
 
@@ -97,6 +98,7 @@ export const CollaborationSection: React.FC<CollaborationSectionProps> = ({
   )
 
   const handleAddRow = useCallback(() => {
+    setFocusRowIndex(rows.length)
     onChange([...rows, { agentId: '', description: '' }])
   }, [onChange, rows])
 
@@ -118,6 +120,7 @@ export const CollaborationSection: React.FC<CollaborationSectionProps> = ({
               agentOptions={agentOptions}
               onUpdate={updateRow}
               onDelete={handleDeleteRow}
+              autoFocus={index === focusRowIndex}
             />
           )
         })}

@@ -44,6 +44,7 @@ export const ToolGeneralSection: React.FC<ToolGeneralSectionProps> = ({
             className={`w-full${!isEditing && !toolId.trim() ? ' p-invalid' : ''}`}
             disabled={isEditing}
             placeholder={t('enter_tool_id')}
+            autoFocus={!isEditing}
           />
         </div>
 

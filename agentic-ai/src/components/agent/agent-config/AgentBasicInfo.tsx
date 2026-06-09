@@ -50,6 +50,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
         className={`w-full ${!isEditing && !agentId.trim() ? 'p-invalid' : ''}`}
         disabled={isEditing}
         placeholder={!isEditing ? t('enter_agent_id') : undefined}
+        autoFocus={!isEditing}
       />
     </div>
   )

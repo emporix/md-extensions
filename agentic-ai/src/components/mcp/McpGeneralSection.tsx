@@ -32,6 +32,7 @@ export const McpGeneralSection: React.FC<McpGeneralSectionProps> = ({
           className={`w-full${!isEditing && !mcpServerId.trim() ? ' p-invalid' : ''}`}
           disabled={isEditing}
           placeholder={t('enter_mcp_server_id')}
+          autoFocus={!isEditing}
         />
       </div>
 

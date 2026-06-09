@@ -79,6 +79,7 @@ export const FormStep: React.FC<FormStepProps> = ({
             onChange={(e) => handleAgentIdChange(e.target.value)}
             className={`w-full ${!agentId.trim() ? 'p-invalid' : ''}`}
             placeholder={t('enter_agent_id')}
+            autoFocus
           />
         </div>
         <div className="form-field">

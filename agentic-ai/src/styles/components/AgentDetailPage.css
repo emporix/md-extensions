@@ -1173,12 +1173,12 @@
 
 .agent-detail-model-slider .slider-container {
   position: relative;
-  padding: 0 4px;
+  padding: 15px 4px 0;
 }
 
 .agent-detail-model-slider .slider-tooltip {
   position: absolute;
-  top: -28px;
+  top: -5px;
   transform: translateX(-50%);
   background: #1b2029;
   color: #fff;

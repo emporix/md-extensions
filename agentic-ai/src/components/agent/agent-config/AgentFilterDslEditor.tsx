@@ -99,6 +99,7 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
     []
   )
 
+  const [focusRuleIndex, setFocusRuleIndex] = useState<number | null>(null)
   const [pendingLogic, setPendingLogic] = useState<DslLogicalOperator>('$and')
   useEffect(() => {
     if (value !== null && isCompoundFilter(value)) {
@@ -275,11 +276,13 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
 
   const addRule = useCallback(() => {
     if (value === null) {
+      setFocusRuleIndex(0)
       onChange(defaultCommerceFilterDsl())
       return
     }
     const model = flattenLeavesForForm(value)
     if (!model) return
+    setFocusRuleIndex(model.leaves.length)
     const nextLeaves = [...model.leaves, defaultCommerceFilterDsl()]
     commitLeaves(nextLeaves)
   }, [value, onChange, commitLeaves])
@@ -396,6 +399,7 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
             onChange={(e) => updateRuleAt(idx, { left: e.target.value })}
             className={`w-full ${pathInvalid ? 'p-invalid' : ''}`}
             placeholder={t('commerce_filter_payload_placeholder')}
+            autoFocus={idx === focusRuleIndex}
           />
         </div>
 
@@ -496,7 +500,7 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
                   : 'p-button-secondary commerce-filter-add-condition'
               }
               aria-label={t('commerce_filter_add_condition')}
-              onClick={() => onChange(defaultCommerceFilterDsl())}
+              onClick={addRule}
             />
           </div>
         </>
@@ -738,7 +742,7 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
           <Button
             type="button"
             label={t('commerce_filter_add')}
-            onClick={() => onChange(defaultCommerceFilterDsl())}
+            onClick={addRule}
           />
         </div>
       </div>

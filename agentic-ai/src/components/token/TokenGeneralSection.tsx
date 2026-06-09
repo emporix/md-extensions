@@ -36,6 +36,7 @@ export const TokenGeneralSection: React.FC<TokenGeneralSectionProps> = ({
             className={`w-full${!isEditing && !tokenId.trim() ? ' p-invalid' : ''}`}
             disabled={isEditing}
             placeholder={t('enter_token_id')}
+            autoFocus={!isEditing}
           />
         </div>
 

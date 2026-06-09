@@ -15,6 +15,7 @@ interface CollaborationRowProps {
   }>
   onUpdate: (index: number, patch: Partial<AgentCollaboration>) => void
   onDelete: (index: number) => void
+  autoFocus?: boolean
 }
 
 export const CollaborationRow: React.FC<CollaborationRowProps> = ({
@@ -23,6 +24,7 @@ export const CollaborationRow: React.FC<CollaborationRowProps> = ({
   agentOptions,
   onUpdate,
   onDelete,
+  autoFocus = false,
 }) => {
   const { t } = useTranslation()
   const selectedAgentId = collaboration.agentId || null
@@ -44,6 +46,7 @@ export const CollaborationRow: React.FC<CollaborationRowProps> = ({
             filter
             filterBy="sortName"
             filterPlaceholder={t('search_agents')}
+            autoFocus={autoFocus}
           />
         </div>
 
