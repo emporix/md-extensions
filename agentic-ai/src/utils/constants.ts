@@ -178,6 +178,7 @@ export const AVAILABLE_TAGS = [
   'Finance',
   'Personal Assistance',
   'Customer Service',
+  "Support"
 ] as const
 
 export const CACHE_TTL = 5 * 60 * 1000

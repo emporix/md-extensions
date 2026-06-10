@@ -10,14 +10,15 @@ export const getSliderThumbLeftCss = (
   max: number,
   thumbSizePx = RANGE_SLIDER_THUMB_SIZE_PX
 ): string => {
-  if (max <= min) {
-    return `calc(${thumbSizePx / 2}px)`
+  const halfThumbPx = thumbSizePx / 2
+
+  if (max <= min || Number.isNaN(value)) {
+    return `calc(${halfThumbPx}px)`
   }
 
   const clamped = Math.min(max, Math.max(min, value))
   const ratio = (clamped - min) / (max - min)
   const thumbOffset = ratio * thumbSizePx
-  const halfThumb = thumbSizePx / 2
 
-  return `calc(${ratio * 100}% - ${thumbOffset}px + ${halfThumb}px)`
+  return `calc(${ratio * 100}% - ${thumbOffset}px + ${halfThumbPx}px)`
 }

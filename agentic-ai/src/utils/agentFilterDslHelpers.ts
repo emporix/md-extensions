@@ -133,6 +133,15 @@ export const operatorRequiresValue = (op: UiFilterOperator): boolean => {
 export const operatorUsesMultiValue = (op: UiFilterOperator): boolean =>
   op === 'in' || op === 'notIn'
 
+export const formatMultiValueList = (values: string[]): string =>
+  values.join(', ')
+
+export const parseMultiValueList = (text: string): string[] =>
+  text
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean)
+
 export const defaultCommerceFilterDsl = (): AgentCommerceLeafDsl => ({
   left: '',
   op: '$ne',

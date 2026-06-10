@@ -8,8 +8,11 @@ import { MultiSelect } from 'primereact/multiselect'
 import { LocalizedString } from '../../../types/Agent'
 import { LocalizedInput } from '../../shared/LocalizedInput'
 import { IconPicker } from '../../shared/IconPicker'
-import { hasAnyLocalizedValue, iconMap } from '../../../utils/agentHelpers'
-import { AVAILABLE_TAGS } from '../../../utils/constants'
+import {
+  getAgentTagOptions,
+  hasAnyLocalizedValue,
+  iconMap,
+} from '../../../utils/agentHelpers'
 import { sanitizeIdInput } from '../../../utils/validation'
 
 interface AgentBasicInfoProps {
@@ -41,14 +44,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   const { t } = useTranslation()
   const [showIconPicker, setShowIconPicker] = useState(false)
 
-  const tagOptions = useMemo(
-    () =>
-      AVAILABLE_TAGS.map((tag) => ({
-        label: tag,
-        value: tag,
-      })),
-    []
-  )
+  const tagOptions = useMemo(() => getAgentTagOptions(tags), [tags])
 
   const handleAgentIdChange = (value: string) => {
     const sanitized = sanitizeIdInput(value)
