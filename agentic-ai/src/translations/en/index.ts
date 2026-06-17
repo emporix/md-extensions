@@ -192,6 +192,9 @@ const TRANSLATIONS_EN = {
   reindex_only_available_for_product:
     'Reindex is only available for Product entity type',
   reindex_triggered_successfully: 'Reindex triggered successfully!',
+  reindex_completed_successfully: 'Reindex completed successfully!',
+  reindex_job_failed: 'Reindex job failed.',
+  reindex_job_already_in_progress: 'A reindex job is already in progress for this entity type.',
   error_triggering_reindex: 'Error triggering reindex',
   failed_to_trigger_reindex: 'Failed to trigger reindex',
   reindex_confirmation:
