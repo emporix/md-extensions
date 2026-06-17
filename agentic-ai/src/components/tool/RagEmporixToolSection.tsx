@@ -51,11 +51,7 @@ export const RagEmporixToolSection: React.FC<RagEmporixToolSectionProps> = ({
   const dimensionsValue = embeddingConfig.dimensions
     ? Number(embeddingConfig.dimensions)
     : 0
-  const isDimensionsInvalid =
-    embeddingConfig.dimensions === null ||
-    embeddingConfig.dimensions === undefined ||
-    dimensionsValue < 128 ||
-    dimensionsValue > 4096
+  const isDimensionsInvalid = dimensionsValue < 128 || dimensionsValue > 4096
 
   const providerOptions = [
     { label: t('llm_provider_openai'), value: RagLlmProvider.OPENAI },
@@ -123,13 +119,12 @@ export const RagEmporixToolSection: React.FC<RagEmporixToolSectionProps> = ({
             </label>
             <InputNumber
               value={dimensionsValue}
-              disabled={isEditing}
-              onValueChange={(event) => {
-                const numValue =
+              onChange={(event) => {
+                onEmbeddingDimensionsChange(
                   event.value !== null && event.value !== undefined
                     ? event.value
                     : null
-                onEmbeddingDimensionsChange(numValue)
+                )
               }}
               className={`w-full${isDimensionsInvalid ? ' p-invalid' : ''}`}
               placeholder={t('enter_dimensions')}

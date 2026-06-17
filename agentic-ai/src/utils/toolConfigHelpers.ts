@@ -72,11 +72,14 @@ export const mergeRagEmporixConfigOnLoad = (tool: Tool): ToolConfig => {
 
 export const validateModelAndDimensions = (
   embeddingConfig: RagEmporixEmbeddingConfig
-): boolean =>
-  !!embeddingConfig.model?.trim() &&
-  !!embeddingConfig.dimensions &&
-  embeddingConfig.dimensions >= 128 &&
-  embeddingConfig.dimensions <= 4096
+): boolean => {
+  const dimensions = embeddingConfig.dimensions ?? 0
+  return (
+    !!embeddingConfig.model?.trim() &&
+    dimensions >= 128 &&
+    dimensions <= 4096
+  )
+}
 
 interface IsToolFormValidParams {
   toolName: string
