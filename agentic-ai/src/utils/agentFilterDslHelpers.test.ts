@@ -11,6 +11,8 @@ import {
   isCompoundFilter,
   mergeCommerceTriggerPersistedConfig,
   parseAgentCommerceFilterDsl,
+  parseMultiValueList,
+  formatMultiValueList,
   stringifyFilterDsl,
   uiOperatorToDsl,
   dslOperatorToUi,
@@ -19,6 +21,13 @@ import {
 } from './agentFilterDslHelpers'
 
 describe('agentFilterDslHelpers', () => {
+  it('formats and parses comma-separated multi-value lists', () => {
+    expect(formatMultiValueList(['a', 'b'])).toBe('a, b')
+    expect(parseMultiValueList('a, b, c')).toEqual(['a', 'b', 'c'])
+    expect(parseMultiValueList('a,')).toEqual(['a'])
+    expect(parseMultiValueList('')).toEqual([])
+  })
+
   it('maps UI operators to DSL and back', () => {
     expect(uiOperatorToDsl('equals')).toBe('$eq')
     expect(uiOperatorToDsl('notIn')).toBe('$notIn')

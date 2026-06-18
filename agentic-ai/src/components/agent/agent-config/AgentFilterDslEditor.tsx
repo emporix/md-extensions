@@ -23,6 +23,8 @@ import {
   isDslLeafOperator,
   operatorRequiresValue,
   operatorUsesMultiValue,
+  formatMultiValueList,
+  parseMultiValueList,
   parseAgentCommerceFilterDsl,
   stringifyFilterDsl,
 } from '../../../utils/agentFilterDslHelpers'
@@ -100,6 +102,9 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
   )
 
   const [focusRuleIndex, setFocusRuleIndex] = useState<number | null>(null)
+  const [multiValueDrafts, setMultiValueDrafts] = useState<
+    Record<number, string>
+  >({})
   const [pendingLogic, setPendingLogic] = useState<DslLogicalOperator>('$and')
   useEffect(() => {
     if (value !== null && isCompoundFilter(value)) {
@@ -134,6 +139,7 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
   useEffect(() => {
     setJsonText(stringifyFilterDsl(value ?? defaultCommerceFilterDsl()))
     setJsonError(null)
+    setMultiValueDrafts({})
   }, [value])
 
   const tryCommitParsedFilter = useCallback(
@@ -427,13 +433,30 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
             </label>
             {operatorUsesMultiValue(uiOp) ? (
               <InputTextarea
-                value={(Array.isArray(leaf.right) ? leaf.right : []).join(', ')}
+                value={
+                  multiValueDrafts[idx] ??
+                  formatMultiValueList(
+                    Array.isArray(leaf.right) ? leaf.right.map(String) : []
+                  )
+                }
                 onChange={(e) => {
-                  const parts = e.target.value
-                    .split(',')
-                    .map((s) => s.trim())
-                    .filter(Boolean)
-                  updateRuleAt(idx, { multi: parts })
+                  setMultiValueDrafts((prev) => ({
+                    ...prev,
+                    [idx]: e.target.value,
+                  }))
+                }}
+                onBlur={() => {
+                  const draft = multiValueDrafts[idx]
+                  if (draft === undefined) {
+                    return
+                  }
+
+                  updateRuleAt(idx, { multi: parseMultiValueList(draft) })
+                  setMultiValueDrafts((prev) => {
+                    const next = { ...prev }
+                    delete next[idx]
+                    return next
+                  })
                 }}
                 rows={isSplitLayout ? 1 : 2}
                 className={`w-full text-mono${valueInvalid ? ' p-invalid' : ''}`}
