@@ -121,9 +121,7 @@ export const RagEmporixToolSection: React.FC<RagEmporixToolSectionProps> = ({
               value={dimensionsValue}
               onChange={(event) => {
                 onEmbeddingDimensionsChange(
-                  event.value !== null && event.value !== undefined
-                    ? event.value
-                    : null
+                  event.value ?? null
                 )
               }}
               className={`w-full${isDimensionsInvalid ? ' p-invalid' : ''}`}

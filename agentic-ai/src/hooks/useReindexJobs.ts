@@ -40,7 +40,8 @@ export const useReindexJobs = (options?: UseReindexJobsOptions) => {
       )
       setActiveReindexEntityTypes(entityTypes)
       return jobs
-    } catch {
+    } catch (err) {
+      console.error("Error while setting active reindex entity types", err)
       setActiveReindexEntityTypes(new Set())
       return []
     }
@@ -75,7 +76,8 @@ export const useReindexJobs = (options?: UseReindexJobsOptions) => {
           if (job.status === 'SUCCESS' || job.status === 'FAILURE') {
             stopPolling(job.status)
           }
-        } catch {
+        } catch (err) {
+          console.error("Error while polling job", err)
           stopPolling('FAILURE')
         }
       }, POLL_INTERVAL_MS)
