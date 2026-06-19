@@ -8,8 +8,9 @@ import { Tool } from '../../types/Tool'
 import { useTools } from '../../hooks/useTools'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../contexts/ToastContext'
-import { reindex } from '../../services/aiRagIndexerService'
+import { reindex } from '../../services/indexingService'
 import { resolveRagEntityType } from '../../utils/ragEmporixToolHelpers'
+import { useReindexJobs } from '../../hooks/useReindexJobs'
 
 const ToolsPage: React.FC = () => {
   const appState = useAppState()
@@ -33,6 +34,15 @@ const ToolsPage: React.FC = () => {
     hideForceToggleConfirm,
     confirmForceToggle,
   } = useTools()
+  const { disabledReindexEntityTypes, startPollingJob } = useReindexJobs({
+    onJobComplete: (status) => {
+      if (status === 'SUCCESS') {
+        showSuccess(t('reindex_completed_successfully'))
+      } else {
+        showError(t('reindex_job_failed'))
+      }
+    },
+  })
   const [reindexConfirmVisible, setReindexConfirmVisible] = useState(false)
   const [toolToReindex, setToolToReindex] = useState<Tool | null>(null)
 
@@ -68,12 +78,12 @@ const ToolsPage: React.FC = () => {
 
     hideReindexConfirm()
 
+    const entityType = resolveRagEntityType(toolToReindex.config.entityType)
+
     try {
-      await reindex(
-        appState,
-        resolveRagEntityType(toolToReindex.config.entityType)
-      )
+      const job = await reindex(appState, entityType, true)
       showSuccess(t('reindex_triggered_successfully'))
+      startPollingJob(job.id, entityType)
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : t('failed_to_trigger_reindex')
@@ -109,6 +119,9 @@ const ToolsPage: React.FC = () => {
               onConfigure={handleConfigure}
               onRemove={removeTool}
               onReindex={handleReindex}
+              isReindexInProgress={disabledReindexEntityTypes.has(
+                resolveRagEntityType(tool.config.entityType).toLowerCase()
+              )}
             />
           ))}
         </div>

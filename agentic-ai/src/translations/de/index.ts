@@ -195,6 +195,9 @@ const TRANSLATIONS_DE = {
   reindex_only_available_for_product:
     'Neuindizierung ist nur für den Entitätstyp Produkt verfügbar',
   reindex_triggered_successfully: 'Neuindizierung erfolgreich gestartet!',
+  reindex_completed_successfully: 'Neuindizierung erfolgreich abgeschlossen!',
+  reindex_job_failed: 'Neuindizierungsauftrag fehlgeschlagen.',
+  reindex_job_already_in_progress: 'Für diesen Entitätstyp läuft bereits ein Neuindizierungsauftrag.',
   error_triggering_reindex: 'Fehler beim Starten der Neuindizierung',
   failed_to_trigger_reindex: 'Neuindizierung konnte nicht gestartet werden.',
   reindex_confirmation:

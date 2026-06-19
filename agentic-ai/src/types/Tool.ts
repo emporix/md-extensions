@@ -87,4 +87,5 @@ export interface ToolCardProps {
   onConfigure: (tool: Tool) => void
   onRemove: (toolId: string) => void
   onReindex?: (tool: Tool) => void
+  isReindexInProgress?: boolean
 }
