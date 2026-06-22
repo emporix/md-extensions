@@ -7,7 +7,7 @@ import {
 } from '../services/indexingService'
 
 const ACTIVE_JOBS_QUERY =
-  'compoundLogicalQuery:((status:IN_PROGRESS) OR (status:PENDING))'
+  'compoundLogicalQuery:((status:IN_PROGRESS) OR (status:PENDING) OR (status:PUBLISHED))'
 
 const POLL_INTERVAL_MS = 3000
 

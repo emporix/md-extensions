@@ -1,7 +1,7 @@
 import { AppState } from '../types/common'
 import { ApiClient } from './apiClient'
 
-export type ReindexJobStatus = 'FAILURE' | 'IN_PROGRESS' | 'PENDING' | 'SUCCESS'
+export type ReindexJobStatus = 'FAILURE' | 'IN_PROGRESS' | 'PENDING' | 'PUBLISHED' | 'SUCCESS'
 
 export interface ReindexJobMetadata {
   createdAt: string
