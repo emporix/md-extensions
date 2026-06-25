@@ -1,0 +1,34 @@
+$brand-grey-300: #c0d0df;
+$brand-grey-600: #596168;
+
+.section-box-wrapper {
+  display: flex;
+  flex-direction: column;
+
+  .section-box-title {
+    margin-bottom: 1rem;
+    color: $brand-grey-600;
+    font-weight: bold;
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+  }
+
+  .section-box {
+    background-color: white;
+    border-radius: 0.25rem;
+    border: 1px solid $brand-grey-300;
+    padding: 1.5rem;
+    width: 100%;
+    flex-grow: 1;
+
+    &--red {
+      background-color: #FAF0F0;
+      border-color: #E32012;
+    }
+
+    &--green {
+      background-color: #F0FAF2;
+      border-color: #0C971F;
+    }
+  }
+}

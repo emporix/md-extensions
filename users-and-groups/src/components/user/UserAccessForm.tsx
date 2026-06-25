@@ -1,0 +1,103 @@
+import { useEffect, useState } from 'react'
+import FormGridRow from '../../components/shared/FormGridRow'
+import InputField from '../../components/shared/InputField'
+import { Controller, useFormContext } from 'react-hook-form'
+import FormGrid from '../../components/shared/FormGrid'
+import { useTranslation } from 'react-i18next'
+import { MultiSelect } from 'primereact/multiselect'
+import { Group } from '../../models/Groups.model'
+import { getApiErrorDetails } from '../../helpers/api'
+import { useIamApi } from '../../hooks/api/iam'
+import { useLocalizedValue } from '../../hooks/useLocalizedValue'
+import { useParams } from 'react-router'
+import { formatDateWithTime } from '../../helpers/date'
+import { InputText, useToast } from '@emporix/component-library'
+import { UserFormFields } from '../../helpers/users/users.helpers'
+import { usePermissions } from '../../context/PermissionsProvider'
+import { EmployeeDomains } from '../../configs/accessControls'
+
+const UserAccessForm = () => {
+  const { t } = useTranslation()
+  const { control } = useFormContext<UserFormFields>()
+  const { getAllGroups } = useIamApi()
+  const { getContentLangValue } = useLocalizedValue()
+  const { showError } = useToast()
+  const { hasPermission } = usePermissions()
+  const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
+
+  const { userId } = useParams()
+  const [groups, setGroups] = useState<Group[]>([])
+
+  useEffect(() => {
+    ;(async () => {
+      await loadGroups()
+    })()
+  }, [])
+
+  const loadGroups = async () => {
+    try {
+      const groups = await getAllGroups()
+      setGroups(groups.values)
+    } catch (e: unknown) {
+      console.error(e)
+      showError(
+        t('usersAndGroups.users.toasts.fetchGroups.error'),
+        getApiErrorDetails(e)
+      )
+    }
+  }
+
+  return (
+    <FormGrid>
+      <FormGridRow>
+        <InputField
+          className="col-12"
+          label={t('usersAndGroups.users.forms.user.userGroups')}
+        >
+          <Controller
+            name="groupIds"
+            control={control}
+            render={({ field }) => (
+              <MultiSelect
+                appendTo="self"
+                filter
+                disabled={!canManage}
+                value={field.value}
+                onChange={(e) => {
+                  field.onChange(e.value)
+                }}
+                options={groups
+                  ?.map((g) => ({
+                    label: getContentLangValue(g.name),
+                    value: g.id,
+                  }))
+                  .sort((a, b) => a.label.localeCompare(b.label))}
+                display="chip"
+              />
+            )}
+          />
+        </InputField>
+      </FormGridRow>
+
+      {userId && (
+        <FormGridRow>
+          <Controller
+            name="validFrom"
+            control={control}
+            render={({ field }) => (
+              <InputText
+                className="col-4"
+                label={t('usersAndGroups.users.forms.user.validFrom')}
+                disabled
+                readOnly
+                value={formatDateWithTime(field.value)}
+              />
+            )}
+          />
+        </FormGridRow>
+      )}
+    </FormGrid>
+  )
+}
+
+export default UserAccessForm
