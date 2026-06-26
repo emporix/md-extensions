@@ -219,8 +219,14 @@
 }
 
 /* Mode A — without template prompt:
-   basic fields stacked on the left, user prompt fills the right column. */
+   basic fields stacked on the left, user prompt and output side by side on the right. */
 .agent-basic-info--single {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+.agent-basic-info--single .agent-basic-info-prompts {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
 }
@@ -244,7 +250,8 @@
 
 .agent-basic-info--with-template .agent-basic-info-prompts {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
 }
 
 /* Large: basic fields stack into a narrow left column beside the prompts. */
@@ -300,8 +307,40 @@
   overflow: auto;
 }
 
-.agent-detail-user-prompt-field .p-inputtextarea {
+.agent-detail-user-prompt-field .p-inputtextarea,
+.agent-detail-output-field .p-inputtextarea {
   min-height: 480px;
+}
+
+.agent-detail-output-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: var(--space-sm);
+}
+
+.agent-detail-generate-json-schema-btn.p-button-outlined,
+.agent-detail-format-json-btn.p-button-outlined {
+  border-color: #3b73bb !important;
+  color: #3b73bb !important;
+  font-size: var(--font-size-xs) !important;
+  font-weight: var(--font-weight-bold) !important;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: var(--space-sm) var(--space-md) !important;
+  height: 32px;
+  white-space: nowrap;
+}
+
+.agent-detail-generate-json-schema-btn-content {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.agent-detail-generate-json-schema-btn-icon {
+  width: 15px;
+  height: 15px;
 }
 
 .agent-detail-triggers-tab {
