@@ -87,6 +87,42 @@ const TRANSLATIONS_EN = {
   user_prompt_placeholder: 'User prompt will appear here',
   template_prompt: 'Template Prompt',
   template_prompt_placeholder: 'Template prompt will appear here',
+  output: 'Output',
+  output_placeholder:
+    'Optional JSON Schema defining the structure of the agent response (e.g. {"type": "object", "properties": {"answer": {"type": "string"}}})',
+  format_json_schema: 'Format JSON Schema',
+  generate_json_schema: 'Generate JSON Schema',
+  generate_json_schema_working: 'Generating JSON Schema…',
+  generate_json_schema_prompt_placeholder:
+    'e.g. An object with a string answer and a numeric confidence score between 0 and 1',
+  output_invalid_json: 'Invalid JSON. Please check the syntax and try again.',
+  output_invalid_json_schema:
+    'Invalid JSON Schema. Include at least one schema keyword (e.g. type, properties) and ensure values are valid.',
+
+  json_schema_assistant_checking:
+    'Checking whether the helper agent is available…',
+  json_schema_assistant_intro:
+    'Use a dedicated helper agent to describe the expected agent response in plain language and get JSON Schema for this field. The helper agent is disabled until you create it once from our predefined templates.',
+  json_schema_assistant_enable: 'Enable helper agent',
+  json_schema_assistant_agent_created: 'Helper agent created.',
+  json_schema_assistant_agent_exists:
+    'Helper agent already exists. You can describe your schema below.',
+  json_schema_assistant_extract_failed:
+    'Could not find valid JSON Schema in the agent response. Ask for JSON only or try again.',
+  json_schema_assistant_applied:
+    'JSON Schema was applied. Review the Output field.',
+  json_schema_assistant_create_failed:
+    'Could not create or enable the helper agent.',
+  json_schema_assistant_chat_failed:
+    'The helper agent did not return a usable response.',
+  json_schema_assistant_empty_response:
+    'The helper agent returned an empty message.',
+  json_schema_assistant_template_not_found:
+    'The JSON Schema helper template is not available for this tenant.',
+  json_schema_assistant_enable_failed:
+    'Could not enable the existing helper agent.',
+  helper_agent_availability_check_failed:
+    'Failed to check helper agent availability.',
 
   // Agent Configuration Panel
   agent_config_panel_title: 'Agent Configuration',

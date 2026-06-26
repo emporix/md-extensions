@@ -2,6 +2,7 @@ import { AgentTemplate, CustomAgent, LocalizedString } from '../types/Agent'
 import { AppState, ImportSummaryState } from '../types/common'
 import { getLanguagesFromStorage } from '../hooks/useLanguages'
 import { COMMERCE_FILTER_ASSISTANT_I18N_KEYS } from '../utils/agentFilterDslHelpers'
+import { JSON_SCHEMA_ASSISTANT_I18N_KEYS } from '../utils/jsonSchemaAssistantHelpers'
 import { ApiClient } from './apiClient'
 
 const filterLocalizedString = (
@@ -37,6 +38,10 @@ export const COMMERCE_FILTER_DSL_AGENT_TEMPLATE_ID =
 
 export const COMMERCE_FILTER_DSL_AGENT_ID =
   'agentic-commerce-events-filters-creator-assistant'
+
+export const JSON_SCHEMA_ASSISTANT_TEMPLATE_ID = 'json-schema-assistant'
+
+export const JSON_SCHEMA_ASSISTANT_AGENT_ID = 'json-schema-assistant'
 
 export interface AgenticChatResponseItem {
   agentId: string
@@ -81,6 +86,30 @@ export const createCommerceFilterDslAgent = async (
     template.userPrompt
   )
   await patchCustomAgent(appState, COMMERCE_FILTER_DSL_AGENT_ID, [
+    { op: 'REPLACE', path: '/enabled', value: true },
+  ])
+  return result
+}
+
+export const createJsonSchemaAssistantAgent = async (
+  appState: AppState
+): Promise<{ success: boolean }> => {
+  const templates = await getAgentTemplates(appState)
+  const template = templates.find(
+    (item) => item.id === JSON_SCHEMA_ASSISTANT_TEMPLATE_ID
+  )
+  if (!template) {
+    throw new Error(JSON_SCHEMA_ASSISTANT_I18N_KEYS.templateNotFound)
+  }
+  const result = await copyTemplate(
+    appState,
+    JSON_SCHEMA_ASSISTANT_TEMPLATE_ID,
+    JSON_SCHEMA_ASSISTANT_AGENT_ID,
+    { ...template.name },
+    { ...template.description },
+    template.userPrompt
+  )
+  await patchCustomAgent(appState, JSON_SCHEMA_ASSISTANT_AGENT_ID, [
     { op: 'REPLACE', path: '/enabled', value: true },
   ])
   return result
@@ -134,6 +163,7 @@ export const upsertCustomAgent = async (
     name: agent.name,
     description: agent.description,
     userPrompt: agent.userPrompt,
+    ...(agent.output && { output: agent.output }),
     triggers: agent.triggers,
     llmConfig: {
       model: agent.llmConfig.model,

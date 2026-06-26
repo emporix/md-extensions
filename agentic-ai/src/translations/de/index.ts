@@ -89,6 +89,43 @@ const TRANSLATIONS_DE = {
   user_prompt_placeholder: 'Der Benutzer-Prompt wird hier angezeigt',
   template_prompt: 'Vorlagen-Prompt',
   template_prompt_placeholder: 'Der Vorlagen-Prompt wird hier angezeigt',
+  output: 'Ausgabe',
+  output_placeholder:
+    'Optionales JSON Schema zur Definition der Struktur der Agentenantwort (z. B. {"type": "object", "properties": {"answer": {"type": "string"}}})',
+  format_json_schema: 'JSON Schema formatieren',
+  generate_json_schema: 'JSON Schema generieren',
+  generate_json_schema_working: 'JSON Schema wird generiert…',
+  generate_json_schema_prompt_placeholder:
+    'z. B. Ein Objekt mit einer String-Antwort und einem numerischen Konfidenzwert zwischen 0 und 1',
+  output_invalid_json:
+    'Ungültiges JSON. Bitte überprüfen Sie die Syntax und versuchen Sie es erneut.',
+  output_invalid_json_schema:
+    'Ungültiges JSON Schema. Fügen Sie mindestens ein Schema-Schlüsselwort hinzu (z. B. type, properties) und stellen Sie gültige Werte sicher.',
+
+  json_schema_assistant_checking:
+    'Prüfe, ob der Hilfeagent verfügbar ist…',
+  json_schema_assistant_intro:
+    'Verwenden Sie einen dedizierten Hilfeagenten, um die erwartete Agentenantwort in natürlicher Sprache zu beschreiben und JSON Schema für dieses Feld zu erhalten. Der Hilfeagent ist deaktiviert, bis Sie ihn einmal aus unseren vordefinierten Vorlagen erstellen.',
+  json_schema_assistant_enable: 'Hilfeagent aktivieren',
+  json_schema_assistant_agent_created: 'Hilfeagent wurde erstellt.',
+  json_schema_assistant_agent_exists:
+    'Hilfeagent existiert bereits. Sie können Ihr Schema unten beschreiben.',
+  json_schema_assistant_extract_failed:
+    'In der Agentenantwort wurde kein gültiges JSON Schema gefunden. Fordern Sie nur JSON an oder versuchen Sie es erneut.',
+  json_schema_assistant_applied:
+    'JSON Schema wurde übernommen. Überprüfen Sie das Ausgabefeld.',
+  json_schema_assistant_create_failed:
+    'Der Hilfeagent konnte nicht erstellt oder aktiviert werden.',
+  json_schema_assistant_chat_failed:
+    'Der Hilfeagent hat keine verwertbare Antwort zurückgegeben.',
+  json_schema_assistant_empty_response:
+    'Der Hilfeagent hat eine leere Nachricht zurückgegeben.',
+  json_schema_assistant_template_not_found:
+    'Die JSON-Schema-Hilfevorlage ist für diesen Mandanten nicht verfügbar.',
+  json_schema_assistant_enable_failed:
+    'Der vorhandene Hilfeagent konnte nicht aktiviert werden.',
+  helper_agent_availability_check_failed:
+    'Verfügbarkeit des Hilfeagenten konnte nicht geprüft werden.',
 
   // Agent Configuration Panel
   agent_config_panel_title: 'Agent-Konfiguration',
