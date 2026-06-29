@@ -83,12 +83,11 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
 
   useEffect(() => {
     setOutputJsonError(null)
-    if (outputFormat.trim()) {
-      setOutputValidationEnabled(true)
-    } else {
-      setOutputValidationEnabled(false)
-    }
   }, [agentId])
+
+  useEffect(() => {
+    setOutputValidationEnabled(Boolean(outputFormat.trim()))
+  }, [outputFormat])
 
   useEffect(() => {
     if (!outputValidationEnabled) {
