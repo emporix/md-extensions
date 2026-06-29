@@ -51,7 +51,8 @@ export interface AgenticChatResponseItem {
 export const chatWithAgent = async (
   appState: AppState,
   agentId: string,
-  message: string
+  message: string,
+  emptyResponseKey: string = COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse
 ): Promise<string> => {
   const api = getApiClient(appState)
   const body = { agentId, message }
@@ -62,7 +63,7 @@ export const chatWithAgent = async (
   const text = res.message.trim()
 
   if (!text) {
-    throw new Error(COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse)
+    throw new Error(emptyResponseKey)
   }
   return text
 }

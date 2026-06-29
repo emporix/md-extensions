@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useToast } from '../contexts/ToastContext'
 import {
+  JSON_SCHEMA_ASSISTANT_I18N_KEYS,
   JSON_SCHEMA_ASSISTANT_I18N_MESSAGES,
   extractJsonSchemaFromAgentMessage,
 } from '../utils/jsonSchemaAssistantHelpers'
@@ -143,7 +144,8 @@ export const useJsonSchemaAssistant = ({
       const reply = await chatWithAgent(
         appState,
         JSON_SCHEMA_ASSISTANT_AGENT_ID,
-        assistantPrompt.trim()
+        assistantPrompt.trim(),
+        JSON_SCHEMA_ASSISTANT_I18N_KEYS.emptyResponse
       )
       const extracted = extractJsonSchemaFromAgentMessage(reply)
       if (!extracted) {
