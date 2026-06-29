@@ -30,7 +30,7 @@ interface AgentBasicInfoProps {
   agentName: LocalizedString
   description: LocalizedString
   prompt: string
-  output: string
+  outputFormat: string
   tags: string[]
   selectedIcon: string
   isEditing: boolean
@@ -46,7 +46,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   agentName,
   description,
   prompt,
-  output,
+  outputFormat,
   tags,
   selectedIcon,
   templatePrompt,
@@ -83,7 +83,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
 
   useEffect(() => {
     setOutputJsonError(null)
-    if (output.trim()) {
+    if (outputFormat.trim()) {
       setOutputValidationEnabled(true)
     } else {
       setOutputValidationEnabled(false)
@@ -95,21 +95,21 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       return
     }
 
-    const trimmed = output.trim()
+    const trimmed = outputFormat.trim()
     if (!trimmed) {
       setOutputJsonError(null)
       return
     }
 
     const timer = window.setTimeout(() => {
-      applyOutputValidation(output)
+      applyOutputValidation(outputFormat)
     }, OUTPUT_VALIDATION_DEBOUNCE_MS)
 
     return () => window.clearTimeout(timer)
-  }, [output, outputValidationEnabled, applyOutputValidation])
+  }, [outputFormat, outputValidationEnabled, applyOutputValidation])
 
   const handleFormatOutputJson = useCallback(() => {
-    const trimmed = output.trim()
+    const trimmed = outputFormat.trim()
     if (!trimmed) {
       return
     }
@@ -124,13 +124,13 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
     }
 
     const formatted = JSON.stringify(parsed, null, 2)
-    onFieldChange('output', formatted)
+    onFieldChange('outputFormat', formatted)
     setOutputValidationEnabled(true)
     applyOutputValidation(formatted, true)
-  }, [applyOutputValidation, onFieldChange, output])
+  }, [applyOutputValidation, onFieldChange, outputFormat])
 
   const handleOutputChange = (value: string) => {
-    onFieldChange('output', value)
+    onFieldChange('outputFormat', value)
     setOutputValidationEnabled(true)
     if (!value.trim()) {
       setOutputJsonError(null)
@@ -138,18 +138,18 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   }
 
   const handleOutputBlur = () => {
-    if (!output.trim()) {
+    if (!outputFormat.trim()) {
       setOutputJsonError(null)
       return
     }
 
     setOutputValidationEnabled(true)
-    applyOutputValidation(output)
+    applyOutputValidation(outputFormat)
   }
 
   const handleApplyGeneratedJsonSchema = useCallback(
     (formattedSchema: string) => {
-      onFieldChange('output', formattedSchema)
+      onFieldChange('outputFormat', formattedSchema)
       setOutputValidationEnabled(true)
       applyOutputValidation(formattedSchema)
     },
@@ -252,7 +252,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       <label className="field-label">{t('template_prompt')}</label>
       <InputTextarea
         value={templatePrompt}
-        rows={12}
+        rows={8}
         className="w-full readonly-textarea"
         readOnly
         placeholder={t('template_prompt_placeholder')}
@@ -269,7 +269,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       <InputTextarea
         value={prompt}
         onChange={(e) => onFieldChange('prompt', e.target.value)}
-        rows={12}
+        rows={8}
         className={`w-full ${!prompt.trim() ? 'p-invalid' : ''}`}
         placeholder={t('enter_prompt')}
       />
@@ -278,14 +278,14 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
 
   const outputField = (
     <div className="form-field agent-detail-output-field">
-      <label className="field-label">{t('output')}</label>
+      <label className="field-label">{t('output_format')}</label>
       <InputTextarea
-        value={output}
+        value={outputFormat}
         onChange={(e) => handleOutputChange(e.target.value)}
         onBlur={handleOutputBlur}
-        rows={12}
+        rows={8}
         className={`w-full${outputJsonError ? ' p-invalid' : ''}`}
-        placeholder={t('output_placeholder')}
+        placeholder={t('output_format_placeholder')}
         spellCheck={false}
       />
       {outputJsonError && <small className="p-error">{outputJsonError}</small>}
@@ -309,7 +309,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
           type="button"
           label={t('format_json_schema')}
           className="p-button-outlined agent-detail-format-json-btn"
-          disabled={!output.trim()}
+          disabled={!outputFormat.trim()}
           onClick={handleFormatOutputJson}
         />
       </div>
@@ -317,24 +317,18 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   )
 
   return (
-    <div
-      className={`agent-basic-info ${
-        hasTemplatePrompt
-          ? 'agent-basic-info--with-template'
-          : 'agent-basic-info--single'
-      }`}
-    >
-      <div className="agent-basic-info-fields">
+    <div className="agent-basic-info">
+      <div className="agent-basic-info-row">
         {idField}
         {nameField}
-        {descriptionField}
+      </div>
+      {descriptionField}
+      {hasTemplatePrompt && templatePromptField}
+      {userPromptField}
+      {outputField}
+      <div className="agent-basic-info-row agent-basic-info-row--tags-icon">
         {tagsField}
         {iconField}
-      </div>
-      <div className="agent-basic-info-prompts">
-        {hasTemplatePrompt && templatePromptField}
-        {userPromptField}
-        {outputField}
       </div>
 
       <IconPicker

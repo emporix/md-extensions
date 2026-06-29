@@ -207,63 +207,20 @@
    ======================================== */
 
 .agent-basic-info {
-  display: grid;
-  gap: var(--space-lg);
-}
-
-.agent-basic-info-fields,
-.agent-basic-info-prompts {
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
 }
 
-/* Mode A — without template prompt:
-   basic fields stacked on the left, user prompt and output side by side on the right. */
-.agent-basic-info--single {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-}
-
-.agent-basic-info--single .agent-basic-info-prompts {
+.agent-basic-info-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-lg);
   align-items: start;
 }
 
-/* Mode B — with template prompt.
-   Small: basic fields in a horizontal row on top, prompts side by side below. */
-.agent-basic-info--with-template {
-  grid-template-columns: 1fr;
-}
-
-.agent-basic-info--with-template .agent-basic-info-fields {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: start;
-}
-
-.agent-basic-info--with-template .agent-basic-info-fields .agent-detail-tags-field,
-.agent-basic-info--with-template .agent-basic-info-fields .agent-detail-icon-field {
-  grid-column: 1 / -1;
-}
-
-.agent-basic-info--with-template .agent-basic-info-prompts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: start;
-}
-
-/* Large: basic fields stack into a narrow left column beside the prompts. */
-@container (min-width: 1200px) {
-  .agent-basic-info--with-template {
-    grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
-    align-items: start;
-  }
-
-  .agent-basic-info--with-template .agent-basic-info-fields {
-    grid-template-columns: 1fr;
-  }
+.agent-basic-info-row--tags-icon {
+  align-items: end;
 }
 
 .agent-detail-section .form-field {
@@ -302,14 +259,23 @@
 }
 
 .agent-detail-template-prompt-field .p-inputtextarea {
-  min-height: 480px;
+  min-height: 240px;
   resize: none;
   overflow: auto;
 }
 
-.agent-detail-user-prompt-field .p-inputtextarea,
+.agent-detail-user-prompt-field .p-inputtextarea {
+  min-height: 240px;
+}
+
 .agent-detail-output-field .p-inputtextarea {
-  min-height: 480px;
+  min-height: 336px;
+}
+
+.agent-detail-output-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
 }
 
 .agent-detail-output-actions {
@@ -1272,10 +1238,7 @@
     grid-template-columns: 1fr;
   }
 
-  .agent-basic-info--single,
-  .agent-basic-info--with-template,
-  .agent-basic-info--with-template .agent-basic-info-fields,
-  .agent-basic-info--with-template .agent-basic-info-prompts {
+  .agent-basic-info-row {
     grid-template-columns: 1fr;
   }
 

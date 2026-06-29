@@ -87,16 +87,17 @@ const TRANSLATIONS_EN = {
   user_prompt_placeholder: 'User prompt will appear here',
   template_prompt: 'Template Prompt',
   template_prompt_placeholder: 'Template prompt will appear here',
-  output: 'Output',
-  output_placeholder:
+  output_format: 'Output Format',
+  output_format_placeholder:
     'Optional JSON Schema defining the structure of the agent response (e.g. {"type": "object", "properties": {"answer": {"type": "string"}}})',
   format_json_schema: 'Format JSON Schema',
   generate_json_schema: 'Generate JSON Schema',
   generate_json_schema_working: 'Generating JSON Schema…',
   generate_json_schema_prompt_placeholder:
     'e.g. An object with a string answer and a numeric confidence score between 0 and 1',
-  output_invalid_json: 'Invalid JSON. Please check the syntax and try again.',
-  output_invalid_json_schema:
+  output_format_invalid_json:
+    'Invalid JSON. Please check the syntax and try again.',
+  output_format_invalid_json_schema:
     'Invalid JSON Schema. Include at least one schema keyword (e.g. type, properties) and ensure values are valid.',
 
   json_schema_assistant_checking:
@@ -110,7 +111,7 @@ const TRANSLATIONS_EN = {
   json_schema_assistant_extract_failed:
     'Could not find valid JSON Schema in the agent response. Ask for JSON only or try again.',
   json_schema_assistant_applied:
-    'JSON Schema was applied. Review the Output field.',
+    'JSON Schema was applied. Review the Output Format field.',
   json_schema_assistant_create_failed:
     'Could not create or enable the helper agent.',
   json_schema_assistant_chat_failed:

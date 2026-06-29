@@ -2013,6 +2013,9 @@ components:
             userPrompt:
               type: string
               description: LLM Prompt which in detailed way describes how agent should work like, which tools it could use to solve some problems, it can contain examples and step by step guidance.
+            outputFormat:
+              type: string
+              description: Optional JSON Schema defining the structure of the agent response.
             trigger:
               $ref: '#/components/schemas/AgentTrigger'
             agentCollaborations:

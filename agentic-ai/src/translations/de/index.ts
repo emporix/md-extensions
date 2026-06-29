@@ -89,17 +89,17 @@ const TRANSLATIONS_DE = {
   user_prompt_placeholder: 'Der Benutzer-Prompt wird hier angezeigt',
   template_prompt: 'Vorlagen-Prompt',
   template_prompt_placeholder: 'Der Vorlagen-Prompt wird hier angezeigt',
-  output: 'Ausgabe',
-  output_placeholder:
+  output_format: 'Ausgabeformat',
+  output_format_placeholder:
     'Optionales JSON Schema zur Definition der Struktur der Agentenantwort (z. B. {"type": "object", "properties": {"answer": {"type": "string"}}})',
   format_json_schema: 'JSON Schema formatieren',
   generate_json_schema: 'JSON Schema generieren',
   generate_json_schema_working: 'JSON Schema wird generiert…',
   generate_json_schema_prompt_placeholder:
     'z. B. Ein Objekt mit einer String-Antwort und einem numerischen Konfidenzwert zwischen 0 und 1',
-  output_invalid_json:
+  output_format_invalid_json:
     'Ungültiges JSON. Bitte überprüfen Sie die Syntax und versuchen Sie es erneut.',
-  output_invalid_json_schema:
+  output_format_invalid_json_schema:
     'Ungültiges JSON Schema. Fügen Sie mindestens ein Schema-Schlüsselwort hinzu (z. B. type, properties) und stellen Sie gültige Werte sicher.',
 
   json_schema_assistant_checking:
@@ -113,7 +113,7 @@ const TRANSLATIONS_DE = {
   json_schema_assistant_extract_failed:
     'In der Agentenantwort wurde kein gültiges JSON Schema gefunden. Fordern Sie nur JSON an oder versuchen Sie es erneut.',
   json_schema_assistant_applied:
-    'JSON Schema wurde übernommen. Überprüfen Sie das Ausgabefeld.',
+    'JSON Schema wurde übernommen. Überprüfen Sie das Ausgabeformat-Feld.',
   json_schema_assistant_create_failed:
     'Der Hilfeagent konnte nicht erstellt oder aktiviert werden.',
   json_schema_assistant_chat_failed:

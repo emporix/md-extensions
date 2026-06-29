@@ -163,7 +163,7 @@ export const upsertCustomAgent = async (
     name: agent.name,
     description: agent.description,
     userPrompt: agent.userPrompt,
-    ...(agent.output && { output: agent.output }),
+    ...(agent.outputFormat && { outputFormat: agent.outputFormat }),
     triggers: agent.triggers,
     llmConfig: {
       model: agent.llmConfig.model,

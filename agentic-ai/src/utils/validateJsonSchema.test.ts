@@ -13,25 +13,25 @@ describe('validateAgentOutputJsonSchema', () => {
   it('rejects invalid JSON syntax', () => {
     expect(validateAgentOutputJsonSchema('{ type: "object" }')).toEqual({
       valid: false,
-      errorKey: 'output_invalid_json',
+      errorKey: 'output_format_invalid_json',
     })
   })
 
   it('rejects non-object root values', () => {
     expect(validateAgentOutputJsonSchema('"text"')).toEqual({
       valid: false,
-      errorKey: 'output_invalid_json_schema',
+      errorKey: 'output_format_invalid_json_schema',
     })
     expect(validateAgentOutputJsonSchema('[]')).toEqual({
       valid: false,
-      errorKey: 'output_invalid_json_schema',
+      errorKey: 'output_format_invalid_json_schema',
     })
   })
 
   it('rejects objects without JSON Schema keywords', () => {
     expect(validateAgentOutputJsonSchema('{"foo":"bar"}')).toEqual({
       valid: false,
-      errorKey: 'output_invalid_json_schema',
+      errorKey: 'output_format_invalid_json_schema',
     })
   })
 
@@ -54,7 +54,7 @@ describe('validateAgentOutputJsonSchema', () => {
     )
 
     expect(result.valid).toBe(false)
-    expect(result.errorKey).toBe('output_invalid_json_schema')
+    expect(result.errorKey).toBe('output_format_invalid_json_schema')
     expect(result.detail).toBeTruthy()
   })
 })

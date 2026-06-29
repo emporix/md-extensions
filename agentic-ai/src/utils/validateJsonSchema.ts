@@ -1,8 +1,8 @@
 import Ajv, { type ErrorObject } from 'ajv'
 
 export type JsonSchemaValidationErrorKey =
-  | 'output_invalid_json'
-  | 'output_invalid_json_schema'
+  | 'output_format_invalid_json'
+  | 'output_format_invalid_json_schema'
 
 export interface JsonSchemaValidationResult {
   valid: boolean
@@ -63,23 +63,23 @@ export const validateAgentOutputJsonSchema = (
   try {
     parsed = JSON.parse(trimmed)
   } catch {
-    return { valid: false, errorKey: 'output_invalid_json' }
+    return { valid: false, errorKey: 'output_format_invalid_json' }
   }
 
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    return { valid: false, errorKey: 'output_invalid_json_schema' }
+    return { valid: false, errorKey: 'output_format_invalid_json_schema' }
   }
 
   const schema = parsed as Record<string, unknown>
 
   if (!hasRecognizedSchemaKeyword(schema)) {
-    return { valid: false, errorKey: 'output_invalid_json_schema' }
+    return { valid: false, errorKey: 'output_format_invalid_json_schema' }
   }
 
   if (!ajv.validateSchema(schema)) {
     return {
       valid: false,
-      errorKey: 'output_invalid_json_schema',
+      errorKey: 'output_format_invalid_json_schema',
       detail: formatAjvError(ajv.errors),
     }
   }

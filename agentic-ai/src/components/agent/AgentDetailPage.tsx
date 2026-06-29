@@ -214,7 +214,7 @@ const AgentDetailPage: React.FC = () => {
               agentName={state.agentName}
               description={state.description}
               prompt={state.prompt}
-              output={state.output}
+              outputFormat={state.outputFormat}
               tags={state.tags}
               selectedIcon={state.selectedIcon}
               templatePrompt={state.templatePrompt}
