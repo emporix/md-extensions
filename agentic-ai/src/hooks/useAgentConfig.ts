@@ -24,6 +24,7 @@ import {
   getValidCollaborations,
   areCollaborationsValid,
 } from '../utils/agentCollaborationHelpers'
+import { isValidAgentOutputJsonSchema } from '../utils/validateJsonSchema'
 
 interface UseAgentConfigProps {
   agent: CustomAgent | null
@@ -44,6 +45,7 @@ interface AgentConfigState {
   triggerTypes: string[]
   prompt: string
   templatePrompt: string
+  outputFormat: string
   model: string
   temperature: string
   maxTokens: string
@@ -83,6 +85,7 @@ export const useAgentConfig = ({
     triggerTypes: ['endpoint'],
     prompt: '',
     templatePrompt: '',
+    outputFormat: '',
     model: '',
     temperature: '0',
     maxTokens: '0',
@@ -120,6 +123,7 @@ export const useAgentConfig = ({
         triggerTypes: agentType === 'support' ? ['slack'] : triggerTypes,
         prompt: agent.userPrompt || '',
         templatePrompt: agent.templatePrompt || '',
+        outputFormat: agent.outputFormat || '',
         model: agent.llmConfig?.model || '',
         temperature: agent.llmConfig?.temperature?.toString() || '0',
         maxTokens: agent.llmConfig?.maxTokens?.toString() || '0',
@@ -182,6 +186,7 @@ export const useAgentConfig = ({
       triggers: triggers,
       userPrompt: state.prompt || '',
       templatePrompt: state.templatePrompt || undefined,
+      outputFormat: state.outputFormat.trim() || undefined,
       llmConfig: (() => {
         const baseConfig: LlmConfig = {
           model: state.model || '',
@@ -363,12 +368,15 @@ export const useAgentConfig = ({
       state.agentCollaborations
     )
 
+    const outputFormatValidation = isValidAgentOutputJsonSchema(state.outputFormat)
+
     return (
       basicValidation &&
       tokenValidation &&
       selfHostedValidation &&
       commerceFilterValidation &&
-      collaborationValidation
+      collaborationValidation &&
+      outputFormatValidation
     )
   }, [state, agent?.id])
 

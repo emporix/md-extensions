@@ -1,25 +1,36 @@
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRobot } from '@fortawesome/free-solid-svg-icons'
+import { Button } from 'primereact/button'
 import { InputText } from 'primereact/inputtext'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { MultiSelect } from 'primereact/multiselect'
 import { LocalizedString } from '../../../types/Agent'
 import { LocalizedInput } from '../../shared/LocalizedInput'
 import { IconPicker } from '../../shared/IconPicker'
+import { GenerateJsonSchemaDialog } from './GenerateJsonSchemaDialog'
+import { useToast } from '../../../contexts/ToastContext'
+import starsIcon from '../../../assets/stars_icon.svg'
 import {
   getAgentTagOptions,
   hasAnyLocalizedValue,
   iconMap,
 } from '../../../utils/agentHelpers'
 import { sanitizeIdInput } from '../../../utils/validation'
+import {
+  getAgentOutputValidationMessage,
+  validateAgentOutputJsonSchema,
+} from '../../../utils/validateJsonSchema'
+
+const OUTPUT_VALIDATION_DEBOUNCE_MS = 400
 
 interface AgentBasicInfoProps {
   agentId: string
   agentName: LocalizedString
   description: LocalizedString
   prompt: string
+  outputFormat: string
   tags: string[]
   selectedIcon: string
   isEditing: boolean
@@ -35,6 +46,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   agentName,
   description,
   prompt,
+  outputFormat,
   tags,
   selectedIcon,
   templatePrompt,
@@ -42,9 +54,106 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   onFieldChange,
 }) => {
   const { t } = useTranslation()
+  const { showError } = useToast()
   const [showIconPicker, setShowIconPicker] = useState(false)
+  const [outputJsonError, setOutputJsonError] = useState<string | null>(null)
+  const [outputValidationEnabled, setOutputValidationEnabled] = useState(false)
+  const [generateJsonSchemaDialogVisible, setGenerateJsonSchemaDialogVisible] =
+    useState(false)
 
   const tagOptions = useMemo(() => getAgentTagOptions(tags), [tags])
+
+  const applyOutputValidation = useCallback(
+    (value: string, showToast = false) => {
+      const result = validateAgentOutputJsonSchema(value)
+      if (result.valid) {
+        setOutputJsonError(null)
+        return true
+      }
+
+      const message = getAgentOutputValidationMessage(result, t)
+      setOutputJsonError(message)
+      if (showToast) {
+        showError(message)
+      }
+      return false
+    },
+    [showError, t]
+  )
+
+  useEffect(() => {
+    setOutputJsonError(null)
+  }, [agentId])
+
+  useEffect(() => {
+    setOutputValidationEnabled(Boolean(outputFormat.trim()))
+  }, [outputFormat])
+
+  useEffect(() => {
+    if (!outputValidationEnabled) {
+      return
+    }
+
+    const trimmed = outputFormat.trim()
+    if (!trimmed) {
+      setOutputJsonError(null)
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      applyOutputValidation(outputFormat)
+    }, OUTPUT_VALIDATION_DEBOUNCE_MS)
+
+    return () => window.clearTimeout(timer)
+  }, [outputFormat, outputValidationEnabled, applyOutputValidation])
+
+  const handleFormatOutputJson = useCallback(() => {
+    const trimmed = outputFormat.trim()
+    if (!trimmed) {
+      return
+    }
+
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(trimmed)
+    } catch {
+      setOutputValidationEnabled(true)
+      applyOutputValidation(trimmed, true)
+      return
+    }
+
+    const formatted = JSON.stringify(parsed, null, 2)
+    onFieldChange('outputFormat', formatted)
+    setOutputValidationEnabled(true)
+    applyOutputValidation(formatted, true)
+  }, [applyOutputValidation, onFieldChange, outputFormat])
+
+  const handleOutputChange = (value: string) => {
+    onFieldChange('outputFormat', value)
+    setOutputValidationEnabled(true)
+    if (!value.trim()) {
+      setOutputJsonError(null)
+    }
+  }
+
+  const handleOutputBlur = () => {
+    if (!outputFormat.trim()) {
+      setOutputJsonError(null)
+      return
+    }
+
+    setOutputValidationEnabled(true)
+    applyOutputValidation(outputFormat)
+  }
+
+  const handleApplyGeneratedJsonSchema = useCallback(
+    (formattedSchema: string) => {
+      onFieldChange('outputFormat', formattedSchema)
+      setOutputValidationEnabled(true)
+      applyOutputValidation(formattedSchema)
+    },
+    [applyOutputValidation, onFieldChange]
+  )
 
   const handleAgentIdChange = (value: string) => {
     const sanitized = sanitizeIdInput(value)
@@ -142,7 +251,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       <label className="field-label">{t('template_prompt')}</label>
       <InputTextarea
         value={templatePrompt}
-        rows={12}
+        rows={8}
         className="w-full readonly-textarea"
         readOnly
         placeholder={t('template_prompt_placeholder')}
@@ -159,31 +268,66 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       <InputTextarea
         value={prompt}
         onChange={(e) => onFieldChange('prompt', e.target.value)}
-        rows={12}
+        rows={8}
         className={`w-full ${!prompt.trim() ? 'p-invalid' : ''}`}
         placeholder={t('enter_prompt')}
       />
     </div>
   )
 
+  const outputField = (
+    <div className="form-field agent-detail-output-field">
+      <label className="field-label">{t('output_format')}</label>
+      <InputTextarea
+        value={outputFormat}
+        onChange={(e) => handleOutputChange(e.target.value)}
+        onBlur={handleOutputBlur}
+        rows={8}
+        className={`w-full${outputJsonError ? ' p-invalid' : ''}`}
+        placeholder={t('output_format_placeholder')}
+        spellCheck={false}
+      />
+      {outputJsonError && <small className="p-error">{outputJsonError}</small>}
+      <div className="agent-detail-output-actions">
+        <Button
+          type="button"
+          className="p-button-outlined agent-detail-generate-json-schema-btn"
+          onClick={() => setGenerateJsonSchemaDialogVisible(true)}
+        >
+          <span className="agent-detail-generate-json-schema-btn-content">
+            <img
+              src={starsIcon}
+              alt=""
+              className="agent-detail-generate-json-schema-btn-icon"
+              aria-hidden="true"
+            />
+            <span className="p-button-label">{t('generate_json_schema')}</span>
+          </span>
+        </Button>
+        <Button
+          type="button"
+          label={t('format_json_schema')}
+          className="p-button-outlined agent-detail-format-json-btn"
+          disabled={!outputFormat.trim()}
+          onClick={handleFormatOutputJson}
+        />
+      </div>
+    </div>
+  )
+
   return (
-    <div
-      className={`agent-basic-info ${
-        hasTemplatePrompt
-          ? 'agent-basic-info--with-template'
-          : 'agent-basic-info--single'
-      }`}
-    >
-      <div className="agent-basic-info-fields">
+    <div className="agent-basic-info">
+      <div className="agent-basic-info-row">
         {idField}
         {nameField}
-        {descriptionField}
+      </div>
+      {descriptionField}
+      {hasTemplatePrompt && templatePromptField}
+      {userPromptField}
+      {outputField}
+      <div className="agent-basic-info-row agent-basic-info-row--tags-icon">
         {tagsField}
         {iconField}
-      </div>
-      <div className="agent-basic-info-prompts">
-        {hasTemplatePrompt && templatePromptField}
-        {userPromptField}
       </div>
 
       <IconPicker
@@ -191,6 +335,12 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
         selectedIcon={selectedIcon}
         onIconSelect={(icon) => onFieldChange('selectedIcon', icon)}
         onClose={() => setShowIconPicker(false)}
+      />
+
+      <GenerateJsonSchemaDialog
+        visible={generateJsonSchemaDialogVisible}
+        onHide={() => setGenerateJsonSchemaDialogVisible(false)}
+        onApply={handleApplyGeneratedJsonSchema}
       />
     </div>
   )
