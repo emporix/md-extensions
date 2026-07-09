@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import federation from '@originjs/vite-plugin-federation'
+import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [
@@ -30,7 +31,6 @@ export default defineConfig({
       context: '/src/context',
       models: '/src/models',
       configs: '/src/configs',
-      modules: '/src/modules',
     },
   },
   build: {
@@ -41,13 +41,23 @@ export default defineConfig({
   },
   server: {
     cors: {
-      origin: ['https://admin.emporix.io'],
+      origin: [
+        'https://admin.emporix.io',
+        'https://dev-admin.emporix.io',
+        'https://stage-admin.emporix.io',
+        'http://localhost:4200',
+      ],
       credentials: true,
     },
   },
   preview: {
     cors: {
-      origin: ['https://admin.emporix.io'],
+      origin: [
+        'https://admin.emporix.io',
+        'https://dev-admin.emporix.io',
+        'https://stage-admin.emporix.io',
+        'http://localhost:4200',
+      ],
       credentials: true,
     },
   },

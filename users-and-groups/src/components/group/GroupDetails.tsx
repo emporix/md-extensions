@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import GroupDetailsGeneralForm from './GroupDetailsGeneralForm'
 import SectionBox from '../../components/shared/SectionBox'
 import { useTranslation } from 'react-i18next'
+import { Message } from '@emporix/component-library'
 import { useGroupData } from '../../context/Group.provider'
 import { useFormContext } from 'react-hook-form'
 import {
@@ -9,8 +10,8 @@ import {
   mapGroupToGroupForm,
 } from '../../helpers/groups/groupForm.helpers'
 import { usePermissions } from '../../context/PermissionsProvider'
-import { Message } from 'primereact/message'
 import AccessControlsTable from './AccessControlsTable'
+import styles from './GroupDetails.module.scss'
 
 const GroupDetails = () => {
   const { t } = useTranslation()
@@ -27,13 +28,13 @@ const GroupDetails = () => {
     <>
       {isPredefinedGroup && (
         <Message
-          className="mb-2 p-3"
+          className={styles.predefinedWarning}
           severity="info"
           text={t('usersAndGroups.groups.warnings.isPredefined')}
         />
       )}
       <SectionBox
-        className="mb-6"
+        className={styles.generalSection}
         name={t('usersAndGroups.groups.titles.general')}
       >
         <GroupDetailsGeneralForm groupId={group?.id}></GroupDetailsGeneralForm>

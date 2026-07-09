@@ -13,6 +13,7 @@ import {
   groupAddPath,
   userAddPath,
 } from '../constants/paths'
+import styles from './UsersAndGroupsPage.module.scss'
 
 const TABS = ['users', 'groups']
 
@@ -55,7 +56,7 @@ const UsersAndGroupsPage = () => {
   )
 
   return (
-    <div className="w-full">
+    <div className={styles.page}>
       <HeaderSection
         title={t('usersAndGroups.titles.main')}
         moduleActions={moduleActions}

@@ -1,20 +1,19 @@
 import { useEffect, useState } from 'react'
 import FormGridRow from '../../components/shared/FormGridRow'
-import InputField from '../../components/shared/InputField'
 import { Controller, useFormContext } from 'react-hook-form'
 import FormGrid from '../../components/shared/FormGrid'
 import { useTranslation } from 'react-i18next'
-import { MultiSelect } from 'primereact/multiselect'
 import { Group } from '../../models/Groups.model'
 import { getApiErrorDetails } from '../../helpers/api'
 import { useIamApi } from '../../hooks/api/iam'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import { useParams } from 'react-router'
 import { formatDateWithTime } from '../../helpers/date'
-import { InputText, useToast } from '@emporix/component-library'
+import { Dropdown, InputText, useToast } from '@emporix/component-library'
 import { UserFormFields } from '../../helpers/users/users.helpers'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { EmployeeDomains } from '../../configs/accessControls'
+import styles from './UserAccessForm.module.scss'
 
 const UserAccessForm = () => {
   const { t } = useTranslation()
@@ -50,33 +49,32 @@ const UserAccessForm = () => {
   return (
     <FormGrid>
       <FormGridRow>
-        <InputField
-          className="col-12"
-          label={t('usersAndGroups.users.forms.user.userGroups')}
-        >
-          <Controller
-            name="groupIds"
-            control={control}
-            render={({ field }) => (
-              <MultiSelect
-                appendTo="self"
-                filter
-                disabled={!canManage}
-                value={field.value}
-                onChange={(e) => {
-                  field.onChange(e.value)
-                }}
-                options={groups
-                  ?.map((g) => ({
-                    label: getContentLangValue(g.name),
-                    value: g.id,
-                  }))
-                  .sort((a, b) => a.label.localeCompare(b.label))}
-                display="chip"
-              />
-            )}
-          />
-        </InputField>
+        <Controller
+          name="groupIds"
+          control={control}
+          render={({ field }) => (
+            <Dropdown
+              className={styles.groupsField}
+              label={t('usersAndGroups.users.forms.user.userGroups')}
+              filter
+              multiple
+              display="chip"
+              disabled={!canManage}
+              value={field.value ?? []}
+              onChange={(e) => {
+                field.onChange(e.value)
+              }}
+              options={groups
+                ?.map((g) => ({
+                  label: getContentLangValue(g.name),
+                  value: g.id,
+                }))
+                .sort((a, b) => a.label.localeCompare(b.label))}
+              optionLabel="label"
+              optionValue="value"
+            />
+          )}
+        />
       </FormGridRow>
 
       {userId && (
@@ -86,7 +84,7 @@ const UserAccessForm = () => {
             control={control}
             render={({ field }) => (
               <InputText
-                className="col-4"
+                className={styles.validFromField}
                 label={t('usersAndGroups.users.forms.user.validFrom')}
                 disabled
                 readOnly

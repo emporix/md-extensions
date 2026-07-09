@@ -2,6 +2,7 @@ import { CSSProperties, ReactNode } from 'react'
 import './SectionBox.scss'
 import { textToTitleCase } from '../../helpers/utils'
 import { StylableProps } from '../../helpers/props'
+import styles from './SectionBox.module.scss'
 
 type SectionBoxProps = StylableProps & {
   readonly children: ReactNode
@@ -43,7 +44,7 @@ const SectionBox = ({
   return (
     <div style={style} className={`${className} section-box-wrapper`}>
       {(name ?? actions) && (
-        <SectionTitle className="mb-3" name={name} actions={actions} />
+        <SectionTitle className={styles.titleSpacing} name={name} actions={actions} />
       )}
       <div
         data-test-id="section-box"

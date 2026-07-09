@@ -2,8 +2,7 @@ import { useContext, createContext, useState } from 'react'
 import classnames from 'classnames'
 import { Props } from '../helpers/props'
 import { ProgressSpinner } from 'primereact/progressspinner'
-
-import './UIBlcoker.scss'
+import styles from './UIBlcoker.module.scss'
 
 const UIBlockerContext = createContext({
   blockPanel: (_isBlocked: boolean) => {
@@ -27,14 +26,14 @@ export const UIBlockerProvider = (props: Props) => {
         {props.children}
         <div
           className={classnames({
-            'ui-blocker': true,
-            'ui-blocker--active': blockedPanel,
+            [styles.overlay]: true,
+            [styles.overlayActive]: blockedPanel,
           })}
         ></div>
         {blockedPanel && (
-          <div className="progress flex flex-column justify-content-center align-items-center bg-white z-5 fixed p-4">
+          <div className={styles.loadingPanel}>
             <ProgressSpinner />
-            <div className="mt-2">Loading</div>
+            <div className={styles.loadingLabel}>Loading</div>
           </div>
         )}
       </>

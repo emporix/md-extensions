@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import type {
+  DataTableFilterParams,
+  DataTableSortParams,
+} from 'primereact/datatable'
 import { useIamApi } from '../../hooks/api/iam'
-import { useToast } from '@emporix/component-library'
+import {
+  DataTable,
+  type DataTablePaginationState,
+  useToast,
+} from '@emporix/component-library'
 import { makeCall, getApiErrorDetails } from '../../helpers/api'
 import { Group, GroupUserTypes } from '../../models/Groups.model'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
@@ -9,7 +17,6 @@ import { useRefresh } from '../../context/RefreshValuesProvider'
 import ConfirmBox from '../../components/shared/ConfirmBox'
 import useGroupsTableColumns from '../../hooks/useGroupsTableColumns'
 import GroupAddMembersDialog from '../group/GroupAddMembersDialog'
-import MdDataTable from '../../components/shared/MdDataTable'
 import TableActions from '../../components/shared/TableActions'
 import { BsPersonPlusFill } from 'react-icons/bs'
 import { useLocation } from 'react-router'
@@ -20,6 +27,7 @@ import usePagination, { PaginationProps } from '../../hooks/usePagination'
 import { EmployeeDomains } from '../../configs/accessControls'
 
 import { groupDetailPath } from '../../constants/paths'
+import styles from './GroupsTable.module.scss'
 
 interface Props {
   groupUserType: GroupUserTypes
@@ -141,42 +149,46 @@ const GroupsTable = (props: Props) => {
     [canManage, groupUserType]
   )
 
+  const pagination: DataTablePaginationState = {
+    ...paginationParams,
+    totalRecords: totalCount,
+  }
+
   return (
     <>
       <BatchDeleteButton
-        className="mb-2"
+        className={styles.batchActionButton}
         selected={selectedGroups}
         onDelete={() => deleteGroups(selectedGroups)}
         isDeleting={isDeleting}
         pluralsPath="usersAndGroups.groups.plurals.groups"
         disabled={!canManage}
       />
-      <MdDataTable
+      <DataTable
         dataKey="id"
         value={groups}
         selection={selectedGroups}
-        setSelectedItems={setSelectedGroups}
-        paginationOptions={{
-          ...paginationParams,
-          totalRecords: totalCount,
-        }}
+        onSelectionChange={(selection) => setSelectedGroups(selection as Group[])}
+        pagination={pagination}
         lazy={true}
-        isLoading={isLoading}
+        loading={isLoading}
         sortField={paginationParams.sortField}
         sortOrder={paginationParams.sortOrder}
         onPage={onPageCallback}
-        onFilter={onFilterCallback}
-        onSort={onSortCallback}
+        onFilter={(event) =>
+          onFilterCallback(event as unknown as DataTableFilterParams)
+        }
+        onSort={(event) => onSortCallback(event as unknown as DataTableSortParams)}
         columns={columns}
         selectionMode="multiple"
-        actions={tableActionsTemplate}
+        rowActions={tableActionsTemplate}
         onRowClick={(group) => {
           const currentPath = `${location.pathname}${location.search}`
           navigate(groupDetailPath(group.id), {
             query: { backTo: currentPath },
           })
         }}
-      ></MdDataTable>
+      />
       <ConfirmBox
         visible={!!groupToForceDelete}
         onAccept={() =>

@@ -7,8 +7,10 @@ import {
   createGroupForm,
   GroupFormFields,
 } from '../helpers/groups/groupForm.helpers'
+import useCustomNavigate from '../hooks/useCustomNavigate'
 import { useTabs } from '../hooks/useTabs'
 import HeaderSection from '../components/shared/HeaderSection'
+import { listPath } from '../constants/paths'
 import { useLocalizedValue } from '../hooks/useLocalizedValue'
 import GroupMembers from '../components/group/GroupMembers'
 import GroupPageActions from '../components/group/GroupPageActions'
@@ -17,7 +19,6 @@ import { useGroupData } from '../context/Group.provider'
 import { usePermissions } from '../context/PermissionsProvider'
 import { GroupRoleProvider } from '../context/GroupRole.provider'
 import { EmployeeDomains } from '../configs/accessControls'
-import { listPath } from '../constants/paths'
 
 const TABS = ['details', 'members']
 
@@ -25,6 +26,7 @@ const GroupPage = () => {
   const { t } = useTranslation()
   const methods = useForm<GroupFormFields>({ defaultValues: createGroupForm() })
   const { activeTab, onTabChange } = useTabs(TABS, true)
+  const { navigate } = useCustomNavigate()
   const { getContentLangValue } = useLocalizedValue()
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
@@ -60,7 +62,7 @@ const GroupPage = () => {
       <HeaderSection
         title={t('usersAndGroups.groups.plurals.groups.singular')}
         subtitle={groupId ? getContentLangValue(group?.name) : undefined}
-        backTo={listPath('groups')}
+        backTo={() => navigate(listPath('groups'))}
         moduleActions={
           <GroupPageActions
             activeTab={activeTab}

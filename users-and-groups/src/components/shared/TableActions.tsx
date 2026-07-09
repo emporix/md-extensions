@@ -1,10 +1,10 @@
 import { ReactNode, useCallback, useMemo, useRef, useState } from 'react'
-import { Button } from 'primereact/button'
+import { Menu, type MenuItem, type MenuRef } from '@emporix/component-library'
 import { BsPencilFill, BsThreeDotsVertical, BsTrashFill } from 'react-icons/bs'
 import { useTranslation } from 'react-i18next'
-import { Menu } from 'primereact/menu'
 import { StylableProps } from '../../helpers/props'
 import DeleteConfirmBox from './DeleteConfirmBox'
+import styles from './TableActions.module.scss'
 
 type DeleteConfirmConfig = {
   pluralsPath: string
@@ -35,30 +35,21 @@ type CustomAction = {
 }
 
 const TableActionsButton = ({ item }: { readonly item: CustomAction }) => {
-  const tooltipOptions = useMemo(
-    () => ({
-      showOnDisabled: true,
-      style: { fontSize: '0.75rem', textAlign: 'center' as const },
-      position: 'top' as const,
-      showDelay: 1000,
-    }),
-    []
-  )
-
   return (
-    <Button
+    <button
       type="button"
-      data-test-id={item.dataTestId}
+      data-testid={item.dataTestId}
       disabled={item.disabled}
-      className="p-button-text"
-      tooltip={item.tooltip}
-      tooltipOptions={tooltipOptions}
-      icon={item.icon}
+      className={styles.iconButton}
+      title={item.tooltip}
+      aria-label={item.tooltip}
       onClick={(e) => {
         item.onClick?.()
         e.stopPropagation()
       }}
-    />
+    >
+      {item.icon}
+    </button>
   )
 }
 
@@ -77,7 +68,7 @@ const TableActions = ({
   const { t } = useTranslation()
   const [confirmVisible, setConfirmVisible] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const menu = useRef<Menu>(null)
+  const menu = useRef<MenuRef>(null)
 
   const handleDeleteClick = useCallback(() => {
     if (deleteConfirm && onDelete) {
@@ -147,9 +138,27 @@ const TableActions = ({
     deleteDisabled,
   ])
 
+  const hiddenMenuItems = useMemo<MenuItem[]>(
+    () =>
+      hiddenItems.map((item, idx) => ({
+        label: item.tooltip ?? `${t('global.action')} ${idx + 1}`,
+        icon: item.icon,
+        disabled: item.disabled,
+        command: (event) => {
+          event.originalEvent.stopPropagation()
+          if (item.link) {
+            window.open(item.link, '_blank', 'noopener,noreferrer')
+            return
+          }
+          item.onClick?.()
+        },
+      })),
+    [hiddenItems, t]
+  )
+
   return (
     <div
-      className={`${className} flex justify-content-end align-items-center px-3`}
+      className={[styles.actions, className].filter(Boolean).join(' ')}
       onClick={(e) => e.stopPropagation()}
     >
       {shownItems.map((item, idx) => (
@@ -165,36 +174,20 @@ const TableActions = ({
       ))}
       {hiddenItems.length > 0 && (
         <>
-          <Button
+          <button
+            type="button"
             key="menuActions"
-            className="p-button-text"
-            icon={<BsThreeDotsVertical size={18} />}
+            className={styles.iconButton}
             onClick={(e) => menu.current?.toggle(e)}
             aria-controls="menuActions"
             aria-haspopup
-          />
+            aria-label={t('global.more')}
+          >
+            <BsThreeDotsVertical size={18} aria-hidden />
+          </button>
           <Menu
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: '2.5rem',
-              padding: '0.25rem',
-            }}
-            model={hiddenItems.map((item, idx) => ({
-              template: (
-                <a
-                  href={item.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  key={`hidden-${idx}`}
-                  onClick={(e) => e.preventDefault()}
-                >
-                  <TableActionsButton item={item} />
-                </a>
-              ),
-            }))}
+            className={styles.menuPanel}
+            model={hiddenMenuItems}
             popup
             ref={menu}
             id="menuActions"

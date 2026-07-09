@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { AccessControl } from '../models/Permissions.model'
 import { useLocalizedValue } from '../hooks/useLocalizedValue'
 import { BsCheck } from 'react-icons/bs'
+import styles from './useDomainsExpansionColumns.module.scss'
 
 export const TABLE_COLUMNS_PATH =
   'usersAndGroups.groups.tables.accessControlsExpansion'
@@ -27,36 +28,17 @@ const useAccessControlsColumns = () => {
         showFilterMenu: false,
         showClearButton: false,
         body: (rowData: AccessControl) => (
-          <div className="flex flex-column gap-2 py-2">
+          <div className={styles.detailsCell}>
             <div className="font-bold">{getUiLangValue(rowData.name)}</div>
-            <div
-              title={rowData.id}
-              style={{
-                maxWidth: '300px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                color: 'var(--grey-6)',
-                fontSize: '0.85rem',
-              }}
-            >
+            <div title={rowData.id} className={styles.identifier}>
               {rowData.id}
             </div>
             {rowData.description?.[i18n.language] && (
               <div>{getUiLangValue(rowData.description)}</div>
             )}
-            <div className="flex flex-wrap gap-2">
+            <div className={styles.scopeList}>
               {rowData.scopes?.map((s) => (
-                <div
-                  key={s}
-                  style={{
-                    border: '1px solid var(--blue-1)',
-                    borderRadius: '4px',
-                    background: 'var(--blue-0)',
-                    color: 'var(--blue-5)',
-                    padding: '4px 8px',
-                  }}
-                >
+                <div key={s} className={styles.scopeBadge}>
                   {s}
                 </div>
               ))}
@@ -73,9 +55,9 @@ const useAccessControlsColumns = () => {
         showClearButton: false,
         body: (rowData: AccessControl) =>
           rowData.restrictionAware ? (
-            <div className="flex align-items-center gap-1 justify-content-end">
+            <div className={styles.statusCell}>
               <BsCheck style={{ color: 'var(--green)' }} size={20} />
-              <span className="white-space-nowrap">
+              <span className={styles.statusLabel}>
                 {t('usersAndGroups.groups.labels.restrictionAware')}
               </span>
             </div>

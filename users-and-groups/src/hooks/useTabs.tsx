@@ -1,17 +1,45 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
+import { DEFAULT_PAGINATION_PROPS } from './usePagination'
 
 export const useTabs = (tabs: string[], withQuery = true) => {
   const [activeTab, setActiveTab] = useState<string>()
   const [activeIndex, setActiveIndex] = useState(0)
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const setSearchParamsRef = useRef(setSearchParams)
+  setSearchParamsRef.current = setSearchParams
 
   const setTabsByIndex = useCallback(
-    (index: number) => {
-      setActiveTab(tabs[index])
+    (index: number, updateQuery = false) => {
+      if (index < 0 || index >= tabs.length) {
+        return
+      }
+      const nextTab = tabs[index]
+
+      setActiveTab(nextTab)
       setActiveIndex(index)
+
+      if (withQuery && updateQuery) {
+        setSearchParamsRef.current((currentSearchParams) => {
+          const nextSearchParams = new URLSearchParams(currentSearchParams)
+          const tabChanged = currentSearchParams.get('tab') !== nextTab
+          nextSearchParams.set('tab', nextTab)
+          if (tabChanged) {
+            nextSearchParams.set(
+              'page',
+              DEFAULT_PAGINATION_PROPS.currentPage?.toString() ?? '1'
+            )
+            nextSearchParams.set(
+              'rows',
+              DEFAULT_PAGINATION_PROPS.rows?.toString() ?? '10'
+            )
+          }
+
+          return nextSearchParams
+        }, { replace: true })
+      }
     },
-    [tabs]
+    [tabs, withQuery]
   )
 
   useEffect(() => {
@@ -26,10 +54,15 @@ export const useTabs = (tabs: string[], withQuery = true) => {
   }, [searchParams, tabs, withQuery, setTabsByIndex])
 
   const onTabChange = useCallback(
-    (tabId: string) => {
-      const index = tabs.indexOf(tabId)
+    (tabIdOrIndex: string | number) => {
+      if (typeof tabIdOrIndex === 'number') {
+        setTabsByIndex(tabIdOrIndex, true)
+        return
+      }
+
+      const index = tabs.indexOf(tabIdOrIndex)
       if (index >= 0) {
-        setTabsByIndex(index)
+        setTabsByIndex(index, true)
       }
     },
     [tabs, setTabsByIndex]

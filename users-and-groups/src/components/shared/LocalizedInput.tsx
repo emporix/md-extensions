@@ -6,6 +6,7 @@ import { BsGlobe } from 'react-icons/bs'
 import type Localized from '../../models/Localized.model'
 import { isEmptyObject } from '../../helpers/utils'
 import { useDashboardContext } from '../../context/Dashboard.context'
+import styles from './LocalizedInput.module.scss'
 
 export type LocalizedInputProps = {
   readonly value: Localized | undefined
@@ -66,7 +67,7 @@ const LocalizedInput = ({
   return (
     <div className="localized-input">
       {activeLanguages.map((lang) => (
-        <div key={lang.id} className="flex align-items-center gap-2 mb-2">
+        <div key={lang.id} className={styles.languageRow}>
           <BsGlobe />
           <InputText
             inputId={`localized-${lang.id}`}

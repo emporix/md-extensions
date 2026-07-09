@@ -1,16 +1,22 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { DataTableFilterParams } from 'primereact/datatable'
 import { useIamApi } from '../../hooks/api/iam'
-import { useToast } from '@emporix/component-library'
+import {
+  DataTable,
+  Dialog,
+  PrimaryButton,
+  SecondaryButton,
+  type DataTablePaginationState,
+  useToast,
+} from '@emporix/component-library'
 import { User } from '../../models/User.model'
-import { Button } from 'primereact/button'
 import { makeCall, getApiErrorDetails } from '../../helpers/api'
 import { GroupUserTypes } from '../../models/Groups.model'
-import { Dialog } from 'primereact/dialog'
-import MdDataTable from '../../components/shared/MdDataTable'
 import useUsersTableColumns from '../../hooks/useUsersTableColumns'
 import { useGroupData } from '../../context/Group.provider'
 import usePagination from '../../hooks/usePagination'
+import styles from './GroupAddMembersDialog.module.scss'
 
 interface Props {
   visible: boolean
@@ -23,8 +29,7 @@ const GroupAddMembersDialog = (props: Props) => {
   const { t } = useTranslation()
   const { getAllUsers, addUserToGroup } = useIamApi()
   const { showSuccess, showError } = useToast()
-  const { paginationParams, onPageCallback, onFilterCallback, totalCount } =
-    usePagination()
+  const { paginationParams, onPageCallback, onFilterCallback } = usePagination()
   const { columns, customerColumns } = useUsersTableColumns()
   const { groupMembers, syncMembers, isLoadingData, groupType } = useGroupData()
   const [isLoadingUsers, setIsLoadingUsers] = useState(false)
@@ -96,42 +101,43 @@ const GroupAddMembersDialog = (props: Props) => {
     }
   }
 
+  const pagination: DataTablePaginationState = {
+    ...paginationParams,
+    totalRecords: users.length,
+  }
+
   return (
     <Dialog
-      className="w-8"
+      className={styles.dialog}
       header={t('usersAndGroups.groups.titles.addMembers')}
       visible={visible}
       onHide={onHide}
     >
-      <MdDataTable
+      <DataTable
         dataKey="id"
         value={users}
         columns={
           groupType === GroupUserTypes.CUSTOMER ? customerColumns : columns
         }
         selection={selectedUsers}
-        setSelectedItems={setSelectedUsers}
-        paginationOptions={{
-          ...paginationParams,
-          totalRecords: totalCount,
-        }}
-        isLoading={isLoadingUsers || isLoadingData}
+        onSelectionChange={(selection) => setSelectedUsers(selection as User[])}
+        pagination={pagination}
+        loading={isLoadingUsers || isLoadingData}
         onPage={onPageCallback}
-        onFilter={onFilterCallback}
+        onFilter={(event) =>
+          onFilterCallback(event as unknown as DataTableFilterParams)
+        }
         selectionMode="multiple"
       />
-      <div className="flex gap-3 justify-content-center mt-5">
-        <Button
-          className="p-button-secondary"
-          onClick={onHide}
-          label={t('global.cancel')}
-        />
-        <Button
+      <div className={styles.footerActions}>
+        <SecondaryButton onClick={onHide}>{t('global.cancel')}</SecondaryButton>
+        <PrimaryButton
           loading={isLoadingAdd}
           disabled={selectedUsers.length === 0 || isLoadingAdd}
           onClick={() => addMembers(selectedUsers)}
-          label={t('usersAndGroups.groups.buttons.addMembers')}
-        />
+        >
+          {t('usersAndGroups.groups.buttons.addMembers')}
+        </PrimaryButton>
       </div>
     </Dialog>
   )

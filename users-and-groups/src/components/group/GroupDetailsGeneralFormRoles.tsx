@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { RadioButton } from '@emporix/component-library'
 import { getArrayFromEnum } from '../../helpers/utils'
-import { RadioButton } from 'primereact/radiobutton'
 import GroupDetailsGeneralFormRolesStandard from './GroupDetailsGeneralFormRolesStandard'
 import GroupDetailsGeneralFormRolesTemplates from './GroupDetailsGeneralFormRolesTemplates'
 import {
@@ -15,6 +15,7 @@ import { useGroupRole } from '../../context/GroupRole.provider'
 import GroupDetailsGeneralFormRolesVendor from './GroupDetailsGeneralFormRolesVendor'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { useFormContext } from 'react-hook-form'
+import styles from './GroupDetailsGeneralFormRoles.module.scss'
 
 const GroupDetailsGeneralFormRoles = () => {
   const { t } = useTranslation()
@@ -70,8 +71,8 @@ const GroupDetailsGeneralFormRoles = () => {
   }
 
   return (
-    <div className="flex justify-content-start gap-6 grid grid-nogutter">
-      <div className="flex flex-column gap-2">
+    <div className={styles.rolesLayout}>
+      <div className={styles.roleTypeList}>
         {getArrayFromEnum(RoleType)
           .filter((rt) => {
             if (rt === RoleType.VENDOR) {
@@ -80,24 +81,25 @@ const GroupDetailsGeneralFormRoles = () => {
             return true
           })
           .map((rt) => (
-            <div key={rt} className="flex align-items-center">
+            <div key={rt} className={styles.roleTypeOption}>
               <RadioButton
                 inputId={rt}
+                name="roleType"
                 value={rt}
+                label={t('usersAndGroups.groups.forms.group.role.labels.' + rt)}
                 disabled={!!group?.vendorId}
                 checked={activeRoleType === rt}
                 onChange={() => handleRoleTypeChange(rt)}
-                className="mr-2"
+                className={styles.roleTypeRadio}
               />
-              <label htmlFor={rt} className="cursor-pointer">
-                {t('usersAndGroups.groups.forms.group.role.labels.' + rt)}
-              </label>
             </div>
           ))}
       </div>
-      <div className="col-5">
+      <div className={styles.roleDetails}>
         {accessControlsForOe?.length > 0 && (
-          <GroupDetailsGeneralFormRolesServicePicker className="mb-3" />
+          <GroupDetailsGeneralFormRolesServicePicker
+            className={styles.servicePicker}
+          />
         )}
         {activeRoleType === RoleType.STANDARD && (
           <GroupDetailsGeneralFormRolesStandard />

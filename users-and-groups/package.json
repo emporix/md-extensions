@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@emporix/api-calls": "^0.1.7",
-    "@emporix/component-library": "^1.12.3",
+    "@emporix/component-library": "1.12.8",
     "@originjs/vite-plugin-federation": "^1.4.1",
     "axios": "^1.18.1",
     "chart.js": "^4.5.1",

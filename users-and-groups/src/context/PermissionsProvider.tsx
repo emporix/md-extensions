@@ -92,7 +92,7 @@ const restrictDomains =
 export const usePermissions = () => useContext(PermissionsContext)
 
 export const PermissionsProvider = ({ children }: PropsWithChildren) => {
-  const { user, tenant, token } = useDashboardContext()
+  const { tenant, token } = useDashboardContext()
   const { t } = useTranslation()
   const { showError } = useToast()
   const {
@@ -114,7 +114,6 @@ export const PermissionsProvider = ({ children }: PropsWithChildren) => {
   >([])
 
   const syncUserAccessControls = async () => {
-    if (!user?.userId) return
     try {
       const userACs = await getAllAccessControlsForUser()
       setUserAccessControls(userACs)
@@ -180,7 +179,6 @@ export const PermissionsProvider = ({ children }: PropsWithChildren) => {
   }
 
   const domainsMap = useMemo(() => getDomainsMapFromAccessControls(), [])
-
   const expandedUserAcIds = useMemo(
     () =>
       expandWithImpliedViewerAcs(
@@ -249,30 +247,43 @@ export const PermissionsProvider = ({ children }: PropsWithChildren) => {
   )
 
   useEffect(() => {
-    if (!token || !user?.userId) {
+    if (!token || !tenant) {
       setIsPermissionsLoading(false)
       return
     }
+    let cancelled = false
     setIsPermissionsLoading(true)
     ;(async () => {
       try {
         await syncUserAccessControls()
+        if (cancelled) return
         await syncScopes()
+        if (cancelled) return
         await syncTemplates()
       } catch (e: unknown) {
         console.error(e)
       } finally {
-        setIsPermissionsLoading(false)
+        if (!cancelled) {
+          setIsPermissionsLoading(false)
+        }
       }
     })()
-  }, [user?.userId, tenant, token])
+    return () => {
+      cancelled = true
+    }
+  }, [tenant, token])
 
   useEffect(() => {
+    let cancelled = false
     ;(async () => {
       if (hasPermission(EmployeeDomains.ACCESS_CONTROLS_VIEWER)) {
         await syncTenantAccessControls()
+        if (cancelled) return
       }
     })()
+    return () => {
+      cancelled = true
+    }
   }, [hasPermission])
 
   if (isPermissionsLoading) {

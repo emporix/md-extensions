@@ -1,0 +1,47 @@
+.dialog {
+  :global(.p-dialog-content) {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+.footerActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.searchSection {
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+}
+
+.searchField {
+  position: relative;
+  width: 100%;
+
+  i {
+    position: absolute;
+    top: 50%;
+    left: 0.75rem;
+    transform: translateY(-50%);
+    color: var(--grey-2);
+    pointer-events: none;
+  }
+}
+
+.searchInput {
+  width: 100%;
+
+  :global(input) {
+    padding-left: 2.25rem;
+  }
+}
+
+.tableContainer {
+  flex: 1;
+  overflow: auto;
+  border: 1px solid var(--grey-4);
+  border-radius: 4px;
+}

@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from 'react'
+import { Checkbox } from '@emporix/component-library'
 import {
   GroupFormFields,
   ServiceType,
 } from '../../helpers/groups/groupForm.helpers'
-import { Checkbox } from 'primereact/checkbox'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { EmployeeDomains } from '../../configs/accessControls'
 import { useTranslation } from 'react-i18next'
@@ -18,6 +18,7 @@ import {
   getViewerAccessControls,
 } from '../../helpers/groups/accessControls.helpers'
 import { RoleCode } from '../../models/Groups.model'
+import styles from './GroupDetailsGeneralFormRolesStandard.module.scss'
 
 const dcpRoles = [RoleCode.VIEWER, RoleCode.MANAGER, RoleCode.ADMINISTRATOR]
 const oeRoles = [
@@ -105,46 +106,40 @@ const GroupDetailsGeneralFormRolesStandard = () => {
   )
 
   return (
-    <div className="flex flex-column gap-2">
+    <div className={styles.rolesList}>
       {activeServiceType === ServiceType.DCP
         ? dcpRoles.map((r) => (
-            <div
-              key={ServiceType.DCP + r}
-              className="flex gap-2 align-items-center"
-            >
+            <div key={ServiceType.DCP + r} className={styles.roleRow}>
               <Checkbox
                 inputId={r}
                 disabled={!canManage}
                 checked={isRoleChecked(r)}
                 value={r}
                 onChange={(e) =>
-                  isRoleChecked(e.target.value)
+                  isRoleChecked(e.value as RoleCode)
                     ? setValue('accessControls', [], { shouldDirty: true })
-                    : onCheckboxChange(e.target.value)
+                    : onCheckboxChange(e.value as RoleCode)
                 }
               />
-              <label htmlFor={r} className="cursor-pointer">
+              <label htmlFor={r} className={styles.roleLabel}>
                 {t(`usersAndGroups.groups.forms.group.role.labels.${r}`)}
               </label>
             </div>
           ))
         : oeRoles.map((r) => (
-            <div
-              key={ServiceType.OE + r}
-              className="flex gap-2 align-items-center"
-            >
+            <div key={ServiceType.OE + r} className={styles.roleRow}>
               <Checkbox
                 inputId={r}
                 disabled={!canManage}
                 checked={isRoleChecked(r)}
                 value={r}
                 onChange={(e) =>
-                  isRoleChecked(e.target.value)
+                  isRoleChecked(e.value as RoleCode)
                     ? setValue('accessControls', [], { shouldDirty: true })
-                    : onCheckboxChange(e.target.value)
+                    : onCheckboxChange(e.value as RoleCode)
                 }
               />
-              <label htmlFor={r} className="cursor-pointer">
+              <label htmlFor={r} className={styles.roleLabel}>
                 {t(`usersAndGroups.groups.forms.group.role.labels.${r}`)}
               </label>
             </div>

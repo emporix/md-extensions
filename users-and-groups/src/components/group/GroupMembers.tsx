@@ -5,9 +5,8 @@ import { User } from '../../models/User.model'
 import { GroupUserTypes } from '../../models/Groups.model'
 import { useTranslation } from 'react-i18next'
 import { useIamApi } from '../../hooks/api/iam'
-import { useToast } from '@emporix/component-library'
+import { DataTable, useToast } from '@emporix/component-library'
 import TableActions from '../../components/shared/TableActions'
-import MdDataTable from '../../components/shared/MdDataTable'
 import { BsXCircleFill } from 'react-icons/bs'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import GroupAddMembersDialog from './GroupAddMembersDialog'
@@ -15,6 +14,8 @@ import { useGroupData } from '../../context/Group.provider'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { EmployeeDomains } from '../../configs/accessControls'
 import BatchDeleteButton from '../../components/shared/BatchDeleteButton'
+import EmptyTable from '../../components/shared/EmptyTable'
+import styles from './GroupMembers.module.scss'
 
 const GroupMembers = () => {
   const { t } = useTranslation()
@@ -93,36 +94,43 @@ const GroupMembers = () => {
       ]
       return <TableActions actions={actions} />
     },
-    [removeMembers]
+    [removeMembers, canManage, t]
   )
 
   return (
     <>
       <BatchDeleteButton
         disabled={selectedMembers.length === 0 || !canManage}
-        className="p-button-secondary mb-2"
+        className={`p-button-secondary ${styles.batchActionButton}`}
         pluralsPath="usersAndGroups.groups.tables.members"
         selected={selectedMembers}
         isDeleting={isDeleting}
         onDelete={() => removeMembers(selectedMembers)}
       />
-      <MdDataTable
-        dataKey="id"
-        isLoading={isLoading || isLoadingData}
-        setSelectedItems={setSelectedMembers}
-        value={groupMembers}
-        columns={
-          groupType === GroupUserTypes.CUSTOMER ? customerColumns : columns
-        }
-        selection={selectedMembers}
-        selectionMode="multiple"
-        actions={tableActionsTemplate}
-        emptyText={t('usersAndGroups.groups.tables.members.emptyText', {
-          name: getContentLangValue(group?.name),
-        })}
-        emptyButtonLabel={t('usersAndGroups.groups.buttons.addMembers')}
-        emptyAction={() => setIsMembersDialogOpened(true)}
-      />
+      {!groupMembers.length && !(isLoading || isLoadingData) ? (
+        <EmptyTable
+          text={t('usersAndGroups.groups.tables.members.emptyText', {
+            name: getContentLangValue(group?.name),
+          })}
+          buttonLabel={t('usersAndGroups.groups.buttons.addMembers')}
+          action={() => setIsMembersDialogOpened(true)}
+        />
+      ) : (
+        <DataTable
+          dataKey="id"
+          loading={isLoading || isLoadingData}
+          onSelectionChange={(selection) =>
+            setSelectedMembers(selection as User[])
+          }
+          value={groupMembers}
+          columns={
+            groupType === GroupUserTypes.CUSTOMER ? customerColumns : columns
+          }
+          selection={selectedMembers}
+          selectionMode="multiple"
+          rowActions={tableActionsTemplate}
+        />
+      )}
       <GroupAddMembersDialog
         groupId={group?.id}
         visible={isMembersDialogOpened}

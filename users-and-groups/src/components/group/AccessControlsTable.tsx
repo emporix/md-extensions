@@ -1,15 +1,18 @@
+import { DataTable } from '@emporix/component-library'
 import { useCallback, useMemo, useState } from 'react'
-import type { DataTableFilterMeta } from 'primereact/datatable'
+import type {
+  DataTableFilterParams,
+  DataTableSortParams,
+} from 'primereact/datatable'
 import { useTranslation } from 'react-i18next'
+import { PrimaryButton } from '@emporix/component-library'
 import { useFormContext } from 'react-hook-form'
 import { GroupFormFields } from '../../helpers/groups/groupForm.helpers'
 import { AccessControl } from '../../models/Permissions.model'
-import MdDataTable from '../../components/shared/MdDataTable'
 import TableActions from '../../components/shared/TableActions'
 import useDomainsColumns from '../../hooks/useDomainsColumns'
 import AccessControlsExpansionTable from './AccessControlsExpansionTable'
 import { BsPlusLg } from 'react-icons/bs'
-import { Button } from 'primereact/button'
 import { GroupUserTypes } from '../../models/Groups.model'
 import { SectionTitle } from '../../components/shared/SectionBox'
 import { useGroupData } from '../../context/Group.provider'
@@ -25,6 +28,8 @@ import {
 import { usePermissions } from '../../context/PermissionsProvider'
 import { EmployeeDomains } from '../../configs/accessControls'
 import ConfirmBox from '../../components/shared/ConfirmBox'
+import EmptyTable from '../../components/shared/EmptyTable'
+import styles from './AccessControlsTable.module.scss'
 
 const AccessControlsTable = () => {
   const { i18n, t } = useTranslation()
@@ -109,59 +114,69 @@ const AccessControlsTable = () => {
   return (
     <>
       <SectionTitle
-        className="mb-3"
+        className={styles.titleSpacing}
         name={t(
           groupType === GroupUserTypes.CUSTOMER
             ? 'usersAndGroups.groups.titles.customerAccessControls'
             : 'usersAndGroups.groups.titles.accessControls'
         )}
         actions={
-          <Button
+          <PrimaryButton
+            className={styles.assignButton}
             disabled={
               activeRoleType === RoleType.TEMPLATES ||
               isPredefinedGroup ||
               !canViewAccess
             }
-            label={t('usersAndGroups.groups.buttons.assignAccessControls')}
-            icon={<BsPlusLg size={16} />}
-            className="p-button-small"
             onClick={() => setIsAssignDialogOpen(true)}
-          />
+          >
+            <BsPlusLg size={16} aria-hidden />
+            <span>{t('usersAndGroups.groups.buttons.assignAccessControls')}</span>
+          </PrimaryButton>
         }
       />
-      <MdDataTable
-        columns={columns}
-        actions={actionsTemplate}
-        value={domainGroups}
-        dataKey="name"
-        expandedRows={expandedRows}
-        onRowToggle={setExpandedRows}
-        rowExpansionTemplate={(domain: DomainGroup) => (
-          <AccessControlsExpansionTable
-            accessControls={domain.accessControls}
-            onRemove={handleRemove}
-          />
-        )}
-        emptyText={
-          canViewAccess
-            ? t('usersAndGroups.groups.tables.accessControls.emptyText')
-            : t('global.noPermissions')
-        }
-        sortField={paginationParams.sortField}
-        sortOrder={paginationParams.sortOrder}
-        onSort={onSortCallback}
-        showFilter
-        onFilter={(e: { filters: DataTableFilterMeta }) => {
-          const nameFilter = e.filters?.name
-          const filterValue =
-            nameFilter &&
-            typeof nameFilter === 'object' &&
-            'value' in nameFilter
-              ? String(nameFilter.value ?? '')
-              : ''
-          setSearchQuery(filterValue)
-        }}
-      />
+      {!domainGroups.length ? (
+        <EmptyTable
+          text={
+            canViewAccess
+              ? t('usersAndGroups.groups.tables.accessControls.emptyText')
+              : t('global.noPermissions')
+          }
+        />
+      ) : (
+        <DataTable
+          columns={columns}
+          rowActions={actionsTemplate}
+          value={domainGroups}
+          dataKey="name"
+          expandedRows={expandedRows}
+          onRowToggle={setExpandedRows}
+          rowExpansionTemplate={(domain: DomainGroup) => (
+            <AccessControlsExpansionTable
+              accessControls={domain.accessControls}
+              onRemove={handleRemove}
+            />
+          )}
+          sortField={paginationParams.sortField}
+          sortOrder={paginationParams.sortOrder}
+          onSort={(event) =>
+            onSortCallback(event as unknown as DataTableSortParams)
+          }
+          showFilter
+          onFilter={(event) => {
+            const nameFilter = (
+              event as unknown as DataTableFilterParams
+            ).filters?.name
+            const filterValue =
+              nameFilter &&
+              typeof nameFilter === 'object' &&
+              'value' in nameFilter
+                ? String(nameFilter.value ?? '')
+                : ''
+            setSearchQuery(filterValue)
+          }}
+        />
+      )}
       <AssignAccessControlsDialog
         visible={isAssignDialogOpen}
         onClose={() => setIsAssignDialogOpen(false)}

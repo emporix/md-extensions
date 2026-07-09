@@ -1,6 +1,7 @@
+import { DataTable } from '@emporix/component-library'
 import { useCallback, useState } from 'react'
+import type { DataTableFilterParams } from 'primereact/datatable'
 import { AccessControl } from '../../models/Permissions.model'
-import MdDataTable from '../../components/shared/MdDataTable'
 import TableActions from '../../components/shared/TableActions'
 import usePagination from '../../hooks/usePagination'
 import useAccessControlsExpansionColumns from '../../hooks/useDomainsExpansionColumns'
@@ -50,18 +51,24 @@ const AccessControlsExpansionTable = (props: Props) => {
   )
 
   return (
-    <MdDataTable
+    <DataTable
       columns={columns}
-      actions={onRemove ? actionsTemplate : undefined}
+      rowActions={onRemove ? actionsTemplate : undefined}
       value={accessControls}
       selectionMode={selectable ? 'multiple' : undefined}
       selection={selectable ? selection : undefined}
-      setSelectedItems={selectable ? onSelectionChange : undefined}
-      isLoading={false}
+      onSelectionChange={
+        selectable
+          ? (selection) => onSelectionChange?.(selection as AccessControl[])
+          : undefined
+      }
+      loading={false}
       sortField={paginationParams.sortField}
       sortOrder={paginationParams.sortOrder}
-      paginationOptions={paginationParams}
-      onFilter={onFilterCallback}
+      pagination={paginationParams}
+      onFilter={(event) =>
+        onFilterCallback(event as unknown as DataTableFilterParams)
+      }
       showFilter={false}
       paginator={false}
       showHeaders={false}

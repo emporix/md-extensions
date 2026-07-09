@@ -1,6 +1,7 @@
 import { Dropdown } from 'primereact/dropdown'
-import { SelectItemOptionsType } from 'primereact/selectitem'
 import { ColumnFilterElementTemplateOptions } from 'primereact/column'
+import { SelectItemOptionsType } from 'primereact/selectitem'
+import styles from './DropdownFilter.module.scss'
 
 type DropdownFilterProps = {
   readonly dropdownOptions: SelectItemOptionsType
@@ -38,9 +39,8 @@ const DropdownFilterTemplate = (
       onChange={(e) => {
         options.filterApplyCallback(e.value, options.index)
       }}
-      className="p-column-filter"
-      style={{ minWidth: '180px' }}
-      panelClassName="p-dropdown-panel-dialog"
+      className={`${styles.filterDropdown} p-column-filter`}
+      panelClassName={styles.filterDropdownPanel}
     />
   )
 }

@@ -2,6 +2,7 @@ import { ReactNode, useMemo } from 'react'
 import { useLocation, useSearchParams } from 'react-router'
 import useCustomNavigate from '../../hooks/useCustomNavigate'
 import BackButton from './BackButton'
+import styles from './HeaderSection.module.scss'
 
 type HeaderProps = {
   readonly title: string | ReactNode
@@ -23,6 +24,9 @@ const HeaderSection = ({
   const [searchParams] = useSearchParams()
 
   const handleBackClick = useMemo(() => {
+    if (typeof backTo === 'function') {
+      return backTo
+    }
     const paramBackTo = searchParams.get('backTo')
     if (paramBackTo) {
       return () => navigate(paramBackTo)
@@ -30,27 +34,24 @@ const HeaderSection = ({
     if (typeof backTo === 'string') {
       return () => navigate(backTo)
     }
-    if (typeof backTo === 'function') {
-      return backTo
-    }
     return undefined
   }, [backTo, location.search, navigate, searchParams])
 
   return (
-    <div className="w-full mb-3">
-      <div className="flex flex-wrap-reverse align-items-center gap-3">
-        {backTo && handleBackClick && (
-          <BackButton onClick={handleBackClick} />
-        )}
-        <div className="flex align-items-center">
+    <div className={styles.headerSection}>
+      <div className={styles.headerRow}>
+        {backTo && handleBackClick && <BackButton onClick={handleBackClick} />}
+        <div className={styles.titleRow}>
           <h1 className="module-title">{title}</h1>
           {subtitle && (
-            <h1 className="module-title highlight-text ml-2">{subtitle}</h1>
+            <h1 className={`module-title highlight-text ${styles.subtitle}`}>
+              {subtitle}
+            </h1>
           )}
         </div>
-        {moduleActions && <div className="ml-auto">{moduleActions}</div>}
+        {moduleActions && <div className={styles.actions}>{moduleActions}</div>}
       </div>
-      {children && <div className="mt-2">{children}</div>}
+      {children && <div className={styles.content}>{children}</div>}
     </div>
   )
 }

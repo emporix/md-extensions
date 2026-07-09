@@ -9,14 +9,18 @@ import { useTranslation } from 'react-i18next'
 import { useUIBlocker } from '../../context/UIBlcoker'
 import { useIamApi } from '../../hooks/api/iam'
 import { useFormContext } from 'react-hook-form'
-import { useToast } from '@emporix/component-library'
+import {
+  PrimaryButton,
+  SecondaryButton,
+  useToast,
+} from '@emporix/component-library'
 import useCustomNavigate from '../../hooks/useCustomNavigate'
-import { Button } from 'primereact/button'
 import GroupAddMembersDialog from './GroupAddMembersDialog'
 import { useGroupData } from '../../context/Group.provider'
 import { makeCall } from '../../helpers/api'
 import { GroupUserTypes } from '../../models/Groups.model'
 import { usePermissions } from '../../context/PermissionsProvider'
+import styles from './GroupPageActions.module.scss'
 
 interface Props {
   activeTab: string | undefined
@@ -104,27 +108,30 @@ const GroupPageActions = (props: Props) => {
     <>
       {activeTab === 'details' ? (
         <>
-          <Button
-            className="p-button-secondary mr-2"
-            label={t('global.discard')}
+          <SecondaryButton
+            className={styles.discardButton}
             disabled={!formState.isDirty || !managerPermissions}
             onClick={() => reset()}
-          />
-          <Button
-            label={t('global.save')}
+          >
+            {t('global.discard')}
+          </SecondaryButton>
+          <PrimaryButton
             disabled={
               !formState.isValid || !formState.isDirty || !managerPermissions
             }
             onClick={handleSubmit(group ? submitEditGroup : submitCreateGroup)}
-          />
+          >
+            {t('global.save')}
+          </PrimaryButton>
         </>
       ) : (
         <>
-          <Button
-            label={t('usersAndGroups.groups.buttons.addMembers')}
+          <PrimaryButton
             disabled={!managerPermissions}
             onClick={() => setIsMembersDialogOpened(true)}
-          />
+          >
+            {t('usersAndGroups.groups.buttons.addMembers')}
+          </PrimaryButton>
           <GroupAddMembersDialog
             visible={isMembersDialogOpened}
             groupId={group?.id}

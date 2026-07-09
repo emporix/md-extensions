@@ -1,5 +1,6 @@
 import { PrimaryButton } from '@emporix/component-library'
 import { Link } from 'react-router'
+import styles from './EmptyContent.module.scss'
 
 type EmptyContentProps = {
   readonly text: string
@@ -19,12 +20,10 @@ const EmptyContent = ({
   managerPermissions = true,
 }: EmptyContentProps) => {
   return (
-    <div
-      className={`${className} flex flex-column justify-content-center align-items-center p-2`}
-    >
-      <p className="text-lg">{text}</p>
+    <div className={[styles.emptyState, className].filter(Boolean).join(' ')}>
+      <p className={styles.message}>{text}</p>
       {buttonLabel && (
-        <Link to={link ?? ''} className="mt-3">
+        <Link to={link ?? ''} className={styles.actionLink}>
           <PrimaryButton disabled={!managerPermissions} onClick={action}>
             {buttonLabel}
           </PrimaryButton>

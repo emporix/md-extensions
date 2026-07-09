@@ -4,18 +4,14 @@ import {
   PrimaryButton,
   SecondaryButton,
   Tabs,
+  useToast,
 } from '@emporix/component-library'
 import { useUIBlocker } from '../context/UIBlcoker'
-import {
-  makeCall,
-  getApiErrorDetails,
-  getApiErrorStatus,
-} from '../helpers/api'
+import { makeCall, getApiErrorDetails, getApiErrorStatus } from '../helpers/api'
 import { useIamApi } from '../hooks/api/iam'
 import { useParams } from 'react-router'
 import { FormProvider, useForm } from 'react-hook-form'
 import { User } from '../models/User.model'
-import { useToast } from '@emporix/component-library'
 import useCustomNavigate from '../hooks/useCustomNavigate'
 import { useTabs } from '../hooks/useTabs'
 import UserDetailsForm from '../components/user/UserDetailsForm'
@@ -31,10 +27,8 @@ import {
   mapUserToUserForm,
   UserFormFields,
 } from '../helpers/users/users.helpers'
-import {
-  listPath,
-  userDetailPath,
-} from '../constants/paths'
+import { listPath, userDetailPath } from '../constants/paths'
+import styles from './UserPage.module.scss'
 
 const TABS = ['details', 'access']
 
@@ -144,9 +138,9 @@ const UserPage = () => {
         subtitle={userId ? subtitle : undefined}
         backTo={() => navigate(listPath('users'))}
         moduleActions={
-          <>
+          <div className={styles.headerActions}>
             <SecondaryButton
-              className="mr-2"
+              className={styles.discardButton}
               disabled={!formState.isDirty || !canManage}
               onClick={() => reset()}
             >
@@ -158,7 +152,7 @@ const UserPage = () => {
             >
               {t('global.save')}
             </PrimaryButton>
-          </>
+          </div>
         }
       />
       <Tabs

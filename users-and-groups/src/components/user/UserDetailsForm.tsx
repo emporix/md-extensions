@@ -14,6 +14,7 @@ import { DotIndicator } from '../../components/shared/DotIndicator'
 import { UserFormFields } from '../../helpers/users/users.helpers'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { EmployeeDomains } from '../../configs/accessControls'
+import styles from './UserDetailsForm.module.scss'
 
 const UserDetailsForm = () => {
   const { t } = useTranslation()
@@ -38,7 +39,7 @@ const UserDetailsForm = () => {
           rules={{ required: true }}
           render={({ field }) => (
             <InputText
-              className="col-4"
+              className={styles.nameField}
               label={t('usersAndGroups.users.forms.user.firstName')}
               required
               value={field.value}
@@ -53,7 +54,7 @@ const UserDetailsForm = () => {
           rules={{ required: true }}
           render={({ field }) => (
             <InputText
-              className="col-4"
+              className={styles.surnameField}
               label={t('usersAndGroups.users.forms.user.lastName')}
               required
               value={field.value}
@@ -68,7 +69,7 @@ const UserDetailsForm = () => {
           rules={{ required: true }}
           render={({ field }) => (
             <InputText
-              className="col-4"
+              className={styles.emailField}
               label={t('usersAndGroups.users.forms.user.contactEmail')}
               required
               value={field.value}
@@ -86,7 +87,7 @@ const UserDetailsForm = () => {
           rules={{ required: true }}
           render={({ field }) => (
             <InputText
-              className="col-6"
+              className={styles.departmentField}
               label={t('usersAndGroups.users.forms.user.department')}
               required
               value={field.value}
@@ -95,30 +96,27 @@ const UserDetailsForm = () => {
             />
           )}
         />
-        <InputField
-          className="col-6"
-          label={t('usersAndGroups.users.forms.user.preferredSite')}
-          required
-        >
-          <Controller
-            name="preferredSite"
-            control={control}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <Dropdown
-                value={field.value}
-                disabled={!canManage}
-                options={(sites ?? [])
-                  .map((s) => ({
-                    label: s.name,
-                    value: s.code,
-                  }))
-                  .sort((a, b) => a.label.localeCompare(b.label))}
-                onChange={(e) => field.onChange(e.value)}
-              />
-            )}
-          />
-        </InputField>
+        <Controller
+          name="preferredSite"
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <Dropdown
+              className={styles.siteField}
+              label={t('usersAndGroups.users.forms.user.preferredSite')}
+              required
+              value={field.value}
+              disabled={!canManage}
+              options={(sites ?? [])
+                .map((s) => ({
+                  label: s.name,
+                  value: s.code,
+                }))
+                .sort((a, b) => a.label.localeCompare(b.label))}
+              onChange={(e) => field.onChange(e.value)}
+            />
+          )}
+        />
       </FormGridRow>
 
       <FormGridRow>
@@ -128,26 +126,23 @@ const UserDetailsForm = () => {
           rules={{ required: true }}
           render={({ field }) =>
             canViewLanguages ? (
-              <InputField
-                className="col-4"
+              <Dropdown
+                className={styles.languageField}
                 label={t('usersAndGroups.users.forms.user.preferredLanguage')}
                 required
-              >
-                <Dropdown
-                  disabled={!canManage}
-                  value={field.value}
-                  options={(languages ?? [])
-                    .map((l) => ({
-                      label: l.label,
-                      value: l.id,
-                    }))
-                    .sort((a, b) => a.label.localeCompare(b.label))}
-                  onChange={(e) => field.onChange(e.value)}
-                />
-              </InputField>
+                disabled={!canManage}
+                value={field.value}
+                options={(languages ?? [])
+                  .map((l) => ({
+                    label: l.label,
+                    value: l.id,
+                  }))
+                  .sort((a, b) => a.label.localeCompare(b.label))}
+                onChange={(e) => field.onChange(e.value)}
+              />
             ) : (
               <InputText
-                className="col-4"
+                className={styles.languageField}
                 label={t('usersAndGroups.users.forms.user.preferredLanguage')}
                 required
                 disabled
@@ -163,26 +158,23 @@ const UserDetailsForm = () => {
           rules={{ required: true }}
           render={({ field }) =>
             canViewCurrencies ? (
-              <InputField
-                className="col-4"
+              <Dropdown
+                className={styles.currencyField}
                 label={t('usersAndGroups.users.forms.user.preferredCurrency')}
                 required
-              >
-                <Dropdown
-                  value={field.value}
-                  disabled={!canManage}
-                  options={(currencies ?? [])
-                    .map((c) => ({
-                      label: getContentLangValue(c.label),
-                      value: c.id,
-                    }))
-                    .sort((a, b) => a.label.localeCompare(b.label))}
-                  onChange={(e) => field.onChange(e.value)}
-                />
-              </InputField>
+                value={field.value}
+                disabled={!canManage}
+                options={(currencies ?? [])
+                  .map((c) => ({
+                    label: getContentLangValue(c.label),
+                    value: c.id,
+                  }))
+                  .sort((a, b) => a.label.localeCompare(b.label))}
+                onChange={(e) => field.onChange(e.value)}
+              />
             ) : (
               <InputText
-                className="col-4"
+                className={styles.currencyField}
                 label={t('usersAndGroups.users.forms.user.preferredCurrency')}
                 required
                 disabled
@@ -194,14 +186,14 @@ const UserDetailsForm = () => {
         />
         {userId && (
           <InputField
-            className="col-4"
+            className={styles.statusField}
             label={t('usersAndGroups.users.forms.user.status')}
           >
             <Controller
               name="status"
               control={control}
               render={({ field }) => (
-                <div className="flex align-items-center gap-2 h-full">
+                <div className={styles.statusValue}>
                   <DotIndicator value={field.value === 'active'} />
                   {textToTitleCase(field.value)}
                 </div>

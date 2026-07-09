@@ -1,19 +1,27 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import type {
+  DataTableFilterParams,
+  DataTableSortParams,
+} from 'primereact/datatable'
 import { useIamApi } from '../../hooks/api/iam'
-import { useToast } from '@emporix/component-library'
+import {
+  DataTable,
+  type DataTablePaginationState,
+  useToast,
+} from '@emporix/component-library'
 import { User } from '../../models/User.model'
 import { makeCall, getApiErrorDetails } from '../../helpers/api'
 import TableActions from '../../components/shared/TableActions'
 import { useLocation } from 'react-router'
 import useCustomNavigate from '../../hooks/useCustomNavigate'
-import MdDataTable from '../../components/shared/MdDataTable'
 import useUsersTableColumns from '../../hooks/useUsersTableColumns'
 import { usePermissions } from '../../context/PermissionsProvider'
 import BatchDeleteButton from '../../components/shared/BatchDeleteButton'
 import usePagination from '../../hooks/usePagination'
 import { EmployeeDomains } from '../../configs/accessControls'
 import { userDetailPath } from '../../constants/paths'
+import styles from './UsersTable.module.scss'
 
 const UsersTable = () => {
   const { t } = useTranslation()
@@ -105,34 +113,37 @@ const UsersTable = () => {
     [canManage]
   )
 
+  const pagination: DataTablePaginationState = {
+    ...paginationParams,
+    totalRecords: totalCount,
+  }
+
   return (
     <>
       <BatchDeleteButton
-        className="mb-2"
+        className={styles.batchActionButton}
         selected={selectedUsers}
         onDelete={() => deleteUsers(selectedUsers)}
         isDeleting={isDeleting}
         pluralsPath="usersAndGroups.users"
         disabled={!canManage}
       />
-      <MdDataTable
+      <DataTable
         dataKey="id"
         value={users}
         columns={columns}
-        lazy={false}
-        paginationOptions={{
-          ...paginationParams,
-          totalRecords: totalCount,
-        }}
+        pagination={pagination}
         sortField={paginationParams.sortField}
         sortOrder={paginationParams.sortOrder}
         selection={selectedUsers}
-        setSelectedItems={setSelectedUsers}
-        isLoading={isLoading}
+        onSelectionChange={(selection) => setSelectedUsers(selection as User[])}
+        loading={isLoading}
         onPage={onPageCallback}
-        onFilter={onFilterCallback}
-        onSort={onSortCallback}
-        actions={actionsTemplate}
+        onFilter={(event) =>
+          onFilterCallback(event as unknown as DataTableFilterParams)
+        }
+        onSort={(event) => onSortCallback(event as unknown as DataTableSortParams)}
+        rowActions={actionsTemplate}
         selectionMode="multiple"
         onRowClick={(user) => {
           navigate(userDetailPath(user.id), {

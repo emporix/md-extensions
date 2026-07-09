@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -61,21 +62,51 @@ export const GroupDataProvider = (props: Props) => {
   const [groupMembers, setGroupMembers] = useState<User[]>([])
   const [isLoadingData, setIsLoadingData] = useState(false)
   const isCustomerGroup = groupType === GroupUserTypes.CUSTOMER
+  const cancelledRef = useRef(false)
 
   useEffect(() => {
+    cancelledRef.current = false
     ;(async () => {
-      await syncGroup()
+      if (!groupId) return
+      try {
+        const loadedGroup = await makeCall(
+          () => getGroup(groupId),
+          setIsLoadingData
+        )
+        if (cancelledRef.current) return
+        if (isCustomerGroup && loadedGroup?.templates?.length > 0) {
+          loadedGroup.accessControls =
+            await getAccessControlsFromTemplates(loadedGroup)
+        }
+        if (cancelledRef.current) return
+        setGroup(loadedGroup)
+      } catch (e: unknown) {
+        if (cancelledRef.current) return
+        console.error(e)
+        navigate(listPath('groups'))
+        showError(
+          t('usersAndGroups.users.toasts.fetchUser.error'),
+          getApiErrorDetails(e)
+        )
+      }
     })()
+    return () => {
+      cancelledRef.current = true
+    }
   }, [groupId])
 
   const syncGroup = async () => {
     if (!groupId) return
     try {
-      const group = await makeCall(() => getGroup(groupId), setIsLoadingData)
-      if (isCustomerGroup && group?.templates?.length > 0) {
-        group.accessControls = await getAccessControlsFromTemplates(group)
+      const loadedGroup = await makeCall(
+        () => getGroup(groupId),
+        setIsLoadingData
+      )
+      if (isCustomerGroup && loadedGroup?.templates?.length > 0) {
+        loadedGroup.accessControls =
+          await getAccessControlsFromTemplates(loadedGroup)
       }
-      setGroup(group)
+      setGroup(loadedGroup)
     } catch (e: unknown) {
       console.error(e)
       navigate(listPath('groups'))

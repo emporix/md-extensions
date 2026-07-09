@@ -4,6 +4,7 @@ import {
   PrimaryButton,
   SecondaryButton,
 } from '@emporix/component-library'
+import styles from './ConfirmBox.module.scss'
 
 type ConfirmBoxProps = {
   readonly visible: boolean
@@ -33,9 +34,9 @@ const ConfirmBox = ({
 
   return (
     <Dialog visible={visible} onHide={onReject} header={t(title)}>
-      <div className="mb-4">{t(message)}</div>
+      <div className={styles.message}>{t(message)}</div>
       {children}
-      <div className="flex justify-content-end gap-2">
+      <div className={styles.actions}>
         <SecondaryButton onClick={onReject} disabled={loading}>
           {t(rejectLabel)}
         </SecondaryButton>
