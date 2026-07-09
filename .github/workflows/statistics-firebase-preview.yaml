@@ -58,10 +58,9 @@ jobs:
 
     steps:
       # management-dashboard's own firebase.json has no target for our site - borrow this repo's
-      - name: Checkout extension hosting config
+      - name: Checkout hosting config
         uses: actions/checkout@v4
         with:
-          path: extension-config
           sparse-checkout: |
             firebase.json
             .firebaserc
@@ -90,10 +89,11 @@ jobs:
           npm ci
           npm run build:dev
 
-      # overrides md's own firebase.json so this deploys to the extension's site, not management-dashboard-develop
-      - name: Move extension's hosting config into management-dashboard build
+      # so the deploy below targets our site instead of management-dashboard-develop
+      - name: Move management-dashboard build into place
         run: |
-          mv extension-config/firebase.json extension-config/.firebaserc md/
+          mkdir -p statistics
+          mv md/dist statistics/dist
 
       - name: Deploy management-dashboard preview
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -102,7 +102,6 @@ jobs:
           firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}"
           projectId: frontend-extensions-develop
           target: emporix-statistics-develop
-          channelId: "md-pr-${{ github.event.pull_request.number }}"
+          channelId: "md-statistics-${{ github.event.pull_request.number }}"
           expires: 5d
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
-          entryPoint: md
