@@ -124,4 +124,3 @@ and also from `RemoteComponent.tsx` file remove:
 import '/node_modules/primeflex/primeflex.css'
 import 'primeicons/primeicons.css'
 ```
-test
