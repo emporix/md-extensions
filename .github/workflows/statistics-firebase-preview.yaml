@@ -22,10 +22,6 @@ jobs:
       run:
         working-directory: ./statistics
 
-    strategy:
-      matrix:
-        node: [20.x]
-
     outputs:
       preview_url: ${{ steps.firebase-preview.outputs.details_url }}
 
@@ -35,7 +31,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 20.x
           cache: 'yarn'
           cache-dependency-path: ./statistics/yarn.lock
 
