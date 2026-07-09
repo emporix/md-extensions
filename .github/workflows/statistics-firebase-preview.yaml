@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   build_and_deploy_preview:
+    name: Deploy statistics extension preview
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -58,7 +59,7 @@ jobs:
 
     steps:
       # management-dashboard's own firebase.json has no target for our site - borrow this repo's
-      - name: Checkout hosting config
+      - name: Checkout statistics extension hosting config
         uses: actions/checkout@v4
         with:
           sparse-checkout: |
@@ -81,7 +82,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: md/package-lock.json
 
-      - name: Build management-dashboard against extension preview
+      - name: Build management-dashboard against statistics extension preview
         working-directory: md
         env:
           VITE_STATISTICS_URL: "${{ needs.build_and_deploy_preview.outputs.preview_url }}/assets/remoteEntry.js?v=1"
@@ -102,6 +103,6 @@ jobs:
           firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}"
           projectId: frontend-extensions-develop
           target: emporix-statistics-develop
-          channelId: "md-statistics-${{ github.event.pull_request.number }}"
+          channelId: "md-statistics-ext-${{ github.event.pull_request.number }}"
           expires: 5d
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
