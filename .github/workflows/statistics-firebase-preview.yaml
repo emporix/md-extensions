@@ -10,6 +10,10 @@ on:
     paths:
       - 'statistics/**'
 
+concurrency:
+  group: statistics-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   build_and_deploy_preview:
     runs-on: ubuntu-latest
@@ -20,6 +24,9 @@ jobs:
     strategy:
       matrix:
         node: [20.x]
+
+    outputs:
+      preview_url: ${{ steps.firebase-preview.outputs.details_url }}
 
     steps:
       - name: Checkout code
@@ -43,3 +50,59 @@ jobs:
           target: emporix-statistics-develop
           expires: 5d
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
+
+  md_preview:
+    name: Deploy management-dashboard preview
+    needs: build_and_deploy_preview
+    runs-on: ubuntu-latest
+
+    steps:
+      # management-dashboard's own firebase.json has no target for our site - borrow this repo's
+      - name: Checkout extension hosting config
+        uses: actions/checkout@v4
+        with:
+          path: extension-config
+          sparse-checkout: |
+            firebase.json
+            .firebaserc
+          sparse-checkout-cone-mode: false
+
+      - name: Checkout management-dashboard
+        uses: actions/checkout@v4
+        with:
+          repository: emporix/management-dashboard
+          ref: master
+          token: ${{ secrets.MD_EXT_GH_TOKEN }}
+          path: md
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: md/package-lock.json
+
+      - name: Build management-dashboard against extension preview
+        working-directory: md
+        env:
+          VITE_STATISTICS_URL: "${{ needs.build_and_deploy_preview.outputs.preview_url }}/assets/remoteEntry.js?v=1"
+        run: |
+          npm ci
+          npm run build:dev
+
+      # overrides md's own firebase.json so this deploys to the extension's site, not management-dashboard-develop
+      - name: Move extension's hosting config into management-dashboard build
+        run: |
+          mv extension-config/firebase.json extension-config/.firebaserc md/
+
+      - name: Deploy management-dashboard preview
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          firebaseToolsVersion: "12.9.1"
+          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}"
+          projectId: frontend-extensions-develop
+          target: emporix-statistics-develop
+          channelId: "md-pr-${{ github.event.pull_request.number }}"
+          expires: 5d
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          entryPoint: md
