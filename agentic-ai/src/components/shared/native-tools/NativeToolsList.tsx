@@ -140,9 +140,8 @@ export const NativeToolsList: React.FC<NativeToolsListProps> = ({
                           key={`${nativeTool.id}-${operation}`}
                           className="native-tool-config-chip"
                         >
-                          {operation}
+                          {t(`teams_operation_${operation}`, operation)}
                         </span>
-                      ))}
                   </div>
                 )}
               {toolInfo.type !== 'slack' && toolInfo.type !== 'teams' && (

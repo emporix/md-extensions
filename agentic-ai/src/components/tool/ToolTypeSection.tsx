@@ -28,7 +28,8 @@ export const ToolTypeSection: React.FC<ToolTypeSectionProps> = ({
   const { t } = useTranslation()
 
   const toolTypeOptions = TOOL_TYPE_OPTIONS.filter(
-    (option) => msTeamsEnabled || option.value !== 'teams'
+    (option) =>
+      msTeamsEnabled || option.value !== 'teams' || toolType === 'teams'
   ).map((option) => ({
     label: t(option.labelKey),
     value: option.value,
