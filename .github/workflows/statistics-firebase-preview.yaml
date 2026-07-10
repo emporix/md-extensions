@@ -55,7 +55,7 @@ jobs:
 
   md_preview:
     name: Deploy management-dashboard preview
-    needs: build_and_deploy_preview
+    needs: extension_preview
     runs-on: ubuntu-latest
 
     strategy:
@@ -78,6 +78,7 @@ jobs:
           repository: emporix/management-dashboard
           ref: master
           token: ${{ secrets.MD_EXT_GH_TOKEN }}
+          persist-credentials: false
           path: md
 
       - name: Setup Node
@@ -90,7 +91,7 @@ jobs:
       - name: Build management-dashboard against statistics extension preview
         working-directory: md
         env:
-          VITE_STATISTICS_URL: "${{ needs.build_and_deploy_preview.outputs.preview_url }}/assets/remoteEntry.js?v=1"
+          VITE_STATISTICS_URL: "${{ needs.extension_preview.outputs.preview_url }}/assets/remoteEntry.js?v=1"
         run: |
           npm ci
           npm run build:dev
