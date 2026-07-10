@@ -1,7 +1,12 @@
 import { AppState } from '../types/common'
 import { ApiClient } from './apiClient'
 
-export type ReindexJobStatus = 'FAILURE' | 'IN_PROGRESS' | 'PENDING' | 'PUBLISHED' | 'SUCCESS'
+export type ReindexJobStatus =
+  | 'FAILURE'
+  | 'IN_PROGRESS'
+  | 'PENDING'
+  | 'PUBLISHED'
+  | 'SUCCESS'
 
 export interface ReindexJobMetadata {
   createdAt: string
@@ -65,7 +70,10 @@ export const reindex = async (
 ): Promise<ReindexJob> => {
   try {
     const api = getApiClient(appState)
-    const body: ReindexRequest = { entityType, ...(rag !== undefined && { rag }) }
+    const body: ReindexRequest = {
+      entityType,
+      ...(rag !== undefined && { rag }),
+    }
     return await api.post<ReindexJob>(
       `/indexing/${appState.tenant}/reindex-jobs`,
       body

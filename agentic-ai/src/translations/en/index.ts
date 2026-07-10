@@ -164,6 +164,38 @@ const TRANSLATIONS_EN = {
   trigger_type_time: 'Time trigger',
   trigger_type_commerce: 'Commerce Event',
   trigger_type_slack: 'Slack',
+  trigger_type_teams: 'Microsoft Teams',
+  teams_default_inbound_agent: 'Default inbound agent',
+  teams_default_inbound_agent_tooltip:
+    'Optional. Agent that handles the first inbound Teams message on this team when no conversation exists yet. Saving assigns the Teams trigger and tool to that agent. Clear to disable cold inbound routing.',
+  teams_default_inbound_agent_hint:
+    'Leave empty to disable cold inbound routing.',
+  teams_default_inbound_agent_not_found:
+    'Selected default inbound agent was not found. Refresh and try again.',
+  conversations: 'Conversations',
+  conversation_name: 'Channel / Chat',
+  filter_by_conversation_name: 'Filter by channel / chat',
+  no_conversations_found_with_filters:
+    'No conversations found matching the filters',
+  conversations_tab_hint:
+    'Assignments are created when an agent collaborates in Teams or when someone first messages the bot. Click a row to open session logs.',
+  error_loading_conversations: 'Failed to load conversations',
+  loading_conversations: 'Loading conversations...',
+  not_available: 'N/A',
+  teams_allowed_operations: 'Allowed operations',
+  teams_allowed_operations_hint:
+    'Maximum operations this Teams tool may expose. Agents can further restrict the subset per attachment.',
+  teams_agent_allowed_operations: 'Allowed actions for this agent',
+  teams_agent_allowed_operations_hint:
+    'Choose which Teams actions this agent may call. Options are limited by the tool configuration.',
+  teams_team_config_conflict:
+    'Another Teams tool already uses this tenant and team combination. Only one tool is allowed per pair.',
+  teams_operation_sendMessage: 'Send message',
+  teams_operation_createChat: 'Create chat',
+  teams_operation_createChannel: 'Create channel',
+  teams_operation_inviteParticipants: 'Invite participants',
+  teams_operation_collaborateOnChannel: 'Collaborate on channel',
+  teams_operation_collaborateOnChat: 'Collaborate on chat',
   prompt: 'Prompt',
   llm_config: 'LLM Configuration',
   model: 'Model',
@@ -231,7 +263,8 @@ const TRANSLATIONS_EN = {
   reindex_triggered_successfully: 'Reindex triggered successfully!',
   reindex_completed_successfully: 'Reindex completed successfully!',
   reindex_job_failed: 'Reindex job failed.',
-  reindex_job_already_in_progress: 'A reindex job is already in progress for this entity type.',
+  reindex_job_already_in_progress:
+    'A reindex job is already in progress for this entity type.',
   error_triggering_reindex: 'Error triggering reindex',
   failed_to_trigger_reindex: 'Failed to trigger reindex',
   reindex_confirmation:
@@ -330,6 +363,10 @@ const TRANSLATIONS_EN = {
   select_token: 'Select token',
   loading_tokens: 'Loading tokens...',
   native_tools: 'Native Tools',
+  native_tool_chip_team: 'Team: {{teamId}}',
+  native_tool_chip_tenant: 'Tenant: {{tenantId}}',
+  native_tool_chip_bot_token: 'Bot Token: ••••••••',
+  native_tool_chip_generic: '{{type}} Tool',
   select_tools: 'Select Tools',
   select_tools_placeholder: 'Select tools',
   search_tools: 'Search tools',
@@ -476,6 +513,58 @@ const TRANSLATIONS_EN = {
   error_slack_installation: 'Error initiating Slack installation',
   failed_to_initiate_slack_installation:
     'Failed to initiate Slack installation',
+
+  // Microsoft Teams tool installation
+  install_teams: 'Install Microsoft Teams',
+  install_emporix_teams_ai: 'Install Emporix Microsoft Teams AI',
+  connect_teams: 'Connect Microsoft Teams',
+  teams_install_description:
+    'Set up Emporix AI in your Microsoft 365 tenant. A Teams admin must add the Emporix app to your tenant catalog first. Then grant Graph admin consent, install the app for users, and complete Settings.',
+  grant_teams_graph_consent: 'Grant Graph admin consent',
+  teams_graph_consent_tenant_hint:
+    'Customer Azure AD (Entra ID) tenant ID. Used for Graph admin consent and tenant-scoped Teams install links.',
+  teams_graph_consent_requires_tenant_id:
+    'Enter the Azure AD tenant ID before granting Graph admin consent.',
+  teams_graph_consent_url_missing:
+    'Graph admin consent is not configured on the AI service.',
+  teams_graph_consent_success:
+    'Graph admin consent granted. Complete Team ID and allowed operations on the Settings tab, then save.',
+  teams_graph_consent_error: 'Graph admin consent failed',
+  teams_graph_consent_unknown: 'Graph admin consent returned an unknown result',
+  teams_install_requires_tool_id:
+    'Set a Tool ID on the General tab before starting install steps. Microsoft redirects back to this tool editor after admin consent.',
+  teams_install_step_tenant_id:
+    'Enter the customer Azure AD tenant ID in the field above.',
+  teams_install_step_org_catalog:
+    'Teams admin: download the app package below, then upload it in Teams Admin Center → Teams apps → Manage apps. Set the app to Allowed and assign it via app permission policy if required. Only needed once per customer tenant.',
+  teams_install_step_graph_consent:
+    'Grant admin consent for the Emporix Graph app (required for outbound collaboration and group chat bot installation). Use Grant Graph admin consent below.',
+  teams_install_step_connect:
+    'Click Connect Microsoft Teams to open the install page in the customer tenant. If the link fails, confirm the app is in the tenant catalog and the tenant ID is correct.',
+  install_status_pending:
+    'Installation stays pending until the app is in your tenant catalog, a user has installed it, and the bot has received its first activity.',
+  teams_install_step_sideload:
+    'Fallback: upload the Emporix app package via Teams → Apps → Manage your apps → Upload a custom app (requires custom-app upload policy).',
+  teams_install_step_settings:
+    'After the bot responds in Teams, open the Settings tab: enter Team ID and Tenant ID, configure allowed operations, then save the tool.',
+  teams_install_state_id_hint:
+    'Install correlation ID: {{id}}. Share this with support if install binding does not complete automatically.',
+  open_teams_apps: 'Open Teams (web)',
+  download_teams_app_package: 'Download app package',
+  open_teams_admin_center: 'Open Teams Admin Center',
+  error_teams_installation: 'Error initiating Teams installation',
+  failed_to_initiate_teams_installation:
+    'Failed to initiate Teams installation',
+  tenant_id: 'Tenant ID (AAD)',
+  enter_tenant_id: 'Enter Azure AD tenant ID',
+  teams_team_id_hint:
+    'Teams team ID from bot install activity when the app is added to a team.',
+  teams_team_id_hint_immutable:
+    'Team ID cannot be changed after the tool is created.',
+  teams_tenant_id_hint:
+    'Azure AD tenant ID from bot install activity (channelData.tenant.id). Required to bind your Microsoft 365 tenant to this tool.',
+  teams_tenant_id_hint_immutable:
+    'Tenant ID cannot be changed after the tool is created.',
 
   // Commerce Events
   commerce_events: 'Commerce Events',

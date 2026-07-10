@@ -8,11 +8,13 @@ import { ToolRequiredMark } from './ToolRequiredMark'
 interface ToolTypeSectionProps {
   toolType: string
   isEditing: boolean
+  msTeamsEnabled: boolean
   onToolTypeChange: (value: string) => void
 }
 
 const TOOL_TYPE_OPTIONS = [
   { labelKey: 'slack', value: 'slack' },
+  { labelKey: 'microsoft_teams', value: 'teams' },
   { labelKey: 'rag_custom', value: 'rag_custom' },
   { labelKey: 'rag_emporix', value: 'rag_emporix' },
 ] as const
@@ -20,11 +22,14 @@ const TOOL_TYPE_OPTIONS = [
 export const ToolTypeSection: React.FC<ToolTypeSectionProps> = ({
   toolType,
   isEditing,
+  msTeamsEnabled,
   onToolTypeChange,
 }) => {
   const { t } = useTranslation()
 
-  const toolTypeOptions = TOOL_TYPE_OPTIONS.map((option) => ({
+  const toolTypeOptions = TOOL_TYPE_OPTIONS.filter(
+    (option) => msTeamsEnabled || option.value !== 'teams'
+  ).map((option) => ({
     label: t(option.labelKey),
     value: option.value,
   }))

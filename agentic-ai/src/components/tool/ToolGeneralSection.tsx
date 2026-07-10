@@ -12,6 +12,7 @@ interface ToolGeneralSectionProps {
   prompt?: string
   showPrompt?: boolean
   isEditing: boolean
+  msTeamsEnabled: boolean
   onFieldChange: (field: 'toolId' | 'toolName', value: string) => void
   onToolTypeChange: (value: string) => void
   onPromptChange?: (value: string) => void
@@ -24,6 +25,7 @@ export const ToolGeneralSection: React.FC<ToolGeneralSectionProps> = ({
   prompt = '',
   showPrompt = false,
   isEditing,
+  msTeamsEnabled,
   onFieldChange,
   onToolTypeChange,
   onPromptChange,
@@ -66,6 +68,7 @@ export const ToolGeneralSection: React.FC<ToolGeneralSectionProps> = ({
         <ToolTypeSection
           toolType={toolType}
           isEditing={isEditing}
+          msTeamsEnabled={msTeamsEnabled}
           onToolTypeChange={onToolTypeChange}
         />
       </div>

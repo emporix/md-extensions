@@ -11,11 +11,18 @@ import {
   formatDomainSectionTitle,
   getDomainSectionTags,
   getNativeToolSectionTags,
+  getNativeToolTags,
   getSelectedDomainTools,
   toggleCustomMcpServer,
   toggleDomainTool,
   toggleNativeTool,
 } from '../../../utils/agentToolsHelpers'
+import { AgentToolTypeTags } from '../../shared/AgentToolTypeTags'
+import {
+  getToolAllowedOperations,
+  toggleTeamsNativeTool,
+  updateTeamsNativeToolAllowedOperations,
+} from '../../../utils/teamsRoutingHelpers'
 
 interface ToolsSectionProps {
   mcpServers: McpServer[]
@@ -35,7 +42,10 @@ type ToolsAccordionSectionId = McpKey | 'native' | 'custom'
 interface ToolListItem {
   id: string
   label: string
+  description?: string
   disabled?: boolean
+  tags?: string[]
+  toolType?: string
 }
 
 interface ToolsAccordionSectionProps {
@@ -47,6 +57,15 @@ interface ToolsAccordionSectionProps {
   isExpanded: boolean
   isLoading?: boolean
   loadingLabel?: string
+  showItemTags?: boolean
+  renderItemRowSuffix?: (
+    item: ToolListItem,
+    isSelected: boolean
+  ) => React.ReactNode
+  renderSelectedItemExtension?: (
+    item: ToolListItem,
+    isSelected: boolean
+  ) => React.ReactNode
   onToggleExpand: (sectionId: ToolsAccordionSectionId) => void
   onToggleItem: (itemId: string, checked: boolean) => void
   onRemoveItem: (itemId: string) => void
@@ -61,6 +80,9 @@ const ToolsAccordionSection: React.FC<ToolsAccordionSectionProps> = ({
   isExpanded,
   isLoading = false,
   loadingLabel,
+  showItemTags = false,
+  renderItemRowSuffix,
+  renderSelectedItemExtension,
   onToggleExpand,
   onToggleItem,
   onRemoveItem,
@@ -143,27 +165,55 @@ const ToolsAccordionSection: React.FC<ToolsAccordionSectionProps> = ({
               </div>
             ) : (
               <div className="agent-detail-tools-scroll">
-                {availableItems.map((item) => (
-                  <label
-                    key={item.id}
-                    className={`agent-detail-tools-row${item.disabled ? ' agent-detail-tools-row--disabled' : ''}`}
-                    htmlFor={`agent-tool-${sectionId}-${item.id}`}
-                  >
-                    <Checkbox
-                      inputId={`agent-tool-${sectionId}-${item.id}`}
-                      checked={selectedItems.some(
-                        (selected) => selected.id === item.id
-                      )}
-                      disabled={item.disabled}
-                      onChange={(event) =>
-                        onToggleItem(item.id, event.checked ?? false)
-                      }
-                    />
-                    <span className="agent-detail-tools-row-label">
-                      {item.label}
-                    </span>
-                  </label>
-                ))}
+                {availableItems.map((item) => {
+                  const isSelected = selectedItems.some(
+                    (selected) => selected.id === item.id
+                  )
+                  const extension = renderSelectedItemExtension?.(
+                    item,
+                    isSelected
+                  )
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={`agent-detail-tools-item${item.disabled ? ' agent-detail-tools-item--disabled' : ''}`}
+                    >
+                      <label
+                        className={`agent-detail-tools-row${item.disabled ? ' agent-detail-tools-row--disabled' : ''}`}
+                        htmlFor={`agent-tool-${sectionId}-${item.id}`}
+                      >
+                        <Checkbox
+                          inputId={`agent-tool-${sectionId}-${item.id}`}
+                          checked={isSelected}
+                          disabled={item.disabled}
+                          onChange={(event) =>
+                            onToggleItem(item.id, event.checked ?? false)
+                          }
+                        />
+                        <span className="agent-detail-tools-row-label-wrap">
+                          <span className="agent-detail-tools-row-label">
+                            <span>{item.label}</span>
+                            {showItemTags && item.tags?.length ? (
+                              <AgentToolTypeTags tags={item.tags} />
+                            ) : null}
+                            {renderItemRowSuffix?.(item, isSelected)}
+                          </span>
+                          {item.description ? (
+                            <span className="agent-detail-tools-row-description">
+                              {item.description}
+                            </span>
+                          ) : null}
+                        </span>
+                      </label>
+                      {extension ? (
+                        <div className="agent-detail-tools-row-extension">
+                          {extension}
+                        </div>
+                      ) : null}
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
@@ -232,12 +282,48 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
 
   const handleNativeToolToggle = useCallback(
     (toolId: string, checked: boolean) => {
+      const tool = availableTools.find((item) => item.id === toolId)
+      const nextNativeTools =
+        tool?.type === 'teams'
+          ? toggleTeamsNativeTool(nativeTools, availableTools, toolId, checked)
+          : toggleNativeTool(nativeTools, toolId, checked)
+
+      onFieldChange('nativeTools', nextNativeTools)
+    },
+    [availableTools, nativeTools, onFieldChange]
+  )
+
+  const handleTeamsOperationToggle = useCallback(
+    (toolId: string, operation: string, checked: boolean) => {
+      const tool = availableTools.find((item) => item.id === toolId)
+      if (!tool || tool.type !== 'teams') {
+        return
+      }
+
+      const nativeTool = nativeTools.find((entry) => entry.id === toolId)
+      const allowedByTool = getToolAllowedOperations(tool)
+      const currentOps = nativeTool?.allowedOperations ?? allowedByTool
+
+      if (
+        !checked &&
+        currentOps.length <= 1 &&
+        currentOps.includes(operation)
+      ) {
+        return
+      }
+
       onFieldChange(
         'nativeTools',
-        toggleNativeTool(nativeTools, toolId, checked)
+        updateTeamsNativeToolAllowedOperations(
+          nativeTools,
+          toolId,
+          operation,
+          checked,
+          tool
+        )
       )
     },
-    [nativeTools, onFieldChange]
+    [availableTools, nativeTools, onFieldChange]
   )
 
   const handleCustomMcpToggle = useCallback(
@@ -345,6 +431,52 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
     }
   }, [searchQuery])
 
+  const renderTeamsNativeToolExtension = useCallback(
+    (item: ToolListItem, isSelected: boolean) => {
+      if (item.toolType !== 'teams' || !isSelected) {
+        return null
+      }
+
+      const tool = availableTools.find((entry) => entry.id === item.id)
+      const nativeTool = nativeTools.find((entry) => entry.id === item.id)
+      if (!tool) {
+        return null
+      }
+
+      const allowedByTool = getToolAllowedOperations(tool)
+      const selectedOperations = nativeTool?.allowedOperations ?? allowedByTool
+
+      return (
+        <div className="agent-detail-tools-nested-actions">
+          <span className="agent-detail-tools-nested-actions-title">
+            {t('teams_agent_allowed_operations')}
+          </span>
+          {allowedByTool.map((operation) => (
+            <label
+              key={`${item.id}-${operation}`}
+              className="agent-detail-tools-nested-action-row"
+              htmlFor={`agent-teams-op-${item.id}-${operation}`}
+            >
+              <Checkbox
+                inputId={`agent-teams-op-${item.id}-${operation}`}
+                checked={selectedOperations.includes(operation)}
+                onChange={(event) =>
+                  handleTeamsOperationToggle(
+                    item.id,
+                    operation,
+                    event.checked ?? false
+                  )
+                }
+              />
+              <span>{t(`teams_operation_${operation}`, operation)}</span>
+            </label>
+          ))}
+        </div>
+      )
+    },
+    [availableTools, handleTeamsOperationToggle, nativeTools, t]
+  )
+
   const domainSections = sortedDomains
     .map((domain) => {
       const selectedToolIds = getSelectedDomainTools(mcpServers, domain)
@@ -390,6 +522,8 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
   const nativeAllItems: ToolListItem[] = availableTools.map((tool) => ({
     id: tool.id,
     label: tool.name,
+    tags: getNativeToolTags(tool),
+    toolType: tool.type,
     disabled: tool.enabled === false,
   }))
   const nativeSelectedItems: ToolListItem[] = nativeTools
@@ -398,6 +532,8 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
       return {
         id: nativeTool.id,
         label: tool?.name ?? nativeTool.id,
+        tags: tool ? getNativeToolTags(tool) : undefined,
+        toolType: tool?.type,
       }
     })
     .filter((item) => item.id)
@@ -452,6 +588,8 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
             availableItems={nativeVisibleItems}
             isExpanded={expandedSections.has('native')}
             isLoading={toolsLoading}
+            showItemTags
+            renderSelectedItemExtension={renderTeamsNativeToolExtension}
             onToggleExpand={handleToggleSection}
             onToggleItem={handleNativeToolToggle}
             onRemoveItem={(toolId) => handleNativeToolToggle(toolId, false)}

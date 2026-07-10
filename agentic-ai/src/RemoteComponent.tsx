@@ -10,6 +10,7 @@ import JobDetailsPage from './components/log/JobDetailsPage'
 import { useTranslation } from 'react-i18next'
 import { useEffect } from 'react'
 import { HashRouter, Routes, Route, Navigate } from 'react-router'
+import TeamsInstallCallbackHandler from './components/tool/TeamsInstallCallbackHandler'
 import { AppState } from './types/common'
 import { ToastProvider } from './contexts/ToastContext'
 import { AppStateProvider } from './contexts/AppStateContext'
@@ -46,6 +47,7 @@ const RemoteComponent = ({
     <AppStateProvider appState={appState}>
       <ToastProvider>
         <HashRouter>
+          <TeamsInstallCallbackHandler />
           <Routes>
             <Route path="/agents" element={<AgentsView />} />
             <Route path="/agents/add" element={<AgentDetailPage />} />

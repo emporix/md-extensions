@@ -17,6 +17,22 @@ export const getDomainSectionTags = (domain: McpKey): string[] => [
   ...MCP_DOMAIN_TAGS[domain],
 ]
 
+export const getNativeToolTags = (tool: Pick<Tool, 'type'>): string[] => {
+  if (tool.type === 'slack') {
+    return ['Slack']
+  }
+  if (tool.type === 'teams') {
+    return ['Microsoft Teams']
+  }
+  if (tool.type === 'rag_emporix' || tool.type === 'rag_custom') {
+    return ['RAG Tools']
+  }
+  if (tool.type) {
+    return [formatTagLabel(tool.type.replace(/_/g, '-'))]
+  }
+  return []
+}
+
 export const getNativeToolSectionTags = (
   tools: Tool[],
   maxTags = 3
@@ -24,17 +40,7 @@ export const getNativeToolSectionTags = (
   const tags = new Set<string>()
 
   tools.forEach((tool) => {
-    if (tool.type === 'slack') {
-      tags.add('Slack')
-      return
-    }
-    if (tool.type === 'rag_emporix' || tool.type === 'rag_custom') {
-      tags.add('RAG Tools')
-      return
-    }
-    if (tool.type) {
-      tags.add(formatTagLabel(tool.type.replace(/_/g, '-')))
-    }
+    getNativeToolTags(tool).forEach((tag) => tags.add(tag))
   })
 
   return [...tags].sort((a, b) => a.localeCompare(b)).slice(0, maxTags)

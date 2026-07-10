@@ -19,6 +19,7 @@ import { TriggersSection } from './agent-config/TriggersSection'
 import { ToolsSection } from './agent-config/ToolsSection'
 import { ModelSection } from './agent-config/ModelSection'
 import { CollaborationSection } from './agent-config/CollaborationSection'
+import { ConversationsTab } from '../shared/ConversationsTab'
 import { useAgentConfig } from '../../hooks/useAgentConfig'
 import { useAgentToolsCatalog } from '../../hooks/useAgentToolsCatalog'
 import { useAgentTokensCatalog } from '../../hooks/useAgentTokensCatalog'
@@ -30,9 +31,10 @@ import {
   getLocalizedValue,
 } from '../../utils/agentHelpers'
 import { getCustomAgents } from '../../services/agentService'
+import { hasConversations } from '../../services/conversationsService'
 import type { AgentCommerceFilterDsl } from '../../utils/agentFilterDslHelpers'
 
-const TABS = [
+const BASE_TABS = [
   { key: 'general', labelKey: 'general' },
   { key: 'model', labelKey: 'model' },
   { key: 'triggers', labelKey: 'triggers_and_constraints' },
@@ -40,7 +42,7 @@ const TABS = [
   { key: 'collaboration', labelKey: 'collaboration' },
 ] as const
 
-type AgentDetailTab = (typeof TABS)[number]['key']
+type AgentDetailTab = (typeof BASE_TABS)[number]['key'] | 'conversations'
 
 const AgentDetailPage: React.FC = () => {
   const appState = useAppState()
@@ -55,6 +57,7 @@ const AgentDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<AgentDetailTab>('general')
+  const [showConversationsTab, setShowConversationsTab] = useState(false)
 
   useEffect(() => {
     if (isCreating) {
@@ -129,6 +132,51 @@ const AgentDetailPage: React.FC = () => {
     }
   }, [agentId, appState, isCreating, t])
 
+  useEffect(() => {
+    if (!appState || isCreating || !agentId?.trim()) {
+      setShowConversationsTab(false)
+      return
+    }
+
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const exists = await hasConversations(appState, { agentId })
+        if (!cancelled) {
+          setShowConversationsTab(exists)
+        }
+      } catch {
+        if (!cancelled) {
+          setShowConversationsTab(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [agentId, appState, isCreating])
+
+  const visibleTabs = useMemo(() => {
+    const tabs: Array<{ key: AgentDetailTab; labelKey: string }> = [
+      ...BASE_TABS,
+    ]
+    if (showConversationsTab) {
+      tabs.push({ key: 'conversations', labelKey: 'conversations' })
+    }
+    return tabs
+  }, [showConversationsTab])
+
+  useEffect(() => {
+    if (
+      activeTab === 'conversations' &&
+      !visibleTabs.some((tab) => tab.key === 'conversations')
+    ) {
+      setActiveTab('general')
+    }
+  }, [activeTab, visibleTabs])
+
   const {
     tools: catalogTools,
     mcpServers: catalogMcpServers,
@@ -172,6 +220,7 @@ const AgentDetailPage: React.FC = () => {
     handleCancelDisable,
   } = useAgentConfig({
     agent,
+    availableTools: catalogTools,
     onSave: handleSaveSuccess,
     onHide: handleNavigateBack,
   })
@@ -295,6 +344,22 @@ const AgentDetailPage: React.FC = () => {
       )
     }
 
+    if (activeTab === 'conversations') {
+      return (
+        <div className="agent-detail-tab-panel">
+          <h2 className="agent-detail-section-title">{t('conversations')}</h2>
+          <p className="tool-detail-section-description">
+            {t('conversations_tab_hint')}
+          </p>
+          <ConversationsTab
+            agents={availableAgents}
+            agentId={state.agentId}
+            enabled={!isCreating && !!agentId?.trim()}
+          />
+        </div>
+      )
+    }
+
     return null
   }
 
@@ -379,7 +444,7 @@ const AgentDetailPage: React.FC = () => {
 
         <div className="agent-detail-tab-bar-row">
           <nav className="agent-detail-tab-bar" aria-label={t('agent_tabs')}>
-            {TABS.map((tab) => (
+            {visibleTabs.map((tab) => (
               <button
                 key={tab.key}
                 type="button"

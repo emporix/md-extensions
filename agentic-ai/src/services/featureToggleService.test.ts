@@ -1,0 +1,66 @@
+import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { AppState } from '../types/common'
+
+const { mockGet } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+}))
+
+vi.mock('./apiClient', () => ({
+  ApiClient: class MockApiClient {
+    get = mockGet
+  },
+}))
+
+import {
+  getAgenticFeatureToggles,
+  isMsTeamsFeatureEnabled,
+  resetFeatureToggleCacheForTests,
+} from './featureToggleService'
+
+const appState: AppState = {
+  tenant: 'testtenant',
+  token: 'token',
+  language: 'en',
+  contentLanguage: 'en',
+}
+
+describe('featureToggleService', () => {
+  beforeEach(() => {
+    mockGet.mockReset()
+    resetFeatureToggleCacheForTests()
+  })
+
+  it('returns true when ms-teams toggle is enabled', async () => {
+    mockGet.mockResolvedValue({ isEnabled: true })
+
+    const result = await getAgenticFeatureToggles(appState)
+
+    expect(mockGet).toHaveBeenCalledWith(
+      '/feature-toggle/testtenant/features/ms-teams'
+    )
+    expect(result.msTeams).toBe(true)
+    expect(await isMsTeamsFeatureEnabled(appState)).toBe(true)
+  })
+
+  it('returns false when fetch fails', async () => {
+    mockGet.mockRejectedValue(new Error('not found'))
+
+    const result = await getAgenticFeatureToggles(appState)
+
+    expect(result.msTeams).toBe(false)
+    expect(await isMsTeamsFeatureEnabled(appState)).toBe(false)
+  })
+
+  it('deduplicates in-flight requests for same tenant and token', async () => {
+    mockGet.mockResolvedValue({ isEnabled: true })
+
+    const [first, second] = await Promise.all([
+      getAgenticFeatureToggles(appState),
+      getAgenticFeatureToggles(appState),
+    ])
+
+    expect(mockGet).toHaveBeenCalledTimes(1)
+    expect(first).toEqual(second)
+    expect(first.msTeams).toBe(true)
+  })
+})

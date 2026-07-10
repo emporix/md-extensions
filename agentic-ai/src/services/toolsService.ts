@@ -84,6 +84,47 @@ export const getSlackInstallationData = async (
   }
 }
 
+export const getTeamsInstallationData = async (
+  appState: AppState,
+  providerTenantId?: string,
+  toolId?: string,
+  toolPersisted?: boolean
+): Promise<{
+  id: string
+  appId: string
+  appInstallUrl: string
+  adminConsentUrl?: string | null
+}> => {
+  try {
+    const api = getApiClient(appState)
+    const queryParams = new URLSearchParams()
+    if (providerTenantId?.trim()) {
+      queryParams.set('providerTenantId', providerTenantId.trim())
+    }
+    if (toolId?.trim()) {
+      queryParams.set('toolId', toolId.trim())
+    }
+    if (toolPersisted) {
+      queryParams.set('toolPersisted', 'true')
+    }
+    const query = queryParams.toString() ? `?${queryParams.toString()}` : ''
+    return await api.get<{
+      id: string
+      appId: string
+      appInstallUrl: string
+      adminConsentUrl?: string | null
+    }>(
+      `/ai-service/${appState.tenant}/agentic/oauth/installations/teams${query}`
+    )
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : 'Failed to fetch Teams installation data'
+    throw new Error(errorMessage)
+  }
+}
+
 export const getTokens = async (
   appState: AppState
 ): Promise<Array<{ id: string; name: string }>> => {

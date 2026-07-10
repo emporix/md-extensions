@@ -10,6 +10,7 @@ export interface McpServer {
 
 export interface NativeTool {
   id: string
+  allowedOperations?: string[]
 }
 
 export interface AgentCollaboration {

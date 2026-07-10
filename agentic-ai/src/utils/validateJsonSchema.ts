@@ -27,7 +27,7 @@ const ROOT_SCHEMA_KEYWORDS = [
   '$schema',
 ] as const
 
-const ajv = new Ajv({ allErrors: true, strict: false })
+const ajv = new Ajv({ allErrors: true })
 
 const formatAjvError = (
   errors: ErrorObject[] | null | undefined
@@ -37,7 +37,7 @@ const formatAjvError = (
     return undefined
   }
 
-  const path = first.instancePath || first.schemaPath
+  const path = first.dataPath || first.schemaPath
   if (first.message) {
     return path ? `${path}: ${first.message}` : first.message
   }

@@ -120,9 +120,7 @@ export const RagEmporixToolSection: React.FC<RagEmporixToolSectionProps> = ({
             <InputNumber
               value={dimensionsValue}
               onChange={(event) => {
-                onEmbeddingDimensionsChange(
-                  event.value ?? null
-                )
+                onEmbeddingDimensionsChange(event.value ?? null)
               }}
               className={`w-full${isDimensionsInvalid ? ' p-invalid' : ''}`}
               placeholder={t('enter_dimensions')}
