@@ -224,7 +224,11 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
           emptyMessage={t('no_conversations_found_with_filters')}
           className="unified-logs-datatable conversations-datatable"
           onRowClick={(event) => handleRowClick(event.data as Conversation)}
-          rowClassName={() => 'conversations-datatable-row-clickable'}
+          rowClassName={(rowData) =>
+            (rowData as Conversation).sessionId?.trim()
+              ? 'conversations-datatable-row-clickable'
+              : ''
+          }
           sortMode="single"
           sortField={sortField}
           sortOrder={sortOrder}

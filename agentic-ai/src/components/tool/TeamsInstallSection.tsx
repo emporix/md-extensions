@@ -242,7 +242,9 @@ export const TeamsInstallSection: React.FC<TeamsInstallSectionProps> = ({
             type="button"
             onClick={handleTeamsInstallation}
             loading={teamsInstallLoading}
-            disabled={teamsInstallLoading}
+            disabled={
+              teamsInstallLoading || !providerTenantId.trim() || !toolId.trim()
+            }
             className="p-button-secondary tool-detail-slack-install-button"
             aria-label={t('connect_teams')}
           >
