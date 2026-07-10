@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import {
@@ -58,6 +58,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
   const [sortField, setSortField] = useState<string>('lastMessageAt')
   const [sortOrder, setSortOrder] = useState<1 | -1>(-1)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
+  const fetchStartedRef = useRef(false)
   const [conversationFilters, setConversationFilters] =
     useState<DataTableFilterMeta>({
       conversationName: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -152,7 +153,17 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
   }, [conversationFilters, updateFilters])
 
   useEffect(() => {
-    if (!loading) {
+    setHasLoadedOnce(false)
+    fetchStartedRef.current = false
+  }, [toolId, agentId, enabled])
+
+  useEffect(() => {
+    if (loading) {
+      fetchStartedRef.current = true
+      return
+    }
+
+    if (fetchStartedRef.current) {
       setHasLoadedOnce(true)
     }
   }, [loading])

@@ -51,7 +51,7 @@ describe('featureToggleService', () => {
     expect(await isMsTeamsFeatureEnabled(appState)).toBe(false)
   })
 
-  it('deduplicates in-flight requests for same tenant and token', async () => {
+  it('deduplicates in-flight requests for the same tenant', async () => {
     mockGet.mockResolvedValue({ isEnabled: true })
 
     const [first, second] = await Promise.all([
@@ -62,5 +62,18 @@ describe('featureToggleService', () => {
     expect(mockGet).toHaveBeenCalledTimes(1)
     expect(first).toEqual(second)
     expect(first.msTeams).toBe(true)
+  })
+
+  it('reuses cached toggles for the same tenant with a different token', async () => {
+    mockGet.mockResolvedValue({ isEnabled: true })
+
+    await getAgenticFeatureToggles(appState)
+    const result = await getAgenticFeatureToggles({
+      ...appState,
+      token: 'rotated-token',
+    })
+
+    expect(mockGet).toHaveBeenCalledTimes(1)
+    expect(result.msTeams).toBe(true)
   })
 })

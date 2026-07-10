@@ -11,8 +11,7 @@ export interface AgenticFeatureToggles {
 
 const MS_TEAMS_FEATURE = 'ms-teams'
 
-const toggleCacheKey = (appState: AppState): string =>
-  `${appState.tenant}::${appState.token}`
+const toggleCacheKey = (appState: AppState): string => appState.tenant
 
 const resolvedCache = new Map<string, AgenticFeatureToggles>()
 const inFlight = new Map<string, Promise<AgenticFeatureToggles>>()

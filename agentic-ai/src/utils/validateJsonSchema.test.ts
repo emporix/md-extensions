@@ -57,4 +57,15 @@ describe('validateAgentOutputJsonSchema', () => {
     expect(result.errorKey).toBe('output_format_invalid_json_schema')
     expect(result.detail).toBeTruthy()
   })
+
+  it('accepts schemas with unknown keywords without throwing', () => {
+    const result = validateAgentOutputJsonSchema(
+      JSON.stringify({
+        type: 'object',
+        'x-custom-keyword': true,
+      })
+    )
+
+    expect(result.valid).toBe(true)
+  })
 })
