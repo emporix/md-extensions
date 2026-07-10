@@ -142,6 +142,7 @@ export const NativeToolsList: React.FC<NativeToolsListProps> = ({
                         >
                           {t(`teams_operation_${operation}`, operation)}
                         </span>
+                      ))}
                   </div>
                 )}
               {toolInfo.type !== 'slack' && toolInfo.type !== 'teams' && (
