@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { ColumnProps } from 'primereact/column'
+import type { DataTableColumnProps } from '@emporix/component-library'
 import { FilterMatchMode } from 'primereact/api'
 import { useTranslation } from 'react-i18next'
 import { AccessControlDomainGroup } from '../models/AccessControl.model'
@@ -9,7 +9,7 @@ export const TABLE_COLUMNS_PATH = 'usersAndGroups.groups.tables.accessControls'
 const useDomainsColumns = () => {
   const { i18n, t } = useTranslation()
 
-  const columns: ColumnProps[] = useMemo(() => {
+  const columns: DataTableColumnProps[] = useMemo(() => {
     return [
       {
         columnKey: 'expander',

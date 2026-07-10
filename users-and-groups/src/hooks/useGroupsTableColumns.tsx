@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { ColumnProps } from 'primereact/column'
+import type { DataTableColumnProps } from '@emporix/component-library'
 import { FilterMatchMode } from 'primereact/api'
 import { useTranslation } from 'react-i18next'
 import { Group } from '../models/Groups.model'
@@ -11,7 +11,7 @@ const useGroupsTableColumns = () => {
   const { i18n, t } = useTranslation()
   const { getContentLangValue } = useLocalizedValue()
 
-  const columns: ColumnProps[] = useMemo(() => {
+  const columns: DataTableColumnProps[] = useMemo(() => {
     return [
       {
         columnKey: 'name',

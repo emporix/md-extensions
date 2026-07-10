@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { ColumnProps } from 'primereact/column'
+import type { DataTableColumnProps } from '@emporix/component-library'
 import { FilterMatchMode } from 'primereact/api'
 import { User } from '../models/User.model'
 import { DotIndicator } from '../components/shared/DotIndicator'
@@ -24,7 +24,7 @@ const useUsersTableColumns = () => {
     ]
   }, [t])
 
-  const customerColumns: ColumnProps[] = useMemo(() => {
+  const customerColumns: DataTableColumnProps[] = useMemo(() => {
     return [
       {
         columnKey: 'firstName',
@@ -78,7 +78,7 @@ const useUsersTableColumns = () => {
     ]
   }, [i18n.language])
 
-  const columns: ColumnProps[] = useMemo(() => {
+  const columns: DataTableColumnProps[] = useMemo(() => {
     return [
       {
         columnKey: 'firstName',

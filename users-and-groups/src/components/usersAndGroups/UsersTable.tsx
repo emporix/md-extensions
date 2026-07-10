@@ -133,6 +133,7 @@ const UsersTable = () => {
         value={users}
         columns={columns}
         pagination={pagination}
+        lazy={false}
         sortField={paginationParams.sortField}
         sortOrder={paginationParams.sortOrder}
         selection={selectedUsers}

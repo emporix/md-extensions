@@ -10,7 +10,7 @@ import { useSearchParams } from 'react-router'
 import { Metadata } from '../models/Metadata.model'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedValue } from './useLocalizedValue'
-import { ColumnProps } from 'primereact/column'
+import type { DataTableColumnProps } from '@emporix/component-library'
 import { FilterMatchMode } from 'primereact/api'
 
 export type PaginationProps = {
@@ -190,7 +190,7 @@ export default function usePagination(
     }, { replace: true })
   }, [paginationParams, withQuery])
 
-  const setFilters = (columns: ColumnProps[]) => {
+  const setFilters = (columns: DataTableColumnProps[]) => {
     const filters: {
       [key: string]: {
         value: string | null

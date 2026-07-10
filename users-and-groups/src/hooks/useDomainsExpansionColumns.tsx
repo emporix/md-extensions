@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { ColumnProps } from 'primereact/column'
+import type { DataTableColumnProps } from '@emporix/component-library'
 import { useTranslation } from 'react-i18next'
 import { AccessControl } from '../models/Permissions.model'
 import { useLocalizedValue } from '../hooks/useLocalizedValue'
@@ -13,7 +13,7 @@ const useAccessControlsColumns = () => {
   const { i18n, t } = useTranslation()
   const { getUiLangValue } = useLocalizedValue()
 
-  const columns: ColumnProps[] = useMemo(() => {
+  const columns: DataTableColumnProps[] = useMemo(() => {
     return [
       {
         columnKey: 'gapStart',
