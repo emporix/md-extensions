@@ -27,11 +27,12 @@ const ROOT_SCHEMA_KEYWORDS = [
   '$schema',
 ] as const
 
-const ajv = new Ajv({
+const ajvOptions = {
   allErrors: true,
-  strictDefaults: false,
-  strictKeywords: false,
-})
+  strict: false,
+} as unknown as ConstructorParameters<typeof Ajv>[0]
+
+const ajv = new Ajv(ajvOptions)
 
 const getAjvErrorPath = (error: ErrorObject): string | undefined => {
   const pathError = error as ErrorObject & {
