@@ -213,6 +213,45 @@
   margin-top: var(--space-xs);
 }
 
+.tool-detail-teams-install-team-id-guide {
+  margin: 0 0 var(--space-md);
+}
+
+.tool-detail-teams-install-team-id-guide-title {
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--text-body-primary, inherit);
+}
+
+.tool-detail-teams-install-team-id-guide-method {
+  margin-bottom: var(--space-xs);
+  font-weight: var(--font-weight-medium, 500);
+}
+
+.tool-detail-teams-install-substeps {
+  margin: 0 0 var(--space-sm);
+  padding-left: var(--space-lg);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  color: var(--text-body-secondary);
+}
+
+.tool-detail-teams-install-substeps li + li {
+  margin-top: var(--space-xs);
+}
+
+.tool-detail-teams-install-team-id-example code {
+  display: block;
+  margin-top: var(--space-xs);
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  background: var(--surface-secondary, #f3f4f6);
+  font-family: var(--font-family-mono, monospace);
+  font-size: var(--font-size-xs, 0.75rem);
+  line-height: 1.4;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
 .tool-detail-teams-install-actions {
   display: flex;
   flex-wrap: wrap;

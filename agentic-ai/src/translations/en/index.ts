@@ -528,7 +528,7 @@ const TRANSLATIONS_EN = {
   teams_graph_consent_url_missing:
     'Graph admin consent is not configured on the AI service.',
   teams_graph_consent_success:
-    'Graph admin consent granted. Complete Team ID and allowed operations on the Settings tab, then save.',
+    'Graph admin consent granted. Find your Team ID (see install steps on the General tab), complete Settings, then save.',
   teams_graph_consent_error: 'Graph admin consent failed',
   teams_graph_consent_unknown: 'Graph admin consent returned an unknown result',
   teams_install_requires_tool_id:
@@ -540,15 +540,34 @@ const TRANSLATIONS_EN = {
   teams_install_step_graph_consent:
     'Grant admin consent for the Emporix Graph app (required for outbound collaboration and group chat bot installation). Use Grant Graph admin consent below.',
   teams_install_step_connect:
-    'Click Connect Microsoft Teams to open the install page in the customer tenant. If the link fails, confirm the app is in the tenant catalog and the tenant ID is correct.',
+    'Click Connect Microsoft Teams to open the install page in the customer tenant. When installing, add the app to a team (not personal use only). If the link fails, confirm the app is in the tenant catalog and the tenant ID is correct.',
   install_status_pending:
     'Installation stays pending until the app is in your tenant catalog, a user has installed it, and the bot has received its first activity.',
   teams_install_step_sideload:
     'Fallback: upload the Emporix app package via Teams → Apps → Manage your apps → Upload a custom app (requires custom-app upload policy).',
   teams_install_step_settings:
-    'After the bot responds in Teams, open the Settings tab: enter Team ID and Tenant ID, configure allowed operations, then save the tool.',
+    'Open the Settings tab: paste the Team ID (see How to find Team ID below), confirm Tenant ID, configure allowed operations, then save. Team ID cannot be changed after the first save.',
+  teams_install_how_to_find_team_id: 'How to find Team ID',
+  teams_install_team_id_intro:
+    'Team ID is the Microsoft 365 Group ID (GUID) of the target Teams team—the same value as groupId in a Teams team link.',
+  teams_install_team_id_method_teams_app_title: 'From Microsoft Teams',
+  teams_install_team_id_method_teams_app_1:
+    'Open Teams and select the target team in the sidebar.',
+  teams_install_team_id_method_teams_app_2:
+    'Click ⋯ next to the team name, then choose Get link to team.',
+  teams_install_team_id_method_teams_app_3:
+    'Copy the link, paste it into a text editor, and copy the groupId query parameter value.',
+  teams_install_team_id_method_admin_title: 'From Teams Admin Center',
+  teams_install_team_id_method_admin_1:
+    'Open Teams Admin Center → Teams → Manage teams.',
+  teams_install_team_id_method_admin_2:
+    'Select the target team and copy its Group ID (or export the team list).',
+  teams_install_team_id_example:
+    'Example: …?groupId=0efcc002-6001-4a21-991b-8ba10bac0612&tenantId=… — paste the groupId value as Team ID.',
+  teams_install_team_id_team_scope_warning:
+    'The app must be added to a team. Personal-only installation has no Team ID.',
   teams_install_state_id_hint:
-    'Install correlation ID: {{id}}. Share this with support if install binding does not complete automatically.',
+    'Install correlation ID: {{id}}. Share this with support if you need help with installation.',
   open_teams_apps: 'Open Teams (web)',
   download_teams_app_package: 'Download app package',
   open_teams_admin_center: 'Open Teams Admin Center',
@@ -558,7 +577,7 @@ const TRANSLATIONS_EN = {
   tenant_id: 'Tenant ID (AAD)',
   enter_tenant_id: 'Enter Azure AD tenant ID',
   teams_team_id_hint:
-    'Teams team ID from bot install activity when the app is added to a team.',
+    'Microsoft 365 Group ID (GUID) of the target Teams team. Copy groupId from a team link or Group ID from Teams Admin Center (see General tab install steps). Verify before saving—Team ID cannot be changed later.',
   teams_team_id_hint_immutable:
     'Team ID cannot be changed after the tool is created.',
   teams_tenant_id_hint:
