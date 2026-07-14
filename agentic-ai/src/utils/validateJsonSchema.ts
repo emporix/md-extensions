@@ -98,8 +98,12 @@ export const validateAgentOutputJsonSchema = (
         detail: formatAjvError(ajv.errors),
       }
     }
-  } catch {
-    return { valid: false, errorKey: 'output_format_invalid_json_schema' }
+  } catch (err) {
+    return {
+      valid: false,
+      errorKey: 'output_format_invalid_json_schema',
+      detail: err instanceof Error ? err.message : String(err),
+    }
   }
 
   return { valid: true }

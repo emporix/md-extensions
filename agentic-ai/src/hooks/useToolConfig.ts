@@ -142,7 +142,7 @@ export const useToolConfig = ({
     return () => {
       cancelled = true
     }
-  }, [appState, state.toolType, state.toolId])
+  }, [appState, state.toolType])
 
   const loadAvailableTokens = useCallback(async () => {
     try {

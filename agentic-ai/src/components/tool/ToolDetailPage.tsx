@@ -251,7 +251,7 @@ const ToolDetailPage: React.FC = () => {
     return () => {
       cancelled = true
     }
-  }, [appState, state.toolType, state.toolId])
+  }, [appState, state.toolType])
 
   useEffect(() => {
     if (
