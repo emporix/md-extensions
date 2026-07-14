@@ -11,6 +11,7 @@ import {
   areRagEmporixFilterFieldsValid,
   isValidRagFieldKey,
 } from './ragEmporixToolHelpers'
+import { DEFAULT_TEAMS_ALLOWED_OPERATIONS } from './teamsRoutingHelpers'
 
 export const MIXINS_PREFIX = 'mixins.'
 
@@ -75,9 +76,7 @@ export const validateModelAndDimensions = (
 ): boolean => {
   const dimensions = embeddingConfig.dimensions ?? 0
   return (
-    !!embeddingConfig.model?.trim() &&
-    dimensions >= 128 &&
-    dimensions <= 4096
+    !!embeddingConfig.model?.trim() && dimensions >= 128 && dimensions <= 4096
   )
 }
 
@@ -104,6 +103,14 @@ export const isToolFormValid = ({
     case 'slack':
       return (
         !!config.teamId?.trim() && (!isCreating || !!config.botToken?.trim())
+      )
+
+    case 'teams':
+      return (
+        !!config.teamId?.trim() &&
+        !!config.tenantId?.trim() &&
+        (config.allowedOperations?.length ??
+          DEFAULT_TEAMS_ALLOWED_OPERATIONS.length) > 0
       )
 
     case 'rag_custom': {

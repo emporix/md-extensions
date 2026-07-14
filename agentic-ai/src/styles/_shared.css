@@ -1012,6 +1012,18 @@ h1 .details-title-with-back {
   text-align: center;
 }
 
+.conversations-datatable-row-clickable {
+  cursor: pointer;
+}
+
+.conversations-datatable {
+  width: 100%;
+}
+
+.conversations-datatable-row-clickable:hover {
+  background: var(--bg-hover);
+}
+
 .state-loading p,
 .state-empty p {
   margin-top: var(--space-lg);

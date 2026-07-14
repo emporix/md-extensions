@@ -62,6 +62,9 @@ export interface RagEmporixNativeToolConfig {
 
 export interface ToolConfig {
   teamId?: string
+  tenantId?: string
+  defaultInboundAgentId?: string
+  allowedOperations?: string[]
   botToken?: string
   prompt?: string
   maxResults?: number

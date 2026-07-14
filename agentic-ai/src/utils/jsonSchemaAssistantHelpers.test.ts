@@ -40,8 +40,7 @@ describe('extractJsonSchemaFromAgentMessage', () => {
   })
 
   it('unwraps double-encoded JSON strings', () => {
-    const inner =
-      '{"type":"object","properties":{"answer":{"type":"string"}}}'
+    const inner = '{"type":"object","properties":{"answer":{"type":"string"}}}'
     const result = extractJsonSchemaFromAgentMessage(JSON.stringify(inner))
 
     expect(result).toBe(JSON.stringify(JSON.parse(inner), null, 2))

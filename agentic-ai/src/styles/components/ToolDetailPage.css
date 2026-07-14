@@ -201,6 +201,36 @@
   color: var(--text-body-secondary);
 }
 
+.tool-detail-teams-install-steps {
+  margin: var(--space-sm) 0 var(--space-md);
+  padding-left: var(--space-lg);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  color: var(--text-body-secondary);
+}
+
+.tool-detail-teams-install-steps li + li {
+  margin-top: var(--space-xs);
+}
+
+.tool-detail-teams-install-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.tool-detail-teams-install-actions .p-button-secondary {
+  height: 32px;
+}
+
+.tool-detail-teams-install-action-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
 .tool-detail-section-description {
   margin: 0 0 var(--space-md);
   font-size: var(--font-size-sm);

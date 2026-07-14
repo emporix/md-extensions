@@ -27,7 +27,21 @@ const ROOT_SCHEMA_KEYWORDS = [
   '$schema',
 ] as const
 
-const ajv = new Ajv({ allErrors: true, strict: false })
+const ajvOptions = {
+  allErrors: true,
+  strict: false,
+} as unknown as ConstructorParameters<typeof Ajv>[0]
+
+const ajv = new Ajv(ajvOptions)
+
+const getAjvErrorPath = (error: ErrorObject): string | undefined => {
+  const pathError = error as ErrorObject & {
+    instancePath?: string
+    dataPath?: string
+  }
+
+  return pathError.instancePath || pathError.dataPath || error.schemaPath
+}
 
 const formatAjvError = (
   errors: ErrorObject[] | null | undefined
@@ -37,7 +51,7 @@ const formatAjvError = (
     return undefined
   }
 
-  const path = first.instancePath || first.schemaPath
+  const path = getAjvErrorPath(first)
   if (first.message) {
     return path ? `${path}: ${first.message}` : first.message
   }
@@ -76,11 +90,19 @@ export const validateAgentOutputJsonSchema = (
     return { valid: false, errorKey: 'output_format_invalid_json_schema' }
   }
 
-  if (!ajv.validateSchema(schema)) {
+  try {
+    if (!ajv.validateSchema(schema)) {
+      return {
+        valid: false,
+        errorKey: 'output_format_invalid_json_schema',
+        detail: formatAjvError(ajv.errors),
+      }
+    }
+  } catch (err) {
     return {
       valid: false,
       errorKey: 'output_format_invalid_json_schema',
-      detail: formatAjvError(ajv.errors),
+      detail: err instanceof Error ? err.message : String(err),
     }
   }
 

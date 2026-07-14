@@ -1,29 +1,47 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation, useNavigate, useParams } from 'react-router'
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router'
 import { Button } from 'primereact/button'
 import { Message } from 'primereact/message'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { Tool } from '../../types/Tool'
 import { useAppState } from '../../contexts/AppStateContext'
 import { getTools } from '../../services/toolsService'
+import { getCustomAgents } from '../../services/agentService'
+import { hasConversations } from '../../services/conversationsService'
+import { CustomAgent } from '../../types/Agent'
 import { createEmptyTool } from '../../utils/toolHelpers'
+import { countTeamsToolsForTeam } from '../../utils/teamsRoutingHelpers'
 import { useToolConfig } from '../../hooks/useToolConfig'
+import { useFeatureToggles } from '../../hooks/useFeatureToggles'
 import { ToolGeneralSection } from './ToolGeneralSection'
 import { ToolDetailSection } from './ToolDetailSection'
 import { DetailStatusDot } from '../shared/DetailStatusDot'
 import { SlackToolSection } from './SlackToolSection'
 import { SlackInstallSection } from './SlackInstallSection'
+import { TeamsToolSection } from './TeamsToolSection'
+import { TeamsInstallSection } from './TeamsInstallSection'
 import { RagCustomResultsSection } from './RagCustomResultsSection'
 import { RagCustomDatabaseSection } from './RagCustomDatabaseSection'
 import { RagCustomEmbeddingSection } from './RagCustomEmbeddingSection'
 import { RagEmporixToolSection } from './RagEmporixToolSection'
 import { RagEmporixIndexedFieldsSection } from './RagEmporixIndexedFieldsSection'
 import { RagFilterFieldsSection } from './RagFilterFieldsSection'
+import { useToast } from '../../contexts/ToastContext'
+import { TeamsGraphConsentCallback } from '../../utils/teamsInstallCallback'
+import { ConversationsTab } from '../shared/ConversationsTab'
 
-type ToolDetailTab = 'general' | 'settings'
+type ToolDetailTab = 'general' | 'settings' | 'conversations'
 
-const TABS: Array<{ key: ToolDetailTab; labelKey: string }> = [
+const BASE_TABS: Array<{
+  key: Exclude<ToolDetailTab, 'conversations'>
+  labelKey: string
+}> = [
   { key: 'general', labelKey: 'general' },
   { key: 'settings', labelKey: 'settings' },
 ]
@@ -33,13 +51,19 @@ const ToolDetailPage: React.FC = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { showSuccess, showError } = useToast()
   const { toolId } = useParams<{ toolId: string }>()
   const isCreating = location.pathname.endsWith('/add')
+  const teamsConsentHandledRef = useRef(false)
 
   const [tool, setTool] = useState<Tool | null>(null)
+  const [availableAgents, setAvailableAgents] = useState<CustomAgent[]>([])
+  const [allTools, setAllTools] = useState<Tool[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<ToolDetailTab>('general')
+  const [showConversationsTab, setShowConversationsTab] = useState(false)
 
   useEffect(() => {
     if (isCreating) {
@@ -94,9 +118,16 @@ const ToolDetailPage: React.FC = () => {
     navigate('/tools')
   }, [navigate])
 
-  const handleSaveSuccess = useCallback(() => {
-    navigate('/tools')
-  }, [navigate])
+  const handleSaveSuccess = useCallback(
+    (savedToolId?: string, savedToolType?: string) => {
+      if (isCreating && savedToolType === 'teams' && savedToolId?.trim()) {
+        navigate(`/tools/${savedToolId.trim()}/edit`, { replace: true })
+        return
+      }
+      navigate('/tools')
+    },
+    [isCreating, navigate]
+  )
 
   const {
     state,
@@ -108,6 +139,7 @@ const ToolDetailPage: React.FC = () => {
     ragEmporixEntityTypeOptions,
     updateField,
     updateConfig,
+    updateAllowedOperations,
     updateRagEmporixEntityType,
     updateNestedConfig,
     updateDeeplyNestedConfig,
@@ -122,11 +154,165 @@ const ToolDetailPage: React.FC = () => {
     selectFilterFieldKey,
     handleSave,
     isFormValid,
+    applyTeamsGraphConsent,
+    restoreTeamsInstallDraft,
+    loadTeamsInstallDraft,
   } = useToolConfig({
     tool,
     isCreating,
     onSave: handleSaveSuccess,
+    onAgentsUpdated: setAvailableAgents,
   })
+
+  const { toggles } = useFeatureToggles()
+
+  useEffect(() => {
+    if (teamsConsentHandledRef.current) {
+      return
+    }
+
+    const consentStatus = searchParams.get('teamsGraphConsent')
+    if (!consentStatus) {
+      return
+    }
+
+    teamsConsentHandledRef.current = true
+
+    const callback: TeamsGraphConsentCallback = {
+      status:
+        consentStatus === 'success' || consentStatus === 'error'
+          ? consentStatus
+          : 'unknown',
+      providerTenantId: searchParams.get('providerTenantId') ?? undefined,
+      state: searchParams.get('state') ?? undefined,
+      error: searchParams.get('error') ?? undefined,
+      errorDescription: searchParams.get('errorDescription') ?? undefined,
+    }
+
+    const draft = loadTeamsInstallDraft(callback.state)
+    if (draft && (isCreating || location.pathname.endsWith('/add'))) {
+      restoreTeamsInstallDraft(draft)
+    }
+
+    if (callback.status === 'success') {
+      applyTeamsGraphConsent(callback)
+      showSuccess(t('teams_graph_consent_success'))
+      setActiveTab('settings')
+    } else if (callback.status === 'error') {
+      applyTeamsGraphConsent(callback)
+      showError(
+        callback.errorDescription?.trim()
+          ? `${t('teams_graph_consent_error')}: ${callback.errorDescription}`
+          : t('teams_graph_consent_error')
+      )
+    } else {
+      showError(t('teams_graph_consent_unknown'))
+    }
+
+    setSearchParams({}, { replace: true })
+  }, [
+    applyTeamsGraphConsent,
+    isCreating,
+    loadTeamsInstallDraft,
+    location.pathname,
+    restoreTeamsInstallDraft,
+    searchParams,
+    setSearchParams,
+    showError,
+    showSuccess,
+    t,
+  ])
+
+  useEffect(() => {
+    if (state.toolType !== 'teams' || !appState) {
+      return
+    }
+
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const [agents, tools] = await Promise.all([
+          getCustomAgents(appState),
+          getTools(appState),
+        ])
+        if (!cancelled) {
+          setAvailableAgents(agents)
+          setAllTools(tools)
+        }
+      } catch {
+        if (!cancelled) {
+          setAvailableAgents([])
+          setAllTools([])
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [appState, state.toolType])
+
+  useEffect(() => {
+    if (
+      state.toolType !== 'teams' ||
+      !appState ||
+      !state.toolId.trim() ||
+      isCreating
+    ) {
+      setShowConversationsTab(false)
+      return
+    }
+
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const exists = await hasConversations(appState, {
+          toolId: state.toolId,
+        })
+        if (!cancelled) {
+          setShowConversationsTab(exists)
+        }
+      } catch {
+        if (!cancelled) {
+          setShowConversationsTab(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [appState, isCreating, state.toolId, state.toolType])
+
+  const visibleTabs = useMemo(() => {
+    const tabs: Array<{ key: ToolDetailTab; labelKey: string }> = [...BASE_TABS]
+    if (showConversationsTab) {
+      tabs.push({ key: 'conversations', labelKey: 'conversations' })
+    }
+    return tabs
+  }, [showConversationsTab])
+
+  useEffect(() => {
+    if (
+      activeTab === 'conversations' &&
+      !visibleTabs.some((tab) => tab.key === 'conversations')
+    ) {
+      setActiveTab('general')
+    }
+  }, [activeTab, visibleTabs])
+
+  const teamConfigConflict =
+    state.toolType === 'teams' &&
+    !!state.config.teamId?.trim() &&
+    !!state.config.tenantId?.trim() &&
+    countTeamsToolsForTeam(
+      allTools,
+      state.config.teamId,
+      state.config.tenantId,
+      state.toolId
+    ) > 0
 
   const isEditing = !isCreating && !!tool?.id
   const showPrompt =
@@ -148,6 +334,27 @@ const ToolDetailPage: React.FC = () => {
             isCreating={isCreating}
             onConfigChange={updateConfig}
           />
+        )
+      case 'teams':
+        return (
+          <>
+            {teamConfigConflict ? (
+              <div className="form-field">
+                <Message
+                  severity="error"
+                  className="w-full"
+                  text={t('teams_team_config_conflict')}
+                />
+              </div>
+            ) : null}
+            <TeamsToolSection
+              config={state.config}
+              availableAgents={availableAgents}
+              isEditing={isEditing}
+              onConfigChange={updateConfig}
+              onAllowedOperationsChange={updateAllowedOperations}
+            />
+          </>
         )
       case 'rag_emporix':
         return (
@@ -176,6 +383,27 @@ const ToolDetailPage: React.FC = () => {
   }
 
   const renderTabContent = () => {
+    if (activeTab === 'conversations') {
+      return (
+        <div className="tool-detail-tab-panel">
+          <ToolDetailSection titleKey="conversations">
+            <p className="tool-detail-section-description">
+              {t('conversations_tab_hint')}
+            </p>
+            <ConversationsTab
+              agents={availableAgents}
+              toolId={state.toolId}
+              enabled={
+                state.toolType === 'teams' &&
+                !isCreating &&
+                !!state.toolId.trim()
+              }
+            />
+          </ToolDetailSection>
+        </div>
+      )
+    }
+
     if (activeTab === 'general') {
       return (
         <div className="tool-detail-tab-panel">
@@ -187,6 +415,7 @@ const ToolDetailPage: React.FC = () => {
               prompt={state.config.prompt ?? ''}
               showPrompt={showPrompt}
               isEditing={isEditing}
+              msTeamsEnabled={toggles.msTeams}
               onFieldChange={updateField}
               onToolTypeChange={(value) => updateField('toolType', value)}
               onPromptChange={(value) => updateConfig('prompt', value)}
@@ -198,6 +427,22 @@ const ToolDetailPage: React.FC = () => {
               <SlackInstallSection />
             </ToolDetailSection>
           )}
+
+          {state.toolType === 'teams' &&
+            (isCreating || !state.config.tenantId?.trim()) && (
+              <ToolDetailSection titleKey="install_teams">
+                <TeamsInstallSection
+                  providerTenantId={state.config.tenantId ?? ''}
+                  toolId={state.toolId}
+                  toolName={state.toolName}
+                  toolType={state.toolType}
+                  toolPersisted={isEditing}
+                  onProviderTenantIdChange={(value) =>
+                    updateConfig('tenantId', value)
+                  }
+                />
+              </ToolDetailSection>
+            )}
         </div>
       )
     }
@@ -344,7 +589,7 @@ const ToolDetailPage: React.FC = () => {
 
         <div className="tool-detail-tab-bar-row">
           <nav className="tool-detail-tab-bar" aria-label={t('tool_tabs')}>
-            {TABS.map((tab) => (
+            {visibleTabs.map((tab) => (
               <button
                 key={tab.key}
                 type="button"

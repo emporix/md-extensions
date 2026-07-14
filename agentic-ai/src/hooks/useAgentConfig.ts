@@ -25,9 +25,18 @@ import {
   areCollaborationsValid,
 } from '../utils/agentCollaborationHelpers'
 import { isValidAgentOutputJsonSchema } from '../utils/validateJsonSchema'
+import {
+  areTeamsAgentToolsValid,
+  getSelectedTeamsToolIds,
+  teamsNativeToolHasAllowedOperations,
+  TEAMS_TRIGGER,
+} from '../utils/teamsRoutingHelpers'
+import { COLLABORATION_TRIGGER_TYPES } from '../utils/constants'
+import { Tool } from '../types/Tool'
 
 interface UseAgentConfigProps {
   agent: CustomAgent | null
+  availableTools: Tool[]
   onSave: (agent: CustomAgent) => void
   onHide: () => void
 }
@@ -68,6 +77,7 @@ interface AgentConfigState {
 
 export const useAgentConfig = ({
   agent,
+  availableTools,
   onSave,
   onHide,
 }: UseAgentConfigProps) => {
@@ -111,16 +121,30 @@ export const useAgentConfig = ({
   useEffect(() => {
     if (agent) {
       const agentType = agent.type || 'custom'
-      const triggerTypes = agent.triggers?.map((trigger) => trigger.type) || [
-        'endpoint',
-      ]
+      const loadedTriggerTypes = agent.triggers?.map(
+        (trigger) => trigger.type
+      ) || ['endpoint']
+      const collaborationTriggers =
+        COLLABORATION_TRIGGER_TYPES as readonly string[]
+      const supportTriggerTypes = loadedTriggerTypes
+        .filter((type) => collaborationTriggers.includes(type))
+        .filter((type) => type !== TEAMS_TRIGGER)
+      const triggerTypes =
+        agentType === 'support'
+          ? supportTriggerTypes.length > 0
+            ? supportTriggerTypes
+            : ['slack']
+          : loadedTriggerTypes.filter(
+              (type) =>
+                !collaborationTriggers.includes(type) && type !== TEAMS_TRIGGER
+            )
 
       setState({
         agentId: agent.id,
         agentName: agent.name || ({} as LocalizedString),
         description: agent.description || ({} as LocalizedString),
         agentType: agentType,
-        triggerTypes: agentType === 'support' ? ['slack'] : triggerTypes,
+        triggerTypes,
         prompt: agent.userPrompt || '',
         templatePrompt: agent.templatePrompt || '',
         outputFormat: agent.outputFormat || '',
@@ -167,7 +191,11 @@ export const useAgentConfig = ({
   const buildAgentFromState = useCallback(() => {
     if (!agent) return null
 
-    const triggers = state.triggerTypes.map((triggerType) => ({
+    const triggerTypesForSave = state.triggerTypes.filter(
+      (type) => type !== TEAMS_TRIGGER
+    )
+
+    const triggers = triggerTypesForSave.map((triggerType) => ({
       type: triggerType,
       config:
         triggerType === 'commerce_events'
@@ -177,6 +205,13 @@ export const useAgentConfig = ({
             )
           : null,
     }))
+
+    const existingTeamsTrigger = agent.triggers?.find(
+      (trigger) => trigger.type === TEAMS_TRIGGER
+    )
+    if (existingTeamsTrigger) {
+      triggers.push(existingTeamsTrigger)
+    }
 
     return {
       ...agent,
@@ -368,7 +403,24 @@ export const useAgentConfig = ({
       state.agentCollaborations
     )
 
-    const outputFormatValidation = isValidAgentOutputJsonSchema(state.outputFormat)
+    const outputFormatValidation = isValidAgentOutputJsonSchema(
+      state.outputFormat
+    )
+
+    const supportTriggerValidation =
+      state.agentType !== 'support' || state.triggerTypes.includes('slack')
+
+    const teamsToolValidation =
+      areTeamsAgentToolsValid(state.nativeTools, availableTools) &&
+      getSelectedTeamsToolIds(state.nativeTools, availableTools).every(
+        (toolId) => {
+          const nativeTool = state.nativeTools.find(
+            (tool) => tool.id === toolId
+          )
+          const tool = availableTools.find((entry) => entry.id === toolId)
+          return teamsNativeToolHasAllowedOperations(nativeTool, tool)
+        }
+      )
 
     return (
       basicValidation &&
@@ -376,9 +428,11 @@ export const useAgentConfig = ({
       selfHostedValidation &&
       commerceFilterValidation &&
       collaborationValidation &&
-      outputFormatValidation
+      outputFormatValidation &&
+      supportTriggerValidation &&
+      teamsToolValidation
     )
-  }, [state, agent?.id])
+  }, [state, agent?.id, availableTools])
 
   return {
     state,
