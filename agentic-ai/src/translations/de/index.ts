@@ -533,7 +533,7 @@ const TRANSLATIONS_DE = {
   teams_graph_consent_url_missing:
     'Graph-Admin-Einwilligung ist im AI-Service nicht konfiguriert.',
   teams_graph_consent_success:
-    'Graph-Admin-Einwilligung erteilt. Tragen Sie Team-ID und erlaubte Operationen auf dem Tab Einstellungen ein und speichern Sie.',
+    'Graph-Admin-Einwilligung erteilt. Ermitteln Sie die Team-ID (siehe Installationsschritte auf dem Tab Allgemein), vervollständigen Sie die Einstellungen und speichern Sie.',
   teams_graph_consent_error: 'Graph-Admin-Einwilligung fehlgeschlagen',
   teams_graph_consent_unknown:
     'Graph-Admin-Einwilligung lieferte ein unbekanntes Ergebnis',
@@ -546,15 +546,34 @@ const TRANSLATIONS_DE = {
   teams_install_step_graph_consent:
     'Erteilen Sie die Admin-Einwilligung für die Emporix-Graph-App (erforderlich für ausgehende Zusammenarbeit und Bot-Installation in Gruppenchats). Verwenden Sie unten Graph-Admin-Einwilligung erteilen.',
   teams_install_step_connect:
-    'Klicken Sie auf Microsoft Teams verbinden, um die Installationsseite im Kundenmandanten zu öffnen. Schlägt der Link fehl, prüfen Sie, ob die App im Mandanten-Katalog vorhanden ist und die Mandanten-ID stimmt.',
+    'Klicken Sie auf Microsoft Teams verbinden, um die Installationsseite im Kundenmandanten zu öffnen. Fügen Sie die App einem Team hinzu (nicht nur für den persönlichen Gebrauch). Schlägt der Link fehl, prüfen Sie, ob die App im Mandanten-Katalog vorhanden ist und die Mandanten-ID stimmt.',
   install_status_pending:
     'Die Installation bleibt ausstehend, bis die App im Mandanten-Katalog vorhanden ist, ein Benutzer sie installiert hat und der Bot seine erste Aktivität empfangen hat.',
   teams_install_step_sideload:
     'Fallback: Laden Sie das Emporix-App-Paket über Teams → Apps → Apps verwalten → Benutzerdefinierte App hochladen hoch (erfordert Richtlinie für benutzerdefinierte Apps).',
   teams_install_step_settings:
-    'Nachdem der Bot in Teams antwortet, öffnen Sie den Tab Einstellungen: Tragen Sie Team-ID und Mandanten-ID ein, konfigurieren Sie erlaubte Operationen und speichern Sie das Tool.',
+    'Öffnen Sie den Tab Einstellungen: fügen Sie die Team-ID ein (siehe So ermitteln Sie die Team-ID unten), bestätigen Sie die Mandanten-ID, konfigurieren Sie erlaubte Operationen und speichern Sie. Die Team-ID kann nach dem ersten Speichern nicht mehr geändert werden.',
+  teams_install_how_to_find_team_id: 'So ermitteln Sie die Team-ID',
+  teams_install_team_id_intro:
+    'Die Team-ID ist die Microsoft-365-Gruppen-ID (GUID) des Zielteams — derselbe Wert wie groupId in einem Teams-Teamlink.',
+  teams_install_team_id_method_teams_app_title: 'Über Microsoft Teams',
+  teams_install_team_id_method_teams_app_1:
+    'Öffnen Sie Teams und wählen Sie das Zielteam in der Seitenleiste.',
+  teams_install_team_id_method_teams_app_2:
+    'Klicken Sie auf ⋯ neben dem Teamnamen und wählen Sie Link zum Team abrufen.',
+  teams_install_team_id_method_teams_app_3:
+    'Kopieren Sie den Link, fügen Sie ihn in einen Texteditor ein und kopieren Sie den Wert des groupId-Query-Parameters.',
+  teams_install_team_id_method_admin_title: 'Über das Teams-Admincenter',
+  teams_install_team_id_method_admin_1:
+    'Öffnen Sie das Teams-Admincenter → Teams → Teams verwalten.',
+  teams_install_team_id_method_admin_2:
+    'Wählen Sie das Zielteam und kopieren Sie die Gruppen-ID (oder exportieren Sie die Teamliste).',
+  teams_install_team_id_example:
+    'Beispiel: …?groupId=0efcc002-6001-4a21-991b-8ba10bac0612&tenantId=… — fügen Sie den groupId-Wert als Team-ID ein.',
+  teams_install_team_id_team_scope_warning:
+    'Die App muss einem Team hinzugefügt werden. Eine reine persönliche Installation hat keine Team-ID.',
   teams_install_state_id_hint:
-    'Installations-Korrelations-ID: {{id}}. Teilen Sie diese mit dem Support, wenn die Installationsbindung nicht automatisch abgeschlossen wird.',
+    'Installations-Korrelations-ID: {{id}}. Teilen Sie diese mit dem Support, wenn Sie Hilfe bei der Installation benötigen.',
   open_teams_apps: 'Teams (Web) öffnen',
   download_teams_app_package: 'App-Paket herunterladen',
   open_teams_admin_center: 'Teams-Admincenter öffnen',
@@ -564,7 +583,7 @@ const TRANSLATIONS_DE = {
   tenant_id: 'Mandanten-ID (AAD)',
   enter_tenant_id: 'Azure AD-Mandanten-ID eingeben',
   teams_team_id_hint:
-    'Teams-Team-ID aus der Bot-Installationsaktivität, wenn die App einem Team hinzugefügt wird.',
+    'Microsoft-365-Gruppen-ID (GUID) des Zielteams. Kopieren Sie groupId aus einem Teamlink oder die Gruppen-ID aus dem Teams-Admincenter (siehe Installationsschritte auf dem Tab Allgemein). Vor dem Speichern prüfen — die Team-ID kann später nicht geändert werden.',
   teams_team_id_hint_immutable:
     'Die Team-ID kann nach der Erstellung des Tools nicht mehr geändert werden.',
   teams_tenant_id_hint:
