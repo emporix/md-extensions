@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Dropdown } from '@emporix/component-library'
 import { Controller, useFormContext } from 'react-hook-form'
 import {
@@ -44,33 +44,47 @@ const GroupDetailsGeneralFormRolesTemplates = () => {
   const availableTemplates =
     activeServiceType === ServiceType.DCP ? DCP_TEMPLATES : OE_TEMPLATES
 
+  const templateOptions = useMemo(
+    () =>
+      availableTemplates
+        .map((template) => ({
+          label: getUiLangValue(template.name),
+          value: template.id,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [availableTemplates, getUiLangValue]
+  )
+
   return (
     <Controller
       name={
         activeServiceType === ServiceType.DCP ? 'dcpTemplates' : 'oeTemplates'
       }
       control={control}
-      render={({ field }) => (
-        <Dropdown
-          multiple
-          display="chip"
-          disabled={!canManage}
-          options={availableTemplates
-            .map((template) => ({
-              label: getUiLangValue(template.name),
-              value: template,
-            }))
-            .sort((a, b) => a.label.localeCompare(b.label))}
-          optionLabel="label"
-          optionValue="value"
-          value={field.value}
-          onChange={(e) => {
-            const selected =
-              (e.value as unknown as AccessControlsTemplate[]) ?? []
-            onTemplatesChange(selected, field.onChange)
-          }}
-        />
-      )}
+      render={({ field }) => {
+        const selectedTemplateIds = (field.value ?? []).map(
+          (template) => template.id
+        )
+
+        return (
+          <Dropdown
+            multiple
+            display="chip"
+            disabled={!canManage}
+            options={templateOptions}
+            optionLabel="label"
+            optionValue="value"
+            value={selectedTemplateIds}
+            onChange={(e) => {
+              const selectedIds = (e.value as string[]) ?? []
+              const selected = availableTemplates.filter((template) =>
+                selectedIds.includes(template.id)
+              )
+              onTemplatesChange(selected, field.onChange)
+            }}
+          />
+        )
+      }}
     />
   )
 }

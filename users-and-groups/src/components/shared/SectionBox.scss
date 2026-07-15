@@ -1,6 +1,20 @@
 $brand-grey-300: #c0d0df;
 $brand-grey-600: #596168;
 
+.section-title-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 34px;
+
+  .section-title {
+    color: $brand-grey-600;
+    font-weight: normal;
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+  }
+}
+
 .section-box-wrapper {
   display: flex;
   flex-direction: column;

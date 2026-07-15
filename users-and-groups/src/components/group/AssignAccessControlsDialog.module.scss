@@ -1,11 +1,3 @@
-.dialog {
-  :global(.p-dialog-content) {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-}
-
 .footerActions {
   display: flex;
   justify-content: flex-end;

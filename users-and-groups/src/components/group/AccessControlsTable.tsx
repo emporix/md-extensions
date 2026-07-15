@@ -28,7 +28,6 @@ import {
 import { usePermissions } from '../../context/PermissionsProvider'
 import { EmployeeDomains } from '../../configs/accessControls'
 import ConfirmBox from '../../components/shared/ConfirmBox'
-import EmptyTable from '../../components/shared/EmptyTable'
 import styles from './AccessControlsTable.module.scss'
 
 const AccessControlsTable = () => {
@@ -135,48 +134,43 @@ const AccessControlsTable = () => {
           </PrimaryButton>
         }
       />
-      {!domainGroups.length ? (
-        <EmptyTable
-          text={
-            canViewAccess
-              ? t('usersAndGroups.groups.tables.accessControls.emptyText')
-              : t('global.noPermissions')
-          }
-        />
-      ) : (
-        <DataTable
-          columns={columns}
-          rowActions={actionsTemplate}
-          value={domainGroups}
-          dataKey="name"
-          expandedRows={expandedRows}
-          onRowToggle={setExpandedRows}
-          rowExpansionTemplate={(domain: DomainGroup) => (
-            <AccessControlsExpansionTable
-              accessControls={domain.accessControls}
-              onRemove={handleRemove}
-            />
-          )}
-          sortField={paginationParams.sortField}
-          sortOrder={paginationParams.sortOrder}
-          onSort={(event) =>
-            onSortCallback(event as unknown as DataTableSortParams)
-          }
-          showFilter
-          onFilter={(event) => {
-            const nameFilter = (
-              event as unknown as DataTableFilterParams
-            ).filters?.name
-            const filterValue =
-              nameFilter &&
-              typeof nameFilter === 'object' &&
-              'value' in nameFilter
-                ? String(nameFilter.value ?? '')
-                : ''
-            setSearchQuery(filterValue)
-          }}
-        />
-      )}
+      <DataTable
+        columns={columns}
+        rowActions={actionsTemplate}
+        value={domainGroups}
+        dataKey="name"
+        expandedRows={expandedRows}
+        onRowToggle={setExpandedRows}
+        rowExpansionTemplate={(domain: DomainGroup) => (
+          <AccessControlsExpansionTable
+            accessControls={domain.accessControls}
+            onRemove={handleRemove}
+          />
+        )}
+        sortField={paginationParams.sortField}
+        sortOrder={paginationParams.sortOrder}
+        onSort={(event) =>
+          onSortCallback(event as unknown as DataTableSortParams)
+        }
+        showFilter
+        onFilter={(event) => {
+          const nameFilter = (
+            event as unknown as DataTableFilterParams
+          ).filters?.name
+          const filterValue =
+            nameFilter &&
+            typeof nameFilter === 'object' &&
+            'value' in nameFilter
+              ? String(nameFilter.value ?? '')
+              : ''
+          setSearchQuery(filterValue)
+        }}
+        emptyMessage={
+          canViewAccess
+            ? t('usersAndGroups.groups.tables.accessControls.emptyText')
+            : t('global.noPermissions')
+        }
+      />
       <AssignAccessControlsDialog
         visible={isAssignDialogOpen}
         onClose={() => setIsAssignDialogOpen(false)}

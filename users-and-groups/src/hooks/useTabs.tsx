@@ -15,28 +15,30 @@ export const useTabs = (tabs: string[], withQuery = true) => {
         return
       }
       const nextTab = tabs[index]
-
       setActiveTab(nextTab)
       setActiveIndex(index)
 
       if (withQuery && updateQuery) {
-        setSearchParamsRef.current((currentSearchParams) => {
-          const nextSearchParams = new URLSearchParams(currentSearchParams)
-          const tabChanged = currentSearchParams.get('tab') !== nextTab
-          nextSearchParams.set('tab', nextTab)
-          if (tabChanged) {
-            nextSearchParams.set(
-              'page',
-              DEFAULT_PAGINATION_PROPS.currentPage?.toString() ?? '1'
-            )
-            nextSearchParams.set(
-              'rows',
-              DEFAULT_PAGINATION_PROPS.rows?.toString() ?? '10'
-            )
-          }
+        setSearchParamsRef.current(
+          (currentSearchParams) => {
+            const nextSearchParams = new URLSearchParams(currentSearchParams)
+            const tabChanged = currentSearchParams.get('tab') !== nextTab
+            nextSearchParams.set('tab', nextTab)
+            if (tabChanged) {
+              nextSearchParams.set(
+                'page',
+                DEFAULT_PAGINATION_PROPS.currentPage?.toString() ?? '1'
+              )
+              nextSearchParams.set(
+                'rows',
+                DEFAULT_PAGINATION_PROPS.rows?.toString() ?? '10'
+              )
+            }
 
-          return nextSearchParams
-        }, { replace: true })
+            return nextSearchParams
+          },
+          { replace: true }
+        )
       }
     },
     [tabs, withQuery]
@@ -44,7 +46,10 @@ export const useTabs = (tabs: string[], withQuery = true) => {
 
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab')
-    if (!tabFromUrl || !withQuery) {
+    if (!withQuery) {
+      return
+    }
+    if (!tabFromUrl) {
       setTabsByIndex(0)
     } else {
       const tabFromUrlIndex = tabs.indexOf(tabFromUrl)

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
 import { FormProvider, useForm } from 'react-hook-form'
@@ -25,7 +25,7 @@ const TABS = ['details', 'members']
 const GroupPage = () => {
   const { t } = useTranslation()
   const methods = useForm<GroupFormFields>({ defaultValues: createGroupForm() })
-  const { activeTab, onTabChange } = useTabs(TABS, true)
+  const { activeTab, onTabChange } = useTabs(TABS, false)
   const { navigate } = useCustomNavigate()
   const { getContentLangValue } = useLocalizedValue()
   const { hasPermission } = usePermissions()

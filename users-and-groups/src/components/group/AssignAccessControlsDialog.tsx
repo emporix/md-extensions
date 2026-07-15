@@ -118,14 +118,12 @@ const AssignAccessControlsDialog = (props: Props) => {
 
   return (
     <Dialog
-      className={styles.dialog}
       visible={visible}
       onHide={handleClose}
       header={t('usersAndGroups.groups.titles.availableAccessControls')}
       footer={footer}
       style={{ maxWidth: '1000px', width: '100%', maxHeight: '80vh' }}
       draggable={false}
-      modal
     >
       <div className={styles.searchSection}>
         <div className={styles.searchField}>
