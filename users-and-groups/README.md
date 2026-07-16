@@ -144,30 +144,17 @@ You will be requested to provide app context on the start if you access the loca
 
 ## Customizing the module
 
-This module template uses [PrimeReact](https://www.primefaces.org/primereact-v8) for UI components and [PrimeFlex](https://primeflex.org) for styling.
-But, the default styling is inherited from the Management Dashboard.
+This module uses [PrimeReact](https://www.primefaces.org/primereact-v8) (via `@emporix/component-library` and a few direct widgets). Default styling is inherited from the Management Dashboard when embedded.
 
-You are free to use your own UI libraries or styling.
-If so, you can remove PrimeReact and PrimeFlex from the package.json file.
+If you replace PrimeReact, remove these from `package.json`:
 ```bash
-    "chart.js": "^4.4.7",
-    "primeflex": "^3.1.3",
     "primeicons": "^6.0.0",
     "primereact": "^8.7.0",
-    "quill": "^2.0.3",
 ```
-Then remove import statements from the `App.tsx` file:
+Then remove the related imports from `RemoteComponent.tsx`:
 ```bash
-import RemoteComponent from './RemoteComponent'
-import { Button, Card, InputText } from 'primereact'
-import 'primereact/resources/themes/lara-light-indigo/theme.css' //theme
-import 'primereact/resources/primereact.min.css' //core css
+import 'primereact/resources/primereact.css'
+import 'primereact/resources/themes/saga-blue/theme.css'
 import 'primeicons/primeicons.css'
 ```
-and all occurrences in the component.
-
-and also from `RemoteComponent.tsx` file remove:
-```bash
-import '/node_modules/primeflex/primeflex.css'
-import 'primeicons/primeicons.css'
-```
+and all other PrimeReact usages in the module.

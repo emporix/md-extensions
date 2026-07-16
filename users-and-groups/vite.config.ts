@@ -16,8 +16,6 @@ export default defineConfig({
         'react-dom',
         'react-router',
         'react-i18next',
-        'chart.js',
-        'quill',
       ],
     }),
   ],

@@ -60,7 +60,7 @@ Outside the dashboard (`npm run dev`):
 
 - Register `remoteEntry.js` in Administration → Extensions
 - `cssCodeSplit: false`
-- Shared deps must match the host: `react`, `react-dom`, `react-router`, `react-i18next`, `chart.js`, `quill`
+- Shared deps must match the host: `react`, `react-dom`, `react-router`, `react-i18next`
 - CORS allows `https://admin.emporix.io` for server and preview
 
 ## UI note
