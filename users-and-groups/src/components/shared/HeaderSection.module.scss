@@ -15,8 +15,20 @@
   align-items: center;
 }
 
-.subtitle {
-  margin-left: 0.5rem;
+.moduleTitle {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 34px;
+  color: #1b2029;
+}
+
+.highlightText {
+  margin: 0 0 0 0.5rem;
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 34px;
+  color: #2665b7;
 }
 
 .actions {
