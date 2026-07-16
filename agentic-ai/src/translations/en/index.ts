@@ -487,6 +487,7 @@ const TRANSLATIONS_EN = {
   custom_model_name_tooltip:
     'Enter a model identifier supported by your provider',
   enable_memory_support: 'Enable Memory Support',
+  disable_temperature: 'Disable Temperature',
   api_key: 'API Key',
   enter_api_key: 'Enter API key',
   tags: 'Tags',
@@ -498,6 +499,17 @@ const TRANSLATIONS_EN = {
   self_hosted_url: 'Self-hosted URL',
   enter_self_hosted_url: 'Enter self-hosted URL',
   authorization_token: 'Authorization Token',
+  use_oauth_authentication: 'Use OAuth authentication',
+  oauth_url: 'OAuth URL',
+  enter_oauth_url: 'Enter OAuth token URL',
+  oauth_client_id: 'Client ID',
+  enter_oauth_client_id: 'Enter OAuth client ID',
+  oauth_client_secret: 'Client Secret',
+  oauth_grant_type: 'Grant Type',
+  select_oauth_grant_type: 'Select grant type',
+  grant_type_client_credentials: 'Client Credentials',
+  oauth_scope: 'Scope',
+  enter_oauth_scope: 'Enter OAuth scope',
 
   // Slack tool installation
   install_emporix_slack_ai: 'Install Emporix Slack AI',

@@ -5,6 +5,7 @@ import {
   McpServer,
   NativeTool,
   LocalizedString,
+  GrantType,
   LlmProvider,
 } from '../types/Agent'
 import { upsertCustomAgent } from '../services/agentService'
@@ -57,6 +58,7 @@ interface AgentConfigState {
   outputFormat: string
   model: string
   temperature: string
+  disableTemperature: boolean
   maxTokens: string
   provider: LlmProvider
   tokenId: string
@@ -69,8 +71,14 @@ interface AgentConfigState {
   tags: string[]
   requiredScopes: string[]
   selfHostedUrl: string
+  selfHostedUseOAuth: boolean
   selfHostedAuthHeaderName: string
   selfHostedTokenId: string
+  oauthUrl: string
+  oauthClientId: string
+  oauthClientSecretTokenId: string
+  oauthGrantType: GrantType | ''
+  oauthScope: string
   commerceEvents: string[]
   commerceEventFilter: AgentCommerceFilterDsl | null
 }
@@ -98,6 +106,7 @@ export const useAgentConfig = ({
     outputFormat: '',
     model: '',
     temperature: '0',
+    disableTemperature: false,
     maxTokens: '0',
     provider: LlmProvider.EMPORIX_OPENAI,
     tokenId: '',
@@ -110,8 +119,14 @@ export const useAgentConfig = ({
     tags: [],
     requiredScopes: [],
     selfHostedUrl: '',
+    selfHostedUseOAuth: false,
     selfHostedAuthHeaderName: '',
     selfHostedTokenId: '',
+    oauthUrl: '',
+    oauthClientId: '',
+    oauthClientSecretTokenId: '',
+    oauthGrantType: '',
+    oauthScope: '',
     commerceEvents: [],
     commerceEventFilter: null,
   })
@@ -150,6 +165,7 @@ export const useAgentConfig = ({
         outputFormat: agent.outputFormat || '',
         model: agent.llmConfig?.model || '',
         temperature: agent.llmConfig?.temperature?.toString() || '0',
+        disableTemperature: agent.llmConfig?.temperature === undefined,
         maxTokens: agent.llmConfig?.maxTokens?.toString() || '0',
         provider: agent.llmConfig?.provider || LlmProvider.EMPORIX_OPENAI,
         tokenId: agent.llmConfig?.token?.id || '',
@@ -163,14 +179,41 @@ export const useAgentConfig = ({
         tags: agent.tags || [],
         requiredScopes: agent.requiredScopes || [],
         selfHostedUrl: agent.llmConfig?.selfHostedParams?.url || '',
-        selfHostedAuthHeaderName:
-          agent.llmConfig?.selfHostedParams?.authorizationHeaderName || '',
-        selfHostedTokenId:
-          (typeof agent.llmConfig?.selfHostedParams
-            ?.authorizationHeaderToken === 'object'
-            ? agent.llmConfig.selfHostedParams.authorizationHeaderToken.id
-            : agent.llmConfig?.selfHostedParams?.authorizationHeaderToken) ||
-          '',
+        ...(() => {
+          const selfHostedParams = agent.llmConfig?.selfHostedParams
+          const oAuthParams = selfHostedParams?.oAuthParams
+          const resolveTokenId = (
+            token: { id: string } | string | undefined
+          ) =>
+            typeof token === 'object' ? token?.id || '' : token || ''
+
+          if (oAuthParams) {
+            return {
+              selfHostedUseOAuth: true,
+              selfHostedAuthHeaderName: '',
+              selfHostedTokenId: '',
+              oauthUrl: oAuthParams.url || '',
+              oauthClientId: oAuthParams.clientId || '',
+              oauthClientSecretTokenId: resolveTokenId(oAuthParams.clientSecret),
+              oauthGrantType: oAuthParams.grantType || '',
+              oauthScope: oAuthParams.scope || '',
+            }
+          }
+
+          return {
+            selfHostedUseOAuth: false,
+            selfHostedAuthHeaderName:
+              selfHostedParams?.authorizationHeaderName || '',
+            selfHostedTokenId: resolveTokenId(
+              selfHostedParams?.authorizationHeaderToken
+            ),
+            oauthUrl: '',
+            oauthClientId: '',
+            oauthClientSecretTokenId: '',
+            oauthGrantType: '',
+            oauthScope: '',
+          }
+        })(),
         ...(() => {
           const raw = agent.triggers?.find(
             (trigger) => trigger.type === 'commerce_events'
@@ -225,10 +268,13 @@ export const useAgentConfig = ({
       llmConfig: (() => {
         const baseConfig: LlmConfig = {
           model: state.model || '',
-          temperature: parseFloat(state.temperature) || 0,
           maxTokens: parseInt(state.maxTokens, 10) || 0,
           provider: state.provider,
           additionalParams: agent.llmConfig?.additionalParams || null,
+        }
+
+        if (!state.disableTemperature) {
+          baseConfig.temperature = parseFloat(state.temperature) || 0
         }
 
         if (
@@ -248,14 +294,36 @@ export const useAgentConfig = ({
             url: state.selfHostedUrl || '',
           }
 
-          if (state.selfHostedAuthHeaderName) {
-            baseConfig.selfHostedParams.authorizationHeaderName =
-              state.selfHostedAuthHeaderName
-          }
+          if (state.selfHostedUseOAuth) {
+            const oAuthParams: NonNullable<
+              LlmConfig['selfHostedParams']
+            >['oAuthParams'] = {
+              url: state.oauthUrl.trim(),
+              clientId: state.oauthClientId.trim(),
+              grantType: state.oauthGrantType as GrantType,
+            }
 
-          if (state.selfHostedTokenId) {
-            baseConfig.selfHostedParams.authorizationHeaderToken = {
-              id: state.selfHostedTokenId,
+            if (state.oauthClientSecretTokenId) {
+              oAuthParams.clientSecret = {
+                id: state.oauthClientSecretTokenId,
+              }
+            }
+
+            if (state.oauthScope.trim()) {
+              oAuthParams.scope = state.oauthScope.trim()
+            }
+
+            baseConfig.selfHostedParams.oAuthParams = oAuthParams
+          } else {
+            if (state.selfHostedAuthHeaderName) {
+              baseConfig.selfHostedParams.authorizationHeaderName =
+                state.selfHostedAuthHeaderName
+            }
+
+            if (state.selfHostedTokenId) {
+              baseConfig.selfHostedParams.authorizationHeaderToken = {
+                id: state.selfHostedTokenId,
+              }
             }
           }
         }
@@ -391,7 +459,13 @@ export const useAgentConfig = ({
     const tokenValidation =
       isEmporixProvider || isSelfHosted || !isCreating || state.tokenId.trim()
 
-    const selfHostedValidation = !isSelfHosted || state.selfHostedUrl.trim()
+    const selfHostedValidation =
+      !isSelfHosted ||
+      (state.selfHostedUrl.trim() &&
+        (!state.selfHostedUseOAuth ||
+          (state.oauthUrl.trim() &&
+            state.oauthClientId.trim() &&
+            !!state.oauthGrantType)))
 
     const commerceFilterValidation =
       !state.triggerTypes.includes('commerce_events') ||

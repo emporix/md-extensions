@@ -52,9 +52,24 @@ export enum LlmProvider {
   SELF_HOSTED_OLLAMA = 'self_hosted_ollama',
   SELF_HOSTED_VLLM = 'self_hosted_vllm',
 }
+
+export enum GrantType {
+  CLIENT_CREDENTIALS = 'client_credentials',
+}
+
+export interface OAuthParams {
+  url: string
+  clientId: string
+  clientSecret?: {
+    id: string
+  }
+  grantType: GrantType
+  scope?: string
+}
+
 export interface LlmConfig {
   model: string
-  temperature: number
+  temperature?: number
   maxTokens: number
   provider: LlmProvider
   additionalParams: Record<string, unknown> | null
@@ -67,6 +82,7 @@ export interface LlmConfig {
     authorizationHeaderToken?: {
       id: string
     }
+    oAuthParams?: OAuthParams
   }
 }
 
