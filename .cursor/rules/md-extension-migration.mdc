@@ -1,0 +1,48 @@
+---
+description: Federation, AppState, provider order, and CL-only UI for MD extension migrations
+globs: "**/RemoteComponent.tsx,**/vite.config.ts,md-extensions/**/src/**"
+alwaysApply: false
+---
+
+# MD Extension Migration
+
+Rules for extracting Management Dashboard modules into `md-extensions` federated remotes. Playbook: `docs/MODULE_MIGRATION_PLAYBOOK.md`.
+
+## Federation
+
+- Vite `name` must equal MD route `key` and `ExternalModule.moduleName` (camelCase).
+- Expose `./RemoteComponent` only at federation boundary.
+- Never use generic names like `extension`.
+
+## AppState
+
+Required: `tenant`, `language`, `token`, `onError`, `contentLanguage`, `currency`.  
+Optional: `user` (host Ory session — do not fetch Ory in remote).  
+**Never** pass `permissions` — use ported `PermissionsProvider`.
+
+## Router
+
+- `HashRouter` inside remote; `BASE_PATH` for navigation helpers matching host path.
+- Sync `i18n.changeLanguage(appState.language)` on host language changes.
+
+## Provider order
+
+```
+ToastProvider → DashboardProvider → PermissionsProvider → ConfigurationProvider
+→ SitesProvider → UIBlockerProvider → HashRouter → RefreshValuesProvider
+```
+
+## UI policy
+
+- Primitives: `@emporix/component-library` only in ported feature code.
+- Copy layout composites (HeaderSection, SectionBox, FormGrid, ConfirmBox).
+- Never copy MD `InputField` — use `FormField` + CL inputs.
+
+## API
+
+- Tenant/token from `useDashboardContext()`, not host-specific providers.
+- All calls through `src/api/bootstrap.ts` + `@emporix/api-calls`.
+
+## Pilot
+
+`users-and-groups` is the canonical reference implementation (COP-5598).

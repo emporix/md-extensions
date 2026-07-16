@@ -1,0 +1,10 @@
+.dialog {
+  width: min(66.6667rem, 100%);
+}
+
+.footerActions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}

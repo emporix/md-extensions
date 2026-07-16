@@ -1,0 +1,20 @@
+.nameField,
+.surnameField,
+.emailField,
+.languageField,
+.currencyField,
+.statusField {
+  grid-column: span 4;
+}
+
+.departmentField,
+.siteField {
+  grid-column: span 6;
+}
+
+.statusValue {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
