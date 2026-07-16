@@ -10,16 +10,25 @@ on:
     paths:
       - 'statistics/**'
 
+concurrency:
+  group: statistics-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
-  build_and_deploy_preview:
+  extension_preview:
+    name: Deploy statistics extension preview
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./statistics
 
     strategy:
       matrix:
         node: [20.x]
+
+    defaults:
+      run:
+        working-directory: ./statistics
+
+    outputs:
+      preview_url: ${{ steps.firebase-preview.outputs.details_url }}
 
     steps:
       - name: Checkout code
@@ -41,5 +50,65 @@ jobs:
           firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}"
           projectId: frontend-extensions-develop
           target: emporix-statistics-develop
+          expires: 5d
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+
+  md_preview:
+    name: Deploy management-dashboard preview
+    needs: extension_preview
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node: [20.x]
+
+    steps:
+      # management-dashboard's own firebase.json has no target for our site - borrow this repo's
+      - name: Checkout statistics extension hosting config
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            firebase.json
+            .firebaserc
+          sparse-checkout-cone-mode: false
+
+      - name: Checkout management-dashboard
+        uses: actions/checkout@v4
+        with:
+          repository: emporix/management-dashboard
+          ref: master
+          token: ${{ secrets.MD_EXT_GH_TOKEN }}
+          persist-credentials: false
+          path: md
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+          cache-dependency-path: md/package-lock.json
+
+      - name: Build management-dashboard against statistics extension preview
+        working-directory: md
+        env:
+          VITE_STATISTICS_URL: "${{ needs.extension_preview.outputs.preview_url }}/assets/remoteEntry.js?v=1"
+        run: |
+          npm ci
+          npm run build:dev
+
+      # so the deploy below targets our site instead of management-dashboard-develop
+      - name: Move management-dashboard build into place
+        run: |
+          mkdir -p statistics
+          mv md/dist statistics/dist
+
+      - name: Deploy management-dashboard preview
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          firebaseToolsVersion: "12.9.1"
+          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}"
+          projectId: frontend-extensions-develop
+          target: emporix-statistics-develop
+          channelId: "md-ext-${{ github.event.pull_request.number }}"
           expires: 5d
           repoToken: "${{ secrets.GITHUB_TOKEN }}"

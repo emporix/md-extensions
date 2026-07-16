@@ -121,6 +121,7 @@ export const cleanAgentForConfig = (agent: CustomAgent): CustomAgent => {
     name: agent.name,
     description: agent.description,
     userPrompt: agent.userPrompt || '',
+    outputFormat: agent.outputFormat || '',
     triggers: agent.triggers || [{ type: 'endpoint', config: null }],
     llmConfig: agent.llmConfig || {
       model: '',

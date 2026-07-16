@@ -4,12 +4,14 @@ export interface QueryParamsOptions {
   pageSize?: number
   pageNumber?: number
   agentId?: string
+  toolId?: string
   filters?: Record<string, string>
   fields?: string
 }
 
 export interface BuildQueryParamsConfig {
   agentIdField?: string
+  toolIdField?: string
   exactMatchFields?: string[]
 }
 
@@ -27,7 +29,11 @@ export const buildQueryParams = (
   params: QueryParamsOptions,
   config: BuildQueryParamsConfig = {}
 ): string => {
-  const { agentIdField = 'agentId', exactMatchFields = [] } = config
+  const {
+    agentIdField = 'agentId',
+    toolIdField = 'toolId',
+    exactMatchFields = [],
+  } = config
 
   const queryParams = new URLSearchParams()
 
@@ -48,6 +54,10 @@ export const buildQueryParams = (
 
   if (params.agentId) {
     qParts.push(`${agentIdField}:${params.agentId}`)
+  }
+
+  if (params.toolId) {
+    qParts.push(`${toolIdField}:${params.toolId}`)
   }
 
   if (params.filters) {

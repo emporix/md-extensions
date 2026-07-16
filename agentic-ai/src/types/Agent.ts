@@ -10,6 +10,7 @@ export interface McpServer {
 
 export interface NativeTool {
   id: string
+  allowedOperations?: string[]
 }
 
 export interface AgentCollaboration {
@@ -88,6 +89,7 @@ export interface CustomAgent {
   description: LocalizedString
   userPrompt: string
   templatePrompt?: string
+  outputFormat?: string
   triggers: Trigger[]
   llmConfig: LlmConfig
   mcpServers: McpServer[]

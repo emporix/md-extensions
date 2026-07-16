@@ -13,8 +13,11 @@ import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
 import {
   getTokens,
+  getTools,
   updateTool as updateToolApi,
 } from '../services/toolsService'
+import { getCustomAgents } from '../services/agentService'
+import { CustomAgent } from '../types/Agent'
 import {
   getRagFilterMetadata,
   getRagMetadata,
@@ -35,14 +38,27 @@ import {
   MIXINS_PREFIX,
   applyRagCustomDefaults,
   applyRagEmporixDefaults,
-  isToolFormValid,
+  isToolFormValid as isToolFormValidBase,
   mergeRagEmporixConfigOnLoad,
 } from '../utils/toolConfigHelpers'
+import {
+  applyTeamsToolDefaults,
+  countTeamsToolsForTeam,
+  DEFAULT_TEAMS_ALLOWED_OPERATIONS,
+  toTeamsToolConfigForSave,
+} from '../utils/teamsRoutingHelpers'
+import {
+  clearTeamsToolInstallDraft,
+  readTeamsToolInstallDraft,
+  TeamsGraphConsentCallback,
+  TeamsToolInstallDraft,
+} from '../utils/teamsInstallCallback'
 
 interface UseToolConfigProps {
   tool: Tool | null
   isCreating: boolean
-  onSave: () => void
+  onSave: (savedToolId?: string, toolType?: string) => void
+  onAgentsUpdated?: (agents: CustomAgent[]) => void
 }
 
 interface ToolConfigState {
@@ -58,6 +74,7 @@ export const useToolConfig = ({
   tool,
   isCreating,
   onSave,
+  onAgentsUpdated,
 }: UseToolConfigProps) => {
   const appState = useAppState()
   const { t } = useTranslation()
@@ -81,17 +98,51 @@ export const useToolConfig = ({
   >([])
   const [customSchemaTypesLoading, setCustomSchemaTypesLoading] =
     useState(false)
+  const [allTools, setAllTools] = useState<Tool[]>([])
+  const [allToolsLoaded, setAllToolsLoaded] = useState(false)
 
   useEffect(() => {
     if (tool) {
+      const loadedConfig = mergeRagEmporixConfigOnLoad(tool)
       setState({
         toolId: tool.id ?? '',
         toolName: tool.name ?? '',
         toolType: tool.type ?? '',
-        config: mergeRagEmporixConfigOnLoad(tool),
+        config:
+          tool.type === 'teams'
+            ? applyTeamsToolDefaults(loadedConfig)
+            : loadedConfig,
       })
     }
   }, [tool])
+
+  useEffect(() => {
+    if (state.toolType !== 'teams' || !appState) {
+      setAllToolsLoaded(false)
+      return
+    }
+
+    let cancelled = false
+    setAllToolsLoaded(false)
+    ;(async () => {
+      try {
+        const tools = await getTools(appState)
+        if (!cancelled) {
+          setAllTools(tools)
+          setAllToolsLoaded(true)
+        }
+      } catch {
+        if (!cancelled) {
+          setAllTools([])
+          setAllToolsLoaded(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [appState, state.toolType])
 
   const loadAvailableTokens = useCallback(async () => {
     try {
@@ -219,10 +270,12 @@ export const useToolConfig = ({
   const updateField = useCallback((field: ToolConfigField, value: string) => {
     setState((prev) => {
       if (field === 'toolType') {
+        const nextConfig =
+          value === 'teams' ? applyTeamsToolDefaults({}) : ({} as ToolConfig)
         return {
           ...prev,
           toolType: value,
-          config: {},
+          config: nextConfig,
         }
       }
 
@@ -233,12 +286,22 @@ export const useToolConfig = ({
     })
   }, [])
 
-  const updateConfig = useCallback((key: string, value: string) => {
+  const updateConfig = useCallback((key: string, value: string | boolean) => {
     setState((prev) => ({
       ...prev,
       config: {
         ...prev.config,
         [key]: value,
+      },
+    }))
+  }, [])
+
+  const updateAllowedOperations = useCallback((allowedOperations: string[]) => {
+    setState((prev) => ({
+      ...prev,
+      config: {
+        ...prev.config,
+        allowedOperations,
       },
     }))
   }, [])
@@ -444,13 +507,68 @@ export const useToolConfig = ({
     []
   )
 
-  const isFormValid = isToolFormValid({
-    toolName: state.toolName,
-    toolId: state.toolId,
-    toolType: state.toolType,
-    config: state.config,
-    isCreating,
-  })
+  const restoreTeamsInstallDraft = useCallback(
+    (draft: TeamsToolInstallDraft) => {
+      setState((prev) => ({
+        toolId: draft.toolId,
+        toolName: draft.toolName || prev.toolName,
+        toolType: draft.toolType || 'teams',
+        config: applyTeamsToolDefaults({
+          ...prev.config,
+          tenantId: draft.tenantId ?? prev.config.tenantId,
+        }),
+      }))
+    },
+    []
+  )
+
+  const applyTeamsGraphConsent = useCallback(
+    (callback: TeamsGraphConsentCallback) => {
+      if (callback.status === 'success' && callback.providerTenantId?.trim()) {
+        setState((prev) => ({
+          ...prev,
+          config: applyTeamsToolDefaults({
+            ...prev.config,
+            tenantId: callback.providerTenantId?.trim(),
+          }),
+        }))
+        clearTeamsToolInstallDraft()
+        return
+      }
+
+      if (callback.status === 'error') {
+        clearTeamsToolInstallDraft()
+      }
+    },
+    []
+  )
+
+  const loadTeamsInstallDraft = useCallback(
+    (installStateId?: string) => readTeamsToolInstallDraft(installStateId),
+    []
+  )
+
+  const isFormValid =
+    isToolFormValidBase({
+      toolName: state.toolName,
+      toolId: state.toolId,
+      toolType: state.toolType,
+      config: state.config,
+      isCreating,
+    }) &&
+    (state.toolType !== 'teams' ||
+      (state.config.allowedOperations?.length ??
+        DEFAULT_TEAMS_ALLOWED_OPERATIONS.length) > 0) &&
+    (state.toolType !== 'teams' ||
+      !state.config.teamId?.trim() ||
+      !state.config.tenantId?.trim() ||
+      (allToolsLoaded &&
+        countTeamsToolsForTeam(
+          allTools,
+          state.config.teamId,
+          state.config.tenantId,
+          state.toolId
+        ) === 0))
 
   const handleSave = useCallback(async () => {
     if (!tool || !isFormValid) {
@@ -465,19 +583,38 @@ export const useToolConfig = ({
       config:
         state.toolType === 'rag_emporix'
           ? toRagEmporixToolConfig(state.config)
-          : state.config,
+          : state.toolType === 'teams'
+            ? toTeamsToolConfigForSave(state.config)
+            : state.config,
       enabled: tool.enabled ?? true,
     }
 
     try {
       setSaving(true)
+
       await updateToolApi(appState, updatedTool)
+
+      if (state.toolType === 'teams' && onAgentsUpdated && appState) {
+        const agents = await getCustomAgents(appState)
+        onAgentsUpdated(agents)
+      }
+
+      setAllTools((prev) => {
+        const exists = prev.some((entry) => entry.id === updatedTool.id)
+        if (exists) {
+          return prev.map((entry) =>
+            entry.id === updatedTool.id ? updatedTool : entry
+          )
+        }
+        return [...prev, updatedTool]
+      })
+
       showSuccess(
         isCreating
           ? t('tool_created_successfully')
           : t('tool_updated_successfully')
       )
-      onSave()
+      onSave(updatedTool.id, updatedTool.type)
     } catch (err) {
       const errorMessage = formatApiError(err, t('error_saving_tool'))
       showError(`${t('error_saving_tool')}: ${errorMessage}`)
@@ -488,6 +625,7 @@ export const useToolConfig = ({
     appState,
     isCreating,
     isFormValid,
+    onAgentsUpdated,
     onSave,
     showError,
     showSuccess,
@@ -509,6 +647,7 @@ export const useToolConfig = ({
     ragEmporixEntityTypeOptions,
     updateField,
     updateConfig,
+    updateAllowedOperations,
     updateRagEmporixEntityType,
     updateNestedConfig,
     updateDeeplyNestedConfig,
@@ -523,5 +662,8 @@ export const useToolConfig = ({
     selectFilterFieldKey,
     handleSave,
     isFormValid,
+    applyTeamsGraphConsent,
+    restoreTeamsInstallDraft,
+    loadTeamsInstallDraft,
   }
 }

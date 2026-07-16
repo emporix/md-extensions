@@ -3,6 +3,7 @@ import {
   formatDomainSectionTitle,
   getDomainSectionTags,
   getNativeToolSectionTags,
+  getNativeToolTags,
   getPredefinedMcpForDomain,
   getSelectedDomainTools,
   isCustomMcpAttached,
@@ -148,5 +149,12 @@ describe('agentToolsHelpers', () => {
       { id: '2', name: 'RAG', type: 'rag_emporix', config: {} },
     ])
     expect(tags).toEqual(['RAG Tools', 'Slack'])
+  })
+
+  it('getNativeToolTags maps individual tool types', () => {
+    expect(getNativeToolTags({ type: 'slack' })).toEqual(['Slack'])
+    expect(getNativeToolTags({ type: 'teams' })).toEqual(['Microsoft Teams'])
+    expect(getNativeToolTags({ type: 'rag_custom' })).toEqual(['RAG Tools'])
+    expect(getNativeToolTags({ type: 'file' })).toEqual(['File'])
   })
 })

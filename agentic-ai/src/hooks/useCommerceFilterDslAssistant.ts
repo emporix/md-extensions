@@ -79,7 +79,7 @@ export const useCommerceFilterDslAssistant = ({
         if (!cancelled) {
           setHelperAgentPresent(false)
           showError(
-            formatApiError(err, 'Failed to check helper agent availability.')
+            formatApiError(err, t('helper_agent_availability_check_failed'))
           )
         }
       }
@@ -87,7 +87,7 @@ export const useCommerceFilterDslAssistant = ({
     return () => {
       cancelled = true
     }
-  }, [activeTab, appState, helperAgentPresent, showError])
+  }, [activeTab, appState, helperAgentPresent, showError, t])
 
   const handleEnableHelperAgent = useCallback(async () => {
     setProvisioningAgent(true)

@@ -52,10 +52,13 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
   )
 
   const availableTriggerTypes = useMemo(() => {
-    const triggerTypes = getTriggerTypes(t)
-    return agentType === 'support'
-      ? triggerTypes.filter((option) => option.value === 'slack')
-      : triggerTypes.filter((option) => option.value !== 'slack')
+    const allTriggerTypes = getTriggerTypes(t)
+    if (agentType === 'support') {
+      return allTriggerTypes.filter((option) => option.value === 'slack')
+    }
+    return allTriggerTypes.filter(
+      (option) => option.value !== 'slack' && option.value !== 'teams'
+    )
   }, [t, agentType])
 
   const selectedTrigger = isDetailVariant ? (triggerTypes[0] ?? null) : null
@@ -249,7 +252,6 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
             display="chip"
             placeholder={t('select_trigger_types')}
             appendTo="self"
-            disabled={agentType === 'support'}
           />
         </div>
 
@@ -279,8 +281,7 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
                 className="w-full"
                 placeholder={t('select_an_option')}
                 appendTo="self"
-                disabled={agentType === 'support'}
-                showClear={agentType !== 'support'}
+                showClear
               />
             </div>
 

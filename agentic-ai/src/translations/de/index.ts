@@ -89,6 +89,42 @@ const TRANSLATIONS_DE = {
   user_prompt_placeholder: 'Der Benutzer-Prompt wird hier angezeigt',
   template_prompt: 'Vorlagen-Prompt',
   template_prompt_placeholder: 'Der Vorlagen-Prompt wird hier angezeigt',
+  output_format: 'Ausgabeformat',
+  output_format_placeholder:
+    'Optionales JSON Schema zur Definition der Struktur der Agentenantwort (z. B. {"type": "object", "properties": {"answer": {"type": "string"}}})',
+  format_json_schema: 'JSON Schema formatieren',
+  generate_json_schema: 'JSON Schema generieren',
+  generate_json_schema_working: 'JSON Schema wird generiert…',
+  generate_json_schema_prompt_placeholder:
+    'z. B. Ein Objekt mit einer String-Antwort und einem numerischen Konfidenzwert zwischen 0 und 1',
+  output_format_invalid_json:
+    'Ungültiges JSON. Bitte überprüfen Sie die Syntax und versuchen Sie es erneut.',
+  output_format_invalid_json_schema:
+    'Ungültiges JSON Schema. Fügen Sie mindestens ein Schema-Schlüsselwort hinzu (z. B. type, properties) und stellen Sie gültige Werte sicher.',
+
+  json_schema_assistant_checking: 'Prüfe, ob der Hilfeagent verfügbar ist…',
+  json_schema_assistant_intro:
+    'Verwenden Sie einen dedizierten Hilfeagenten, um die erwartete Agentenantwort in natürlicher Sprache zu beschreiben und JSON Schema für dieses Feld zu erhalten. Der Hilfeagent ist deaktiviert, bis Sie ihn einmal aus unseren vordefinierten Vorlagen erstellen.',
+  json_schema_assistant_enable: 'Hilfeagent aktivieren',
+  json_schema_assistant_agent_created: 'Hilfeagent wurde erstellt.',
+  json_schema_assistant_agent_exists:
+    'Hilfeagent existiert bereits. Sie können Ihr Schema unten beschreiben.',
+  json_schema_assistant_extract_failed:
+    'In der Agentenantwort wurde kein gültiges JSON Schema gefunden. Fordern Sie nur JSON an oder versuchen Sie es erneut.',
+  json_schema_assistant_applied:
+    'JSON Schema wurde übernommen. Überprüfen Sie das Ausgabeformat-Feld.',
+  json_schema_assistant_create_failed:
+    'Der Hilfeagent konnte nicht erstellt oder aktiviert werden.',
+  json_schema_assistant_chat_failed:
+    'Der Hilfeagent hat keine verwertbare Antwort zurückgegeben.',
+  json_schema_assistant_empty_response:
+    'Der Hilfeagent hat eine leere Nachricht zurückgegeben.',
+  json_schema_assistant_template_not_found:
+    'Die JSON-Schema-Hilfevorlage ist für diesen Mandanten nicht verfügbar.',
+  json_schema_assistant_enable_failed:
+    'Der vorhandene Hilfeagent konnte nicht aktiviert werden.',
+  helper_agent_availability_check_failed:
+    'Verfügbarkeit des Hilfeagenten konnte nicht geprüft werden.',
 
   // Agent Configuration Panel
   agent_config_panel_title: 'Agent-Konfiguration',
@@ -129,6 +165,38 @@ const TRANSLATIONS_DE = {
   trigger_type_time: 'Zeitgesteuert',
   trigger_type_commerce: 'Commerce-Ereignis',
   trigger_type_slack: 'Slack',
+  trigger_type_teams: 'Microsoft Teams',
+  teams_default_inbound_agent: 'Standard-Eingangsagent',
+  teams_default_inbound_agent_tooltip:
+    'Optional. Agent, der die erste eingehende Teams-Nachricht in diesem Team verarbeitet, wenn noch keine Konversation existiert. Beim Speichern werden Teams-Trigger und Tool diesem Agenten zugewiesen. Leer lassen, um Cold-Inbound-Routing zu deaktivieren.',
+  teams_default_inbound_agent_hint:
+    'Leer lassen, um Cold-Inbound-Routing zu deaktivieren.',
+  teams_default_inbound_agent_not_found:
+    'Ausgewählter Standard-Eingangsagent wurde nicht gefunden. Aktualisieren und erneut versuchen.',
+  conversations: 'Konversationen',
+  conversation_name: 'Kanal / Chat',
+  filter_by_conversation_name: 'Nach Kanal / Chat filtern',
+  no_conversations_found_with_filters:
+    'Keine Konversationen für die Filter gefunden',
+  conversations_tab_hint:
+    'Zuweisungen entstehen, wenn ein Agent in Teams kollaboriert oder jemand zum ersten Mal dem Bot schreibt. Zeile anklicken, um Sitzungsprotokolle zu öffnen.',
+  error_loading_conversations: 'Konversationen konnten nicht geladen werden',
+  loading_conversations: 'Konversationen werden geladen...',
+  not_available: 'k. A.',
+  teams_allowed_operations: 'Erlaubte Operationen',
+  teams_allowed_operations_hint:
+    'Maximale Operationen, die dieses Teams-Tool bereitstellen darf. Agenten können die Teilmenge pro Zuordnung weiter einschränken.',
+  teams_agent_allowed_operations: 'Erlaubte Aktionen für diesen Agenten',
+  teams_agent_allowed_operations_hint:
+    'Wähle, welche Teams-Aktionen dieser Agent ausführen darf. Optionen sind durch die Tool-Konfiguration begrenzt.',
+  teams_team_config_conflict:
+    'Ein anderes Teams-Tool nutzt bereits diese Tenant- und Team-Kombination. Pro Paar ist nur ein Tool erlaubt.',
+  teams_operation_sendMessage: 'Nachricht senden',
+  teams_operation_createChat: 'Chat erstellen',
+  teams_operation_createChannel: 'Kanal erstellen',
+  teams_operation_inviteParticipants: 'Teilnehmer einladen',
+  teams_operation_collaborateOnChannel: 'Auf Kanal zusammenarbeiten',
+  teams_operation_collaborateOnChat: 'Im Chat zusammenarbeiten',
   prompt: 'Prompt',
   llm_config: 'LLM-Konfiguration',
   model: 'Modell',
@@ -197,7 +265,8 @@ const TRANSLATIONS_DE = {
   reindex_triggered_successfully: 'Neuindizierung erfolgreich gestartet!',
   reindex_completed_successfully: 'Neuindizierung erfolgreich abgeschlossen!',
   reindex_job_failed: 'Neuindizierungsauftrag fehlgeschlagen.',
-  reindex_job_already_in_progress: 'Für diesen Entitätstyp läuft bereits ein Neuindizierungsauftrag.',
+  reindex_job_already_in_progress:
+    'Für diesen Entitätstyp läuft bereits ein Neuindizierungsauftrag.',
   error_triggering_reindex: 'Fehler beim Starten der Neuindizierung',
   failed_to_trigger_reindex: 'Neuindizierung konnte nicht gestartet werden.',
   reindex_confirmation:
@@ -297,6 +366,10 @@ const TRANSLATIONS_DE = {
   select_token: 'Token auswählen',
   loading_tokens: 'Lade Token...',
   native_tools: 'Native Tools',
+  native_tool_chip_team: 'Team: {{teamId}}',
+  native_tool_chip_tenant: 'Mandant: {{tenantId}}',
+  native_tool_chip_bot_token: 'Bot-Token: ••••••••',
+  native_tool_chip_generic: '{{type}}-Tool',
   select_tools: 'Tools auswählen',
   select_tools_placeholder: 'Tools auswählen',
   search_tools: 'Tools durchsuchen',
@@ -445,6 +518,78 @@ const TRANSLATIONS_DE = {
   error_slack_installation: 'Fehler beim Initiieren der Slack-Installation',
   failed_to_initiate_slack_installation:
     'Slack-Installation konnte nicht gestartet werden',
+
+  // Microsoft Teams tool installation
+  install_teams: 'Microsoft Teams installieren',
+  install_emporix_teams_ai: 'Emporix Microsoft Teams AI installieren',
+  connect_teams: 'Microsoft Teams verbinden',
+  teams_install_description:
+    'Richten Sie Emporix AI in Ihrem Microsoft-365-Mandanten ein. Ein Teams-Administrator muss die Emporix-App zuerst im Mandanten-Katalog bereitstellen. Erteilen Sie dann die Graph-Admin-Einwilligung, installieren Sie die App für Benutzer und vervollständigen Sie die Einstellungen.',
+  grant_teams_graph_consent: 'Graph-Admin-Einwilligung erteilen',
+  teams_graph_consent_tenant_hint:
+    'Azure-AD-Mandanten-ID (Entra ID) des Kunden. Wird für Graph-Admin-Einwilligung und mandantenspezifische Teams-Installationslinks verwendet.',
+  teams_graph_consent_requires_tenant_id:
+    'Geben Sie die Azure-AD-Mandanten-ID ein, bevor Sie die Graph-Admin-Einwilligung erteilen.',
+  teams_graph_consent_url_missing:
+    'Graph-Admin-Einwilligung ist im AI-Service nicht konfiguriert.',
+  teams_graph_consent_success:
+    'Graph-Admin-Einwilligung erteilt. Ermitteln Sie die Team-ID (siehe Installationsschritte auf dem Tab Allgemein), vervollständigen Sie die Einstellungen und speichern Sie.',
+  teams_graph_consent_error: 'Graph-Admin-Einwilligung fehlgeschlagen',
+  teams_graph_consent_unknown:
+    'Graph-Admin-Einwilligung lieferte ein unbekanntes Ergebnis',
+  teams_install_requires_tool_id:
+    'Legen Sie auf dem Tab Allgemein zuerst eine Tool-ID fest. Nach der Admin-Einwilligung leitet Microsoft zurück zu diesem Tool-Editor.',
+  teams_install_step_tenant_id:
+    'Geben Sie die Azure-AD-Mandanten-ID des Kunden im Feld oben ein.',
+  teams_install_step_org_catalog:
+    'Teams-Administrator: Laden Sie das App-Paket unten herunter und laden Sie es im Teams-Admincenter unter Teams-Apps → Apps verwalten hoch. Setzen Sie die App auf Zugelassen und weisen Sie sie bei Bedarf per App-Berechtigungsrichtlinie zu. Nur einmal pro Kundenmandant erforderlich.',
+  teams_install_step_graph_consent:
+    'Erteilen Sie die Admin-Einwilligung für die Emporix-Graph-App (erforderlich für ausgehende Zusammenarbeit und Bot-Installation in Gruppenchats). Verwenden Sie unten Graph-Admin-Einwilligung erteilen.',
+  teams_install_step_connect:
+    'Klicken Sie auf Microsoft Teams verbinden, um die Installationsseite im Kundenmandanten zu öffnen. Fügen Sie die App einem Team hinzu (nicht nur für den persönlichen Gebrauch). Schlägt der Link fehl, prüfen Sie, ob die App im Mandanten-Katalog vorhanden ist und die Mandanten-ID stimmt.',
+  install_status_pending:
+    'Die Installation bleibt ausstehend, bis die App im Mandanten-Katalog vorhanden ist, ein Benutzer sie installiert hat und der Bot seine erste Aktivität empfangen hat.',
+  teams_install_step_sideload:
+    'Fallback: Laden Sie das Emporix-App-Paket über Teams → Apps → Apps verwalten → Benutzerdefinierte App hochladen hoch (erfordert Richtlinie für benutzerdefinierte Apps).',
+  teams_install_step_settings:
+    'Öffnen Sie den Tab Einstellungen: fügen Sie die Team-ID ein (siehe So ermitteln Sie die Team-ID unten), bestätigen Sie die Mandanten-ID, konfigurieren Sie erlaubte Operationen und speichern Sie. Die Team-ID kann nach dem ersten Speichern nicht mehr geändert werden.',
+  teams_install_how_to_find_team_id: 'So ermitteln Sie die Team-ID',
+  teams_install_team_id_intro:
+    'Die Team-ID ist die Microsoft-365-Gruppen-ID (GUID) des Zielteams — derselbe Wert wie groupId in einem Teams-Teamlink.',
+  teams_install_team_id_method_teams_app_title: 'Über Microsoft Teams',
+  teams_install_team_id_method_teams_app_1:
+    'Öffnen Sie Teams und wählen Sie das Zielteam in der Seitenleiste.',
+  teams_install_team_id_method_teams_app_2:
+    'Klicken Sie auf ⋯ neben dem Teamnamen und wählen Sie Link zum Team abrufen.',
+  teams_install_team_id_method_teams_app_3:
+    'Kopieren Sie den Link, fügen Sie ihn in einen Texteditor ein und kopieren Sie den Wert des groupId-Query-Parameters.',
+  teams_install_team_id_method_admin_title: 'Über das Teams-Admincenter',
+  teams_install_team_id_method_admin_1:
+    'Öffnen Sie das Teams-Admincenter → Teams → Teams verwalten.',
+  teams_install_team_id_method_admin_2:
+    'Wählen Sie das Zielteam und kopieren Sie die Gruppen-ID (oder exportieren Sie die Teamliste).',
+  teams_install_team_id_example:
+    'Beispiel: …?groupId=0efcc002-6001-4a21-991b-8ba10bac0612&tenantId=… — fügen Sie den groupId-Wert als Team-ID ein.',
+  teams_install_team_id_team_scope_warning:
+    'Die App muss einem Team hinzugefügt werden. Eine reine persönliche Installation hat keine Team-ID.',
+  teams_install_state_id_hint:
+    'Installations-Korrelations-ID: {{id}}. Teilen Sie diese mit dem Support, wenn Sie Hilfe bei der Installation benötigen.',
+  open_teams_apps: 'Teams (Web) öffnen',
+  download_teams_app_package: 'App-Paket herunterladen',
+  open_teams_admin_center: 'Teams-Admincenter öffnen',
+  error_teams_installation: 'Fehler beim Initiieren der Teams-Installation',
+  failed_to_initiate_teams_installation:
+    'Teams-Installation konnte nicht gestartet werden',
+  tenant_id: 'Mandanten-ID (AAD)',
+  enter_tenant_id: 'Azure AD-Mandanten-ID eingeben',
+  teams_team_id_hint:
+    'Microsoft-365-Gruppen-ID (GUID) des Zielteams. Kopieren Sie groupId aus einem Teamlink oder die Gruppen-ID aus dem Teams-Admincenter (siehe Installationsschritte auf dem Tab Allgemein). Vor dem Speichern prüfen — die Team-ID kann später nicht geändert werden.',
+  teams_team_id_hint_immutable:
+    'Die Team-ID kann nach der Erstellung des Tools nicht mehr geändert werden.',
+  teams_tenant_id_hint:
+    'Azure-AD-Mandanten-ID aus der Bot-Installationsaktivität (channelData.tenant.id). Erforderlich, um Ihren Microsoft-365-Mandanten an dieses Tool zu binden.',
+  teams_tenant_id_hint_immutable:
+    'Die Mandanten-ID kann nach der Erstellung des Tools nicht mehr geändert werden.',
 
   commerce_events: 'Commerce-Ereignisse',
   select_events: 'Ereignisse auswählen',

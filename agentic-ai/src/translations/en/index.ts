@@ -87,6 +87,43 @@ const TRANSLATIONS_EN = {
   user_prompt_placeholder: 'User prompt will appear here',
   template_prompt: 'Template Prompt',
   template_prompt_placeholder: 'Template prompt will appear here',
+  output_format: 'Output Format',
+  output_format_placeholder:
+    'Optional JSON Schema defining the structure of the agent response (e.g. {"type": "object", "properties": {"answer": {"type": "string"}}})',
+  format_json_schema: 'Format JSON Schema',
+  generate_json_schema: 'Generate JSON Schema',
+  generate_json_schema_working: 'Generating JSON Schema…',
+  generate_json_schema_prompt_placeholder:
+    'e.g. An object with a string answer and a numeric confidence score between 0 and 1',
+  output_format_invalid_json:
+    'Invalid JSON. Please check the syntax and try again.',
+  output_format_invalid_json_schema:
+    'Invalid JSON Schema. Include at least one schema keyword (e.g. type, properties) and ensure values are valid.',
+
+  json_schema_assistant_checking:
+    'Checking whether the helper agent is available…',
+  json_schema_assistant_intro:
+    'Use a dedicated helper agent to describe the expected agent response in plain language and get JSON Schema for this field. The helper agent is disabled until you create it once from our predefined templates.',
+  json_schema_assistant_enable: 'Enable helper agent',
+  json_schema_assistant_agent_created: 'Helper agent created.',
+  json_schema_assistant_agent_exists:
+    'Helper agent already exists. You can describe your schema below.',
+  json_schema_assistant_extract_failed:
+    'Could not find valid JSON Schema in the agent response. Ask for JSON only or try again.',
+  json_schema_assistant_applied:
+    'JSON Schema was applied. Review the Output Format field.',
+  json_schema_assistant_create_failed:
+    'Could not create or enable the helper agent.',
+  json_schema_assistant_chat_failed:
+    'The helper agent did not return a usable response.',
+  json_schema_assistant_empty_response:
+    'The helper agent returned an empty message.',
+  json_schema_assistant_template_not_found:
+    'The JSON Schema helper template is not available for this tenant.',
+  json_schema_assistant_enable_failed:
+    'Could not enable the existing helper agent.',
+  helper_agent_availability_check_failed:
+    'Failed to check helper agent availability.',
 
   // Agent Configuration Panel
   agent_config_panel_title: 'Agent Configuration',
@@ -127,6 +164,38 @@ const TRANSLATIONS_EN = {
   trigger_type_time: 'Time trigger',
   trigger_type_commerce: 'Commerce Event',
   trigger_type_slack: 'Slack',
+  trigger_type_teams: 'Microsoft Teams',
+  teams_default_inbound_agent: 'Default inbound agent',
+  teams_default_inbound_agent_tooltip:
+    'Optional. Agent that handles the first inbound Teams message on this team when no conversation exists yet. Saving assigns the Teams trigger and tool to that agent. Clear to disable cold inbound routing.',
+  teams_default_inbound_agent_hint:
+    'Leave empty to disable cold inbound routing.',
+  teams_default_inbound_agent_not_found:
+    'Selected default inbound agent was not found. Refresh and try again.',
+  conversations: 'Conversations',
+  conversation_name: 'Channel / Chat',
+  filter_by_conversation_name: 'Filter by channel / chat',
+  no_conversations_found_with_filters:
+    'No conversations found matching the filters',
+  conversations_tab_hint:
+    'Assignments are created when an agent collaborates in Teams or when someone first messages the bot. Click a row to open session logs.',
+  error_loading_conversations: 'Failed to load conversations',
+  loading_conversations: 'Loading conversations...',
+  not_available: 'N/A',
+  teams_allowed_operations: 'Allowed operations',
+  teams_allowed_operations_hint:
+    'Maximum operations this Teams tool may expose. Agents can further restrict the subset per attachment.',
+  teams_agent_allowed_operations: 'Allowed actions for this agent',
+  teams_agent_allowed_operations_hint:
+    'Choose which Teams actions this agent may call. Options are limited by the tool configuration.',
+  teams_team_config_conflict:
+    'Another Teams tool already uses this tenant and team combination. Only one tool is allowed per pair.',
+  teams_operation_sendMessage: 'Send message',
+  teams_operation_createChat: 'Create chat',
+  teams_operation_createChannel: 'Create channel',
+  teams_operation_inviteParticipants: 'Invite participants',
+  teams_operation_collaborateOnChannel: 'Collaborate on channel',
+  teams_operation_collaborateOnChat: 'Collaborate on chat',
   prompt: 'Prompt',
   llm_config: 'LLM Configuration',
   model: 'Model',
@@ -194,7 +263,8 @@ const TRANSLATIONS_EN = {
   reindex_triggered_successfully: 'Reindex triggered successfully!',
   reindex_completed_successfully: 'Reindex completed successfully!',
   reindex_job_failed: 'Reindex job failed.',
-  reindex_job_already_in_progress: 'A reindex job is already in progress for this entity type.',
+  reindex_job_already_in_progress:
+    'A reindex job is already in progress for this entity type.',
   error_triggering_reindex: 'Error triggering reindex',
   failed_to_trigger_reindex: 'Failed to trigger reindex',
   reindex_confirmation:
@@ -293,6 +363,10 @@ const TRANSLATIONS_EN = {
   select_token: 'Select token',
   loading_tokens: 'Loading tokens...',
   native_tools: 'Native Tools',
+  native_tool_chip_team: 'Team: {{teamId}}',
+  native_tool_chip_tenant: 'Tenant: {{tenantId}}',
+  native_tool_chip_bot_token: 'Bot Token: ••••••••',
+  native_tool_chip_generic: '{{type}} Tool',
   select_tools: 'Select Tools',
   select_tools_placeholder: 'Select tools',
   search_tools: 'Search tools',
@@ -439,6 +513,77 @@ const TRANSLATIONS_EN = {
   error_slack_installation: 'Error initiating Slack installation',
   failed_to_initiate_slack_installation:
     'Failed to initiate Slack installation',
+
+  // Microsoft Teams tool installation
+  install_teams: 'Install Microsoft Teams',
+  install_emporix_teams_ai: 'Install Emporix Microsoft Teams AI',
+  connect_teams: 'Connect Microsoft Teams',
+  teams_install_description:
+    'Set up Emporix AI in your Microsoft 365 tenant. A Teams admin must add the Emporix app to your tenant catalog first. Then grant Graph admin consent, install the app for users, and complete Settings.',
+  grant_teams_graph_consent: 'Grant Graph admin consent',
+  teams_graph_consent_tenant_hint:
+    'Customer Azure AD (Entra ID) tenant ID. Used for Graph admin consent and tenant-scoped Teams install links.',
+  teams_graph_consent_requires_tenant_id:
+    'Enter the Azure AD tenant ID before granting Graph admin consent.',
+  teams_graph_consent_url_missing:
+    'Graph admin consent is not configured on the AI service.',
+  teams_graph_consent_success:
+    'Graph admin consent granted. Find your Team ID (see install steps on the General tab), complete Settings, then save.',
+  teams_graph_consent_error: 'Graph admin consent failed',
+  teams_graph_consent_unknown: 'Graph admin consent returned an unknown result',
+  teams_install_requires_tool_id:
+    'Set a Tool ID on the General tab before starting install steps. Microsoft redirects back to this tool editor after admin consent.',
+  teams_install_step_tenant_id:
+    'Enter the customer Azure AD tenant ID in the field above.',
+  teams_install_step_org_catalog:
+    'Teams admin: download the app package below, then upload it in Teams Admin Center → Teams apps → Manage apps. Set the app to Allowed and assign it via app permission policy if required. Only needed once per customer tenant.',
+  teams_install_step_graph_consent:
+    'Grant admin consent for the Emporix Graph app (required for outbound collaboration and group chat bot installation). Use Grant Graph admin consent below.',
+  teams_install_step_connect:
+    'Click Connect Microsoft Teams to open the install page in the customer tenant. When installing, add the app to a team (not personal use only). If the link fails, confirm the app is in the tenant catalog and the tenant ID is correct.',
+  install_status_pending:
+    'Installation stays pending until the app is in your tenant catalog, a user has installed it, and the bot has received its first activity.',
+  teams_install_step_sideload:
+    'Fallback: upload the Emporix app package via Teams → Apps → Manage your apps → Upload a custom app (requires custom-app upload policy).',
+  teams_install_step_settings:
+    'Open the Settings tab: paste the Team ID (see How to find Team ID below), confirm Tenant ID, configure allowed operations, then save. Team ID cannot be changed after the first save.',
+  teams_install_how_to_find_team_id: 'How to find Team ID',
+  teams_install_team_id_intro:
+    'Team ID is the Microsoft 365 Group ID (GUID) of the target Teams team—the same value as groupId in a Teams team link.',
+  teams_install_team_id_method_teams_app_title: 'From Microsoft Teams',
+  teams_install_team_id_method_teams_app_1:
+    'Open Teams and select the target team in the sidebar.',
+  teams_install_team_id_method_teams_app_2:
+    'Click ⋯ next to the team name, then choose Get link to team.',
+  teams_install_team_id_method_teams_app_3:
+    'Copy the link, paste it into a text editor, and copy the groupId query parameter value.',
+  teams_install_team_id_method_admin_title: 'From Teams Admin Center',
+  teams_install_team_id_method_admin_1:
+    'Open Teams Admin Center → Teams → Manage teams.',
+  teams_install_team_id_method_admin_2:
+    'Select the target team and copy its Group ID (or export the team list).',
+  teams_install_team_id_example:
+    'Example: …?groupId=0efcc002-6001-4a21-991b-8ba10bac0612&tenantId=… — paste the groupId value as Team ID.',
+  teams_install_team_id_team_scope_warning:
+    'The app must be added to a team. Personal-only installation has no Team ID.',
+  teams_install_state_id_hint:
+    'Install correlation ID: {{id}}. Share this with support if you need help with installation.',
+  open_teams_apps: 'Open Teams (web)',
+  download_teams_app_package: 'Download app package',
+  open_teams_admin_center: 'Open Teams Admin Center',
+  error_teams_installation: 'Error initiating Teams installation',
+  failed_to_initiate_teams_installation:
+    'Failed to initiate Teams installation',
+  tenant_id: 'Tenant ID (AAD)',
+  enter_tenant_id: 'Enter Azure AD tenant ID',
+  teams_team_id_hint:
+    'Microsoft 365 Group ID (GUID) of the target Teams team. Copy groupId from a team link or Group ID from Teams Admin Center (see General tab install steps). Verify before saving—Team ID cannot be changed later.',
+  teams_team_id_hint_immutable:
+    'Team ID cannot be changed after the tool is created.',
+  teams_tenant_id_hint:
+    'Azure AD tenant ID from bot install activity (channelData.tenant.id). Required to bind your Microsoft 365 tenant to this tool.',
+  teams_tenant_id_hint_immutable:
+    'Tenant ID cannot be changed after the tool is created.',
 
   // Commerce Events
   commerce_events: 'Commerce Events',

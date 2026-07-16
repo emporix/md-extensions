@@ -812,6 +812,7 @@ paths:
                 items:
                   oneOf:
                     - $ref: '#/components/schemas/SlackNativeToolResponse'
+                    - $ref: '#/components/schemas/TeamsNativeToolResponse'
               examples:
                 Tools Response:
                   $ref: '#/components/examples/SlackNativeToolsResponse'
@@ -855,6 +856,7 @@ paths:
                 items:
                   oneOf:
                     - $ref: '#/components/schemas/SlackNativeToolResponse'
+                    - $ref: '#/components/schemas/TeamsNativeToolResponse'
               examples:
                 Tools Response:
                   $ref: '#/components/examples/SlackNativeToolsResponse'
@@ -899,6 +901,7 @@ paths:
               schema:
                 oneOf:
                   - $ref: '#/components/schemas/SlackNativeToolResponse'
+                  - $ref: '#/components/schemas/TeamsNativeToolResponse'
               examples:
                 Tool Response:
                   $ref: '#/components/examples/SlackNativeToolResponse'
@@ -1576,7 +1579,7 @@ components:
     # Native Tools:
     NativeToolType:
       type: string
-      enum: [slack]
+      enum: [slack, teams]
       description: Type of the native tool.
     BaseNativeTool:
       type: object
@@ -1636,12 +1639,72 @@ components:
               $ref: '#/components/schemas/SlackNativeToolConfigResponse'
             metadata:
               $ref: '#/components/schemas/MetadataResponse'
+    TeamsNativeToolConfigResponse:
+      type: object
+      properties:
+        teamId:
+          type: string
+          description: Microsoft Teams team ID.
+        tenantId:
+          type: string
+          description: Microsoft Entra tenant ID for the customer workspace.
+        defaultInboundAgentId:
+          type: string
+          description: Optional agent that receives first inbound message when no conversation context exists. When omitted, cold inbound Teams messages are not routed to an agent.
+        allowedOperations:
+          type: array
+          items:
+            type: string
+            enum:
+              - sendMessage
+              - createChat
+              - createChannel
+              - inviteParticipants
+              - collaborateOnChannel
+              - collaborateOnChat
+      required:
+        - teamId
+        - tenantId
+        - allowedOperations
+    TeamsNativeToolConfigRequest:
+      allOf:
+        - $ref: '#/components/schemas/TeamsNativeToolConfigResponse'
+    TeamsNativeToolRequest:
+      allOf:
+        - $ref: '#/components/schemas/BaseNativeTool'
+        - type: object
+          properties:
+            type:
+              description: For TeamsNativeTool it has to be set to `teams`.
+              example: teams
+            config:
+              $ref: '#/components/schemas/TeamsNativeToolConfigRequest'
+            metadata:
+              $ref: '#/components/schemas/MetadataRequest'
+          required:
+            - config
+    TeamsNativeToolResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseNativeTool'
+        - type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier of the tool.
+            type:
+              description: For TeamsNativeTool it has to be set to `teams`.
+              example: teams
+            config:
+              $ref: '#/components/schemas/TeamsNativeToolConfigResponse'
+            metadata:
+              $ref: '#/components/schemas/MetadataResponse'
     NativeToolsResponse:
       type: array
       description: List of native tools which agents should have access to.
       items:
         oneOf:
           - $ref: '#/components/schemas/SlackNativeToolResponse'
+          - $ref: '#/components/schemas/TeamsNativeToolResponse'
 
     # MCP Servers:
     McpServerConfigRequest:
@@ -1944,6 +2007,18 @@ components:
       required:
         - id
 
+    NativeToolReference:
+      type: object
+      properties:
+        id:
+          type: string
+        allowedOperations:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+
     AgentCollaborations:
       type: array
       description: List of agent collaborations which allows an agent to hand off its task to other agents.
@@ -1959,8 +2034,8 @@ components:
 
     TriggerType:
       type: string
-      enum: [endpoint,slack]
-      description: Type of the trigger. The `slack` trigger type can be used only for `support` agent type.
+      enum: [endpoint, slack, teams]
+      description: Type of the trigger. The `slack` and `teams` trigger types can be used only for `support` agent type.
     AgentTrigger:
       type: object
       properties:
@@ -2013,6 +2088,9 @@ components:
             userPrompt:
               type: string
               description: LLM Prompt which in detailed way describes how agent should work like, which tools it could use to solve some problems, it can contain examples and step by step guidance.
+            outputFormat:
+              type: string
+              description: Optional JSON Schema defining the structure of the agent response.
             trigger:
               $ref: '#/components/schemas/AgentTrigger'
             agentCollaborations:
@@ -2065,8 +2143,8 @@ components:
             nativeTools:
               type: array
               items:
-                $ref: '#/components/schemas/IdWrapper'
-              description: Id of the native tools.
+                $ref: '#/components/schemas/NativeToolReference'
+              description: Native tool references with optional per-agent allowedOperations subset.
             llmConfig:
               oneOf:
                 - $ref: '#/components/schemas/EmporixLlm'
@@ -2596,6 +2674,7 @@ components:
           schema:
             oneOf:
               - $ref: '#/components/schemas/SlackNativeToolRequest'
+              - $ref: '#/components/schemas/TeamsNativeToolRequest'
           examples:
             Create Slack Tool:
               $ref: '#/components/examples/SlackNativeToolRequest'

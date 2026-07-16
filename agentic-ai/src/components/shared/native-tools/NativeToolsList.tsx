@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { NativeTool } from '../../../types/Agent'
 import { Tool } from '../../../types/Tool'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSlack } from '@fortawesome/free-brands-svg-icons'
+import { faSlack, faMicrosoft } from '@fortawesome/free-brands-svg-icons'
 import { faCog } from '@fortawesome/free-solid-svg-icons'
 
 interface NativeToolsListProps {
@@ -35,7 +35,12 @@ export const NativeToolsList: React.FC<NativeToolsListProps> = ({
       }
     }
 
-    const icon = tool.type === 'slack' ? faSlack : faCog
+    const icon =
+      tool.type === 'slack'
+        ? faSlack
+        : tool.type === 'teams'
+          ? faMicrosoft
+          : faCog
 
     return {
       name: tool.name,
@@ -98,24 +103,54 @@ export const NativeToolsList: React.FC<NativeToolsListProps> = ({
             </div>
             <div className="native-tool-divider" />
             <div className="native-tool-details">
-              {toolInfo.type === 'slack' && toolInfo.config && (
-                <div className="native-tool-config">
-                  {toolInfo.config.teamId && (
-                    <span className="native-tool-config-chip">
-                      Team: {toolInfo.config.teamId}
-                    </span>
-                  )}
-                  {toolInfo.config.botToken && (
-                    <span className="native-tool-config-chip">
-                      Bot Token: ••••••••
-                    </span>
-                  )}
-                </div>
-              )}
-              {toolInfo.type !== 'slack' && (
+              {(toolInfo.type === 'slack' || toolInfo.type === 'teams') &&
+                toolInfo.config && (
+                  <div className="native-tool-config">
+                    {toolInfo.type === 'slack' && toolInfo.config.teamId && (
+                      <span className="native-tool-config-chip">
+                        {t('native_tool_chip_team', {
+                          teamId: toolInfo.config.teamId,
+                        })}
+                      </span>
+                    )}
+                    {toolInfo.type === 'slack' && toolInfo.config.botToken && (
+                      <span className="native-tool-config-chip">
+                        {t('native_tool_chip_bot_token')}
+                      </span>
+                    )}
+                    {toolInfo.type === 'teams' && toolInfo.config.tenantId && (
+                      <span className="native-tool-config-chip">
+                        {t('native_tool_chip_tenant', {
+                          tenantId: toolInfo.config.tenantId,
+                        })}
+                      </span>
+                    )}
+                    {toolInfo.type === 'teams' && toolInfo.config.teamId && (
+                      <span className="native-tool-config-chip">
+                        {t('native_tool_chip_team', {
+                          teamId: toolInfo.config.teamId,
+                        })}
+                      </span>
+                    )}
+                    {toolInfo.type === 'teams' &&
+                      nativeTool.allowedOperations &&
+                      nativeTool.allowedOperations.length > 0 &&
+                      nativeTool.allowedOperations.map((operation) => (
+                        <span
+                          key={`${nativeTool.id}-${operation}`}
+                          className="native-tool-config-chip"
+                        >
+                          {t(`teams_operation_${operation}`, operation)}
+                        </span>
+                      ))}
+                  </div>
+                )}
+              {toolInfo.type !== 'slack' && toolInfo.type !== 'teams' && (
                 <div className="native-tool-config">
                   <span className="native-tool-config-chip">
-                    {toolInfo.type.toUpperCase()} Tool
+                    {t('native_tool_chip_generic', {
+                      type: toolInfo.type.toUpperCase(),
+                    })}
                   </span>
                 </div>
               )}

@@ -144,6 +144,8 @@ export const MCP_DOMAIN_TAGS: Record<McpKey, readonly string[]> = {
   customer: ['Customer', 'Legal Entity', 'Location', 'Email'],
 }
 
+export const COLLABORATION_TRIGGER_TYPES = ['slack', 'teams'] as const
+
 export const getTriggerTypes = (t: TFunction) => [
   { label: t('trigger_type_api'), value: 'endpoint', disabled: false },
   {
@@ -152,6 +154,7 @@ export const getTriggerTypes = (t: TFunction) => [
     disabled: false,
   },
   { label: t('trigger_type_slack'), value: 'slack', disabled: false },
+  { label: t('trigger_type_teams'), value: 'teams', disabled: false },
 ]
 
 export const getLlmProviders = (t: TFunction) => [
