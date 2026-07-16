@@ -48,20 +48,31 @@ export default function usePagination(
   initialPaginationParams: Partial<PaginationProps> = DEFAULT_PAGINATION_PROPS,
   withQuery: boolean | undefined = true
 ) {
+  const initialPaginationParamsRef = useRef(initialPaginationParams)
+  initialPaginationParamsRef.current = initialPaginationParams
+
   const [paginationParams, setPaginationParams] = useState<
     Partial<PaginationProps>
-  >(initialPaginationParams)
+  >(() => ({
+    ...DEFAULT_PAGINATION_PROPS,
+    ...initialPaginationParamsRef.current,
+  }))
   const [totalCount, setTotalCount] = useState<number>(0)
   const [searchParams, setSearchParams] = useSearchParams()
   const setSearchParamsRef = useRef(setSearchParams)
   setSearchParamsRef.current = setSearchParams
+  const isInitialMount = useRef(true)
+  const isSyncingFromUrl = useRef(false)
 
   const { i18n } = useTranslation()
   const { contentLanguage } = useLocalizedValue()
 
   useEffect(() => {
-    setPaginationParams(initialPaginationParams)
-  }, [i18n.language, contentLanguage, initialPaginationParams])
+    setPaginationParams({
+      ...DEFAULT_PAGINATION_PROPS,
+      ...initialPaginationParamsRef.current,
+    })
+  }, [i18n.language, contentLanguage])
 
   const onPageCallback = (event: DataTablePageParams) => {
     const { first, page, rows } = event
@@ -139,7 +150,10 @@ export default function usePagination(
   }
 
   const resetPagination = () => {
-    setPaginationParams(initialPaginationParams)
+    setPaginationParams({
+      ...DEFAULT_PAGINATION_PROPS,
+      ...initialPaginationParamsRef.current,
+    })
   }
 
   const isFiltersActive = (filters: TableFilters) => {
@@ -149,45 +163,75 @@ export default function usePagination(
   }
 
   useEffect(() => {
-    const pageStr = searchParams.get('page')
-    const rowsStr = searchParams.get('rows')
-    if (pageStr && rowsStr) {
-      const rowsNum = parseInt(rowsStr, 10)
-      const rowsCurrentPage = parseInt(pageStr, 10)
-      setPaginationParams((pagination) => {
-        if (
-          pagination.currentPage === rowsCurrentPage &&
-          pagination.rows === rowsNum
-        ) {
-          return pagination
-        }
-        return {
-          ...pagination,
-          currentPage: rowsCurrentPage,
-          rows: rowsNum,
-          first: (rowsCurrentPage - 1) * rowsNum,
-        }
-      })
-    }
-  }, [searchParams])
-
-  useEffect(() => {
-    const { currentPage, rows } = paginationParams
-    if (!currentPage || !rows || !withQuery) {
+    if (!withQuery) {
       return
     }
-    setSearchParamsRef.current((currentSearchParams) => {
+
+    const pageStr = searchParams.get('page')
+    const rowsStr = searchParams.get('rows')
+    if (!pageStr || !rowsStr) {
+      return
+    }
+
+    const rowsNum = parseInt(rowsStr, 10)
+    const rowsCurrentPage = parseInt(pageStr, 10)
+    if (Number.isNaN(rowsNum) || Number.isNaN(rowsCurrentPage)) {
+      return
+    }
+
+    setPaginationParams((pagination) => {
       if (
-        currentSearchParams.get('page') === currentPage.toString() &&
-        currentSearchParams.get('rows') === rows.toString()
+        pagination.currentPage === rowsCurrentPage &&
+        pagination.rows === rowsNum
       ) {
-        return currentSearchParams
+        return pagination
       }
-      const nextSearchParams = new URLSearchParams(currentSearchParams)
-      nextSearchParams.set('page', currentPage.toString())
-      nextSearchParams.set('rows', rows.toString())
-      return nextSearchParams
-    }, { replace: true })
+
+      isSyncingFromUrl.current = true
+      return {
+        ...pagination,
+        currentPage: rowsCurrentPage,
+        rows: rowsNum,
+        first: (rowsCurrentPage - 1) * rowsNum,
+      }
+    })
+  }, [searchParams, withQuery])
+
+  useEffect(() => {
+    if (!withQuery) {
+      return
+    }
+
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+
+    if (isSyncingFromUrl.current) {
+      isSyncingFromUrl.current = false
+      return
+    }
+
+    const { currentPage, rows } = paginationParams
+    if (!currentPage || !rows) {
+      return
+    }
+
+    setSearchParamsRef.current(
+      (currentSearchParams) => {
+        if (
+          currentSearchParams.get('page') === currentPage.toString() &&
+          currentSearchParams.get('rows') === rows.toString()
+        ) {
+          return currentSearchParams
+        }
+        const nextSearchParams = new URLSearchParams(currentSearchParams)
+        nextSearchParams.set('page', currentPage.toString())
+        nextSearchParams.set('rows', rows.toString())
+        return nextSearchParams
+      },
+      { replace: true }
+    )
   }, [paginationParams, withQuery])
 
   const setFilters = (columns: DataTableColumnProps[]) => {
