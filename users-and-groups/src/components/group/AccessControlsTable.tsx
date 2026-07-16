@@ -76,7 +76,10 @@ const AccessControlsTable = () => {
         <TableActions onDelete={() => setVisible(domainGroup.name)} />
         <ConfirmBox
           visible={visible === domainGroup.name}
-          onAccept={() => handleRemoveDomain(domainGroup)}
+          onAccept={() => {
+            handleRemoveDomain(domainGroup)
+            setVisible(undefined)
+          }}
           onReject={() => setVisible(undefined)}
           title={t('usersAndGroups.groups.dialogs.unassignDomain.title')}
           message={t('usersAndGroups.groups.dialogs.unassignDomain.text', {
@@ -85,7 +88,7 @@ const AccessControlsTable = () => {
         />
       </>
     ),
-    [i18n.language, visible, handleRemoveDomain]
+    [i18n.language, t, visible, handleRemoveDomain]
   )
 
   const availableDomainGroups = useMemo(() => {

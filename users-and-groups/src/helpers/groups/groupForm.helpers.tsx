@@ -74,9 +74,12 @@ export const mapGroupToGroupForm = (group: Group): GroupFormFields => {
 
 export const mapGroupFormToPayload = (
   form: GroupFormFields,
-  templateId: string,
+  templateId: string | undefined,
   group?: Group
 ): Partial<Group> => {
+  const usesTemplates =
+    form.oeTemplates.length > 0 || form.dcpTemplates.length > 0
+
   return {
     ...(group ? group : {}),
     id: form.id,
@@ -86,10 +89,7 @@ export const mapGroupFormToPayload = (
       legalEntityId: form.b2b?.legalEntityId || '',
     },
     accessControls: form.accessControls ?? [],
-    templates:
-      form.oeTemplates.length > 0 || form.dcpTemplates.length > 0
-        ? [templateId]
-        : [],
+    templates: usesTemplates && templateId ? [templateId] : [],
     vendorId: form.vendorId,
     restrictions:
       form.restrictions && form.restrictions.length > 0

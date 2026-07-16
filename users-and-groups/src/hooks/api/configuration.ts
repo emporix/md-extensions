@@ -30,7 +30,7 @@ export const useConfigurationApi = () => {
         } catch (error) {
           console.error(error)
           console.info(
-            `Update failed trying to create new conifguration under key ${key}`
+            `Update failed trying to create new configuration under key ${key}`
           )
           if (error instanceof AxiosError && error.response?.status === 404) {
             return await createSingleConfiguration(tenant, key, payload)

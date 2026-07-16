@@ -30,7 +30,7 @@ interface Props {
 import { groupDetailPath } from '../../constants/paths'
 const GroupPageActions = (props: Props) => {
   const { activeTab, managerPermissions = false } = props
-  const { i18n, t } = useTranslation()
+  const { t } = useTranslation()
   const { blockPanel } = useUIBlocker()
   const { createGroup, updateGroup } = useIamApi()
   const { handleSubmit, formState, reset } = useFormContext<GroupFormFields>()
@@ -45,6 +45,12 @@ const GroupPageActions = (props: Props) => {
     async (data: GroupFormFields) => {
       try {
         const templateId = templates[0]?.id
+        const usesTemplates =
+          data.oeTemplates.length > 0 || data.dcpTemplates.length > 0
+        if (usesTemplates && !templateId) {
+          showError(t('usersAndGroups.groups.toasts.createGroup.error'))
+          return
+        }
         const payload = mapGroupFormToPayload(data, templateId)
         const filteredData = removeEmptyValues(payload)
         const newGroupId = await makeCall(
@@ -71,7 +77,16 @@ const GroupPageActions = (props: Props) => {
         }
       }
     },
-    [i18n, templates]
+    [
+      templates,
+      createGroup,
+      groupType,
+      blockPanel,
+      navigate,
+      t,
+      showSuccess,
+      showError,
+    ]
   )
 
   const submitEditGroup = useCallback(
@@ -84,6 +99,12 @@ const GroupPageActions = (props: Props) => {
 
       try {
         const templateId = templates[0]?.id
+        const usesTemplates =
+          data.oeTemplates.length > 0 || data.dcpTemplates.length > 0
+        if (usesTemplates && !templateId) {
+          showError(t('usersAndGroups.groups.toasts.editGroup.error'))
+          return
+        }
         const payload = mapGroupFormToPayload(data, templateId, group)
         const filteredData = removeEmptyValues(payload)
         await makeCall(
@@ -101,7 +122,18 @@ const GroupPageActions = (props: Props) => {
         )
       }
     },
-    [i18n, group, templates, groupType]
+    [
+      group,
+      templates,
+      groupType,
+      updateGroup,
+      blockPanel,
+      syncGroup,
+      syncUserAccessControls,
+      t,
+      showSuccess,
+      showError,
+    ]
   )
 
   return (
