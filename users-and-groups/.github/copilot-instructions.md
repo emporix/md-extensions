@@ -31,12 +31,20 @@ These rules are maintained centrally in the [frontend-ai-rules](https://github.c
 | `ui-components.mdc` | `ui-components.instructions.md` | `ui-components.md` | Component and page work |
 | `testing.mdc` | `testing.instructions.md` | `testing.md` | Test files |
 | `api-data.mdc` | `api-data.instructions.md` | `api-data.md` | API / service layer |
+| `npm-dependencies.mdc` | `npm-dependencies.instructions.md` | `npm-dependencies.md` | `package.json` / lockfiles — npm semver vs git URLs |
 | `performance.mdc` | `performance.instructions.md` | `performance.md` | Component performance |
 | `git-workflow.mdc` | `git-workflow.instructions.md` | `git-workflow.md` | Commits / branches |
 | `emporix-component-library.mdc` | `emporix-component-library.instructions.md` | `emporix-component-library.md` | Shared UI primitives |
 | `i18n.mdc` | `i18n.instructions.md` | `i18n.md` | Translations |
 | `primereact.mdc` | `primereact.instructions.md` | `primereact.md` | PrimeReact widgets (if applicable) |
 | `module-federation.mdc` | `module-federation.instructions.md` | `module-federation.md` | Module Federation (if applicable) |
+| `contributing-global-rules.mdc` | `contributing-global-rules.instructions.md` | `contributing-global-rules.md` | After feature work / upstream rule proposals |
+
+## Workflow Skills (from frontend-ai-rules)
+
+| Cursor | Copilot | Claude Code | Purpose |
+|--------|---------|-------------|---------|
+| `.cursor/skills/contribute-global-rule/` | `.github/skills/contribute-global-rule/` | `.claude/skills/contribute-global-rule/` | Open PR in frontend-ai-rules after approved lesson |
 
 ## Project-Specific Rules
 
