@@ -144,17 +144,12 @@ You will be requested to provide app context on the start if you access the loca
 
 ## Customizing the module
 
-This module uses [PrimeReact](https://www.primefaces.org/primereact-v8) (via `@emporix/component-library` and a few direct widgets). Default styling is inherited from the Management Dashboard when embedded.
+UI primitives come from `@emporix/component-library`. Pattern B widgets (DataTable, Dialog, Menu, Toast) ship with PrimeReact bundled inside the library — this module does **not** depend on `primereact` / `primeicons` directly.
 
-If you replace PrimeReact, remove these from `package.json`:
-```bash
-    "primeicons": "^6.0.0",
-    "primereact": "^8.7.0",
+Load styles once at the federated entry:
+
+```ts
+import '@emporix/component-library/styles'
 ```
-Then remove the related imports from `RemoteComponent.tsx`:
-```bash
-import 'primereact/resources/primereact.css'
-import 'primereact/resources/themes/saga-blue/theme.css'
-import 'primeicons/primeicons.css'
-```
-and all other PrimeReact usages in the module.
+
+Default styling is inherited from the Management Dashboard host when embedded.

@@ -18,8 +18,9 @@ Skip this rule if the project is not a federated micro-frontend.
 
 - Federated apps expose a single remote component (e.g. `RemoteComponent.tsx`)
 - Import global styles once at the remote entry — not in leaf components:
-  - PrimeReact / PrimeFlex / PrimeIcons CSS (if used)
-  - App theme and `@emporix/component-library/styles`
+  - `@emporix/component-library/styles` (includes Pattern B Prime theme/icons)
+  - App theme / `index.css` as needed
+  - Do **not** import `primereact` / `primeicons` CSS in the remote
 
 ## Provider Hierarchy
 
