@@ -33,8 +33,8 @@ const ConfirmBox = ({
   const { t } = useTranslation()
 
   return (
-    <Dialog visible={visible} onHide={onReject} header={t(title)}>
-      <div className={styles.message}>{t(message)}</div>
+    <Dialog visible={visible} onHide={onReject} header={title}>
+      <div className={styles.message}>{message}</div>
       {children}
       <div className={styles.actions}>
         <SecondaryButton onClick={onReject} disabled={loading}>

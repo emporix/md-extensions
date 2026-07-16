@@ -40,7 +40,7 @@ const HeaderSection = ({
   return (
     <div className={styles.headerSection}>
       <div className={styles.headerRow}>
-        {backTo && handleBackClick && <BackButton onClick={handleBackClick} />}
+        {handleBackClick && <BackButton onClick={handleBackClick} />}
         <div className={styles.titleRow}>
           <h1 className={styles.moduleTitle}>{title}</h1>
           {subtitle && (

@@ -58,7 +58,10 @@ export const useConfigurationApi = () => {
 
   const deleteConfiguration = useCallback(
     (key: string) => {
-      return deleteSingleConfiguration(tenant, key)
+      if (tenant) {
+        return deleteSingleConfiguration(tenant, key)
+      }
+      return Promise.reject('no tenant')
     },
     [tenant]
   )

@@ -19,16 +19,23 @@ const EmptyContent = ({
   action,
   managerPermissions = true,
 }: EmptyContentProps) => {
+  const actionButton = buttonLabel ? (
+    <PrimaryButton disabled={!managerPermissions} onClick={action}>
+      {buttonLabel}
+    </PrimaryButton>
+  ) : null
+
   return (
     <div className={[styles.emptyState, className].filter(Boolean).join(' ')}>
       <p className={styles.message}>{text}</p>
-      {buttonLabel && (
-        <Link to={link ?? ''} className={styles.actionLink}>
-          <PrimaryButton disabled={!managerPermissions} onClick={action}>
-            {buttonLabel}
-          </PrimaryButton>
-        </Link>
-      )}
+      {actionButton &&
+        (link ? (
+          <Link to={link} className={styles.actionLink}>
+            {actionButton}
+          </Link>
+        ) : (
+          actionButton
+        ))}
     </div>
   )
 }
