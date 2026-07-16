@@ -20,6 +20,9 @@
         ],
         "emporix-dashboard-extension": [
           "emporix-dashboard-extension"
+        ],
+        "emporix-users-and-groups": [
+          "emporix-users-and-groups"
         ]
       }
     },
@@ -42,6 +45,9 @@
         ],
         "emporix-dashboard-extension-stage": [
           "emporix-dashboard-extension-stage"
+        ],
+        "emporix-users-and-groups-stage": [
+          "emporix-users-and-groups-stage"
         ]
       }
     },
@@ -64,6 +70,9 @@
         ],
         "emporix-dashboard-extension-develop": [
           "emporix-dashboard-extension-develop"
+        ],
+        "emporix-users-and-groups-develop": [
+          "emporix-users-and-groups-develop"
         ]
       }
     }
