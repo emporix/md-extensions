@@ -1,7 +1,7 @@
 import { useContext, createContext, useState } from 'react'
 import classnames from 'classnames'
+import { ProgressSpinner } from '@emporix/component-library'
 import { Props } from '../helpers/props'
-import { ProgressSpinner } from 'primereact/progressspinner'
 import styles from './UIBlcoker.module.scss'
 
 const UIBlockerContext = createContext({

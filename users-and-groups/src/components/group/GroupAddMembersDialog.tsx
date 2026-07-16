@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { DataTableFilterParams } from 'primereact/datatable'
 import { useIamApi } from '../../hooks/api/iam'
 import {
   DataTable,
@@ -124,9 +123,7 @@ const GroupAddMembersDialog = (props: Props) => {
         pagination={pagination}
         loading={isLoadingUsers || isLoadingData}
         onPage={onPageCallback}
-        onFilter={(event) =>
-          onFilterCallback(event as unknown as DataTableFilterParams)
-        }
+        onFilter={onFilterCallback}
         selectionMode="multiple"
       />
       <div className={styles.footerActions}>

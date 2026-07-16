@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type {
-  DataTableFilterParams,
-  DataTableSortParams,
-} from 'primereact/datatable'
 import { useIamApi } from '../../hooks/api/iam'
 import {
   DataTable,
@@ -175,10 +171,8 @@ const GroupsTable = (props: Props) => {
         sortField={paginationParams.sortField}
         sortOrder={paginationParams.sortOrder}
         onPage={onPageCallback}
-        onFilter={(event) =>
-          onFilterCallback(event as unknown as DataTableFilterParams)
-        }
-        onSort={(event) => onSortCallback(event as unknown as DataTableSortParams)}
+        onFilter={onFilterCallback}
+        onSort={onSortCallback}
         columns={columns}
         selectionMode="multiple"
         rowActions={tableActionsTemplate}

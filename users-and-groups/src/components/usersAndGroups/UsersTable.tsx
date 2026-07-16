@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type {
-  DataTableFilterParams,
-  DataTableSortParams,
-} from 'primereact/datatable'
 import { useIamApi } from '../../hooks/api/iam'
 import {
   DataTable,
@@ -140,10 +136,8 @@ const UsersTable = () => {
         onSelectionChange={(selection) => setSelectedUsers(selection as User[])}
         loading={isLoading}
         onPage={onPageCallback}
-        onFilter={(event) =>
-          onFilterCallback(event as unknown as DataTableFilterParams)
-        }
-        onSort={(event) => onSortCallback(event as unknown as DataTableSortParams)}
+        onFilter={onFilterCallback}
+        onSort={onSortCallback}
         rowActions={actionsTemplate}
         selectionMode="multiple"
         onRowClick={(user) => {

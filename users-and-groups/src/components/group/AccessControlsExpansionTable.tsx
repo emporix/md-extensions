@@ -1,6 +1,5 @@
 import { DataTable } from '@emporix/component-library'
 import { useCallback, useState } from 'react'
-import type { DataTableFilterParams } from 'primereact/datatable'
 import { AccessControl } from '../../models/Permissions.model'
 import TableActions from '../../components/shared/TableActions'
 import usePagination from '../../hooks/usePagination'
@@ -66,9 +65,7 @@ const AccessControlsExpansionTable = (props: Props) => {
       sortField={paginationParams.sortField}
       sortOrder={paginationParams.sortOrder}
       pagination={paginationParams}
-      onFilter={(event) =>
-        onFilterCallback(event as unknown as DataTableFilterParams)
-      }
+      onFilter={onFilterCallback}
       showFilter={false}
       paginator={false}
       showHeaders={false}

@@ -1,17 +1,17 @@
 import {
   DataTableFilterMeta,
   DataTableFilterMetaData,
-  DataTableFilterParams,
-  DataTablePageParams,
-  DataTableSortParams,
-} from 'primereact/datatable'
+  DataTableFilterEvent,
+  DataTablePageEvent,
+  DataTableSortEvent,
+  FilterMatchMode,
+  type DataTableColumnProps,
+} from '@emporix/component-library'
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { Metadata } from '../models/Metadata.model'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedValue } from './useLocalizedValue'
-import type { DataTableColumnProps } from '@emporix/component-library'
-import { FilterMatchMode } from 'primereact/api'
 
 export type PaginationProps = {
   currentPage: number
@@ -74,7 +74,7 @@ export default function usePagination(
     })
   }, [i18n.language, contentLanguage])
 
-  const onPageCallback = (event: DataTablePageParams) => {
+  const onPageCallback = (event: DataTablePageEvent) => {
     const { first, page, rows } = event
     setPaginationParams((pg) => ({
       ...pg,
@@ -96,7 +96,7 @@ export default function usePagination(
     )
   }
 
-  const onFilterCallback = (event: DataTableFilterParams) => {
+  const onFilterCallback = (event: DataTableFilterEvent) => {
     const clearedFilters = clearEmptyFilters(event.filters as TableFilters)
     const newPaginationParams = {
       ...paginationParams,
@@ -109,7 +109,7 @@ export default function usePagination(
     setPaginationParams(newPaginationParams)
   }
 
-  const onSortCallback = (event: DataTableSortParams) => {
+  const onSortCallback = (event: DataTableSortEvent) => {
     if (!event.sortField) {
       setPaginationParams({
         ...paginationParams,

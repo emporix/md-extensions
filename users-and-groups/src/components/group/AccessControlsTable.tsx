@@ -1,11 +1,6 @@
-import { DataTable } from '@emporix/component-library'
+import { DataTable, PrimaryButton } from '@emporix/component-library'
 import { useCallback, useMemo, useState } from 'react'
-import type {
-  DataTableFilterParams,
-  DataTableSortParams,
-} from 'primereact/datatable'
 import { useTranslation } from 'react-i18next'
-import { PrimaryButton } from '@emporix/component-library'
 import { useFormContext } from 'react-hook-form'
 import { GroupFormFields } from '../../helpers/groups/groupForm.helpers'
 import { AccessControl } from '../../models/Permissions.model'
@@ -149,14 +144,10 @@ const AccessControlsTable = () => {
         )}
         sortField={paginationParams.sortField}
         sortOrder={paginationParams.sortOrder}
-        onSort={(event) =>
-          onSortCallback(event as unknown as DataTableSortParams)
-        }
+        onSort={onSortCallback}
         showFilter
         onFilter={(event) => {
-          const nameFilter = (
-            event as unknown as DataTableFilterParams
-          ).filters?.name
+          const nameFilter = event.filters?.name
           const filterValue =
             nameFilter &&
             typeof nameFilter === 'object' &&

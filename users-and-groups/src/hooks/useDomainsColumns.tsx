@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
-import type { DataTableColumnProps } from '@emporix/component-library'
-import { FilterMatchMode } from 'primereact/api'
+import {
+  FilterMatchMode,
+  type DataTableColumnProps,
+} from '@emporix/component-library'
 import { useTranslation } from 'react-i18next'
 import { AccessControlDomainGroup } from '../models/AccessControl.model'
 

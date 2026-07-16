@@ -7,6 +7,7 @@ import {
 } from '@emporix/component-library'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { FiSearch } from 'react-icons/fi'
 import { AccessControl } from '../../models/Permissions.model'
 import AccessControlsExpansionTable from './AccessControlsExpansionTable'
 import useDomainsColumns from '../../hooks/useDomainsColumns'
@@ -127,7 +128,7 @@ const AssignAccessControlsDialog = (props: Props) => {
     >
       <div className={styles.searchSection}>
         <div className={styles.searchField}>
-          <i className="pi pi-search" />
+          <FiSearch className={styles.searchIcon} aria-hidden />
           <InputText
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

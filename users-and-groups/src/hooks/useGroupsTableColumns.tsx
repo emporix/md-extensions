@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
-import type { DataTableColumnProps } from '@emporix/component-library'
-import { FilterMatchMode } from 'primereact/api'
+import {
+  FilterMatchMode,
+  type DataTableColumnProps,
+} from '@emporix/component-library'
 import { useTranslation } from 'react-i18next'
 import { Group } from '../models/Groups.model'
 import { useLocalizedValue } from '../hooks/useLocalizedValue'

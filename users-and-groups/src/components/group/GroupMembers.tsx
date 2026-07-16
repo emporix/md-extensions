@@ -101,7 +101,7 @@ const GroupMembers = () => {
     <>
       <BatchDeleteButton
         disabled={selectedMembers.length === 0 || !canManage}
-        className={`p-button-secondary ${styles.batchActionButton}`}
+        className={styles.batchActionButton}
         pluralsPath="usersAndGroups.groups.tables.members"
         selected={selectedMembers}
         isDeleting={isDeleting}

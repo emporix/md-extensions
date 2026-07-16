@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
-import type { DataTableColumnProps } from '@emporix/component-library'
-import { FilterMatchMode } from 'primereact/api'
+import {
+  FilterMatchMode,
+  type DataTableColumnProps,
+} from '@emporix/component-library'
 import { User } from '../models/User.model'
 import { DotIndicator } from '../components/shared/DotIndicator'
 import { useTranslation } from 'react-i18next'
