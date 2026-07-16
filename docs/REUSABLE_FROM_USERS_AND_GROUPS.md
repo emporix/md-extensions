@@ -4,7 +4,8 @@
 
 **Canonical source:** `md-extensions/users-and-groups` (COP-5598 pilot).  
 **Full workflow:** [MODULE_MIGRATION_PLAYBOOK.md](./MODULE_MIGRATION_PLAYBOOK.md)  
-**Skill:** `~/.cursor/skills/md-module-extraction/SKILL.md`
+**Skill (canonical):** `md-extensions/.cursor/skills/md-module-extraction/SKILL.md`  
+**Host wiring:** `management-dashboard/.cursor/rules/federated-module-wiring.mdc`
 
 > Prefer **users-and-groups** over `md-extensions/products`. Products may still pass `permissions` via AppState; U&G is the source of truth.
 
@@ -247,7 +248,7 @@ Not required for the next extraction:
 
 1. Extract Tier 1 into `md-extensions/shared/` or an internal package to stop copy-paste drift.
 2. Promote stable shells (`HeaderSection`, `SectionBox`, Confirm/TableActions) into `@emporix/component-library` if MD and remotes both need them (follow CL migrate skill Pattern A/B).
-3. Align playbook §5, `.cursor/rules/md-extension-migration.mdc`, and the extraction skill with this full Tier 1 UI list.
+3. Align playbook §5, `.cursor/rules/md-extension-migration.mdc`, and the extraction skill with this full Tier 1 UI list. **Done 2026-07-16** — lean InputField is SoT; FormField wording removed; Phase 3 MD wiring is a hard gate; see also `.cursor/hooks.json` validation hooks.
 
 ---
 

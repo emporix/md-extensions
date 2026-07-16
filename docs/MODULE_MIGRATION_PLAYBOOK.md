@@ -63,16 +63,27 @@ Full file list and agent checklist: [REUSABLE_FROM_USERS_AND_GROUPS.md](./REUSAB
 - **Copy** layout shells from U&G `src/components/shared/` (at minimum: `HeaderSection`, `BackButton`, `SectionBox`, `FormGrid`, `FormGridRow`, `EmptyContent`, `EmptyTable`, `ConfirmBox`, `DeleteConfirmBox`, `TableActions`, `BatchDeleteButton`, lean `InputField`, `DropdownFilter`, `LocalizedInput`, `LoadingLayout`).
 - **Use CL** for primitives: `InputText`, `Dropdown`, `DataTable`, `Tabs`, `Dialog`, buttons, `ProgressSpinner`, `FilterMatchMode` / DataTable filter types.
 - **Never** add `primereact` / `primeicons` to the remote `package.json` or import their CSS — load only `@emporix/component-library/styles` at the federated entry.
-- **Never copy** MD `InputField` — it depends on `ProductDataProvider`. Copy U&G’s lean `InputField` instead.
+- **Never copy** MD `InputField` — it depends on `ProductDataProvider`. Copy U&G’s lean `InputField` (`components/shared/InputField.tsx`). There is no CL `FormField` substitute for that wrapper.
 - **Also copy** Tier 1 providers/hooks/bootstrap from U&G (see reusable guide); slim `PermissionsProvider` per module.
-## 6. MD wiring recipe
+## 6. MD wiring recipe (hard gate)
+
+Remote-only is **not** done. Phase 3 greps must pass before calling the migration complete.
+
+**Host SoT:** `management-dashboard/.cursor/rules/federated-module-wiring.mdc` (Mode A `url:`, Mode B `GateComponent` + toggle, env matrix, cleanup retention).
+
+**Mode A** (permanent remote, like `statistics`): set `url: process.env.VITE_{MODULE}_URL` on the route — `parseRoute` mounts `ExternalModule`.
+
+**Mode B** (parallel rollout):
 
 1. Create `src/modules/{module}/config/{module}.config.ts` with `{MODULE}_EXTERNAL_MODULE_FEATURE_TOGGLE`.
-2. Update `src/router/module-routes.tsx`:
-   - During rollout: `GateComponent` toggle ON → `ExternalModule`, OFF → built-in routes.
-   - After cleanup: `ExternalModule` only (built-in employee code removed).
-3. Add `VITE_{MODULE}_URL` to all `.env.*` files.
-4. Create backend feature toggle via Administration → Feature Toggles; enable on dev tenant first.
+2. Update `src/router/module-routes.tsx`: GateComponent children → `ExternalModule`, `fallback` → built-in.
+3. After cleanup: `ExternalModule` only (employee-only built-in removed; retain sibling shared UI).
+
+Always:
+
+1. Add `VITE_{MODULE}_URL` to **all** `.env.*` files (`…/assets/remoteEntry.js`).
+2. Create backend feature toggle when using Mode B; enable on dev tenant first.
+3. Validate: Vite `name` ≡ route `key` ≡ `moduleName`.
 
 ## 7. Per-module audit template
 
@@ -161,3 +172,10 @@ firebase hosting:sites:create emporix-{module} --project frontend-extensions
 | 2026-07-16 | CL ≥ 2.0.0 bundles Pattern B Prime + saga-blue/primeicons CSS; remotes drop `primereact` deps/CSS | Peer + host theme CSS per remote | All new remotes |
 | 2026-07-16 | Lockfile must resolve CL from npm registry (no `file:` links) | Local `file:../../component-library` for CI | All remotes |
 | 2026-07-16 | Provision Firebase Hosting sites before first preview/live deploy | Relying on `.firebaserc` alone | All new remotes |
+| 2026-07-16 | Lean U&G `InputField` is SoT (not MD InputField, not CL FormField) | FormField wording in older rules | All remotes |
+| 2026-07-16 | Phase 3 MD env+route wiring is a hard gate; remote-only ≠ done | Treat playbook as done when remote builds | All modules |
+| 2026-07-16 | Cleanup retains MD files still imported by sibling routes (Customer Groups) | Delete whole MD module folder | users-and-groups + similar |
+| 2026-07-16 | After U&G scaffold: `diff -rq` before domain work; greps exclude `*.md` | File-count parity claims; grepping notes | All remotes |
+| 2026-07-16 | Scrub scaffold leftovers (`.env.example` / README product wording); keep U&G `.gitignore` env rules | Blind rsync without rename/scrub | All remotes |
+| 2026-07-16 | Same-module pilot-copy dry-runs: stop after one clean `diff -rq`; next cycle re-port from MD or pick another module | Endless U&G rsync cycles | Tooling validation |
+| 2026-07-16 | Split ownership: remote rules/skill/hooks in md-extensions; host wiring in MD `federated-module-wiring` | Duplicate `md-host-wiring` in both repos | All modules |

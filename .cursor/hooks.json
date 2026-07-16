@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "hooks": {
+    "stop": [
+      {
+        "command": ".cursor/hooks/md-migration-stop-checklist.sh",
+        "timeout": 30
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": ".cursor/hooks/md-extension-after-edit.sh",
+        "matcher": "Write|StrReplace|EditNotebook",
+        "timeout": 15
+      }
+    ]
+  }
+}
