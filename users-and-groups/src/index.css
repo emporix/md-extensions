@@ -1,5 +1,8 @@
-:root {
-  font-family: system-ui, sans-serif;
+body,
+.module {
+  font-family: 'Lato', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
