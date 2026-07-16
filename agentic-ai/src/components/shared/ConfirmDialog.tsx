@@ -10,9 +10,18 @@ interface ConfirmDialogProps {
   onConfirm: () => void
   title: string
   message: string
+  detail?: string
   confirmLabel?: string
   cancelLabel?: string
   severity?: 'danger' | 'warning' | 'info' | 'primary'
+}
+
+const formatDialogTextBlock = (text: string): React.ReactNode => {
+  const formatted = formatMessageWithLineBreaks(text)
+  if (typeof formatted === 'string') {
+    return formatted
+  }
+  return formatted
 }
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -21,6 +30,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onConfirm,
   title,
   message,
+  detail,
   confirmLabel,
   cancelLabel,
   severity = 'danger',
@@ -39,12 +49,24 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   }, [severity])
 
   const formattedMessage = useMemo(() => {
-    const formatted = formatMessageWithLineBreaks(message)
-    if (typeof formatted === 'string') {
-      return <p>{formatted}</p>
+    const intro = formatDialogTextBlock(message)
+
+    if (!detail) {
+      if (typeof intro === 'string') {
+        return <p>{intro}</p>
+      }
+      return intro
     }
-    return formatted
-  }, [message])
+
+    const formattedDetail = formatDialogTextBlock(detail)
+
+    return (
+      <>
+        {typeof intro === 'string' ? <p>{intro}</p> : intro}
+        <div className="confirm-dialog-detail">{formattedDetail}</div>
+      </>
+    )
+  }, [message, detail])
 
   const footer = (
     <div className="dialog-actions">

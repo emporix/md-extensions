@@ -156,7 +156,7 @@ const TRANSLATIONS_DE = {
   confirm_save_agent: 'Speichern und Agent deaktivieren',
   save_and_deactivate: 'Speichern und deaktivieren',
   confirm_disable_agent_message:
-    'Sie können den aktivierten Agenten mit diesen Fehlern nicht speichern. Sie können den Agenten speichern, indem Sie ihn zuerst deaktivieren.\n\n{{detail}}',
+    'Sie können den aktivierten Agenten mit diesen Fehlern nicht speichern. Sie können den Agenten speichern, indem Sie ihn zuerst deaktivieren.',
   close: 'Schließen',
   trigger_type: 'Auslöser-Typ',
   trigger_type_endpoint: 'ENDPUNKT',
@@ -188,7 +188,7 @@ const TRANSLATIONS_DE = {
     'Maximale Operationen, die dieses Teams-Tool bereitstellen darf. Agenten können die Teilmenge pro Zuordnung weiter einschränken.',
   teams_agent_allowed_operations: 'Erlaubte Aktionen für diesen Agenten',
   teams_agent_allowed_operations_hint:
-    'Wähle, welche Teams-Aktionen dieser Agent ausführen darf. Optionen sind durch die Tool-Konfiguration begrenzt.',
+    'Wählen Sie, welche Teams-Aktionen dieser Agent aufrufen darf. Die Optionen sind durch die Tool-Konfiguration begrenzt.',
   teams_team_config_conflict:
     'Ein anderes Teams-Tool nutzt bereits diese Tenant- und Team-Kombination. Pro Paar ist nur ein Tool erlaubt.',
   teams_operation_sendMessage: 'Nachricht senden',
@@ -533,7 +533,7 @@ const TRANSLATIONS_DE = {
   teams_graph_consent_url_missing:
     'Graph-Admin-Einwilligung ist im AI-Service nicht konfiguriert.',
   teams_graph_consent_success:
-    'Graph-Admin-Einwilligung erteilt. Ermitteln Sie die Team-ID (siehe Installationsschritte auf dem Tab Allgemein), vervollständigen Sie die Einstellungen und speichern Sie.',
+    'Graph-Admin-Einwilligung erteilt. Öffnen Sie Einstellungen, geben Sie Ihre Team-ID ein und speichern Sie.',
   teams_graph_consent_error: 'Graph-Admin-Einwilligung fehlgeschlagen',
   teams_graph_consent_unknown:
     'Graph-Admin-Einwilligung lieferte ein unbekanntes Ergebnis',
@@ -552,7 +552,7 @@ const TRANSLATIONS_DE = {
   teams_install_step_sideload:
     'Fallback: Laden Sie das Emporix-App-Paket über Teams → Apps → Apps verwalten → Benutzerdefinierte App hochladen hoch (erfordert Richtlinie für benutzerdefinierte Apps).',
   teams_install_step_settings:
-    'Öffnen Sie den Tab Einstellungen: fügen Sie die Team-ID ein (siehe So ermitteln Sie die Team-ID unten), bestätigen Sie die Mandanten-ID, konfigurieren Sie erlaubte Operationen und speichern Sie. Die Team-ID kann nach dem ersten Speichern nicht mehr geändert werden.',
+    'Öffnen Sie den Tab Einstellungen: fügen Sie die Team-ID mithilfe der Anleitung unter dem Feld Team-ID ein, bestätigen Sie die Mandanten-ID, konfigurieren Sie erlaubte Operationen und speichern Sie. Die Team-ID kann nach dem ersten Speichern nicht mehr geändert werden.',
   teams_install_how_to_find_team_id: 'So ermitteln Sie die Team-ID',
   teams_install_team_id_intro:
     'Die Team-ID ist die Microsoft-365-Gruppen-ID (GUID) des Zielteams — derselbe Wert wie groupId in einem Teams-Teamlink.',
@@ -583,7 +583,7 @@ const TRANSLATIONS_DE = {
   tenant_id: 'Mandanten-ID (AAD)',
   enter_tenant_id: 'Azure AD-Mandanten-ID eingeben',
   teams_team_id_hint:
-    'Microsoft-365-Gruppen-ID (GUID) des Zielteams. Kopieren Sie groupId aus einem Teamlink oder die Gruppen-ID aus dem Teams-Admincenter (siehe Installationsschritte auf dem Tab Allgemein). Vor dem Speichern prüfen — die Team-ID kann später nicht geändert werden.',
+    'Microsoft-365-Gruppen-ID (GUID) des Zielteams. Kopieren Sie groupId aus einem Teamlink oder die Gruppen-ID aus dem Teams-Admincenter (siehe So ermitteln Sie die Team-ID unten). Vor dem Speichern prüfen — die Team-ID kann später nicht geändert werden.',
   teams_team_id_hint_immutable:
     'Die Team-ID kann nach der Erstellung des Tools nicht mehr geändert werden.',
   teams_tenant_id_hint:

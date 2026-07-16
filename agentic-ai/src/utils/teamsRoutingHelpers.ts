@@ -136,6 +136,16 @@ export const areTeamsAgentToolsValid = (
   availableTools: Tool[]
 ): boolean => getSelectedTeamsToolIds(nativeTools, availableTools).length <= 1
 
+export const isAgentDefaultInboundOwnerForTeamsTools = (
+  agentId: string,
+  nativeTools: NativeTool[],
+  availableTools: Tool[]
+): boolean =>
+  getSelectedTeamsToolIds(nativeTools, availableTools).some((toolId) => {
+    const tool = availableTools.find((entry) => entry.id === toolId)
+    return tool?.config?.defaultInboundAgentId === agentId
+  })
+
 export const countTeamsToolsForTeam = (
   tools: Tool[],
   teamId?: string,

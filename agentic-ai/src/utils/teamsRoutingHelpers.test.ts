@@ -5,6 +5,7 @@ import {
   areTeamsAgentToolsValid,
   getSelectedTeamsToolIds,
   getToolAllowedOperations,
+  isAgentDefaultInboundOwnerForTeamsTools,
   teamsNativeToolHasAllowedOperations,
   toTeamsToolConfigForSave,
   toggleTeamsNativeTool,
@@ -145,5 +146,23 @@ describe('teamsRoutingHelpers', () => {
         [teamsToolA, slackTool]
       )
     ).toEqual(['teams-orders'])
+  })
+
+  it('isAgentDefaultInboundOwnerForTeamsTools matches tool default inbound agent', () => {
+    expect(
+      isAgentDefaultInboundOwnerForTeamsTools(
+        'owner-teams',
+        [{ id: 'teams-orders' }],
+        [teamsToolA, teamsToolB]
+      )
+    ).toBe(true)
+
+    expect(
+      isAgentDefaultInboundOwnerForTeamsTools(
+        'other-agent',
+        [{ id: 'teams-orders' }],
+        [teamsToolA, teamsToolB]
+      )
+    ).toBe(false)
   })
 })
