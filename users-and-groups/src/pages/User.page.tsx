@@ -28,9 +28,12 @@ import {
   UserFormFields,
 } from '../helpers/users/users.helpers'
 import { listPath, userDetailPath } from '../constants/paths'
+import { useFeatureToggles } from '../context/FeatureTogglesProvider'
+import { AUDIT_LOG_FEATURE_TOGGLE } from '../configs/auditLog.config'
+import EntityChangelogTab from '../components/auditLog/EntityChangelogTab'
 import styles from './UserPage.module.scss'
 
-const TABS = ['details', 'access']
+const BASE_TABS = ['details', 'access']
 
 const UserPage = () => {
   const { t } = useTranslation()
@@ -40,7 +43,15 @@ const UserPage = () => {
   const { handleSubmit, formState, reset } = methods
   const { showSuccess, showError } = useToast()
   const { navigate } = useCustomNavigate()
-  const { activeTab, onTabChange } = useTabs(TABS, true)
+  const toggles = useFeatureToggles()
+  const tabIds = useMemo(
+    () =>
+      toggles.isToggleValid(AUDIT_LOG_FEATURE_TOGGLE)
+        ? [...BASE_TABS, 'audit-log']
+        : BASE_TABS,
+    [toggles]
+  )
+  const { activeTab, onTabChange } = useTabs(tabIds, true)
   const { syncUserAccessControls, hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
 
@@ -127,8 +138,24 @@ const UserPage = () => {
           </SectionBox>
         ),
       },
+      ...(toggles.isToggleValid(AUDIT_LOG_FEATURE_TOGGLE)
+        ? [
+            {
+              id: 'audit-log',
+              label: t('auditLog.entityChangelog.tab'),
+              disabled: !userId,
+              content: userId ? (
+                <EntityChangelogTab
+                  entity="employee"
+                  entityId={userId}
+                  isActive={activeTab === 'audit-log'}
+                />
+              ) : null,
+            },
+          ]
+        : []),
     ],
-    [t]
+    [activeTab, t, toggles, userId]
   )
 
   return (

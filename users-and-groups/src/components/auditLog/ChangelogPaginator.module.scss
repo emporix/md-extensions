@@ -1,0 +1,14 @@
+.root {
+  :global(.p-datatable) {
+    border: none;
+  }
+
+  :global(.p-datatable-wrapper),
+  :global(.p-datatable-table),
+  :global(.p-datatable-thead),
+  :global(.p-datatable-tbody),
+  :global(.p-datatable-emptymessage),
+  :global(.p-datatable-footer) {
+    display: none !important;
+  }
+}

@@ -19,13 +19,24 @@ import { useGroupData } from '../context/Group.provider'
 import { usePermissions } from '../context/PermissionsProvider'
 import { GroupRoleProvider } from '../context/GroupRole.provider'
 import { EmployeeDomains } from '../configs/accessControls'
+import { useFeatureToggles } from '../context/FeatureTogglesProvider'
+import { AUDIT_LOG_FEATURE_TOGGLE } from '../configs/auditLog.config'
+import EntityChangelogTab from '../components/auditLog/EntityChangelogTab'
 
-const TABS = ['details', 'members']
+const BASE_TABS = ['details', 'members']
 
 const GroupPage = () => {
   const { t } = useTranslation()
   const methods = useForm<GroupFormFields>({ defaultValues: createGroupForm() })
-  const { activeTab, onTabChange } = useTabs(TABS, false)
+  const toggles = useFeatureToggles()
+  const tabIds = useMemo(
+    () =>
+      toggles.isToggleValid(AUDIT_LOG_FEATURE_TOGGLE)
+        ? [...BASE_TABS, 'audit-log']
+        : BASE_TABS,
+    [toggles]
+  )
+  const { activeTab, onTabChange } = useTabs(tabIds, true)
   const { navigate } = useCustomNavigate()
   const { getContentLangValue } = useLocalizedValue()
   const { hasPermission } = usePermissions()
@@ -51,8 +62,25 @@ const GroupPage = () => {
         content: <GroupMembers />,
         disabled: !group,
       },
+      ...(toggles.isToggleValid(AUDIT_LOG_FEATURE_TOGGLE)
+        ? [
+            {
+              id: 'audit-log',
+              label: t('auditLog.entityChangelog.tab'),
+              disabled: !group,
+              content:
+                groupId && group ? (
+                  <EntityChangelogTab
+                    entity="group"
+                    entityId={groupId}
+                    isActive={activeTab === 'audit-log'}
+                  />
+                ) : null,
+            },
+          ]
+        : []),
     ],
-    [group, t]
+    [activeTab, group, groupId, t, toggles]
   )
 
   const visibleTabs = tabs.filter((tab) => !tab.disabled)
@@ -64,10 +92,12 @@ const GroupPage = () => {
         subtitle={groupId ? getContentLangValue(group?.name) : undefined}
         backTo={() => navigate(listPath('groups'))}
         moduleActions={
-          <GroupPageActions
-            activeTab={activeTab}
-            managerPermissions={canManage}
-          />
+          activeTab !== 'audit-log' ? (
+            <GroupPageActions
+              activeTab={activeTab}
+              managerPermissions={canManage}
+            />
+          ) : undefined
         }
       />
       <Tabs
