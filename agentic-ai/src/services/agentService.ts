@@ -168,7 +168,9 @@ export const upsertCustomAgent = async (
     triggers: agent.triggers,
     llmConfig: {
       model: agent.llmConfig.model,
-      temperature: agent.llmConfig.temperature,
+      ...(agent.llmConfig.temperature !== undefined && {
+        temperature: agent.llmConfig.temperature,
+      }),
       maxTokens: agent.llmConfig.maxTokens,
       provider: agent.llmConfig.provider,
       additionalParams: agent.llmConfig.additionalParams,

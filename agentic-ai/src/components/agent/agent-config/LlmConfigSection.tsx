@@ -7,8 +7,9 @@ import { getLlmProviders } from '../../../utils/constants'
 import { getTokens } from '../../../services/tokensService'
 import { Token } from '../../../types/Token'
 import { useAppState } from '../../../contexts/AppStateContext'
-import { LlmProvider } from '../../../types/Agent'
+import { LlmProvider, GrantType } from '../../../types/Agent'
 import { getSliderThumbLeftCss } from '../../../utils/sliderHelpers'
+import { SelfHostedAuthSection } from './SelfHostedAuthSection'
 
 interface LlmConfigSectionProps {
   model: string
@@ -22,8 +23,15 @@ interface LlmConfigSectionProps {
   onFieldChange: (field: string, value: string | boolean) => void
   // Self-hosted LLM parameters
   selfHostedUrl?: string
+  selfHostedUseOAuth?: boolean
   selfHostedAuthHeaderName?: string
   selfHostedTokenId?: string
+  oauthUrl?: string
+  oauthClientId?: string
+  oauthClientSecretTokenId?: string
+  oauthGrantType?: GrantType | ''
+  oauthScope?: string
+  aiOauthEnabled?: boolean
 }
 
 export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
@@ -37,8 +45,15 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
   isEditing,
   onFieldChange,
   selfHostedUrl = '',
+  selfHostedUseOAuth = false,
   selfHostedAuthHeaderName = '',
   selfHostedTokenId = '',
+  oauthUrl = '',
+  oauthClientId = '',
+  oauthClientSecretTokenId = '',
+  oauthGrantType = '',
+  oauthScope = '',
+  aiOauthEnabled = false,
 }) => {
   const { t } = useTranslation()
   const appState = useAppState()
@@ -190,44 +205,21 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
               />
             </div>
 
-            <div className="form-field">
-              <label className="field-label">
-                {t('authorization_header_name', 'Authorization Header Name')} (
-                {t('optional', 'Optional')})
-              </label>
-              <InputText
-                value={selfHostedAuthHeaderName}
-                onChange={(e) =>
-                  onFieldChange('selfHostedAuthHeaderName', e.target.value)
-                }
-                className="w-full"
-                placeholder={t(
-                  'enter_authorization_header_name',
-                  'Enter authorization header name'
-                )}
-              />
-            </div>
-
-            <div className="form-field">
-              <label className="field-label">
-                {t('authorization_token', 'Authorization Token')} (
-                {t('optional', 'Optional')})
-              </label>
-              <Dropdown
-                value={selfHostedTokenId}
-                options={tokenOptions}
-                onChange={(e) => onFieldChange('selfHostedTokenId', e.value)}
-                className="w-full"
-                placeholder={
-                  tokensLoading
-                    ? t('loading_tokens', 'Loading tokens...')
-                    : t('select_token', 'Select token')
-                }
-                disabled={tokensLoading}
-                showClear
-                appendTo="self"
-              />
-            </div>
+            <SelfHostedAuthSection
+              oauthFeatureEnabled={aiOauthEnabled}
+              useOAuth={selfHostedUseOAuth}
+              authHeaderName={selfHostedAuthHeaderName}
+              authHeaderTokenId={selfHostedTokenId}
+              oauthUrl={oauthUrl}
+              oauthClientId={oauthClientId}
+              oauthClientSecretTokenId={oauthClientSecretTokenId}
+              oauthGrantType={oauthGrantType}
+              oauthScope={oauthScope}
+              tokens={tokens}
+              tokensLoading={tokensLoading}
+              showValidation={!isEditing}
+              onFieldChange={onFieldChange}
+            />
           </>
         )}
       </div>
