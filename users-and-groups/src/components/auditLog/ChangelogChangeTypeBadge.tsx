@@ -7,6 +7,12 @@ type ChangelogChangeTypeBadgeProps = {
   readonly variant?: 'table' | 'card'
 }
 
+const CARD_TYPE_CLASS: Record<string, string> = {
+  created: styles.badgeCardCreated,
+  updated: styles.badgeCardUpdated,
+  deleted: styles.badgeCardDeleted,
+}
+
 const ChangelogChangeTypeBadge = ({
   type,
   variant = 'table',
@@ -17,15 +23,18 @@ const ChangelogChangeTypeBadge = ({
     defaultValue: changeTypeKey,
   })
 
-  return (
-    <span
-      className={`${styles.badge} ${
-        variant === 'card' ? styles.badgeCard : styles.badgeTable
-      }`}
-    >
-      {label.toUpperCase()}
-    </span>
-  )
+  const className =
+    variant === 'card'
+      ? [
+          styles.badge,
+          styles.badgeCard,
+          CARD_TYPE_CLASS[changeTypeKey],
+        ]
+          .filter(Boolean)
+          .join(' ')
+      : `${styles.badge} ${styles.badgeTable}`
+
+  return <span className={className}>{label.toUpperCase()}</span>
 }
 
 export default ChangelogChangeTypeBadge
