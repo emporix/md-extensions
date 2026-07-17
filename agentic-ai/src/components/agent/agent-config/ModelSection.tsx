@@ -5,7 +5,7 @@ import { InputSwitch } from 'primereact/inputswitch'
 import { InputText } from 'primereact/inputtext'
 import { Message } from 'primereact/message'
 import { Tooltip } from 'primereact/tooltip'
-import { LlmProvider } from '../../../types/Agent'
+import { LlmProvider, GrantType } from '../../../types/Agent'
 import { LlmModel, LlmModelProvider } from '../../../types/Model'
 import { Token } from '../../../types/Token'
 import { getLlmProviders } from '../../../utils/constants'
@@ -21,6 +21,7 @@ import {
   type ProviderModelMemory,
 } from '../../../utils/llmModelHelpers'
 import { getSliderThumbLeftCss } from '../../../utils/sliderHelpers'
+import { SelfHostedAuthSection } from './SelfHostedAuthSection'
 
 type ModelInputMode = 'list' | 'custom'
 
@@ -28,13 +29,21 @@ interface ModelSectionProps {
   provider: LlmProvider
   model: string
   temperature: string
+  disableTemperature: boolean
   maxTokens: string
   tokenId: string
   recursionLimit: string
   enableMemory: boolean
   selfHostedUrl: string
+  selfHostedUseOAuth: boolean
   selfHostedAuthHeaderName: string
   selfHostedTokenId: string
+  oauthUrl: string
+  oauthClientId: string
+  oauthClientSecretTokenId: string
+  oauthGrantType: GrantType | ''
+  oauthScope: string
+  aiOauthEnabled?: boolean
   modelsByProvider: Map<LlmModelProvider, LlmModel[]>
   modelsLoading: boolean
   modelsFetched: boolean
@@ -49,13 +58,21 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   provider,
   model,
   temperature,
+  disableTemperature,
   maxTokens,
   tokenId,
   recursionLimit,
   enableMemory,
   selfHostedUrl,
+  selfHostedUseOAuth,
   selfHostedAuthHeaderName,
   selfHostedTokenId,
+  oauthUrl,
+  oauthClientId,
+  oauthClientSecretTokenId,
+  oauthGrantType,
+  oauthScope,
+  aiOauthEnabled = false,
   modelsByProvider,
   modelsLoading,
   modelsFetched,
@@ -478,12 +495,44 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
                 </label>
               </div>
             </div>
+
+            <div className="form-field agent-detail-model-memory-field">
+              <span
+                className="field-label agent-detail-model-memory-field-spacer"
+                aria-hidden="true"
+              >
+                {t('max_tokens')}
+              </span>
+              <div className="agent-detail-model-memory-switch">
+                <InputSwitch
+                  inputId="agent-detail-disable-temperature"
+                  checked={disableTemperature}
+                  onChange={(event) =>
+                    onFieldChange('disableTemperature', event.value)
+                  }
+                />
+                <label
+                  className="field-label agent-detail-model-memory-label"
+                  htmlFor="agent-detail-disable-temperature"
+                >
+                  {t('disable_temperature')}
+                  <i
+                    className="pi pi-info-circle field-label-help-icon agent-detail-disable-temperature-help"
+                    data-pr-tooltip={t('disable_temperature_tooltip')}
+                    data-pr-position="top"
+                  />
+                </label>
+                <Tooltip target=".agent-detail-disable-temperature-help" />
+              </div>
+            </div>
           </div>
 
           <div className="agent-detail-model-sliders-row">
             <div className="form-field">
               <label className="field-label">{t('temperature')}</label>
-              <div className="agent-detail-model-slider temperature-slider">
+              <div
+                className={`agent-detail-model-slider temperature-slider${disableTemperature ? ' agent-detail-model-slider--disabled' : ''}`}
+              >
                 <div className="slider-container">
                   <input
                     type="range"
@@ -497,6 +546,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
                     }}
                     className="w-full"
                     title={temperature}
+                    disabled={disableTemperature}
                   />
                   <div
                     className="slider-tooltip"
@@ -574,42 +624,21 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
                 />
               </div>
 
-              <div className="form-field">
-                <label className="field-label">
-                  {t('authorization_header_name')} ({t('optional')})
-                </label>
-                <InputText
-                  value={selfHostedAuthHeaderName}
-                  onChange={(event) =>
-                    onFieldChange(
-                      'selfHostedAuthHeaderName',
-                      event.target.value
-                    )
-                  }
-                  className="w-full"
-                  placeholder={t('enter_authorization_header_name')}
-                />
-              </div>
-
-              <div className="form-field">
-                <label className="field-label">
-                  {t('authorization_token')} ({t('optional')})
-                </label>
-                <Dropdown
-                  value={selfHostedTokenId || null}
-                  options={tokenOptions}
-                  onChange={(event) =>
-                    onFieldChange('selfHostedTokenId', event.value ?? '')
-                  }
-                  className="w-full"
-                  placeholder={
-                    tokensLoading ? t('loading_tokens') : t('select_token')
-                  }
-                  disabled={tokensLoading}
-                  showClear
-                  appendTo="self"
-                />
-              </div>
+              <SelfHostedAuthSection
+                oauthFeatureEnabled={aiOauthEnabled}
+                useOAuth={selfHostedUseOAuth}
+                authHeaderName={selfHostedAuthHeaderName}
+                authHeaderTokenId={selfHostedTokenId}
+                oauthUrl={oauthUrl}
+                oauthClientId={oauthClientId}
+                oauthClientSecretTokenId={oauthClientSecretTokenId}
+                oauthGrantType={oauthGrantType}
+                oauthScope={oauthScope}
+                tokens={tokens}
+                tokensLoading={tokensLoading}
+                showValidation={isCreateMode}
+                onFieldChange={onFieldChange}
+              />
             </div>
           )}
         </div>

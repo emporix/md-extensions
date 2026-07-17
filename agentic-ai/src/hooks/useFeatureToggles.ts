@@ -7,6 +7,7 @@ import {
 
 const DEFAULT_TOGGLES: AgenticFeatureToggles = {
   msTeams: false,
+  aiOauth: false,
 }
 
 export const useFeatureToggles = () => {

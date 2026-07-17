@@ -21,6 +21,7 @@ import { ModelSection } from './agent-config/ModelSection'
 import { CollaborationSection } from './agent-config/CollaborationSection'
 import { ConversationsTab } from '../shared/ConversationsTab'
 import { useAgentConfig } from '../../hooks/useAgentConfig'
+import { useFeatureToggles } from '../../hooks/useFeatureToggles'
 import { useAgentToolsCatalog } from '../../hooks/useAgentToolsCatalog'
 import { useAgentTokensCatalog } from '../../hooks/useAgentTokensCatalog'
 import { useLlmModelsCatalog } from '../../hooks/useLlmModelsCatalog'
@@ -208,6 +209,8 @@ const AgentDetailPage: React.FC = () => {
     navigate('/agents')
   }, [navigate])
 
+  const { toggles } = useFeatureToggles()
+
   const {
     state,
     saving,
@@ -221,6 +224,7 @@ const AgentDetailPage: React.FC = () => {
   } = useAgentConfig({
     agent,
     availableTools: catalogTools,
+    aiOauthEnabled: toggles.aiOauth,
     onSave: handleSaveSuccess,
     onHide: handleNavigateBack,
   })
@@ -311,13 +315,21 @@ const AgentDetailPage: React.FC = () => {
           provider={state.provider}
           model={state.model}
           temperature={state.temperature}
+          disableTemperature={state.disableTemperature}
           maxTokens={state.maxTokens}
           tokenId={state.tokenId}
           recursionLimit={state.recursionLimit}
           enableMemory={state.enableMemory}
           selfHostedUrl={state.selfHostedUrl}
+          selfHostedUseOAuth={state.selfHostedUseOAuth}
           selfHostedAuthHeaderName={state.selfHostedAuthHeaderName}
           selfHostedTokenId={state.selfHostedTokenId}
+          oauthUrl={state.oauthUrl}
+          oauthClientId={state.oauthClientId}
+          oauthClientSecretTokenId={state.oauthClientSecretTokenId}
+          oauthGrantType={state.oauthGrantType}
+          oauthScope={state.oauthScope}
+          aiOauthEnabled={toggles.aiOauth}
           modelsByProvider={modelsByProvider}
           modelsLoading={modelsLoading}
           modelsFetched={modelsFetched}
