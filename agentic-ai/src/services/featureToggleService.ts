@@ -7,24 +7,29 @@ export interface FeatureToggleDto {
 
 export interface AgenticFeatureToggles {
   msTeams: boolean
+  aiOauth: boolean
 }
 
 const MS_TEAMS_FEATURE = 'ms-teams'
+const AI_OAUTH_FEATURE = 'ai-oauth'
 
 const toggleCacheKey = (appState: AppState): string => appState.tenant
 
 const resolvedCache = new Map<string, AgenticFeatureToggles>()
 const inFlight = new Map<string, Promise<AgenticFeatureToggles>>()
 
-const fetchMsTeamsEnabled = async (appState: AppState): Promise<boolean> => {
+const fetchFeatureEnabled = async (
+  appState: AppState,
+  feature: string
+): Promise<boolean> => {
   try {
     const api = new ApiClient(appState)
     const response = await api.get<FeatureToggleDto>(
-      `/feature-toggle/${appState.tenant}/features/${MS_TEAMS_FEATURE}`
+      `/feature-toggle/${appState.tenant}/features/${feature}`
     )
     return response.isEnabled
   } catch (error) {
-    console.error('Failed to fetch ms-teams feature toggle:', error)
+    console.error(`Failed to fetch ${feature} feature toggle:`, error)
     return false
   }
 }
@@ -40,8 +45,11 @@ export const getAgenticFeatureToggles = async (
 
   let pending = inFlight.get(key)
   if (!pending) {
-    pending = fetchMsTeamsEnabled(appState).then((msTeams) => {
-      const value: AgenticFeatureToggles = { msTeams }
+    pending = Promise.all([
+      fetchFeatureEnabled(appState, MS_TEAMS_FEATURE),
+      fetchFeatureEnabled(appState, AI_OAUTH_FEATURE),
+    ]).then(([msTeams, aiOauth]) => {
+      const value: AgenticFeatureToggles = { msTeams, aiOauth }
       resolvedCache.set(key, value)
       inFlight.delete(key)
       return value
@@ -57,6 +65,13 @@ export const isMsTeamsFeatureEnabled = async (
 ): Promise<boolean> => {
   const { msTeams } = await getAgenticFeatureToggles(appState)
   return msTeams
+}
+
+export const isAiOauthFeatureEnabled = async (
+  appState: AppState
+): Promise<boolean> => {
+  const { aiOauth } = await getAgenticFeatureToggles(appState)
+  return aiOauth
 }
 
 /** Test-only: reset module cache between tests */

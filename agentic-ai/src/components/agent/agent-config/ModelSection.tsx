@@ -43,6 +43,7 @@ interface ModelSectionProps {
   oauthClientSecretTokenId: string
   oauthGrantType: GrantType | ''
   oauthScope: string
+  aiOauthEnabled?: boolean
   modelsByProvider: Map<LlmModelProvider, LlmModel[]>
   modelsLoading: boolean
   modelsFetched: boolean
@@ -71,6 +72,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   oauthClientSecretTokenId,
   oauthGrantType,
   oauthScope,
+  aiOauthEnabled = false,
   modelsByProvider,
   modelsLoading,
   modelsFetched,
@@ -514,7 +516,13 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
                   htmlFor="agent-detail-disable-temperature"
                 >
                   {t('disable_temperature')}
+                  <i
+                    className="pi pi-info-circle field-label-help-icon agent-detail-disable-temperature-help"
+                    data-pr-tooltip={t('disable_temperature_tooltip')}
+                    data-pr-position="top"
+                  />
                 </label>
+                <Tooltip target=".agent-detail-disable-temperature-help" />
               </div>
             </div>
           </div>
@@ -617,6 +625,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
               </div>
 
               <SelfHostedAuthSection
+                oauthFeatureEnabled={aiOauthEnabled}
                 useOAuth={selfHostedUseOAuth}
                 authHeaderName={selfHostedAuthHeaderName}
                 authHeaderTokenId={selfHostedTokenId}

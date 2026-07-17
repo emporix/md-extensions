@@ -493,6 +493,8 @@ const TRANSLATIONS_DE = {
     'Geben Sie eine von Ihrem Anbieter unterstützte Modellkennung ein',
   enable_memory_support: 'Speicherunterstützung aktivieren',
   disable_temperature: 'Temperatur deaktivieren',
+  disable_temperature_tooltip:
+    'Einige Modelle unterstützen keine Temperatur. Aktivieren Sie diese Option, um die Temperatur aus der Agenten-Konfiguration wegzulassen.',
   api_key: 'API-Schlüssel',
   enter_api_key: 'API-Schlüssel eingeben',
   tags: 'Tags',

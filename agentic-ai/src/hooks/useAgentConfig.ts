@@ -38,6 +38,7 @@ import { Tool } from '../types/Tool'
 interface UseAgentConfigProps {
   agent: CustomAgent | null
   availableTools: Tool[]
+  aiOauthEnabled?: boolean
   onSave: (agent: CustomAgent) => void
   onHide: () => void
 }
@@ -86,6 +87,7 @@ interface AgentConfigState {
 export const useAgentConfig = ({
   agent,
   availableTools,
+  aiOauthEnabled = false,
   onSave,
   onHide,
 }: UseAgentConfigProps) => {
@@ -294,7 +296,7 @@ export const useAgentConfig = ({
             url: state.selfHostedUrl || '',
           }
 
-          if (state.selfHostedUseOAuth) {
+          if (aiOauthEnabled && state.selfHostedUseOAuth) {
             const oAuthParams: NonNullable<
               LlmConfig['selfHostedParams']
             >['oAuthParams'] = {
@@ -348,7 +350,7 @@ export const useAgentConfig = ({
       tags: state.tags || [],
       requiredScopes: state.requiredScopes || [],
     } as CustomAgent
-  }, [agent, state])
+  }, [agent, state, aiOauthEnabled])
 
   const handleSave = useCallback(async () => {
     if (!agent) return
@@ -462,7 +464,8 @@ export const useAgentConfig = ({
     const selfHostedValidation =
       !isSelfHosted ||
       (state.selfHostedUrl.trim() &&
-        (!state.selfHostedUseOAuth ||
+        (!aiOauthEnabled ||
+          !state.selfHostedUseOAuth ||
           (state.oauthUrl.trim() &&
             state.oauthClientId.trim() &&
             !!state.oauthGrantType)))
@@ -506,7 +509,7 @@ export const useAgentConfig = ({
       supportTriggerValidation &&
       teamsToolValidation
     )
-  }, [state, agent?.id, availableTools])
+  }, [state, agent?.id, availableTools, aiOauthEnabled])
 
   return {
     state,

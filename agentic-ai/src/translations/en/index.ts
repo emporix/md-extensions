@@ -488,6 +488,8 @@ const TRANSLATIONS_EN = {
     'Enter a model identifier supported by your provider',
   enable_memory_support: 'Enable Memory Support',
   disable_temperature: 'Disable Temperature',
+  disable_temperature_tooltip:
+    'Some models do not support temperature. Enable this to omit temperature from the agent configuration.',
   api_key: 'API Key',
   enter_api_key: 'Enter API key',
   tags: 'Tags',

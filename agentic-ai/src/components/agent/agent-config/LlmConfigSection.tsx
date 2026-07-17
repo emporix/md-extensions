@@ -31,6 +31,7 @@ interface LlmConfigSectionProps {
   oauthClientSecretTokenId?: string
   oauthGrantType?: GrantType | ''
   oauthScope?: string
+  aiOauthEnabled?: boolean
 }
 
 export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
@@ -52,6 +53,7 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
   oauthClientSecretTokenId = '',
   oauthGrantType = '',
   oauthScope = '',
+  aiOauthEnabled = false,
 }) => {
   const { t } = useTranslation()
   const appState = useAppState()
@@ -204,6 +206,7 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
             </div>
 
             <SelfHostedAuthSection
+              oauthFeatureEnabled={aiOauthEnabled}
               useOAuth={selfHostedUseOAuth}
               authHeaderName={selfHostedAuthHeaderName}
               authHeaderTokenId={selfHostedTokenId}
