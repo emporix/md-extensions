@@ -1,0 +1,40 @@
+.detailsCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.identifier {
+  max-width: 18.75rem;
+  overflow: hidden;
+  color: var(--grey-6);
+  font-size: 0.85rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scopeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.scopeBadge {
+  padding: 4px 8px;
+  color: var(--blue-5);
+  background: var(--blue-0);
+  border: 1px solid var(--blue-1);
+  border-radius: 4px;
+}
+
+.statusCell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+.statusLabel {
+  white-space: nowrap;
+}
