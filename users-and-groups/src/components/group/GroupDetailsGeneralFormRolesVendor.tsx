@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Controller, useFormContext, useWatch } from 'react-hook-form'
 import { AutoComplete } from '@emporix/component-library'
 import { GroupFormFields } from '../../helpers/groups/groupForm.helpers'
@@ -22,31 +22,32 @@ const GroupDetailsGeneralFormRolesVendor = () => {
   const [query, setQuery] = useState('')
   const vendorId = useWatch({ name: 'vendorId' })
 
+  const loadVendors = useCallback(
+    async (searchQuery?: string) => {
+      try {
+        const pagination = { currentPage: 1, rows: 100 }
+        const params = searchQuery ? { name: `(~${searchQuery})` } : undefined
+        const { values } = await getVendors(pagination, params)
+        setVendors(values)
+        if (!searchQuery && vendorId) {
+          const vendorName =
+            values.find((vendor) => vendor.id === vendorId)?.name ?? '--'
+          setQuery(vendorName)
+        }
+      } catch (e: unknown) {
+        console.error(e)
+      }
+    },
+    [getVendors, vendorId]
+  )
+
   useEffect(() => {
-    if (!canViewVendors) return
     void loadVendors()
-  }, [canViewVendors])
+  }, [loadVendors])
 
   useEffect(() => {
     if (!vendorId) setQuery('')
   }, [vendorId])
-
-  const loadVendors = async (searchQuery?: string) => {
-    if (!canViewVendors) return
-    try {
-      const pagination = { currentPage: 1, rows: 100 }
-      const params = searchQuery ? { name: `(~${searchQuery})` } : undefined
-      const { values } = await getVendors(pagination, params)
-      setVendors(values)
-      if (!searchQuery && vendorId) {
-        const vendorName =
-          values.find((vendor) => vendor.id === vendorId)?.name ?? '--'
-        setQuery(vendorName)
-      }
-    } catch (e: unknown) {
-      console.error(e)
-    }
-  }
 
   return (
     <Controller
@@ -58,7 +59,6 @@ const GroupDetailsGeneralFormRolesVendor = () => {
           value={query}
           suggestions={vendors as unknown as Record<string, unknown>[]}
           completeMethod={(e) => {
-            if (!canViewVendors) return
             void loadVendors(e.query)
           }}
           field="name"
@@ -69,10 +69,7 @@ const GroupDetailsGeneralFormRolesVendor = () => {
             field.onChange(vendor.id)
           }}
           disabled={
-            !canManage ||
-            !canViewVendors ||
-            Boolean(group?.id) ||
-            Boolean(group?.vendorId)
+            !canManage || Boolean(group?.id) || Boolean(group?.vendorId)
           }
           placeholder={!canViewVendors ? t('global.noPermissions') : ''}
         />

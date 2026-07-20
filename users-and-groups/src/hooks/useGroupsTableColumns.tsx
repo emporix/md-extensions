@@ -10,14 +10,16 @@ import { useLocalizedValue } from '../hooks/useLocalizedValue'
 const COLUMN_PATH = 'usersAndGroups.groups.tables.groups.columns'
 
 const useGroupsTableColumns = () => {
-  const { t } = useTranslation()
+  const { i18n, t } = useTranslation()
   const { getContentLangValue } = useLocalizedValue()
 
   const columns: DataTableColumnProps[] = useMemo(() => {
+    const language = i18n.language
+
     return [
       {
         columnKey: 'name',
-        header: t(`${COLUMN_PATH}.name`),
+        header: t(`${COLUMN_PATH}.name`, { lng: language }),
         field: 'name',
         filter: true,
         filterMatchMode: FilterMatchMode.CONTAINS,
@@ -27,7 +29,7 @@ const useGroupsTableColumns = () => {
         body: (rowData: Group) => getContentLangValue(rowData.name),
       },
     ]
-  }, [t, getContentLangValue])
+  }, [i18n.language, t, getContentLangValue])
 
   return { columns }
 }
