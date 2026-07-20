@@ -9,10 +9,7 @@ import UsersTable from '../components/usersAndGroups/UsersTable'
 import { usePermissions } from '../context/PermissionsProvider'
 import { GroupUserTypes } from '../models/Groups.model'
 import { EmployeeDomains } from '../configs/accessControls'
-import {
-  groupAddPath,
-  userAddPath,
-} from '../constants/paths'
+import { groupAddPath, userAddPath } from '../constants/paths'
 import styles from './UsersAndGroupsPage.module.scss'
 
 const TABS = ['users', 'groups']
@@ -30,9 +27,7 @@ const UsersAndGroupsPage = () => {
     return (
       <PrimaryButton
         disabled={!canManage}
-        onClick={() =>
-          navigate(isUserTab ? userAddPath() : groupAddPath())
-        }
+        onClick={() => navigate(isUserTab ? userAddPath() : groupAddPath())}
       >
         {t(`usersAndGroups.buttons.${key}`)}
       </PrimaryButton>

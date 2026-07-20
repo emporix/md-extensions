@@ -44,7 +44,11 @@ const SectionBox = ({
   return (
     <div style={style} className={`${className} section-box-wrapper`}>
       {(name ?? actions) && (
-        <SectionTitle className={styles.titleSpacing} name={name} actions={actions} />
+        <SectionTitle
+          className={styles.titleSpacing}
+          name={name}
+          actions={actions}
+        />
       )}
       <div
         data-test-id="section-box"

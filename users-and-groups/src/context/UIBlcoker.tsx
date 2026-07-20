@@ -1,6 +1,7 @@
 import { useContext, createContext, useState } from 'react'
 import classnames from 'classnames'
 import { ProgressSpinner } from '@emporix/component-library'
+import { useTranslation } from 'react-i18next'
 import { Props } from '../helpers/props'
 import styles from './UIBlcoker.module.scss'
 
@@ -14,6 +15,7 @@ const UIBlockerContext = createContext({
 export const useUIBlocker = () => useContext(UIBlockerContext)
 
 export const UIBlockerProvider = (props: Props) => {
+  const { t } = useTranslation()
   const [blockedPanel, setBlockedPanel] = useState(false)
 
   const blockPanel = (isBlocked: boolean) => {
@@ -33,7 +35,7 @@ export const UIBlockerProvider = (props: Props) => {
         {blockedPanel && (
           <div className={styles.loadingPanel}>
             <ProgressSpinner />
-            <div className={styles.loadingLabel}>Loading</div>
+            <div className={styles.loadingLabel}>{t('global.loading')}</div>
           </div>
         )}
       </>

@@ -64,7 +64,7 @@ const useAccessControlsColumns = () => {
           ) : null,
       },
     ]
-  }, [i18n.language])
+  }, [i18n.language, t, getUiLangValue])
 
   return { columns }
 }

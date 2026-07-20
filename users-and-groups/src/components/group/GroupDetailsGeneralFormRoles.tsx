@@ -36,7 +36,7 @@ const GroupDetailsGeneralFormRoles = () => {
       roleType = RoleType.VENDOR
     }
     setActiveRoleType(roleType)
-  }, [group])
+  }, [group, setActiveRoleType])
 
   const handleRoleTypeChange = (roleType: RoleType) => {
     if (roleType === RoleType.VENDOR) {

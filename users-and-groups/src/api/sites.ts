@@ -9,7 +9,7 @@ export const useSitesApi = () => {
     if (tenant) {
       return getSitesCall(tenant)
     }
-    return Promise.reject('no tenant')
+    return Promise.reject(new Error('No tenant'))
   }, [tenant])
 
   return { getSites }

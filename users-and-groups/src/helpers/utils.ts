@@ -28,9 +28,9 @@ export const removeObjectEmptyValues = (obj: Record<string, unknown>) => {
   }
 }
 
-export const removeEmptyValues = <T>(obj: T): Partial<T> | T => {
-  const clonedObj = deepClone(obj)
-  for (const key in clonedObj) {
+export const removeEmptyValues = <T>(obj: T): Partial<T> => {
+  const clonedObj = deepClone(obj) as Record<string, unknown>
+  for (const key of Object.keys(clonedObj)) {
     const value = clonedObj[key]
     if (isObject(value)) {
       removeObjectEmptyValues(value)
@@ -41,7 +41,7 @@ export const removeEmptyValues = <T>(obj: T): Partial<T> | T => {
       delete clonedObj[key]
     }
   }
-  return clonedObj
+  return clonedObj as Partial<T>
 }
 
 export const getArrayFromEnum = <T extends Record<string, string | number>>(

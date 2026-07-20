@@ -156,7 +156,9 @@ const AssignAccessControlsDialog = (props: Props) => {
               onSelectionChange={setSelectedAcs}
             />
           )}
-          emptyTemplate={t('usersAndGroups.groups.tables.accessControls.emptyText')}
+          emptyTemplate={t(
+            'usersAndGroups.groups.tables.accessControls.emptyText'
+          )}
           sortField="name"
           sortOrder={1}
           paginator={false}

@@ -11,12 +11,7 @@ export default defineConfig({
       exposes: {
         './RemoteComponent': './src/RemoteComponent',
       },
-      shared: [
-        'react',
-        'react-dom',
-        'react-router',
-        'react-i18next',
-      ],
+      shared: ['react', 'react-dom', 'react-router', 'react-i18next'],
     }),
   ],
   resolve: {

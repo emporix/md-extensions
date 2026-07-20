@@ -19,7 +19,7 @@ interface Props {
 const AccessControlsExpansionTable = (props: Props) => {
   const { accessControls, onRemove, selectable, selection, onSelectionChange } =
     props
-  const { i18n, t } = useTranslation()
+  const { t } = useTranslation()
   const { columns } = useAccessControlsExpansionColumns()
   const { getUiLangValue } = useLocalizedValue()
   const [visible, setVisible] = useState<string>()
@@ -46,7 +46,7 @@ const AccessControlsExpansionTable = (props: Props) => {
         />
       </>
     ),
-    [i18n.language, visible, onRemove]
+    [t, getUiLangValue, visible, onRemove]
   )
 
   return (

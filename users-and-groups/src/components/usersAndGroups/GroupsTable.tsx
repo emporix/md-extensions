@@ -164,7 +164,9 @@ const GroupsTable = (props: Props) => {
         dataKey="id"
         value={groups}
         selection={selectedGroups}
-        onSelectionChange={(selection) => setSelectedGroups(selection as Group[])}
+        onSelectionChange={(selection) =>
+          setSelectedGroups(selection as Group[])
+        }
         pagination={pagination}
         lazy={true}
         loading={isLoading}

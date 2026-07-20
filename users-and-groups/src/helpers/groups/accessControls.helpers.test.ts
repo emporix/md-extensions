@@ -3,9 +3,9 @@ import { AccessControl } from '../../models/Permissions.model'
 import type { Metadata } from '../../models/Metadata.model'
 import type { AccessControlsTemplate } from '../../configs/accessControlsTemplates'
 
-vi.mock('../../../../configs/accessControls', async (importOriginal) => {
+vi.mock('../../configs/accessControls', async (importOriginal) => {
   const actual =
-    await importOriginal<typeof import('../../../../configs/accessControls')>()
+    await importOriginal<typeof import('../../configs/accessControls')>()
   return {
     ...actual,
     EMPLOYEE_DOMAINS: [

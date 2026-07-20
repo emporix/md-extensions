@@ -5,6 +5,7 @@ export default {
   save: 'Speichern',
   discard: 'Verwerfen',
   saving: 'Speichern...',
+  loading: 'Laden',
   settings: 'Einstellungen',
   logout: 'Abmelden',
   cancel: 'Abbrechen',
@@ -67,7 +68,8 @@ export default {
   deleteConfirm: {
     singular: {
       title: '{{entity}} {{action}}?',
-      description: 'Sind Sie sicher, dass Sie {{entity}} {{id}} {{action}} wollen?',
+      description:
+        'Sind Sie sicher, dass Sie {{entity}} {{id}} {{action}} wollen?',
     },
     plural: {
       title: '{{entity}} ({{count}}) {{action}}?',

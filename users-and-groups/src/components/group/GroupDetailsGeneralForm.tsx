@@ -181,7 +181,9 @@ const GroupDetailsGeneralForm = ({ groupId }: GroupDetailsGeneralFormProps) => {
             {restrictions.length === 0 && (
               <span
                 className={inputFieldStyles.tooltipIcon}
-                title={t('usersAndGroups.groups.forms.group.tooltip.restrictionsEmpty')}
+                title={t(
+                  'usersAndGroups.groups.forms.group.tooltip.restrictionsEmpty'
+                )}
                 aria-label={t(
                   'usersAndGroups.groups.forms.group.tooltip.restrictionsEmpty'
                 )}
@@ -219,9 +221,7 @@ const GroupDetailsGeneralForm = ({ groupId }: GroupDetailsGeneralFormProps) => {
       </FormGridRow>
       {groupType === GroupUserTypes.EMPLOYEE && (
         <FormGridRow>
-          <div
-            className={`${inputFieldStyles.field} ${styles.rolesField}`}
-          >
+          <div className={`${inputFieldStyles.field} ${styles.rolesField}`}>
             <label className={inputFieldStyles.label}>
               {t('usersAndGroups.groups.forms.group.role.title')}
             </label>

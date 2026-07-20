@@ -43,9 +43,7 @@ const HeaderSection = ({
         {handleBackClick && <BackButton onClick={handleBackClick} />}
         <div className={styles.titleRow}>
           <h1 className={styles.moduleTitle}>{title}</h1>
-          {subtitle && (
-            <h1 className={styles.highlightText}>{subtitle}</h1>
-          )}
+          {subtitle && <h1 className={styles.highlightText}>{subtitle}</h1>}
         </div>
         {moduleActions && <div className={styles.actions}>{moduleActions}</div>}
       </div>

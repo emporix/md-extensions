@@ -22,7 +22,7 @@ const GroupDetails = () => {
   useEffect(() => {
     if (!group || templates.length === 0) return
     reset(mapGroupToGroupForm(group))
-  }, [group, templates])
+  }, [group, templates, reset])
 
   return (
     <>

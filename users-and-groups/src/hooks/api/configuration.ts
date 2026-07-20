@@ -17,7 +17,7 @@ export const useConfigurationApi = () => {
       if (tenant) {
         return fetchSingleConfiguration(tenant, key)
       } else {
-        return Promise.reject('no tenant')
+        return Promise.reject(new Error('No tenant'))
       }
     },
     [tenant]
@@ -39,7 +39,7 @@ export const useConfigurationApi = () => {
           }
         }
       } else {
-        return Promise.reject('no tenant')
+        return Promise.reject(new Error('No tenant'))
       }
     },
     [tenant]
@@ -50,7 +50,7 @@ export const useConfigurationApi = () => {
       if (tenant) {
         return createSingleConfiguration(tenant, key, data)
       } else {
-        return Promise.reject('no tenant')
+        return Promise.reject(new Error('No tenant'))
       }
     },
     [tenant]
@@ -61,7 +61,7 @@ export const useConfigurationApi = () => {
       if (tenant) {
         return deleteSingleConfiguration(tenant, key)
       }
-      return Promise.reject('no tenant')
+      return Promise.reject(new Error('No tenant'))
     },
     [tenant]
   )

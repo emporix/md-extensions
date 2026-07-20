@@ -25,11 +25,7 @@ const ChangelogChangeTypeBadge = ({
 
   const className =
     variant === 'card'
-      ? [
-          styles.badge,
-          styles.badgeCard,
-          CARD_TYPE_CLASS[changeTypeKey],
-        ]
+      ? [styles.badge, styles.badgeCard, CARD_TYPE_CLASS[changeTypeKey]]
           .filter(Boolean)
           .join(' ')
       : `${styles.badge} ${styles.badgeTable}`

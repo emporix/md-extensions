@@ -5,6 +5,7 @@ export default {
   save: 'Save',
   discard: 'Discard',
   saving: 'Saving...',
+  loading: 'Loading',
   settings: 'Settings',
   logout: 'Log Out',
   cancel: 'Cancel',

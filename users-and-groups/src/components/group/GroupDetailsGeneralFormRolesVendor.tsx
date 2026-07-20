@@ -23,14 +23,16 @@ const GroupDetailsGeneralFormRolesVendor = () => {
   const vendorId = useWatch({ name: 'vendorId' })
 
   useEffect(() => {
+    if (!canViewVendors) return
     void loadVendors()
-  }, [])
+  }, [canViewVendors])
 
   useEffect(() => {
     if (!vendorId) setQuery('')
   }, [vendorId])
 
   const loadVendors = async (searchQuery?: string) => {
+    if (!canViewVendors) return
     try {
       const pagination = { currentPage: 1, rows: 100 }
       const params = searchQuery ? { name: `(~${searchQuery})` } : undefined
@@ -56,6 +58,7 @@ const GroupDetailsGeneralFormRolesVendor = () => {
           value={query}
           suggestions={vendors as unknown as Record<string, unknown>[]}
           completeMethod={(e) => {
+            if (!canViewVendors) return
             void loadVendors(e.query)
           }}
           field="name"
@@ -66,7 +69,10 @@ const GroupDetailsGeneralFormRolesVendor = () => {
             field.onChange(vendor.id)
           }}
           disabled={
-            !canManage || Boolean(group?.id) || Boolean(group?.vendorId)
+            !canManage ||
+            !canViewVendors ||
+            Boolean(group?.id) ||
+            Boolean(group?.vendorId)
           }
           placeholder={!canViewVendors ? t('global.noPermissions') : ''}
         />

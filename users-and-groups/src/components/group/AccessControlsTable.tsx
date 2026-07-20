@@ -26,7 +26,7 @@ import ConfirmBox from '../../components/shared/ConfirmBox'
 import styles from './AccessControlsTable.module.scss'
 
 const AccessControlsTable = () => {
-  const { i18n, t } = useTranslation()
+  const { t } = useTranslation()
   const { setValue, watch } = useFormContext<GroupFormFields>()
   const formAccessControls = watch('accessControls') ?? []
   const { columns } = useDomainsColumns()
@@ -88,7 +88,7 @@ const AccessControlsTable = () => {
         />
       </>
     ),
-    [i18n.language, t, visible, handleRemoveDomain]
+    [t, visible, handleRemoveDomain]
   )
 
   const availableDomainGroups = useMemo(() => {
@@ -128,7 +128,9 @@ const AccessControlsTable = () => {
             onClick={() => setIsAssignDialogOpen(true)}
           >
             <BsPlusLg size={16} aria-hidden />
-            <span>{t('usersAndGroups.groups.buttons.assignAccessControls')}</span>
+            <span>
+              {t('usersAndGroups.groups.buttons.assignAccessControls')}
+            </span>
           </PrimaryButton>
         }
       />

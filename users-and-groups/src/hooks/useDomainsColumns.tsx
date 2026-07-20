@@ -9,7 +9,7 @@ import { AccessControlDomainGroup } from '../models/AccessControl.model'
 export const TABLE_COLUMNS_PATH = 'usersAndGroups.groups.tables.accessControls'
 
 const useDomainsColumns = () => {
-  const { i18n, t } = useTranslation()
+  const { t } = useTranslation()
 
   const columns: DataTableColumnProps[] = useMemo(() => {
     return [
@@ -32,7 +32,7 @@ const useDomainsColumns = () => {
           rowData.name.startsWith('zzz') ? rowData.name.slice(3) : rowData.name,
       },
     ]
-  }, [i18n.language])
+  }, [t])
 
   return { columns }
 }
