@@ -63,11 +63,16 @@ export default function usePagination(
   setSearchParamsRef.current = setSearchParams
   const isInitialMount = useRef(true)
   const isSyncingFromUrl = useRef(false)
+  const isLanguageResetInitialMount = useRef(true)
 
   const { i18n } = useTranslation()
   const { contentLanguage } = useLocalizedValue()
 
   useEffect(() => {
+    if (isLanguageResetInitialMount.current) {
+      isLanguageResetInitialMount.current = false
+      return
+    }
     setPaginationParams({
       ...DEFAULT_PAGINATION_PROPS,
       ...initialPaginationParamsRef.current,
@@ -217,6 +222,13 @@ export default function usePagination(
       return
     }
 
+    if (
+      searchParams.get('page') === currentPage.toString() &&
+      searchParams.get('rows') === rows.toString()
+    ) {
+      return
+    }
+
     setSearchParamsRef.current(
       (currentSearchParams) => {
         if (
@@ -232,7 +244,7 @@ export default function usePagination(
       },
       { replace: true }
     )
-  }, [paginationParams, withQuery])
+  }, [paginationParams, withQuery, searchParams])
 
   const setFilters = (columns: DataTableColumnProps[]) => {
     const filters: {
