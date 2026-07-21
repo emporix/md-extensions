@@ -1,16 +1,21 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { InputText } from '@emporix/component-library'
-import { useConfiguration } from '../../context/ConfigurationProvider'
+import { useMemo, type ReactNode } from 'react'
+import {
+  LocalizedInput as LibraryLocalizedInput,
+  type LocalizedValue,
+} from '@emporix/component-library'
 import { useTranslation } from 'react-i18next'
-import { BsGlobe } from 'react-icons/bs'
-import type Localized from '../../models/Localized.model'
-import { isEmptyObject } from '../../helpers/utils'
+import { useConfiguration } from '../../context/ConfigurationProvider'
 import { useDashboardContext } from '../../context/Dashboard.context'
-import styles from './LocalizedInput.module.scss'
+import type Localized from '../../models/Localized.model'
 
 export type LocalizedInputProps = {
   readonly value: Localized | undefined
   readonly onChange: (value: Localized | undefined) => void
+  readonly label?: ReactNode
+  readonly tooltip?: string
+  readonly required?: boolean
+  readonly inputId?: string
+  readonly className?: string
   readonly displayOnly?: boolean
   readonly errors?: {
     [key: string]: {
@@ -26,6 +31,11 @@ export type LocalizedInputProps = {
 const LocalizedInput = ({
   value,
   onChange,
+  label,
+  tooltip,
+  required = false,
+  inputId,
+  className,
   displayOnly = false,
   errors,
   uiLanguages = false,
@@ -35,50 +45,37 @@ const LocalizedInput = ({
 }: LocalizedInputProps) => {
   const { languages } = useConfiguration()
   const { contentLanguage } = useDashboardContext()
-  const { i18n } = useTranslation()
-  const [localizedValue, setLocalizedValue] = useState<Localized | undefined>(
-    value
-  )
+  const { t, i18n } = useTranslation()
 
-  useEffect(() => {
-    setLocalizedValue(value)
-  }, [value])
-
-  const activeLanguages = useMemo(() => {
-    if (showAllLanguages) {
-      return languages
+  const resolvedLanguages = useMemo(() => {
+    if (uiLanguages) {
+      return [
+        { id: 'en' },
+        { id: 'de' },
+      ]
     }
-    const lang = uiLanguages ? i18n.language : contentLanguage
-    return languages.filter((l) => l.id === lang)
-  }, [languages, showAllLanguages, uiLanguages, i18n.language, contentLanguage])
-
-  const handleChange = useCallback(
-    (langId: string, text: string) => {
-      const newLocalizedValue = {
-        ...(localizedValue ?? {}),
-        [langId]: text,
-      }
-      setLocalizedValue(newLocalizedValue)
-      onChange(isEmptyObject(newLocalizedValue) ? undefined : newLocalizedValue)
-    },
-    [localizedValue, onChange]
-  )
+    return languages
+  }, [languages, uiLanguages])
 
   return (
-    <div className="localized-input">
-      {activeLanguages.map((lang) => (
-        <div key={lang.id} className={styles.languageRow}>
-          <BsGlobe />
-          <InputText
-            inputId={`localized-${lang.id}`}
-            value={localizedValue?.[lang.id] ?? ''}
-            disabled={disabled || displayOnly}
-            onChange={(e) => handleChange(lang.id, e.target.value)}
-            error={errors?.[lang.id]?.message ?? error}
-          />
-        </div>
-      ))}
-    </div>
+    <LibraryLocalizedInput
+      value={value as LocalizedValue | undefined}
+      onChange={onChange}
+      languages={resolvedLanguages}
+      selectedLanguage={uiLanguages ? i18n.language : contentLanguage}
+      showAllLanguages={showAllLanguages}
+      label={label}
+      tooltip={tooltip}
+      required={required}
+      inputId={inputId}
+      className={className}
+      displayOnly={displayOnly}
+      disabled={disabled}
+      error={error}
+      errors={errors}
+      showLanguagesLabel={t('global.localizedInput.showLanguages')}
+      hideLanguagesLabel={t('global.localizedInput.hideLanguages')}
+    />
   )
 }
 
