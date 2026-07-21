@@ -155,7 +155,7 @@ const TRANSLATIONS_EN = {
   confirm_save_agent: 'Save and Deactivate Agent',
   save_and_deactivate: 'Save and Deactivate',
   confirm_disable_agent_message:
-    'You cannot save an enabled agent while it has validation errors. You can save the agent by disabling it first.\n\n{{detail}}',
+    'You cannot save an enabled agent while it has validation errors. You can save the agent by disabling it first.',
   close: 'Close',
   trigger_type: 'Trigger Type',
   trigger_type_endpoint: 'ENDPOINT',
@@ -542,7 +542,7 @@ const TRANSLATIONS_EN = {
   teams_graph_consent_url_missing:
     'Graph admin consent is not configured on the AI service.',
   teams_graph_consent_success:
-    'Graph admin consent granted. Find your Team ID (see install steps on the General tab), complete Settings, then save.',
+    'Graph admin consent granted. Open Settings and enter your Team ID, then save.',
   teams_graph_consent_error: 'Graph admin consent failed',
   teams_graph_consent_unknown: 'Graph admin consent returned an unknown result',
   teams_install_requires_tool_id:
@@ -560,7 +560,7 @@ const TRANSLATIONS_EN = {
   teams_install_step_sideload:
     'Fallback: upload the Emporix app package via Teams → Apps → Manage your apps → Upload a custom app (requires custom-app upload policy).',
   teams_install_step_settings:
-    'Open the Settings tab: paste the Team ID (see How to find Team ID below), confirm Tenant ID, configure allowed operations, then save. Team ID cannot be changed after the first save.',
+    'Open the Settings tab: paste the Team ID using the guide under the Team ID field, confirm Tenant ID, configure allowed operations, then save. Team ID cannot be changed after the first save.',
   teams_install_how_to_find_team_id: 'How to find Team ID',
   teams_install_team_id_intro:
     'Team ID is the Microsoft 365 Group ID (GUID) of the target Teams team—the same value as groupId in a Teams team link.',
@@ -591,7 +591,7 @@ const TRANSLATIONS_EN = {
   tenant_id: 'Tenant ID (AAD)',
   enter_tenant_id: 'Enter Azure AD tenant ID',
   teams_team_id_hint:
-    'Microsoft 365 Group ID (GUID) of the target Teams team. Copy groupId from a team link or Group ID from Teams Admin Center (see General tab install steps). Verify before saving—Team ID cannot be changed later.',
+    'Microsoft 365 Group ID (GUID) of the target Teams team. Copy groupId from a team link or Group ID from Teams Admin Center (see How to find Team ID below). Verify before saving—Team ID cannot be changed later.',
   teams_team_id_hint_immutable:
     'Team ID cannot be changed after the tool is created.',
   teams_tenant_id_hint:

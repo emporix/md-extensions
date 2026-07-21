@@ -29,6 +29,7 @@ import { isValidAgentOutputJsonSchema } from '../utils/validateJsonSchema'
 import {
   areTeamsAgentToolsValid,
   getSelectedTeamsToolIds,
+  isAgentDefaultInboundOwnerForTeamsTools,
   teamsNativeToolHasAllowedOperations,
   TEAMS_TRIGGER,
 } from '../utils/teamsRoutingHelpers'
@@ -254,7 +255,12 @@ export const useAgentConfig = ({
     const existingTeamsTrigger = agent.triggers?.find(
       (trigger) => trigger.type === TEAMS_TRIGGER
     )
-    if (existingTeamsTrigger) {
+    const isDefaultInboundAgent = isAgentDefaultInboundOwnerForTeamsTools(
+      state.agentId,
+      state.nativeTools,
+      availableTools
+    )
+    if (existingTeamsTrigger && isDefaultInboundAgent) {
       triggers.push(existingTeamsTrigger)
     }
 
@@ -350,7 +356,7 @@ export const useAgentConfig = ({
       tags: state.tags || [],
       requiredScopes: state.requiredScopes || [],
     } as CustomAgent
-  }, [agent, state, aiOauthEnabled])
+  }, [agent, state, availableTools, aiOauthEnabled])
 
   const handleSave = useCallback(async () => {
     if (!agent) return

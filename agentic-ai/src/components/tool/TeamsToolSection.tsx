@@ -11,6 +11,7 @@ import { ToolConfig } from '../../types/Tool'
 import { getLocalizedValue, iconMap } from '../../utils/agentHelpers'
 import { DEFAULT_TEAMS_ALLOWED_OPERATIONS } from '../../utils/teamsRoutingHelpers'
 import { ToolRequiredMark } from './ToolRequiredMark'
+import { TeamsTeamIdGuide } from './TeamsTeamIdGuide'
 
 interface TeamsToolSectionProps {
   config: ToolConfig
@@ -83,6 +84,7 @@ export const TeamsToolSection: React.FC<TeamsToolSectionProps> = ({
         <p className="tool-detail-section-description">
           {t(isEditing ? 'teams_team_id_hint_immutable' : 'teams_team_id_hint')}
         </p>
+        {!isEditing ? <TeamsTeamIdGuide /> : null}
       </div>
 
       <div className="form-field">

@@ -837,6 +837,12 @@ h1 .details-title-with-back {
   max-width: 900px;
 }
 
+.confirm-dialog .confirm-dialog-detail {
+  font-weight: 600;
+  margin-top: var(--spacing-md);
+  white-space: pre-line;
+}
+
 /* Icon spacing */
 .icon-with-text {
   margin-left: var(--spacing-sm);

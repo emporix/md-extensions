@@ -475,9 +475,8 @@ const AgentDetailPage: React.FC = () => {
       <ConfirmDialog
         visible={showDisableConfirm}
         title={t('confirm_save_agent')}
-        message={t('confirm_disable_agent_message', {
-          detail: disableConfirmMessage,
-        })}
+        message={t('confirm_disable_agent_message')}
+        detail={disableConfirmMessage}
         confirmLabel={t('save_and_deactivate')}
         cancelLabel={t('cancel')}
         onConfirm={handleConfirmDisable}
