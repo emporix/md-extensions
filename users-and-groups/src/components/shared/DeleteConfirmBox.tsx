@@ -46,6 +46,13 @@ const DeleteConfirmBox = ({
       if ('localizedName' in item) {
         return getContentLangValue(item.localizedName as Localized)
       }
+      if ('firstName' in item || 'lastName' in item) {
+        const firstName =
+          'firstName' in item ? String(item.firstName ?? '') : ''
+        const lastName = 'lastName' in item ? String(item.lastName ?? '') : ''
+        const fullName = `${firstName} ${lastName}`.trim()
+        if (fullName) return fullName
+      }
       if ('id' in item) return String(item.id)
     }
     return ''
