@@ -46,8 +46,11 @@ export const DEFAULT_PAGINATION_PROPS: Partial<PaginationProps> = {
 
 export default function usePagination(
   initialPaginationParams: Partial<PaginationProps> = DEFAULT_PAGINATION_PROPS,
-  withQuery: boolean | undefined = true
+  withQuery: boolean | undefined = true,
+  queryKeyPrefix?: string
 ) {
+  const pageKey = queryKeyPrefix ? `${queryKeyPrefix}Page` : 'page'
+  const rowsKey = queryKeyPrefix ? `${queryKeyPrefix}Rows` : 'rows'
   const initialPaginationParamsRef = useRef(initialPaginationParams)
   initialPaginationParamsRef.current = initialPaginationParams
 
@@ -172,8 +175,8 @@ export default function usePagination(
       return
     }
 
-    const pageStr = searchParams.get('page')
-    const rowsStr = searchParams.get('rows')
+    const pageStr = searchParams.get(pageKey)
+    const rowsStr = searchParams.get(rowsKey)
     if (!pageStr || !rowsStr) {
       return
     }
@@ -200,7 +203,7 @@ export default function usePagination(
         first: (rowsCurrentPage - 1) * rowsNum,
       }
     })
-  }, [searchParams, withQuery])
+  }, [searchParams, withQuery, pageKey, rowsKey])
 
   useEffect(() => {
     if (!withQuery) {
@@ -223,28 +226,35 @@ export default function usePagination(
     }
 
     if (
-      searchParams.get('page') === currentPage.toString() &&
-      searchParams.get('rows') === rows.toString()
+      searchParams.get(pageKey) === currentPage.toString() &&
+      searchParams.get(rowsKey) === rows.toString()
     ) {
       return
     }
 
     setSearchParamsRef.current(
-      (currentSearchParams) => {
+      () => {
+        // Merge onto the live URL (not the `currentSearchParams` argument) —
+        // that argument can be a stale per-hook snapshot when another
+        // setSearchParams call (e.g. a tab change) lands in the same tick,
+        // which would otherwise get silently reverted by this write.
+        const currentSearchParams = new URLSearchParams(
+          window.location.hash.split('?')[1] ?? ''
+        )
         if (
-          currentSearchParams.get('page') === currentPage.toString() &&
-          currentSearchParams.get('rows') === rows.toString()
+          currentSearchParams.get(pageKey) === currentPage.toString() &&
+          currentSearchParams.get(rowsKey) === rows.toString()
         ) {
           return currentSearchParams
         }
         const nextSearchParams = new URLSearchParams(currentSearchParams)
-        nextSearchParams.set('page', currentPage.toString())
-        nextSearchParams.set('rows', rows.toString())
+        nextSearchParams.set(pageKey, currentPage.toString())
+        nextSearchParams.set(rowsKey, rows.toString())
         return nextSearchParams
       },
       { replace: true }
     )
-  }, [paginationParams, withQuery, searchParams])
+  }, [paginationParams, withQuery, searchParams, pageKey, rowsKey])
 
   const setFilters = (columns: DataTableColumnProps[]) => {
     const filters: {

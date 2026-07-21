@@ -20,7 +20,13 @@ export const useTabs = (tabs: string[], withQuery = true) => {
 
       if (withQuery && updateQuery) {
         setSearchParamsRef.current(
-          (currentSearchParams) => {
+          () => {
+            // Merge onto the live URL, not the (potentially stale, if another
+            // setSearchParams call lands in the same tick) `currentSearchParams`
+            // argument — see the equivalent comment in usePagination.tsx.
+            const currentSearchParams = new URLSearchParams(
+              window.location.hash.split('?')[1] ?? ''
+            )
             const nextSearchParams = new URLSearchParams(currentSearchParams)
             const tabChanged = currentSearchParams.get('tab') !== nextTab
             nextSearchParams.set('tab', nextTab)
