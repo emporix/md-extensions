@@ -4,7 +4,12 @@ import {
   mapGroupFormToPayload,
 } from '../../helpers/groups/groupForm.helpers'
 import { removeEmptyValues } from '../../helpers/utils'
-import { getApiErrorDetails, getApiErrorStatus } from '../../helpers/api'
+import {
+  getApiErrorDetails,
+  getApiErrorResourceId,
+  getApiErrorStatus,
+  getConflictErrorToast,
+} from '../../helpers/api'
 import { useTranslation } from 'react-i18next'
 import { useUIBlocker } from '../../context/UIBlcoker'
 import { useIamApi } from '../../hooks/api/iam'
@@ -63,18 +68,19 @@ const GroupPageActions = (props: Props) => {
         })
       } catch (e: unknown) {
         if (getApiErrorStatus(e) === 409) {
-          showError(
-            t('usersAndGroups.groups.toasts.createGroup.error'),
+          const { title, detail } = getConflictErrorToast(
+            e,
             t('usersAndGroups.groups.toasts.createGroup.conflictError', {
-              name: getApiErrorDetails(e),
+              name: data.id ?? getApiErrorResourceId(e) ?? '',
             })
           )
-        } else {
-          showError(
-            t('usersAndGroups.groups.toasts.createGroup.error'),
-            getApiErrorDetails(e)
-          )
+          showError(title, detail)
+          return
         }
+        showError(
+          t('usersAndGroups.groups.toasts.createGroup.error'),
+          getApiErrorDetails(e)
+        )
       }
     },
     [
