@@ -175,8 +175,16 @@ export default function usePagination(
       return
     }
 
-    const pageStr = searchParams.get(pageKey)
-    const rowsStr = searchParams.get(rowsKey)
+    // Read the live URL rather than trusting `searchParams` directly — on a
+    // fresh mount (e.g. right after a tab switch), react-router's own
+    // location state can momentarily lag behind a `history.replaceState`
+    // that already landed synchronously, which would otherwise sync this
+    // component's pagination to stale page/rows left over from elsewhere.
+    const liveSearchParams = new URLSearchParams(
+      window.location.hash.split('?')[1] ?? ''
+    )
+    const pageStr = liveSearchParams.get(pageKey)
+    const rowsStr = liveSearchParams.get(rowsKey)
     if (!pageStr || !rowsStr) {
       return
     }
@@ -225,9 +233,12 @@ export default function usePagination(
       return
     }
 
+    const liveSearchParams = new URLSearchParams(
+      window.location.hash.split('?')[1] ?? ''
+    )
     if (
-      searchParams.get(pageKey) === currentPage.toString() &&
-      searchParams.get(rowsKey) === rows.toString()
+      liveSearchParams.get(pageKey) === currentPage.toString() &&
+      liveSearchParams.get(rowsKey) === rows.toString()
     ) {
       return
     }

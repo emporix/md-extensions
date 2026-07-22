@@ -51,10 +51,16 @@ export const useTabs = (tabs: string[], withQuery = true) => {
   )
 
   useEffect(() => {
-    const tabFromUrl = searchParams.get('tab')
     if (!withQuery) {
       return
     }
+
+    // Read the live URL rather than trusting `searchParams` directly — see
+    // the equivalent comment in usePagination.tsx's read-from-url effect.
+    const liveSearchParams = new URLSearchParams(
+      window.location.hash.split('?')[1] ?? ''
+    )
+    const tabFromUrl = liveSearchParams.get('tab')
     if (!tabFromUrl) {
       setTabsByIndex(0)
     } else {
