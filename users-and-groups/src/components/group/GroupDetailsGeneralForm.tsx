@@ -11,9 +11,9 @@ import GroupDetailsGeneralFormRoles from './GroupDetailsGeneralFormRoles'
 import { Dropdown, InputText } from '@emporix/component-library'
 import { GroupUserTypes } from '../../models/Groups.model'
 import { useGroupData } from '../../context/Group.provider'
-import { useDashboardContext } from '../../context/Dashboard.context'
 import { useConfigurationApi } from '../../hooks/api/configuration'
 import SectionBox from '../../components/shared/SectionBox'
+import LocalizedInput from '../../components/shared/LocalizedInput'
 import inputFieldStyles from '../../components/shared/InputField.module.scss'
 import styles from './GroupDetailsGeneralForm.module.scss'
 
@@ -31,7 +31,6 @@ const GroupDetailsGeneralForm = ({ groupId }: GroupDetailsGeneralFormProps) => {
   const { t } = useTranslation()
   const { control, watch } = useFormContext<GroupFormFields>()
   const { hasPermission } = usePermissions()
-  const { contentLanguage } = useDashboardContext()
   const selectedRestrictions = watch('restrictions')
   const { getRestrictions, getSyncBetweenRestrictionsAndSiteCodes } =
     useConfigurationApi()
@@ -129,41 +128,29 @@ const GroupDetailsGeneralForm = ({ groupId }: GroupDetailsGeneralFormProps) => {
                 (val) => val && val.trim() !== ''
               ),
           }}
-          render={({ field: { value, onChange, ...field } }) => (
-            <InputText
+          render={({ field }) => (
+            <LocalizedInput
               className={styles.nameField}
               inputId="group-name"
               label={t('usersAndGroups.groups.forms.group.name')}
               required
-              value={value?.[contentLanguage] ?? ''}
+              value={field.value}
               disabled={!canManage}
-              onChange={(e) =>
-                onChange({
-                  ...(value ?? {}),
-                  [contentLanguage]: e.target.value,
-                })
-              }
-              {...field}
+              onChange={field.onChange}
             />
           )}
         />
         <Controller
           name="description"
           control={control}
-          render={({ field: { value, onChange, ...field } }) => (
-            <InputText
+          render={({ field }) => (
+            <LocalizedInput
               className={styles.descriptionField}
               inputId="group-description"
               label={t('usersAndGroups.groups.forms.group.description')}
-              value={value?.[contentLanguage] ?? ''}
+              value={field.value}
               disabled={!canManage}
-              onChange={(e) =>
-                onChange({
-                  ...(value ?? {}),
-                  [contentLanguage]: e.target.value,
-                })
-              }
-              {...field}
+              onChange={field.onChange}
             />
           )}
         />

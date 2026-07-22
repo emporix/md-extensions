@@ -52,11 +52,17 @@ const GroupsTable = (props: Props) => {
   const [groupToForceDelete, setGroupToForceDelete] = useState<Group>()
   const [groupToAddMembers, setGroupToAddMembers] = useState<string>()
 
+  const { currentPage, rows, sortField, sortOrder, filters } = paginationParams
+  const filtersKey = JSON.stringify(filters ?? null)
+
   useEffect(() => {
     ;(async () => {
       await loadGroups(paginationParams)
     })()
-  }, [refresh, paginationParams])
+    // Depend on pagination field values (not the paginationParams object) so
+    // updates that don't change these fields don't trigger a refetch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refresh, currentPage, rows, sortField, sortOrder, filtersKey])
 
   const loadGroups = async (paginationParams: Partial<PaginationProps>) => {
     try {

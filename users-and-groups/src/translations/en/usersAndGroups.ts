@@ -179,7 +179,7 @@ export default {
       createGroup: {
         success: 'Group successfully added',
         error: 'Error while creating group',
-        conflictError: 'Group with id {{name}} already exists.!!!',
+        conflictError: 'Group with id {{name}} already exists.',
       },
       editGroup: {
         success: 'Group successfully edited',

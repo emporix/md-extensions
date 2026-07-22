@@ -28,7 +28,10 @@ const GroupAddMembersDialog = (props: Props) => {
   const { t } = useTranslation()
   const { getAllUsers, addUserToGroup } = useIamApi()
   const { showSuccess, showError } = useToast()
-  const { paginationParams, onPageCallback, onFilterCallback } = usePagination()
+  const { paginationParams, onPageCallback, onFilterCallback } = usePagination(
+    undefined,
+    false
+  )
   const { columns, customerColumns } = useUsersTableColumns()
   const { groupMembers, syncMembers, isLoadingData, groupType } = useGroupData()
   const [isLoadingUsers, setIsLoadingUsers] = useState(false)

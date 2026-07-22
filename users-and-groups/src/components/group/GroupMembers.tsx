@@ -5,7 +5,11 @@ import { User } from '../../models/User.model'
 import { GroupUserTypes } from '../../models/Groups.model'
 import { useTranslation } from 'react-i18next'
 import { useIamApi } from '../../hooks/api/iam'
-import { DataTable, useToast } from '@emporix/component-library'
+import {
+  DataTable,
+  type DataTablePaginationState,
+  useToast,
+} from '@emporix/component-library'
 import TableActions from '../../components/shared/TableActions'
 import { BsXCircleFill } from 'react-icons/bs'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
@@ -15,6 +19,7 @@ import { usePermissions } from '../../context/PermissionsProvider'
 import { EmployeeDomains } from '../../configs/accessControls'
 import BatchDeleteButton from '../../components/shared/BatchDeleteButton'
 import EmptyTable from '../../components/shared/EmptyTable'
+import usePagination from '../../hooks/usePagination'
 import styles from './GroupMembers.module.scss'
 
 const GroupMembers = () => {
@@ -32,6 +37,11 @@ const GroupMembers = () => {
   const { hasPermission } = usePermissions()
   const [isDeleting, setIsDeleting] = useState(false)
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
+  const { paginationParams, onPageCallback } = usePagination(
+    undefined,
+    true,
+    'members'
+  )
 
   useEffect(() => {
     if (!group) return
@@ -97,6 +107,11 @@ const GroupMembers = () => {
     [removeMembers, canManage, t]
   )
 
+  const membersPagination: DataTablePaginationState = {
+    ...paginationParams,
+    totalRecords: groupMembers.length,
+  }
+
   return (
     <>
       <BatchDeleteButton
@@ -129,6 +144,9 @@ const GroupMembers = () => {
           selection={selectedMembers}
           selectionMode="multiple"
           rowActions={tableActionsTemplate}
+          pagination={membersPagination}
+          lazy={false}
+          onPage={onPageCallback}
         />
       )}
       <GroupAddMembersDialog

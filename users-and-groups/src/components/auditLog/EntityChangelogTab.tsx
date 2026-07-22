@@ -32,7 +32,8 @@ const EntityChangelogTab = ({
   const initialPaginationRef = useRef({ ...DEFAULT_PAGINATION_PROPS })
   const { paginationParams, onPageCallback, resetPagination } = usePagination(
     initialPaginationRef.current,
-    false
+    true,
+    'audit'
   )
   const [items, setItems] = useState<ChangelogItem[]>([])
   const [totalElements, setTotalElements] = useState(0)
