@@ -3,21 +3,20 @@ import { useTranslation } from 'react-i18next'
 import { Dropdown } from 'primereact/dropdown'
 import { InputSwitch } from 'primereact/inputswitch'
 import { InputText } from 'primereact/inputtext'
-import { GrantType } from '../../../types/Agent'
 import { Token } from '../../../types/Token'
+import { OAuth } from '../../../types/OAuth'
+import { getOAuthDisplayName } from '../../../utils/oauthHelpers'
 
 interface SelfHostedAuthSectionProps {
   oauthFeatureEnabled?: boolean
   useOAuth: boolean
   authHeaderName: string
   authHeaderTokenId: string
-  oauthUrl: string
-  oauthClientId: string
-  oauthClientSecretTokenId: string
-  oauthGrantType: GrantType | ''
-  oauthScope: string
+  oauthId: string
   tokens: Token[]
   tokensLoading: boolean
+  oauths: OAuth[]
+  oauthsLoading: boolean
   showValidation?: boolean
   onFieldChange: (field: string, value: string | boolean) => void
 }
@@ -27,13 +26,11 @@ export const SelfHostedAuthSection: React.FC<SelfHostedAuthSectionProps> = ({
   useOAuth,
   authHeaderName,
   authHeaderTokenId,
-  oauthUrl,
-  oauthClientId,
-  oauthClientSecretTokenId,
-  oauthGrantType,
-  oauthScope,
+  oauthId,
   tokens,
   tokensLoading,
+  oauths,
+  oauthsLoading,
   showValidation = false,
   onFieldChange,
 }) => {
@@ -50,14 +47,18 @@ export const SelfHostedAuthSection: React.FC<SelfHostedAuthSectionProps> = ({
     [tokens]
   )
 
-  const grantTypeOptions = useMemo(
-    () => [
-      {
-        label: t('grant_type_client_credentials'),
-        value: GrantType.CLIENT_CREDENTIALS,
-      },
-    ],
-    [t]
+  const oauthOptions = useMemo(
+    () =>
+      oauths
+        .filter(
+          (oauth) => oauth.enabled !== false || oauth.id === oauthId
+        )
+        .map((oauth) => ({
+          label: getOAuthDisplayName(oauth),
+          value: oauth.id,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [oauthId, oauths]
   )
 
   const showOAuthFields = oauthFeatureEnabled && useOAuth
@@ -121,88 +122,26 @@ export const SelfHostedAuthSection: React.FC<SelfHostedAuthSectionProps> = ({
           </div>
         </>
       ) : (
-        <>
-          <div className="form-field">
-            <label className="field-label">
-              {t('oauth_url')}
-              <span className="agent-detail-required"> *</span>
-            </label>
-            <InputText
-              value={oauthUrl}
-              onChange={(event) =>
-                onFieldChange('oauthUrl', event.target.value)
-              }
-              className={`w-full${showValidation && !oauthUrl.trim() ? ' p-invalid' : ''}`}
-              placeholder={t('enter_oauth_url')}
-            />
-          </div>
-
-          <div className="form-field">
-            <label className="field-label">
-              {t('oauth_client_id')}
-              <span className="agent-detail-required"> *</span>
-            </label>
-            <InputText
-              value={oauthClientId}
-              onChange={(event) =>
-                onFieldChange('oauthClientId', event.target.value)
-              }
-              className={`w-full${showValidation && !oauthClientId.trim() ? ' p-invalid' : ''}`}
-              placeholder={t('enter_oauth_client_id')}
-            />
-          </div>
-
-          <div className="form-field">
-            <label className="field-label">
-              {t('oauth_client_secret')} ({t('optional')})
-            </label>
-            <Dropdown
-              value={oauthClientSecretTokenId || null}
-              options={tokenOptions}
-              onChange={(event) =>
-                onFieldChange('oauthClientSecretTokenId', event.value ?? '')
-              }
-              className="w-full"
-              placeholder={
-                tokensLoading ? t('loading_tokens') : t('select_token')
-              }
-              disabled={tokensLoading}
-              showClear
-              appendTo="self"
-            />
-          </div>
-
-          <div className="form-field">
-            <label className="field-label">
-              {t('oauth_grant_type')}
-              <span className="agent-detail-required"> *</span>
-            </label>
-            <Dropdown
-              value={oauthGrantType || null}
-              options={grantTypeOptions}
-              onChange={(event) =>
-                onFieldChange('oauthGrantType', event.value ?? '')
-              }
-              className={`w-full${showValidation && !oauthGrantType ? ' p-invalid' : ''}`}
-              placeholder={t('select_oauth_grant_type')}
-              appendTo="self"
-            />
-          </div>
-
-          <div className="form-field">
-            <label className="field-label">
-              {t('oauth_scope')} ({t('optional')})
-            </label>
-            <InputText
-              value={oauthScope}
-              onChange={(event) =>
-                onFieldChange('oauthScope', event.target.value)
-              }
-              className="w-full"
-              placeholder={t('enter_oauth_scope')}
-            />
-          </div>
-        </>
+        <div className="form-field">
+          <label className="field-label">
+            {t('oauth')}
+            <span className="agent-detail-required"> *</span>
+          </label>
+          <Dropdown
+            value={oauthId || null}
+            options={oauthOptions}
+            onChange={(event) =>
+              onFieldChange('oauthId', event.value ?? '')
+            }
+            className={`w-full${showValidation && !oauthId.trim() ? ' p-invalid' : ''}`}
+            placeholder={
+              oauthsLoading ? t('loading_oauths') : t('select_oauth')
+            }
+            disabled={oauthsLoading}
+            showClear
+            appendTo="self"
+          />
+        </div>
       )}
     </>
   )

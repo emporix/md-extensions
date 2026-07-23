@@ -357,6 +357,44 @@ const TRANSLATIONS_DE = {
   token_type_anthropic: 'Anthropic',
   token_type_api: 'API-Token',
 
+  // OAuth
+  oauths: 'OAuth',
+  no_oauths: 'Keine OAuth-Konfigurationen verfügbar',
+  add_new_oauth: 'NEUES OAUTH HINZUFÜGEN',
+  new_oauth: 'Neues OAuth',
+  back_to_oauths: 'Zurück zu OAuth',
+  oauth_not_found: 'OAuth-Konfiguration nicht gefunden',
+  error_loading_oauth: 'Fehler beim Laden der OAuth-Konfiguration',
+  error_loading_oauths: 'Fehler beim Laden der OAuth-Konfigurationen',
+  oauth_detail_subtitle:
+    'OAuth-Client-Zugangsdaten für die Authentifizierung selbst gehosteter LLMs konfigurieren.',
+  oauth_id: 'OAuth-ID',
+  enter_oauth_id: 'OAuth-ID eingeben',
+  oauth_created_successfully: 'OAuth-Konfiguration erfolgreich erstellt!',
+  oauth_updated_successfully: 'OAuth-Konfiguration erfolgreich aktualisiert!',
+  oauth_activated_successfully: 'OAuth-Konfiguration erfolgreich aktiviert!',
+  oauth_deactivated_successfully:
+    'OAuth-Konfiguration erfolgreich deaktiviert!',
+  error_saving_oauth: 'Fehler beim Speichern der OAuth-Konfiguration',
+  error_updating_oauth: 'Fehler beim Aktualisieren der OAuth-Konfiguration',
+  delete_oauth: 'OAuth löschen',
+  delete_oauth_confirmation:
+    'Sind Sie sicher, dass Sie diese OAuth-Konfiguration löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+  oauth_deleted_successfully: 'OAuth-Konfiguration erfolgreich gelöscht!',
+  force_delete_oauth: 'OAuth erzwungen löschen',
+  force_delete_oauth_message:
+    'OAuth-Konfiguration wird von Agenten verwendet.\nDurch das Löschen wird sie aus den Agenten entfernt und die Agenten werden deaktiviert.',
+  force_disable_oauth: 'OAuth erzwungen deaktivieren',
+  force_disable_oauth_message:
+    'OAuth-Konfiguration wird von Agenten verwendet. Durch das Deaktivieren werden die Agenten ebenfalls deaktiviert.',
+  failed_to_delete_oauth: 'OAuth-Konfiguration konnte nicht gelöscht werden',
+  cannot_delete_active_oauth:
+    'Aktive OAuth-Konfiguration kann nicht gelöscht werden',
+  remove_oauth: 'OAuth entfernen',
+  oauth: 'OAuth',
+  select_oauth: 'OAuth-Konfiguration auswählen',
+  loading_oauths: 'OAuth-Konfigurationen werden geladen...',
+
   // Common UI
   save: 'Speichern',
   cancel: 'Abbrechen',

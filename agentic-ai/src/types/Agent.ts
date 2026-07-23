@@ -57,16 +57,6 @@ export enum GrantType {
   CLIENT_CREDENTIALS = 'client_credentials',
 }
 
-export interface OAuthParams {
-  url: string
-  clientId: string
-  clientSecret?: {
-    id: string
-  }
-  grantType: GrantType
-  scope?: string
-}
-
 export interface LlmConfig {
   model: string
   temperature?: number
@@ -82,7 +72,9 @@ export interface LlmConfig {
     authorizationHeaderToken?: {
       id: string
     }
-    oAuthParams?: OAuthParams
+    oauth?: {
+      id: string
+    }
   }
 }
 

@@ -113,3 +113,15 @@ export const validateMcpServer = (mcpServer: {
   validateName(mcpServer.name, 'MCP Server')
   validateUrl(mcpServer.config?.url, 'MCP Server URL')
 }
+
+export const validateOAuth = (oauth: {
+  id?: string
+  url?: string
+  clientId?: string
+  grantType?: string
+}) => {
+  validateId(oauth.id, 'OAuth')
+  validateUrl(oauth.url, 'OAuth URL')
+  validateRequired(oauth.clientId, 'OAuth Client ID')
+  validateRequired(oauth.grantType, 'OAuth Grant Type')
+}

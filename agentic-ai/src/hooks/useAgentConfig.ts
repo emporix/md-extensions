@@ -5,7 +5,6 @@ import {
   McpServer,
   NativeTool,
   LocalizedString,
-  GrantType,
   LlmProvider,
 } from '../types/Agent'
 import { upsertCustomAgent } from '../services/agentService'
@@ -76,11 +75,7 @@ interface AgentConfigState {
   selfHostedUseOAuth: boolean
   selfHostedAuthHeaderName: string
   selfHostedTokenId: string
-  oauthUrl: string
-  oauthClientId: string
-  oauthClientSecretTokenId: string
-  oauthGrantType: GrantType | ''
-  oauthScope: string
+  oauthId: string
   commerceEvents: string[]
   commerceEventFilter: AgentCommerceFilterDsl | null
 }
@@ -125,11 +120,7 @@ export const useAgentConfig = ({
     selfHostedUseOAuth: false,
     selfHostedAuthHeaderName: '',
     selfHostedTokenId: '',
-    oauthUrl: '',
-    oauthClientId: '',
-    oauthClientSecretTokenId: '',
-    oauthGrantType: '',
-    oauthScope: '',
+    oauthId: '',
     commerceEvents: [],
     commerceEventFilter: null,
   })
@@ -184,22 +175,18 @@ export const useAgentConfig = ({
         selfHostedUrl: agent.llmConfig?.selfHostedParams?.url || '',
         ...(() => {
           const selfHostedParams = agent.llmConfig?.selfHostedParams
-          const oAuthParams = selfHostedParams?.oAuthParams
-          const resolveTokenId = (
-            token: { id: string } | string | undefined
-          ) =>
-            typeof token === 'object' ? token?.id || '' : token || ''
+          const resolveRefId = (
+            ref: { id: string } | string | undefined
+          ) => (typeof ref === 'object' ? ref?.id || '' : ref || '')
 
-          if (oAuthParams) {
+          const oauthId = resolveRefId(selfHostedParams?.oauth)
+
+          if (oauthId) {
             return {
               selfHostedUseOAuth: true,
               selfHostedAuthHeaderName: '',
               selfHostedTokenId: '',
-              oauthUrl: oAuthParams.url || '',
-              oauthClientId: oAuthParams.clientId || '',
-              oauthClientSecretTokenId: resolveTokenId(oAuthParams.clientSecret),
-              oauthGrantType: oAuthParams.grantType || '',
-              oauthScope: oAuthParams.scope || '',
+              oauthId,
             }
           }
 
@@ -207,14 +194,10 @@ export const useAgentConfig = ({
             selfHostedUseOAuth: false,
             selfHostedAuthHeaderName:
               selfHostedParams?.authorizationHeaderName || '',
-            selfHostedTokenId: resolveTokenId(
+            selfHostedTokenId: resolveRefId(
               selfHostedParams?.authorizationHeaderToken
             ),
-            oauthUrl: '',
-            oauthClientId: '',
-            oauthClientSecretTokenId: '',
-            oauthGrantType: '',
-            oauthScope: '',
+            oauthId: '',
           }
         })(),
         ...(() => {
@@ -303,25 +286,9 @@ export const useAgentConfig = ({
           }
 
           if (aiOauthEnabled && state.selfHostedUseOAuth) {
-            const oAuthParams: NonNullable<
-              LlmConfig['selfHostedParams']
-            >['oAuthParams'] = {
-              url: state.oauthUrl.trim(),
-              clientId: state.oauthClientId.trim(),
-              grantType: state.oauthGrantType as GrantType,
+            if (state.oauthId) {
+              baseConfig.selfHostedParams.oauth = { id: state.oauthId }
             }
-
-            if (state.oauthClientSecretTokenId) {
-              oAuthParams.clientSecret = {
-                id: state.oauthClientSecretTokenId,
-              }
-            }
-
-            if (state.oauthScope.trim()) {
-              oAuthParams.scope = state.oauthScope.trim()
-            }
-
-            baseConfig.selfHostedParams.oAuthParams = oAuthParams
           } else {
             if (state.selfHostedAuthHeaderName) {
               baseConfig.selfHostedParams.authorizationHeaderName =
@@ -472,9 +439,7 @@ export const useAgentConfig = ({
       (state.selfHostedUrl.trim() &&
         (!aiOauthEnabled ||
           !state.selfHostedUseOAuth ||
-          (state.oauthUrl.trim() &&
-            state.oauthClientId.trim() &&
-            !!state.oauthGrantType)))
+          !!state.oauthId.trim()))
 
     const commerceFilterValidation =
       !state.triggerTypes.includes('commerce_events') ||
