@@ -5,9 +5,10 @@ import { InputSwitch } from 'primereact/inputswitch'
 import { InputText } from 'primereact/inputtext'
 import { Message } from 'primereact/message'
 import { Tooltip } from 'primereact/tooltip'
-import { LlmProvider, GrantType } from '../../../types/Agent'
+import { LlmProvider } from '../../../types/Agent'
 import { LlmModel, LlmModelProvider } from '../../../types/Model'
 import { Token } from '../../../types/Token'
+import { OAuth } from '../../../types/OAuth'
 import { getLlmProviders } from '../../../utils/constants'
 import { ModelListItem } from './ModelListItem'
 import {
@@ -38,11 +39,7 @@ interface ModelSectionProps {
   selfHostedUseOAuth: boolean
   selfHostedAuthHeaderName: string
   selfHostedTokenId: string
-  oauthUrl: string
-  oauthClientId: string
-  oauthClientSecretTokenId: string
-  oauthGrantType: GrantType | ''
-  oauthScope: string
+  oauthId: string
   aiOauthEnabled?: boolean
   modelsByProvider: Map<LlmModelProvider, LlmModel[]>
   modelsLoading: boolean
@@ -50,6 +47,8 @@ interface ModelSectionProps {
   modelsError: string | null
   tokens: Token[]
   tokensLoading: boolean
+  oauths: OAuth[]
+  oauthsLoading: boolean
   isCreateMode?: boolean
   onFieldChange: (field: string, value: string | boolean) => void
 }
@@ -67,11 +66,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   selfHostedUseOAuth,
   selfHostedAuthHeaderName,
   selfHostedTokenId,
-  oauthUrl,
-  oauthClientId,
-  oauthClientSecretTokenId,
-  oauthGrantType,
-  oauthScope,
+  oauthId,
   aiOauthEnabled = false,
   modelsByProvider,
   modelsLoading,
@@ -79,6 +74,8 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   modelsError,
   tokens,
   tokensLoading,
+  oauths,
+  oauthsLoading,
   isCreateMode = false,
   onFieldChange,
 }) => {
@@ -629,13 +626,11 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
                 useOAuth={selfHostedUseOAuth}
                 authHeaderName={selfHostedAuthHeaderName}
                 authHeaderTokenId={selfHostedTokenId}
-                oauthUrl={oauthUrl}
-                oauthClientId={oauthClientId}
-                oauthClientSecretTokenId={oauthClientSecretTokenId}
-                oauthGrantType={oauthGrantType}
-                oauthScope={oauthScope}
+                oauthId={oauthId}
                 tokens={tokens}
                 tokensLoading={tokensLoading}
+                oauths={oauths}
+                oauthsLoading={oauthsLoading}
                 showValidation={isCreateMode}
                 onFieldChange={onFieldChange}
               />

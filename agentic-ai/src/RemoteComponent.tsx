@@ -2,6 +2,7 @@ import { AgentsView } from './components/agent'
 import AgentDetailPage from './components/agent/AgentDetailPage'
 import { ToolsPage, ToolDetailPage } from './components/tool'
 import { TokensPage, TokenDetailPage } from './components/token'
+import { OAuthsPage, OAuthDetailPage } from './components/oauth'
 import { McpPage, McpDetailPage } from './components/mcp'
 import LogsPage from './components/log/LogsPage'
 import SessionFlowPage from './components/log/SessionFlowPage'
@@ -58,6 +59,9 @@ const RemoteComponent = ({
             <Route path="/tokens" element={<TokensPage />} />
             <Route path="/tokens/add" element={<TokenDetailPage />} />
             <Route path="/tokens/:tokenId/edit" element={<TokenDetailPage />} />
+            <Route path="/oauth" element={<OAuthsPage />} />
+            <Route path="/oauth/add" element={<OAuthDetailPage />} />
+            <Route path="/oauth/:oauthId/edit" element={<OAuthDetailPage />} />
             <Route path="/mcp" element={<McpPage />} />
             <Route path="/mcp/add" element={<McpDetailPage />} />
             <Route path="/mcp/:mcpServerId/edit" element={<McpDetailPage />} />

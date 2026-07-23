@@ -24,6 +24,7 @@ import { useAgentConfig } from '../../hooks/useAgentConfig'
 import { useFeatureToggles } from '../../hooks/useFeatureToggles'
 import { useAgentToolsCatalog } from '../../hooks/useAgentToolsCatalog'
 import { useAgentTokensCatalog } from '../../hooks/useAgentTokensCatalog'
+import { useAgentOAuthCatalog } from '../../hooks/useAgentOAuthCatalog'
 import { useLlmModelsCatalog } from '../../hooks/useLlmModelsCatalog'
 import { useCommerceEvents } from '../../hooks/useCommerceEvents'
 import {
@@ -188,6 +189,9 @@ const AgentDetailPage: React.FC = () => {
   const { tokens: catalogTokens, loading: tokensLoading } =
     useAgentTokensCatalog()
 
+  const { oauths: catalogOAuths, loading: oauthsLoading } =
+    useAgentOAuthCatalog()
+
   const {
     modelsByProvider,
     loading: modelsLoading,
@@ -324,11 +328,7 @@ const AgentDetailPage: React.FC = () => {
           selfHostedUseOAuth={state.selfHostedUseOAuth}
           selfHostedAuthHeaderName={state.selfHostedAuthHeaderName}
           selfHostedTokenId={state.selfHostedTokenId}
-          oauthUrl={state.oauthUrl}
-          oauthClientId={state.oauthClientId}
-          oauthClientSecretTokenId={state.oauthClientSecretTokenId}
-          oauthGrantType={state.oauthGrantType}
-          oauthScope={state.oauthScope}
+          oauthId={state.oauthId}
           aiOauthEnabled={toggles.aiOauth}
           modelsByProvider={modelsByProvider}
           modelsLoading={modelsLoading}
@@ -336,6 +336,8 @@ const AgentDetailPage: React.FC = () => {
           modelsError={modelsError}
           tokens={catalogTokens}
           tokensLoading={tokensLoading}
+          oauths={catalogOAuths}
+          oauthsLoading={oauthsLoading}
           isCreateMode={isCreating}
           onFieldChange={handleFieldChange}
         />

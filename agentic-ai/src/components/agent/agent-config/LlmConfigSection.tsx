@@ -5,9 +5,11 @@ import { Dropdown } from 'primereact/dropdown'
 import { InputSwitch } from 'primereact/inputswitch'
 import { getLlmProviders } from '../../../utils/constants'
 import { getTokens } from '../../../services/tokensService'
+import { getOAuths } from '../../../services/oauthService'
 import { Token } from '../../../types/Token'
+import { OAuth } from '../../../types/OAuth'
 import { useAppState } from '../../../contexts/AppStateContext'
-import { LlmProvider, GrantType } from '../../../types/Agent'
+import { LlmProvider } from '../../../types/Agent'
 import { getSliderThumbLeftCss } from '../../../utils/sliderHelpers'
 import { SelfHostedAuthSection } from './SelfHostedAuthSection'
 
@@ -26,11 +28,7 @@ interface LlmConfigSectionProps {
   selfHostedUseOAuth?: boolean
   selfHostedAuthHeaderName?: string
   selfHostedTokenId?: string
-  oauthUrl?: string
-  oauthClientId?: string
-  oauthClientSecretTokenId?: string
-  oauthGrantType?: GrantType | ''
-  oauthScope?: string
+  oauthId?: string
   aiOauthEnabled?: boolean
 }
 
@@ -48,11 +46,7 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
   selfHostedUseOAuth = false,
   selfHostedAuthHeaderName = '',
   selfHostedTokenId = '',
-  oauthUrl = '',
-  oauthClientId = '',
-  oauthClientSecretTokenId = '',
-  oauthGrantType = '',
-  oauthScope = '',
+  oauthId = '',
   aiOauthEnabled = false,
 }) => {
   const { t } = useTranslation()
@@ -60,6 +54,8 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
   const llmProviderOptions = useMemo(() => getLlmProviders(t), [t])
   const [tokens, setTokens] = useState<Token[]>([])
   const [tokensLoading, setTokensLoading] = useState(false)
+  const [oauths, setOAuths] = useState<OAuth[]>([])
+  const [oauthsLoading, setOAuthsLoading] = useState(false)
 
   useEffect(() => {
     const loadTokens = async () => {
@@ -82,6 +78,32 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
 
     loadTokens()
   }, [provider, appState])
+
+  useEffect(() => {
+    const loadOAuths = async () => {
+      if (
+        !aiOauthEnabled ||
+        (provider !== LlmProvider.SELF_HOSTED_OLLAMA &&
+          provider !== LlmProvider.SELF_HOSTED_VLLM)
+      ) {
+        setOAuths([])
+        return
+      }
+
+      setOAuthsLoading(true)
+      try {
+        const fetchedOAuths = await getOAuths(appState)
+        setOAuths(fetchedOAuths)
+      } catch (error) {
+        console.error(error)
+        setOAuths([])
+      } finally {
+        setOAuthsLoading(false)
+      }
+    }
+
+    void loadOAuths()
+  }, [aiOauthEnabled, appState, provider])
 
   const tokenOptions = tokens
     .map((token) => ({
@@ -210,13 +232,11 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
               useOAuth={selfHostedUseOAuth}
               authHeaderName={selfHostedAuthHeaderName}
               authHeaderTokenId={selfHostedTokenId}
-              oauthUrl={oauthUrl}
-              oauthClientId={oauthClientId}
-              oauthClientSecretTokenId={oauthClientSecretTokenId}
-              oauthGrantType={oauthGrantType}
-              oauthScope={oauthScope}
+              oauthId={oauthId}
               tokens={tokens}
               tokensLoading={tokensLoading}
+              oauths={oauths}
+              oauthsLoading={oauthsLoading}
               showValidation={!isEditing}
               onFieldChange={onFieldChange}
             />

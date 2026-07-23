@@ -354,6 +354,43 @@ const TRANSLATIONS_EN = {
   token_type_anthropic: 'Anthropic',
   token_type_api: 'API Token',
 
+  // OAuth
+  oauths: 'OAuth',
+  no_oauths: 'No OAuth configurations available',
+  add_new_oauth: 'ADD NEW OAUTH',
+  new_oauth: 'New OAuth',
+  back_to_oauths: 'Back to OAuth',
+  oauth_not_found: 'OAuth configuration not found',
+  error_loading_oauth: 'Failed to load OAuth configuration',
+  error_loading_oauths: 'Failed to load OAuth configurations',
+  oauth_detail_subtitle:
+    'Configure OAuth client credentials for self-hosted LLM authentication.',
+  oauth_id: 'OAuth ID',
+  enter_oauth_id: 'Enter OAuth ID',
+  oauth_created_successfully: 'OAuth configuration created successfully!',
+  oauth_updated_successfully: 'OAuth configuration updated successfully!',
+  oauth_activated_successfully: 'OAuth configuration activated successfully!',
+  oauth_deactivated_successfully:
+    'OAuth configuration deactivated successfully!',
+  error_saving_oauth: 'Error saving OAuth configuration',
+  error_updating_oauth: 'Error updating OAuth configuration',
+  delete_oauth: 'Delete OAuth',
+  delete_oauth_confirmation:
+    'Are you sure you want to delete this OAuth configuration? This action cannot be undone.',
+  oauth_deleted_successfully: 'OAuth configuration deleted successfully!',
+  force_delete_oauth: 'Force Delete OAuth',
+  force_delete_oauth_message:
+    'OAuth configuration is used by agents.\nBy deleting it, the OAuth configuration will be removed from the agents and agents will be disabled.',
+  force_disable_oauth: 'Force Disable OAuth',
+  force_disable_oauth_message:
+    'OAuth configuration is used by agents. By disabling it, the agents will be disabled as well.',
+  failed_to_delete_oauth: 'Failed to delete OAuth configuration',
+  cannot_delete_active_oauth: 'Cannot delete active OAuth configuration',
+  remove_oauth: 'Remove OAuth',
+  oauth: 'OAuth',
+  select_oauth: 'Select OAuth configuration',
+  loading_oauths: 'Loading OAuth configurations...',
+
   // Common UI
   save: 'Save',
   cancel: 'Cancel',
