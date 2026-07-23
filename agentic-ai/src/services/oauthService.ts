@@ -30,10 +30,12 @@ export const upsertOAuth = async (
       : {}),
   }
 
-  return await api.put<OAuth>(
+  const saved = await api.put<unknown>(
     `/ai-service/${appState.tenant}/agentic/oauths/${oauth.id}`,
     payload
   )
+
+  return saved && typeof saved === 'object' ? (saved as OAuth) : oauth
 }
 
 export const patchOAuth = async (
@@ -41,10 +43,10 @@ export const patchOAuth = async (
   oauthId: string,
   patches: Array<{ op: string; path: string; value: unknown }>,
   force?: boolean
-): Promise<OAuth> => {
+): Promise<void> => {
   const api = getApiClient(appState)
   const url = `/ai-service/${appState.tenant}/agentic/oauths/${oauthId}${force ? '?force=true' : ''}`
-  return await api.patch<OAuth>(url, patches)
+  await api.patch<void>(url, patches)
 }
 
 export const deleteOAuth = async (
