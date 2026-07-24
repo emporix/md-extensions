@@ -116,12 +116,18 @@ export const validateMcpServer = (mcpServer: {
 
 export const validateOAuth = (oauth: {
   id?: string
-  url?: string
+  tokenUrl?: string
+  authorizationUrl?: string
   clientId?: string
   grantType?: string
+  codeChallengeMethod?: string
 }) => {
   validateId(oauth.id, 'OAuth')
-  validateUrl(oauth.url, 'OAuth URL')
+  validateUrl(oauth.tokenUrl, 'OAuth Token URL')
   validateRequired(oauth.clientId, 'OAuth Client ID')
   validateRequired(oauth.grantType, 'OAuth Grant Type')
+  if (oauth.grantType === 'authorization_code') {
+    validateUrl(oauth.authorizationUrl, 'OAuth Authorization URL')
+    validateRequired(oauth.codeChallengeMethod, 'OAuth Code Challenge Method')
+  }
 }

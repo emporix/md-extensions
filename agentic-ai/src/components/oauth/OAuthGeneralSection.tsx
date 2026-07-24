@@ -4,35 +4,46 @@ import { Dropdown } from 'primereact/dropdown'
 import { InputSwitch } from 'primereact/inputswitch'
 import { InputText } from 'primereact/inputtext'
 import { GrantType } from '../../types/Agent'
+import { CodeChallengeMethod } from '../../types/OAuth'
 import { Token } from '../../types/Token'
 import type { OAuthConfigField } from '../../hooks/useOAuthConfig'
+import {
+  getCodeChallengeMethodLabel,
+  getOAuthStatusLabel,
+} from '../../utils/oauthHelpers'
 import { OAuthRequiredMark } from './OAuthRequiredMark'
 import { McpAuthTokenSelect } from '../mcp/McpAuthTokenSelect'
 
 interface OAuthGeneralSectionProps {
   oauthId: string
-  url: string
+  tokenUrl: string
+  authorizationUrl: string
   clientId: string
   grantType: GrantType | ''
   scope: string
   clientSecretTokenId: string
+  codeChallengeMethod: CodeChallengeMethod | ''
+  status: string
   enabled: boolean
   isEditing: boolean
   tokens: Token[]
   tokensLoading: boolean
   onFieldChange: (
     field: OAuthConfigField,
-    value: string | boolean | GrantType
+    value: string | boolean | GrantType | CodeChallengeMethod
   ) => void
 }
 
 export const OAuthGeneralSection: React.FC<OAuthGeneralSectionProps> = ({
   oauthId,
-  url,
+  tokenUrl,
+  authorizationUrl,
   clientId,
   grantType,
   scope,
   clientSecretTokenId,
+  codeChallengeMethod,
+  status,
   enabled,
   isEditing,
   tokens,
@@ -40,12 +51,27 @@ export const OAuthGeneralSection: React.FC<OAuthGeneralSectionProps> = ({
   onFieldChange,
 }) => {
   const { t } = useTranslation()
+  const isAuthorizationCode = grantType === GrantType.AUTHORIZATION_CODE
 
   const grantTypeOptions = useMemo(
     () => [
       {
         label: t('grant_type_client_credentials'),
         value: GrantType.CLIENT_CREDENTIALS,
+      },
+      {
+        label: t('grant_type_authorization_code'),
+        value: GrantType.AUTHORIZATION_CODE,
+      },
+    ],
+    [t]
+  )
+
+  const codeChallengeMethodOptions = useMemo(
+    () => [
+      {
+        label: getCodeChallengeMethodLabel(t, CodeChallengeMethod.S256),
+        value: CodeChallengeMethod.S256,
       },
     ],
     [t]
@@ -83,16 +109,33 @@ export const OAuthGeneralSection: React.FC<OAuthGeneralSectionProps> = ({
         </div>
       </div>
 
+      {isAuthorizationCode && (
+        <div className="form-field">
+          <label className="field-label">
+            {t('oauth_authorization_url')}
+            <OAuthRequiredMark />
+          </label>
+          <InputText
+            value={authorizationUrl}
+            onChange={(event) =>
+              onFieldChange('authorizationUrl', event.target.value)
+            }
+            className={`w-full${!authorizationUrl.trim() ? ' p-invalid' : ''}`}
+            placeholder={t('enter_oauth_authorize_url')}
+          />
+        </div>
+      )}
+
       <div className="form-field">
         <label className="field-label">
-          {t('oauth_url')}
+          {t('oauth_token_url')}
           <OAuthRequiredMark />
         </label>
         <InputText
-          value={url}
-          onChange={(event) => onFieldChange('url', event.target.value)}
-          className={`w-full${!url.trim() ? ' p-invalid' : ''}`}
-          placeholder={t('enter_oauth_url')}
+          value={tokenUrl}
+          onChange={(event) => onFieldChange('tokenUrl', event.target.value)}
+          className={`w-full${!tokenUrl.trim() ? ' p-invalid' : ''}`}
+          placeholder={t('enter_oauth_token_url')}
         />
       </div>
 
@@ -105,9 +148,7 @@ export const OAuthGeneralSection: React.FC<OAuthGeneralSectionProps> = ({
           <Dropdown
             value={grantType || null}
             options={grantTypeOptions}
-            onChange={(event) =>
-              onFieldChange('grantType', event.value ?? '')
-            }
+            onChange={(event) => onFieldChange('grantType', event.value ?? '')}
             className={`w-full${!grantType ? ' p-invalid' : ''}`}
             placeholder={t('select_oauth_grant_type')}
             appendTo="self"
@@ -126,6 +167,42 @@ export const OAuthGeneralSection: React.FC<OAuthGeneralSectionProps> = ({
           />
         </div>
       </div>
+
+      {isAuthorizationCode && (
+        <div className="oauth-detail-form-row">
+          <div className="form-field">
+            <label className="field-label">
+              {t('oauth_code_challenge_method')}
+              <OAuthRequiredMark />
+            </label>
+            <Dropdown
+              value={codeChallengeMethod || null}
+              options={codeChallengeMethodOptions}
+              onChange={(event) =>
+                onFieldChange('codeChallengeMethod', event.value ?? '')
+              }
+              className={`w-full${!codeChallengeMethod ? ' p-invalid' : ''}`}
+              placeholder={t('select_oauth_code_challenge_method')}
+              appendTo="self"
+            />
+          </div>
+
+          {isEditing && status ? (
+            <div className="form-field">
+              <label className="field-label">
+                {t('oauth_connection_status')}
+              </label>
+              <InputText
+                value={getOAuthStatusLabel(t, status)}
+                className="w-full"
+                disabled
+              />
+            </div>
+          ) : (
+            <div className="form-field" />
+          )}
+        </div>
+      )}
 
       <div className="form-field">
         <label className="field-label">
