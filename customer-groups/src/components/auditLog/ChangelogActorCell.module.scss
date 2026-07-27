@@ -1,0 +1,19 @@
+.systemBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.5rem;
+  border-radius: 10px;
+  border: 0;
+  background: var(--blue-5, var(--color-primary, #3b73bb));
+  color: var(--grey-1, #f2f3f5);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.5rem;
+  height: 1.5rem;
+  white-space: nowrap;
+}
+
+.actorName {
+  font-weight: 700;
+}

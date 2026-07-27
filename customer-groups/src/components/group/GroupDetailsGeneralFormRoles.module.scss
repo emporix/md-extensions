@@ -1,0 +1,29 @@
+.rolesLayout {
+  display: grid;
+  grid-template-columns: minmax(12rem, auto) minmax(0, 1fr);
+  align-items: start;
+  gap: 1.5rem;
+}
+
+.roleTypeList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.roleTypeOption {
+  display: flex;
+  align-items: center;
+}
+
+.roleTypeRadio {
+  margin-right: 0.5rem;
+}
+
+.roleDetails {
+  min-width: 0;
+}
+
+.servicePicker {
+  margin-bottom: 0.75rem;
+}

@@ -1,0 +1,15 @@
+.rolesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.roleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.roleLabel {
+  cursor: pointer;
+}

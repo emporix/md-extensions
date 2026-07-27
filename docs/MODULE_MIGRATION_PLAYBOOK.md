@@ -154,7 +154,24 @@ firebase hosting:sites:create emporix-{module} --project frontend-extensions
 | MD route key | `usersAndGroups` |
 | Toggle | `users-and-groups-external-module` |
 | Env var | `VITE_USERS_AND_GROUPS_URL` |
-| Customer groups (stays in MD) | `management-dashboard/src/modules/usersAndGroups/CustomerGroups.*` |
+| Customer groups | Extracted 2026-07-27 to the `customer-groups` remote — no longer in MD |
+
+## 11. Second remote (customer-groups)
+
+| Artifact | Path |
+|----------|------|
+| Remote entry | `md-extensions/customer-groups/src/RemoteComponent.tsx` |
+| Vite federation name | `customerGroups` |
+| MD route key | `customerGroups` |
+| Mode | A — permanent remote (`url:` prop, no toggle/fallback) |
+| Env var | `VITE_CUSTOMER_GROUPS_URL` |
+| Local ports | dev + preview pinned to `5174` (`strictPort`) |
+
+Scaffolded from `users-and-groups` and reduced to the group domain: the users
+domain (`pages/User.page.tsx`, `components/user/`, `UsersTable`,
+`helpers/users/`) was removed, while `useUsersTableColumns`, `User.model`, and
+`hooks/api/iam.ts` were retained because group member tables depend on them.
+Routes render `GroupDataProvider` with `groupType={GroupUserTypes.CUSTOMER}`.
 
 ---
 
@@ -179,3 +196,10 @@ firebase hosting:sites:create emporix-{module} --project frontend-extensions
 | 2026-07-16 | Scrub scaffold leftovers (`.env.example` / README product wording); keep U&G `.gitignore` env rules | Blind rsync without rename/scrub | All remotes |
 | 2026-07-16 | Same-module pilot-copy dry-runs: stop after one clean `diff -rq`; next cycle re-port from MD or pick another module | Endless U&G rsync cycles | Tooling validation |
 | 2026-07-16 | Split ownership: remote rules/skill/hooks in md-extensions; host wiring in MD `federated-module-wiring` | Duplicate `md-host-wiring` in both repos | All modules |
+| 2026-07-27 | Customer Groups extracted to its own `customerGroups` remote, reversing the 2026-06-25 "remain in MD" decision | Keep in MD; second exposed entry on the U&G remoteEntry; shared group-domain npm package | customer-groups |
+| 2026-07-27 | Group domain copied from U&G rather than shared; duplication accepted so each remote deploys independently | Shared package (extra release coupling); one remote serving both route keys (MD `DynamicComponent` hardcodes `./RemoteComponent`) | customer-groups |
+| 2026-07-27 | Strip only leaf users-domain files; keep `useUsersTableColumns`, `User.model`, `hooks/api/iam.ts` (group member tables need them) | Delete everything named `*User*` | Derived remotes |
+| 2026-07-27 | Pin remote dev/preview ports (`5174`, `strictPort`) to match MD `.env.local-*` | Vite defaults — collide with U&G on 5173/4173 and break local host wiring | All remotes |
+| 2026-07-27 | Drop `employee` from `entityLinkConfig` when the remote has no user route | Keep mapping and emit links that dead-end at `Navigate to="/"` | Derived remotes |
+| 2026-07-27 | Before deleting an MD module folder, grep its i18n namespace across `src/` and re-home keys used by staying routes (Segments used `usersAndGroups.groups.tables.members.actions.removeMember`) | Rely on typecheck/build — missing i18n keys only surface at runtime | All modules |
+| 2026-07-27 | MD cleanup applied directly to `master` as a targeted change | Merging the local `customer-groups` branch, which bundles unrelated COP-5598 work (`GroupsSelector`/`CompaniesSelector` removal, `PriceListsSettings` rework, api-calls bump) | customer-groups |
