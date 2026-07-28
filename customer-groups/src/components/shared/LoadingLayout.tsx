@@ -1,9 +1,10 @@
+import { ProgressSpinner } from '@emporix/component-library'
 import styles from './LoadingLayout.module.scss'
 
 const LoadingLayout = () => {
   return (
     <div className={styles.wrapper} data-testid="loading-layout">
-      <div className={styles.spinner} />
+      <ProgressSpinner />
     </div>
   )
 }

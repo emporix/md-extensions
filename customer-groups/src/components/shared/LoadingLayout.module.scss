@@ -5,18 +5,3 @@
   min-height: 200px;
   width: 100%;
 }
-
-.spinner {
-  width: 2rem;
-  height: 2rem;
-  border: 2px solid var(--surface-border, #dee2e6);
-  border-top-color: var(--primary-color, #3b82f6);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
