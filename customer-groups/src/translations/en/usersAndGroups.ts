@@ -155,6 +155,7 @@ export default {
         restrictions: 'Restrictions',
         sites: 'Sites',
         placeholder: {
+          company: 'Select company',
           restrictions: 'Select restrictions',
           sites: 'Select sites',
         },

@@ -1,7 +1,7 @@
 import { ReactNode, useMemo } from 'react'
+import { BackButton } from '@emporix/component-library'
 import { useLocation, useSearchParams } from 'react-router'
 import useCustomNavigate from '../../hooks/useCustomNavigate'
-import BackButton from './BackButton'
 import styles from './HeaderSection.module.scss'
 
 type HeaderProps = {

@@ -154,6 +154,7 @@ export default {
         restrictions: 'Beschränkungen',
         sites: 'Sites',
         placeholder: {
+          company: 'Firma auswählen',
           restrictions: 'Beschränkungen auswählen',
           sites: 'Sites auswählen',
         },

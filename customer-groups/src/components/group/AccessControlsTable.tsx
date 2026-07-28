@@ -1,4 +1,8 @@
-import { DataTable, PrimaryButton } from '@emporix/component-library'
+import {
+  ConfirmBox,
+  DataTable,
+  PrimaryButton,
+} from '@emporix/component-library'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFormContext } from 'react-hook-form'
@@ -22,7 +26,6 @@ import {
 } from '../../helpers/accessControls'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { EmployeeDomains } from '../../configs/accessControls'
-import ConfirmBox from '../../components/shared/ConfirmBox'
 import styles from './AccessControlsTable.module.scss'
 
 const AccessControlsTable = () => {
@@ -85,6 +88,8 @@ const AccessControlsTable = () => {
           message={t('usersAndGroups.groups.dialogs.unassignDomain.text', {
             name: domainGroup.name === 'zzzOther' ? 'Other' : domainGroup.name,
           })}
+          acceptLabel={t('global.yes')}
+          rejectLabel={t('global.cancel')}
         />
       </>
     ),

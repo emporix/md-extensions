@@ -10,8 +10,10 @@ import { EmployeeDomains } from '../../configs/accessControls'
 import GroupDetailsGeneralFormRoles from './GroupDetailsGeneralFormRoles'
 import { Dropdown, InputText } from '@emporix/component-library'
 import { GroupUserTypes } from '../../models/Groups.model'
+import type { LegalEntity } from '../../models/LegalEntity.model'
 import { useGroupData } from '../../context/Group.provider'
 import { useConfigurationApi } from '../../hooks/api/configuration'
+import { useCustomerManagementApi } from '../../hooks/api/customerManagement'
 import SectionBox from '../../components/shared/SectionBox'
 import LocalizedInput from '../../components/shared/LocalizedInput'
 import inputFieldStyles from '../../components/shared/InputField.module.scss'
@@ -32,10 +34,13 @@ const GroupDetailsGeneralForm = ({ groupId }: GroupDetailsGeneralFormProps) => {
   const { control, watch } = useFormContext<GroupFormFields>()
   const { hasPermission } = usePermissions()
   const selectedRestrictions = watch('restrictions')
+  const { getLegalEntities } = useCustomerManagementApi()
   const { getRestrictions, getSyncBetweenRestrictionsAndSiteCodes } =
     useConfigurationApi()
   const { groupType, isPredefinedGroup } = useGroupData()
+  const canViewCompanies = hasPermission(EmployeeDomains.COMPANIES_VIEWER)
 
+  const [companies, setCompanies] = useState<LegalEntity[]>([])
   const [restrictions, setRestrictions] = useState<string[]>([])
   const [isSyncEnabled, setIsSyncEnabled] = useState(false)
 
@@ -66,6 +71,16 @@ const GroupDetailsGeneralForm = ({ groupId }: GroupDetailsGeneralFormProps) => {
     return options
   }, [restrictions, selectedRestrictions])
 
+  const fetchLegalEntities = async () => {
+    try {
+      const fetchedEntities = await getLegalEntities({ rows: 100 }, false)
+      setCompanies(fetchedEntities.values)
+    } catch (error) {
+      console.error('Error fetching companies:', error)
+      setCompanies([])
+    }
+  }
+
   const fetchRestrictions = async () => {
     try {
       const fetchedRestrictions = await getRestrictions()
@@ -86,6 +101,12 @@ const GroupDetailsGeneralForm = ({ groupId }: GroupDetailsGeneralFormProps) => {
       setIsSyncEnabled(false)
     }
   }
+
+  useEffect(() => {
+    if (groupType === GroupUserTypes.CUSTOMER && canViewCompanies) {
+      void fetchLegalEntities()
+    }
+  }, [groupType, canViewCompanies])
 
   useEffect(() => {
     void fetchRestrictions()
@@ -156,6 +177,34 @@ const GroupDetailsGeneralForm = ({ groupId }: GroupDetailsGeneralFormProps) => {
         />
       </FormGridRow>
       <FormGridRow>
+        {groupType === GroupUserTypes.CUSTOMER && (
+          <div className={`${inputFieldStyles.field} ${styles.companyField}`}>
+            <label className={inputFieldStyles.label}>
+              {t('usersAndGroups.groups.forms.group.company')}
+            </label>
+            <Controller
+              name="b2b.legalEntityId"
+              control={control}
+              render={({ field }) => (
+                <Dropdown
+                  disabled={!canManage || !canViewCompanies}
+                  placeholder={
+                    !canViewCompanies
+                      ? t('global.noPermissions')
+                      : t(
+                          'usersAndGroups.groups.forms.group.placeholder.company'
+                        )
+                  }
+                  options={companies}
+                  optionLabel="name"
+                  optionValue="id"
+                  value={field.value || null}
+                  onChange={(e) => field.onChange(e.value ?? '')}
+                />
+              )}
+            />
+          </div>
+        )}
         <div
           className={`${inputFieldStyles.field} ${styles.restrictionsField}`}
         >
