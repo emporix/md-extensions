@@ -103,6 +103,9 @@ export const updateSlackNativeToolAllowedOperations = (
     }
 
     const current = nativeTool.allowedOperations ?? allowedByTool
+    if (!checked && current.length <= 1 && current.includes(operation)) {
+      return nativeTool
+    }
     const next = checked
       ? current.includes(operation)
         ? current

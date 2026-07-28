@@ -112,7 +112,7 @@ describe('slackRoutingHelpers', () => {
       expect(unchanged[0].allowedOperations).toEqual(['sendMessage', 'createChannel'])
     })
 
-    it('can remove all allowed operations to an empty list', () => {
+    it('prevents removing the last allowed operation', () => {
       const attached = toggleSlackNativeTool(
         [],
         [slackToolB],

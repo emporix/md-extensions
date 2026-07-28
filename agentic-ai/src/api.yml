@@ -3179,7 +3179,7 @@ components:
             oneOf:
               - $ref: '#/components/schemas/TeamsAllowedOperations'
               - $ref: '#/components/schemas/SlackAllowedOperations'
-          description: Optional per-agent override of allowed native tool operations. When omitted, the tool instance defaults apply. Supported for MS Teams and Slack (preview).
+          description: Optional per-agent override of allowed native tool operations. When omitted, the tool instance defaults apply. Values must match the referenced tool type (Teams vs Slack); unsupported operations are rejected by the server. Supported for MS Teams and Slack (preview).
       required:
         - id
 
