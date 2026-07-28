@@ -19,6 +19,14 @@ import {
 } from '../../../utils/agentToolsHelpers'
 import { AgentToolTypeTags } from '../../shared/AgentToolTypeTags'
 import {
+  isCommunicationNativeToolType,
+} from '../../../utils/communicationRoutingHelpers'
+import {
+  getSlackToolAllowedOperations,
+  toggleSlackNativeTool,
+  updateSlackNativeToolAllowedOperations,
+} from '../../../utils/slackRoutingHelpers'
+import {
   getToolAllowedOperations,
   toggleTeamsNativeTool,
   updateTeamsNativeToolAllowedOperations,
@@ -283,25 +291,42 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
   const handleNativeToolToggle = useCallback(
     (toolId: string, checked: boolean) => {
       const tool = availableTools.find((item) => item.id === toolId)
-      const nextNativeTools =
-        tool?.type === 'teams'
-          ? toggleTeamsNativeTool(nativeTools, availableTools, toolId, checked)
-          : toggleNativeTool(nativeTools, toolId, checked)
+      let nextNativeTools = nativeTools
+      if (tool?.type === 'teams') {
+        nextNativeTools = toggleTeamsNativeTool(
+          nativeTools,
+          availableTools,
+          toolId,
+          checked
+        )
+      } else if (tool?.type === 'slack') {
+        nextNativeTools = toggleSlackNativeTool(
+          nativeTools,
+          availableTools,
+          toolId,
+          checked
+        )
+      } else {
+        nextNativeTools = toggleNativeTool(nativeTools, toolId, checked)
+      }
 
       onFieldChange('nativeTools', nextNativeTools)
     },
     [availableTools, nativeTools, onFieldChange]
   )
 
-  const handleTeamsOperationToggle = useCallback(
+  const handleCommunicationOperationToggle = useCallback(
     (toolId: string, operation: string, checked: boolean) => {
       const tool = availableTools.find((item) => item.id === toolId)
-      if (!tool || tool.type !== 'teams') {
+      if (!tool || !isCommunicationNativeToolType(tool.type)) {
         return
       }
 
       const nativeTool = nativeTools.find((entry) => entry.id === toolId)
-      const allowedByTool = getToolAllowedOperations(tool)
+      const allowedByTool =
+        tool.type === 'slack'
+          ? getSlackToolAllowedOperations(tool)
+          : getToolAllowedOperations(tool)
       const currentOps = nativeTool?.allowedOperations ?? allowedByTool
 
       if (
@@ -314,13 +339,21 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
 
       onFieldChange(
         'nativeTools',
-        updateTeamsNativeToolAllowedOperations(
-          nativeTools,
-          toolId,
-          operation,
-          checked,
-          tool
-        )
+        tool.type === 'slack'
+          ? updateSlackNativeToolAllowedOperations(
+              nativeTools,
+              toolId,
+              operation,
+              checked,
+              tool
+            )
+          : updateTeamsNativeToolAllowedOperations(
+              nativeTools,
+              toolId,
+              operation,
+              checked,
+              tool
+            )
       )
     },
     [availableTools, nativeTools, onFieldChange]
@@ -431,9 +464,12 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
     }
   }, [searchQuery])
 
-  const renderTeamsNativeToolExtension = useCallback(
+  const renderCommunicationNativeToolExtension = useCallback(
     (item: ToolListItem, isSelected: boolean) => {
-      if (item.toolType !== 'teams' || !isSelected) {
+      if (
+        !isCommunicationNativeToolType(item.toolType) ||
+        !isSelected
+      ) {
         return null
       }
 
@@ -443,38 +479,41 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
         return null
       }
 
-      const allowedByTool = getToolAllowedOperations(tool)
+      const allowedByTool =
+        tool.type === 'slack'
+          ? getSlackToolAllowedOperations(tool)
+          : getToolAllowedOperations(tool)
       const selectedOperations = nativeTool?.allowedOperations ?? allowedByTool
 
       return (
         <div className="agent-detail-tools-nested-actions">
           <span className="agent-detail-tools-nested-actions-title">
-            {t('teams_agent_allowed_operations')}
+            {t(`${tool.type}_agent_allowed_operations`)}
           </span>
           {allowedByTool.map((operation) => (
             <label
               key={`${item.id}-${operation}`}
               className="agent-detail-tools-nested-action-row"
-              htmlFor={`agent-teams-op-${item.id}-${operation}`}
+              htmlFor={`agent-${tool.type}-op-${item.id}-${operation}`}
             >
               <Checkbox
-                inputId={`agent-teams-op-${item.id}-${operation}`}
+                inputId={`agent-${tool.type}-op-${item.id}-${operation}`}
                 checked={selectedOperations.includes(operation)}
                 onChange={(event) =>
-                  handleTeamsOperationToggle(
+                  handleCommunicationOperationToggle(
                     item.id,
                     operation,
                     event.checked ?? false
                   )
                 }
               />
-              <span>{t(`teams_operation_${operation}`, operation)}</span>
+              <span>{t(`${tool.type}_operation_${operation}`, operation)}</span>
             </label>
           ))}
         </div>
       )
     },
-    [availableTools, handleTeamsOperationToggle, nativeTools, t]
+    [availableTools, handleCommunicationOperationToggle, nativeTools, t]
   )
 
   const domainSections = sortedDomains
@@ -589,7 +628,7 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
             isExpanded={expandedSections.has('native')}
             isLoading={toolsLoading}
             showItemTags
-            renderSelectedItemExtension={renderTeamsNativeToolExtension}
+            renderSelectedItemExtension={renderCommunicationNativeToolExtension}
             onToggleExpand={handleToggleSection}
             onToggleItem={handleNativeToolToggle}
             onRemoveItem={(toolId) => handleNativeToolToggle(toolId, false)}

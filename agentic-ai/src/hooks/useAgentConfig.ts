@@ -32,6 +32,11 @@ import {
   teamsNativeToolHasAllowedOperations,
   TEAMS_TRIGGER,
 } from '../utils/teamsRoutingHelpers'
+import {
+  areSlackAgentToolsValid,
+  getSelectedSlackToolIds,
+  slackNativeToolHasAllowedOperations,
+} from '../utils/slackRoutingHelpers'
 import { COLLABORATION_TRIGGER_TYPES } from '../utils/constants'
 import { Tool } from '../types/Tool'
 
@@ -470,6 +475,18 @@ export const useAgentConfig = ({
         }
       )
 
+    const slackToolValidation =
+      areSlackAgentToolsValid(state.nativeTools, availableTools) &&
+      getSelectedSlackToolIds(state.nativeTools, availableTools).every(
+        (toolId) => {
+          const nativeTool = state.nativeTools.find(
+            (tool) => tool.id === toolId
+          )
+          const tool = availableTools.find((entry) => entry.id === toolId)
+          return slackNativeToolHasAllowedOperations(nativeTool, tool)
+        }
+      )
+
     return (
       basicValidation &&
       tokenValidation &&
@@ -478,7 +495,8 @@ export const useAgentConfig = ({
       collaborationValidation &&
       outputFormatValidation &&
       supportTriggerValidation &&
-      teamsToolValidation
+      teamsToolValidation &&
+      slackToolValidation
     )
   }, [state, agent?.id, availableTools, aiOauthEnabled])
 

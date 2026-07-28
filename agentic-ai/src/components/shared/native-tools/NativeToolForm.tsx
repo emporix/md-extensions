@@ -6,9 +6,9 @@ import { Button } from 'primereact/button'
 import { NativeTool } from '../../../types/Agent'
 import { Tool } from '../../../types/Tool'
 import {
-  DEFAULT_TEAMS_ALLOWED_OPERATIONS,
-  getToolAllowedOperations,
-} from '../../../utils/teamsRoutingHelpers'
+  getCommunicationToolAllowedOperations,
+  isCommunicationNativeToolType,
+} from '../../../utils/communicationRoutingHelpers'
 
 interface NativeToolFormProps {
   onAdd: (nativeTool: NativeTool) => void
@@ -37,23 +37,22 @@ export const NativeToolForm: React.FC<NativeToolFormProps> = ({
 
   const selectedTool = availableTools.find((tool) => tool.id === selectedToolId)
   const operationOptions = useMemo(() => {
-    if (!selectedTool || selectedTool.type !== 'teams') {
-      return [...DEFAULT_TEAMS_ALLOWED_OPERATIONS].map((operation) => ({
-        label: t(`teams_operation_${operation}`),
-        value: operation,
-      }))
+    if (!selectedTool || !isCommunicationNativeToolType(selectedTool.type)) {
+      return []
     }
-    return getToolAllowedOperations(selectedTool).map((operation) => ({
-      label: t(`teams_operation_${operation}`),
-      value: operation,
-    }))
+    return getCommunicationToolAllowedOperations(selectedTool).map(
+      (operation) => ({
+        label: t(`${selectedTool.type}_operation_${operation}`, operation),
+        value: operation,
+      })
+    )
   }, [selectedTool, t])
 
   const handleToolChange = (toolId: string) => {
     setSelectedToolId(toolId)
     const tool = availableTools.find((entry) => entry.id === toolId)
-    if (tool?.type === 'teams') {
-      setSelectedOperations(getToolAllowedOperations(tool))
+    if (tool && isCommunicationNativeToolType(tool.type)) {
+      setSelectedOperations(getCommunicationToolAllowedOperations(tool))
     } else {
       setSelectedOperations([])
     }
@@ -67,7 +66,9 @@ export const NativeToolForm: React.FC<NativeToolFormProps> = ({
     onAdd({
       id: selectedToolId,
       allowedOperations:
-        selectedTool?.type === 'teams' ? selectedOperations : undefined,
+        selectedTool && isCommunicationNativeToolType(selectedTool.type)
+          ? selectedOperations
+          : undefined,
     })
   }
 
@@ -86,10 +87,10 @@ export const NativeToolForm: React.FC<NativeToolFormProps> = ({
           />
         </div>
 
-        {selectedTool?.type === 'teams' ? (
+        {selectedTool && isCommunicationNativeToolType(selectedTool.type) ? (
           <div className="form-field">
             <label className="field-label">
-              {t('teams_agent_allowed_operations')}
+              {t(`${selectedTool.type}_agent_allowed_operations`)}
             </label>
             <MultiSelect
               value={selectedOperations}
@@ -102,7 +103,7 @@ export const NativeToolForm: React.FC<NativeToolFormProps> = ({
               appendTo="self"
             />
             <p className="tool-detail-section-description">
-              {t('teams_agent_allowed_operations_hint')}
+              {t(`${selectedTool.type}_agent_allowed_operations_hint`)}
             </p>
           </div>
         ) : null}
@@ -114,7 +115,8 @@ export const NativeToolForm: React.FC<NativeToolFormProps> = ({
             onClick={handleAdd}
             disabled={
               !selectedToolId ||
-              (selectedTool?.type === 'teams' &&
+              (selectedTool &&
+                isCommunicationNativeToolType(selectedTool.type) &&
                 selectedOperations.length === 0)
             }
           />

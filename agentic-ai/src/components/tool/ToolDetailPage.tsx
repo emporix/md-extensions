@@ -17,6 +17,7 @@ import { hasConversations } from '../../services/conversationsService'
 import { CustomAgent } from '../../types/Agent'
 import { createEmptyTool } from '../../utils/toolHelpers'
 import { countTeamsToolsForTeam } from '../../utils/teamsRoutingHelpers'
+import { countSlackToolsForTeam } from '../../utils/slackRoutingHelpers'
 import { useToolConfig } from '../../hooks/useToolConfig'
 import { useFeatureToggles } from '../../hooks/useFeatureToggles'
 import { ToolGeneralSection } from './ToolGeneralSection'
@@ -224,7 +225,10 @@ const ToolDetailPage: React.FC = () => {
   ])
 
   useEffect(() => {
-    if (state.toolType !== 'teams' || !appState) {
+    if (
+      (state.toolType !== 'teams' && state.toolType !== 'slack') ||
+      !appState
+    ) {
       return
     }
 
@@ -314,6 +318,11 @@ const ToolDetailPage: React.FC = () => {
       state.toolId
     ) > 0
 
+  const slackTeamConfigConflict =
+    state.toolType === 'slack' &&
+    !!state.config.teamId?.trim() &&
+    countSlackToolsForTeam(allTools, state.config.teamId, state.toolId) > 0
+
   const isEditing = !isCreating && !!tool?.id
   const showPrompt =
     state.toolType === 'rag_custom' || state.toolType === 'rag_emporix'
@@ -329,11 +338,25 @@ const ToolDetailPage: React.FC = () => {
     switch (state.toolType) {
       case 'slack':
         return (
-          <SlackToolSection
-            config={state.config}
-            isCreating={isCreating}
-            onConfigChange={updateConfig}
-          />
+          <>
+            {slackTeamConfigConflict ? (
+              <div className="form-field">
+                <Message
+                  severity="error"
+                  className="w-full"
+                  text={t('slack_team_config_conflict')}
+                />
+              </div>
+            ) : null}
+            <SlackToolSection
+              config={state.config}
+              availableAgents={availableAgents}
+              isCreating={isCreating}
+              isEditing={isEditing}
+              onConfigChange={updateConfig}
+              onAllowedOperationsChange={updateAllowedOperations}
+            />
+          </>
         )
       case 'teams':
         return (

@@ -65,3 +65,64 @@ describe('isToolFormValid teams config', () => {
     ).toBe(false)
   })
 })
+
+describe('isToolFormValid slack config', () => {
+  it('requires teamId and non-empty allowedOperations for slack tools', () => {
+    expect(
+      isToolFormValid({
+        toolName: 'Slack Support',
+        toolId: 'slack-support',
+        toolType: 'slack',
+        config: {
+          teamId: 'T123',
+          defaultInboundAgentId: 'support-agent',
+          allowedOperations: ['sendMessage'],
+        },
+        isCreating: false,
+      })
+    ).toBe(true)
+  })
+
+  it('accepts slack tools without defaultInboundAgentId', () => {
+    expect(
+      isToolFormValid({
+        toolName: 'Slack Support',
+        toolId: 'slack-support',
+        toolType: 'slack',
+        config: {
+          teamId: 'T123',
+        },
+        isCreating: false,
+      })
+    ).toBe(true)
+  })
+
+  it('rejects slack tools with empty allowedOperations', () => {
+    expect(
+      isToolFormValid({
+        toolName: 'Slack Support',
+        toolId: 'slack-support',
+        toolType: 'slack',
+        config: {
+          teamId: 'T123',
+          allowedOperations: [],
+        },
+        isCreating: false,
+      })
+    ).toBe(false)
+  })
+
+  it('requires botToken when creating slack tools', () => {
+    expect(
+      isToolFormValid({
+        toolName: 'Slack Support',
+        toolId: 'slack-support',
+        toolType: 'slack',
+        config: {
+          teamId: 'T123',
+        },
+        isCreating: true,
+      })
+    ).toBe(false)
+  })
+})

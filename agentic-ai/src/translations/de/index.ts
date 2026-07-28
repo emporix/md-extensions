@@ -197,6 +197,27 @@ const TRANSLATIONS_DE = {
   teams_operation_inviteParticipants: 'Teilnehmer einladen',
   teams_operation_collaborateOnChannel: 'Auf Kanal zusammenarbeiten',
   teams_operation_collaborateOnChat: 'Im Chat zusammenarbeiten',
+  slack_default_inbound_agent: 'Standard-Eingangsagent',
+  slack_default_inbound_agent_tooltip:
+    'Optional. Agent, der die erste eingehende Slack-Nachricht in diesem Workspace verarbeitet, wenn noch keine Konversation existiert. Leer lassen, um Cold-Inbound-Routing zu deaktivieren.',
+  slack_default_inbound_agent_hint:
+    'Leer lassen, um Cold-Inbound-Routing zu deaktivieren.',
+  slack_allowed_operations: 'Erlaubte Operationen',
+  slack_allowed_operations_hint:
+    'Maximale Operationen, die dieses Slack-Tool bereitstellen darf. Agenten können die Teilmenge pro Zuordnung weiter einschränken.',
+  slack_agent_allowed_operations: 'Erlaubte Aktionen für diesen Agenten',
+  slack_agent_allowed_operations_hint:
+    'Wähle, welche Slack-Aktionen dieser Agent ausführen darf. Optionen sind durch die Tool-Konfiguration begrenzt.',
+  slack_team_id_hint:
+    'Slack-Workspace-(Team-)ID zur Zuordnung eingehender Ereignisse an dieses Tool.',
+  slack_team_id_hint_immutable:
+    'Die Slack-Workspace-ID kann nach der Tool-Erstellung nicht geändert werden.',
+  slack_team_config_conflict:
+    'Ein anderes Slack-Tool nutzt bereits diese Workspace-ID. Pro Workspace ist nur ein Tool erlaubt.',
+  slack_operation_sendMessage: 'Nachricht senden',
+  slack_operation_createChannel: 'Kanal erstellen',
+  slack_operation_inviteParticipants: 'Teilnehmer einladen',
+  slack_operation_collaborateOnChannel: 'Auf Kanal zusammenarbeiten',
   prompt: 'Prompt',
   llm_config: 'LLM-Konfiguration',
   model: 'Modell',
