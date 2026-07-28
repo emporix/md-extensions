@@ -1,11 +1,10 @@
-import { DataTable } from '@emporix/component-library'
+import { ConfirmBox, DataTable } from '@emporix/component-library'
 import { useCallback, useState } from 'react'
 import { AccessControl } from '../../models/Permissions.model'
 import TableActions from '../../components/shared/TableActions'
 import usePagination from '../../hooks/usePagination'
 import useAccessControlsExpansionColumns from '../../hooks/useDomainsExpansionColumns'
 import { useTranslation } from 'react-i18next'
-import ConfirmBox from '../../components/shared/ConfirmBox'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 
 interface Props {
@@ -43,6 +42,8 @@ const AccessControlsExpansionTable = (props: Props) => {
           message={t('usersAndGroups.groups.dialogs.unassignDomain.text', {
             name: getUiLangValue(ac.name),
           })}
+          acceptLabel={t('global.yes')}
+          rejectLabel={t('global.cancel')}
         />
       </>
     ),

@@ -22,16 +22,24 @@ export default defineConfig({
     }),
   ],
   resolve: {
-    alias: {
-      components: '/src/components',
-      api: '/src/api',
-      helpers: '/src/helpers',
-      hooks: '/src/hooks',
-      layouts: '/src/layouts',
-      context: '/src/context',
-      modules: '/src/modules',
-      models: '/src/models',
-    },
+    alias: [
+      {
+        find: '@emporix/component-library/styles',
+        replacement: '../../component-library/dist/style.css',
+      },
+      {
+        find: '@emporix/component-library',
+        replacement: '../../component-library/dist/index.es.js',
+      },
+      { find: 'components', replacement: '/src/components' },
+      { find: 'api', replacement: '/src/api' },
+      { find: 'helpers', replacement: '/src/helpers' },
+      { find: 'hooks', replacement: '/src/hooks' },
+      { find: 'layouts', replacement: '/src/layouts' },
+      { find: 'context', replacement: '/src/context' },
+      { find: 'modules', replacement: '/src/modules' },
+      { find: 'models', replacement: '/src/models' },
+    ],
   },
   build: {
     modulePreload: false,

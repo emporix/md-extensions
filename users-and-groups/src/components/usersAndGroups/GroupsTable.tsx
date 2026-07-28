@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useIamApi } from '../../hooks/api/iam'
 import {
   DataTable,
+  ConfirmBox,
   type DataTablePaginationState,
   useToast,
 } from '@emporix/component-library'
@@ -10,7 +11,6 @@ import { makeCall, getApiErrorDetails } from '../../helpers/api'
 import { Group, GroupUserTypes } from '../../models/Groups.model'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import { useRefresh } from '../../context/RefreshValuesProvider'
-import ConfirmBox from '../../components/shared/ConfirmBox'
 import useGroupsTableColumns from '../../hooks/useGroupsTableColumns'
 import GroupAddMembersDialog from '../group/GroupAddMembersDialog'
 import TableActions from '../../components/shared/TableActions'
@@ -201,6 +201,8 @@ const GroupsTable = (props: Props) => {
         message={t('usersAndGroups.groups.dialogs.deleteGroupForce.text', {
           name: getContentLangValue(groupToForceDelete?.name),
         })}
+        acceptLabel={t('global.yes')}
+        rejectLabel={t('global.cancel')}
       />
       <GroupAddMembersDialog
         visible={!!groupToAddMembers}

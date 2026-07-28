@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import ConfirmBox from './ConfirmBox'
+import { ConfirmBox } from '@emporix/component-library'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import type Localized from '../../models/Localized.model'
 
@@ -110,6 +110,8 @@ const DeleteConfirmBox = ({
       loading={loading}
       title={isPlural ? pluralTitle : singularTitle}
       message={isPlural ? pluralMessage : singularMessage}
+      acceptLabel={t('global.yes')}
+      rejectLabel={t('global.cancel')}
     />
   )
 }
