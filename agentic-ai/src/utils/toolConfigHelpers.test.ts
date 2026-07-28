@@ -67,7 +67,7 @@ describe('isToolFormValid teams config', () => {
 })
 
 describe('isToolFormValid slack config', () => {
-  it('requires teamId and non-empty allowedOperations for slack tools', () => {
+  it('requires teamId for slack tools', () => {
     expect(
       isToolFormValid({
         toolName: 'Slack Support',
@@ -97,7 +97,7 @@ describe('isToolFormValid slack config', () => {
     ).toBe(true)
   })
 
-  it('rejects slack tools with empty allowedOperations', () => {
+  it('accepts slack tools with empty allowedOperations for backward compatibility', () => {
     expect(
       isToolFormValid({
         toolName: 'Slack Support',
@@ -109,7 +109,7 @@ describe('isToolFormValid slack config', () => {
         },
         isCreating: false,
       })
-    ).toBe(false)
+    ).toBe(true)
   })
 
   it('requires botToken when creating slack tools', () => {

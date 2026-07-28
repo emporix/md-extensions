@@ -135,7 +135,8 @@ export const SlackToolSection: React.FC<SlackToolSectionProps> = ({
       <div className="form-field">
         <label className="field-label">
           {t('slack_allowed_operations')}
-          <ToolRequiredMark />
+          {/* TODO: Re-enable required mark once empty/null allowedOperations is no longer allowed for Slack. */}
+          {/* <ToolRequiredMark /> */}
         </label>
         <MultiSelect
           value={
@@ -148,12 +149,9 @@ export const SlackToolSection: React.FC<SlackToolSectionProps> = ({
           onChange={(event) =>
             onAllowedOperationsChange((event.value as string[]) ?? [])
           }
-          className={`w-full${
-            (config.allowedOperations?.length ??
-              DEFAULT_SLACK_ALLOWED_OPERATIONS.length) === 0
-              ? ' p-invalid'
-              : ''
-          }`}
+          // Backward compatibility: do not mark empty allowedOperations invalid for legacy Slack tools.
+          // TODO: Re-enable p-invalid once non-empty allowedOperations is required again.
+          className="w-full"
           display="chip"
           appendTo="self"
         />
