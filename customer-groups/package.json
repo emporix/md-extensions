@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --mode dev",
     "dev:stage": "vite --mode stage",
     "postinstall": "node node_modules/frontend-ai-rules/scripts/sync-rules.js && node scripts/customize-ai-rules-index.mjs",
     "sync:ai-rules": "node node_modules/frontend-ai-rules/scripts/sync-rules.js && node scripts/customize-ai-rules-index.mjs",
