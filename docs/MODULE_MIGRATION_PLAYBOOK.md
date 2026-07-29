@@ -1,20 +1,38 @@
 # MD Module Migration Playbook
 
-Living guide for extracting Management Dashboard modules into `md-extensions` federated remotes. **Pilot reference:** `users-and-groups` (COP-5598).
+Living guide for extracting Management Dashboard modules into `md-extensions` federated remotes.
 
-**Agent copy inventory:** [REUSABLE_FROM_USERS_AND_GROUPS.md](./REUSABLE_FROM_USERS_AND_GROUPS.md) — what to copy/adapt/skip from the U&G pilot (shared UI, providers, hooks, checklist).
+**Migrated modules registry (update after every migration):** [MIGRATED_MODULES.md](./MIGRATED_MODULES.md)  
+**Agent copy inventory:** [REUSABLE_FROM_USERS_AND_GROUPS.md](./REUSABLE_FROM_USERS_AND_GROUPS.md) — Tier 1 from **all** playbook-aligned remotes (not U&G alone).  
+**First pilot:** `users-and-groups` (COP-5598). **Second:** `customer-groups` (COP-6096) — see registry.
 
 ## 1. Prerequisites
 
 - `@emporix/component-library` **≥ 2.0.0** (Pattern B widgets bundle `primereact` / theme / primeicons; remotes must not depend on or import `primereact` directly).
 - Required CL primitives for typical ports: Dialog, DataTable, Menu, ToastProvider, Checkbox, RadioButton, AutoComplete, Message, ProgressSpinner, FilterMatchMode (re-exported).
+- Prefer **CL ≥ 2.2.0** shells when exported: `ConfirmBox`, `BackButton`, `DateValue` (delete local U&G copies once pinned).
+- **CL replacement policy:** import CL components **directly** in feature code. Add a local thin wrapper **only** when the app must inject dependencies the library deliberately omits (i18n, tenant languages, config) — same pattern as `LocalizedInput`. Do not wrap CL widgets "for consistency" when props can be passed at the call site.
 - Ticket interview checklist:
   - Scope: which routes move vs stay in MD?
-  - Toggle name: `{kebab-module}-external-module`
-  - Customer-group or cross-module exclusions
+  - Toggle name: `{kebab-module}-external-module` (Mode B only — prefer Mode A when there is no built-in fallback)
+  - Cross-module consumers that **import** the module folder (Companies, Price Lists, Segments i18n, …) — cleanup must retain those files / re-home keys
+  - Unique local Vite port (avoid colliding with U&G `5173`) + matching `VITE_{MODULE}_URL` in MD `.env.local-*`
   - Firebase / CI URL placeholders **and** Hosting site IDs (must be created in Firebase before first deploy)
   - Default tenant for dev standalone shell
   - Published CL semver for `package.json` (never commit `file:../../component-library` lock entries)
+  - Scaffold source: clone **[md-module-template](https://github.com/emporix/md-module-template)** branch **`md-module-migration`** into `md-extensions/{kebab-module}/`, then absorb (remove nested `.git`). Align Tier 1 with **playbook-aligned remotes** in [MIGRATED_MODULES.md](./MIGRATED_MODULES.md) (not `products`, not template `master`)
+
+### Scaffold starter (required)
+
+```bash
+cd md-extensions
+git clone -b md-module-migration --single-branch \
+  https://github.com/emporix/md-module-template.git {kebab-module}
+rm -rf {kebab-module}/.git   # absorb into the md-extensions monorepo
+```
+
+Then rename federation `name`, scrub leftovers, pin a unique port (see [MIGRATED_MODULES.md](./MIGRATED_MODULES.md) "Next free local port"), and continue Phase 0/1 against playbook-aligned remotes (see skill). Do **not** leave a nested git repo; do **not** start from template `master` (Product List / `extension` name).
+
 ## 2. Federation contract
 
 | Item | Rule |
@@ -58,13 +76,18 @@ Reference: `md-extensions/users-and-groups/src/RemoteComponent.tsx`, `md-extensi
 
 ## 5. Hybrid composite policy
 
-Full file list and agent checklist: [REUSABLE_FROM_USERS_AND_GROUPS.md](./REUSABLE_FROM_USERS_AND_GROUPS.md).
+**Full inventory (Tier 1/2/3 tables):** [REUSABLE_FROM_USERS_AND_GROUPS.md](./REUSABLE_FROM_USERS_AND_GROUPS.md).  
+**Tier 1 sources:** [MIGRATED_MODULES.md](./MIGRATED_MODULES.md) — use newest playbook-aligned remote.
 
-- **Copy** layout shells from U&G `src/components/shared/` (at minimum: `HeaderSection`, `BackButton`, `SectionBox`, `FormGrid`, `FormGridRow`, `EmptyContent`, `EmptyTable`, `ConfirmBox`, `DeleteConfirmBox`, `TableActions`, `BatchDeleteButton`, lean `InputField`, `DropdownFilter`, `LocalizedInput`, `LoadingLayout`).
-- **Use CL** for primitives: `InputText`, `Dropdown`, `DataTable`, `Tabs`, `Dialog`, buttons, `ProgressSpinner`, `FilterMatchMode` / DataTable filter types.
-- **Never** add `primereact` / `primeicons` to the remote `package.json` or import their CSS — load only `@emporix/component-library/styles` at the federated entry.
-- **Never copy** MD `InputField` — it depends on `ProductDataProvider`. Copy U&G’s lean `InputField` (`components/shared/InputField.tsx`). There is no CL `FormField` substitute for that wrapper.
-- **Also copy** Tier 1 providers/hooks/bootstrap from U&G (see reusable guide); slim `PermissionsProvider` per module.
+Key rules (detail in REUSABLE):
+
+- Copy layout shells from `src/components/shared/` of the best playbook-aligned remote.
+- **CL ≥ 2.2.0** → import `ConfirmBox`, `BackButton`, `DateValue`, `ProgressSpinner` directly; no pass-through wrappers unless app deps are required (`LocalizedInput` pattern).
+- **Promote-to-CL gate:** before third-copying a shared shell already in a prior remote, ask the user whether to migrate it to CL first.
+- **SCSS Modules** for feature UI — no global / unscoped styles, no inline styles.
+- **CL primitives** only (`InputText`, `Dropdown`, `DataTable`, `Tabs`, `Dialog`, `FilterMatchMode`, …). Never add `primereact` / `primeicons` deps or CSS.
+- **Lean `InputField`** from prior remote — never MD `InputField` (ProductDataProvider).
+
 ## 6. MD wiring recipe (hard gate)
 
 Remote-only is **not** done. Phase 3 greps must pass before calling the migration complete.
@@ -117,7 +140,7 @@ Automated gates (both repos): `typecheck`, `lint`, `test:run` / `test`, `build`.
 
 ## 9. Firebase Hosting + CI (new remotes)
 
-Wire workflows by copying an existing module’s trio under `.github/workflows/` (e.g. `users-and-groups-firebase-*.yaml`) and renaming targets/paths.
+Wire workflows by copying an existing module's trio under `.github/workflows/` (e.g. `users-and-groups-firebase-*.yaml`) and renaming targets/paths.
 
 | Env | Firebase project | Hosting site / target | Trigger |
 |-----|------------------|------------------------|---------|
@@ -145,33 +168,25 @@ firebase hosting:sites:create emporix-{module} --project frontend-extensions
 - After changing the version, regenerate the lockfile with a clean install so `node_modules/@emporix/component-library` resolves to the registry tarball (`"link": true` to a sibling path breaks `npm ci` on GitHub Actions).
 - Ignore local Vite cache: add `.vite` to the module `.gitignore` (see U&G).
 
-## 10. Pilot reference (users-and-groups)
+## 10. Pilot artifacts
 
-| Artifact | Path |
-|----------|------|
-| Remote entry | `md-extensions/users-and-groups/src/RemoteComponent.tsx` |
-| Vite federation name | `usersAndGroups` |
-| MD route key | `usersAndGroups` |
-| Toggle | `users-and-groups-external-module` |
-| Env var | `VITE_USERS_AND_GROUPS_URL` |
-| Customer groups | Extracted 2026-07-27 to the `customer-groups` remote — no longer in MD |
+See [MIGRATED_MODULES.md](./MIGRATED_MODULES.md) for the full registry of extracted remotes (federation names, tickets, modes, ports, CL versions, and reusable deltas).
 
-## 11. Second remote (customer-groups)
+## 11. Derived remotes (pattern)
 
-| Artifact | Path |
-|----------|------|
-| Remote entry | `md-extensions/customer-groups/src/RemoteComponent.tsx` |
-| Vite federation name | `customerGroups` |
-| MD route key | `customerGroups` |
-| Mode | A — permanent remote (`url:` prop, no toggle/fallback) |
-| Env var | `VITE_CUSTOMER_GROUPS_URL` |
-| Local ports | dev + preview pinned to `5174` (`strictPort`) |
+When a new remote is mostly a **scoped copy** of U&G (or another pilot) rather than a green-field MD port:
 
-Scaffolded from `users-and-groups` and reduced to the group domain: the users
-domain (`pages/User.page.tsx`, `components/user/`, `UsersTable`,
-`helpers/users/`) was removed, while `useUsersTableColumns`, `User.model`, and
-`hooks/api/iam.ts` were retained because group member tables depend on them.
-Routes render `GroupDataProvider` with `groupType={GroupUserTypes.CUSTOMER}`.
+| Step | Do |
+|------|----|
+| 1 | Copy U&G → `md-extensions/{kebab}/`; rename package / vite `name` / README |
+| 2 | Delete **leaf** out-of-scope screens only; keep shared models/hooks the remaining UI needs |
+| 3 | Diff MD source for the target subtype (customer vs employee, vendor, …) and restore missing fields/APIs |
+| 4 | Drop dead `entityLinkConfig` / path helpers / i18n keys for removed routes |
+| 5 | Pin a free local port; set `dev` to `vite --mode dev` |
+| 6 | Prefer Mode A when MD already has no useful built-in fallback |
+| 7 | Run playbook §7 greps + Phase 4 QA + decisions-log rows |
+
+Do **not** claim "identical to U&G" after a reduce — `diff -rq` will (and should) show intentional drift.
 
 ---
 
@@ -182,7 +197,7 @@ Routes render `GroupDataProvider` with `groupType={GroupUserTypes.CUSTOMER}`.
 | 2026-06-25 | Federation name `usersAndGroups` (not `extension`) | Generic template name | All modules |
 | 2026-06-25 | Permissions in remote `PermissionsProvider`, not AppState | Host passes permissions | All modules |
 | 2026-06-25 | Hybrid composites + CL primitives | Full MD copy; full CL rewrite | All modules |
-| 2026-06-25 | Customer Groups remain in MD | Port with employee U&G | users-and-groups |
+| 2026-06-25 | ~~Customer Groups remain in MD~~ **Superseded 2026-07-27** by COP-6096 (`customerGroups` remote) | Port with employee U&G | users-and-groups → customer-groups |
 | 2026-06-25 | `contentLanguage` + `currency` in AppState | Remote fetches config only | All modules |
 | 2026-06-25 | Post-cleanup: `ExternalModule` only (no built-in fallback) | Keep dead fallback routes | users-and-groups |
 | 2026-06-25 | Hash-relative paths in remote (`/users/:id`) not host absolute paths | Full `/administration/...` paths in HashRouter | users-and-groups |
@@ -205,3 +220,11 @@ Routes render `GroupDataProvider` with `groupType={GroupUserTypes.CUSTOMER}`.
 | 2026-07-27 | MD cleanup applied directly to `master` as a targeted change | Merging the local `customer-groups` branch, which bundles unrelated COP-5598 work (`GroupsSelector`/`CompaniesSelector` removal, `PriceListsSettings` rework, api-calls bump) | customer-groups |
 | 2026-07-28 | After reducing U&G to a customer-only remote, re-diff MD `GroupUserTypes.CUSTOMER` form fields (Company / `b2b.legalEntityId`) — employee pilot omits them | Assume U&G group form is a complete customer-group form | Derived remotes |
 | 2026-07-28 | Prefer published CL `ConfirmBox` when the library exports it; delete the local shared copy | Keep duplicated remote `ConfirmBox` forever | Remotes on CL ≥ 2.2.0 |
+| 2026-07-29 | Prefer CL `BackButton` / `DateValue` / `ProgressSpinner` the same way; cascade CL shell adoption to sibling remotes when bumping | Leave each remote on divergent local copies | Remotes on CL ≥ 2.2.0 |
+| 2026-07-29 | Remote `dev` script: `vite --mode dev` so `.env.dev` loads | Plain `vite` (often skips mode-specific env) | All remotes |
+| 2026-07-29 | Keep a living [MIGRATED_MODULES.md](./MIGRATED_MODULES.md) registry; Tier 1 comes from **all** playbook-aligned remotes, not U&G alone — update after every migration | Single-pilot dependency on `REUSABLE_FROM_USERS_AND_GROUPS` / U&G only | All remotes |
+| 2026-07-29 | Prefer SCSS Modules for remote UI; avoid global / unscoped styles that MD global CSS can override (or that leak into the host) | Global class names in `index.css` / unscoped SCSS for feature UI | All remotes |
+| 2026-07-29 | When implementing a shared UI piece already present in a prior remote (`users-and-groups`, `customer-groups`, …), **ask the user** whether to migrate it to CL before copying again | Silently third-copy local shells forever | All remotes |
+| 2026-07-29 | Members pagination: omit `usePagination` prefix when MD used shared `page`/`rows` on the group detail URL | Blindly keep U&G `'members'` prefix on every derived remote | customer-groups |
+| 2026-07-29 | Document derived-remote pattern (§11) after COP-6096 | Treat every extraction as green-field MD copy only | All modules |
+| 2026-07-29 | Consolidate overlapping migration docs: playbook is policy SoT, REUSABLE is inventory SoT, MIGRATED_MODULES is registry SoT, skill is workflow SoT, reference.md is FAQ/greps SoT | Duplicating checklists and lessons across all files | All docs |

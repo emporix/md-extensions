@@ -1,7 +1,9 @@
 ---
-description: Federation, AppState, provider order, and CL-only UI for MD extension remotes
-globs: "**/RemoteComponent.tsx,**/vite.config.ts,**/AppState.model.ts,**/src/**"
-alwaysApply: false
+paths:
+  - "**/RemoteComponent.tsx"
+  - "**/vite.config.ts"
+  - "**/AppState.model.ts"
+  - "**/src/**"
 ---
 
 # MD Extension Migration (remote)
@@ -9,8 +11,8 @@ alwaysApply: false
 Playbook: `docs/MODULE_MIGRATION_PLAYBOOK.md` (§11–§12 for derived remotes).  
 **Registry (update every migration):** `docs/MIGRATED_MODULES.md`.  
 Copy inventory: `docs/REUSABLE_FROM_USERS_AND_GROUPS.md` (Tier 1 from all playbook-aligned remotes).  
-**Skill (canonical):** `.cursor/skills/md-module-extraction/` (also `.claude/skills/` / `.github/skills/`).  
-**Host wiring:** `management-dashboard/.cursor/rules/federated-module-wiring.mdc` (not this file).
+**Skill (canonical):** `.claude/skills/md-module-extraction/` (also `.cursor/skills/` / `.github/skills/`).  
+**Host wiring:** `management-dashboard/.claude/rules/federated-module-wiring.md` (not this file).
 
 **Scaffold:** clone [md-module-template](https://github.com/emporix/md-module-template) branch **`md-module-migration`**, absorb into `md-extensions/{kebab}/` (`rm -rf .git`). Align Tier 1 with **playbook-aligned remotes** in `MIGRATED_MODULES.md` (not U&G alone; not `products`; not template `master`).
 

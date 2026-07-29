@@ -1,7 +1,8 @@
 ---
-description: Anti-patterns and validation greps after porting an MD module to md-extensions
-globs: "md-extensions/**/src/**,md-extensions/**/vite.config.ts,md-extensions/**/package.json"
-alwaysApply: false
+paths:
+  - "md-extensions/**/src/**"
+  - "md-extensions/**/vite.config.ts"
+  - "md-extensions/**/package.json"
 ---
 
 # Extension Port Validation
@@ -40,5 +41,5 @@ Do not claim “matches pilot” without `diff -rq` (file counts are not enough)
 
 ## Skill
 
-Follow `md-extensions/.cursor/skills/md-module-extraction/` (+ `.claude/skills/` / `.github/skills/`) + `docs/MIGRATED_MODULES.md` + `docs/REUSABLE_FROM_USERS_AND_GROUPS.md`.
-Host Phase 3: `management-dashboard/.cursor/rules/federated-module-wiring.mdc` (+ Copilot/Claude mirrors).
+Follow `md-extensions/.claude/skills/md-module-extraction/` + `docs/MIGRATED_MODULES.md` + `docs/REUSABLE_FROM_USERS_AND_GROUPS.md`.  
+Host Phase 3: `management-dashboard/.claude/rules/federated-module-wiring.md`.

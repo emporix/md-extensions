@@ -18,7 +18,7 @@ The module manages IAM groups of `userType: CUSTOMER` — listing, creating, edi
 
 The remote uses a `HashRouter` with hash-relative paths (`/`, `/groups/add`, `/groups/:groupId`). The host stays on `BrowserRouter`.
 
-It was extracted from `management-dashboard/src/modules/usersAndGroups` and shares its scaffold with the `users-and-groups` remote (the extraction pilot).
+It was extracted from `management-dashboard/src/modules/usersAndGroups` (COP-6096) as a **derived remote**: scaffold from `users-and-groups`, reduce to `GroupUserTypes.CUSTOMER`, restore customer-only MD fields (Company / `b2b.legalEntityId`). Migration notes: `../docs/MODULE_MIGRATION_PLAYBOOK.md` §11–§12.
 
 ## AI and code-assistant rules
 
