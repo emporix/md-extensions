@@ -37,11 +37,7 @@ const GroupMembers = () => {
   const { hasPermission } = usePermissions()
   const [isDeleting, setIsDeleting] = useState(false)
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
-  const { paginationParams, onPageCallback } = usePagination(
-    undefined,
-    true,
-    'members'
-  )
+  const { paginationParams, onPageCallback } = usePagination(undefined, true)
 
   useEffect(() => {
     if (!group) return
