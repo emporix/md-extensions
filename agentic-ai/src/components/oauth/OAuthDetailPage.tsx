@@ -83,12 +83,19 @@ const OAuthDetailPage: React.FC = () => {
     navigate('/oauth')
   }, [navigate])
 
-  const { state, saving, updateField, handleSave, isFormValid } =
-    useOAuthConfig({
-      oauth,
-      isCreating,
-      onSave: handleSaveSuccess,
-    })
+  const {
+    state,
+    saving,
+    updateField,
+    handleSave,
+    handleSaveAndConnect,
+    isFormValid,
+    isAuthorizationCode,
+  } = useOAuthConfig({
+    oauth,
+    isCreating,
+    onSave: handleSaveSuccess,
+  })
 
   const oauthDisplayName = useMemo(() => {
     if (state.clientId.trim()) {
@@ -160,9 +167,21 @@ const OAuthDetailPage: React.FC = () => {
                 </span>
               </h1>
             </div>
-            <p className="oauth-detail-subtitle">{t('oauth_detail_subtitle')}</p>
+            <p className="oauth-detail-subtitle">
+              {t('oauth_detail_subtitle')}
+            </p>
           </div>
           <div className="oauth-detail-header-right">
+            {isAuthorizationCode && (
+              <Button
+                type="button"
+                label={t('save_and_connect')}
+                className="oauth-detail-save-btn"
+                onClick={() => handleSaveAndConnect()}
+                disabled={saving || !isFormValid || !state.enabled}
+                loading={saving}
+              />
+            )}
             <Button
               type="button"
               label={t('save')}
@@ -179,11 +198,14 @@ const OAuthDetailPage: React.FC = () => {
         <OAuthDetailSection titleKey="general">
           <OAuthGeneralSection
             oauthId={state.oauthId}
-            url={state.url}
+            tokenUrl={state.tokenUrl}
+            authorizationUrl={state.authorizationUrl}
             clientId={state.clientId}
             grantType={state.grantType}
             scope={state.scope}
             clientSecretTokenId={state.clientSecretTokenId}
+            codeChallengeMethod={state.codeChallengeMethod}
+            status={state.status}
             enabled={state.enabled}
             isEditing={!isCreating && !!oauth.id}
             tokens={tokens}

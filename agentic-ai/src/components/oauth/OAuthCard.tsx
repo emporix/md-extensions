@@ -22,7 +22,7 @@ const OAuthCard: React.FC<OAuthCardProps> = ({
     <BaseCard
       id={oauth.id}
       title={getOAuthDisplayName(oauth)}
-      description={`${t('url')}: ${oauth.url}`}
+      description={`${t('oauth_token_url')}: ${oauth.tokenUrl}`}
       icon={<FontAwesomeIcon icon={faLock} />}
       badge={getOAuthGrantTypeLabel(t, oauth.grantType)}
       enabled={enabled}
