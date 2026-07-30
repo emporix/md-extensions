@@ -519,7 +519,7 @@ const TRANSLATIONS_DE = {
   llm_provider_google: 'Google',
   llm_provider_emporix_openai: 'Emporix OpenAI',
   llm_provider_self_hosted_ollama: 'Self-Hosted Ollama',
-  llm_provider_self_hosted_vllm: 'Self-hosted VLLM',
+  llm_provider_self_hosted_vllm: 'Self-Hosted VLLM',
   dimensions: 'Dimensionen',
   enter_dimensions: 'Dimensionen eingeben (128-4096)',
   dimensions_range: 'Dimensionen müssen zwischen 128 und 4096 liegen',

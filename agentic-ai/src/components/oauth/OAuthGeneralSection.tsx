@@ -109,6 +109,35 @@ export const OAuthGeneralSection: React.FC<OAuthGeneralSectionProps> = ({
         </div>
       </div>
 
+      <div className="oauth-detail-form-row">
+        <div className="form-field">
+          <label className="field-label">
+            {t('oauth_grant_type')}
+            <OAuthRequiredMark />
+          </label>
+          <Dropdown
+            value={grantType || null}
+            options={grantTypeOptions}
+            onChange={(event) => onFieldChange('grantType', event.value ?? '')}
+            className={`w-full${!grantType ? ' p-invalid' : ''}`}
+            placeholder={t('select_oauth_grant_type')}
+            appendTo="self"
+          />
+        </div>
+
+        <div className="form-field">
+          <label className="field-label">
+            {t('oauth_scope')} ({t('optional')})
+          </label>
+          <InputText
+            value={scope}
+            onChange={(event) => onFieldChange('scope', event.target.value)}
+            className="w-full"
+            placeholder={t('enter_oauth_scope')}
+          />
+        </div>
+      </div>
+
       {isAuthorizationCode && (
         <div className="form-field">
           <label className="field-label">
@@ -137,35 +166,6 @@ export const OAuthGeneralSection: React.FC<OAuthGeneralSectionProps> = ({
           className={`w-full${!tokenUrl.trim() ? ' p-invalid' : ''}`}
           placeholder={t('enter_oauth_token_url')}
         />
-      </div>
-
-      <div className="oauth-detail-form-row">
-        <div className="form-field">
-          <label className="field-label">
-            {t('oauth_grant_type')}
-            <OAuthRequiredMark />
-          </label>
-          <Dropdown
-            value={grantType || null}
-            options={grantTypeOptions}
-            onChange={(event) => onFieldChange('grantType', event.value ?? '')}
-            className={`w-full${!grantType ? ' p-invalid' : ''}`}
-            placeholder={t('select_oauth_grant_type')}
-            appendTo="self"
-          />
-        </div>
-
-        <div className="form-field">
-          <label className="field-label">
-            {t('oauth_scope')} ({t('optional')})
-          </label>
-          <InputText
-            value={scope}
-            onChange={(event) => onFieldChange('scope', event.target.value)}
-            className="w-full"
-            placeholder={t('enter_oauth_scope')}
-          />
-        </div>
       </div>
 
       {isAuthorizationCode && (
