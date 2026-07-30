@@ -2,7 +2,7 @@ import { AppState } from '../types/common'
 import { CustomSchemaType } from '../types/Schema'
 import { buildQueryParams, getApiHeaders } from '../utils/apiHelpers'
 import { getLocalizedValue } from '../utils/agentHelpers'
-import { PRODUCT_ENTITY_TYPE } from '../types/Tool'
+import { ORDER_ENTITY_TYPE, PRODUCT_ENTITY_TYPE } from '../types/Tool'
 import { EntityTypeOption } from '../types/Schema'
 import { ApiClient } from './apiClient'
 
@@ -32,17 +32,24 @@ export const getCustomSchemaTypes = async (
 export const buildRagEmporixEntityTypeOptions = (
   customSchemaTypes: CustomSchemaType[],
   productLabel: string,
+  orderLabel: string,
   language: string
 ): EntityTypeOption[] => {
-  const productOption: EntityTypeOption = {
-    label: productLabel,
-    value: PRODUCT_ENTITY_TYPE,
-  }
+  const predefinedOptions: EntityTypeOption[] = [
+    {
+      label: productLabel,
+      value: PRODUCT_ENTITY_TYPE,
+    },
+    {
+      label: orderLabel,
+      value: ORDER_ENTITY_TYPE,
+    },
+  ]
 
   const customOptions = customSchemaTypes.map((type) => ({
     label: getLocalizedValue(type.name, language) || type.id,
     value: type.id,
   }))
 
-  return [productOption, ...customOptions]
+  return [...predefinedOptions, ...customOptions]
 }
