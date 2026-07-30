@@ -15,13 +15,6 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
-    "baseUrl": ".",
-    "paths": {
-      "@emporix/component-library": ["../../component-library/dist/index.d.ts"],
-      "@emporix/component-library/styles": [
-        "../../component-library/dist/styles.d.ts"
-      ]
-    },
 
     /* Linting */
     "strict": true,

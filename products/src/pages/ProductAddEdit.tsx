@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { BackButton } from '@emporix/component-library'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { ProductType } from '../models/Category.ts'
@@ -13,6 +12,7 @@ import {
 } from '../context/RefreshValuesProvider'
 import { useUIBlocker } from '../context/UIBlcoker'
 import { useTabs } from '../hooks/useTabs'
+import BackButton from '../components/shared/BackButton.tsx'
 import { ProductPrices } from '../components/products/ProductPrices.tsx'
 import HeaderSection from '../components/shared/HeaderSection.tsx'
 import ConfirmBox from '../components/shared/ConfirmBox'
@@ -75,9 +75,6 @@ const ProductAddEditView = () => {
   const toast = useToast()
   const { permissions } = useDashboardContext()
   const canBeManaged = permissions?.products?.manager
-  const backButtonLabel = useMemo(() => {
-    return `${t('global.backTo')} ${t('products.title')}`
-  }, [t])
 
   const { getContentLangValue } = useLocalizedValue()
   const { getAllAssetsForId } = useMediaAssets()
@@ -160,30 +157,7 @@ const ProductAddEditView = () => {
   return (
     <div className="module products">
       <div className="col-12">
-        <div className="flex align-items-center gap-2 mb-4">
-          <BackButton
-            onClick={() => navigate('/products')}
-            ariaLabel={backButtonLabel}
-          />
-          <button
-            type="button"
-            onClick={() => navigate('/products')}
-            style={{
-              background: 'transparent',
-              border: 0,
-              color: '#596168',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontStyle: 'normal',
-              fontWeight: 700,
-              lineHeight: '14px',
-              padding: 0,
-              textTransform: 'uppercase',
-            }}
-          >
-            {backButtonLabel}
-          </button>
-        </div>
+        <BackButton label={t('products.title')} to={'/products'} />
       </div>
       <>
         <HeaderSection
