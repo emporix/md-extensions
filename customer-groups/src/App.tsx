@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { InputText, PrimaryButton } from '@emporix/component-library'
-import '@emporix/component-library/styles'
 import RemoteComponent from './RemoteComponent'
 import {
   getStoredSettings,
