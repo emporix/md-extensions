@@ -1,0 +1,11 @@
+.identifierField,
+.rolesField {
+  grid-column: 1 / -1;
+}
+
+.nameField,
+.descriptionField,
+.companyField,
+.restrictionsField {
+  grid-column: span 6;
+}

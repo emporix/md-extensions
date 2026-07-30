@@ -27,10 +27,11 @@ Exclude `*.md` from anti-pattern greps — notes often name forbidden patterns.
 - Lean `InputField` from local `components/shared/`
 - Hash-relative `constants/paths.ts` helpers
 - U&G-style `.gitignore` env exceptions + `.vite`
+- SCSS Modules for feature UI (avoid global styles MD can override)
 
 ## Parity
 
-Do not claim “matches pilot” without `diff -rq` (file counts are not enough).
+Do not claim “matches pilot” without `diff -rq` (file counts are not enough). Compare against playbook-aligned remotes in `docs/MIGRATED_MODULES.md`.
 
 ## Lockfile / CI
 
@@ -39,5 +40,5 @@ Do not claim “matches pilot” without `diff -rq` (file counts are not enough)
 
 ## Skill
 
-Follow `md-extensions/.cursor/skills/md-module-extraction/` + `docs/REUSABLE_FROM_USERS_AND_GROUPS.md`.  
-Host Phase 3: `management-dashboard/.cursor/rules/federated-module-wiring.mdc`.
+Follow `md-extensions/.cursor/skills/md-module-extraction/` (+ `.claude/skills/` / `.github/skills/`) + `docs/MIGRATED_MODULES.md` + `docs/REUSABLE_FROM_USERS_AND_GROUPS.md`.
+Host Phase 3: `management-dashboard/.cursor/rules/federated-module-wiring.mdc` (+ Copilot/Claude mirrors).

@@ -1,0 +1,21 @@
+.predefinedWarning {
+  margin-bottom: 0.5rem;
+  padding: 0.75rem;
+
+  color: #79a3da;
+  background-color: rgba(121, 163, 218, 0.15);
+  border-color: rgba(121, 163, 218, 0.3);
+
+  :global(svg),
+  :global([class*='icon']) {
+    color: #79a3da;
+  }
+
+  :global([class*='content']) {
+    color: #79a3da;
+  }
+}
+
+.generalSection {
+  margin-bottom: 1.5rem;
+}

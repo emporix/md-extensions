@@ -1,0 +1,44 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.5rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.5rem;
+  white-space: nowrap;
+}
+
+.badgeTable {
+  border: 0;
+  color: var(--grey-6, #3e4759);
+  background: var(--grey-2, #e8e9eb);
+  height: 1.5rem;
+}
+
+.badgeCard {
+  height: auto;
+  line-height: 1.5rem;
+  border: 1px solid var(--grey-6, #3e4759);
+  color: var(--grey-6, #3e4759);
+  background: transparent;
+}
+
+.badgeCardCreated {
+  border-color: var(--green, #2fbea9);
+  color: var(--green, #2fbea9);
+  background: var(--color-message-success-bg, #e4f8f0);
+}
+
+.badgeCardUpdated {
+  border-color: var(--blue-5, #3b73bb);
+  color: var(--blue-5, #3b73bb);
+  background: var(--blue-0, #f3f7fb);
+}
+
+.badgeCardDeleted {
+  border-color: var(--red, #e8615a);
+  color: var(--red, #e8615a);
+  background: var(--color-message-error-bg, #ffe7e6);
+}

@@ -23,6 +23,9 @@
         ],
         "emporix-users-and-groups": [
           "emporix-users-and-groups"
+        ],
+        "emporix-customer-groups": [
+          "emporix-customer-groups"
         ]
       }
     },
@@ -48,6 +51,9 @@
         ],
         "emporix-users-and-groups-stage": [
           "emporix-users-and-groups-stage"
+        ],
+        "emporix-customer-groups-stage": [
+          "emporix-customer-groups-stage"
         ]
       }
     },
@@ -73,6 +79,9 @@
         ],
         "emporix-users-and-groups-develop": [
           "emporix-users-and-groups-develop"
+        ],
+        "emporix-customer-groups-develop": [
+          "emporix-customer-groups-develop"
         ]
       }
     }
