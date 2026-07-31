@@ -1,4 +1,9 @@
 import { AppState } from '../types/common'
+import {
+  AgentChatStreamEvent,
+  mapAgentChatStreamEvent,
+  readSseStream,
+} from '../utils/sseHelpers'
 
 interface ErrorDetail {
   field: string
@@ -66,57 +71,65 @@ export class ApiClient {
     return `${base}${suffix}`
   }
 
-  private async handleResponse<T>(response: Response): Promise<T> {
+  private async readResponsePayload(response: Response): Promise<unknown> {
     const contentType = response.headers.get('content-type') || ''
     const isJson = contentType.includes('application/json')
-    const payload = isJson
-      ? await response.json().catch(() => undefined)
-      : await response.text().catch(() => undefined)
+    return isJson
+      ? response.json().catch(() => undefined)
+      : response.text().catch(() => undefined)
+  }
+
+  private throwApiClientError(response: Response, payload: unknown): never {
+    let message = `Request failed with status ${response.status}`
+    let disableable = false
+    let force = false
+
+    if (typeof payload === 'string' && payload) {
+      message = payload
+    } else if (payload && typeof payload === 'object') {
+      const errorPayload = payload as ErrorPayload
+
+      if (errorPayload.message) {
+        message = errorPayload.message
+      }
+      if (
+        errorPayload.details &&
+        Array.isArray(errorPayload.details) &&
+        errorPayload.details.length > 0
+      ) {
+        const validationMessages = errorPayload.details
+          .filter(
+            (detail: ErrorDetail) =>
+              detail.type !== 'disableable' && detail.type !== 'force'
+          )
+          .map((detail: ErrorDetail) => detail.message)
+          .join('\n')
+        if (validationMessages) {
+          message += `\n${validationMessages}`
+        }
+        disableable = errorPayload.details.some(
+          (detail: ErrorDetail) => detail.type === 'disableable'
+        )
+        force = errorPayload.details.some(
+          (detail: ErrorDetail) => detail.type === 'force'
+        )
+      }
+    }
+
+    throw new ApiClientError(
+      message,
+      response.status,
+      payload,
+      disableable,
+      force
+    )
+  }
+
+  private async handleResponse<T>(response: Response): Promise<T> {
+    const payload = await this.readResponsePayload(response)
 
     if (!response.ok) {
-      let message = `Request failed with status ${response.status}`
-      let disableable = false
-      let force = false
-      if (typeof payload === 'string' && payload) {
-        message = payload
-      } else if (payload && typeof payload === 'object') {
-        const errorPayload = payload as ErrorPayload
-
-        // Handle validation errors with details
-        if (errorPayload.message) {
-          message = errorPayload.message
-        }
-        if (
-          errorPayload.details &&
-          Array.isArray(errorPayload.details) &&
-          errorPayload.details.length > 0
-        ) {
-          const validationMessages = errorPayload.details
-            .filter(
-              (detail: ErrorDetail) =>
-                detail.type !== 'disableable' && detail.type !== 'force'
-            )
-            .map((detail: ErrorDetail) => detail.message)
-            .join('\n')
-          if (validationMessages) {
-            message += `\n${validationMessages}`
-          }
-          disableable = errorPayload.details.some(
-            (detail: ErrorDetail) => detail.type === 'disableable'
-          )
-          force = errorPayload.details.some(
-            (detail: ErrorDetail) => detail.type === 'force'
-          )
-        }
-      }
-
-      throw new ApiClientError(
-        message,
-        response.status,
-        payload,
-        disableable,
-        force
-      )
+      this.throwApiClientError(response, payload)
     }
 
     return payload as T as T
@@ -159,6 +172,39 @@ export class ApiClient {
       ...init,
     })
     return this.handleResponse<T>(response)
+  }
+
+  async *postSse(
+    path: string,
+    body?: unknown,
+    init?: RequestInit
+  ): AsyncGenerator<AgentChatStreamEvent> {
+    const { headers: extraHeaders, body: _, ...restInit } = init || {}
+    const response = await fetch(this.buildUrl(path), {
+      method: 'POST',
+      headers: this.buildHeaders({
+        Accept: 'text/event-stream',
+        ...(extraHeaders as Record<string, string> | undefined),
+      }),
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+      ...restInit,
+    })
+
+    if (!response.ok) {
+      const payload = await this.readResponsePayload(response)
+      this.throwApiClientError(response, payload)
+    }
+
+    if (!response.body) {
+      throw new ApiClientError('Empty stream response', response.status)
+    }
+
+    for await (const frame of readSseStream(response.body)) {
+      const event = mapAgentChatStreamEvent(frame)
+      if (event) {
+        yield event
+      }
+    }
   }
 
   async put<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {

@@ -43,29 +43,59 @@ export const JSON_SCHEMA_ASSISTANT_TEMPLATE_ID = 'json-schema-assistant'
 
 export const JSON_SCHEMA_ASSISTANT_AGENT_ID = 'json-schema-assistant'
 
-export interface AgenticChatResponseItem {
-  agentId: string
-  message: string
+export type ChatWithAgentOptions = {
+  readonly emptyResponseKey?: string
+  readonly onToken?: (accumulated: string) => void
+  readonly onToolActivity?: (toolName: string | null) => void
 }
 
 export const chatWithAgent = async (
   appState: AppState,
   agentId: string,
   message: string,
-  emptyResponseKey: string = COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse
+  options: ChatWithAgentOptions = {}
 ): Promise<string> => {
+  const emptyResponseKey =
+    options.emptyResponseKey ?? COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse
   const api = getApiClient(appState)
   const body = { agentId, message }
-  const res = await api.post<AgenticChatResponseItem>(
-    `/ai-service/${appState.tenant}/agentic/chat`,
+  const stream = api.postSse(
+    `/ai-service/${appState.tenant}/agentic/chat-stream`,
     body
   )
-  const text = res.message.trim()
 
-  if (!text) {
+  let text = ''
+  for await (const event of stream) {
+    if (event.type === 'token') {
+      text += event.content
+      options.onToken?.(text)
+      continue
+    }
+
+    if (event.type === 'tool_start') {
+      options.onToolActivity?.(event.toolName)
+      continue
+    }
+
+    if (event.type === 'tool_end') {
+      options.onToolActivity?.(null)
+      continue
+    }
+
+    if (event.type === 'error') {
+      throw new Error(event.message)
+    }
+
+    if (event.type === 'done') {
+      break
+    }
+  }
+
+  const trimmed = text.trim()
+  if (!trimmed) {
     throw new Error(emptyResponseKey)
   }
-  return text
+  return trimmed
 }
 
 export const createCommerceFilterDslAgent = async (
