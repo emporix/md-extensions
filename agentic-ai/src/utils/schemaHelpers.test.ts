@@ -1,20 +1,22 @@
 import { describe, expect, it } from 'vitest'
 import { buildRagEmporixEntityTypeOptions } from '../services/schemaService'
-import { PRODUCT_ENTITY_TYPE } from '../types/Tool'
+import { ORDER_ENTITY_TYPE, PRODUCT_ENTITY_TYPE } from '../types/Tool'
 
 describe('buildRagEmporixEntityTypeOptions', () => {
-  it('should include product and custom schema types', () => {
+  it('should include product, order and custom schema types', () => {
     const options = buildRagEmporixEntityTypeOptions(
       [
         { id: 'CUSTOM_PRODUCT', name: { en: 'Custom Product Type' } },
         { id: 'DOCUMENT', name: { de: 'Dokumente', en: 'Documents' } },
       ],
       'Product',
+      'Order',
       'de'
     )
 
     expect(options).toEqual([
       { label: 'Product', value: PRODUCT_ENTITY_TYPE },
+      { label: 'Order', value: ORDER_ENTITY_TYPE },
       { label: 'Custom Product Type', value: 'CUSTOM_PRODUCT' },
       { label: 'Dokumente', value: 'DOCUMENT' },
     ])
@@ -24,9 +26,10 @@ describe('buildRagEmporixEntityTypeOptions', () => {
     const options = buildRagEmporixEntityTypeOptions(
       [{ id: 'NO_NAME', name: {} }],
       'Product',
+      'Order',
       'en'
     )
 
-    expect(options[1]).toEqual({ label: 'NO_NAME', value: 'NO_NAME' })
+    expect(options[2]).toEqual({ label: 'NO_NAME', value: 'NO_NAME' })
   })
 })

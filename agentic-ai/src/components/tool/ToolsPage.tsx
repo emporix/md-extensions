@@ -9,7 +9,7 @@ import { useTools } from '../../hooks/useTools'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../contexts/ToastContext'
 import { reindex } from '../../services/indexingService'
-import { resolveRagEntityType } from '../../utils/ragEmporixToolHelpers'
+import { resolveToolRagEntityType } from '../../utils/ragEmporixToolHelpers'
 import { useReindexJobs } from '../../hooks/useReindexJobs'
 
 const ToolsPage: React.FC = () => {
@@ -70,15 +70,19 @@ const ToolsPage: React.FC = () => {
   const confirmReindex = async () => {
     if (!toolToReindex) return
 
-    if (!toolToReindex.config.entityType?.trim()) {
+    const entityType = resolveToolRagEntityType(toolToReindex)
+    const hasConfiguredEntityType = !!(
+      toolToReindex.config.entityType?.trim() ||
+      toolToReindex.config.emporixNativeToolConfig?.entityType?.trim()
+    )
+
+    if (!hasConfiguredEntityType) {
       showError(t('entity_type_missing'))
       hideReindexConfirm()
       return
     }
 
     hideReindexConfirm()
-
-    const entityType = resolveRagEntityType(toolToReindex.config.entityType)
 
     try {
       const job = await reindex(appState, entityType, true)
@@ -120,7 +124,7 @@ const ToolsPage: React.FC = () => {
               onRemove={removeTool}
               onReindex={handleReindex}
               isReindexInProgress={disabledReindexEntityTypes.has(
-                resolveRagEntityType(tool.config.entityType).toLowerCase()
+                resolveToolRagEntityType(tool).toLowerCase()
               )}
             />
           ))}

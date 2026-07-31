@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { PRODUCT_ENTITY_TYPE } from '../types/Tool'
+import { ORDER_ENTITY_TYPE, PRODUCT_ENTITY_TYPE, Tool } from '../types/Tool'
 import {
   areRagEmporixFilterFieldsValid,
   getRagFilterFieldDisplayLabel,
   isValidRagFieldKey,
   resolveRagEntityType,
+  resolveToolRagEntityType,
   sanitizeRagEmporixFilterFields,
   sanitizeRagEmporixIndexedFields,
 } from './ragEmporixToolHelpers'
@@ -17,8 +18,41 @@ describe('resolveRagEntityType', () => {
     expect(resolveRagEntityType('   ')).toBe(PRODUCT_ENTITY_TYPE)
   })
 
+  it('normalizes predefined product and order entity types', () => {
+    expect(resolveRagEntityType('PRODUCT')).toBe(PRODUCT_ENTITY_TYPE)
+    expect(resolveRagEntityType('product')).toBe(PRODUCT_ENTITY_TYPE)
+    expect(resolveRagEntityType('ORDER')).toBe(ORDER_ENTITY_TYPE)
+    expect(resolveRagEntityType('order')).toBe(ORDER_ENTITY_TYPE)
+  })
+
   it('returns trimmed custom entity type', () => {
     expect(resolveRagEntityType('  CUSTOM_PRODUCT  ')).toBe('CUSTOM_PRODUCT')
+  })
+})
+
+describe('resolveToolRagEntityType', () => {
+  it('resolves order from top-level config', () => {
+    const tool = {
+      id: 'rag-order',
+      name: 'Order RAG',
+      type: 'rag_emporix',
+      config: { entityType: 'ORDER' },
+    } as Tool
+
+    expect(resolveToolRagEntityType(tool)).toBe(ORDER_ENTITY_TYPE)
+  })
+
+  it('resolves order from nested emporixNativeToolConfig', () => {
+    const tool = {
+      id: 'rag-order',
+      name: 'Order RAG',
+      type: 'rag_emporix',
+      config: {
+        emporixNativeToolConfig: { entityType: 'order' },
+      },
+    } as Tool
+
+    expect(resolveToolRagEntityType(tool)).toBe(ORDER_ENTITY_TYPE)
   })
 })
 

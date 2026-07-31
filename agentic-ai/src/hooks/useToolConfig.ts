@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  PRODUCT_ENTITY_TYPE,
   RagEmporixEmbeddingConfig,
   RagEmporixFieldConfig,
   RagEmporixFilterFieldConfig,
@@ -206,14 +205,12 @@ export const useToolConfig = ({
     const options = buildRagEmporixEntityTypeOptions(
       customSchemaTypes,
       t('product'),
+      t('order'),
       appState.contentLanguage
     )
     const currentValue = resolveRagEntityType(state.config.entityType)
 
-    if (
-      currentValue !== PRODUCT_ENTITY_TYPE &&
-      !options.some((option) => option.value === currentValue)
-    ) {
+    if (!options.some((option) => option.value === currentValue)) {
       return [...options, { label: currentValue, value: currentValue }]
     }
 

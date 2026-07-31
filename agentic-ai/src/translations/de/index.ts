@@ -286,6 +286,7 @@ const TRANSLATIONS_DE = {
   select_entity_type: 'Entity-Typ auswählen',
   loading_entity_types: 'Entity-Typen werden geladen...',
   product: 'Produkt',
+  order: 'Bestellung',
   collection_name: 'Collection-Name',
   enter_collection_name: 'Collection-Name eingeben',
   embedding_configuration: 'Embedding-Konfiguration',

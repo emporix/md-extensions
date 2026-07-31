@@ -284,6 +284,7 @@ const TRANSLATIONS_EN = {
   select_entity_type: 'Select entity type',
   loading_entity_types: 'Loading entity types...',
   product: 'Product',
+  order: 'Order',
   collection_name: 'Collection Name',
   enter_collection_name: 'Enter collection name',
   embedding_configuration: 'Embedding Configuration',
