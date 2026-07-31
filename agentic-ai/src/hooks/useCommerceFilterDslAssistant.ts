@@ -47,6 +47,10 @@ export const useCommerceFilterDslAssistant = ({
   )
   const [provisioningAgent, setProvisioningAgent] = useState(false)
   const [assistantWorking, setAssistantWorking] = useState(false)
+  const [assistantStreamText, setAssistantStreamText] = useState('')
+  const [assistantToolName, setAssistantToolName] = useState<string | null>(
+    null
+  )
 
   const resolveAssistantErrorMessage = useCallback(
     (err: unknown, fallbackKey: string): string => {
@@ -136,11 +140,17 @@ export const useCommerceFilterDslAssistant = ({
     if (!assistantPrompt.trim()) return
     setAssistantWorking(true)
     setAssistantError(null)
+    setAssistantStreamText('')
+    setAssistantToolName(null)
     try {
       const reply = await chatWithAgent(
         appState,
         COMMERCE_FILTER_DSL_AGENT_ID,
-        assistantPrompt.trim()
+        assistantPrompt.trim(),
+        {
+          onToken: setAssistantStreamText,
+          onToolActivity: setAssistantToolName,
+        }
       )
       const extracted = extractFilterDslJsonFromAgentMessage(reply)
       if (!extracted) {
@@ -163,6 +173,7 @@ export const useCommerceFilterDslAssistant = ({
       )
     } finally {
       setAssistantWorking(false)
+      setAssistantToolName(null)
     }
   }, [
     appState,
@@ -183,7 +194,15 @@ export const useCommerceFilterDslAssistant = ({
     helperAgentPresent,
     provisioningAgent,
     assistantWorking,
+    assistantStreamText,
+    assistantToolName,
     handleEnableHelperAgent,
     handleAssistantGenerate,
+    resetAssistantState: () => {
+      setAssistantPrompt('')
+      setAssistantError(null)
+      setAssistantStreamText('')
+      setAssistantToolName(null)
+    },
   }
 }
