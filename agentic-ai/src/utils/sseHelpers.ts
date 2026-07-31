@@ -31,21 +31,21 @@ const parseSseChunk = (chunk: string): SseFrame | null => {
   }
 
   let event = ''
-  let data = ''
+  const dataLines: string[] = []
 
-  for (const line of chunk.split('\n')) {
+  for (const line of chunk.split(/\r?\n/)) {
     if (line.startsWith('event:')) {
       event = line.slice('event:'.length).trim()
     } else if (line.startsWith('data:')) {
-      data = line.slice('data:'.length).trim()
+      dataLines.push(line.slice('data:'.length).trim())
     }
   }
 
-  if (!event && !data) {
+  if (!event && dataLines.length === 0) {
     return null
   }
 
-  return { event, data }
+  return { event, data: dataLines.join('\n') }
 }
 
 export const parseSseFrames = (buffer: string): {
@@ -55,15 +55,24 @@ export const parseSseFrames = (buffer: string): {
   const frames: SseFrame[] = []
   let remainder = buffer
 
-  let boundary = remainder.indexOf('\n\n')
+  const findBoundary = (text: string): number => {
+    const lf = text.indexOf('\n\n')
+    const crlf = text.indexOf('\r\n\r\n')
+    if (lf === -1) return crlf
+    if (crlf === -1) return lf
+    return Math.min(lf, crlf)
+  }
+
+  let boundary = findBoundary(remainder)
   while (boundary !== -1) {
     const chunk = remainder.slice(0, boundary)
-    remainder = remainder.slice(boundary + 2)
+    const isDoubleLineBreak = remainder.slice(boundary, boundary + 4) === '\r\n\r\n'
+    remainder = remainder.slice(boundary + (isDoubleLineBreak ? 4 : 2))
     const frame = parseSseChunk(chunk)
     if (frame) {
       frames.push(frame)
     }
-    boundary = remainder.indexOf('\n\n')
+    boundary = findBoundary(remainder)
   }
 
   return { frames, remainder }
@@ -92,6 +101,8 @@ export async function* readSseStream(
       }
     }
 
+    buffer += decoder.decode()
+
     if (buffer.trim()) {
       const frame = parseSseChunk(buffer)
       if (frame) {
@@ -110,10 +121,18 @@ export const mapAgentChatStreamEvent = (
     return null
   }
 
-  const payload =
-    frame.data.length > 0
-      ? (JSON.parse(frame.data) as Record<string, unknown>)
-      : {}
+  let payload: Record<string, unknown> = {}
+  if (frame.data.length > 0) {
+    try {
+      payload = JSON.parse(frame.data) as Record<string, unknown>
+    } catch (err) {
+      return {
+        type: 'error',
+        message: `Invalid JSON in stream frame: ${err instanceof Error ? err.message : 'parse error'}`,
+        code: 'INVALID_FRAME',
+      }
+    }
+  }
 
   switch (frame.event) {
     case 'token':

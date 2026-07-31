@@ -179,14 +179,15 @@ export class ApiClient {
     body?: unknown,
     init?: RequestInit
   ): AsyncGenerator<AgentChatStreamEvent> {
+    const { headers: extraHeaders, body: _, ...restInit } = init || {}
     const response = await fetch(this.buildUrl(path), {
       method: 'POST',
       headers: this.buildHeaders({
         Accept: 'text/event-stream',
-        ...(init?.headers as Record<string, string> | undefined),
+        ...(extraHeaders as Record<string, string> | undefined),
       }),
       body: body !== undefined ? JSON.stringify(body) : undefined,
-      ...init,
+      ...restInit,
     })
 
     if (!response.ok) {

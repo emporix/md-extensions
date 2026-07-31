@@ -77,4 +77,35 @@ describe('sseHelpers', () => {
       ttftMs: 123.4,
     })
   })
+
+  it('handles CRLF line endings', () => {
+    const result = parseSseFrames(
+      'event: token\r\ndata: {"content":"Hi"}\r\n\r\n'
+    )
+    expect(result.frames).toHaveLength(1)
+    expect(result.frames[0]).toEqual({
+      event: 'token',
+      data: '{"content":"Hi"}',
+    })
+  })
+
+  it('concatenates multiple data lines', () => {
+    const result = parseSseFrames(
+      'event: token\ndata: line1\ndata: line2\ndata: line3\n\n'
+    )
+    expect(result.frames).toHaveLength(1)
+    expect(result.frames[0].data).toBe('line1\nline2\nline3')
+  })
+
+  it('returns error event for invalid JSON', () => {
+    const result = mapAgentChatStreamEvent({
+      event: 'token',
+      data: '{invalid json}',
+    })
+    expect(result).toEqual({
+      type: 'error',
+      message: expect.stringContaining('Invalid JSON'),
+      code: 'INVALID_FRAME',
+    })
+  })
 })
