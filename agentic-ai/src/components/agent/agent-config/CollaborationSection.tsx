@@ -17,7 +17,6 @@ interface CollaborationSectionProps {
   onChange: (collaborations: AgentCollaboration[]) => void
   availableAgents: CustomAgent[]
   currentAgentId?: string
-  currentAgentType?: string
 }
 
 export const CollaborationSection: React.FC<CollaborationSectionProps> = ({
@@ -25,7 +24,6 @@ export const CollaborationSection: React.FC<CollaborationSectionProps> = ({
   onChange,
   availableAgents,
   currentAgentId,
-  currentAgentType,
 }) => {
   const appState = useAppState()
   const { t } = useTranslation()
@@ -40,7 +38,6 @@ export const CollaborationSection: React.FC<CollaborationSectionProps> = ({
         availableAgents,
         currentAgentId,
         getUsedCollaborationAgentIdsExcludingRow(rows, rowIndex),
-        currentAgentType,
         undefined,
         appState.contentLanguage
       )
@@ -74,7 +71,6 @@ export const CollaborationSection: React.FC<CollaborationSectionProps> = ({
     [
       availableAgents,
       currentAgentId,
-      currentAgentType,
       rows,
       appState.contentLanguage,
     ]

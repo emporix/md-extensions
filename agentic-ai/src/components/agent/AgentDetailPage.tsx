@@ -353,7 +353,6 @@ const AgentDetailPage: React.FC = () => {
           }
           availableAgents={availableAgents}
           currentAgentId={state.agentId || agent?.id}
-          currentAgentType={state.agentType}
         />
       )
     }

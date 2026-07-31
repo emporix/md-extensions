@@ -15,7 +15,6 @@ interface AgentCollaborationManagerProps {
   onChange: (collaborations: AgentCollaboration[]) => void
   availableAgents: CustomAgent[]
   currentAgentId?: string
-  currentAgentType?: string
 }
 
 export const AgentCollaborationManager: React.FC<
@@ -25,7 +24,6 @@ export const AgentCollaborationManager: React.FC<
   onChange,
   availableAgents,
   currentAgentId,
-  currentAgentType,
 }) => {
   const { t } = useTranslation()
   const appState = useAppState()
@@ -43,7 +41,6 @@ export const AgentCollaborationManager: React.FC<
     availableAgents,
     currentAgentId,
     getUsedCollaborationAgentIds(collaborations),
-    currentAgentType,
     editingAgentId,
     appState.contentLanguage
   )

@@ -8,7 +8,6 @@ import {
   getUsedCollaborationAgentIds,
   getUsedCollaborationAgentIdsExcludingRow,
   getValidCollaborations,
-  isCollaborationAgentAllowed,
   isCollaborationPromptMissing,
   isCollaborationRowValid,
   isEmptyCollaborationRow,
@@ -47,22 +46,6 @@ const agents: CustomAgent[] = [
     metadata: {} as CustomAgent['metadata'],
     type: 'custom',
   },
-  {
-    id: 'emporix--collaboration',
-    name: { en: 'Emporix Collaboration' },
-    description: { en: '' },
-    userPrompt: '',
-    triggers: [],
-    llmConfig: {} as CustomAgent['llmConfig'],
-    mcpServers: [],
-    nativeTools: [],
-    agentCollaborations: [],
-    maxRecursionLimit: 10,
-    enableMemory: false,
-    enabled: true,
-    metadata: {} as CustomAgent['metadata'],
-    type: 'custom',
-  },
 ]
 
 describe('agentCollaborationHelpers', () => {
@@ -79,20 +62,11 @@ describe('agentCollaborationHelpers', () => {
     })
   })
 
-  it('isCollaborationAgentAllowed filters emporix collaboration by agent type', () => {
-    const emporixAgent = agents[2]
-
-    expect(isCollaborationAgentAllowed(emporixAgent, 'complaint')).toBe(true)
-    expect(isCollaborationAgentAllowed(emporixAgent, 'anti_fraud')).toBe(true)
-    expect(isCollaborationAgentAllowed(emporixAgent, 'custom')).toBe(false)
-  })
-
   it('filterCollaborationAgentOptions excludes current and used agents', () => {
     const filtered = filterCollaborationAgentOptions(
       agents,
       'agent-a',
-      ['agent-b'],
-      'custom'
+      ['agent-b']
     )
 
     expect(filtered.map((agent) => agent.id)).toEqual([])
@@ -103,7 +77,6 @@ describe('agentCollaborationHelpers', () => {
       agents,
       'agent-a',
       ['agent-b'],
-      'custom',
       'agent-b'
     )
 
