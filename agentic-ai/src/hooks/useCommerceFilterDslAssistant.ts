@@ -186,6 +186,13 @@ export const useCommerceFilterDslAssistant = ({
     tryCommitParsedFilter,
   ])
 
+  const resetAssistantState = useCallback(() => {
+    setAssistantPrompt('')
+    setAssistantError(null)
+    setAssistantStreamText('')
+    setAssistantToolName(null)
+  }, [])
+
   return {
     assistantPrompt,
     setAssistantPrompt,
@@ -198,11 +205,6 @@ export const useCommerceFilterDslAssistant = ({
     assistantToolName,
     handleEnableHelperAgent,
     handleAssistantGenerate,
-    resetAssistantState: () => {
-      setAssistantPrompt('')
-      setAssistantError(null)
-      setAssistantStreamText('')
-      setAssistantToolName(null)
-    },
+    resetAssistantState,
   }
 }

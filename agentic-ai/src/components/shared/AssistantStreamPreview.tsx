@@ -31,13 +31,13 @@ export const AssistantStreamPreview = ({
   }
 
   return (
-    <div
-      className="assistant-stream-preview"
-      role="status"
-      aria-live="polite"
-      aria-busy={working}
-    >
-      <div className="assistant-stream-preview-header">
+    <div className="assistant-stream-preview">
+      <div
+        className="assistant-stream-preview-header"
+        role="status"
+        aria-live="polite"
+        aria-busy={working}
+      >
         {working && !streamText && (
           <ProgressSpinner
             className="assistant-stream-preview-spinner"
@@ -54,7 +54,11 @@ export const AssistantStreamPreview = ({
         )}
       </div>
       {streamText ? (
-        <pre ref={streamRef} className="assistant-stream-preview-body text-mono">
+        <pre
+          ref={streamRef}
+          className="assistant-stream-preview-body text-mono"
+          aria-hidden="true"
+        >
           {streamText}
         </pre>
       ) : (
