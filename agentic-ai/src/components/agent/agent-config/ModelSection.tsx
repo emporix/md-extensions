@@ -40,7 +40,6 @@ interface ModelSectionProps {
   selfHostedAuthHeaderName: string
   selfHostedTokenId: string
   oauthId: string
-  aiOauthEnabled?: boolean
   modelsByProvider: Map<LlmModelProvider, LlmModel[]>
   modelsLoading: boolean
   modelsFetched: boolean
@@ -67,7 +66,6 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   selfHostedAuthHeaderName,
   selfHostedTokenId,
   oauthId,
-  aiOauthEnabled = false,
   modelsByProvider,
   modelsLoading,
   modelsFetched,
@@ -622,7 +620,6 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
               </div>
 
               <SelfHostedAuthSection
-                oauthFeatureEnabled={aiOauthEnabled}
                 useOAuth={selfHostedUseOAuth}
                 authHeaderName={selfHostedAuthHeaderName}
                 authHeaderTokenId={selfHostedTokenId}

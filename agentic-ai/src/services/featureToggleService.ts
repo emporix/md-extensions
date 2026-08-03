@@ -7,11 +7,9 @@ export interface FeatureToggleDto {
 
 export interface AgenticFeatureToggles {
   msTeams: boolean
-  aiOauth: boolean
 }
 
 const MS_TEAMS_FEATURE = 'ms-teams'
-const AI_OAUTH_FEATURE = 'ai-oauth'
 
 const toggleCacheKey = (appState: AppState): string => appState.tenant
 
@@ -45,15 +43,14 @@ export const getAgenticFeatureToggles = async (
 
   let pending = inFlight.get(key)
   if (!pending) {
-    pending = Promise.all([
-      fetchFeatureEnabled(appState, MS_TEAMS_FEATURE),
-      fetchFeatureEnabled(appState, AI_OAUTH_FEATURE),
-    ]).then(([msTeams, aiOauth]) => {
-      const value: AgenticFeatureToggles = { msTeams, aiOauth }
-      resolvedCache.set(key, value)
-      inFlight.delete(key)
-      return value
-    })
+    pending = fetchFeatureEnabled(appState, MS_TEAMS_FEATURE).then(
+      (msTeams) => {
+        const value: AgenticFeatureToggles = { msTeams }
+        resolvedCache.set(key, value)
+        inFlight.delete(key)
+        return value
+      }
+    )
     inFlight.set(key, pending)
   }
 
@@ -65,13 +62,6 @@ export const isMsTeamsFeatureEnabled = async (
 ): Promise<boolean> => {
   const { msTeams } = await getAgenticFeatureToggles(appState)
   return msTeams
-}
-
-export const isAiOauthFeatureEnabled = async (
-  appState: AppState
-): Promise<boolean> => {
-  const { aiOauth } = await getAgenticFeatureToggles(appState)
-  return aiOauth
 }
 
 /** Test-only: reset module cache between tests */

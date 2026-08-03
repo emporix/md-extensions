@@ -8,7 +8,6 @@ import { OAuth } from '../../../types/OAuth'
 import { getOAuthDisplayName } from '../../../utils/oauthHelpers'
 
 interface SelfHostedAuthSectionProps {
-  oauthFeatureEnabled?: boolean
   useOAuth: boolean
   authHeaderName: string
   authHeaderTokenId: string
@@ -22,7 +21,6 @@ interface SelfHostedAuthSectionProps {
 }
 
 export const SelfHostedAuthSection: React.FC<SelfHostedAuthSectionProps> = ({
-  oauthFeatureEnabled = false,
   useOAuth,
   authHeaderName,
   authHeaderTokenId,
@@ -61,31 +59,27 @@ export const SelfHostedAuthSection: React.FC<SelfHostedAuthSectionProps> = ({
     [oauthId, oauths]
   )
 
-  const showOAuthFields = oauthFeatureEnabled && useOAuth
-
   return (
     <>
-      {oauthFeatureEnabled ? (
-        <div className="form-field agent-detail-model-memory-field agent-detail-self-hosted-auth-toggle">
-          <div className="agent-detail-model-memory-switch">
-            <InputSwitch
-              inputId="self-hosted-use-oauth"
-              checked={useOAuth}
-              onChange={(event) =>
-                onFieldChange('selfHostedUseOAuth', event.value)
-              }
-            />
-            <label
-              className="field-label agent-detail-model-memory-label"
-              htmlFor="self-hosted-use-oauth"
-            >
-              {t('use_oauth_authentication')}
-            </label>
-          </div>
+      <div className="form-field agent-detail-model-memory-field agent-detail-self-hosted-auth-toggle">
+        <div className="agent-detail-model-memory-switch">
+          <InputSwitch
+            inputId="self-hosted-use-oauth"
+            checked={useOAuth}
+            onChange={(event) =>
+              onFieldChange('selfHostedUseOAuth', event.value)
+            }
+          />
+          <label
+            className="field-label agent-detail-model-memory-label"
+            htmlFor="self-hosted-use-oauth"
+          >
+            {t('use_oauth_authentication')}
+          </label>
         </div>
-      ) : null}
+      </div>
 
-      {!showOAuthFields ? (
+      {!useOAuth ? (
         <>
           <div className="form-field">
             <label className="field-label">

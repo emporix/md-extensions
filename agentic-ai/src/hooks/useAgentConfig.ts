@@ -38,7 +38,6 @@ import { Tool } from '../types/Tool'
 interface UseAgentConfigProps {
   agent: CustomAgent | null
   availableTools: Tool[]
-  aiOauthEnabled?: boolean
   onSave: (agent: CustomAgent) => void
   onHide: () => void
 }
@@ -83,7 +82,6 @@ interface AgentConfigState {
 export const useAgentConfig = ({
   agent,
   availableTools,
-  aiOauthEnabled = false,
   onSave,
   onHide,
 }: UseAgentConfigProps) => {
@@ -285,7 +283,7 @@ export const useAgentConfig = ({
             url: state.selfHostedUrl || '',
           }
 
-          if (aiOauthEnabled && state.selfHostedUseOAuth) {
+          if (state.selfHostedUseOAuth) {
             if (state.oauthId) {
               baseConfig.selfHostedParams.oauth = { id: state.oauthId }
             }
@@ -323,7 +321,7 @@ export const useAgentConfig = ({
       tags: state.tags || [],
       requiredScopes: state.requiredScopes || [],
     } as CustomAgent
-  }, [agent, state, availableTools, aiOauthEnabled])
+  }, [agent, state, availableTools])
 
   const handleSave = useCallback(async () => {
     if (!agent) return
@@ -437,9 +435,7 @@ export const useAgentConfig = ({
     const selfHostedValidation =
       !isSelfHosted ||
       (state.selfHostedUrl.trim() &&
-        (!aiOauthEnabled ||
-          !state.selfHostedUseOAuth ||
-          !!state.oauthId.trim()))
+        (!state.selfHostedUseOAuth || !!state.oauthId.trim()))
 
     const commerceFilterValidation =
       !state.triggerTypes.includes('commerce_events') ||
@@ -480,7 +476,7 @@ export const useAgentConfig = ({
       supportTriggerValidation &&
       teamsToolValidation
     )
-  }, [state, agent?.id, availableTools, aiOauthEnabled])
+  }, [state, agent?.id, availableTools])
 
   return {
     state,
