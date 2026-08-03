@@ -67,8 +67,8 @@ export const mapGroupToGroupForm = (group: Group): GroupFormFields => {
       OE_TEMPLATES
     ),
     vendorId: group.vendorId || '',
-    restrictions: group.restrictions || [],
-    accessControls: group.accessControls || [],
+    restrictions: group.restrictions ? [...group.restrictions] : [],
+    accessControls: [...(group.accessControls || [])],
   }
 }
 
