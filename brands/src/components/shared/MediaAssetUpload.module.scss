@@ -1,0 +1,86 @@
+// Ported from management-dashboard's MediaAssetUpload inline styles, with MD's
+// global $grey-*/$red values replaced by component-library CSS variables.
+
+.header {
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+}
+
+.headerProgress {
+  width: max-content;
+  max-width: 200px;
+  height: 20px;
+  margin-left: auto;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.itemInfo {
+  display: flex;
+  align-items: center;
+}
+
+.itemThumb {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.itemName {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  margin-left: 1rem;
+  font-size: var(--font-size-sm);
+}
+
+.itemProgress {
+  width: max-content;
+  max-width: 300px;
+  height: 20px;
+  margin-left: auto;
+}
+
+.itemRemove {
+  display: block;
+  margin-left: 0.5rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--color-danger);
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-box-shadow);
+  }
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.emptyIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  font-size: 1.25rem;
+  border-radius: 50%;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-muted);
+}
+
+.emptyText {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  color: var(--color-text-muted);
+}

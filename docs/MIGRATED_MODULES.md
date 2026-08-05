@@ -19,8 +19,17 @@ Living list of Management Dashboard modules extracted into `md-extensions` under
 |--------|-------------------|--------|------|------------|---------------------|-------------------------|
 | `users-and-groups` | `usersAndGroups` | COP-5598 | A (post-cleanup; was B) | `5173` | ≥ 2.2.0 | Original pilot. Full employee users + groups. Tier 1 shared UI / providers / hooks originated here. |
 | `customer-groups` | `customerGroups` | COP-6096 | A | `5174` | `2.4.2` (migrate pinned ≥2.2.0) | Derived from U&G (customer groups only). Company field (`b2b.legalEntityId`); CL ConfirmBox/BackButton/DateValue/ProgressSpinner direct imports; `vite --mode dev`. Expose ships named+default `RemoteComponent` so MD `return module.default` works (2026-08-07). |
+| `brands` | `brands` | COP-6180 | A | `5175` | `2.4.0` | Green-field from template. First remote to import CL `SectionBox` instead of copying it, and first to need CL `Editor` / `FileUpload` / `ProgressBar` (added in 2.4.0 — see below). Ports `TableExtensions` (column visibility, `ext_brands`) using CL Dialog+Checkbox since CL has no Sidebar/InputSwitch. Media tab (`AssetsViewer`, `MediaAssetUpload`) opens the host's `/media-assets/:id` via `window.location.assign` — no in-remote route exists for it. |
 
-**Next free local port:** `5175` (update when claiming).
+**Next free local port:** `5176` (update when claiming).
+
+### Deltas worth reusing from `brands` (COP-6180)
+
+- **CL 2.4.0 adds `Editor`, `FileUpload`, `ProgressBar`** (Pattern B). Any remote needing rich text or media upload should import these rather than adding `primereact` — that is what kept `brands` PrimeReact-free.
+- **`SectionBox` is a CL export since 2.3.0.** Do not copy `components/shared/SectionBox.tsx` into new remotes.
+- **`quill` must be 1.x.** PrimeReact 8's Editor calls `clipboard.convert(htmlString)`, which is Quill 1 API; with Quill 2 the editor silently fails to load existing content. CL pins `quill@^1.3.7`. `management-dashboard` still ships the broken pairing (quill 2.0.3 + primereact 8.7.0).
+- **`ConfigurationProvider` table-config surface.** `brands` extends it with `tableConfigurations` / `fetchTableConfiguration` / `fetchVisibleColumns` / `updateTableConfiguration`; `fetchBasicConfiguration` already returned `tableConfigurations`, it just was not exposed. Copy from `brands` if the next module needs column visibility.
+- **CL gaps found:** no `Sidebar`, no `InputSwitch`, and `Checkbox` has no `label` prop. Consider promoting these if more screens need them.
 
 ## Not playbook SoT (legacy / other remotes)
 

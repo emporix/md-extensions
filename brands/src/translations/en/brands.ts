@@ -1,0 +1,60 @@
+export default {
+  title: 'Brands',
+  singular: 'Brand',
+  plural: 'Brands',
+  table: {
+    columns: {
+      name: 'Name',
+      image: 'Image',
+      actions: 'Actions',
+    },
+    filters: {
+      name: 'Filter by name',
+    },
+  },
+  addBrand: 'Add Brand',
+  editBrand: 'Edit Brand',
+  dialog: {
+    id: 'Id',
+    titleAdd: 'Add new brand',
+    titleEdit: 'Edit brand',
+    name: 'Name',
+    desc: 'Description',
+    image: 'Image',
+    submitAdd: 'Create Brand',
+    submitEdit: 'Edit Brand',
+  },
+  tabs: {
+    details: 'Details',
+    media: 'Media',
+  },
+  toasts: {
+    errorUpdate: 'Error while updating brand. Check logs for more details.',
+    errorCreate: 'Error while creating brand. Check logs for more details.',
+    errorFetch: 'Error while fetching brand. Check logs for more details.',
+    successUpdate: 'Brand updated with success',
+    successCreate: 'Brand created with success',
+    errorDelete: 'Error while deleting brand. Check logs for more details.',
+    successDelete: 'Brand {{name}} deleted with success',
+  },
+  noBrands: 'You do not have any brands defined yet',
+  addFirstBrand: 'ADD YOUR FIRST BRAND',
+  media: {
+    choose: 'Choose',
+    upload: 'Upload',
+    clear: 'Clear',
+    dropImageHere: 'Drag & Drop Image Here',
+    dropFileHere: 'Drag & Drop File Here',
+    toast: {
+      uploadSuccess: '{{count}} file(s) uploaded',
+      bulkDeleteSuccess: '{{itemsLength}} image(s) were deleted',
+      deleteFailure: 'Failed to delete image',
+      downloadFailure: 'Failed to download {{filename}}',
+    },
+    confirm: {
+      singleDelete: 'Remove this image?',
+      bulkDelete: 'Remove {{itemsLength}} images?',
+      deleteDescription: 'This action cannot be undone.',
+    },
+  },
+}

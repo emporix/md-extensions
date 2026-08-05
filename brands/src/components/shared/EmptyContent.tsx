@@ -1,0 +1,43 @@
+import { PrimaryButton } from '@emporix/component-library'
+import { Link } from 'react-router'
+import styles from './EmptyContent.module.scss'
+
+type EmptyContentProps = {
+  readonly text: string
+  readonly buttonLabel?: string
+  readonly className?: string
+  readonly link?: string
+  readonly action?: () => void
+  readonly managerPermissions?: boolean
+}
+
+const EmptyContent = ({
+  className = '',
+  text,
+  buttonLabel,
+  link,
+  action,
+  managerPermissions = true,
+}: EmptyContentProps) => {
+  const actionButton = buttonLabel ? (
+    <PrimaryButton disabled={!managerPermissions} onClick={action}>
+      {buttonLabel}
+    </PrimaryButton>
+  ) : null
+
+  return (
+    <div className={[styles.emptyState, className].filter(Boolean).join(' ')}>
+      <p className={styles.message}>{text}</p>
+      {actionButton &&
+        (link ? (
+          <Link to={link} className={styles.actionLink}>
+            {actionButton}
+          </Link>
+        ) : (
+          actionButton
+        ))}
+    </div>
+  )
+}
+
+export default EmptyContent

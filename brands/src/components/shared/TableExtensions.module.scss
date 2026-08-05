@@ -1,0 +1,21 @@
+.columns {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.column {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  label {
+    cursor: pointer;
+  }
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

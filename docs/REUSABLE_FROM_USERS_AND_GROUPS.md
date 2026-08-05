@@ -51,7 +51,7 @@ Paths below are relative to a playbook-aligned remote (historically `users-and-g
 |-----------|------|------|
 | `HeaderSection` | `HeaderSection.tsx` | Page title, back, actions |
 | `BackButton` | Prefer CL ≥ 2.2.0 — **import directly** | Used by HeaderSection |
-| `SectionBox` | `SectionBox.tsx` (+ `.scss` / `.module.scss`) | Named section panel |
+| `SectionBox` | Prefer CL ≥ 2.3.0 — **import directly** | Named section panel (do not copy locally; `brands` dropped its copy) |
 | `FormGrid` | `FormGrid.tsx` | Form layout |
 | `FormGridRow` | `FormGridRow.tsx` | Form row |
 | `EmptyContent` | `EmptyContent.tsx` | Empty state + optional CTA |
@@ -66,6 +66,8 @@ Paths below are relative to a playbook-aligned remote (historically `users-and-g
 | `DropdownFilter` | `DropdownFilter.tsx` | DataTable column filter → CL Dropdown |
 | `LocalizedInput` | `LocalizedInput.tsx` | **Required thin wrapper** — injects languages + i18n toggle labels into context-free CL |
 | `DotIndicator` | `DotIndicator.tsx` | Boolean status dot (optional; prefer CSS Modules if you touch it) |
+| `TableExtensions` | `brands/src/components/shared/TableExtensions.tsx` | Column visibility persisted per config key. Only in `brands` (playbook-aligned) and `products` (not SoT). Needs the `ConfigurationProvider` table-config surface from `brands`. CL has no Sidebar/InputSwitch, so it uses Dialog + Checkbox. |
+| `AssetsViewer` / `MediaAssetUpload` | `brands/src/components/shared/` | Media grid + upload on CL `FileUpload`/`ProgressBar` (CL ≥ 2.4.0). Asset tiles need a host route — see the `brands` row in the registry. |
 
 Also copy matching `*.module.scss` / `*.scss` next to each component.
 
