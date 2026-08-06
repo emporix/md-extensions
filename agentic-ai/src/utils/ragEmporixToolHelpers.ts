@@ -1,15 +1,34 @@
 import {
+  ORDER_ENTITY_TYPE,
   PRODUCT_ENTITY_TYPE,
   RAG_FIELD_KEY_PATTERN,
   RagEmporixEmbeddingConfig,
   RagEmporixFieldConfig,
   RagEmporixFilterFieldConfig,
+  Tool,
   ToolConfig,
 } from '../types/Tool'
 
 export const resolveRagEntityType = (entityType?: string): string => {
   const trimmed = entityType?.trim()
-  return trimmed || PRODUCT_ENTITY_TYPE
+  if (!trimmed) {
+    return PRODUCT_ENTITY_TYPE
+  }
+
+  const upper = trimmed.toUpperCase()
+  if (upper === 'PRODUCT') {
+    return PRODUCT_ENTITY_TYPE
+  }
+  if (upper === 'ORDER') {
+    return ORDER_ENTITY_TYPE
+  }
+
+  return trimmed
+}
+
+export const resolveToolRagEntityType = (tool: Tool): string => {
+  const nestedEntityType = tool.config.emporixNativeToolConfig?.entityType
+  return resolveRagEntityType(tool.config.entityType ?? nestedEntityType)
 }
 
 export const isValidRagFieldKey = (key?: string): key is string => {

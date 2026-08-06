@@ -6,17 +6,21 @@ alwaysApply: false
 
 # MD Extension Migration (remote)
 
-Playbook: `docs/MODULE_MIGRATION_PLAYBOOK.md`. Copy inventory: `docs/REUSABLE_FROM_USERS_AND_GROUPS.md`.  
-**Skill (canonical):** `.cursor/skills/md-module-extraction/`.  
+Playbook: `docs/MODULE_MIGRATION_PLAYBOOK.md` (§11–§12 for derived remotes).  
+**Registry (update every migration):** `docs/MIGRATED_MODULES.md`.  
+Copy inventory: `docs/REUSABLE_FROM_USERS_AND_GROUPS.md` (Tier 1 from all playbook-aligned remotes).  
+**Skill (canonical):** `.cursor/skills/md-module-extraction/` (also `.claude/skills/` / `.github/skills/`).  
 **Host wiring:** `management-dashboard/.cursor/rules/federated-module-wiring.mdc` (not this file).
 
-**Scaffold from `users-and-groups`, not `products`.**
+**Scaffold:** clone [md-module-template](https://github.com/emporix/md-module-template) branch **`md-module-migration`**, absorb into `md-extensions/{kebab}/` (`rm -rf .git`). Align Tier 1 with **playbook-aligned remotes** in `MIGRATED_MODULES.md` (not U&G alone; not `products`; not template `master`).
 
 ## Federation
 
 - Vite `name` ≡ MD route `key` ≡ `ExternalModule.moduleName` (camelCase).
 - Expose `./RemoteComponent` only. Never name the remote `extension`.
 - Keep `cssCodeSplit: false`. Share `react`, `react-dom`, `react-router`, `react-i18next`.
+- Pin unique `server.port` + `preview.port` with `strictPort: true` (avoid colliding with U&G `5173`).
+- `"dev": "vite --mode dev"` so `.env.dev` loads.
 
 ## AppState
 
@@ -29,6 +33,7 @@ Optional: `user` (host Ory — do not fetch Ory in remote).
 - `HashRouter` inside remote; host uses `BrowserRouter`.
 - Hash-relative paths (`/`, `/users/:id`) via `src/constants/paths.ts` — **not** host `/administration/...`.
 - Sync `i18n.changeLanguage(appState.language)` on host language changes.
+- Trim `entityLinkConfig` to entities this remote can actually open.
 
 ## Provider order
 
@@ -40,8 +45,11 @@ ToastProvider → DashboardProvider → PermissionsProvider → ConfigurationPro
 ## UI policy
 
 - Primitives: `@emporix/component-library` only (CL ≥ 2.0.0 bundles Pattern B Prime CSS).
-- Copy layout composites from U&G `components/shared/` (HeaderSection, SectionBox, FormGrid, ConfirmBox, …).
-- **Never** copy MD `InputField` (ProductDataProvider). Copy U&G lean `InputField`.
+- Copy layout composites from prior playbook-aligned remotes `components/shared/` (HeaderSection, SectionBox, FormGrid, lean InputField, …).
+- Prefer CL ≥ 2.2.0 for `ConfirmBox`, `BackButton`, `DateValue`, `ProgressSpinner` — **import directly**; delete local duplicates. Thin wrappers only when app deps are required (i18n / languages / config), same as `LocalizedInput`.
+- Before copying a shared UI piece already present in a prior remote, **ask the user** whether to migrate it to CL (`migrate-to-component-library` skill) instead of another local copy.
+- **SCSS Modules** for feature UI — avoid global / unscoped styles that MD global CSS can override (or that leak into the host). Minimal `index.css` shell only; no inline styles.
+- **Never** copy MD `InputField` (ProductDataProvider). Copy lean `InputField` from a prior remote.
 - No `primereact` / `primeicons` deps or CSS in the remote — only `@emporix/component-library/styles` at entry.
 
 ## API
@@ -49,10 +57,14 @@ ToastProvider → DashboardProvider → PermissionsProvider → ConfigurationPro
 - `VITE_API_URL` (not `VITE_API_BASE_URL`).
 - Tenant/token via `useDashboardContext()` + `api/bootstrap.ts` + `@emporix/api-calls`.
 
+## Derived remotes
+
+When reducing U&G to a subtype: strip leaf screens only; keep models/hooks member tables need; **re-diff MD** for subtype-specific fields (e.g. customer `Company` / `b2b.legalEntityId`). See playbook §12.
+
 ## Host wiring
 
-Do Phase 3 in **management-dashboard** per `federated-module-wiring` (Mode A / Mode B + env matrix). Remote-only ≠ done.
+Do Phase 3 in **management-dashboard** per `federated-module-wiring` (Mode A / Mode B + env matrix + i18n re-home). Remote-only ≠ done.
 
-## Pilot
+## Pilots
 
-`users-and-groups` (COP-5598).
+See `docs/MIGRATED_MODULES.md`.

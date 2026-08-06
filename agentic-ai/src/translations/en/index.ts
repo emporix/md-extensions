@@ -93,6 +93,9 @@ const TRANSLATIONS_EN = {
   format_json_schema: 'Format JSON Schema',
   generate_json_schema: 'Generate JSON Schema',
   generate_json_schema_working: 'Generating JSON Schema…',
+  assistant_stream_waiting: 'Waiting for response…',
+  assistant_stream_complete: 'Generation complete',
+  assistant_stream_running_tool: 'Running {{toolName}}…',
   generate_json_schema_prompt_placeholder:
     'e.g. An object with a string answer and a numeric confidence score between 0 and 1',
   output_format_invalid_json:
@@ -136,6 +139,7 @@ const TRANSLATIONS_EN = {
   trigger: 'Trigger',
   generate_condition: 'Generate Condition',
   generate_condition_working: 'Generating condition…',
+  commerce_filter_assistant_generating: 'Generating condition JSON…',
   generate_condition_prompt_placeholder:
     'e.g. Trigger an agent when siteCode is DE and published is true',
   select_an_option: 'Select an option',
@@ -305,6 +309,7 @@ const TRANSLATIONS_EN = {
   select_entity_type: 'Select entity type',
   loading_entity_types: 'Loading entity types...',
   product: 'Product',
+  order: 'Order',
   collection_name: 'Collection Name',
   enter_collection_name: 'Enter collection name',
   embedding_configuration: 'Embedding Configuration',

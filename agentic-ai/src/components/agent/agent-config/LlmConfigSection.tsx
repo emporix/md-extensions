@@ -29,7 +29,6 @@ interface LlmConfigSectionProps {
   selfHostedAuthHeaderName?: string
   selfHostedTokenId?: string
   oauthId?: string
-  aiOauthEnabled?: boolean
 }
 
 export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
@@ -47,7 +46,6 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
   selfHostedAuthHeaderName = '',
   selfHostedTokenId = '',
   oauthId = '',
-  aiOauthEnabled = false,
 }) => {
   const { t } = useTranslation()
   const appState = useAppState()
@@ -82,9 +80,8 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
   useEffect(() => {
     const loadOAuths = async () => {
       if (
-        !aiOauthEnabled ||
-        (provider !== LlmProvider.SELF_HOSTED_OLLAMA &&
-          provider !== LlmProvider.SELF_HOSTED_VLLM)
+        provider !== LlmProvider.SELF_HOSTED_OLLAMA &&
+        provider !== LlmProvider.SELF_HOSTED_VLLM
       ) {
         setOAuths([])
         return
@@ -103,7 +100,7 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
     }
 
     void loadOAuths()
-  }, [aiOauthEnabled, appState, provider])
+  }, [appState, provider])
 
   const tokenOptions = tokens
     .map((token) => ({
@@ -228,7 +225,6 @@ export const LlmConfigSection: React.FC<LlmConfigSectionProps> = ({
             </div>
 
             <SelfHostedAuthSection
-              oauthFeatureEnabled={aiOauthEnabled}
               useOAuth={selfHostedUseOAuth}
               authHeaderName={selfHostedAuthHeaderName}
               authHeaderTokenId={selfHostedTokenId}

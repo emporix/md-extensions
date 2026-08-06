@@ -27,6 +27,10 @@ export const normalizeEntityType = (
     return RagEntityType.PRODUCT
   }
 
+  if (value === RagEntityType.ORDER || value === 'ORDER') {
+    return RagEntityType.ORDER
+  }
+
   if (value === RagEntityType.INVALID || value === 'INVALID') {
     return RagEntityType.INVALID
   }

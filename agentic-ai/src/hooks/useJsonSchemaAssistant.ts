@@ -46,6 +46,10 @@ export const useJsonSchemaAssistant = ({
   )
   const [provisioningAgent, setProvisioningAgent] = useState(false)
   const [assistantWorking, setAssistantWorking] = useState(false)
+  const [assistantStreamText, setAssistantStreamText] = useState('')
+  const [assistantToolName, setAssistantToolName] = useState<string | null>(
+    null
+  )
 
   const resolveAssistantErrorMessage = useCallback(
     (err: unknown, fallbackKey: string): string => {
@@ -140,12 +144,18 @@ export const useJsonSchemaAssistant = ({
 
     setAssistantWorking(true)
     setAssistantError(null)
+    setAssistantStreamText('')
+    setAssistantToolName(null)
     try {
       const reply = await chatWithAgent(
         appState,
         JSON_SCHEMA_ASSISTANT_AGENT_ID,
         assistantPrompt.trim(),
-        JSON_SCHEMA_ASSISTANT_I18N_KEYS.emptyResponse
+        {
+          emptyResponseKey: JSON_SCHEMA_ASSISTANT_I18N_KEYS.emptyResponse,
+          onToken: setAssistantStreamText,
+          onToolActivity: setAssistantToolName,
+        }
       )
       const extracted = extractJsonSchemaFromAgentMessage(reply)
       if (!extracted) {
@@ -169,6 +179,7 @@ export const useJsonSchemaAssistant = ({
       )
     } finally {
       setAssistantWorking(false)
+      setAssistantToolName(null)
     }
   }, [
     appState,
@@ -184,6 +195,8 @@ export const useJsonSchemaAssistant = ({
   const resetAssistantState = useCallback(() => {
     setAssistantPrompt('')
     setAssistantError(null)
+    setAssistantStreamText('')
+    setAssistantToolName(null)
   }, [])
 
   return {
@@ -194,6 +207,8 @@ export const useJsonSchemaAssistant = ({
     helperAgentPresent,
     provisioningAgent,
     assistantWorking,
+    assistantStreamText,
+    assistantToolName,
     handleEnableHelperAgent,
     handleAssistantGenerate,
     resetAssistantState,

@@ -29,6 +29,7 @@ import {
   stringifyFilterDsl,
 } from '../../../utils/agentFilterDslHelpers'
 import { useCommerceFilterDslAssistant } from '../../../hooks/useCommerceFilterDslAssistant'
+import { AssistantStreamPreview } from '../../shared/AssistantStreamPreview'
 
 export interface AgentFilterDslEditorProps {
   value: AgentCommerceFilterDsl | null
@@ -192,8 +193,11 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
     helperAgentPresent,
     provisioningAgent,
     assistantWorking,
+    assistantStreamText,
+    assistantToolName,
     handleEnableHelperAgent,
     handleAssistantGenerate,
+    resetAssistantState,
   } = useCommerceFilterDslAssistant({
     activeTab: assistantHookTab,
     tryCommitParsedFilter,
@@ -205,15 +209,13 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
       return
     }
     onAssistantDialogVisibleChange?.(false)
-    setAssistantPrompt('')
-    setAssistantError(null)
+    resetAssistantState()
     setPendingAssistantDialogClose(false)
   }, [
     isSplitLayout,
     onAssistantDialogVisibleChange,
     pendingAssistantDialogClose,
-    setAssistantError,
-    setAssistantPrompt,
+    resetAssistantState,
   ])
 
   const operatorOptions = useMemo(
@@ -349,9 +351,8 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
 
   const closeAssistantDialog = useCallback(() => {
     onAssistantDialogVisibleChange?.(false)
-    setAssistantPrompt('')
-    setAssistantError(null)
-  }, [onAssistantDialogVisibleChange, setAssistantError, setAssistantPrompt])
+    resetAssistantState()
+  }, [onAssistantDialogVisibleChange, resetAssistantState])
 
   const generateConditionPromptRef = useRef<HTMLTextAreaElement>(null)
 
@@ -663,15 +664,6 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
     <div
       className={`commerce-filter-assistant-panel${inDialog ? ' commerce-filter-assistant-panel--dialog' : ''}`}
     >
-      {inDialog && assistantWorking && (
-        <div
-          className="generate-condition-dialog-blocker"
-          role="status"
-          aria-live="polite"
-        >
-          <ProgressSpinner aria-label={t('generate_condition_working')} />
-        </div>
-      )}
       {helperAgentPresent === null && (
         <div
           className="commerce-filter-assistant-loading state-loading"
@@ -750,6 +742,16 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
           {assistantError && (
             <small className="p-error">{assistantError}</small>
           )}
+          <AssistantStreamPreview
+            streamText={assistantStreamText}
+            toolName={assistantToolName}
+            working={assistantWorking}
+            workingLabelKey={
+              inDialog
+                ? 'generate_condition_working'
+                : 'commerce_filter_assistant_generating'
+            }
+          />
         </>
       )}
     </div>

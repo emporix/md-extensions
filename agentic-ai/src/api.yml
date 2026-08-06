@@ -2297,7 +2297,7 @@ components:
       type: string
       enum: [ qdrant ]
       description: Type of the database.
-    RagEntityType:
+    RagCustomType:
       type: string
       enum: [ product ]
       description: Type of the entity which is stored in the given collection.
@@ -2312,7 +2312,7 @@ components:
             - $ref: '#/components/schemas/RagCustomDatabaseType'
         entityType:
           allOf:
-            - $ref: '#/components/schemas/RagEntityType'
+            - $ref: '#/components/schemas/RagCustomType'
         collectionName:
           type: string
           description: Name of the database collection.
@@ -2465,7 +2465,7 @@ components:
           description: The prompt for an agent. It should define when and why this tool is to be called.
         entityType:
           type: string
-          description: "Type of the entity which is stored in the given collection. Supported predefined types: [PRODUCT] and custom entity types."
+          description: "Type of the entity which is stored in the given collection. Supported predefined types: [ORDER, PRODUCT] and custom entity types."
         indexedFields:
           type: array
           description: This field specifies the fields of the given entityType that are used for generating embeddings. The provided values are then concatenated and converted to embeddings.
@@ -2612,13 +2612,9 @@ components:
     TeamsNativeToolConfigResponse:
       type: object
       description: |-
-        ![Preview](https://res.cloudinary.com/saas-ag/image/upload/v1752824268/emporix/icons/preview_api1.png)
-
-        {% hint style="danger" %}
-        This functionality is in preview mode - some of the features may not be fully operational yet.
-        {% endhint %}
-
         Configuration of an MS Teams native tool instance.
+
+        **The MS Teams native tool configuration is in preview mode** - some of the features may not be fully operational yet.
       properties:
         teamId:
           type: string
@@ -3161,14 +3157,7 @@ components:
         - id
     NativeToolReferenceRequest:
       type: object
-      description: |-
-        ![Preview](https://res.cloudinary.com/saas-ag/image/upload/v1752824268/emporix/icons/preview_api1.png)
-
-        {% hint style="danger" %}
-        This functionality is in preview mode - some of the features may not be fully operational yet.
-        {% endhint %}
-
-        Reference to a native tool assigned to an agent.
+      description: Reference to a native tool assigned to an agent.
       properties:
         id:
           type: string
