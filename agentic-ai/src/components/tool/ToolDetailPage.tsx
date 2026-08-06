@@ -18,6 +18,7 @@ import { CustomAgent } from '../../types/Agent'
 import { createEmptyTool } from '../../utils/toolHelpers'
 import { countTeamsToolsForTeam } from '../../utils/teamsRoutingHelpers'
 import { countSlackToolsForTeam } from '../../utils/slackRoutingHelpers'
+import { isCommunicationNativeToolType } from '../../utils/communicationRoutingHelpers'
 import { useToolConfig } from '../../hooks/useToolConfig'
 import { useFeatureToggles } from '../../hooks/useFeatureToggles'
 import { ToolGeneralSection } from './ToolGeneralSection'
@@ -225,10 +226,7 @@ const ToolDetailPage: React.FC = () => {
   ])
 
   useEffect(() => {
-    if (
-      (state.toolType !== 'teams' && state.toolType !== 'slack') ||
-      !appState
-    ) {
+    if (!isCommunicationNativeToolType(state.toolType) || !appState) {
       return
     }
 
@@ -259,7 +257,7 @@ const ToolDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (
-      state.toolType !== 'teams' ||
+      !isCommunicationNativeToolType(state.toolType) ||
       !appState ||
       !state.toolId.trim() ||
       isCreating
@@ -417,7 +415,7 @@ const ToolDetailPage: React.FC = () => {
               agents={availableAgents}
               toolId={state.toolId}
               enabled={
-                state.toolType === 'teams' &&
+                isCommunicationNativeToolType(state.toolType) &&
                 !isCreating &&
                 !!state.toolId.trim()
               }

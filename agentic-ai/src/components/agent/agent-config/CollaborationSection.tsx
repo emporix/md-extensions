@@ -68,12 +68,7 @@ export const CollaborationSection: React.FC<CollaborationSectionProps> = ({
         sortName: getLocalizedValue(agent.name, appState.contentLanguage),
       }))
     },
-    [
-      availableAgents,
-      currentAgentId,
-      rows,
-      appState.contentLanguage,
-    ]
+    [availableAgents, currentAgentId, rows, appState.contentLanguage]
   )
 
   const updateRow = useCallback(

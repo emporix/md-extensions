@@ -19,12 +19,7 @@ interface AgentCollaborationManagerProps {
 
 export const AgentCollaborationManager: React.FC<
   AgentCollaborationManagerProps
-> = ({
-  collaborations,
-  onChange,
-  availableAgents,
-  currentAgentId,
-}) => {
+> = ({ collaborations, onChange, availableAgents, currentAgentId }) => {
   const { t } = useTranslation()
   const appState = useAppState()
   const [showAddForm, setShowAddForm] = useState(false)

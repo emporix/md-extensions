@@ -169,6 +169,8 @@ const TRANSLATIONS_EN = {
   trigger_type_commerce: 'Commerce Event',
   trigger_type_slack: 'Slack',
   trigger_type_teams: 'Microsoft Teams',
+  support_trigger_types_hint:
+    'Select at least one channel trigger. When Teams is selected, attach exactly one Teams tool on the Tools tab.',
   teams_default_inbound_agent: 'Default inbound agent',
   teams_default_inbound_agent_tooltip:
     'Optional. Agent that handles the first inbound Teams message on this team when no conversation exists yet. Saving assigns the Teams trigger and tool to that agent. Clear to disable cold inbound routing.',
@@ -182,7 +184,7 @@ const TRANSLATIONS_EN = {
   no_conversations_found_with_filters:
     'No conversations found matching the filters',
   conversations_tab_hint:
-    'Assignments are created when an agent collaborates in Teams or when someone first messages the bot. Click a row to open session logs.',
+    'Assignments are created when an agent collaborates in Slack or Teams, or when someone first messages the bot. Click a row to open session logs.',
   error_loading_conversations: 'Failed to load conversations',
   loading_conversations: 'Loading conversations...',
   not_available: 'N/A',

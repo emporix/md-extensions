@@ -18,9 +18,7 @@ import {
   toggleNativeTool,
 } from '../../../utils/agentToolsHelpers'
 import { AgentToolTypeTags } from '../../shared/AgentToolTypeTags'
-import {
-  isCommunicationNativeToolType,
-} from '../../../utils/communicationRoutingHelpers'
+import { isCommunicationNativeToolType } from '../../../utils/communicationRoutingHelpers'
 import {
   getSlackToolAllowedOperations,
   toggleSlackNativeTool,
@@ -466,10 +464,7 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
 
   const renderCommunicationNativeToolExtension = useCallback(
     (item: ToolListItem, isSelected: boolean) => {
-      if (
-        !isCommunicationNativeToolType(item.toolType) ||
-        !isSelected
-      ) {
+      if (!isCommunicationNativeToolType(item.toolType) || !isSelected) {
         return null
       }
 

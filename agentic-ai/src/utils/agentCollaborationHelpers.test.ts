@@ -63,11 +63,9 @@ describe('agentCollaborationHelpers', () => {
   })
 
   it('filterCollaborationAgentOptions excludes current and used agents', () => {
-    const filtered = filterCollaborationAgentOptions(
-      agents,
-      'agent-a',
-      ['agent-b']
-    )
+    const filtered = filterCollaborationAgentOptions(agents, 'agent-a', [
+      'agent-b',
+    ])
 
     expect(filtered.map((agent) => agent.id)).toEqual([])
   })

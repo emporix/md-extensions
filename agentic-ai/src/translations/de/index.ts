@@ -170,6 +170,8 @@ const TRANSLATIONS_DE = {
   trigger_type_commerce: 'Commerce-Ereignis',
   trigger_type_slack: 'Slack',
   trigger_type_teams: 'Microsoft Teams',
+  support_trigger_types_hint:
+    'Wählen Sie mindestens einen Kanal-Trigger. Bei Teams muss auf der Registerkarte Tools genau ein Teams-Tool zugewiesen sein.',
   teams_default_inbound_agent: 'Standard-Eingangsagent',
   teams_default_inbound_agent_tooltip:
     'Optional. Agent, der die erste eingehende Teams-Nachricht in diesem Team verarbeitet, wenn noch keine Konversation existiert. Beim Speichern werden Teams-Trigger und Tool diesem Agenten zugewiesen. Leer lassen, um Cold-Inbound-Routing zu deaktivieren.',
@@ -183,7 +185,7 @@ const TRANSLATIONS_DE = {
   no_conversations_found_with_filters:
     'Keine Konversationen für die Filter gefunden',
   conversations_tab_hint:
-    'Zuweisungen entstehen, wenn ein Agent in Teams kollaboriert oder jemand zum ersten Mal dem Bot schreibt. Zeile anklicken, um Sitzungsprotokolle zu öffnen.',
+    'Zuweisungen entstehen, wenn ein Agent in Slack oder Teams kollaboriert oder jemand zum ersten Mal dem Bot schreibt. Zeile anklicken, um Sitzungsprotokolle zu öffnen.',
   error_loading_conversations: 'Konversationen konnten nicht geladen werden',
   loading_conversations: 'Konversationen werden geladen...',
   not_available: 'k. A.',

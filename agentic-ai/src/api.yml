@@ -3190,7 +3190,8 @@ components:
       enum:
         - endpoint
         - slack
-      description: Type of the trigger. The `slack` trigger type can be used only for `support` agent type.
+        - teams
+      description: Type of the trigger. The `slack` and `teams` trigger types can be used only for `support` agent type.
     CommerceEventsTriggerType:
       type: string
       enum:

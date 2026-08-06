@@ -105,9 +105,7 @@ export const OAuthGeneralSection: React.FC<OAuthGeneralSectionProps> = ({
           <Dropdown
             value={grantType || null}
             options={grantTypeOptions}
-            onChange={(event) =>
-              onFieldChange('grantType', event.value ?? '')
-            }
+            onChange={(event) => onFieldChange('grantType', event.value ?? '')}
             className={`w-full${!grantType ? ' p-invalid' : ''}`}
             placeholder={t('select_oauth_grant_type')}
             appendTo="self"

@@ -123,7 +123,10 @@ export const useToolConfig = ({
   }, [tool])
 
   useEffect(() => {
-    if ((state.toolType !== 'teams' && state.toolType !== 'slack') || !appState) {
+    if (
+      (state.toolType !== 'teams' && state.toolType !== 'slack') ||
+      !appState
+    ) {
       setAllToolsLoaded(false)
       return
     }
@@ -585,11 +588,8 @@ export const useToolConfig = ({
     (state.toolType !== 'slack' ||
       !state.config.teamId?.trim() ||
       (allToolsLoaded &&
-        countSlackToolsForTeam(
-          allTools,
-          state.config.teamId,
-          state.toolId
-        ) === 0))
+        countSlackToolsForTeam(allTools, state.config.teamId, state.toolId) ===
+          0))
 
   const handleSave = useCallback(async () => {
     if (!tool || !isFormValid) {

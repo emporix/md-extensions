@@ -109,8 +109,7 @@ export const isToolFormValid = ({
       // TODO: Re-enable non-empty allowedOperations once all Slack tools are migrated.
       // && (config.allowedOperations?.length ?? DEFAULT_SLACK_ALLOWED_OPERATIONS.length) > 0
       return (
-        !!config.teamId?.trim() &&
-        (!isCreating || !!config.botToken?.trim())
+        !!config.teamId?.trim() && (!isCreating || !!config.botToken?.trim())
       )
 
     case 'teams':

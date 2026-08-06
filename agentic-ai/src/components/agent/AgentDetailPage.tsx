@@ -21,6 +21,7 @@ import { ModelSection } from './agent-config/ModelSection'
 import { CollaborationSection } from './agent-config/CollaborationSection'
 import { ConversationsTab } from '../shared/ConversationsTab'
 import { useAgentConfig } from '../../hooks/useAgentConfig'
+import { useFeatureToggles } from '../../hooks/useFeatureToggles'
 import { useAgentToolsCatalog } from '../../hooks/useAgentToolsCatalog'
 import { useAgentTokensCatalog } from '../../hooks/useAgentTokensCatalog'
 import { useAgentOAuthCatalog } from '../../hooks/useAgentOAuthCatalog'
@@ -204,6 +205,8 @@ const AgentDetailPage: React.FC = () => {
     error: commerceCatalogError,
   } = useCommerceEvents()
 
+  const { toggles } = useFeatureToggles()
+
   const handleNavigateBack = useCallback(() => {
     navigate('/agents')
   }, [navigate])
@@ -291,6 +294,7 @@ const AgentDetailPage: React.FC = () => {
           commerceEventCatalog={commerceEventCatalog}
           commerceCatalogLoading={commerceCatalogLoading}
           commerceCatalogError={commerceCatalogError}
+          msTeamsEnabled={toggles.msTeams}
         />
       )
     }

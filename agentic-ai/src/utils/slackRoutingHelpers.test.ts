@@ -109,7 +109,10 @@ describe('slackRoutingHelpers', () => {
       )
 
       expect(unchanged).toEqual(attached)
-      expect(unchanged[0].allowedOperations).toEqual(['sendMessage', 'createChannel'])
+      expect(unchanged[0].allowedOperations).toEqual([
+        'sendMessage',
+        'createChannel',
+      ])
     })
 
     it('prevents removing the last allowed operation', () => {
@@ -144,7 +147,10 @@ describe('slackRoutingHelpers', () => {
       expect(areSlackAgentToolsValid([], [slackToolA, slackToolB])).toBe(true)
 
       expect(
-        areSlackAgentToolsValid([{ id: 'slack-orders' }], [slackToolA, slackToolB])
+        areSlackAgentToolsValid(
+          [{ id: 'slack-orders' }],
+          [slackToolA, slackToolB]
+        )
       ).toBe(true)
 
       expect(
