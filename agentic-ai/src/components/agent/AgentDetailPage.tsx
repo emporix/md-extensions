@@ -321,6 +321,7 @@ const AgentDetailPage: React.FC = () => {
           recursionLimit={state.recursionLimit}
           enableMemory={state.enableMemory}
           selfHostedUrl={state.selfHostedUrl}
+          baseProvider={state.baseProvider}
           selfHostedUseOAuth={state.selfHostedUseOAuth}
           selfHostedAuthHeaderName={state.selfHostedAuthHeaderName}
           selfHostedTokenId={state.selfHostedTokenId}

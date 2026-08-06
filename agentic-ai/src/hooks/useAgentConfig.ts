@@ -6,6 +6,7 @@ import {
   NativeTool,
   LocalizedString,
   LlmProvider,
+  BaseProvider,
 } from '../types/Agent'
 import { upsertCustomAgent } from '../services/agentService'
 import { useAppState } from '../contexts/AppStateContext'
@@ -70,6 +71,7 @@ interface AgentConfigState {
   agentCollaborations: AgentCollaboration[]
   tags: string[]
   requiredScopes: string[]
+  baseProvider: BaseProvider | ''
   selfHostedUrl: string
   selfHostedUseOAuth: boolean
   selfHostedAuthHeaderName: string
@@ -114,6 +116,7 @@ export const useAgentConfig = ({
     agentCollaborations: [],
     tags: [],
     requiredScopes: [],
+    baseProvider: '',
     selfHostedUrl: '',
     selfHostedUseOAuth: false,
     selfHostedAuthHeaderName: '',
@@ -170,6 +173,7 @@ export const useAgentConfig = ({
         agentCollaborations: agent.agentCollaborations || [],
         tags: agent.tags || [],
         requiredScopes: agent.requiredScopes || [],
+        baseProvider: agent.llmConfig?.baseProvider || '',
         selfHostedUrl: agent.llmConfig?.selfHostedParams?.url || '',
         ...(() => {
           const selfHostedParams = agent.llmConfig?.selfHostedParams
@@ -279,6 +283,10 @@ export const useAgentConfig = ({
           state.provider === LlmProvider.SELF_HOSTED_OLLAMA ||
           state.provider === LlmProvider.SELF_HOSTED_VLLM
         ) {
+          if (state.baseProvider) {
+            baseConfig.baseProvider = state.baseProvider
+          }
+
           baseConfig.selfHostedParams = {
             url: state.selfHostedUrl || '',
           }

@@ -53,6 +53,13 @@ export enum LlmProvider {
   SELF_HOSTED_VLLM = 'self_hosted_vllm',
 }
 
+/** Cloud LLM API compatibility for self-hosted endpoints (API uses uppercase values). */
+export enum BaseProvider {
+  ANTHROPIC = 'ANTHROPIC',
+  GOOGLE = 'GOOGLE',
+  OPENAI = 'OPENAI',
+}
+
 export enum GrantType {
   CLIENT_CREDENTIALS = 'client_credentials',
 }
@@ -62,6 +69,8 @@ export interface LlmConfig {
   temperature?: number
   maxTokens: number
   provider: LlmProvider
+  /** Optional. API compatibility for self-hosted Ollama/vLLM backends. */
+  baseProvider?: BaseProvider
   additionalParams: Record<string, unknown> | null
   token?: {
     id: string
