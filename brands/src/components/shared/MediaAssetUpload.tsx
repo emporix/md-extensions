@@ -11,6 +11,7 @@ import {
 } from '@emporix/component-library'
 import type { AxiosProgressEvent } from 'axios'
 import { BsFileEarmark, BsImage, BsXCircle } from 'react-icons/bs'
+import { FiPlus, FiUpload, FiX } from 'react-icons/fi'
 
 import { useMediaAssets } from '../../hooks/api/mediaAssets'
 import { useUIBlocker } from '../../context/UIBlcoker'
@@ -104,6 +105,25 @@ const MediaAssetUpload = ({
 
   const formatSize = (bytes: number) =>
     fileUploadRef.current?.formatSize(bytes) ?? '0 B'
+
+  // Icon-only square buttons, matching the management-dashboard media
+  // uploader. MD used primeicons class strings (`pi pi-fw pi-plus`);
+  // remotes must not depend on primeicons, so these are react-icons nodes.
+  const chooseOptions = {
+    icon: <FiPlus size={16} aria-hidden />,
+    iconOnly: true,
+    className: styles.iconButton,
+  }
+  const uploadOptions = {
+    icon: <FiUpload size={16} aria-hidden />,
+    iconOnly: true,
+    className: styles.iconButton,
+  }
+  const cancelOptions = {
+    icon: <FiX size={16} aria-hidden />,
+    iconOnly: true,
+    className: styles.iconButton,
+  }
 
   const onTemplateSelect = (event: FileUploadSelectEvent) => {
     const addedSize = event.files.reduce((sum, file) => sum + file.size, 0)
@@ -282,6 +302,9 @@ const MediaAssetUpload = ({
         headerTemplate={headerTemplate}
         itemTemplate={itemTemplate}
         emptyTemplate={emptyTemplate}
+        chooseOptions={chooseOptions}
+        uploadOptions={uploadOptions}
+        cancelOptions={cancelOptions}
         chooseLabel={t('brands.media.choose')}
         uploadLabel={t('brands.media.upload')}
         cancelLabel={t('brands.media.clear')}

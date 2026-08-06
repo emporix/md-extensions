@@ -1,10 +1,85 @@
 // Ported from management-dashboard's MediaAssetUpload inline styles, with MD's
 // global $grey-*/$red values replaced by component-library CSS variables.
 
+// Local tints for the icon-only upload buttons. Kept as SCSS variables rather
+// than global CSS custom properties: component-library has no token for this
+// pale-blue surface, and the playbook keeps remote feature styling scoped.
+$media-button-bg: #eef2fa;
+$media-button-bg-hover: #e3eaf7;
+$media-button-icon-disabled: #c3d1e8;
+
 .header {
   background-color: transparent;
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+// Square icon-only choose/upload/cancel buttons.
+// PrimeReact merges `chooseOptions.className` onto its own `.p-button`
+// classes, so these selectors are combined rather than nested.
+// Fixed pixel sizing so the buttons stay 34px regardless of root font size.
+.iconButton:global(.p-button) {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  flex: 0 0 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  // Secondary (upload / cancel) resting state.
+  background: #{$media-button-bg};
+  color: var(--color-primary);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+
+  // `iconOnly` still renders a label span for the accessible name.
+  :global(.p-button-label) {
+    display: none;
+  }
+
+  // Lock the glyph to 16x16; PrimeReact clones the icon with its own
+  // `.p-button-icon` class, whose theme rules would otherwise size it.
+  svg {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    margin: 0;
+  }
+
+  &:not(:global(.p-disabled)):hover {
+    background: #{$media-button-bg-hover};
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-box-shadow);
+  }
+
+  &:global(.p-disabled) {
+    opacity: 1; // Prime dims the whole button; use a muted icon instead.
+    color: #{$media-button-icon-disabled};
+    cursor: default;
+  }
+
+  // Choose is the primary action — filled, always enabled.
+  &:global(.p-fileupload-choose) {
+    background: var(--color-primary);
+    color: var(--color-bg-primary);
+
+    &:not(:global(.p-disabled)):hover {
+      background: var(--color-primary-hover);
+    }
+
+    &:global(.p-disabled) {
+      background: #{$media-button-bg};
+      color: #{$media-button-icon-disabled};
+    }
+  }
 }
 
 .headerProgress {

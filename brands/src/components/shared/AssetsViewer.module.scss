@@ -3,8 +3,30 @@
 
 .actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 8px;
   margin: 1rem 0 0.5rem;
+
+  // Fixed 16px glyphs so the icons do not scale with font size, and sit
+  // centred against the button label.
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+  }
+
+  // Delete uses the primeicons glyph (same as management-dashboard), which is
+  // a font icon rather than an SVG, so it is sized via font-size.
+  :global(.pi) {
+    font-size: 16px;
+    line-height: 1;
+    flex: 0 0 16px;
+  }
 }
 
 .grid {

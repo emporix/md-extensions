@@ -12,7 +12,6 @@ import {
   BsFileEarmarkText,
   BsFileExcel,
   BsFilePdf,
-  BsTrashFill,
 } from 'react-icons/bs'
 
 import type { Asset } from '../../models/Assets.model'
@@ -207,14 +206,17 @@ const AssetsViewer = ({
           disabled={selectedAssets.length < 1 || !managerPermissions}
           onClick={() => setIsDeleteConfirmOpened(true)}
         >
-          <BsTrashFill aria-hidden />
+          {/* Same glyph as management-dashboard (`pi pi-trash`). The
+              primeicons font ships inside @emporix/component-library/styles,
+              so this needs no primeicons dependency in the remote. */}
+          <i className="pi pi-trash" aria-hidden />
           {`${t('global.delete')} (${selectedAssets.length})`}
         </SecondaryButton>
         <SecondaryButton
           disabled={selectedAssets.length < 1}
           onClick={downloadAssets}
         >
-          <BsDownload aria-hidden />
+          <BsDownload size={16} aria-hidden />
           {`${t('global.download')} (${selectedAssets.length})`}
         </SecondaryButton>
       </div>
