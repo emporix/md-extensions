@@ -1067,6 +1067,14 @@ paths:
       description: |-
         Updates or creates a specified tool by replacing all of its existing data with data from the request body.
         If the `metadata.version` is provided then optimistic locking is enabled and version must match the version in the database.`
+
+        ![Preview](https://res.cloudinary.com/saas-ag/image/upload/v1752824268/emporix/icons/preview_api1.png)
+
+        {% hint style="danger" %}
+        This functionality is in preview mode - some of the features may not be fully operational yet.
+        {% endhint %}
+
+        The `teams` native tool type and its configuration fields are in preview. Slack `config.defaultInboundAgentId` and `config.allowedOperations` are in preview.
       security:
         - OAuth2:
             - ai.agent_manage
@@ -2245,14 +2253,7 @@ components:
     NativeToolType:
       type: string
       enum: [ slack, rag_custom, rag_emporix, teams ]
-      description: |-
-        Type of the native tool. Possible values:
-        * `slack`
-        * `rag_custom`
-        * `rag_emporix`
-        * `teams`
-
-          **The `teams` value is in preview mode** - some of the features may not be fully operational yet.
+      description: Type of the native tool. Value `teams` is in preview. Slack fields `defaultInboundAgentId` and `allowedOperations` are in preview.
     BaseNativeTool:
       type: object
       properties:
@@ -2520,12 +2521,43 @@ components:
                 - $ref: '#/components/schemas/OpenAiRagEmporixEmbeddingNativeToolConfigResponse'
                 - $ref: '#/components/schemas/SelfHostedOllamaRagEmporixEmbeddingNativeToolConfigResponse'
 
+    SlackAllowedOperations:
+      type: string
+      enum:
+        - sendMessage
+        - createChannel
+        - inviteParticipants
+        - collaborateOnChannel
+      description: |-
+        ![Preview](https://res.cloudinary.com/saas-ag/image/upload/v1752824268/emporix/icons/preview_api1.png)
+
+        {% hint style="danger" %}
+        This functionality is in preview mode - some of the features may not be fully operational yet.
+        {% endhint %}
+
+        Slack native tool operation identifier.
     SlackNativeToolConfigResponse:
       type: object
+      description: |-
+        ![Preview](https://res.cloudinary.com/saas-ag/image/upload/v1752824268/emporix/icons/preview_api1.png)
+
+        {% hint style="danger" %}
+        This functionality is in preview mode - some of the features may not be fully operational yet.
+        {% endhint %}
+
+        Configuration of a Slack native tool instance. Fields `defaultInboundAgentId` and `allowedOperations` are in preview.
       properties:
         teamId:
           type: string
           description: Unique identifier of the Slack workspace (team) associated with the request. Used to distinguish the source Slack environment when handling events or API calls.
+        defaultInboundAgentId:
+          type: string
+          description: Agent ID that handles inbound Slack replies when no conversation-specific routing context exists yet. This field is in preview.
+        allowedOperations:
+          type: array
+          items:
+            $ref: '#/components/schemas/SlackAllowedOperations'
+          description: Operations the tool instance exposes to assigned agents. At least one value is required when the tool is enabled. This field is in preview.
       required:
         - teamId
     SlackNativeToolConfigRequest:
@@ -3133,11 +3165,10 @@ components:
         allowedOperations:
           type: array
           items:
-            $ref: '#/components/schemas/TeamsAllowedOperations'
-          description: |-
-            Optional per-agent override of allowed MS Teams operations. When omitted, the tool instance defaults apply.
-
-            **The `allowedOperations` field is in preview mode** - some of the features may not be fully operational yet.
+            oneOf:
+              - $ref: '#/components/schemas/TeamsAllowedOperations'
+              - $ref: '#/components/schemas/SlackAllowedOperations'
+          description: Optional per-agent override of allowed native tool operations. When omitted, the tool instance defaults apply. Values must match the referenced tool type (Teams vs Slack); unsupported operations are rejected by the server. Supported for MS Teams and Slack (preview).
       required:
         - id
 
@@ -3159,7 +3190,8 @@ components:
       enum:
         - endpoint
         - slack
-      description: Type of the trigger. The `slack` trigger type can be used only for `support` agent type.
+        - teams
+      description: Type of the trigger. The `slack` and `teams` trigger types can be used only for `support` agent type.
     CommerceEventsTriggerType:
       type: string
       enum:

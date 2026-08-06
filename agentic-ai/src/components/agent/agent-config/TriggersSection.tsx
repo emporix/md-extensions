@@ -4,7 +4,10 @@ import { Button } from 'primereact/button'
 import { Dropdown } from 'primereact/dropdown'
 import { MultiSelect } from 'primereact/multiselect'
 import { Tooltip } from 'primereact/tooltip'
-import { getTriggerTypes } from '../../../utils/constants'
+import {
+  COLLABORATION_TRIGGER_TYPES,
+  getTriggerTypes,
+} from '../../../utils/constants'
 import { type AgentCommerceFilterDsl } from '../../../utils/agentFilterDslHelpers'
 import { AgentFilterDslEditor } from './AgentFilterDslEditor'
 import starsIcon from '../../../assets/stars_icon.svg'
@@ -23,6 +26,7 @@ interface TriggersSectionProps {
   commerceEventCatalog: string[]
   commerceCatalogLoading: boolean
   commerceCatalogError: string | null
+  msTeamsEnabled?: boolean
 }
 
 export const TriggersSection: React.FC<TriggersSectionProps> = ({
@@ -36,10 +40,12 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
   commerceEventCatalog,
   commerceCatalogLoading,
   commerceCatalogError,
+  msTeamsEnabled = false,
 }) => {
   const { t } = useTranslation()
   const [assistantDialogVisible, setAssistantDialogVisible] = useState(false)
   const isDetailVariant = variant === 'detail'
+  const isSupportAgent = agentType === 'support'
 
   const scopeOptions = useMemo(
     () => [
@@ -51,19 +57,30 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
     [t]
   )
 
+  const supportTriggerOptions = useMemo(() => {
+    const allTriggerTypes = getTriggerTypes(t)
+    return allTriggerTypes.filter(
+      (option) =>
+        option.value === 'slack' || (option.value === 'teams' && msTeamsEnabled)
+    )
+  }, [t, msTeamsEnabled])
+
   const availableTriggerTypes = useMemo(() => {
     const allTriggerTypes = getTriggerTypes(t)
-    if (agentType === 'support') {
-      return allTriggerTypes.filter((option) => option.value === 'slack')
+    if (isSupportAgent) {
+      return supportTriggerOptions
     }
     return allTriggerTypes.filter(
       (option) => option.value !== 'slack' && option.value !== 'teams'
     )
-  }, [t, agentType])
+  }, [t, isSupportAgent, supportTriggerOptions])
 
-  const selectedTrigger = isDetailVariant ? (triggerTypes[0] ?? null) : null
+  const selectedTrigger =
+    isDetailVariant && !isSupportAgent ? (triggerTypes[0] ?? null) : null
   const isCommerceTriggerSelected = isDetailVariant
-    ? selectedTrigger === 'commerce_events'
+    ? isSupportAgent
+      ? false
+      : selectedTrigger === 'commerce_events'
     : triggerTypes.includes('commerce_events')
 
   const handleTriggerChange = (value: string | null) => {
@@ -91,6 +108,15 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
       onFieldChange('commerceEvents', [])
       onFieldChange('commerceEventFilter', null)
     }
+  }
+
+  const handleSupportTriggerChange = (next: string[]) => {
+    onFieldChange(
+      'triggerTypes',
+      next.filter((type) =>
+        (COLLABORATION_TRIGGER_TYPES as readonly string[]).includes(type)
+      )
+    )
   }
 
   const isCommerceEventsFieldEnabled = isCommerceTriggerSelected
@@ -237,23 +263,48 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
     )
   }
 
+  const renderSupportTriggersField = () => (
+    <div className="form-field">
+      <label className="field-label">
+        {t('trigger_types')}
+        <span className="field-required-mark"> *</span>
+      </label>
+      <MultiSelect
+        value={triggerTypes}
+        options={supportTriggerOptions}
+        onChange={(e) =>
+          handleSupportTriggerChange((e.value as string[]) ?? [])
+        }
+        className={`w-full ${triggerTypes.length === 0 ? 'p-invalid' : ''}`}
+        display="chip"
+        placeholder={t('select_trigger_types')}
+        appendTo="self"
+      />
+      <small className="text-muted">{t('support_trigger_types_hint')}</small>
+    </div>
+  )
+
   if (!isDetailVariant) {
     return (
       <>
-        <div className="form-field">
-          <label className="field-label">{t('trigger_types')}</label>
-          <MultiSelect
-            value={triggerTypes}
-            options={availableTriggerTypes}
-            onChange={(e) =>
-              handleMultiTriggerChange((e.value as string[]) ?? [])
-            }
-            className="w-full"
-            display="chip"
-            placeholder={t('select_trigger_types')}
-            appendTo="self"
-          />
-        </div>
+        {isSupportAgent ? (
+          renderSupportTriggersField()
+        ) : (
+          <div className="form-field">
+            <label className="field-label">{t('trigger_types')}</label>
+            <MultiSelect
+              value={triggerTypes}
+              options={availableTriggerTypes}
+              onChange={(e) =>
+                handleMultiTriggerChange((e.value as string[]) ?? [])
+              }
+              className="w-full"
+              display="chip"
+              placeholder={t('select_trigger_types')}
+              appendTo="self"
+            />
+          </div>
+        )}
 
         {renderRequiredScopes()}
         {renderCommerceEventsField(false)}
@@ -272,20 +323,28 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
           <div className="agent-detail-form-row">{renderRequiredScopes()}</div>
 
           <div className="agent-detail-form-row">
-            <div className="form-field">
-              <label className="field-label">{t('trigger')}</label>
-              <Dropdown
-                value={selectedTrigger}
-                options={availableTriggerTypes}
-                onChange={(e) => handleTriggerChange(e.value as string | null)}
-                className="w-full"
-                placeholder={t('select_an_option')}
-                appendTo="self"
-                showClear
-              />
-            </div>
+            {isSupportAgent ? (
+              renderSupportTriggersField()
+            ) : (
+              <>
+                <div className="form-field">
+                  <label className="field-label">{t('trigger')}</label>
+                  <Dropdown
+                    value={selectedTrigger}
+                    options={availableTriggerTypes}
+                    onChange={(e) =>
+                      handleTriggerChange(e.value as string | null)
+                    }
+                    className="w-full"
+                    placeholder={t('select_an_option')}
+                    appendTo="self"
+                    showClear
+                  />
+                </div>
 
-            {renderCommerceEventsField(true)}
+                {renderCommerceEventsField(true)}
+              </>
+            )}
           </div>
         </section>
       </div>

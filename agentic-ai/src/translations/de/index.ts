@@ -170,6 +170,8 @@ const TRANSLATIONS_DE = {
   trigger_type_commerce: 'Commerce-Ereignis',
   trigger_type_slack: 'Slack',
   trigger_type_teams: 'Microsoft Teams',
+  support_trigger_types_hint:
+    'Wählen Sie mindestens einen Kanal-Trigger. Bei Teams muss auf der Registerkarte Tools genau ein Teams-Tool zugewiesen sein.',
   teams_default_inbound_agent: 'Standard-Eingangsagent',
   teams_default_inbound_agent_tooltip:
     'Optional. Agent, der die erste eingehende Teams-Nachricht in diesem Team verarbeitet, wenn noch keine Konversation existiert. Beim Speichern werden Teams-Trigger und Tool diesem Agenten zugewiesen. Leer lassen, um Cold-Inbound-Routing zu deaktivieren.',
@@ -183,7 +185,7 @@ const TRANSLATIONS_DE = {
   no_conversations_found_with_filters:
     'Keine Konversationen für die Filter gefunden',
   conversations_tab_hint:
-    'Zuweisungen entstehen, wenn ein Agent in Teams kollaboriert oder jemand zum ersten Mal dem Bot schreibt. Zeile anklicken, um Sitzungsprotokolle zu öffnen.',
+    'Zuweisungen entstehen, wenn ein Agent in Slack oder Teams kollaboriert oder jemand zum ersten Mal dem Bot schreibt. Zeile anklicken, um Sitzungsprotokolle zu öffnen.',
   error_loading_conversations: 'Konversationen konnten nicht geladen werden',
   loading_conversations: 'Konversationen werden geladen...',
   not_available: 'k. A.',
@@ -201,6 +203,27 @@ const TRANSLATIONS_DE = {
   teams_operation_inviteParticipants: 'Teilnehmer einladen',
   teams_operation_collaborateOnChannel: 'Auf Kanal zusammenarbeiten',
   teams_operation_collaborateOnChat: 'Im Chat zusammenarbeiten',
+  slack_default_inbound_agent: 'Standard-Eingangsagent',
+  slack_default_inbound_agent_tooltip:
+    'Optional. Agent, der die erste eingehende Slack-Nachricht in diesem Workspace verarbeitet, wenn noch keine Konversation existiert. Leer lassen, um Cold-Inbound-Routing zu deaktivieren.',
+  slack_default_inbound_agent_hint:
+    'Leer lassen, um Cold-Inbound-Routing zu deaktivieren.',
+  slack_allowed_operations: 'Erlaubte Operationen',
+  slack_allowed_operations_hint:
+    'Maximale Operationen, die dieses Slack-Tool bereitstellen darf. Agenten können die Teilmenge pro Zuordnung weiter einschränken.',
+  slack_agent_allowed_operations: 'Erlaubte Aktionen für diesen Agenten',
+  slack_agent_allowed_operations_hint:
+    'Wähle, welche Slack-Aktionen dieser Agent ausführen darf. Optionen sind durch die Tool-Konfiguration begrenzt.',
+  slack_team_id_hint:
+    'Slack-Workspace-(Team-)ID zur Zuordnung eingehender Ereignisse an dieses Tool.',
+  slack_team_id_hint_immutable:
+    'Die Slack-Workspace-ID kann nach der Tool-Erstellung nicht geändert werden.',
+  slack_team_config_conflict:
+    'Ein anderes Slack-Tool nutzt bereits diese Workspace-ID. Pro Workspace ist nur ein Tool erlaubt.',
+  slack_operation_sendMessage: 'Nachricht senden',
+  slack_operation_createChannel: 'Kanal erstellen',
+  slack_operation_inviteParticipants: 'Teilnehmer einladen',
+  slack_operation_collaborateOnChannel: 'Auf Kanal zusammenarbeiten',
   prompt: 'Prompt',
   llm_config: 'LLM-Konfiguration',
   model: 'Modell',

@@ -105,6 +105,9 @@ export const isToolFormValid = ({
 
   switch (toolType) {
     case 'slack':
+      // Backward compatibility: allow null/empty allowedOperations for legacy Slack tools.
+      // TODO: Re-enable non-empty allowedOperations once all Slack tools are migrated.
+      // && (config.allowedOperations?.length ?? DEFAULT_SLACK_ALLOWED_OPERATIONS.length) > 0
       return (
         !!config.teamId?.trim() && (!isCreating || !!config.botToken?.trim())
       )

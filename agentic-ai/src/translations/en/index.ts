@@ -169,6 +169,8 @@ const TRANSLATIONS_EN = {
   trigger_type_commerce: 'Commerce Event',
   trigger_type_slack: 'Slack',
   trigger_type_teams: 'Microsoft Teams',
+  support_trigger_types_hint:
+    'Select at least one channel trigger. When Teams is selected, attach exactly one Teams tool on the Tools tab.',
   teams_default_inbound_agent: 'Default inbound agent',
   teams_default_inbound_agent_tooltip:
     'Optional. Agent that handles the first inbound Teams message on this team when no conversation exists yet. Saving assigns the Teams trigger and tool to that agent. Clear to disable cold inbound routing.',
@@ -182,7 +184,7 @@ const TRANSLATIONS_EN = {
   no_conversations_found_with_filters:
     'No conversations found matching the filters',
   conversations_tab_hint:
-    'Assignments are created when an agent collaborates in Teams or when someone first messages the bot. Click a row to open session logs.',
+    'Assignments are created when an agent collaborates in Slack or Teams, or when someone first messages the bot. Click a row to open session logs.',
   error_loading_conversations: 'Failed to load conversations',
   loading_conversations: 'Loading conversations...',
   not_available: 'N/A',
@@ -200,6 +202,27 @@ const TRANSLATIONS_EN = {
   teams_operation_inviteParticipants: 'Invite participants',
   teams_operation_collaborateOnChannel: 'Collaborate on channel',
   teams_operation_collaborateOnChat: 'Collaborate on chat',
+  slack_default_inbound_agent: 'Default inbound agent',
+  slack_default_inbound_agent_tooltip:
+    'Optional. Agent that handles the first inbound Slack message in this workspace when no conversation exists yet. Clear to disable cold inbound routing.',
+  slack_default_inbound_agent_hint:
+    'Leave empty to disable cold inbound routing.',
+  slack_allowed_operations: 'Allowed operations',
+  slack_allowed_operations_hint:
+    'Maximum operations this Slack tool may expose. Agents can further restrict the subset per attachment.',
+  slack_agent_allowed_operations: 'Allowed actions for this agent',
+  slack_agent_allowed_operations_hint:
+    'Choose which Slack actions this agent may call. Options are limited by the tool configuration.',
+  slack_team_id_hint:
+    'Slack workspace (team) ID used to route inbound events to this tool.',
+  slack_team_id_hint_immutable:
+    'Slack workspace ID cannot be changed after the tool is created.',
+  slack_team_config_conflict:
+    'Another Slack tool already uses this workspace ID. Only one tool is allowed per workspace.',
+  slack_operation_sendMessage: 'Send message',
+  slack_operation_createChannel: 'Create channel',
+  slack_operation_inviteParticipants: 'Invite participants',
+  slack_operation_collaborateOnChannel: 'Collaborate on channel',
   prompt: 'Prompt',
   llm_config: 'LLM Configuration',
   model: 'Model',

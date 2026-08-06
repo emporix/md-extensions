@@ -73,11 +73,7 @@ export const useOAuthConfig = ({
   )
 
   const isFormValid = useCallback(() => {
-    if (
-      !state.url.trim() ||
-      !state.clientId.trim() ||
-      !state.grantType
-    ) {
+    if (!state.url.trim() || !state.clientId.trim() || !state.grantType) {
       return false
     }
 

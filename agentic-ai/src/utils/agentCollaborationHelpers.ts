@@ -14,22 +14,10 @@ export const buildCollaboration = (
   description: prompt.trim(),
 })
 
-export const isCollaborationAgentAllowed = (
-  agent: CustomAgent,
-  currentAgentType?: string
-): boolean => {
-  if (agent.id === 'emporix--collaboration') {
-    return currentAgentType === 'complaint' || currentAgentType === 'anti_fraud'
-  }
-
-  return true
-}
-
 export const filterCollaborationAgentOptions = (
   agents: CustomAgent[],
   currentAgentId: string | undefined,
   usedAgentIds: string[],
-  currentAgentType?: string,
   editingAgentId?: string,
   contentLanguage = 'en'
 ): CustomAgent[] => {
@@ -47,7 +35,7 @@ export const filterCollaborationAgentOptions = (
         return false
       }
 
-      return isCollaborationAgentAllowed(agent, currentAgentType)
+      return true
     })
     .sort((left, right) =>
       getLocalizedValue(left.name, contentLanguage)

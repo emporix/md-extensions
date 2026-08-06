@@ -48,9 +48,7 @@ export const SelfHostedAuthSection: React.FC<SelfHostedAuthSectionProps> = ({
   const oauthOptions = useMemo(
     () =>
       oauths
-        .filter(
-          (oauth) => oauth.enabled !== false || oauth.id === oauthId
-        )
+        .filter((oauth) => oauth.enabled !== false || oauth.id === oauthId)
         .map((oauth) => ({
           label: getOAuthDisplayName(oauth),
           value: oauth.id,
@@ -124,9 +122,7 @@ export const SelfHostedAuthSection: React.FC<SelfHostedAuthSectionProps> = ({
           <Dropdown
             value={oauthId || null}
             options={oauthOptions}
-            onChange={(event) =>
-              onFieldChange('oauthId', event.value ?? '')
-            }
+            onChange={(event) => onFieldChange('oauthId', event.value ?? '')}
             className={`w-full${showValidation && !oauthId.trim() ? ' p-invalid' : ''}`}
             placeholder={
               oauthsLoading ? t('loading_oauths') : t('select_oauth')

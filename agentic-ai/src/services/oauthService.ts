@@ -7,9 +7,7 @@ const getApiClient = (appState: AppState): ApiClient => new ApiClient(appState)
 
 export const getOAuths = async (appState: AppState): Promise<OAuth[]> => {
   const api = getApiClient(appState)
-  return await api.get<OAuth[]>(
-    `/ai-service/${appState.tenant}/agentic/oauths`
-  )
+  return await api.get<OAuth[]>(`/ai-service/${appState.tenant}/agentic/oauths`)
 }
 
 export const upsertOAuth = async (

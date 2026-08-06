@@ -61,6 +61,34 @@ describe('extractInitialMessageFromLog', () => {
     expect(result).toBe('What is the weather today?')
   })
 
+  it('should extract message from routed Slack inbound log', () => {
+    const messages: LogMessage[] = [
+      {
+        severity: 'INFO',
+        message:
+          'Processing routed Slack message user=U09JCUVGXL3 channel=C0BL5DJAYSH message=what is sum of 1+1',
+        timestamp: '2024-01-01T00:00:01Z',
+        agentId: 'slack-agent',
+      },
+    ]
+
+    expect(extractInitialMessageFromLog(messages)).toBe('what is sum of 1+1')
+  })
+
+  it('should extract message from Teams inbound log', () => {
+    const messages: LogMessage[] = [
+      {
+        severity: 'INFO',
+        message:
+          "Processing Teams message for conversation 'order-eon444' from user: s.mendla, message: hello there",
+        timestamp: '2024-01-01T00:00:01Z',
+        agentId: 'teams-agent',
+      },
+    ]
+
+    expect(extractInitialMessageFromLog(messages)).toBe('hello there')
+  })
+
   it('should return undefined when no message matches the patterns', () => {
     const messages: LogMessage[] = [
       {
@@ -155,6 +183,75 @@ describe('extractResponseFromLog', () => {
     const result = extractResponseFromLog(messages)
 
     expect(result).toBe('Your order has been processed.')
+  })
+
+  it('should extract response from routed Slack success log', () => {
+    const messages: LogMessage[] = [
+      {
+        severity: 'INFO',
+        message:
+          'Slack routed message sent successfully (channel=C0BL5DJAYSH, message=The sum of 1 + 1 is 2.)',
+        timestamp: '2024-01-01T00:00:01Z',
+        agentId: 'slack-agent',
+      },
+    ]
+
+    expect(extractResponseFromLog(messages)).toBe('The sum of 1 + 1 is 2.')
+  })
+
+  it('should extract response from Teams success log', () => {
+    const messages: LogMessage[] = [
+      {
+        severity: 'INFO',
+        message:
+          "Teams message sent successfully (conversation='order-eon444', message=Hello from Teams)",
+        timestamp: '2024-01-01T00:00:01Z',
+        agentId: 'teams-agent',
+      },
+    ]
+
+    expect(extractResponseFromLog(messages)).toBe('Hello from Teams')
+  })
+
+  it('should extract the last matching response when multiple response lines exist', () => {
+    const messages: LogMessage[] = [
+      {
+        severity: 'INFO',
+        message: 'Agent final response: Old reply from retry',
+        timestamp: '2024-01-01T00:00:01Z',
+        agentId: 'slack-agent',
+      },
+      {
+        severity: 'INFO',
+        message:
+          'Slack routed message sent successfully (channel=C0BL5DJAYSH, message=Latest reply)',
+        timestamp: '2024-01-01T00:00:02Z',
+        agentId: 'slack-agent',
+      },
+    ]
+
+    expect(extractResponseFromLog(messages)).toBe('Latest reply')
+  })
+
+  it('should extract the first matching inbound message when multiple inbound lines exist', () => {
+    const messages: LogMessage[] = [
+      {
+        severity: 'INFO',
+        message:
+          'Processing routed Slack message user=U123 channel=C456 message=first question',
+        timestamp: '2024-01-01T00:00:01Z',
+        agentId: 'slack-agent',
+      },
+      {
+        severity: 'INFO',
+        message:
+          'Processing routed Slack message user=U123 channel=C456 message=second question',
+        timestamp: '2024-01-01T00:00:02Z',
+        agentId: 'slack-agent',
+      },
+    ]
+
+    expect(extractInitialMessageFromLog(messages)).toBe('first question')
   })
 
   it('should return undefined when no message matches the patterns', () => {
