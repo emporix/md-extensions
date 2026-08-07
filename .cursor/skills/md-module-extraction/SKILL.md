@@ -84,8 +84,9 @@ Key checks: `strictPort: true`, `"dev": "vite --mode dev"`, `VITE_API_URL` (not 
 
 - `tsconfig.app.json` is missing `"exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]`, so copied helper tests break `typecheck`.
 - `.gitignore` is missing the `.env` / `!.env.example` rules the aligned remotes use — the bare `.env` gets committed otherwise.
-- `scripts/ensure-cors-origin.mjs` (template-only) **prompts on a TTY and exits 1 headless**. Every `VITE_DASHBOARD_ORIGIN` in `.env.dev|stage|prod` must already be in `vite.config.ts` `corsOrigins`, or CI fails. Verify with `node scripts/ensure-cors-origin.mjs --mode <m> < /dev/null` for all three modes.
-- `.env.stage` ships `VITE_DASHBOARD_ORIGIN=https://admin.emporix.io`; it should be the stage origin.
+- **CORS — pick one scheme, deliberately.** The template gates builds on `scripts/ensure-cors-origin.mjs` + a single `VITE_DASHBOARD_ORIGIN` per env; the aligned remotes instead hardcode a multi-origin `corsOrigins` array in `vite.config.ts` and have no such script. These are mutually exclusive, and following "align with the aligned remote" and "verify the script" literally at the same time is impossible.
+  - **Keeping the script** (what `brands` did): every `VITE_DASHBOARD_ORIGIN` in `.env.dev|stage|prod` must already be in `corsOrigins`, or CI fails — it prompts on a TTY and **exits 1 headless**. Verify with `node scripts/ensure-cors-origin.mjs --mode <m> < /dev/null` for all three modes. Also fix `.env.stage`, which ships the prod origin (`https://admin.emporix.io`).
+  - **Dropping it** (what `customer-groups` does): delete the script, remove it from the `build:*` scripts, and keep the hardcoded multi-origin array.
 - Delete the placeholder trio (`context/ExtensionContext.tsx`, `pages/List.tsx`, `pages/Detail.tsx`) plus `models/Product.model.ts` and `helpers/localized.helpers.ts` when the real provider stack and pages land — they reference the 3-field template AppState and will keep `typecheck` red.
 - Drop unused template deps (`chart.js`, `quill`) unless the module actually needs them.
 
@@ -116,9 +117,30 @@ Always: rewrite PrimeReact → CL; no `primereact` deps/CSS; replace `useTenant(
 
 ## Phase 2b — Remote wiring
 
-Provider stack (outer → inner) — see playbook §4 for full template.
+Provider stack, outer → inner. **Copy all seven** unless you can show the module needs none of a provider's data — a verification run silently shipped five and lost feature toggles and site scoping:
 
-Sync: `i18n.changeLanguage(appState.language)` in `RemoteComponent`.
+```
+ToastProvider (CL)
+ └ DashboardProvider          appState from the host
+    └ PermissionsProvider     fetches IAM access controls itself (never via AppState)
+       └ FeatureTogglesProvider
+          └ ConfigurationProvider   languages/currencies/contentLanguage (+ table config)
+             └ SitesProvider
+                └ UIBlockerProvider
+                   └ HashRouter → Routes → {Module}.module (RefreshValuesProvider + Outlet)
+```
+
+`RemoteComponent` must also: import `@emporix/component-library/styles` **once**, call `useApiCredentials(appState.tenant, appState.token)`, sync `i18n.changeLanguage(appState.language)`, and **export `RemoteComponent` both named and default** (see the 2026-08-07 decisions-log row — default-only breaks the host's `loadRemoteModule`).
+
+### CL API deltas that bite during the port
+
+| CL component | Delta from MD |
+|--------------|---------------|
+| `ConfirmBox` | `message` is **required**; MD's local one took `title` only. Supply a real message — do not just repeat the title. |
+| `Tabs` | **No per-tab `disabled`.** MD greys out tabs (e.g. Media before first save). Hiding the tab instead is a UX change — confirm with the user, or render the tab with disabled content. |
+| `Checkbox` | No `label` prop — render your own `<label htmlFor>`. |
+| `DataTable` | Row actions come from the `rowActions` prop, not a column. If MD let users toggle an "actions" column via `TableExtensions`, that column no longer exists to toggle. |
+| — | No `Sidebar`, no `InputSwitch`. |
 
 ## Phase 3 — MD host wiring (hard gate)
 

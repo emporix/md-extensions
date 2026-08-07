@@ -51,7 +51,7 @@ Paths below are relative to a playbook-aligned remote (historically `users-and-g
 |-----------|------|------|
 | `HeaderSection` | `HeaderSection.tsx` | Page title, back, actions |
 | `BackButton` | Prefer CL ≥ 2.2.0 — **import directly** | Used by HeaderSection |
-| `SectionBox` | Prefer CL ≥ 2.3.0 — **import directly** | Named section panel (do not copy locally; `brands` dropped its copy) |
+| `SectionBox` | Prefer CL ≥ 2.3.0 — **import directly** | Named section panel (do not copy locally; `brands` dropped its copy). **`EmptyTable.tsx` still imports `./SectionBox` — patch that import to CL when you copy it**, otherwise "copy Tier 1 verbatim" and "never copy SectionBox locally" contradict each other. |
 | `FormGrid` | `FormGrid.tsx` | Form layout |
 | `FormGridRow` | `FormGridRow.tsx` | Form row |
 | `EmptyContent` | `EmptyContent.tsx` | Empty state + optional CTA |
@@ -70,6 +70,23 @@ Paths below are relative to a playbook-aligned remote (historically `users-and-g
 | `AssetsViewer` / `MediaAssetUpload` | `brands/src/components/shared/` | Media grid + upload on CL `FileUpload`/`ProgressBar` (CL ≥ 2.4.0). Asset tiles need a host route — see the `brands` row in the registry. |
 
 Also copy matching `*.module.scss` / `*.scss` next to each component.
+
+### Copying Tier 1 is not verbatim — fix these every time
+
+A second independent run of the Brands migration (Aug 2026) hit all of these:
+
+- **`EmptyTable.tsx`** imports `./SectionBox` — repoint at CL (above).
+- **`AssetsViewer.tsx` / `MediaAssetUpload.tsx`** carry MD global CSS variables (`--grey-*`, `--blue-*`, `var(--red)`) — i.e. the copy sources violate the anti-pattern grep in `reference.md`. Map them to CL tokens (see `component-library` `styling` rule; `src/styles/index.scss` is the token source of truth) or a local SCSS variable.
+- **`global.ts` is not a complete set.** Copied shells reference keys it lacks (`global.toasts.errorUploadAssets`, `global.fieldRequired`, `global.tableExtensions.*`, `global.more`, `global.action`). Grep the shells you copied for `t('global.` and add every missing key to **both** locales.
+- **Ported shared components carry another module's i18n namespace.** `AssetsViewer`/`MediaAssetUpload` read `categories.media.*` — keys owned by MD's Categories module. Re-home them under **your module's** namespace (`{module}.media.*`), not a new top-level one, so the remote owns all its keys.
+
+### Forms: use `react-hook-form`
+
+**Do not port MD's `hooks/useForm.ts`.** It is coupled to `NavigationConfirmProvider`, is absent from every aligned remote, and is not in this inventory — a verification run wasted effort hand-reconstructing it from call sites. `customer-groups` and `brands` both use **`react-hook-form`** (already a dependency): `useForm` + `Controller` for field wiring, `formState.isDirty` / `isValid` for save/discard enablement, `reset(mapEntityToForm(entity))` after load and after save.
+
+### Page and file naming
+
+Follow the aligned remotes so diffs stay comparable: `pages/{Entity}.page.tsx` for a detail/edit screen and `pages/{Entities}.page.tsx` for a list (e.g. `Brand.page.tsx`, `Brands.page.tsx`) — **not** `BrandAddEdit.page.tsx` / `BrandsList.page.tsx`. Table components live in `components/{module}/{Entities}Table.tsx`, and column definitions in `hooks/use{Entities}TableColumns.tsx`.
 
 **i18n:** copy `src/translations/{en,de}/global.ts` — required by delete confirm, pagination, toasts, table actions.
 

@@ -41,7 +41,7 @@ Then rename federation `name`, scrub leftovers, pin a unique port (see [MIGRATED
 | Expose | `./RemoteComponent` → `src/RemoteComponent.tsx` |
 | Router | `HashRouter` inside remote; host uses `BrowserRouter` |
 | Env var | `VITE_{MODULE_SCREAMING_SNAKE}_URL` → `.../assets/remoteEntry.js` |
-| Shared deps | `react`, `react-dom`, `react-router`, `react-i18next`, `chart.js`, `quill` — versions must match host |
+| Shared deps | `react`, `react-dom`, `react-router`, `react-i18next` — versions must match host. **Do not add `chart.js` / `quill`**: they were template-era entries, the aligned remotes do not share them, and CL now bundles what needs them. Sharing a dep the remote does not import is dead weight. |
 
 **Never** use generic federation names like `extension`.
 
@@ -59,20 +59,25 @@ Host passes AppState via `ExternalModule` → `DynamicComponent`.
 
 ## 4. Provider stack template
 
-Order (outer → inner):
+Order (outer → inner). **All seven are the default — copy them all.** Omit one only when you can show the module needs none of its data, and say so in the PR:
 
 ```
 ToastProvider (CL)
-→ DashboardProvider
-→ PermissionsProvider
-→ ConfigurationProvider (if languages/currencies)
+→ DashboardProvider          appState from the host
+→ PermissionsProvider        fetches IAM access controls itself (never via AppState)
+→ FeatureTogglesProvider
+→ ConfigurationProvider      languages / currencies / contentLanguage (+ table config)
 → SitesProvider
-→ UIBlockerProvider (optional)
+→ UIBlockerProvider
 → HashRouter + routes
-→ RefreshValuesProvider (module shell / Outlet)
+→ RefreshValuesProvider      (module shell / Outlet)
 ```
 
-Reference: `md-extensions/users-and-groups/src/RemoteComponent.tsx`, `md-extensions/products/src/RemoteComponent.tsx`.
+`RemoteComponent` must also import `@emporix/component-library/styles` once, call `useApiCredentials(tenant, token)`, sync `i18n.changeLanguage(appState.language)`, and export `RemoteComponent` **named + default**.
+
+> This list previously omitted `FeatureTogglesProvider` and hedged `ConfigurationProvider`/`UIBlockerProvider` as conditional. A from-the-docs re-run duly shipped five providers, losing feature toggles and site scoping — with typecheck, lint and build all green, because nothing fails until a screen reads that context. Treat trimming as a decision that needs evidence.
+
+Reference: `md-extensions/brands/src/RemoteComponent.tsx` (all seven), `md-extensions/users-and-groups/src/RemoteComponent.tsx`.
 
 ## 5. Hybrid composite policy
 
@@ -240,3 +245,8 @@ Do **not** claim "identical to U&G" after a reduce — `diff -rq` will (and shou
 | 2026-08-07 | Remotes must expose **named + default** `RemoteComponent` (`export { RemoteComponent }; export default RemoteComponent`) so Vite federation returns `{ default: Component }` and MD `loadRemoteModule` can keep `return module.default`. Default-only exposes unwrap to a bare function → host NotFound/404. U&G worked by accident (`jsxRuntimeExports as j` in the expose chunk). | Host dual-shape unwrap (`module?.default ?? module`); relying on accidental jsx-runtime named leaks | All remotes (fixed first on customer-groups) |
 | 2026-08-07 | Group details `isDirty` remount guard: skip `reset()` only when `initializedGroupKeyRef` is still `null` (tab remount with FormProvider surviving). Always reset when the group id changes so dirty edits cannot leak across routes | Broad `if (isDirty) return` that also skipped reset on A→B navigation | customer-groups + users-and-groups |
 | 2026-08-07 | Audit changelog paginator: custom control + CL `Dropdown` (no `primereact/paginator`); restore lean U&G `InputField` in customer-groups shared/ | Leaving PrimeReact in derived remotes; MD ProductDataProvider InputField | customer-groups (+ U&G sync) |
+| 2026-08-07 | Re-run a finished migration from the docs alone (fresh agent, no session context) and diff against the real result — divergences are documentation defects, not agent error. The Brands re-run produced 84 files vs 100 and silently dropped two providers | Assume the docs are sufficient because the migration succeeded once | All modules |
+| 2026-08-07 | Name the form library explicitly: `react-hook-form`, never MD's `useForm` (NavigationConfirmProvider-coupled). Absent that, a re-run hand-reconstructed the MD hook from call sites | Leave the form approach implicit in the aligned remotes | All remotes |
+| 2026-08-07 | Spell out the full seven-provider stack and require justification to omit any — a re-run shipped five, losing feature toggles and site scoping with everything still green | "See playbook §4 for the template" | All remotes |
+| 2026-08-07 | Treat Tier 1 as copy-then-fix, not verbatim: `EmptyTable` imports a local `SectionBox`, the media shells carry MD CSS vars, `global.ts` lacks keys the shells use, and ported shells reference another module's i18n namespace | "Copy entire src/components/shared/" | All remotes |
+| 2026-08-07 | Keep CL's documented CSS-variable list a pointer to `src/styles/index.scss`, never a copy — the stale copy listed 11 of 56 tokens and a wrong `--color-primary`, so a re-run hardcoded a hex for a token that existed | Inline the token table in the rule | component-library |

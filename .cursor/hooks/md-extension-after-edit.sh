@@ -94,10 +94,30 @@ if base in ("SectionBox.tsx", "SectionBox.module.scss", "SectionBox.scss"):
         "Local SectionBox copy — component-library >= 2.3.0 exports SectionBox/SectionTitle; import it instead."
     )
 
-if re.search(r"from ['\"].*hooks/useForm['\"]", text):
+if re.search(r"from ['\"].*hooks/useForm['\"]", text) or base == "useForm.ts":
     issues.append(
-        "MD useForm is coupled to NavigationConfirmProvider — use react-hook-form, as customer-groups/brands do."
+        "MD useForm is coupled to NavigationConfirmProvider — use react-hook-form, as customer-groups/brands do. "
+        "Do not port or reconstruct it."
     )
+
+if base == "RemoteComponent.tsx":
+    if "export { RemoteComponent }" not in text:
+        issues.append(
+            "RemoteComponent must be exported named AND default — a default-only expose unwraps to a bare "
+            "function and the host's loadRemoteModule (module.default) gets undefined."
+        )
+    missing = [
+        p for p in (
+            "ToastProvider", "DashboardProvider", "PermissionsProvider", "FeatureTogglesProvider",
+            "ConfigurationProvider", "SitesProvider", "UIBlockerProvider",
+        )
+        if p not in text
+    ]
+    if missing:
+        issues.append(
+            "Provider stack is missing: " + ", ".join(missing)
+            + ". Copy all seven unless the module provably needs none of a provider's data (skill Phase 2b)."
+        )
 
 if re.search(r"window\.location\.(assign|href)", text):
     issues.append(
