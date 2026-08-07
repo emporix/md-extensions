@@ -18,7 +18,7 @@ Living list of Management Dashboard modules extracted into `md-extensions` under
 | Folder | Federation `name` | Ticket | Mode | Local port | CL pin (at migrate) | Notes / reusable deltas |
 |--------|-------------------|--------|------|------------|---------------------|-------------------------|
 | `users-and-groups` | `usersAndGroups` | COP-5598 | A (post-cleanup; was B) | `5173` | ≥ 2.2.0 | Original pilot. Full employee users + groups. Tier 1 shared UI / providers / hooks originated here. |
-| `customer-groups` | `customerGroups` | COP-6096 | A | `5174` | `2.4.1` (migrate pinned ≥2.2.0) | Derived from U&G (customer groups only). Company field (`b2b.legalEntityId`); CL ConfirmBox/BackButton/DateValue/ProgressSpinner direct imports; `vite --mode dev`. Expose ships named+default `RemoteComponent` so MD `return module.default` works (2026-08-07). |
+| `customer-groups` | `customerGroups` | COP-6096 | A | `5174` | `2.4.2` (migrate pinned ≥2.2.0) | Derived from U&G (customer groups only). Company field (`b2b.legalEntityId`); CL ConfirmBox/BackButton/DateValue/ProgressSpinner direct imports; `vite --mode dev`. Expose ships named+default `RemoteComponent` so MD `return module.default` works (2026-08-07). |
 
 **Next free local port:** `5175` (update when claiming).
 
