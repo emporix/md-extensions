@@ -1,4 +1,7 @@
-import type { ChangelogRelatedItem } from '../../models/Changelog.model'
+import type {
+  ChangelogPathChange,
+  ChangelogRelatedItem,
+} from '../../models/Changelog.model'
 import { ChangelogChangeType } from './changelog.helpers'
 
 export const getOtherRelatedItems = (
@@ -34,8 +37,28 @@ export const getChangeTypeKey = (type: string): string => {
   return ChangelogChangeType.toUi(type)
 }
 
-export const formatChangelogValue = (value: unknown): string | null => {
+export const isChangelogValueEmpty = (value: unknown): boolean => {
   if (value === null || value === undefined) {
+    return true
+  }
+
+  if (typeof value === 'string') {
+    return value === ''
+  }
+
+  if (Array.isArray(value)) {
+    return value.length === 0
+  }
+
+  if (typeof value === 'object') {
+    return Object.keys(value).length === 0
+  }
+
+  return false
+}
+
+export const formatChangelogValue = (value: unknown): string | null => {
+  if (isChangelogValueEmpty(value)) {
     return null
   }
 
@@ -44,4 +67,23 @@ export const formatChangelogValue = (value: unknown): string | null => {
   }
 
   return String(value)
+}
+
+export const filterMeaningfulChangelogPaths = (
+  paths: Record<string, ChangelogPathChange>
+): Record<string, ChangelogPathChange> => {
+  return Object.entries(paths).reduce<Record<string, ChangelogPathChange>>(
+    (acc, [field, change]) => {
+      if (
+        isChangelogValueEmpty(change.before) &&
+        isChangelogValueEmpty(change.after)
+      ) {
+        return acc
+      }
+
+      acc[field] = change
+      return acc
+    },
+    {}
+  )
 }

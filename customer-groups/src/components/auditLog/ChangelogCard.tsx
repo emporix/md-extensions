@@ -1,9 +1,11 @@
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import type { ChangelogItem } from '../../models/Changelog.model'
 import { getEntityDetailPath } from '../../configs/entityLinkConfig'
 import {
   buildRelatedEntityBadgeLabel,
+  filterMeaningfulChangelogPaths,
   getOtherRelatedItems,
 } from '../../helpers/auditLog/entityChangelog.helpers'
 import DateValue from '../shared/DateValue'
@@ -45,8 +47,13 @@ const ChangelogCard = ({
       ? getEntityTypeLabel(otherRelatedItem.entity ?? 'unknown')
       : undefined
   )
-  const isUpdate = item.type === 'update'
-  const hasPaths = Object.keys(item.paths ?? {}).length > 0
+  const meaningfulPaths = useMemo(
+    () => filterMeaningfulChangelogPaths(item.paths ?? {}),
+    [item.paths]
+  )
+  const showPathsTable =
+    (item.type === 'create' || item.type === 'update') &&
+    Object.keys(meaningfulPaths).length > 0
 
   const entityBadge = (
     <span className={styles.entityBadge}>{badgeLabel.toUpperCase()}</span>
@@ -83,9 +90,9 @@ const ChangelogCard = ({
           <ChangelogChangeTypeBadge type={item.type} variant="card" />
         </div>
       </header>
-      {isUpdate && hasPaths && (
+      {showPathsTable && (
         <div className={styles.body}>
-          <ChangelogPathsTable paths={item.paths ?? {}} />
+          <ChangelogPathsTable paths={meaningfulPaths} />
         </div>
       )}
     </article>

@@ -4,9 +4,21 @@ type ChangelogActorCellProps = {
   readonly actor: string
 }
 
+const ACTOR_BADGE_CLASS: Record<string, string> = {
+  system: styles.badgeSystem,
+  external: styles.badgeExternal,
+  unknown: styles.badgeUnknown,
+}
+
 const ChangelogActorCell = ({ actor }: ChangelogActorCellProps) => {
-  if (actor.toLowerCase() === 'system') {
-    return <span className={styles.systemBadge}>{actor.toUpperCase()}</span>
+  const badgeClass = ACTOR_BADGE_CLASS[actor.toLowerCase()]
+
+  if (badgeClass) {
+    return (
+      <span className={`${styles.actorBadge} ${badgeClass}`}>
+        {actor.toUpperCase()}
+      </span>
+    )
   }
 
   return <span className={styles.actorName}>{actor}</span>

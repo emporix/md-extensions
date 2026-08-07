@@ -3,7 +3,6 @@ import FormGridRow from '../../components/shared/FormGridRow'
 import { Controller, useFormContext } from 'react-hook-form'
 import FormGrid from '../../components/shared/FormGrid'
 import { useTranslation } from 'react-i18next'
-import { FiInfo } from 'react-icons/fi'
 import { GroupFormFields } from '../../helpers/groups/groupForm.helpers'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { EmployeeDomains } from '../../configs/accessControls'
@@ -16,7 +15,7 @@ import { useConfigurationApi } from '../../hooks/api/configuration'
 import { useCustomerManagementApi } from '../../hooks/api/customerManagement'
 import SectionBox from '../../components/shared/SectionBox'
 import LocalizedInput from '../../components/shared/LocalizedInput'
-import inputFieldStyles from '../../components/shared/InputField.module.scss'
+import InputField from '../../components/shared/InputField'
 import styles from './GroupDetailsGeneralForm.module.scss'
 
 type GroupDetailsGeneralFormProps = {
@@ -178,10 +177,10 @@ const GroupDetailsGeneralForm = ({ groupId }: GroupDetailsGeneralFormProps) => {
       </FormGridRow>
       <FormGridRow>
         {groupType === GroupUserTypes.CUSTOMER && (
-          <div className={`${inputFieldStyles.field} ${styles.companyField}`}>
-            <label className={inputFieldStyles.label}>
-              {t('usersAndGroups.groups.forms.group.company')}
-            </label>
+          <InputField
+            className={styles.companyField}
+            label={t('usersAndGroups.groups.forms.group.company')}
+          >
             <Controller
               name="b2b.legalEntityId"
               control={control}
@@ -203,31 +202,21 @@ const GroupDetailsGeneralForm = ({ groupId }: GroupDetailsGeneralFormProps) => {
                 />
               )}
             />
-          </div>
+          </InputField>
         )}
-        <div
-          className={`${inputFieldStyles.field} ${styles.restrictionsField}`}
+        <InputField
+          className={styles.restrictionsField}
+          label={t(
+            isSyncEnabled
+              ? 'usersAndGroups.groups.forms.group.sites'
+              : 'usersAndGroups.groups.forms.group.restrictions'
+          )}
+          tooltip={
+            restrictions.length === 0
+              ? t('usersAndGroups.groups.forms.group.tooltip.restrictionsEmpty')
+              : undefined
+          }
         >
-          <label className={inputFieldStyles.label}>
-            {t(
-              isSyncEnabled
-                ? 'usersAndGroups.groups.forms.group.sites'
-                : 'usersAndGroups.groups.forms.group.restrictions'
-            )}
-            {restrictions.length === 0 && (
-              <span
-                className={inputFieldStyles.tooltipIcon}
-                title={t(
-                  'usersAndGroups.groups.forms.group.tooltip.restrictionsEmpty'
-                )}
-                aria-label={t(
-                  'usersAndGroups.groups.forms.group.tooltip.restrictionsEmpty'
-                )}
-              >
-                <FiInfo aria-hidden />
-              </span>
-            )}
-          </label>
           <Controller
             name="restrictions"
             control={control}
@@ -253,18 +242,18 @@ const GroupDetailsGeneralForm = ({ groupId }: GroupDetailsGeneralFormProps) => {
               />
             )}
           />
-        </div>
+        </InputField>
       </FormGridRow>
       {groupType === GroupUserTypes.EMPLOYEE && (
         <FormGridRow>
-          <div className={`${inputFieldStyles.field} ${styles.rolesField}`}>
-            <label className={inputFieldStyles.label}>
-              {t('usersAndGroups.groups.forms.group.role.title')}
-            </label>
+          <InputField
+            className={styles.rolesField}
+            label={t('usersAndGroups.groups.forms.group.role.title')}
+          >
             <SectionBox>
               <GroupDetailsGeneralFormRoles />
             </SectionBox>
-          </div>
+          </InputField>
         </FormGridRow>
       )}
     </FormGrid>

@@ -3,9 +3,9 @@ import {
   DataTable,
   PrimaryButton,
 } from '@emporix/component-library'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFormContext } from 'react-hook-form'
+import { useController, useFormContext } from 'react-hook-form'
 import { GroupFormFields } from '../../helpers/groups/groupForm.helpers'
 import { AccessControl } from '../../models/Permissions.model'
 import TableActions from '../../components/shared/TableActions'
@@ -30,8 +30,22 @@ import styles from './AccessControlsTable.module.scss'
 
 const AccessControlsTable = () => {
   const { t } = useTranslation()
-  const { setValue, watch } = useFormContext<GroupFormFields>()
-  const formAccessControls = watch('accessControls') ?? []
+  const { control } = useFormContext<GroupFormFields>()
+  // useController marks the field dirty via field.onChange (setValue alone was
+  // not reliably flipping formState.isDirty for this array field).
+  const { field } = useController({
+    name: 'accessControls',
+    control,
+    defaultValue: [],
+  })
+  const formAccessControls = field.value ?? []
+  const onAccessControlsChangeRef = useRef(field.onChange)
+  onAccessControlsChangeRef.current = field.onChange
+
+  const setAccessControls = useCallback((next: string[]) => {
+    onAccessControlsChangeRef.current(next)
+  }, [])
+
   const { columns } = useDomainsColumns()
   const { groupType, isPredefinedGroup } = useGroupData()
   const { activeRoleType, accessControlsByRole } = useGroupRole()
@@ -49,28 +63,27 @@ const AccessControlsTable = () => {
 
   const handleRemove = useCallback(
     (accessControlId: string) => {
-      const updated = formAccessControls.filter((id) => id !== accessControlId)
-      setValue('accessControls', updated, { shouldDirty: true })
+      setAccessControls(
+        formAccessControls.filter((id) => id !== accessControlId)
+      )
     },
-    [formAccessControls, setValue]
+    [formAccessControls, setAccessControls]
   )
 
   const handleRemoveDomain = useCallback(
     (domainGroup: DomainGroup) => {
       const idsToRemove = new Set(domainGroup.accessControls.map((ac) => ac.id))
-      const updated = formAccessControls.filter((id) => !idsToRemove.has(id))
-      setValue('accessControls', updated, { shouldDirty: true })
+      setAccessControls(formAccessControls.filter((id) => !idsToRemove.has(id)))
     },
-    [formAccessControls, setValue]
+    [formAccessControls, setAccessControls]
   )
 
   const handleAssign = useCallback(
     (accessControls: AccessControl[]) => {
       const newIds = accessControls.map((ac) => ac.id)
-      const merged = [...new Set([...formAccessControls, ...newIds])]
-      setValue('accessControls', merged, { shouldDirty: true })
+      setAccessControls([...new Set([...formAccessControls, ...newIds])])
     },
-    [formAccessControls]
+    [formAccessControls, setAccessControls]
   )
 
   const actionsTemplate = useCallback(
