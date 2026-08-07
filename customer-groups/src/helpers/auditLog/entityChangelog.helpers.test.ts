@@ -15,6 +15,7 @@ vi.mock('@emporix/api-calls', () => ({
 
 import {
   buildRelatedEntityBadgeLabel,
+  filterMeaningfulChangelogPaths,
   formatChangelogValue,
   getChangeTypeKey,
   getOtherRelatedItems,
@@ -70,9 +71,12 @@ describe('getChangeTypeKey', () => {
 })
 
 describe('formatChangelogValue', () => {
-  it('returns null for null and undefined values', () => {
+  it('returns null for null, undefined, and other empty values', () => {
     expect(formatChangelogValue(null)).toBeNull()
     expect(formatChangelogValue(undefined)).toBeNull()
+    expect(formatChangelogValue('')).toBeNull()
+    expect(formatChangelogValue([])).toBeNull()
+    expect(formatChangelogValue({})).toBeNull()
   })
 
   it('stringifies object values', () => {
@@ -83,5 +87,33 @@ describe('formatChangelogValue', () => {
     expect(formatChangelogValue('active')).toBe('active')
     expect(formatChangelogValue(42)).toBe('42')
     expect(formatChangelogValue(false)).toBe('false')
+  })
+})
+
+describe('filterMeaningfulChangelogPaths', () => {
+  it('drops paths where both before and after are empty', () => {
+    expect(
+      filterMeaningfulChangelogPaths({
+        cleared: { before: {}, after: null },
+        blank: { before: '', after: [] },
+        kept: { before: 'a', after: 'b' },
+      })
+    ).toEqual({
+      kept: { before: 'a', after: 'b' },
+    })
+  })
+
+  it('keeps empty-to-value, value-to-empty, and value-to-value changes', () => {
+    expect(
+      filterMeaningfulChangelogPaths({
+        created: { before: null, after: 'new' },
+        cleared: { before: 'old', after: '' },
+        updated: { before: 'a', after: 'b' },
+      })
+    ).toEqual({
+      created: { before: null, after: 'new' },
+      cleared: { before: 'old', after: '' },
+      updated: { before: 'a', after: 'b' },
+    })
   })
 })
