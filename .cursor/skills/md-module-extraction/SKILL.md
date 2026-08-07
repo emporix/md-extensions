@@ -30,14 +30,36 @@ Step-by-step workflow for porting an MD module to `md-extensions`.
 
 ## Pre-flight
 
+0. **Settle the Jira key before the first commit.** **Ask the user whether a ticket already exists** for this module. If it does, ask for the **number or URL** and use that. Only create one — as a child of the COP-5597 epic — if they confirm there is none, and confirm the summary with them first. **Never invent or assume a key**, and do not silently fall back to the epic. The key goes in the branch name *and* every commit, so getting it late means rewriting history.
+
+   Then read **`git-workflow`**: branches are `feature/{KEY}-###-kebab-description`, commits are `{KEY}-### Sentence case description` (≤ ~72 chars), and branches are **squashed** before merging to `master`.
 1. Confirm scope: which routes **move** vs **stay** in MD; list **sibling consumers** that import the module folder.
 2. List MD files those consumers still need — cleanup must retain them (and re-home any shared i18n keys).
 3. Pick federation `name` = MD route `key` (camelCase).
 4. Pick a **unique local Vite port** (claim from `MIGRATED_MODULES.md` "Next free local port").
 5. Run audit greps (playbook §7 + below).
-6. Verify CL exports every PrimeReact / MdDataTable replacement; prefer **CL ≥ 2.2.0** for `ConfirmBox` / `BackButton` / `DateValue`.
+6. Verify CL exports every PrimeReact / MdDataTable replacement; prefer **CL ≥ 2.2.0** for `ConfirmBox` / `BackButton` / `DateValue`, **CL ≥ 2.3.0** for `SectionBox`, **CL ≥ 2.4.0** for `Editor` / `FileUpload` / `ProgressBar`.
 7. Align `@emporix/api-calls` semver with call signatures used by the module.
 8. Decide Mode A (permanent `url:`) vs Mode B (GateComponent + toggle). Prefer Mode A when there is no useful built-in fallback.
+9. **Feature-parity audit** and **CL widget-gap check** (below) — both belong *before* Phase 2, not before Phase 5.
+
+### Feature-parity audit
+
+Read the MD module's JSX end to end and list every **capability**, not just components. A file-by-file port can look complete while a user-visible feature silently disappears:
+
+| Look for | Why it gets missed |
+|----------|--------------------|
+| `TableExtensions` | Column visibility persisted under a config key (e.g. `ext_brands`). No playbook-aligned remote had it, so "matches customer-groups" ≠ parity. Needs the `ConfigurationProvider` table-config surface — copy from `brands`. |
+| Links to **host-owned routes** | e.g. media tiles opening `/media-assets/:id`. That route lives in MD, outside the remote's HashRouter, and AppState carries no navigation callback. Decide with the user: drop the link, or `window.location.assign` with a comment. |
+| Rich text / file upload / progress | Needs CL ≥ 2.4.0 — see the widget-gap check. |
+| Exact icon glyphs | MD uses primeicons classes (`pi pi-trash`). Swapping to react-icons silently changes the glyph (filled vs outline trash, etc.). The primeicons **font ships inside `@emporix/component-library/styles`**, so `pi pi-*` is usable without a primeicons dependency when exact parity matters. |
+| Fixed pixel sizing | MD sizes controls in px (34px is the house control height). Porting to `rem` makes them drift with root font size. |
+
+### CL widget-gap check
+
+If the module needs a PrimeReact widget CL does not export, **do not add `primereact` to the remote** and do not silently descope. Promote it to CL as Pattern B (skill `migrate-to-component-library`), release, then pin. CL already bundles `primereact`, so this costs consumers nothing.
+
+Known gaps: **no `Sidebar`, no `InputSwitch`, and `Checkbox` has no `label` prop.** `brands` worked around the first two using CL `Dialog` + `Checkbox` for `TableExtensions` — acceptable when function and persisted shape are preserved, but confirm the presentation change with the user.
 
 ```bash
 # Cross-module imports
@@ -57,6 +79,15 @@ Clone template into `md-extensions/`, absorb, rename federation `name` + ports +
 Key checks: `strictPort: true`, `"dev": "vite --mode dev"`, `VITE_API_URL` (not `BASE_URL`), published CL semver, no nested `.git`.
 
 **Scaffold parity check** — `diff -rq` vs playbook-aligned remotes; reconcile unexpected deltas before domain work.
+
+**Template gotchas** (the template lags the aligned remotes — fix these in Phase 0 or they surface later as confusing failures):
+
+- `tsconfig.app.json` is missing `"exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]`, so copied helper tests break `typecheck`.
+- `.gitignore` is missing the `.env` / `!.env.example` rules the aligned remotes use — the bare `.env` gets committed otherwise.
+- `scripts/ensure-cors-origin.mjs` (template-only) **prompts on a TTY and exits 1 headless**. Every `VITE_DASHBOARD_ORIGIN` in `.env.dev|stage|prod` must already be in `vite.config.ts` `corsOrigins`, or CI fails. Verify with `node scripts/ensure-cors-origin.mjs --mode <m> < /dev/null` for all three modes.
+- `.env.stage` ships `VITE_DASHBOARD_ORIGIN=https://admin.emporix.io`; it should be the stage origin.
+- Delete the placeholder trio (`context/ExtensionContext.tsx`, `pages/List.tsx`, `pages/Detail.tsx`) plus `models/Product.model.ts` and `helpers/localized.helpers.ts` when the real provider stack and pages land — they reference the 3-field template AppState and will keep `typecheck` red.
+- Drop unused template deps (`chart.js`, `quill`) unless the module actually needs them.
 
 ## Phase 1 — Tier 1 infrastructure
 
@@ -127,3 +158,18 @@ Create Hosting sites, register `.firebaserc` + `firebase.json`, copy workflow YA
 Bugbot + second model on full diff. Append 1–3 rows to playbook decisions log. Update this skill if steps were wrong.
 
 **Required registry update:** add/refresh row in `docs/MIGRATED_MODULES.md` + bump "Next free local port". Refresh `REUSABLE_FROM_USERS_AND_GROUPS.md` if Tier 1 inventory changed.
+
+## Phase 8 — PRs, merge order, release
+
+**Merge order is a hard gate.** The host PR deletes MD's built-in screens and points at the remote's URLs, so:
+
+1. Merge the **md-extensions** PR first and let `deploy-dev-stage` finish.
+2. Confirm the remote actually serves — `curl -o /dev/null -w '%{http_code}' https://emporix-{module}-develop.web.app/assets/remoteEntry.js` must return `200`. A green workflow only proves it deployed, not that the entry resolves.
+3. Only then merge the **management-dashboard** PR. Merged first, the module's menu entry 404s in every environment.
+4. Production needs a `{module}-*` tag to trigger `deploy-prod`.
+
+Cross-link the two PRs and state the order in the host PR body.
+
+Squash each branch before merge (`git-workflow`), keeping a `{KEY}-### …` subject.
+
+**Before requesting review, render the module.** Every gate in Phase 4 is structural — none of them prove the UI looks right. Run the remote standalone (`npm run dev`, tenant/token via the dev settings dialog) or open the PR preview URL. Visual regressions found here are cheap; found after the MD deletion merges, they are not.
