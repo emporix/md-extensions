@@ -89,6 +89,16 @@ Key checks: `strictPort: true`, `"dev": "vite --mode dev"`, `VITE_API_URL` (not 
   - **Dropping it** (what `customer-groups` does): delete the script, remove it from the `build:*` scripts, and keep the hardcoded multi-origin array.
 - Delete the placeholder trio (`context/ExtensionContext.tsx`, `pages/List.tsx`, `pages/Detail.tsx`) plus `models/Product.model.ts` and `helpers/localized.helpers.ts` when the real provider stack and pages land — they reference the 3-field template AppState and will keep `typecheck` red.
 - Drop unused template deps (`chart.js`, `quill`) unless the module actually needs them.
+- `scripts/customize-ai-rules-index.mjs` hardcodes the template's own domain in the generated directory map — `Domain types (AppState, Product, ApiError)`. Replace `Product` with your module's model. **This defect has already propagated into shipped remotes** (`customer-groups` still carries it), so do not treat a sibling remote's copy as clean.
+- The template `README.md` still documents `primereact` / `primeflex` as direct dependencies to remove — flatly contradicting "never add primereact to a remote". Rewrite the README from an aligned remote's rather than patching sentence by sentence.
+
+### `@emporix/api-calls` exports functions, not model types
+
+Its public entrypoint re-exports the **call functions** (`postFileAsset`, `getAssetsForId`, `fetchBasicConfiguration`, …) but **none of the model interfaces** — `Asset`, `MediaRefIdType`, `MediaAccess`, `RefId`, `Configuration`, `ColumnVisibility`, `TableConfiguration` are all unavailable to import.
+
+Declare them in your remote's `src/models/` (copy the shapes from MD), and keep them **structurally compatible with the call signatures** — e.g. Brands' `metadata` fields are required in api-calls, so a looser shared `Metadata` type will not be assignable. Prefer that over `as unknown as` casts at the call boundary.
+
+For table configuration, use the generic `updateSingleConfiguration(tenant, key, { key, value })` that MD uses, not the purpose-built `updateTableConfiguration` — MD's persisted shape is what existing saved preferences depend on.
 
 ## Phase 1 — Tier 1 infrastructure
 
@@ -114,6 +124,20 @@ When a UI component already lives in a prior remote:
 **Derived remote** (same domain, reduced scope — e.g. customer-groups from U&G): follow playbook §11. Strip leaf screens only; keep shared models/hooks; re-diff MD for subtype fields.
 
 Always: rewrite PrimeReact → CL; no `primereact` deps/CSS; replace `useTenant()` → `useDashboardContext().tenant`; Jest → Vitest; Hash-relative routes; `src/constants/paths.ts`.
+
+### Keep MD's exact icon glyphs — do this as a step, not a memory
+
+`primereact` components go, **`pi pi-*` icon classes stay**. The primeicons font ships inside `@emporix/component-library/styles`, so keeping them costs nothing and is the only way the port looks identical. Substituting a react-icons lookalike silently changes the shape (`BsTrashFill` is a *filled* bin; MD's `pi pi-trash` is an *outline* one).
+
+Run this against every screen you port, and carry each hit across verbatim:
+
+```bash
+rg -o "pi pi-[a-z-]+" "$(git -C ../management-dashboard rev-parse --show-toplevel)/src" 2>/dev/null | sort -u
+# or, when the MD source is already deleted:
+git -C ../management-dashboard show master:src/modules/{Module}.module.tsx | rg -o "pi pi-[a-z-]+" | sort -u
+```
+
+Only reach for `react-icons` where MD itself used it. Three independent re-runs of the Brands port each had to be corrected here — two silently swapped the glyph set, so treat it as a checklist item rather than something you will remember.
 
 ## Phase 2b — Remote wiring
 

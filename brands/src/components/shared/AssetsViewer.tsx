@@ -7,7 +7,6 @@ import {
   useToast,
 } from '@emporix/component-library'
 import {
-  BsDownload,
   BsFileEarmark,
   BsFileEarmarkText,
   BsFileExcel,
@@ -216,7 +215,7 @@ const AssetsViewer = ({
           disabled={selectedAssets.length < 1}
           onClick={downloadAssets}
         >
-          <BsDownload size={16} aria-hidden />
+          <i className="pi pi-download" aria-hidden />
           {`${t('global.download')} (${selectedAssets.length})`}
         </SecondaryButton>
       </div>

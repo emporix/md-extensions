@@ -79,6 +79,18 @@ A second independent run of the Brands migration (Aug 2026) hit all of these:
 - **`AssetsViewer.tsx` / `MediaAssetUpload.tsx`** carry MD global CSS variables (`--grey-*`, `--blue-*`, `var(--red)`) — i.e. the copy sources violate the anti-pattern grep in `reference.md`. Map them to CL tokens (see `component-library` `styling` rule; `src/styles/index.scss` is the token source of truth) or a local SCSS variable.
 - **`global.ts` is not a complete set.** Copied shells reference keys it lacks (`global.toasts.errorUploadAssets`, `global.fieldRequired`, `global.tableExtensions.*`, `global.more`, `global.action`). Grep the shells you copied for `t('global.` and add every missing key to **both** locales.
 - **Ported shared components carry another module's i18n namespace.** `AssetsViewer`/`MediaAssetUpload` read `categories.media.*` — keys owned by MD's Categories module. Re-home them under **your module's** namespace (`{module}.media.*`), not a new top-level one, so the remote owns all its keys.
+- **`global` keys the copied shells need, with the names to use** (invent nothing — a re-run guessed `global.tableExtensions.title` where the shipped remotes use `columns`):
+
+  ```
+  global.fieldRequired
+  global.tableExtensions.columns      global.tableExtensions.saveError
+  global.toasts.errorUploadAssets
+  global.more                          global.action
+  ```
+
+### Copy what the module uses, not the whole table
+
+Tier 1 is a menu, not a mandate. Skip shells the module genuinely has no use for — a Brands-style module needs no `DateValue` (renders no dates), and the lean `InputField` is redundant once you use CL `InputText` / `Editor`, which already render `FieldLabel` themselves. Copying them anyway leaves dead files that the next reader assumes are load-bearing. Conversely, do not skip a **provider** on the same reasoning (see playbook §4).
 
 ### Forms: use `react-hook-form`
 

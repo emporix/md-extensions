@@ -119,6 +119,17 @@ if base == "RemoteComponent.tsx":
             + ". Copy all seven unless the module provably needs none of a provider's data (skill Phase 2b)."
         )
 
+# Glyph parity: MD renders these actions with specific primeicons. Swapping in a
+# react-icons lookalike silently changes the shape (filled vs outline trash, etc.).
+if base in ("AssetsViewer.tsx", "TableActions.tsx", "MediaAssetUpload.tsx"):
+    for icon_name, pi_class in (("Trash", "pi pi-trash"), ("Download", "pi pi-download")):
+        if re.search(rf"<Bs{icon_name}\w*|<Fi{icon_name}\w*", text) and pi_class not in text:
+            issues.append(
+                f"{base} renders a {icon_name.lower()} action with react-icons; management-dashboard uses "
+                f"`{pi_class}`. Confirm the glyph matches — primeicons ships inside "
+                "@emporix/component-library/styles, so `pi pi-*` needs no extra dependency."
+            )
+
 if re.search(r"window\.location\.(assign|href)", text):
     issues.append(
         "Navigating to a host-owned route: no in-remote route exists for it. Confirm the choice with the user "
