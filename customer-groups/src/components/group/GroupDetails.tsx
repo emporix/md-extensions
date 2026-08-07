@@ -33,9 +33,10 @@ const GroupDetails = () => {
       return
     }
 
-    // Remount (e.g. tab switch) while FormProvider still has dirty values:
-    // adopt the key and keep edits — do not reset.
-    if (isDirty) {
+    // Remount (e.g. tab switch): FormProvider kept dirty values and ref reset to
+    // null. Keep edits only when we have not yet bound any group key — never
+    // when navigating to a different group while dirty.
+    if (isDirty && initializedGroupKeyRef.current === null) {
       initializedGroupKeyRef.current = groupKey
       return
     }
