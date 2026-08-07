@@ -1,10 +1,11 @@
-import {
-  DataTable,
-  type DataTablePageEvent,
-  type DataTablePaginationState,
-} from '@emporix/component-library'
+import type { DataTablePageEvent } from '@emporix/component-library'
+import { Paginator } from 'primereact/paginator'
+import { useTranslation } from 'react-i18next'
 import type { PaginationProps } from '../../hooks/usePagination'
 import styles from './ChangelogPaginator.module.scss'
+
+const PAGINATOR_TEMPLATE =
+  'FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown'
 
 type ChangelogPaginatorProps = {
   readonly paginationParams: Partial<PaginationProps>
@@ -17,26 +18,22 @@ const ChangelogPaginator = ({
   totalRecords,
   onPageChange,
 }: ChangelogPaginatorProps) => {
-  const pagination: DataTablePaginationState = {
-    ...paginationParams,
-    totalRecords,
+  const { t } = useTranslation()
+
+  const handlePageChange = (event: DataTablePageEvent) => {
+    onPageChange(event)
   }
 
   return (
-    <DataTable
-      className={styles.root}
-      dataKey="id"
-      value={[]}
-      columns={[]}
-      pagination={pagination}
-      paginator
-      lazy
+    <Paginator
+      className={styles.paginator}
+      first={paginationParams.first ?? 0}
+      rows={paginationParams.rows ?? 10}
       totalRecords={totalRecords}
-      onPage={onPageChange}
-      showHeaders={false}
-      showFilter={false}
-      showEmptyIcon={false}
-      emptyTemplate={() => null}
+      rowsPerPageOptions={paginationParams.rowsPerPageOptions}
+      onPageChange={handlePageChange}
+      template={PAGINATOR_TEMPLATE}
+      currentPageReportTemplate={t('global.pagination')}
     />
   )
 }
