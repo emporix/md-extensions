@@ -3,6 +3,7 @@ import { AppState, ImportSummaryState } from '../types/common'
 import { getLanguagesFromStorage } from '../hooks/useLanguages'
 import { COMMERCE_FILTER_ASSISTANT_I18N_KEYS } from '../utils/agentFilterDslHelpers'
 import { JSON_SCHEMA_ASSISTANT_I18N_KEYS } from '../utils/jsonSchemaAssistantHelpers'
+import { LOG_ANALYSIS_ASSISTANT_I18N_KEYS } from '../utils/logAnalysisAssistantHelpers'
 import { ApiClient } from './apiClient'
 
 const filterLocalizedString = (
@@ -43,10 +44,16 @@ export const JSON_SCHEMA_ASSISTANT_TEMPLATE_ID = 'json-schema-assistant'
 
 export const JSON_SCHEMA_ASSISTANT_AGENT_ID = 'json-schema-assistant'
 
+export const LOG_ANALYSIS_ASSISTANT_TEMPLATE_ID = 'log-analysis-assistant'
+
+export const LOG_ANALYSIS_ASSISTANT_AGENT_ID = 'log-analysis-assistant'
+
 export type ChatWithAgentOptions = {
   readonly emptyResponseKey?: string
+  readonly sessionId?: string
   readonly onToken?: (accumulated: string) => void
   readonly onToolActivity?: (toolName: string | null) => void
+  readonly onSessionId?: (sessionId: string) => void
 }
 
 export const chatWithAgent = async (
@@ -56,12 +63,16 @@ export const chatWithAgent = async (
   options: ChatWithAgentOptions = {}
 ): Promise<string> => {
   const emptyResponseKey =
-    options.emptyResponseKey ?? COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse
+    options.emptyResponseKey ??
+    COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse
   const api = getApiClient(appState)
   const body = { agentId, message }
   const stream = api.postSse(
     `/ai-service/${appState.tenant}/agentic/chat-stream`,
-    body
+    body,
+    options.sessionId
+      ? { headers: { 'session-id': options.sessionId } }
+      : undefined
   )
 
   let text = ''
@@ -87,6 +98,9 @@ export const chatWithAgent = async (
     }
 
     if (event.type === 'done') {
+      if (event.sessionId) {
+        options.onSessionId?.(event.sessionId)
+      }
       break
     }
   }
@@ -98,53 +112,61 @@ export const chatWithAgent = async (
   return trimmed
 }
 
-export const createCommerceFilterDslAgent = async (
-  appState: AppState
+type CreateTemplateAgentParams = {
+  readonly templateId: string
+  readonly agentId: string
+  readonly templateNotFoundKey: string
+}
+
+const createTemplateAgent = async (
+  appState: AppState,
+  { templateId, agentId, templateNotFoundKey }: CreateTemplateAgentParams
 ): Promise<{ success: boolean }> => {
   const templates = await getAgentTemplates(appState)
-  const template = templates.find(
-    (t) => t.id === COMMERCE_FILTER_DSL_AGENT_TEMPLATE_ID
-  )
+  const template = templates.find((item) => item.id === templateId)
   if (!template) {
-    throw new Error(COMMERCE_FILTER_ASSISTANT_I18N_KEYS.templateNotFound)
+    throw new Error(templateNotFoundKey)
   }
   const result = await copyTemplate(
     appState,
-    COMMERCE_FILTER_DSL_AGENT_TEMPLATE_ID,
-    COMMERCE_FILTER_DSL_AGENT_ID,
+    templateId,
+    agentId,
     { ...template.name },
     { ...template.description },
     template.userPrompt
   )
-  await patchCustomAgent(appState, COMMERCE_FILTER_DSL_AGENT_ID, [
+  await patchCustomAgent(appState, agentId, [
     { op: 'REPLACE', path: '/enabled', value: true },
   ])
   return result
 }
 
+export const createCommerceFilterDslAgent = async (
+  appState: AppState
+): Promise<{ success: boolean }> =>
+  createTemplateAgent(appState, {
+    templateId: COMMERCE_FILTER_DSL_AGENT_TEMPLATE_ID,
+    agentId: COMMERCE_FILTER_DSL_AGENT_ID,
+    templateNotFoundKey: COMMERCE_FILTER_ASSISTANT_I18N_KEYS.templateNotFound,
+  })
+
 export const createJsonSchemaAssistantAgent = async (
   appState: AppState
-): Promise<{ success: boolean }> => {
-  const templates = await getAgentTemplates(appState)
-  const template = templates.find(
-    (item) => item.id === JSON_SCHEMA_ASSISTANT_TEMPLATE_ID
-  )
-  if (!template) {
-    throw new Error(JSON_SCHEMA_ASSISTANT_I18N_KEYS.templateNotFound)
-  }
-  const result = await copyTemplate(
-    appState,
-    JSON_SCHEMA_ASSISTANT_TEMPLATE_ID,
-    JSON_SCHEMA_ASSISTANT_AGENT_ID,
-    { ...template.name },
-    { ...template.description },
-    template.userPrompt
-  )
-  await patchCustomAgent(appState, JSON_SCHEMA_ASSISTANT_AGENT_ID, [
-    { op: 'REPLACE', path: '/enabled', value: true },
-  ])
-  return result
-}
+): Promise<{ success: boolean }> =>
+  createTemplateAgent(appState, {
+    templateId: JSON_SCHEMA_ASSISTANT_TEMPLATE_ID,
+    agentId: JSON_SCHEMA_ASSISTANT_AGENT_ID,
+    templateNotFoundKey: JSON_SCHEMA_ASSISTANT_I18N_KEYS.templateNotFound,
+  })
+
+export const createLogAnalysisAssistantAgent = async (
+  appState: AppState
+): Promise<{ success: boolean }> =>
+  createTemplateAgent(appState, {
+    templateId: LOG_ANALYSIS_ASSISTANT_TEMPLATE_ID,
+    agentId: LOG_ANALYSIS_ASSISTANT_AGENT_ID,
+    templateNotFoundKey: LOG_ANALYSIS_ASSISTANT_I18N_KEYS.templateNotFound,
+  })
 
 export const getAgentTemplates = async (
   appState: AppState

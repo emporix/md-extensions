@@ -1,0 +1,102 @@
+.analyze-logs-dialog .p-dialog-content {
+  padding-top: 0;
+}
+
+.analyze-logs-dialog-header {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.analyze-logs-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  min-height: 24rem;
+}
+
+.analyze-logs-chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  max-height: 28rem;
+  overflow-y: auto;
+  padding: var(--space-xs) 0.125rem;
+}
+
+.analyze-logs-chat-message {
+  display: flex;
+  width: 100%;
+}
+
+.analyze-logs-chat-message--user {
+  justify-content: flex-end;
+}
+
+.analyze-logs-chat-message--assistant,
+.analyze-logs-chat-message--error {
+  justify-content: flex-start;
+}
+
+.analyze-logs-chat-bubble {
+  max-width: 85%;
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-md);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+}
+
+.analyze-logs-chat-message--user .analyze-logs-chat-bubble {
+  background: var(--color-primary);
+  color: var(--color-surface-white);
+}
+
+.analyze-logs-chat-message--assistant .analyze-logs-chat-bubble {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+}
+
+.analyze-logs-chat-bubble--error {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border: 1px solid var(--color-red-100);
+  font-weight: var(--font-weight-medium);
+}
+
+.analyze-logs-chat-bubble--streaming {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.analyze-logs-chat-stream {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-tight);
+}
+
+.analyze-logs-chat-waiting {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.analyze-logs-chat-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-md);
+}
+
+.analyze-logs-chat-input {
+  flex: 1;
+}
+
+.analyze-logs-chat-send-btn {
+  flex-shrink: 0;
+}

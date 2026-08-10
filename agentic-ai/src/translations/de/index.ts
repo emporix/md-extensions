@@ -262,6 +262,37 @@ const TRANSLATIONS_DE = {
   loading_mcp_servers: 'MCP-Server werden geladen...',
   expand_section: 'Abschnitt erweitern',
   collapse_section: 'Abschnitt einklappen',
+  expand_text: 'Text erweitern',
+  collapse_text: 'Text einklappen',
+  show_all: 'Alle anzeigen',
+  show_less: 'Weniger anzeigen',
+  copy_all_logs: 'Alle Protokolle kopieren',
+  copy_all_logs_to_clipboard: 'Alle Protokolle in die Zwischenablage kopieren',
+  logs_copied_to_clipboard: 'Protokolle in die Zwischenablage kopiert',
+  failed_to_copy_logs: 'Protokolle konnten nicht kopiert werden',
+  analyze_logs: 'Protokolle analysieren',
+  analyze_logs_dialog_title: 'Protokolle analysieren',
+  log_analysis_assistant_checking:
+    'Verfügbarkeit des Hilfsagenten wird geprüft...',
+  log_analysis_assistant_intro:
+    'Nutzen Sie einen dedizierten Hilfsagenten zur Analyse dieser Protokolle. Sie können ihn einmalig aus unseren vordefinierten Vorlagen erstellen.',
+  log_analysis_assistant_enable: 'Hilfsagenten aktivieren',
+  log_analysis_assistant_agent_created: 'Hilfsagent erstellt.',
+  log_analysis_assistant_agent_exists: 'Hilfsagent existiert bereits.',
+  log_analysis_assistant_create_failed:
+    'Hilfsagent konnte nicht erstellt oder aktiviert werden.',
+  log_analysis_assistant_chat_failed:
+    'Der Hilfsagent hat keine verwertbare Antwort geliefert.',
+  log_analysis_assistant_empty_response:
+    'Der Hilfsagent hat eine leere Nachricht zurückgegeben.',
+  log_analysis_assistant_template_not_found:
+    'Die Vorlage für den Protokollanalyse-Hilfsagenten ist für diesen Mandanten nicht verfügbar.',
+  log_analysis_assistant_enable_failed:
+    'Der vorhandene Hilfsagent konnte nicht aktiviert werden.',
+  log_analysis_starting:
+    '{{count}} Protokollnachrichten auf Laufzeitfehler prüfen',
+  log_analysis_chat_placeholder: 'Stellen Sie eine Folgefrage...',
+  send: 'Senden',
   no_tools: 'Keine Tools verfügbar',
   add_new_tool: 'NEUES TOOL HINZUFÜGEN',
   new_tool: 'Neues Tool',
@@ -787,6 +818,7 @@ const TRANSLATIONS_DE = {
   message: 'Nachricht',
   errors: 'Fehler',
   duration: 'Dauer',
+  duration_seconds: '{{count}} Sek.',
   agent: 'Agent',
   no_messages: 'Keine Nachrichten gefunden',
   result: 'Ergebnis',
@@ -801,8 +833,10 @@ const TRANSLATIONS_DE = {
   agent_type: 'Agent-Typ',
   job_type: 'Job-Typ',
   response: 'Antwort',
+  communication: 'Kommunikation',
+  no_content: 'Kein Inhalt',
   created_at: 'Erstellt am',
-  related_logs: 'Verwandte Protokolle',
+  related_logs: 'Protokolle',
   trigger_agent: 'Auslöser-Agent',
   included_agents: 'Beteiligte Agenten',
   no_logs_found: 'Keine Protokolle gefunden',

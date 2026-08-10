@@ -21,7 +21,9 @@ const appState: AppState = {
   contentLanguage: 'en',
 }
 
-const createStream = (...events: Array<{ type: string; [key: string]: unknown }>) =>
+const createStream = (
+  ...events: Array<{ type: string; [key: string]: unknown }>
+) =>
   (async function* () {
     for (const event of events) {
       yield event
@@ -54,7 +56,8 @@ describe('chatWithAgent', () => {
 
     expect(mockPostSse).toHaveBeenCalledWith(
       '/ai-service/testtenant/agentic/chat-stream',
-      { agentId: 'agent-1', message: 'build filter' }
+      { agentId: 'agent-1', message: 'build filter' },
+      undefined
     )
   })
 
@@ -104,6 +107,36 @@ describe('chatWithAgent', () => {
     expect(onToken).toHaveBeenLastCalledWith('Hello world')
     expect(onToolActivity).toHaveBeenCalledWith('search')
     expect(onToolActivity).toHaveBeenLastCalledWith(null)
+  })
+
+  it('passes session-id header and onSessionId callback when provided', async () => {
+    const onSessionId = vi.fn()
+    mockPostSse.mockReturnValue(
+      createStream(
+        { type: 'token', content: 'Analysis complete' },
+        {
+          type: 'done',
+          agentId: 'agent-1',
+          agentType: 'generic',
+          sessionId: 'sess-continuity',
+          toolsUsed: [],
+        }
+      )
+    )
+
+    await expect(
+      chatWithAgent(appState, 'agent-1', 'analyze logs', {
+        sessionId: 'sess-existing',
+        onSessionId,
+      })
+    ).resolves.toBe('Analysis complete')
+
+    expect(mockPostSse).toHaveBeenCalledWith(
+      '/ai-service/testtenant/agentic/chat-stream',
+      { agentId: 'agent-1', message: 'analyze logs' },
+      { headers: { 'session-id': 'sess-existing' } }
+    )
+    expect(onSessionId).toHaveBeenCalledWith('sess-continuity')
   })
 
   it('throws on stream error events', async () => {
