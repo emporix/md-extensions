@@ -1,13 +1,38 @@
 .table {
   margin-top: 0.5rem;
+
+  :global(.p-datatable-thead > tr > th) {
+    background: var(--grey-2, #e8e9eb);
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--grey-6, #3e4759);
+  }
+
+  :global(.p-datatable-thead > tr > th),
+  :global(.p-datatable-tbody > tr > td) {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+
+  :global(.p-datatable-tbody > tr > td) {
+    font-size: 0.875rem;
+    vertical-align: top;
+    cursor: default !important;
+  }
 }
 
 .notSet {
   font-style: italic;
-  color: var(--grey-5, #adb5bd);
+  color: var(--grey-5, #828a99);
+}
+
+.previousValue {
+  color: var(--grey-5, #828a99);
+  text-decoration: line-through;
+  opacity: 0.85;
 }
 
 .updatedValue {
-  color: var(--green-600, #16a34a);
-  font-weight: 500;
+  color: var(--grey-9, #0a0c0f);
+  font-weight: 700;
 }

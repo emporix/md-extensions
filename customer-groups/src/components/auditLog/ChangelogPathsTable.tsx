@@ -44,8 +44,11 @@ const ChangelogPathsTable = ({ paths }: ChangelogPathsTableProps) => {
       {
         columnKey: 'previousValue',
         header: t('auditLog.entityChangelog.table.previousValue'),
-        body: (row: ChangelogPathRow) =>
-          renderValue(formatChangelogValue(row.change.before)),
+        body: (row: ChangelogPathRow) => (
+          <span className={styles.previousValue}>
+            {renderValue(formatChangelogValue(row.change.before))}
+          </span>
+        ),
       },
       {
         columnKey: 'updatedValue',

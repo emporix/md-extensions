@@ -47,6 +47,11 @@ import {
   toTeamsToolConfigForSave,
 } from '../utils/teamsRoutingHelpers'
 import {
+  applySlackToolDefaults,
+  countSlackToolsForTeam,
+  toSlackToolConfigForSave,
+} from '../utils/slackRoutingHelpers'
+import {
   clearTeamsToolInstallDraft,
   readTeamsToolInstallDraft,
   TeamsGraphConsentCallback,
@@ -110,13 +115,18 @@ export const useToolConfig = ({
         config:
           tool.type === 'teams'
             ? applyTeamsToolDefaults(loadedConfig)
-            : loadedConfig,
+            : tool.type === 'slack'
+              ? applySlackToolDefaults(loadedConfig)
+              : loadedConfig,
       })
     }
   }, [tool])
 
   useEffect(() => {
-    if (state.toolType !== 'teams' || !appState) {
+    if (
+      (state.toolType !== 'teams' && state.toolType !== 'slack') ||
+      !appState
+    ) {
       setAllToolsLoaded(false)
       return
     }
@@ -268,7 +278,11 @@ export const useToolConfig = ({
     setState((prev) => {
       if (field === 'toolType') {
         const nextConfig =
-          value === 'teams' ? applyTeamsToolDefaults({}) : ({} as ToolConfig)
+          value === 'teams'
+            ? applyTeamsToolDefaults({})
+            : value === 'slack'
+              ? applySlackToolDefaults({})
+              : ({} as ToolConfig)
         return {
           ...prev,
           toolType: value,
@@ -556,6 +570,11 @@ export const useToolConfig = ({
     (state.toolType !== 'teams' ||
       (state.config.allowedOperations?.length ??
         DEFAULT_TEAMS_ALLOWED_OPERATIONS.length) > 0) &&
+    // Backward compatibility: allow null/empty Slack allowedOperations for legacy tools.
+    // TODO: Re-enable non-empty Slack allowedOperations once all Slack tools are migrated.
+    // (state.toolType !== 'slack' ||
+    //   (state.config.allowedOperations?.length ??
+    //     DEFAULT_SLACK_ALLOWED_OPERATIONS.length) > 0) &&
     (state.toolType !== 'teams' ||
       !state.config.teamId?.trim() ||
       !state.config.tenantId?.trim() ||
@@ -565,7 +584,12 @@ export const useToolConfig = ({
           state.config.teamId,
           state.config.tenantId,
           state.toolId
-        ) === 0))
+        ) === 0)) &&
+    (state.toolType !== 'slack' ||
+      !state.config.teamId?.trim() ||
+      (allToolsLoaded &&
+        countSlackToolsForTeam(allTools, state.config.teamId, state.toolId) ===
+          0))
 
   const handleSave = useCallback(async () => {
     if (!tool || !isFormValid) {
@@ -582,7 +606,9 @@ export const useToolConfig = ({
           ? toRagEmporixToolConfig(state.config)
           : state.toolType === 'teams'
             ? toTeamsToolConfigForSave(state.config)
-            : state.config,
+            : state.toolType === 'slack'
+              ? toSlackToolConfigForSave(state.config)
+              : state.config,
       enabled: tool.enabled ?? true,
     }
 

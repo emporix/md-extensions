@@ -27,7 +27,10 @@ const BASE_TABS = ['details', 'members']
 
 const GroupPage = () => {
   const { t } = useTranslation()
-  const methods = useForm<GroupFormFields>({ defaultValues: createGroupForm() })
+  const methods = useForm<GroupFormFields>({
+    defaultValues: createGroupForm(),
+    mode: 'onChange',
+  })
   const toggles = useFeatureToggles()
   const tabIds = useMemo(
     () =>
@@ -45,21 +48,30 @@ const GroupPage = () => {
   const { groupId } = useParams()
   const { group } = useGroupData()
 
+  // Keep details mounted across GroupPage re-renders (form dirty updates,
+  // i18n, toggles). Remounting GroupDetails would reset() and clear isDirty.
+  const detailsContent = useMemo(
+    () => (
+      <GroupRoleProvider>
+        <GroupDetails />
+      </GroupRoleProvider>
+    ),
+    []
+  )
+
+  const membersContent = useMemo(() => <GroupMembers />, [])
+
   const tabs = useMemo(
     () => [
       {
         id: 'details',
         label: t('usersAndGroups.groups.tabs.details'),
-        content: (
-          <GroupRoleProvider>
-            <GroupDetails />
-          </GroupRoleProvider>
-        ),
+        content: detailsContent,
       },
       {
         id: 'members',
         label: t('usersAndGroups.groups.tabs.members'),
-        content: <GroupMembers />,
+        content: membersContent,
         disabled: !group,
       },
       ...(toggles.isToggleValid(AUDIT_LOG_FEATURE_TOGGLE)
@@ -80,7 +92,7 @@ const GroupPage = () => {
           ]
         : []),
     ],
-    [activeTab, group, groupId, t, toggles]
+    [activeTab, detailsContent, group, groupId, membersContent, t, toggles]
   )
 
   const visibleTabs = tabs.filter((tab) => !tab.disabled)

@@ -13,7 +13,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { useUIBlocker } from '../../context/UIBlcoker'
 import { useIamApi } from '../../hooks/api/iam'
-import { useFormContext } from 'react-hook-form'
+import { useFormContext, useFormState } from 'react-hook-form'
 import {
   PrimaryButton,
   SecondaryButton,
@@ -38,7 +38,12 @@ const GroupPageActions = (props: Props) => {
   const { t } = useTranslation()
   const { blockPanel } = useUIBlocker()
   const { createGroup, updateGroup } = useIamApi()
-  const { handleSubmit, formState, reset } = useFormContext<GroupFormFields>()
+  const { handleSubmit, reset, control } = useFormContext<GroupFormFields>()
+  const { isDirty, isValid, dirtyFields } = useFormState({ control })
+  const accessControlsDirty = !!dirtyFields.accessControls
+  const canSave =
+    isValid && (isDirty || accessControlsDirty) && managerPermissions
+  const canDiscard = (isDirty || accessControlsDirty) && managerPermissions
   const { showSuccess, showError } = useToast()
   const { navigate } = useCustomNavigate()
   const { syncUserAccessControls, templates } = usePermissions()
@@ -120,6 +125,10 @@ const GroupPageActions = (props: Props) => {
         showSuccess(t('usersAndGroups.groups.toasts.editGroup.success'))
         await makeCall(syncGroup, blockPanel)
         await makeCall(syncUserAccessControls, blockPanel)
+        reset({
+          ...data,
+          accessControls: data.accessControls ?? [],
+        })
       } catch (e: unknown) {
         console.error(e)
         showError(
@@ -136,6 +145,7 @@ const GroupPageActions = (props: Props) => {
       blockPanel,
       syncGroup,
       syncUserAccessControls,
+      reset,
       t,
       showSuccess,
       showError,
@@ -148,15 +158,13 @@ const GroupPageActions = (props: Props) => {
         <>
           <SecondaryButton
             className={styles.discardButton}
-            disabled={!formState.isDirty || !managerPermissions}
+            disabled={!canDiscard}
             onClick={() => reset()}
           >
             {t('global.discard')}
           </SecondaryButton>
           <PrimaryButton
-            disabled={
-              !formState.isValid || !formState.isDirty || !managerPermissions
-            }
+            disabled={!canSave}
             onClick={handleSubmit(group ? submitEditGroup : submitCreateGroup)}
           >
             {t('global.save')}

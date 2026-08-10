@@ -160,7 +160,9 @@ const OAuthDetailPage: React.FC = () => {
                 </span>
               </h1>
             </div>
-            <p className="oauth-detail-subtitle">{t('oauth_detail_subtitle')}</p>
+            <p className="oauth-detail-subtitle">
+              {t('oauth_detail_subtitle')}
+            </p>
           </div>
           <div className="oauth-detail-header-right">
             <Button

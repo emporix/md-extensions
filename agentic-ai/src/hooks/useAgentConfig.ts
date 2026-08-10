@@ -33,6 +33,12 @@ import {
   teamsNativeToolHasAllowedOperations,
   TEAMS_TRIGGER,
 } from '../utils/teamsRoutingHelpers'
+import {
+  areSlackAgentToolsValid,
+  getSelectedSlackToolIds,
+  slackNativeToolHasAllowedOperations,
+  SLACK_TRIGGER,
+} from '../utils/slackRoutingHelpers'
 import { COLLABORATION_TRIGGER_TYPES } from '../utils/constants'
 import { Tool } from '../types/Tool'
 
@@ -136,17 +142,16 @@ export const useAgentConfig = ({
       ) || ['endpoint']
       const collaborationTriggers =
         COLLABORATION_TRIGGER_TYPES as readonly string[]
-      const supportTriggerTypes = loadedTriggerTypes
-        .filter((type) => collaborationTriggers.includes(type))
-        .filter((type) => type !== TEAMS_TRIGGER)
+      const supportTriggerTypes = loadedTriggerTypes.filter((type) =>
+        collaborationTriggers.includes(type)
+      )
       const triggerTypes =
         agentType === 'support'
           ? supportTriggerTypes.length > 0
             ? supportTriggerTypes
             : ['slack']
           : loadedTriggerTypes.filter(
-              (type) =>
-                !collaborationTriggers.includes(type) && type !== TEAMS_TRIGGER
+              (type) => !collaborationTriggers.includes(type)
             )
 
       setState({
@@ -177,9 +182,8 @@ export const useAgentConfig = ({
         selfHostedUrl: agent.llmConfig?.selfHostedParams?.url || '',
         ...(() => {
           const selfHostedParams = agent.llmConfig?.selfHostedParams
-          const resolveRefId = (
-            ref: { id: string } | string | undefined
-          ) => (typeof ref === 'object' ? ref?.id || '' : ref || '')
+          const resolveRefId = (ref: { id: string } | string | undefined) =>
+            typeof ref === 'object' ? ref?.id || '' : ref || ''
 
           const oauthId = resolveRefId(selfHostedParams?.oauth)
 
@@ -222,11 +226,7 @@ export const useAgentConfig = ({
   const buildAgentFromState = useCallback(() => {
     if (!agent) return null
 
-    const triggerTypesForSave = state.triggerTypes.filter(
-      (type) => type !== TEAMS_TRIGGER
-    )
-
-    const triggers = triggerTypesForSave.map((triggerType) => ({
+    const triggers = state.triggerTypes.map((triggerType) => ({
       type: triggerType,
       config:
         triggerType === 'commerce_events'
@@ -245,7 +245,11 @@ export const useAgentConfig = ({
       state.nativeTools,
       availableTools
     )
-    if (existingTeamsTrigger && isDefaultInboundAgent) {
+    if (
+      existingTeamsTrigger &&
+      isDefaultInboundAgent &&
+      !state.triggerTypes.includes(TEAMS_TRIGGER)
+    ) {
       triggers.push(existingTeamsTrigger)
     }
 
@@ -460,7 +464,28 @@ export const useAgentConfig = ({
     )
 
     const supportTriggerValidation =
-      state.agentType !== 'support' || state.triggerTypes.includes('slack')
+      state.agentType !== 'support' ||
+      state.triggerTypes.includes(SLACK_TRIGGER) ||
+      state.triggerTypes.includes(TEAMS_TRIGGER)
+
+    const selectedSlackToolCount = getSelectedSlackToolIds(
+      state.nativeTools,
+      availableTools
+    ).length
+    const selectedTeamsToolCount = getSelectedTeamsToolIds(
+      state.nativeTools,
+      availableTools
+    ).length
+
+    const supportSlackTriggerToolValidation =
+      state.agentType !== 'support' ||
+      !state.triggerTypes.includes(SLACK_TRIGGER) ||
+      selectedSlackToolCount === 1
+
+    const supportTeamsTriggerToolValidation =
+      state.agentType !== 'support' ||
+      !state.triggerTypes.includes(TEAMS_TRIGGER) ||
+      selectedTeamsToolCount === 1
 
     const teamsToolValidation =
       areTeamsAgentToolsValid(state.nativeTools, availableTools) &&
@@ -474,6 +499,18 @@ export const useAgentConfig = ({
         }
       )
 
+    const slackToolValidation =
+      areSlackAgentToolsValid(state.nativeTools, availableTools) &&
+      getSelectedSlackToolIds(state.nativeTools, availableTools).every(
+        (toolId) => {
+          const nativeTool = state.nativeTools.find(
+            (tool) => tool.id === toolId
+          )
+          const tool = availableTools.find((entry) => entry.id === toolId)
+          return slackNativeToolHasAllowedOperations(nativeTool, tool)
+        }
+      )
+
     return (
       basicValidation &&
       tokenValidation &&
@@ -482,7 +519,10 @@ export const useAgentConfig = ({
       collaborationValidation &&
       outputFormatValidation &&
       supportTriggerValidation &&
-      teamsToolValidation
+      supportSlackTriggerToolValidation &&
+      supportTeamsTriggerToolValidation &&
+      teamsToolValidation &&
+      slackToolValidation
     )
   }, [state, agent?.id, availableTools])
 
