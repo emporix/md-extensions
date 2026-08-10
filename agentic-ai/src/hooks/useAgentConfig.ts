@@ -7,6 +7,7 @@ import {
   LocalizedString,
   LlmProvider,
   BaseProvider,
+  parseBaseProvider,
 } from '../types/Agent'
 import { upsertCustomAgent } from '../services/agentService'
 import { useAppState } from '../contexts/AppStateContext'
@@ -178,7 +179,7 @@ export const useAgentConfig = ({
         agentCollaborations: agent.agentCollaborations || [],
         tags: agent.tags || [],
         requiredScopes: agent.requiredScopes || [],
-        baseProvider: agent.llmConfig?.baseProvider || '',
+        baseProvider: parseBaseProvider(agent.llmConfig?.baseProvider),
         selfHostedUrl: agent.llmConfig?.selfHostedParams?.url || '',
         ...(() => {
           const selfHostedParams = agent.llmConfig?.selfHostedParams

@@ -3013,9 +3013,9 @@ components:
               example: self_hosted_ollama
             baseProvider:
               type: string
-              description: Optional. Indicates which cloud LLM provider API the self-hosted endpoint is compatible with (OPENAI, GOOGLE, or ANTHROPIC). Applies when provider is self_hosted_ollama or self_hosted_vllm. Used to select the correct request/response conventions for that backend. Ignored for non–self-hosted providers.
-              enum: [ ANTHROPIC, GOOGLE, OPENAI ]
-              example: OPENAI
+              description: Optional. Indicates which cloud LLM provider API the self-hosted endpoint is compatible with (openai, google, or anthropic). Applies when provider is self_hosted_ollama or self_hosted_vllm. Used to select the correct request/response conventions for that backend. Ignored for non–self-hosted providers.
+              enum: [ anthropic, google, openai ]
+              example: openai
           required:
             - provider
     SelfHostedLlmRequest:

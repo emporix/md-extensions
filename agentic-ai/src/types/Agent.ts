@@ -53,11 +53,27 @@ export enum LlmProvider {
   SELF_HOSTED_VLLM = 'self_hosted_vllm',
 }
 
-/** Cloud LLM API compatibility for self-hosted endpoints (API uses uppercase values). */
+/** Cloud LLM API compatibility for self-hosted endpoints. */
 export enum BaseProvider {
-  ANTHROPIC = 'ANTHROPIC',
-  GOOGLE = 'GOOGLE',
-  OPENAI = 'OPENAI',
+  ANTHROPIC = 'anthropic',
+  GOOGLE = 'google',
+  OPENAI = 'openai',
+}
+
+const BASE_PROVIDER_VALUES = new Set<string>(Object.values(BaseProvider))
+
+/** Normalize API `baseProvider` (case-insensitive) to the dropdown value. */
+export const parseBaseProvider = (
+  value: string | undefined | null
+): BaseProvider | '' => {
+  if (!value) {
+    return ''
+  }
+
+  const normalized = value.toLowerCase()
+  return BASE_PROVIDER_VALUES.has(normalized)
+    ? (normalized as BaseProvider)
+    : ''
 }
 
 export enum GrantType {
