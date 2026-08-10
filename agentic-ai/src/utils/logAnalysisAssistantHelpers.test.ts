@@ -4,6 +4,7 @@ import {
   buildLogAnalysisInitialMessage,
   normalizeLogMessageForAnalysis,
   truncateLlmStartedLogForAnalysis,
+  truncateLogMessageForAnalysis,
   truncateToolEndedLogForAnalysis,
 } from './logAnalysisAssistantHelpers'
 
@@ -129,6 +130,16 @@ describe('truncateToolEndedLogForAnalysis', () => {
 
     expect(result).toContain('...[tool output truncated for analysis]...')
     expect(result.length).toBeLessThan(message.length)
+  })
+})
+
+describe('truncateLogMessageForAnalysis', () => {
+  it('normalizes escaped newlines when no truncators apply', () => {
+    const message = 'Agent step completed\\nnext line'
+
+    expect(truncateLogMessageForAnalysis(message)).toBe(
+      'Agent step completed\nnext line'
+    )
   })
 })
 

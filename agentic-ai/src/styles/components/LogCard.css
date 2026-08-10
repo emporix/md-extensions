@@ -312,10 +312,6 @@
   gap: var(--space-md);
 }
 
-.unified-logs-section-title {
-  margin: 0;
-}
-
 .unified-logs-section-actions {
   display: flex;
   align-items: center;
@@ -436,6 +432,15 @@
 @media (max-width: 768px) {
   .log-details-info {
     grid-template-columns: 1fr;
+  }
+
+  .details-info-columns {
+    flex-direction: column;
+  }
+
+  .details-info-divider {
+    width: 100%;
+    height: 1px;
   }
 
   .communication-panel {

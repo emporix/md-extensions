@@ -12,7 +12,7 @@ export const InfoCard: React.FC<InfoCardProps> = ({
   isTag = false,
 }) => {
   return (
-    <div className="info-card panel-surface">
+    <div className="details-info-field">
       <div className="info-label">{label}</div>
       {isTag ? (
         <div className="info-value-tag">{value}</div>

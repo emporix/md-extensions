@@ -120,8 +120,10 @@ export const truncateLlmStartedLogForAnalysis = (message: string): string => {
 
 /** Apply all analysis-only truncations for a single log message. */
 export const truncateLogMessageForAnalysis = (message: string): string =>
-  enforceMaxAnalysisLength(
-    truncateToolEndedLogForAnalysis(truncateLlmStartedLogForAnalysis(message))
+  normalizeLogMessageForAnalysis(
+    enforceMaxAnalysisLength(
+      truncateToolEndedLogForAnalysis(truncateLlmStartedLogForAnalysis(message))
+    )
   )
 
 export const buildLogAnalysisInitialMessage = (

@@ -812,7 +812,7 @@ const TRANSLATIONS_EN = {
   message: 'Message',
   errors: 'errors',
   duration: 'Duration',
-  duration_seconds: '{{count}}sec',
+  duration_seconds: '{{count}} sec',
   agent: 'Agent',
   no_messages: 'No messages found',
   result: 'Result',

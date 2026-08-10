@@ -98,9 +98,12 @@ export const useCollapsibleText = (
     }
 
     const frameId = requestAnimationFrame(updateMeasurements)
-    const resizeObserver = new ResizeObserver(() => {
-      updateMeasurements()
-    })
+    if (typeof ResizeObserver === 'undefined') {
+      return () => {
+        cancelAnimationFrame(frameId)
+      }
+    }
+    const resizeObserver = new ResizeObserver(updateMeasurements)
 
     resizeObserver.observe(element)
 

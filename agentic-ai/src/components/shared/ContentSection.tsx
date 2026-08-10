@@ -36,7 +36,7 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
     <div className="content-section">
       <div className="section-header">
         <i className={`pi ${icon} section-icon`} />
-        <h3 className="section-title">{title}</h3>
+        <h3 className="panel-section-title">{title}</h3>
         {(headerAction || isCollapsible) && (
           <div className="section-header-actions">
             {headerAction}

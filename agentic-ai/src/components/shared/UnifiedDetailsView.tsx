@@ -169,6 +169,96 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
     ? `/agents/${encodeURIComponent(agentId)}/edit`
     : undefined
 
+  const infoFields: React.ReactNode[] = []
+
+  if (agentId && agentDetailsPath) {
+    infoFields.push(
+      <InfoCard
+        key="agent"
+        label={t('logs_agent_id')}
+        value={
+          <Link to={agentDetailsPath} className="info-value-link">
+            {agentId}
+          </Link>
+        }
+      />
+    )
+  }
+
+  if (sessionId && sessionDetailsPath) {
+    infoFields.push(
+      <InfoCard
+        key="session"
+        label={t('session_id')}
+        value={
+          <Link to={sessionDetailsPath} className="info-value-link">
+            {sessionId}
+          </Link>
+        }
+      />
+    )
+  }
+
+  if (requestId) {
+    infoFields.push(
+      <InfoCard key="request" label={t('request_id')} value={requestId} />
+    )
+  }
+
+  if (jobType) {
+    infoFields.push(
+      <InfoCard
+        key="jobType"
+        label={t('job_type')}
+        value={getJobTypeDisplay(jobType)}
+      />
+    )
+  }
+
+  if (duration !== undefined && duration !== null) {
+    infoFields.push(
+      <InfoCard
+        key="duration"
+        label={t('duration')}
+        value={t('duration_seconds', { count: duration })}
+      />
+    )
+  }
+
+  if (createdAt) {
+    infoFields.push(
+      <InfoCard
+        key="createdAt"
+        label={t('created_at')}
+        value={formatTimestamp(createdAt)}
+      />
+    )
+  }
+
+  if (status) {
+    infoFields.push(
+      <InfoCard
+        key="status"
+        label={t('status')}
+        value={statusBodyTemplate(status)}
+        isTag
+      />
+    )
+  }
+
+  const infoFieldColumns = infoFields.flatMap((field, index) =>
+    index === 0
+      ? [field]
+      : [
+          <div
+            key={`details-info-divider-${index}`}
+            className="details-info-divider"
+            aria-hidden="true"
+          />,
+          field,
+        ]
+  )
+
   return (
     <BasePage
       loading={false}
@@ -180,55 +270,8 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
         {hasInfoCards && (
           <section className="details-info-section">
             <h3 className="panel-section-title">{infoSectionTitle}</h3>
-            <div className="details-info-grid">
-              {agentId && agentDetailsPath && (
-                <InfoCard
-                  label={t('logs_agent_id')}
-                  value={
-                    <Link to={agentDetailsPath} className="info-value-link">
-                      {agentId}
-                    </Link>
-                  }
-                />
-              )}
-              {sessionId && sessionDetailsPath && (
-                <InfoCard
-                  label={t('session_id')}
-                  value={
-                    <Link to={sessionDetailsPath} className="info-value-link">
-                      {sessionId}
-                    </Link>
-                  }
-                />
-              )}
-              {requestId && (
-                <InfoCard label={t('request_id')} value={requestId} />
-              )}
-              {jobType && (
-                <InfoCard
-                  label={t('job_type')}
-                  value={getJobTypeDisplay(jobType)}
-                />
-              )}
-              {duration !== undefined && duration !== null && (
-                <InfoCard
-                  label={t('duration')}
-                  value={t('duration_seconds', { count: duration })}
-                />
-              )}
-              {createdAt && (
-                <InfoCard
-                  label={t('created_at')}
-                  value={formatTimestamp(createdAt)}
-                />
-              )}
-              {status && (
-                <InfoCard
-                  label={t('status')}
-                  value={statusBodyTemplate(status)}
-                  isTag
-                />
-              )}
+            <div className="details-info-panel panel-surface">
+              <div className="details-info-columns">{infoFieldColumns}</div>
             </div>
           </section>
         )}

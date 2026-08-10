@@ -250,7 +250,7 @@ const UnifiedLogsTable = forwardRef<
       return (
         <div className={`unified-logs-section-header ${className}`.trim()}>
           {title ? (
-            <h4 className="unified-logs-section-title">{t('related_logs')}</h4>
+            <h4 className="panel-section-title">{t('related_logs')}</h4>
           ) : (
             <span />
           )}
