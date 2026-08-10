@@ -21,6 +21,30 @@ describe('formatErrorPayloadMessage', () => {
     ).toBe('Stream error')
   })
 
+  it('parses pretty-printed JSON string payloads', () => {
+    expect(
+      formatErrorPayloadMessage(
+        '{\n  "message": "Invalid request",\n  "details": []\n}'
+      )
+    ).toBe('Invalid request')
+  })
+
+  it('strips SSE data: prefix from multi-line JSON payloads', () => {
+    expect(
+      formatErrorPayloadMessage(
+        'data: {\n  "message": "Stream error",\n  "details": []\n}'
+      )
+    ).toBe('Stream error')
+  })
+
+  it('extracts JSON blocks that start after non-JSON lines', () => {
+    expect(
+      formatErrorPayloadMessage(
+        'event: error\n{\n  "message": "Nested failure",\n  "details": []\n}'
+      )
+    ).toBe('Nested failure')
+  })
+
   it('joins primary message with detail messages', () => {
     expect(
       formatErrorPayloadMessage({

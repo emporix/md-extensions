@@ -2,6 +2,11 @@ import { useCallback, useMemo, useState } from 'react'
 import { LogMessage, SessionLogs } from '../types/Log'
 import { useAppState } from '../contexts/AppStateContext'
 import { LogService } from '../services/logService'
+import {
+  findInitialMessageFromLog,
+  findResponseFromLog,
+  isSameLogMessage,
+} from '../utils/logHelpers'
 
 export interface SessionFlowNode {
   id: string
@@ -16,6 +21,58 @@ export interface SessionFlowGroup {
   sessionId: string
   agentId?: string
   nodes: SessionFlowNode[]
+}
+
+const toSessionFlowNode = (
+  message: LogMessage,
+  sessionId: string,
+  displayMessage: string
+): SessionFlowNode => ({
+  id: message.requestId || '',
+  sessionId,
+  agentId: message.agentId,
+  timestamp: message.timestamp,
+  severity: message.severity,
+  message: displayMessage,
+})
+
+export const buildSessionFlowNodes = (
+  messages: LogMessage[],
+  sessionId: string
+): SessionFlowNode[] => {
+  const initialMessage = findInitialMessageFromLog(messages)
+  const responseMessage = findResponseFromLog(messages)
+
+  return messages
+    .filter(
+      (message) =>
+        message.isBusinessLog ||
+        (initialMessage !== undefined &&
+          isSameLogMessage(message, initialMessage.entry)) ||
+        (responseMessage !== undefined &&
+          isSameLogMessage(message, responseMessage.entry))
+    )
+    .map((message) => {
+      if (
+        responseMessage &&
+        isSameLogMessage(message, responseMessage.entry)
+      ) {
+        return toSessionFlowNode(message, sessionId, responseMessage.text)
+      }
+
+      if (
+        initialMessage &&
+        isSameLogMessage(message, initialMessage.entry)
+      ) {
+        return toSessionFlowNode(message, sessionId, initialMessage.text)
+      }
+
+      return toSessionFlowNode(message, sessionId, message.message)
+    })
+    .sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    )
 }
 
 export const useSessionFlow = () => {
@@ -33,21 +90,10 @@ export const useSessionFlow = () => {
         setError(null)
 
         const session: SessionLogs = await logService.getSessionById(sessionId)
-
-        const nodes: SessionFlowNode[] = (session.messages || [])
-          .filter((m: LogMessage) => m.isBusinessLog)
-          .map((m: LogMessage) => ({
-            id: m.requestId || '',
-            sessionId: session.sessionId,
-            agentId: m.agentId,
-            timestamp: m.timestamp,
-            severity: m.severity,
-            message: m.message,
-          }))
-          .sort(
-            (a: SessionFlowNode, b: SessionFlowNode) =>
-              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-          )
+        const nodes = buildSessionFlowNodes(
+          session.messages || [],
+          session.sessionId
+        )
 
         setFlows([{ sessionId, nodes }])
       } catch (e) {

@@ -35,6 +35,11 @@ const RESPONSE_PATTERNS = [
 const LLM_ENDED_RESPONSE_PATTERN =
   /^LLM ended \(run #\d+\) for agent: '[^']+' with response:\s*(.*)/s
 
+export type ExtractedLogMessage = {
+  readonly entry: LogMessage
+  readonly text: string
+}
+
 const messageMatchesMarker = (message: string, marker: string): boolean =>
   message.startsWith(marker)
 
@@ -48,7 +53,7 @@ const extractWithPatterns = (
   markers: readonly string[],
   patterns: readonly RegExp[],
   preferLast = false
-): string | undefined => {
+): ExtractedLogMessage | undefined => {
   const matchingEntries = messages.filter((msg) =>
     markers.some((marker) => messageMatchesMarker(msg.message, marker))
   )
@@ -65,7 +70,7 @@ const extractWithPatterns = (
     const match = entry.message.match(pattern)
     const captured = match?.[1]?.trim()
     if (captured) {
-      return captured
+      return { entry, text: captured }
     }
   }
 
@@ -74,27 +79,26 @@ const extractWithPatterns = (
 
 const extractStreamingResponseFromLog = (
   messages: LogMessage[]
-): string | undefined => {
+): ExtractedLogMessage | undefined => {
   const llmEndedEntries = messages.filter((msg) =>
     msg.message.startsWith('LLM ended')
   )
 
   for (let index = llmEndedEntries.length - 1; index >= 0; index -= 1) {
-    const match = llmEndedEntries[index].message.match(
-      LLM_ENDED_RESPONSE_PATTERN
-    )
+    const entry = llmEndedEntries[index]
+    const match = entry.message.match(LLM_ENDED_RESPONSE_PATTERN)
     const captured = match?.[1]?.trim()
     if (captured) {
-      return captured
+      return { entry, text: captured }
     }
   }
 
   return undefined
 }
 
-export const extractInitialMessageFromLog = (
+export const findInitialMessageFromLog = (
   messages: LogMessage[] | undefined
-): string | undefined => {
+): ExtractedLogMessage | undefined => {
   if (!messages) {
     return undefined
   }
@@ -106,9 +110,9 @@ export const extractInitialMessageFromLog = (
   )
 }
 
-export const extractResponseFromLog = (
+export const findResponseFromLog = (
   messages: LogMessage[] | undefined
-): string | undefined => {
+): ExtractedLogMessage | undefined => {
   if (!messages) {
     return undefined
   }
@@ -124,3 +128,16 @@ export const extractResponseFromLog = (
     true
   )
 }
+
+export const extractInitialMessageFromLog = (
+  messages: LogMessage[] | undefined
+): string | undefined => findInitialMessageFromLog(messages)?.text
+
+export const extractResponseFromLog = (
+  messages: LogMessage[] | undefined
+): string | undefined => findResponseFromLog(messages)?.text
+
+export const isSameLogMessage = (left: LogMessage, right: LogMessage): boolean =>
+  left.timestamp === right.timestamp &&
+  left.message === right.message &&
+  left.agentId === right.agentId

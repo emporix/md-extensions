@@ -16,18 +16,37 @@ type ErrorPayloadLike = {
 
 const stripSseDataPrefix = (content: string): string => {
   const trimmed = content.trim()
-  const dataLine = trimmed
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .find((line) => line.startsWith('data:') || line.startsWith('{'))
-
-  if (!dataLine) {
+  if (!trimmed) {
     return trimmed
   }
 
-  return dataLine.startsWith('data:')
-    ? dataLine.slice('data:'.length).trim()
-    : dataLine
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    return trimmed
+  }
+
+  const lines = trimmed.split(/\r?\n/)
+  const dataLineIndex = lines.findIndex((line) =>
+    line.trim().startsWith('data:')
+  )
+
+  if (dataLineIndex >= 0) {
+    const firstLine = lines[dataLineIndex].trim()
+    const jsonStart = firstLine.slice('data:'.length).trim()
+    const remainingLines = lines.slice(dataLineIndex + 1).join('\n')
+
+    return remainingLines ? `${jsonStart}\n${remainingLines}`.trim() : jsonStart
+  }
+
+  const jsonLineIndex = lines.findIndex((line) => {
+    const lineTrimmed = line.trim()
+    return lineTrimmed.startsWith('{') || lineTrimmed.startsWith('[')
+  })
+
+  if (jsonLineIndex >= 0) {
+    return lines.slice(jsonLineIndex).join('\n').trim()
+  }
+
+  return trimmed
 }
 
 const collectDetailMessages = (details: unknown): string[] => {
