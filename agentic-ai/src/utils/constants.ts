@@ -1,5 +1,5 @@
 import { TFunction } from 'i18next'
-import { LlmProvider } from '../types/Agent'
+import { BaseProvider, LlmProvider } from '../types/Agent'
 
 export const MCP_SERVERS = {
   customer: {
@@ -173,6 +173,12 @@ export const getLlmProviders = (t: TFunction) => [
     label: t('llm_provider_self_hosted_vllm'),
     value: LlmProvider.SELF_HOSTED_VLLM,
   },
+]
+
+export const getBaseProviders = (t: TFunction) => [
+  { label: t('llm_provider_anthropic'), value: BaseProvider.ANTHROPIC },
+  { label: t('llm_provider_google'), value: BaseProvider.GOOGLE },
+  { label: t('llm_provider_openai'), value: BaseProvider.OPENAI },
 ]
 
 export const AVAILABLE_TAGS = [

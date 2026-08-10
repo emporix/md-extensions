@@ -5,11 +5,11 @@ import { InputSwitch } from 'primereact/inputswitch'
 import { InputText } from 'primereact/inputtext'
 import { Message } from 'primereact/message'
 import { Tooltip } from 'primereact/tooltip'
-import { LlmProvider } from '../../../types/Agent'
+import { LlmProvider, BaseProvider } from '../../../types/Agent'
 import { LlmModel, LlmModelProvider } from '../../../types/Model'
 import { Token } from '../../../types/Token'
 import { OAuth } from '../../../types/OAuth'
-import { getLlmProviders } from '../../../utils/constants'
+import { getBaseProviders, getLlmProviders } from '../../../utils/constants'
 import { ModelListItem } from './ModelListItem'
 import {
   findCatalogModel,
@@ -36,6 +36,7 @@ interface ModelSectionProps {
   recursionLimit: string
   enableMemory: boolean
   selfHostedUrl: string
+  baseProvider: BaseProvider | ''
   selfHostedUseOAuth: boolean
   selfHostedAuthHeaderName: string
   selfHostedTokenId: string
@@ -62,6 +63,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   recursionLimit,
   enableMemory,
   selfHostedUrl,
+  baseProvider,
   selfHostedUseOAuth,
   selfHostedAuthHeaderName,
   selfHostedTokenId,
@@ -79,6 +81,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
 }) => {
   const { t } = useTranslation()
   const llmProviderOptions = useMemo(() => getLlmProviders(t), [t])
+  const baseProviderOptions = useMemo(() => getBaseProviders(t), [t])
   const [modelInputMode, setModelInputMode] = useState<ModelInputMode>('list')
   const [modelSearchQuery, setModelSearchQuery] = useState('')
   const modelRef = useRef(model)
@@ -224,6 +227,10 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
     )
 
     onFieldChange('provider', nextProvider)
+
+    if (!isSelfHostedProvider(nextProvider) && baseProvider) {
+      onFieldChange('baseProvider', '')
+    }
 
     const rememberedModel = providerModelMemoryRef.current[nextProvider]
     const nextModel = resolveModelForProviderSwitch(
@@ -604,6 +611,21 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
 
           {isSelfHosted && (
             <div className="agent-detail-model-self-hosted-row">
+              <div className="form-field">
+                <label className="field-label">{t('base_provider')}</label>
+                <Dropdown
+                  value={baseProvider || null}
+                  options={baseProviderOptions}
+                  onChange={(event) =>
+                    onFieldChange('baseProvider', event.value ?? '')
+                  }
+                  className="w-full"
+                  placeholder={t('select_base_provider')}
+                  showClear
+                  appendTo="self"
+                />
+              </div>
+
               <div className="form-field">
                 <label className="field-label">
                   {t('self_hosted_url')}

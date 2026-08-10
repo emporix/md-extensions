@@ -31,7 +31,7 @@ tags:
   - name: Model
     description: Read LLM models from supported providers
   - name: OAuth
-    description: Manage OAuth configurations
+    description: Manage OAuth configurations (Preview)
   - name: Text Generation
     description: AI Text Generation
   - name: Token
@@ -861,7 +861,7 @@ paths:
         '403':
           $ref: '#/components/responses/403_resp_common'
       description: |-
-        ![Preview](https://res.cloudinary.com/saas-ag/image/upload/v1752824268/emporix/icons/preview_api1.png)
+        <p align="left"><img src="https://res.cloudinary.com/saas-ag/image/upload/v1752824268/emporix/icons/preview_api1.png" alt=""></p>
 
         {% hint style="danger" %}
         This functionality is in preview mode - some of the features may not be fully operational yet.
@@ -906,7 +906,7 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/QParamSearchBody'
       description: |-
-        ![Preview](https://res.cloudinary.com/saas-ag/image/upload/v1752824268/emporix/icons/preview_api1.png)
+        <p align="left"><img src="https://res.cloudinary.com/saas-ag/image/upload/v1752824268/emporix/icons/preview_api1.png" alt=""></p>
 
         {% hint style="danger" %}
         This functionality is in preview mode - some of the features may not be fully operational yet.
@@ -1370,6 +1370,12 @@ paths:
         '403':
           $ref: '#/components/responses/403_resp_common'
       description: |-
+        <p align="left"><img src="https://res.cloudinary.com/saas-ag/image/upload/v1752824268/emporix/icons/preview_api1.png" alt=""></p>
+
+        {% hint style="danger" %}
+        This functionality is in preview mode - some of the features may not be fully operational yet.
+        {% endhint %}
+
         Retrieves OAuth configurations based on the provided query.
       security:
         - OAuth2:
@@ -1410,6 +1416,12 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/QParamSearchBody'
       description: |-
+        <p align="left"><img src="https://res.cloudinary.com/saas-ag/image/upload/v1752824268/emporix/icons/preview_api1.png" alt=""></p>
+
+        {% hint style="danger" %}
+        This functionality is in preview mode - some of the features may not be fully operational yet.
+        {% endhint %}
+
         Searches for OAuth configurations based on the provided query.
       security:
         - OAuth2:
@@ -1447,6 +1459,12 @@ paths:
         '404':
           $ref: '#/components/responses/404_resp_common'
       description: |-
+        <p align="left"><img src="https://res.cloudinary.com/saas-ag/image/upload/v1752824268/emporix/icons/preview_api1.png" alt=""></p>
+
+        {% hint style="danger" %}
+        This functionality is in preview mode - some of the features may not be fully operational yet.
+        {% endhint %}
+
         Retrieves the OAuth configuration by a given ID.
       security:
         - OAuth2:
@@ -1481,6 +1499,12 @@ paths:
         '409':
           $ref: '#/components/responses/409_resp_common'
       description: |-
+        <p align="left"><img src="https://res.cloudinary.com/saas-ag/image/upload/v1752824268/emporix/icons/preview_api1.png" alt=""></p>
+
+        {% hint style="danger" %}
+        This functionality is in preview mode - some of the features may not be fully operational yet.
+        {% endhint %}
+
         Updates or creates a specified OAuth configuration by replacing all of its existing data with data from the request body.
         If the `metadata.version` is provided, then optimistic locking is enabled and version must match the version in the database.
 
@@ -1509,6 +1533,12 @@ paths:
         '404':
           $ref: '#/components/responses/404_resp_common'
       description: |-
+        <p align="left"><img src="https://res.cloudinary.com/saas-ag/image/upload/v1752824268/emporix/icons/preview_api1.png" alt=""></p>
+
+        {% hint style="danger" %}
+        This functionality is in preview mode - some of the features may not be fully operational yet.
+        {% endhint %}
+
         Partially updates a single OAuth configuration document with given information.
         Single update may contain multiple partial updates in the form of an array. It contains the allowed operations list:
           - `add` (adding an item to the items list)
@@ -1536,6 +1566,12 @@ paths:
         '403':
           $ref: '#/components/responses/403_resp_common'
       description: |-
+        <p align="left"><img src="https://res.cloudinary.com/saas-ag/image/upload/v1752824268/emporix/icons/preview_api1.png" alt=""></p>
+
+        {% hint style="danger" %}
+        This functionality is in preview mode - some of the features may not be fully operational yet.
+        {% endhint %}
+
         Deletes OAuth configuration by given ID.
 
         ***Important***: If an OAuth configuration is being used by an agent, then delete operation is not possible without `force` flag set to `true`.
@@ -2297,7 +2333,7 @@ components:
       type: string
       enum: [ qdrant ]
       description: Type of the database.
-    RagCustomType:
+    RagEntityType:
       type: string
       enum: [ product ]
       description: Type of the entity which is stored in the given collection.
@@ -2312,7 +2348,7 @@ components:
             - $ref: '#/components/schemas/RagCustomDatabaseType'
         entityType:
           allOf:
-            - $ref: '#/components/schemas/RagCustomType'
+            - $ref: '#/components/schemas/RagEntityType'
         collectionName:
           type: string
           description: Name of the database collection.
@@ -2975,6 +3011,11 @@ components:
               description: Type of the LLM Provider. The self-hosted LLM allows you to provide your own LLMs. When using this providers, the `selfHostedParams.url` property cannot be omitted.
               enum: [ self_hosted_ollama, self_hosted_vllm ]
               example: self_hosted_ollama
+            baseProvider:
+              type: string
+              description: Optional. Indicates which cloud LLM provider API the self-hosted endpoint is compatible with (openai, google, or anthropic). Applies when provider is self_hosted_ollama or self_hosted_vllm. Used to select the correct request/response conventions for that backend. Ignored for non–self-hosted providers.
+              enum: [ anthropic, google, openai ]
+              example: openai
           required:
             - provider
     SelfHostedLlmRequest:
