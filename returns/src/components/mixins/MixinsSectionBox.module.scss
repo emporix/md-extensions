@@ -1,0 +1,38 @@
+.wrapper {
+  padding-bottom: 2em;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-muted);
+  padding-bottom: var(--spacing-sm);
+}
+
+.titleFull {
+  width: 100%;
+}
+
+.body {
+  border-top: 1px solid var(--color-border-light);
+  padding-top: var(--spacing-md);
+}
+
+.removeButton {
+  margin-left: var(--spacing-sm);
+}
+
+.addLabel {
+  margin-left: var(--spacing-sm);
+}

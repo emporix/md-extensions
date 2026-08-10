@@ -1,0 +1,11 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: var(--spacing-sm);
+}
+
+.statusFilter {
+  min-width: 12rem;
+}

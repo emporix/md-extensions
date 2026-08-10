@@ -1,0 +1,24 @@
+.section {
+  width: 100%;
+  margin-bottom: var(--spacing-md);
+}
+
+.codeField {
+  flex: 0 0 25%;
+  max-width: 25%;
+}
+
+.detailsField {
+  flex: 0 0 75%;
+  max-width: 75%;
+}
+
+.customerField {
+  flex: 0 0 41.6667%;
+  max-width: 41.6667%;
+}
+
+.noCustomer {
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
