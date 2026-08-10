@@ -10,9 +10,28 @@ When a package is published to the **npm registry** (e.g. `@emporix/api-calls`, 
 
 ```json
 "dependencies": {
-  "@emporix/api-calls": "0.1.6"
+  "@emporix/api-calls": "0.1.6",
+  "@emporix/component-library": "1.13.1"
 }
 ```
+
+## Do not commit `file:` local path dependencies
+
+For **local development only**, you may temporarily link a sibling package:
+
+```json
+"@emporix/component-library": "file:../../component-library"
+```
+
+**Never commit** `package.json` or lockfile changes that use `file:`, `link:`, or other local filesystem paths for published `@emporix/*` packages.
+
+Before committing:
+
+1. Restore the published **semver** in `package.json` (e.g. `"1.13.1"`, not `file:../../component-library`).
+2. Run `npm install` / `yarn install` to refresh the lockfile against the registry.
+3. Do not stage or commit `package.json` / lockfile diffs that still contain `file:` / `link:` entries.
+
+Agents: when switching to `file:` for local testing, revert to semver before any commit unless the user explicitly asks to commit a local link (avoid — it breaks CI and other developers).
 
 ## Do not use git URLs for published packages
 
@@ -32,9 +51,9 @@ Git dependencies cause problems in CI (SSH auth, missing `prepare` builds, slowe
 ## After publishing a new library version
 
 1. Publish the package to npm (`npm publish`).
-2. Update the consumer `package.json` to the new semver (exact or caret as team convention).
+2. Update the consumer `package.json` to the new semver (exact or caret as team convention) — not `file:`.
 3. Run `yarn install` / `npm install` and commit the lockfile.
-4. Do not leave temporary git pins in `package.json` after publish.
+4. Do not leave temporary `file:` or git pins in `package.json` after publish.
 
 ## Lockfile
 
