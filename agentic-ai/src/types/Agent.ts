@@ -53,6 +53,29 @@ export enum LlmProvider {
   SELF_HOSTED_VLLM = 'self_hosted_vllm',
 }
 
+/** Cloud LLM API compatibility for self-hosted endpoints. */
+export enum BaseProvider {
+  ANTHROPIC = 'anthropic',
+  GOOGLE = 'google',
+  OPENAI = 'openai',
+}
+
+const BASE_PROVIDER_VALUES = new Set<string>(Object.values(BaseProvider))
+
+/** Normalize API `baseProvider` (case-insensitive) to the dropdown value. */
+export const parseBaseProvider = (
+  value: string | undefined | null
+): BaseProvider | '' => {
+  if (!value) {
+    return ''
+  }
+
+  const normalized = value.toLowerCase()
+  return BASE_PROVIDER_VALUES.has(normalized)
+    ? (normalized as BaseProvider)
+    : ''
+}
+
 export enum GrantType {
   CLIENT_CREDENTIALS = 'client_credentials',
 }
@@ -62,6 +85,8 @@ export interface LlmConfig {
   temperature?: number
   maxTokens: number
   provider: LlmProvider
+  /** Optional. API compatibility for self-hosted Ollama/vLLM backends. */
+  baseProvider?: BaseProvider
   additionalParams: Record<string, unknown> | null
   token?: {
     id: string

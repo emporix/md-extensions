@@ -573,6 +573,8 @@ const TRANSLATIONS_EN = {
   model_thinking_badge: 'THINKING',
   model_self_hosted_headers: 'Additional headers',
   select_provider: 'Select Provider',
+  base_provider: 'Base Provider',
+  select_base_provider: 'Select Base Provider',
   provider_type: 'Models',
   model_input_mode_list: 'Standard',
   model_input_mode_custom: 'Custom',

@@ -225,6 +225,9 @@ export const upsertCustomAgent = async (
       }),
       maxTokens: agent.llmConfig.maxTokens,
       provider: agent.llmConfig.provider,
+      ...(agent.llmConfig.baseProvider && {
+        baseProvider: agent.llmConfig.baseProvider,
+      }),
       additionalParams: agent.llmConfig.additionalParams,
       ...(agent.llmConfig.token && { token: agent.llmConfig.token }),
       ...(agent.llmConfig.selfHostedParams && {

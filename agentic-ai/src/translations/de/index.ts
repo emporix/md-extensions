@@ -580,6 +580,8 @@ const TRANSLATIONS_DE = {
   model_thinking_badge: 'THINKING',
   model_self_hosted_headers: 'Zusätzliche Header',
   select_provider: 'Anbieter auswählen',
+  base_provider: 'Basis-Anbieter',
+  select_base_provider: 'Basis-Anbieter auswählen',
   provider_type: 'Modelle',
   model_input_mode_list: 'Standard',
   model_input_mode_custom: 'Benutzerdefiniert',
