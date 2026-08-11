@@ -169,8 +169,8 @@ const TRANSLATIONS_EN = {
   trigger_type_commerce: 'Commerce Event',
   trigger_type_slack: 'Slack',
   trigger_type_teams: 'Microsoft Teams',
-  support_trigger_types_hint:
-    'Select at least one channel trigger. When Teams is selected, attach exactly one Teams tool on the Tools tab.',
+  channel_trigger_tool_hint:
+    'When Slack or Teams is selected, attach exactly one matching native tool on the Tools tab.',
   teams_default_inbound_agent: 'Default inbound agent',
   teams_default_inbound_agent_tooltip:
     'Optional. Agent that handles the first inbound Teams message on this team when no conversation exists yet. Saving assigns the Teams trigger and tool to that agent. Clear to disable cold inbound routing.',

@@ -49,6 +49,7 @@ import {
 import {
   applySlackToolDefaults,
   countSlackToolsForTeam,
+  DEFAULT_SLACK_ALLOWED_OPERATIONS,
   toSlackToolConfigForSave,
 } from '../utils/slackRoutingHelpers'
 import {
@@ -570,11 +571,9 @@ export const useToolConfig = ({
     (state.toolType !== 'teams' ||
       (state.config.allowedOperations?.length ??
         DEFAULT_TEAMS_ALLOWED_OPERATIONS.length) > 0) &&
-    // Backward compatibility: allow null/empty Slack allowedOperations for legacy tools.
-    // TODO: Re-enable non-empty Slack allowedOperations once all Slack tools are migrated.
-    // (state.toolType !== 'slack' ||
-    //   (state.config.allowedOperations?.length ??
-    //     DEFAULT_SLACK_ALLOWED_OPERATIONS.length) > 0) &&
+    (state.toolType !== 'slack' ||
+      (state.config.allowedOperations?.length ??
+        DEFAULT_SLACK_ALLOWED_OPERATIONS.length) > 0) &&
     (state.toolType !== 'teams' ||
       !state.config.teamId?.trim() ||
       !state.config.tenantId?.trim() ||
