@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { InputText } from 'primereact/inputtext'
@@ -12,23 +12,23 @@ import { getLocalizedValue, iconMap } from '../../utils/agentHelpers'
 import { DEFAULT_SLACK_ALLOWED_OPERATIONS } from '../../utils/slackRoutingHelpers'
 import { ToolRequiredMark } from './ToolRequiredMark'
 
-interface SlackToolSectionProps {
-  config: ToolConfig
-  availableAgents: CustomAgent[]
-  isCreating: boolean
-  isEditing: boolean
-  onConfigChange: (key: string, value: string) => void
-  onAllowedOperationsChange: (operations: string[]) => void
+type SlackToolSectionProps = {
+  readonly config: ToolConfig
+  readonly availableAgents: CustomAgent[]
+  readonly isCreating: boolean
+  readonly isEditing: boolean
+  readonly onConfigChange: (key: string, value: string) => void
+  readonly onAllowedOperationsChange: (operations: string[]) => void
 }
 
-export const SlackToolSection: React.FC<SlackToolSectionProps> = ({
+export const SlackToolSection = ({
   config,
   availableAgents,
   isCreating,
   isEditing,
   onConfigChange,
   onAllowedOperationsChange,
-}) => {
+}: SlackToolSectionProps) => {
   const { t } = useTranslation()
   const appState = useAppState()
 
@@ -135,8 +135,7 @@ export const SlackToolSection: React.FC<SlackToolSectionProps> = ({
       <div className="form-field">
         <label className="field-label">
           {t('slack_allowed_operations')}
-          {/* TODO: Re-enable required mark once empty/null allowedOperations is no longer allowed for Slack. */}
-          {/* <ToolRequiredMark /> */}
+          <ToolRequiredMark />
         </label>
         <MultiSelect
           value={
@@ -149,9 +148,12 @@ export const SlackToolSection: React.FC<SlackToolSectionProps> = ({
           onChange={(event) =>
             onAllowedOperationsChange((event.value as string[]) ?? [])
           }
-          // Backward compatibility: do not mark empty allowedOperations invalid for legacy Slack tools.
-          // TODO: Re-enable p-invalid once non-empty allowedOperations is required again.
-          className="w-full"
+          className={`w-full${
+            (config.allowedOperations?.length ??
+              DEFAULT_SLACK_ALLOWED_OPERATIONS.length) === 0
+              ? ' p-invalid'
+              : ''
+          }`}
           display="chip"
           appendTo="self"
         />

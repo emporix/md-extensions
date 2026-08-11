@@ -170,8 +170,8 @@ const TRANSLATIONS_DE = {
   trigger_type_commerce: 'Commerce-Ereignis',
   trigger_type_slack: 'Slack',
   trigger_type_teams: 'Microsoft Teams',
-  support_trigger_types_hint:
-    'Wählen Sie mindestens einen Kanal-Trigger. Bei Teams muss auf der Registerkarte Tools genau ein Teams-Tool zugewiesen sein.',
+  channel_trigger_tool_hint:
+    'Bei Slack- oder Teams-Auswahl muss auf der Registerkarte Tools genau ein passendes natives Tool zugewiesen sein.',
   teams_default_inbound_agent: 'Standard-Eingangsagent',
   teams_default_inbound_agent_tooltip:
     'Optional. Agent, der die erste eingehende Teams-Nachricht in diesem Team verarbeitet, wenn noch keine Konversation existiert. Beim Speichern werden Teams-Trigger und Tool diesem Agenten zugewiesen. Leer lassen, um Cold-Inbound-Routing zu deaktivieren.',

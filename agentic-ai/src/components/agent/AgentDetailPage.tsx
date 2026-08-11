@@ -285,7 +285,6 @@ const AgentDetailPage: React.FC = () => {
     if (activeTab === 'triggers') {
       return (
         <TriggersSection
-          agentType={state.agentType}
           triggerTypes={state.triggerTypes}
           commerceEvents={state.commerceEvents}
           commerceEventFilter={state.commerceEventFilter}

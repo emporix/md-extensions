@@ -1,51 +1,42 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'primereact/button'
-import { Dropdown } from 'primereact/dropdown'
 import { MultiSelect } from 'primereact/multiselect'
 import { Tooltip } from 'primereact/tooltip'
-import {
-  COLLABORATION_TRIGGER_TYPES,
-  getTriggerTypes,
-} from '../../../utils/constants'
+import { getTriggerTypes } from '../../../utils/constants'
 import { type AgentCommerceFilterDsl } from '../../../utils/agentFilterDslHelpers'
+import { hasChannelTrigger } from '../../../utils/agentTriggerValidationHelpers'
 import { AgentFilterDslEditor } from './AgentFilterDslEditor'
 import starsIcon from '../../../assets/stars_icon.svg'
 
-interface TriggersSectionProps {
-  agentType: string
-  triggerTypes: string[]
-  commerceEvents: string[]
-  commerceEventFilter: AgentCommerceFilterDsl | null
-  requiredScopes: string[]
-  onFieldChange: (
+type TriggersSectionProps = {
+  readonly triggerTypes: string[]
+  readonly commerceEvents: string[]
+  readonly commerceEventFilter: AgentCommerceFilterDsl | null
+  readonly requiredScopes: string[]
+  readonly onFieldChange: (
     field: string,
     value: string[] | AgentCommerceFilterDsl | null
   ) => void
-  variant?: 'detail' | 'inline'
-  commerceEventCatalog: string[]
-  commerceCatalogLoading: boolean
-  commerceCatalogError: string | null
-  msTeamsEnabled?: boolean
+  readonly commerceEventCatalog: string[]
+  readonly commerceCatalogLoading: boolean
+  readonly commerceCatalogError: string | null
+  readonly msTeamsEnabled?: boolean
 }
 
-export const TriggersSection: React.FC<TriggersSectionProps> = ({
-  agentType,
+export const TriggersSection = ({
   triggerTypes,
   commerceEvents,
   commerceEventFilter,
   requiredScopes,
   onFieldChange,
-  variant = 'detail',
   commerceEventCatalog,
   commerceCatalogLoading,
   commerceCatalogError,
   msTeamsEnabled = false,
-}) => {
+}: TriggersSectionProps) => {
   const { t } = useTranslation()
   const [assistantDialogVisible, setAssistantDialogVisible] = useState(false)
-  const isDetailVariant = variant === 'detail'
-  const isSupportAgent = agentType === 'support'
 
   const scopeOptions = useMemo(
     () => [
@@ -57,45 +48,15 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
     [t]
   )
 
-  const supportTriggerOptions = useMemo(() => {
+  const availableTriggerTypes = useMemo(() => {
     const allTriggerTypes = getTriggerTypes(t)
     return allTriggerTypes.filter(
-      (option) =>
-        option.value === 'slack' || (option.value === 'teams' && msTeamsEnabled)
+      (option) => option.value !== 'teams' || msTeamsEnabled
     )
   }, [t, msTeamsEnabled])
 
-  const availableTriggerTypes = useMemo(() => {
-    const allTriggerTypes = getTriggerTypes(t)
-    if (isSupportAgent) {
-      return supportTriggerOptions
-    }
-    return allTriggerTypes.filter(
-      (option) => option.value !== 'slack' && option.value !== 'teams'
-    )
-  }, [t, isSupportAgent, supportTriggerOptions])
-
-  const selectedTrigger =
-    isDetailVariant && !isSupportAgent ? (triggerTypes[0] ?? null) : null
-  const isCommerceTriggerSelected = isDetailVariant
-    ? isSupportAgent
-      ? false
-      : selectedTrigger === 'commerce_events'
-    : triggerTypes.includes('commerce_events')
-
-  const handleTriggerChange = (value: string | null) => {
-    const wasCommerce = triggerTypes.includes('commerce_events')
-    const nextTypes = value ? [value] : []
-    onFieldChange('triggerTypes', nextTypes)
-
-    if (!wasCommerce && value === 'commerce_events') {
-      onFieldChange('commerceEvents', [])
-      onFieldChange('commerceEventFilter', null)
-    } else if (wasCommerce && value !== 'commerce_events') {
-      onFieldChange('commerceEvents', [])
-      onFieldChange('commerceEventFilter', null)
-    }
-  }
+  const isCommerceTriggerSelected = triggerTypes.includes('commerce_events')
+  const showChannelTriggerHint = hasChannelTrigger(triggerTypes)
 
   const handleMultiTriggerChange = (next: string[]) => {
     const wasCommerce = triggerTypes.includes('commerce_events')
@@ -109,17 +70,6 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
       onFieldChange('commerceEventFilter', null)
     }
   }
-
-  const handleSupportTriggerChange = (next: string[]) => {
-    onFieldChange(
-      'triggerTypes',
-      next.filter((type) =>
-        (COLLABORATION_TRIGGER_TYPES as readonly string[]).includes(type)
-      )
-    )
-  }
-
-  const isCommerceEventsFieldEnabled = isCommerceTriggerSelected
 
   const commerceEventOptions = useMemo(() => {
     const catalogSet = new Set(commerceEventCatalog)
@@ -157,161 +107,94 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
     </div>
   )
 
-  const renderCommerceEventsField = (alwaysVisible: boolean) => {
-    if (!alwaysVisible && !isCommerceTriggerSelected) {
-      return null
-    }
-
-    return (
-      <div
-        className={`form-field agent-detail-commerce-events-field${isCommerceEventsFieldEnabled ? '' : ' agent-detail-commerce-events-field--disabled'}`}
-      >
-        <label className="field-label">
-          {t('commerce_events')}
-          {isCommerceTriggerSelected ? (
-            <span className="field-required-mark"> *</span>
-          ) : null}
-        </label>
-        <MultiSelect
-          value={isCommerceTriggerSelected ? commerceEvents : []}
-          options={commerceEventOptions}
-          onChange={(e) => {
-            if (!isCommerceTriggerSelected || commerceCatalogLoading) {
-              return
-            }
-            onFieldChange('commerceEvents', (e.value as string[]) ?? [])
-          }}
-          className={`w-full ${isCommerceTriggerSelected && commerceEvents.length === 0 ? 'p-invalid' : ''}${commerceCatalogLoading && isCommerceTriggerSelected ? ' agent-detail-commerce-events-field--loading' : ''}`}
-          display="chip"
-          showClear={isCommerceTriggerSelected}
-          maxSelectedLabels={3}
-          placeholder={
-            commerceCatalogLoading
-              ? t('loading_events')
-              : isDetailVariant
-                ? t('select_an_option')
-                : t('select_events_placeholder')
-          }
-          disabled={!isCommerceEventsFieldEnabled}
-          appendTo="self"
-          filter={isCommerceTriggerSelected && !commerceCatalogLoading}
-        />
-        {isCommerceTriggerSelected &&
-          !commerceCatalogLoading &&
-          commerceEventCatalog.length === 0 &&
-          !commerceCatalogError && (
-            <small className="state-empty text-muted">
-              {t('no_events_available')}
-            </small>
-          )}
-        {commerceCatalogError ? (
-          <small className="p-error">{commerceCatalogError}</small>
+  const renderCommerceEventsField = () => (
+    <div
+      className={`form-field agent-detail-commerce-events-field${isCommerceTriggerSelected ? '' : ' agent-detail-commerce-events-field--disabled'}`}
+    >
+      <label className="field-label">
+        {t('commerce_events')}
+        {isCommerceTriggerSelected ? (
+          <span className="field-required-mark"> *</span>
         ) : null}
-      </div>
-    )
-  }
+      </label>
+      <MultiSelect
+        value={isCommerceTriggerSelected ? commerceEvents : []}
+        options={commerceEventOptions}
+        onChange={(e) => {
+          if (!isCommerceTriggerSelected || commerceCatalogLoading) {
+            return
+          }
+          onFieldChange('commerceEvents', (e.value as string[]) ?? [])
+        }}
+        className={`w-full ${isCommerceTriggerSelected && commerceEvents.length === 0 ? 'p-invalid' : ''}${commerceCatalogLoading && isCommerceTriggerSelected ? ' agent-detail-commerce-events-field--loading' : ''}`}
+        display="chip"
+        showClear={isCommerceTriggerSelected}
+        maxSelectedLabels={3}
+        placeholder={
+          commerceCatalogLoading
+            ? t('loading_events')
+            : t('select_an_option')
+        }
+        disabled={!isCommerceTriggerSelected}
+        appendTo="self"
+        filter={isCommerceTriggerSelected && !commerceCatalogLoading}
+      />
+      {isCommerceTriggerSelected &&
+        !commerceCatalogLoading &&
+        commerceEventCatalog.length === 0 &&
+        !commerceCatalogError && (
+          <small className="state-empty text-muted">
+            {t('no_events_available')}
+          </small>
+        )}
+      {commerceCatalogError ? (
+        <small className="p-error">{commerceCatalogError}</small>
+      ) : null}
+    </div>
+  )
 
   const renderConstraintsEditor = () => {
     if (!isCommerceTriggerSelected) {
       return null
     }
 
-    if (isDetailVariant) {
-      return (
-        <div className="agent-detail-constraints-section">
-          <div className="agent-detail-constraints-header">
-            <h2 className="agent-detail-section-title">{t('constraints')}</h2>
-            <Button
-              type="button"
-              className="p-button-outlined agent-detail-generate-condition-btn"
-              onClick={() => setAssistantDialogVisible(true)}
-            >
-              <span className="agent-detail-generate-condition-btn-content">
-                <img
-                  src={starsIcon}
-                  alt=""
-                  className="agent-detail-generate-condition-btn-icon"
-                  aria-hidden="true"
-                />
-                <span className="p-button-label">
-                  {t('generate_condition')}
-                </span>
-              </span>
-            </Button>
-          </div>
-          <section className="agent-detail-section agent-detail-constraints-card">
-            <AgentFilterDslEditor
-              value={commerceEventFilter}
-              onChange={(value) => onFieldChange('commerceEventFilter', value)}
-              layout="split"
-              assistantDialogVisible={assistantDialogVisible}
-              onAssistantDialogVisibleChange={setAssistantDialogVisible}
-            />
-          </section>
-        </div>
-      )
-    }
-
     return (
-      <div className="constraints-card">
-        <h3 className="constraints-card-title">{t('constraints')}</h3>
-        <AgentFilterDslEditor
-          value={commerceEventFilter}
-          onChange={(value) => onFieldChange('commerceEventFilter', value)}
-        />
+      <div className="agent-detail-constraints-section">
+        <div className="agent-detail-constraints-header">
+          <h2 className="agent-detail-section-title">{t('constraints')}</h2>
+          <Button
+            type="button"
+            className="p-button-outlined agent-detail-generate-condition-btn"
+            onClick={() => setAssistantDialogVisible(true)}
+          >
+            <span className="agent-detail-generate-condition-btn-content">
+              <img
+                src={starsIcon}
+                alt=""
+                className="agent-detail-generate-condition-btn-icon"
+                aria-hidden="true"
+              />
+              <span className="p-button-label">{t('generate_condition')}</span>
+            </span>
+          </Button>
+        </div>
+        <section className="agent-detail-section agent-detail-constraints-card">
+          <AgentFilterDslEditor
+            value={commerceEventFilter}
+            onChange={(value) => onFieldChange('commerceEventFilter', value)}
+            layout="split"
+            assistantDialogVisible={assistantDialogVisible}
+            onAssistantDialogVisibleChange={setAssistantDialogVisible}
+          />
+        </section>
       </div>
     )
   }
 
-  const renderSupportTriggersField = () => (
-    <div className="form-field">
-      <label className="field-label">
-        {t('trigger_types')}
-        <span className="field-required-mark"> *</span>
-      </label>
-      <MultiSelect
-        value={triggerTypes}
-        options={supportTriggerOptions}
-        onChange={(e) =>
-          handleSupportTriggerChange((e.value as string[]) ?? [])
-        }
-        className={`w-full ${triggerTypes.length === 0 ? 'p-invalid' : ''}`}
-        display="chip"
-        placeholder={t('select_trigger_types')}
-        appendTo="self"
-      />
-      <small className="text-muted">{t('support_trigger_types_hint')}</small>
-    </div>
-  )
-
-  if (!isDetailVariant) {
-    return (
-      <>
-        {isSupportAgent ? (
-          renderSupportTriggersField()
-        ) : (
-          <div className="form-field">
-            <label className="field-label">{t('trigger_types')}</label>
-            <MultiSelect
-              value={triggerTypes}
-              options={availableTriggerTypes}
-              onChange={(e) =>
-                handleMultiTriggerChange((e.value as string[]) ?? [])
-              }
-              className="w-full"
-              display="chip"
-              placeholder={t('select_trigger_types')}
-              appendTo="self"
-            />
-          </div>
-        )}
-
-        {renderRequiredScopes()}
-        {renderCommerceEventsField(false)}
-        {renderConstraintsEditor()}
-      </>
-    )
-  }
+  const renderChannelTriggerHint = () =>
+    showChannelTriggerHint ? (
+      <small className="text-muted">{t('channel_trigger_tool_hint')}</small>
+    ) : null
 
   return (
     <div className="agent-detail-triggers-tab">
@@ -323,28 +206,23 @@ export const TriggersSection: React.FC<TriggersSectionProps> = ({
           <div className="agent-detail-form-row">{renderRequiredScopes()}</div>
 
           <div className="agent-detail-form-row">
-            {isSupportAgent ? (
-              renderSupportTriggersField()
-            ) : (
-              <>
-                <div className="form-field">
-                  <label className="field-label">{t('trigger')}</label>
-                  <Dropdown
-                    value={selectedTrigger}
-                    options={availableTriggerTypes}
-                    onChange={(e) =>
-                      handleTriggerChange(e.value as string | null)
-                    }
-                    className="w-full"
-                    placeholder={t('select_an_option')}
-                    appendTo="self"
-                    showClear
-                  />
-                </div>
+            <div className="form-field">
+              <label className="field-label">{t('trigger_types')}</label>
+              <MultiSelect
+                value={triggerTypes}
+                options={availableTriggerTypes}
+                onChange={(e) =>
+                  handleMultiTriggerChange((e.value as string[]) ?? [])
+                }
+                className="w-full"
+                display="chip"
+                placeholder={t('select_trigger_types')}
+                appendTo="self"
+              />
+              {renderChannelTriggerHint()}
+            </div>
 
-                {renderCommerceEventsField(true)}
-              </>
-            )}
+            {renderCommerceEventsField()}
           </div>
         </section>
       </div>

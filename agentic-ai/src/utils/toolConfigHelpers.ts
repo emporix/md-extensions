@@ -12,6 +12,7 @@ import {
   isValidRagFieldKey,
 } from './ragEmporixToolHelpers'
 import { DEFAULT_TEAMS_ALLOWED_OPERATIONS } from './teamsRoutingHelpers'
+import { DEFAULT_SLACK_ALLOWED_OPERATIONS } from './slackRoutingHelpers'
 
 export const MIXINS_PREFIX = 'mixins.'
 
@@ -105,11 +106,11 @@ export const isToolFormValid = ({
 
   switch (toolType) {
     case 'slack':
-      // Backward compatibility: allow null/empty allowedOperations for legacy Slack tools.
-      // TODO: Re-enable non-empty allowedOperations once all Slack tools are migrated.
-      // && (config.allowedOperations?.length ?? DEFAULT_SLACK_ALLOWED_OPERATIONS.length) > 0
       return (
-        !!config.teamId?.trim() && (!isCreating || !!config.botToken?.trim())
+        !!config.teamId?.trim() &&
+        (!isCreating || !!config.botToken?.trim()) &&
+        (config.allowedOperations?.length ??
+          DEFAULT_SLACK_ALLOWED_OPERATIONS.length) > 0
       )
 
     case 'teams':
