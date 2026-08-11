@@ -1,4 +1,9 @@
 import React, { ReactNode } from 'react'
+import {
+  CollapsibleText,
+  CollapsibleTextToggle,
+  useCollapsibleText,
+} from './CollapsibleText'
 
 interface ContentSectionProps {
   icon: string
@@ -6,6 +11,7 @@ interface ContentSectionProps {
   content?: string
   children?: ReactNode
   headerAction?: ReactNode
+  maxLines?: number
 }
 
 export const ContentSection: React.FC<ContentSectionProps> = ({
@@ -14,17 +20,53 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
   content,
   children,
   headerAction,
+  maxLines,
 }) => {
+  const isCollapsible = content !== undefined && maxLines !== undefined
+  const collapsible = useCollapsibleText(content ?? '', maxLines ?? 2)
+  const canToggle = isCollapsible && collapsible.showToggle
+
+  const handleContentClick = () => {
+    if (canToggle) {
+      collapsible.toggle()
+    }
+  }
+
   return (
     <div className="content-section">
       <div className="section-header">
         <i className={`pi ${icon} section-icon`} />
-        <h3 className="section-title">{title}</h3>
-        {headerAction && headerAction}
+        <h3 className="panel-section-title">{title}</h3>
+        {(headerAction || isCollapsible) && (
+          <div className="section-header-actions">
+            {headerAction}
+            {isCollapsible && (
+              <CollapsibleTextToggle
+                isExpanded={collapsible.isExpanded}
+                onToggle={collapsible.toggle}
+                visible={collapsible.showToggle}
+              />
+            )}
+          </div>
+        )}
       </div>
-      <div className="content-box">
+      <div
+        className={`content-box${canToggle ? ' content-box--collapsible' : ''}`}
+        onClick={handleContentClick}
+      >
         {content !== undefined ? (
-          <pre className="content-text">{content}</pre>
+          isCollapsible ? (
+            <CollapsibleText
+              as="pre"
+              content={content}
+              className="content-text"
+              isExpanded={collapsible.isExpanded}
+              textRef={collapsible.textRef}
+              collapsedStyle={collapsible.collapsedStyle}
+            />
+          ) : (
+            <pre className="content-text">{content}</pre>
+          )
         ) : (
           children
         )}

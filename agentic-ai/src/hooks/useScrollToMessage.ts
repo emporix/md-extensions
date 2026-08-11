@@ -44,69 +44,35 @@ export const useScrollToMessage = (
         return
       }
 
-      const tbody = element.querySelector('.p-datatable-tbody')
+      const messageCell = element.querySelector(
+        `[data-log-timestamp="${CSS.escape(scrollToMessage)}"]`
+      )
 
-      if (!tbody) {
+      if (!messageCell) {
         setTimeout(() => attemptScroll(attempt + 1), 100)
         return
       }
 
-      // Find the row by matching timestamp and message in the DOM
-      // Iterate through all rows and check both timestamp and message
-      for (let i = 0; i < tbody.children.length; i++) {
-        const row = tbody.children[i] as HTMLElement
+      const row = messageCell.closest('tr')
 
-        // Get all cells in the row
-        const cells = row.querySelectorAll('td')
-        if (cells.length < 4) continue
-
-        // Column order: severity (0), timestamp (1), agentId (2), message (3)
-        const timestampCell = cells[1]
-        const messageCell = cells[3]
-
-        if (!timestampCell || !messageCell) continue
-
-        // Get cell text content and remove prefixes
-        const timestampText = (timestampCell.textContent?.trim() || '').replace(
-          'Timestamp',
-          ''
-        )
-        const messageText = (messageCell.textContent?.trim() || '').replace(
-          'Message',
-          ''
-        )
-
-        // Format the target timestamp for comparison
-        const formattedTargetTimestamp = new Date(
-          targetMessage.timestamp
-        ).toLocaleString()
-
-        if (
-          timestampText !== formattedTargetTimestamp ||
-          messageText !== targetMessage.message.replace(/\n/g, '')
-        )
-          continue
-
-        row.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-        })
-
-        row.style.backgroundColor = '#fff3cd'
-        row.style.transition = 'background-color 2s ease'
-
-        setTimeout(() => {
-          row.style.backgroundColor = ''
-        }, 2000)
-
+      if (!row || !(row instanceof HTMLElement)) {
+        setTimeout(() => attemptScroll(attempt + 1), 100)
         return
       }
 
-      // Row not found yet, retry after a short delay
-      setTimeout(() => attemptScroll(attempt + 1), 100)
+      row.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      })
+
+      row.style.backgroundColor = '#fff3cd'
+      row.style.transition = 'background-color 2s ease'
+
+      setTimeout(() => {
+        row.style.backgroundColor = ''
+      }, 2000)
     }
 
-    // Start scrolling attempts after a short delay to ensure table is rendered
     setTimeout(() => attemptScroll(), 200)
   }, [dataTableRef, messages, scrollToMessage, isVisible])
 }

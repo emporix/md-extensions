@@ -21,17 +21,19 @@ const LogCard: React.FC<LogCardProps> = ({ log, onClick }) => {
 
   const getSeverityBadgeText = () => {
     if (log.errorCount > 0) {
-      return `${log.errorCount} ${t('errors', 'errors')}`
+      return `${log.errorCount} ${t('errors')}`
     }
-    return t('success', 'Success')
+    return t('success')
   }
 
   const getDescription = () => {
     const parts = []
-    parts.push(`${log.messageCount} ${t('messages', 'messages')}`)
+    parts.push(`${log.messageCount} ${t('messages')}`)
 
     if (log.duration) {
-      parts.push(`${t('duration', 'Duration')}: ${log.duration}`)
+      parts.push(
+        `${t('duration')}: ${t('duration_seconds', { count: log.duration })}`
+      )
     }
 
     return parts.join(' • ')
@@ -43,23 +45,19 @@ const LogCard: React.FC<LogCardProps> = ({ log, onClick }) => {
         className="log-card"
         icon={getSeverityIcon()}
         badge={getSeverityBadgeText()}
-        title={`${t('agent', 'Agent')}: ${log.agentId}`}
+        title={`${t('agent')}: ${log.agentId}`}
         description={getDescription()}
         onClick={() => onClick(log)}
       >
         <div className="log-metadata">
           <div className="log-meta-item">
-            <span className="log-meta-label">
-              {t('session_id', 'Session ID')}:
-            </span>
+            <span className="log-meta-label">{t('session_id')}:</span>
             <span className="log-meta-value">
               {log.sessionId.substring(0, 8)}...
             </span>
           </div>
           <div className="log-meta-item">
-            <span className="log-meta-label">
-              {t('last_activity', 'Last Activity')}:
-            </span>
+            <span className="log-meta-label">{t('last_activity')}:</span>
             <span className="log-meta-value">
               {formatTimestamp(log.lastActivity)}
             </span>

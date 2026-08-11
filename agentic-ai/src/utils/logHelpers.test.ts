@@ -127,6 +127,37 @@ describe('extractInitialMessageFromLog', () => {
 
     expect(result).toBeUndefined()
   })
+
+  it('should extract message from streaming inbound log', () => {
+    const messages: LogMessage[] = [
+      {
+        severity: 'INFO',
+        message: 'Agent receive streaming request: Review the following logs',
+        timestamp: '2024-01-01T00:00:00Z',
+        agentId: 'log-analysis-assistant',
+      },
+    ]
+
+    expect(extractInitialMessageFromLog(messages)).toBe(
+      'Review the following logs'
+    )
+  })
+
+  it('should not match nested Agent receive request inside streaming payload', () => {
+    const messages: LogMessage[] = [
+      {
+        severity: 'INFO',
+        message:
+          'Agent receive streaming request: payload with nested Agent receive request: {"product_id":"Ferrari"}',
+        timestamp: '2024-01-01T00:00:00Z',
+        agentId: 'log-analysis-assistant',
+      },
+    ]
+
+    expect(extractInitialMessageFromLog(messages)).toBe(
+      'payload with nested Agent receive request: {"product_id":"Ferrari"}'
+    )
+  })
 })
 
 describe('extractResponseFromLog', () => {
@@ -291,5 +322,68 @@ describe('extractResponseFromLog', () => {
     const result = extractResponseFromLog([])
 
     expect(result).toBeUndefined()
+  })
+
+  it('should extract last LLM ended response for streaming logs', () => {
+    const messages: LogMessage[] = [
+      {
+        severity: 'INFO',
+        message: 'Agent receive streaming request: Review logs',
+        timestamp: '2024-01-01T00:00:00Z',
+        agentId: 'log-analysis-assistant',
+      },
+      {
+        severity: 'INFO',
+        message:
+          "LLM ended (run #1) for agent: 'log-analysis-assistant' with response: ⚠️ Failures detected:\n- ERROR logs show recursion limit",
+        timestamp: '2024-01-01T00:00:01Z',
+        agentId: 'log-analysis-assistant',
+      },
+    ]
+
+    expect(extractResponseFromLog(messages)).toBe(
+      '⚠️ Failures detected:\n- ERROR logs show recursion limit'
+    )
+  })
+
+  it('should ignore nested Agent final response inside streaming payload', () => {
+    const messages: LogMessage[] = [
+      {
+        severity: 'INFO',
+        message:
+          'Agent receive streaming request: nested Agent final response: Recursion limit reached',
+        timestamp: '2024-01-01T00:00:00Z',
+        agentId: 'log-analysis-assistant',
+      },
+      {
+        severity: 'INFO',
+        message:
+          "LLM ended (run #1) for agent: 'log-analysis-assistant' with response: Analysis complete",
+        timestamp: '2024-01-01T00:00:01Z',
+        agentId: 'log-analysis-assistant',
+      },
+    ]
+
+    expect(extractResponseFromLog(messages)).toBe('Analysis complete')
+  })
+
+  it('should return undefined for streaming logs without LLM ended response', () => {
+    const messages: LogMessage[] = [
+      {
+        severity: 'INFO',
+        message: 'Agent receive streaming request: Review logs',
+        timestamp: '2024-01-01T00:00:00Z',
+        agentId: 'log-analysis-assistant',
+      },
+      {
+        severity: 'INFO',
+        message:
+          'Agent final response: Recursion limit reached, but task may be partially complete',
+        timestamp: '2024-01-01T00:00:01Z',
+        agentId: 'product-created-agent',
+      },
+    ]
+
+    expect(extractResponseFromLog(messages)).toBeUndefined()
   })
 })

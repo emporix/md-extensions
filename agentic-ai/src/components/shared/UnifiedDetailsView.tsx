@@ -1,10 +1,11 @@
 import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 import { BasePage } from './BasePage'
 import UnifiedLogsTable from './UnifiedLogsTable'
 import { InfoCard } from './InfoCard'
 import { StatusBadge } from './StatusBadge'
-import { ContentSection } from './ContentSection'
+import { CommunicationSection } from './CommunicationSection'
 import { ImportResultSection } from './ImportResultSection'
 import { ExportResultSection } from './ExportResultSection'
 import { LogMessage } from '../../types/Log'
@@ -151,6 +152,113 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
       )
     : []
 
+  const hasInfoCards =
+    Boolean(agentId) ||
+    Boolean(sessionId) ||
+    Boolean(requestId) ||
+    Boolean(jobType) ||
+    (duration !== undefined && duration !== null) ||
+    Boolean(createdAt) ||
+    Boolean(status)
+
+  const infoSectionTitle = jobType ? t('job_details') : t('log_details')
+  const sessionDetailsPath = sessionId
+    ? `/logs/sessions/${sessionId}${agentId ? `?agentId=${encodeURIComponent(agentId)}` : ''}`
+    : undefined
+  const agentDetailsPath = agentId
+    ? `/agents/${encodeURIComponent(agentId)}/edit`
+    : undefined
+
+  const infoFields: React.ReactNode[] = []
+
+  if (agentId && agentDetailsPath) {
+    infoFields.push(
+      <InfoCard
+        key="agent"
+        label={t('logs_agent_id')}
+        value={
+          <Link to={agentDetailsPath} className="info-value-link">
+            {agentId}
+          </Link>
+        }
+      />
+    )
+  }
+
+  if (sessionId && sessionDetailsPath) {
+    infoFields.push(
+      <InfoCard
+        key="session"
+        label={t('session_id')}
+        value={
+          <Link to={sessionDetailsPath} className="info-value-link">
+            {sessionId}
+          </Link>
+        }
+      />
+    )
+  }
+
+  if (requestId) {
+    infoFields.push(
+      <InfoCard key="request" label={t('request_id')} value={requestId} />
+    )
+  }
+
+  if (jobType) {
+    infoFields.push(
+      <InfoCard
+        key="jobType"
+        label={t('job_type')}
+        value={getJobTypeDisplay(jobType)}
+      />
+    )
+  }
+
+  if (duration !== undefined && duration !== null) {
+    infoFields.push(
+      <InfoCard
+        key="duration"
+        label={t('duration')}
+        value={t('duration_seconds', { count: duration })}
+      />
+    )
+  }
+
+  if (createdAt) {
+    infoFields.push(
+      <InfoCard
+        key="createdAt"
+        label={t('created_at')}
+        value={formatTimestamp(createdAt)}
+      />
+    )
+  }
+
+  if (status) {
+    infoFields.push(
+      <InfoCard
+        key="status"
+        label={t('status')}
+        value={statusBodyTemplate(status)}
+        isTag
+      />
+    )
+  }
+
+  const infoFieldColumns = infoFields.flatMap((field, index) =>
+    index === 0
+      ? [field]
+      : [
+          <div
+            key={`details-info-divider-${index}`}
+            className="details-info-divider"
+            aria-hidden="true"
+          />,
+          field,
+        ]
+  )
+
   return (
     <BasePage
       loading={false}
@@ -159,68 +267,17 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
       className={className}
     >
       <div className="details-content">
-        <div className="details-header">
-          <div className="details-info-grid">
-            {agentId && (
-              <InfoCard
-                label={t('logs_agent_id', 'Agent ID')}
-                value={agentId}
-              />
-            )}
-            {sessionId && (
-              <InfoCard
-                label={t('session_id', 'Session ID')}
-                value={sessionId}
-              />
-            )}
-            {requestId && (
-              <InfoCard
-                label={t('request_id', 'Request ID')}
-                value={requestId}
-              />
-            )}
-            {jobType && (
-              <InfoCard
-                label={t('job_type', 'Job Type')}
-                value={getJobTypeDisplay(jobType)}
-              />
-            )}
-            {duration !== undefined && duration !== null && (
-              <InfoCard
-                label={t('duration', 'Duration')}
-                value={String(duration)}
-              />
-            )}
-            {createdAt && (
-              <InfoCard
-                label={t('created_at', 'Created At')}
-                value={formatTimestamp(createdAt)}
-              />
-            )}
-            {status && (
-              <InfoCard
-                label={t('status', 'Status')}
-                value={statusBodyTemplate(status)}
-                isTag
-              />
-            )}
-          </div>
-        </div>
-
-        {message && (
-          <ContentSection
-            icon="pi-inbox"
-            title={t('message', 'Message')}
-            content={message}
-          />
+        {hasInfoCards && (
+          <section className="details-info-section">
+            <h3 className="panel-section-title">{infoSectionTitle}</h3>
+            <div className="details-info-panel panel-surface">
+              <div className="details-info-columns">{infoFieldColumns}</div>
+            </div>
+          </section>
         )}
 
-        {response && (
-          <ContentSection
-            icon="pi-send"
-            title={t('response', 'Response')}
-            content={response}
-          />
+        {(message || response) && (
+          <CommunicationSection message={message} response={response} />
         )}
 
         {importResult && <ImportResultSection importResult={importResult} />}
@@ -235,6 +292,8 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
             error={error}
             title={title}
             className="log-messages-datatable"
+            messageMaxLines={2}
+            expandMessageTimestamp={scrollToMessage}
           />
         )}
       </div>

@@ -48,7 +48,9 @@ const parseSseChunk = (chunk: string): SseFrame | null => {
   return { event, data: dataLines.join('\n') }
 }
 
-export const parseSseFrames = (buffer: string): {
+export const parseSseFrames = (
+  buffer: string
+): {
   frames: SseFrame[]
   remainder: string
 } => {
@@ -66,7 +68,8 @@ export const parseSseFrames = (buffer: string): {
   let boundary = findBoundary(remainder)
   while (boundary !== -1) {
     const chunk = remainder.slice(0, boundary)
-    const isDoubleLineBreak = remainder.slice(boundary, boundary + 4) === '\r\n\r\n'
+    const isDoubleLineBreak =
+      remainder.slice(boundary, boundary + 4) === '\r\n\r\n'
     remainder = remainder.slice(boundary + (isDoubleLineBreak ? 4 : 2))
     const frame = parseSseChunk(chunk)
     if (frame) {
