@@ -41,7 +41,9 @@ const RemoteComponent = ({
     const language = validLanguages.includes(appState.language)
       ? appState.language
       : 'en'
-    i18n.changeLanguage(language)
+    if (i18n.language !== language) {
+      i18n.changeLanguage(language)
+    }
   }, [appState.language, i18n])
 
   return (

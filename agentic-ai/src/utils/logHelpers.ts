@@ -137,7 +137,10 @@ export const extractResponseFromLog = (
   messages: LogMessage[] | undefined
 ): string | undefined => findResponseFromLog(messages)?.text
 
-export const isSameLogMessage = (left: LogMessage, right: LogMessage): boolean =>
+export const isSameLogMessage = (
+  left: LogMessage,
+  right: LogMessage
+): boolean =>
   left.timestamp === right.timestamp &&
   left.message === right.message &&
   left.agentId === right.agentId

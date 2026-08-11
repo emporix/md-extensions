@@ -32,7 +32,8 @@ import {
   createEmptyAgent,
   getLocalizedValue,
 } from '../../utils/agentHelpers'
-import { getCustomAgents } from '../../services/agentService'
+import { getCustomAgent, getCustomAgents } from '../../services/agentService'
+import { getEntityLoadErrorMessage } from '../../utils/errorHelpers'
 import { hasConversations } from '../../services/conversationsService'
 import type { AgentCommerceFilterDsl } from '../../utils/agentFilterDslHelpers'
 
@@ -104,22 +105,26 @@ const AgentDetailPage: React.FC = () => {
       setLoading(true)
       setError(null)
       try {
-        const agents = await getCustomAgents(appState)
+        const [fetchedAgent, agents] = await Promise.all([
+          getCustomAgent(appState, agentId),
+          getCustomAgents(appState),
+        ])
         if (cancelled) return
 
         setAvailableAgents(agents)
-
-        const foundAgent = agents.find((item) => item.id === agentId)
-        if (!foundAgent) {
-          setError(t('agent_not_found'))
-          setAgent(null)
-          return
-        }
-
-        setAgent(cleanAgentForConfig(foundAgent))
-      } catch {
+        setAgent(cleanAgentForConfig(fetchedAgent))
+      } catch (err) {
         if (!cancelled) {
-          setError(t('error_loading_agent'))
+          setError(
+            getEntityLoadErrorMessage(
+              err,
+              {
+                notFoundKey: 'agent_not_found',
+                errorKey: 'error_loading_agent',
+              },
+              t
+            )
+          )
           setAgent(null)
         }
       } finally {

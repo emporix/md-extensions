@@ -1,7 +1,10 @@
-import React, { memo } from 'react'
+import React, { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Dialog } from 'primereact/dialog'
 import { AgentTemplate, LocalizedString } from '../../types/Agent'
+import { useAppState } from '../../contexts/AppStateContext'
+import { getLocalizedValue } from '../../utils/agentHelpers'
+import { getBundleHelperTemplateIds } from '../../utils/agentTemplateBundles'
 import { FormStep } from './add-agent/FormStep'
 import { LoadingStep } from './add-agent/LoadingStep'
 import { SuccessStep } from './add-agent/SuccessStep'
@@ -11,6 +14,7 @@ import { useAddAgentDialog } from '../../hooks/useAddAgentDialog'
 interface AddAgentDialogProps {
   visible: boolean
   agentTemplate: AgentTemplate | null
+  templates?: AgentTemplate[]
   onHide: () => void
   onSave: (
     name: LocalizedString,
@@ -20,8 +24,9 @@ interface AddAgentDialogProps {
 }
 
 const AddAgentDialog: React.FC<AddAgentDialogProps> = memo(
-  ({ visible, agentTemplate, onHide, onSave }) => {
+  ({ visible, agentTemplate, templates = [], onHide, onSave }) => {
     const { t } = useTranslation()
+    const appState = useAppState()
 
     const {
       step,
@@ -46,6 +51,26 @@ const AddAgentDialog: React.FC<AddAgentDialogProps> = memo(
       onHide,
     })
 
+    const bundleHelperNames = useMemo(() => {
+      if (!agentTemplate) {
+        return []
+      }
+
+      return getBundleHelperTemplateIds(agentTemplate.id).map(
+        (helperTemplateId) => {
+          const helperTemplate = templates.find(
+            (template) => template.id === helperTemplateId
+          )
+          return (
+            getLocalizedValue(
+              helperTemplate?.name ?? {},
+              appState.contentLanguage
+            ) || helperTemplateId
+          )
+        }
+      )
+    }, [agentTemplate, templates, appState.contentLanguage])
+
     const renderStepContent = () => {
       switch (step) {
         case 'form':
@@ -60,6 +85,7 @@ const AddAgentDialog: React.FC<AddAgentDialogProps> = memo(
               userPrompt={userPrompt}
               templatePrompt={templatePrompt}
               setDescription={setDescription}
+              bundleHelperNames={bundleHelperNames}
               onDiscard={handleDiscard}
               onSave={handleSave}
             />
@@ -82,8 +108,6 @@ const AddAgentDialog: React.FC<AddAgentDialogProps> = memo(
     }
 
     const getDialogTitle = () => {
-      if (!agentTemplate) return t('add_agent', 'Add Agent')
-
       return t('add_agent')
     }
 

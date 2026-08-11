@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { InputText } from 'primereact/inputtext'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { Button } from 'primereact/button'
+import { Message } from 'primereact/message'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHeadset } from '@fortawesome/free-solid-svg-icons'
 import { LocalizedString } from '../../../types/Agent'
@@ -24,6 +25,7 @@ interface FormStepProps {
   setUserPrompt: (value: string) => void
   userPrompt: string
   templatePrompt: string
+  bundleHelperNames?: string[]
   onDiscard: () => void
   onSave: () => void
 }
@@ -38,6 +40,7 @@ export const FormStep: React.FC<FormStepProps> = ({
   setUserPrompt,
   userPrompt,
   templatePrompt,
+  bundleHelperNames = [],
   onDiscard,
   onSave,
 }) => {
@@ -67,6 +70,16 @@ export const FormStep: React.FC<FormStepProps> = ({
         </h2>
         <p className="agent-subtitle">{t('customize_agent_subtitle')}</p>
       </div>
+
+      {bundleHelperNames.length > 0 && (
+        <Message
+          severity="info"
+          className="w-full mb-3"
+          text={t('agent_bundle_install_notice', {
+            names: bundleHelperNames.join(', '),
+          })}
+        />
+      )}
 
       <div className="form-fields-section">
         <div className="form-field">

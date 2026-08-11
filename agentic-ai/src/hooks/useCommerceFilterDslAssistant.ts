@@ -67,18 +67,15 @@ export const useCommerceFilterDslAssistant = ({
     setAssistantError(null)
   }, [])
 
-  const {
-    helperAgentPresent,
-    provisioningAgent,
-    handleEnableHelperAgent,
-  } = useHelperAgentProvisioning({
-    agentId: COMMERCE_FILTER_DSL_AGENT_ID,
-    shouldCheck: activeTab === 'assistant',
-    createAgent: createCommerceFilterDslAgent,
-    i18nKeys: COMMERCE_FILTER_HELPER_I18N_KEYS,
-    resolveErrorMessage: resolveAssistantErrorMessage,
-    onBeforeEnable: handleBeforeEnableHelperAgent,
-  })
+  const { helperAgentPresent, provisioningAgent, handleEnableHelperAgent } =
+    useHelperAgentProvisioning({
+      agentId: COMMERCE_FILTER_DSL_AGENT_ID,
+      shouldCheck: activeTab === 'assistant',
+      createAgent: createCommerceFilterDslAgent,
+      i18nKeys: COMMERCE_FILTER_HELPER_I18N_KEYS,
+      resolveErrorMessage: resolveAssistantErrorMessage,
+      onBeforeEnable: handleBeforeEnableHelperAgent,
+    })
 
   const handleAssistantGenerate = useCallback(async () => {
     if (!assistantPrompt.trim()) return

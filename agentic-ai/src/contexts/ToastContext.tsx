@@ -1,8 +1,10 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
-  useRef,
   useEffect,
+  useMemo,
+  useRef,
   useState,
 } from 'react'
 import { Toast } from 'primereact/toast'
@@ -42,44 +44,49 @@ const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
     }
   }, [])
 
-  const showSuccess = (message: string): void => {
+  const showSuccess = useCallback((message: string): void => {
     toast.current?.show({
       severity: 'success',
       summary: 'Success',
       detail: formatMessageWithLineBreaks(message),
       life: 3000,
     })
-  }
+  }, [])
 
-  const showError = (message: string): void => {
+  const showError = useCallback((message: string): void => {
     toast.current?.show({
       severity: 'error',
       summary: 'Error',
       detail: formatMessageWithLineBreaks(message),
       life: 5000,
     })
-  }
+  }, [])
 
-  const showInfo = (message: string): void => {
+  const showInfo = useCallback((message: string): void => {
     toast.current?.show({
       severity: 'info',
       summary: 'Info',
       detail: formatMessageWithLineBreaks(message),
       life: 3000,
     })
-  }
+  }, [])
 
-  const showWarning = (message: string): void => {
+  const showWarning = useCallback((message: string): void => {
     toast.current?.show({
       severity: 'warn',
       summary: 'Warning',
       detail: formatMessageWithLineBreaks(message),
       life: 4000,
     })
-  }
+  }, [])
+
+  const value = useMemo(
+    () => ({ showSuccess, showError, showInfo, showWarning }),
+    [showSuccess, showError, showInfo, showWarning]
+  )
 
   return (
-    <Context.Provider value={{ showSuccess, showError, showInfo, showWarning }}>
+    <Context.Provider value={value}>
       <Toast ref={toast} appendTo={appendTo} />
       {children}
     </Context.Provider>

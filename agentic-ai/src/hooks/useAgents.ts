@@ -72,7 +72,6 @@ export const useAgents = (): UseAgentsResult => {
     try {
       setCustomAgentsLoading(true)
       setCustomAgentsError(null)
-      console.log('appState', appState)
 
       const customAgentsList = await getCustomAgents(appState)
 

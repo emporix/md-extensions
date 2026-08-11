@@ -65,6 +65,11 @@ const TRANSLATIONS_EN = {
   // Add Agent Dialog
   customize_agent_subtitle:
     'Customize name and description to suit it better to your task.',
+  agent_bundle_install_notice:
+    'Installing this agent also creates these helpers first: {{names}}.',
+  bundle_helper_template_not_found:
+    'Bundle helper template not found: {{templateId}}.',
+  agent_created_successfully: 'Agent created successfully!',
   agent_name: 'Agent Name',
   enter_agent_name: 'Enter agent name',
   description: 'Description',

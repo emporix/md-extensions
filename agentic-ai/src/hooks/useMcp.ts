@@ -194,7 +194,7 @@ export const useMcp = () => {
   }, [loadMcpServers])
 
   useEffect(() => {
-    loadMcpServers()
+    void loadMcpServers()
   }, [loadMcpServers])
 
   return {

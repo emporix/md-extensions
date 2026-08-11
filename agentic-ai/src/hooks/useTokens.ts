@@ -63,7 +63,7 @@ export const useTokens = () => {
   }, [loadTokens])
 
   useEffect(() => {
-    loadTokens()
+    void loadTokens()
   }, [loadTokens])
 
   return {

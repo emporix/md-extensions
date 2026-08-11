@@ -11,7 +11,8 @@ import { Message } from 'primereact/message'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { Tool } from '../../types/Tool'
 import { useAppState } from '../../contexts/AppStateContext'
-import { getTools } from '../../services/toolsService'
+import { getTool, getTools } from '../../services/toolsService'
+import { getEntityLoadErrorMessage } from '../../utils/errorHelpers'
 import { getCustomAgents } from '../../services/agentService'
 import { hasConversations } from '../../services/conversationsService'
 import { CustomAgent } from '../../types/Agent'
@@ -88,20 +89,19 @@ const ToolDetailPage: React.FC = () => {
       setLoading(true)
       setError(null)
       try {
-        const tools = await getTools(appState)
+        const fetchedTool = await getTool(appState, toolId)
         if (cancelled) return
 
-        const foundTool = tools.find((item) => item.id === toolId)
-        if (!foundTool) {
-          setError(t('tool_not_found'))
-          setTool(null)
-          return
-        }
-
-        setTool(foundTool)
-      } catch {
+        setTool(fetchedTool)
+      } catch (err) {
         if (!cancelled) {
-          setError(t('error_loading_tool'))
+          setError(
+            getEntityLoadErrorMessage(
+              err,
+              { notFoundKey: 'tool_not_found', errorKey: 'error_loading_tool' },
+              t
+            )
+          )
           setTool(null)
         }
       } finally {
