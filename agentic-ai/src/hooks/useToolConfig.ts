@@ -43,13 +43,11 @@ import {
 import {
   applyTeamsToolDefaults,
   countTeamsToolsForTeam,
-  DEFAULT_TEAMS_ALLOWED_OPERATIONS,
   toTeamsToolConfigForSave,
 } from '../utils/teamsRoutingHelpers'
 import {
   applySlackToolDefaults,
   countSlackToolsForTeam,
-  DEFAULT_SLACK_ALLOWED_OPERATIONS,
   toSlackToolConfigForSave,
 } from '../utils/slackRoutingHelpers'
 import {
@@ -568,12 +566,6 @@ export const useToolConfig = ({
       config: state.config,
       isCreating,
     }) &&
-    (state.toolType !== 'teams' ||
-      (state.config.allowedOperations?.length ??
-        DEFAULT_TEAMS_ALLOWED_OPERATIONS.length) > 0) &&
-    (state.toolType !== 'slack' ||
-      (state.config.allowedOperations?.length ??
-        DEFAULT_SLACK_ALLOWED_OPERATIONS.length) > 0) &&
     (state.toolType !== 'teams' ||
       !state.config.teamId?.trim() ||
       !state.config.tenantId?.trim() ||
