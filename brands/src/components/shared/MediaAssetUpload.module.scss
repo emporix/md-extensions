@@ -142,20 +142,19 @@ $media-button-icon-disabled: #c3d1e8;
   flex-direction: column;
 }
 
+// Same classes/values as MD `MediaAssetUpload` emptyTemplate
+// (`pi … mt-2 p-3` + inline fontSize/borderRadius/grey vars).
 .emptyIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 0.5rem;
-  padding: 0.75rem;
+  margin-top: 0.5rem; // mt-2
+  padding: 1rem; // p-3
   font-size: 1.25rem;
   border-radius: 50%;
-  background-color: var(--color-bg-secondary);
-  color: var(--color-text-muted);
+  background-color: var(--grey-1, #f2f3f5);
+  color: var(--grey-4, #c7cad1);
 }
 
 .emptyText {
-  margin: 0.5rem 0;
+  margin: 0.5rem 0; // my-2
   font-size: 1rem;
-  color: var(--color-text-muted);
+  color: var(--grey-5, #828a99);
 }

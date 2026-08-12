@@ -10,7 +10,7 @@ import {
   type FileUploadSelectEvent,
 } from '@emporix/component-library'
 import type { AxiosProgressEvent } from 'axios'
-import { BsFileEarmark, BsImage, BsXCircle } from 'react-icons/bs'
+import { BsXCircle } from 'react-icons/bs'
 import { FiPlus, FiUpload, FiX } from 'react-icons/fi'
 
 import { useMediaAssets } from '../../hooks/api/mediaAssets'
@@ -272,11 +272,14 @@ const MediaAssetUpload = ({
     )
   }
 
+  // Match MD `MediaAssetUpload` empty state exactly: `pi pi-image` /
+  // `pi pi-file` (primeicons font ships in @emporix/component-library/styles).
   const emptyTemplate = () => (
     <div className={styles.empty}>
-      <span className={styles.emptyIcon}>
-        {acceptAllMedia ? <BsFileEarmark /> : <BsImage />}
-      </span>
+      <i
+        className={`pi ${acceptAllMedia ? 'pi-file' : 'pi-image'} ${styles.emptyIcon}`}
+        aria-hidden
+      />
       <span className={styles.emptyText}>
         {t(
           acceptAllMedia
