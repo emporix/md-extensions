@@ -79,12 +79,16 @@ export const TeamsToolSection: React.FC<TeamsToolSectionProps> = ({
           onChange={(event) => onConfigChange('teamId', event.target.value)}
           className={`w-full${!config.teamId?.trim() ? ' p-invalid' : ''}`}
           placeholder={t('enter_team_id')}
-          disabled={isEditing}
+          disabled={isEditing || !!config.teamId?.trim()}
         />
         <p className="tool-detail-section-description">
-          {t(isEditing ? 'teams_team_id_hint_immutable' : 'teams_team_id_hint')}
+          {t(
+            isEditing || config.teamId?.trim()
+              ? 'teams_team_id_hint_immutable'
+              : 'teams_team_id_hint'
+          )}
         </p>
-        {!isEditing ? <TeamsTeamIdGuide /> : null}
+        {!isEditing && !config.teamId?.trim() ? <TeamsTeamIdGuide /> : null}
       </div>
 
       <div className="form-field">
@@ -97,11 +101,11 @@ export const TeamsToolSection: React.FC<TeamsToolSectionProps> = ({
           onChange={(event) => onConfigChange('tenantId', event.target.value)}
           className={`w-full${!config.tenantId?.trim() ? ' p-invalid' : ''}`}
           placeholder={t('enter_tenant_id')}
-          disabled={isEditing}
+          disabled={isEditing || !!config.tenantId?.trim()}
         />
         <p className="tool-detail-section-description">
           {t(
-            isEditing
+            isEditing || config.tenantId?.trim()
               ? 'teams_tenant_id_hint_immutable'
               : 'teams_tenant_id_hint'
           )}

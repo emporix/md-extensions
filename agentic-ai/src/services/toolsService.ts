@@ -101,8 +101,8 @@ export const getTeamsInstallationData = async (
   toolPersisted?: boolean
 ): Promise<{
   id: string
-  appId: string
-  appInstallUrl: string
+  appId: string | null
+  appInstallUrl: string | null
   adminConsentUrl?: string | null
 }> => {
   try {
@@ -120,8 +120,8 @@ export const getTeamsInstallationData = async (
     const query = queryParams.toString() ? `?${queryParams.toString()}` : ''
     return await api.get<{
       id: string
-      appId: string
-      appInstallUrl: string
+      appId: string | null
+      appInstallUrl: string | null
       adminConsentUrl?: string | null
     }>(
       `/ai-service/${appState.tenant}/agentic/oauth/installations/teams${query}`
@@ -131,6 +131,41 @@ export const getTeamsInstallationData = async (
       error instanceof Error
         ? error.message
         : 'Failed to fetch Teams installation data'
+    throw new Error(errorMessage)
+  }
+}
+
+export type TeamsInstallationStatus = {
+  status: 'pending' | 'ready' | 'missing'
+  installStateId?: string | null
+  providerTenantId?: string | null
+  teamId?: string | null
+  toolId?: string | null
+}
+
+export const getTeamsInstallationStatus = async (
+  appState: AppState,
+  installStateId?: string,
+  providerTenantId?: string
+): Promise<TeamsInstallationStatus> => {
+  try {
+    const api = getApiClient(appState)
+    const queryParams = new URLSearchParams()
+    if (installStateId?.trim()) {
+      queryParams.set('installStateId', installStateId.trim())
+    }
+    if (providerTenantId?.trim()) {
+      queryParams.set('providerTenantId', providerTenantId.trim())
+    }
+    const query = queryParams.toString()
+    return await api.get<TeamsInstallationStatus>(
+      `/ai-service/${appState.tenant}/agentic/oauth/installations/teams/status${query ? `?${query}` : ''}`
+    )
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : 'Failed to fetch Teams installation status'
     throw new Error(errorMessage)
   }
 }

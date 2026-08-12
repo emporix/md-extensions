@@ -635,37 +635,40 @@ const TRANSLATIONS_EN = {
   install_emporix_teams_ai: 'Install Emporix Microsoft Teams AI',
   connect_teams: 'Connect Microsoft Teams',
   teams_install_description:
-    'Set up Emporix AI in your Microsoft 365 tenant. A Teams admin must add the Emporix app to your tenant catalog first. Then grant Graph admin consent, install the app for users, and complete Settings.',
+    'Three actions set up Emporix in Microsoft Teams. Tenant ID and Team ID are filled automatically — no GUID paste.',
   grant_teams_graph_consent: 'Grant Graph admin consent',
-  teams_graph_consent_tenant_hint:
-    'Customer Azure AD (Entra ID) tenant ID. Used for Graph admin consent and tenant-scoped Teams install links.',
-  teams_graph_consent_requires_tenant_id:
-    'Enter the Azure AD tenant ID before granting Graph admin consent.',
+  teams_connect_requires_consent:
+    'Complete step 2 first. Tenant ID is filled from Graph admin consent.',
+  teams_consent_then_connect_hint:
+    'Start with step 2 — Microsoft asks you to pick the customer tenant. Then connect and add the app to a team.',
+  teams_consent_tenant_bound:
+    'Tenant bound: {{tenantId}}. Continue with step 3.',
   teams_graph_consent_url_missing:
     'Graph admin consent is not configured on the AI service.',
   teams_graph_consent_success:
-    'Graph admin consent granted. Open Settings and enter your Team ID, then save.',
+    'Graph admin consent granted. Continue with Connect Microsoft Teams.',
   teams_graph_consent_error: 'Graph admin consent failed',
   teams_graph_consent_unknown: 'Graph admin consent returned an unknown result',
-  teams_install_requires_tool_id:
-    'Set a Tool ID on the General tab before starting install steps. Microsoft redirects back to this tool editor after admin consent.',
-  teams_install_step_tenant_id:
-    'Enter the customer Azure AD tenant ID in the field above.',
   teams_install_step_org_catalog:
     'Teams admin: download the app package below, then upload it in Teams Admin Center → Teams apps → Manage apps. Set the app to Allowed and assign it via app permission policy if required. Only needed once per customer tenant.',
   teams_install_step_graph_consent:
-    'Grant admin consent for the Emporix Graph app (required for outbound collaboration and group chat bot installation). Use Grant Graph admin consent below.',
+    'Grant admin consent for the Emporix Graph app (required for outbound collaboration and group chat bot installation). Use Grant Graph admin consent below — no tenant GUID typing.',
   teams_install_step_connect:
-    'Click Connect Microsoft Teams to open the install page in the customer tenant. When installing, add the app to a team (not personal use only). If the link fails, confirm the app is in the tenant catalog and the tenant ID is correct.',
+    'Click Connect Microsoft Teams, then add the app to a team (not personal use only). Emporix captures Team ID from the install.',
+  teams_install_step_auto_tool:
+    'When install completes, this page opens the new Teams tool with Tenant ID and Team ID already set. Configure the default inbound agent if needed, then save any extra settings.',
+  teams_install_waiting:
+    'Waiting for the app to be added to a team… Keep this tab open.',
+  teams_install_ready: 'Teams tool created from the install. Opening the tool…',
+  teams_install_poll_timeout:
+    'Still waiting for Teams install. Confirm the app was added to a team, then try Connect again.',
+  teams_install_catalog_missing:
+    'Could not build the Teams install link. Confirm the app package is in the tenant catalog and Graph admin consent succeeded.',
   install_status_pending:
-    'Installation stays pending until the app is in your tenant catalog, a user has installed it, and the bot has received its first activity.',
-  teams_install_step_sideload:
-    'Fallback: upload the Emporix app package via Teams → Apps → Manage your apps → Upload a custom app (requires custom-app upload policy).',
-  teams_install_step_settings:
-    'Open the Settings tab: paste the Team ID using the guide under the Team ID field, confirm Tenant ID, configure allowed operations, then save. Team ID cannot be changed after the first save.',
+    'Installation finishes when someone adds the app to a team and the bot receives the install event.',
   teams_install_how_to_find_team_id: 'How to find Team ID',
   teams_install_team_id_intro:
-    'Team ID is the Microsoft 365 Group ID (GUID) of the target Teams team—the same value as groupId in a Teams team link.',
+    'Team ID is the Microsoft 365 Group ID (GUID) of the target Teams team—the same value as groupId in a Teams team link. Prefer Connect install so this is filled automatically.',
   teams_install_team_id_method_teams_app_title: 'From Microsoft Teams',
   teams_install_team_id_method_teams_app_1:
     'Open Teams and select the target team in the sidebar.',
@@ -682,8 +685,7 @@ const TRANSLATIONS_EN = {
     'Example: …?groupId=0efcc002-6001-4a21-991b-8ba10bac0612&tenantId=… — paste the groupId value as Team ID.',
   teams_install_team_id_team_scope_warning:
     'The app must be added to a team. Personal-only installation has no Team ID.',
-  teams_install_state_id_hint:
-    'Install correlation ID: {{id}}. Share this with support if you need help with installation.',
+  teams_install_state_id_hint: 'Support reference: {{id}}',
   open_teams_apps: 'Open Teams (web)',
   download_teams_app_package: 'Download app package',
   open_teams_admin_center: 'Open Teams Admin Center',
@@ -693,11 +695,11 @@ const TRANSLATIONS_EN = {
   tenant_id: 'Tenant ID (AAD)',
   enter_tenant_id: 'Enter Azure AD tenant ID',
   teams_team_id_hint:
-    'Microsoft 365 Group ID (GUID) of the target Teams team. Copy groupId from a team link or Group ID from Teams Admin Center (see How to find Team ID below). Verify before saving—Team ID cannot be changed later.',
+    'Microsoft 365 Group ID of the target team. Filled automatically when you Connect and add the app to a team. Cannot be changed after save.',
   teams_team_id_hint_immutable:
     'Team ID cannot be changed after the tool is created.',
   teams_tenant_id_hint:
-    'Azure AD tenant ID from bot install activity (channelData.tenant.id). Required to bind your Microsoft 365 tenant to this tool.',
+    'Azure AD tenant ID. Filled automatically after Graph admin consent.',
   teams_tenant_id_hint_immutable:
     'Tenant ID cannot be changed after the tool is created.',
 

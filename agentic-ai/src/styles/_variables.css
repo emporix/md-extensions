@@ -182,6 +182,8 @@
 
   /* Component sizes */
   --spinner-size-md: 2.25rem;
+  --control-height-sm: 32px;
+  --icon-size-sm: 20px;
 
   /* DataTable Column Widths */
   --col-width-severity: 200px;

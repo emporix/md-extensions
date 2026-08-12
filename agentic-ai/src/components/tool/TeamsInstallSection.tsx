@@ -1,19 +1,27 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'primereact/button'
-import { InputText } from 'primereact/inputtext'
 import { Message } from 'primereact/message'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMicrosoft } from '@fortawesome/free-brands-svg-icons'
 import { useAppState } from '../../contexts/AppStateContext'
-import { getTeamsInstallationData } from '../../services/toolsService'
+import {
+  getTeamsInstallationData,
+  getTeamsInstallationStatus,
+} from '../../services/toolsService'
 import { useToast } from '../../contexts/ToastContext'
-import { saveTeamsToolInstallDraft } from '../../utils/teamsInstallCallback'
 import {
   getTeamsAppPackageSuffix,
   getTeamsAppPackageUrl,
 } from '../../utils/teamsAppPackageUrl'
-import { ToolRequiredMark } from './ToolRequiredMark'
+import {
+  clearTeamsInstallPending,
+  readTeamsInstallPending,
+  saveTeamsToolInstallDraft,
+  saveTeamsInstallPending,
+  TEAMS_INSTALL_POLL_INTERVAL_MS,
+  TEAMS_INSTALL_POLL_TIMEOUT_MS,
+} from '../../utils/teamsInstallCallback'
 
 const TEAMS_APPS_URL = 'https://teams.microsoft.com/v2/'
 const TEAMS_ADMIN_MANAGE_APPS_URL =
@@ -26,6 +34,7 @@ interface TeamsInstallSectionProps {
   toolType?: string
   toolPersisted?: boolean
   onProviderTenantIdChange?: (value: string) => void
+  onInstallReady?: (toolId: string) => void
 }
 
 export const TeamsInstallSection: React.FC<TeamsInstallSectionProps> = ({
@@ -35,39 +44,28 @@ export const TeamsInstallSection: React.FC<TeamsInstallSectionProps> = ({
   toolType = 'teams',
   toolPersisted = false,
   onProviderTenantIdChange,
+  onInstallReady,
 }) => {
   const appState = useAppState()
   const { t } = useTranslation()
-  const { showError } = useToast()
+  const { showError, showSuccess } = useToast()
   const [teamsInstallLoading, setTeamsInstallLoading] = useState(false)
   const [graphConsentLoading, setGraphConsentLoading] = useState(false)
   const [installStateId, setInstallStateId] = useState<string | null>(null)
   const [providerTenantId, setProviderTenantId] = useState(
     initialProviderTenantId
   )
+  const [waitingForInstall, setWaitingForInstall] = useState(false)
+  const pollStartedAtRef = useRef<number | null>(null)
+  const onInstallReadyRef = useRef(onInstallReady)
+
+  useEffect(() => {
+    onInstallReadyRef.current = onInstallReady
+  }, [onInstallReady])
 
   useEffect(() => {
     setProviderTenantId(initialProviderTenantId)
   }, [initialProviderTenantId])
-
-  const persistInstallDraft = (stateId: string) => {
-    if (!toolId.trim()) {
-      return
-    }
-
-    saveTeamsToolInstallDraft({
-      toolId: toolId.trim(),
-      toolName: toolName.trim(),
-      toolType: toolType.trim() || 'teams',
-      tenantId: providerTenantId.trim() || undefined,
-      installStateId: stateId,
-    })
-  }
-
-  const handleProviderTenantIdChange = (value: string) => {
-    setProviderTenantId(value)
-    onProviderTenantIdChange?.(value)
-  }
 
   const openUrlInNewTab = (url: string) => {
     const link = document.createElement('a')
@@ -79,7 +77,94 @@ export const TeamsInstallSection: React.FC<TeamsInstallSectionProps> = ({
     document.body.removeChild(link)
   }
 
+  const handleInstallReady = useCallback(
+    (readyToolId: string) => {
+      clearTeamsInstallPending()
+      setWaitingForInstall(false)
+      pollStartedAtRef.current = null
+      showSuccess(t('teams_install_ready'))
+      onInstallReadyRef.current?.(readyToolId)
+    },
+    [showSuccess, t]
+  )
+
+  const pollInstallStatus = useCallback(
+    async (stateId: string, aadTenantId: string) => {
+      try {
+        const status = await getTeamsInstallationStatus(
+          appState,
+          stateId,
+          aadTenantId
+        )
+        if (status.status === 'ready' && status.toolId?.trim()) {
+          handleInstallReady(status.toolId.trim())
+          return true
+        }
+      } catch (error) {
+        console.error('Failed to poll Teams installation status', error)
+      }
+      return false
+    },
+    [appState, handleInstallReady]
+  )
+
+  useEffect(() => {
+    const pending = readTeamsInstallPending()
+    if (!pending) {
+      return
+    }
+    setInstallStateId(pending.installStateId)
+    setProviderTenantId(pending.providerTenantId)
+    onProviderTenantIdChange?.(pending.providerTenantId)
+    setWaitingForInstall(true)
+    pollStartedAtRef.current = Date.now()
+  }, [onProviderTenantIdChange])
+
+  useEffect(() => {
+    if (!waitingForInstall || !installStateId) {
+      return
+    }
+
+    let cancelled = false
+    const tick = async () => {
+      if (cancelled) {
+        return
+      }
+      const startedAt = pollStartedAtRef.current ?? Date.now()
+      if (Date.now() - startedAt > TEAMS_INSTALL_POLL_TIMEOUT_MS) {
+        clearTeamsInstallPending()
+        setWaitingForInstall(false)
+        pollStartedAtRef.current = null
+        showError(t('teams_install_poll_timeout'))
+        return
+      }
+      await pollInstallStatus(installStateId, providerTenantId)
+    }
+
+    void tick()
+    const intervalId = window.setInterval(() => {
+      void tick()
+    }, TEAMS_INSTALL_POLL_INTERVAL_MS)
+
+    return () => {
+      cancelled = true
+      window.clearInterval(intervalId)
+    }
+  }, [
+    installStateId,
+    pollInstallStatus,
+    providerTenantId,
+    showError,
+    t,
+    waitingForInstall,
+  ])
+
   const handleTeamsInstallation = async () => {
+    if (!providerTenantId.trim()) {
+      showError(t('teams_connect_requires_consent'))
+      return
+    }
+
     try {
       setTeamsInstallLoading(true)
       const { id: stateId, appInstallUrl } = await getTeamsInstallationData(
@@ -89,11 +174,19 @@ export const TeamsInstallSection: React.FC<TeamsInstallSectionProps> = ({
         toolPersisted
       )
       setInstallStateId(stateId)
-      persistInstallDraft(stateId)
 
-      if (appInstallUrl) {
-        openUrlInNewTab(appInstallUrl)
+      if (!appInstallUrl) {
+        showError(t('teams_install_catalog_missing'))
+        return
       }
+
+      saveTeamsInstallPending({
+        installStateId: stateId,
+        providerTenantId: providerTenantId.trim(),
+      })
+      pollStartedAtRef.current = Date.now()
+      setWaitingForInstall(true)
+      openUrlInNewTab(appInstallUrl)
     } catch (error) {
       const errorMessage =
         error instanceof Error
@@ -106,21 +199,23 @@ export const TeamsInstallSection: React.FC<TeamsInstallSectionProps> = ({
   }
 
   const handleGraphAdminConsent = async () => {
-    if (!providerTenantId.trim()) {
-      showError(t('teams_graph_consent_requires_tenant_id'))
-      return
-    }
-
     try {
       setGraphConsentLoading(true)
       const { id: stateId, adminConsentUrl } = await getTeamsInstallationData(
         appState,
-        providerTenantId,
+        undefined,
         toolId,
         toolPersisted
       )
       setInstallStateId(stateId)
-      persistInstallDraft(stateId)
+
+      saveTeamsToolInstallDraft({
+        toolId: toolId.trim() || undefined,
+        toolName: toolName.trim() || undefined,
+        toolType: toolType.trim() || 'teams',
+        tenantId: providerTenantId.trim() || undefined,
+        installStateId: stateId,
+      })
 
       if (!adminConsentUrl) {
         showError(t('teams_graph_consent_url_missing'))
@@ -174,38 +269,37 @@ export const TeamsInstallSection: React.FC<TeamsInstallSectionProps> = ({
       <p className="tool-detail-slack-install-description">
         {t('teams_install_description')}
       </p>
-      <div className="form-field">
-        <label className="field-label">
-          {t('tenant_id')}
-          <ToolRequiredMark />
-        </label>
-        <InputText
-          value={providerTenantId}
-          onChange={(event) => handleProviderTenantIdChange(event.target.value)}
-          className={`w-full${!providerTenantId.trim() ? ' p-invalid' : ''}`}
-          placeholder={t('enter_tenant_id')}
+      {providerTenantId.trim() ? (
+        <Message
+          severity="success"
+          className="w-full"
+          text={t('teams_consent_tenant_bound', {
+            tenantId: providerTenantId.trim(),
+          })}
         />
-        <p className="tool-detail-section-description">
-          {t('teams_graph_consent_tenant_hint')}
-        </p>
-      </div>
+      ) : (
+        <Message
+          severity="info"
+          className="w-full"
+          text={t('teams_consent_then_connect_hint')}
+        />
+      )}
+      {waitingForInstall ? (
+        <Message
+          severity="info"
+          className="w-full"
+          text={t('teams_install_waiting')}
+        />
+      ) : null}
       <p className="tool-detail-section-description">
         {t('install_status_pending')}
       </p>
       <ol className="tool-detail-teams-install-steps">
-        <li>{t('teams_install_step_tenant_id')}</li>
         <li>{t('teams_install_step_org_catalog')}</li>
         <li>{t('teams_install_step_graph_consent')}</li>
         <li>{t('teams_install_step_connect')}</li>
-        <li>{t('teams_install_step_settings')}</li>
+        <li>{t('teams_install_step_auto_tool')}</li>
       </ol>
-      {!toolId.trim() ? (
-        <Message
-          severity="warn"
-          className="w-full"
-          text={t('teams_install_requires_tool_id')}
-        />
-      ) : null}
       <div className="tool-detail-teams-install-actions">
         <div className="tool-detail-teams-install-action-group">
           <Button
@@ -231,9 +325,7 @@ export const TeamsInstallSection: React.FC<TeamsInstallSectionProps> = ({
           label={t('grant_teams_graph_consent')}
           onClick={handleGraphAdminConsent}
           loading={graphConsentLoading}
-          disabled={
-            graphConsentLoading || !providerTenantId.trim() || !toolId.trim()
-          }
+          disabled={graphConsentLoading}
           className="p-button-secondary tool-detail-slack-install-button"
           aria-label={t('grant_teams_graph_consent')}
         />
@@ -243,7 +335,9 @@ export const TeamsInstallSection: React.FC<TeamsInstallSectionProps> = ({
             onClick={handleTeamsInstallation}
             loading={teamsInstallLoading}
             disabled={
-              teamsInstallLoading || !providerTenantId.trim() || !toolId.trim()
+              teamsInstallLoading ||
+              waitingForInstall ||
+              !providerTenantId.trim()
             }
             className="p-button-secondary tool-detail-slack-install-button"
             aria-label={t('connect_teams')}
