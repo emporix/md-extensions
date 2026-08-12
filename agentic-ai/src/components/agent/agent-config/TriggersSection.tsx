@@ -131,9 +131,7 @@ export const TriggersSection = ({
         showClear={isCommerceTriggerSelected}
         maxSelectedLabels={3}
         placeholder={
-          commerceCatalogLoading
-            ? t('loading_events')
-            : t('select_an_option')
+          commerceCatalogLoading ? t('loading_events') : t('select_an_option')
         }
         disabled={!isCommerceTriggerSelected}
         appendTo="self"

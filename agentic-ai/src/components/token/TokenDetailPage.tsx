@@ -6,7 +6,8 @@ import { Message } from 'primereact/message'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { Token } from '../../types/Token'
 import { useAppState } from '../../contexts/AppStateContext'
-import { getTokens } from '../../services/tokensService'
+import { getToken } from '../../services/tokensService'
+import { getEntityLoadErrorMessage } from '../../utils/errorHelpers'
 import { createEmptyToken } from '../../utils/tokenHelpers'
 import { useTokenConfig } from '../../hooks/useTokenConfig'
 import { TokenGeneralSection } from './TokenGeneralSection'
@@ -45,20 +46,22 @@ const TokenDetailPage: React.FC = () => {
       setLoading(true)
       setError(null)
       try {
-        const tokens = await getTokens(appState)
+        const fetchedToken = await getToken(appState, tokenId)
         if (cancelled) return
 
-        const foundToken = tokens.find((item) => item.id === tokenId)
-        if (!foundToken) {
-          setError(t('token_not_found'))
-          setToken(null)
-          return
-        }
-
-        setToken(foundToken)
-      } catch {
+        setToken(fetchedToken)
+      } catch (err) {
         if (!cancelled) {
-          setError(t('error_loading_token'))
+          setError(
+            getEntityLoadErrorMessage(
+              err,
+              {
+                notFoundKey: 'token_not_found',
+                errorKey: 'error_loading_token',
+              },
+              t
+            )
+          )
           setToken(null)
         }
       } finally {

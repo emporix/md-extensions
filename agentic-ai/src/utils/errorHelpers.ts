@@ -138,3 +138,20 @@ export const formatApiError = (
   }
   return fallbackMessage
 }
+
+type EntityLoadErrorKeys = {
+  readonly notFoundKey: string
+  readonly errorKey: string
+}
+
+export const getEntityLoadErrorMessage = (
+  err: unknown,
+  keys: EntityLoadErrorKeys,
+  t: (key: string) => string
+): string => {
+  if (err instanceof ApiClientError && err.status === 404) {
+    return t(keys.notFoundKey)
+  }
+
+  return t(keys.errorKey)
+}

@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useMemo } from 'react'
 import { AppState } from '../types/common'
 
 type AppStateContextType = AppState
@@ -22,7 +22,19 @@ const AppStateProvider = ({
   children: React.ReactNode
   appState: AppState
 }) => {
-  return <Context.Provider value={appState}>{children}</Context.Provider>
+  const { tenant, language, token, contentLanguage } = appState
+
+  const value = useMemo(
+    () => ({
+      tenant,
+      language,
+      token,
+      contentLanguage,
+    }),
+    [tenant, language, token, contentLanguage]
+  )
+
+  return <Context.Provider value={value}>{children}</Context.Provider>
 }
 
 export { AppStateProvider }

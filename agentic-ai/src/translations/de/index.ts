@@ -71,6 +71,11 @@ const TRANSLATIONS_DE = {
   // Add Agent Dialog
   customize_agent_subtitle:
     'Passen Sie Name und Beschreibung an, damit sie besser zu Ihrer Aufgabe passen.',
+  agent_bundle_install_notice:
+    'Beim Installieren dieses Agenten werden zuerst diese Hilfsagenten erstellt: {{names}}.',
+  bundle_helper_template_not_found:
+    'Hilfsagent-Vorlage nicht gefunden: {{templateId}}.',
+  agent_created_successfully: 'Agent erfolgreich erstellt!',
   agent_name: 'Agent Name',
   enter_agent_name: 'Agent Namen eingeben',
   description: 'Beschreibung',

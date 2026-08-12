@@ -53,17 +53,11 @@ export const buildSessionFlowNodes = (
           isSameLogMessage(message, responseMessage.entry))
     )
     .map((message) => {
-      if (
-        responseMessage &&
-        isSameLogMessage(message, responseMessage.entry)
-      ) {
+      if (responseMessage && isSameLogMessage(message, responseMessage.entry)) {
         return toSessionFlowNode(message, sessionId, responseMessage.text)
       }
 
-      if (
-        initialMessage &&
-        isSameLogMessage(message, initialMessage.entry)
-      ) {
+      if (initialMessage && isSameLogMessage(message, initialMessage.entry)) {
         return toSessionFlowNode(message, sessionId, initialMessage.text)
       }
 

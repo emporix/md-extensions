@@ -140,8 +140,9 @@ export const useAgentConfig = ({
   useEffect(() => {
     if (agent) {
       const agentType = agent.type || 'custom'
-      const triggerTypes =
-        agent.triggers?.map((trigger) => trigger.type) || ['endpoint']
+      const triggerTypes = agent.triggers?.map((trigger) => trigger.type) || [
+        'endpoint',
+      ]
 
       setState({
         agentId: agent.id,

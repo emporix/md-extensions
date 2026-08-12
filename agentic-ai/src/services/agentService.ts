@@ -2,9 +2,20 @@ import { AgentTemplate, CustomAgent, LocalizedString } from '../types/Agent'
 import { AppState, ImportSummaryState } from '../types/common'
 import { getLanguagesFromStorage } from '../hooks/useLanguages'
 import { COMMERCE_FILTER_ASSISTANT_I18N_KEYS } from '../utils/agentFilterDslHelpers'
+import { getBundleHelperTemplateIds } from '../utils/agentTemplateBundles'
 import { JSON_SCHEMA_ASSISTANT_I18N_KEYS } from '../utils/jsonSchemaAssistantHelpers'
 import { LOG_ANALYSIS_ASSISTANT_I18N_KEYS } from '../utils/logAnalysisAssistantHelpers'
 import { ApiClient } from './apiClient'
+
+export class BundleHelperTemplateNotFoundError extends Error {
+  readonly helperTemplateId: string
+
+  constructor(helperTemplateId: string) {
+    super('BundleHelperTemplateNotFoundError')
+    this.name = 'BundleHelperTemplateNotFoundError'
+    this.helperTemplateId = helperTemplateId
+  }
+}
 
 const filterLocalizedString = (
   localizedString: LocalizedString
@@ -186,6 +197,16 @@ export const getCustomAgents = async (
   )
 }
 
+export const getCustomAgent = async (
+  appState: AppState,
+  agentId: string
+): Promise<CustomAgent> => {
+  const api = getApiClient(appState)
+  return await api.get<CustomAgent>(
+    `/ai-service/${appState.tenant}/agentic/agents/${agentId}`
+  )
+}
+
 export const copyTemplate = async (
   appState: AppState,
   templateId: string,
@@ -203,6 +224,59 @@ export const copyTemplate = async (
       description: filterLocalizedString(description),
       userPrompt: userPrompt,
     }
+  )
+}
+
+export const copyTemplateWithBundle = async (
+  appState: AppState,
+  primaryTemplate: AgentTemplate,
+  id: string,
+  name: LocalizedString,
+  description: LocalizedString,
+  userPrompt: string
+): Promise<{ success: boolean }> => {
+  const helperTemplateIds = getBundleHelperTemplateIds(primaryTemplate.id)
+
+  if (helperTemplateIds.length > 0) {
+    const [templates, existingAgents] = await Promise.all([
+      getAgentTemplates(appState),
+      getCustomAgents(appState),
+    ])
+    const existingIds = new Set(existingAgents.map((agent) => agent.id))
+
+    for (const helperTemplateId of helperTemplateIds) {
+      if (existingIds.has(helperTemplateId)) {
+        continue
+      }
+
+      const helperTemplate = templates.find(
+        (template) => template.id === helperTemplateId
+      )
+      if (!helperTemplate) {
+        throw new BundleHelperTemplateNotFoundError(helperTemplateId)
+      }
+
+      await copyTemplate(
+        appState,
+        helperTemplateId,
+        helperTemplateId,
+        { ...helperTemplate.name },
+        { ...helperTemplate.description },
+        helperTemplate.userPrompt
+      )
+      await patchCustomAgent(appState, helperTemplateId, [
+        { op: 'REPLACE', path: '/enabled', value: true },
+      ])
+    }
+  }
+
+  return copyTemplate(
+    appState,
+    primaryTemplate.id,
+    id,
+    name,
+    description,
+    userPrompt
   )
 }
 

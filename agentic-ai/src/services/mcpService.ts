@@ -20,6 +20,16 @@ export const getMcpServers = async (
   }
 }
 
+export const getMcpServer = async (
+  appState: AppState,
+  mcpServerId: string
+): Promise<McpServer> => {
+  const api = getApiClient(appState)
+  return await api.get<McpServer>(
+    `/ai-service/${appState.tenant}/agentic/mcp-servers/${mcpServerId}`
+  )
+}
+
 export const upsertMcpServer = async (
   appState: AppState,
   mcpServer: McpServer

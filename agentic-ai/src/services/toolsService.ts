@@ -17,6 +17,16 @@ export const getTools = async (appState: AppState): Promise<Tool[]> => {
   }
 }
 
+export const getTool = async (
+  appState: AppState,
+  toolId: string
+): Promise<Tool> => {
+  const api = getApiClient(appState)
+  return await api.get<Tool>(
+    `/ai-service/${appState.tenant}/agentic/tools/${toolId}`
+  )
+}
+
 export const updateTool = async (
   appState: AppState,
   tool: Tool

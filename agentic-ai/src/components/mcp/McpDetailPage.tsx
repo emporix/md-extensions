@@ -6,7 +6,8 @@ import { Message } from 'primereact/message'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { McpServer } from '../../types/Mcp'
 import { useAppState } from '../../contexts/AppStateContext'
-import { getMcpServers } from '../../services/mcpService'
+import { getMcpServer } from '../../services/mcpService'
+import { getEntityLoadErrorMessage } from '../../utils/errorHelpers'
 import { createEmptyMcpServer } from '../../utils/mcpHelpers'
 import { useMcpConfig } from '../../hooks/useMcpConfig'
 import { useAgentTokensCatalog } from '../../hooks/useAgentTokensCatalog'
@@ -51,20 +52,22 @@ const McpDetailPage: React.FC = () => {
       setLoading(true)
       setError(null)
       try {
-        const servers = await getMcpServers(appState)
+        const fetchedServer = await getMcpServer(appState, mcpServerId)
         if (cancelled) return
 
-        const foundServer = servers.find((item) => item.id === mcpServerId)
-        if (!foundServer) {
-          setError(t('mcp_server_not_found'))
-          setMcpServer(null)
-          return
-        }
-
-        setMcpServer(foundServer)
-      } catch {
+        setMcpServer(fetchedServer)
+      } catch (err) {
         if (!cancelled) {
-          setError(t('error_loading_mcp_server'))
+          setError(
+            getEntityLoadErrorMessage(
+              err,
+              {
+                notFoundKey: 'mcp_server_not_found',
+                errorKey: 'error_loading_mcp_server',
+              },
+              t
+            )
+          )
           setMcpServer(null)
         }
       } finally {
