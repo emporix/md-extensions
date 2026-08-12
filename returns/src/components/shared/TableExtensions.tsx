@@ -116,16 +116,13 @@ const TableExtensions = ({
   return (
     <div className={className}>
       <SecondaryButton
+        size="small"
+        iconOnly
         onClick={() => setIsOpen(true)}
+        aria-label={t('global.tableExtensions.columns')}
         data-testid="table-extensions-open"
       >
-        {/* Icon-only, matching MD `p-button-secondary-small` + BiSlider. */}
-        <BiSlider
-          size={18}
-          role="img"
-          aria-label={t('global.tableExtensions.columns')}
-          title={t('global.tableExtensions.columns')}
-        />
+        <BiSlider size={18} aria-hidden />
       </SecondaryButton>
       <SidePanel
         visible={isOpen}
