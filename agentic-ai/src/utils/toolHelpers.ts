@@ -1,6 +1,6 @@
-import { Tool } from '../types/Tool'
-import { TFunction } from 'i18next'
-import {
+import type { Tool } from '../types/Tool'
+import type { TFunction } from 'i18next'
+import type {
   TeamsGraphConsentCallback,
   TeamsToolInstallDraft,
 } from './teamsInstallCallback'

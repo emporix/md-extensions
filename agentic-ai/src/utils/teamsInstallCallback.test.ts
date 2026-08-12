@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   buildTeamsGraphConsentSearch,
   buildTeamsToolRouteFromCallback,
@@ -34,11 +34,12 @@ const createSessionStorageMock = (): Storage => {
 
 describe('teamsInstallCallback', () => {
   beforeEach(() => {
-    globalThis.sessionStorage = createSessionStorageMock()
+    vi.stubGlobal('sessionStorage', createSessionStorageMock())
   })
 
   afterEach(() => {
     sessionStorage.clear()
+    vi.unstubAllGlobals()
   })
 
   it('parses legacy hash callback urls', () => {

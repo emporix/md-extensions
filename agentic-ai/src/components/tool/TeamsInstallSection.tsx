@@ -77,15 +77,19 @@ export const TeamsInstallSection: React.FC<TeamsInstallSectionProps> = ({
     document.body.removeChild(link)
   }
 
+  const stopInstallWait = useCallback(() => {
+    clearTeamsInstallPending()
+    setWaitingForInstall(false)
+    pollStartedAtRef.current = null
+  }, [])
+
   const handleInstallReady = useCallback(
     (readyToolId: string) => {
-      clearTeamsInstallPending()
-      setWaitingForInstall(false)
-      pollStartedAtRef.current = null
+      stopInstallWait()
       showSuccess(t('teams_install_ready'))
       onInstallReadyRef.current?.(readyToolId)
     },
-    [showSuccess, t]
+    [showSuccess, stopInstallWait, t]
   )
 
   const pollInstallStatus = useCallback(
@@ -100,12 +104,17 @@ export const TeamsInstallSection: React.FC<TeamsInstallSectionProps> = ({
           handleInstallReady(status.toolId.trim())
           return true
         }
+        if (status.status === 'missing') {
+          stopInstallWait()
+          showError(t('teams_install_missing'))
+          return true
+        }
       } catch (error) {
         console.error('Failed to poll Teams installation status', error)
       }
       return false
     },
-    [appState, handleInstallReady]
+    [appState, handleInstallReady, showError, stopInstallWait, t]
   )
 
   useEffect(() => {
@@ -132,13 +141,14 @@ export const TeamsInstallSection: React.FC<TeamsInstallSectionProps> = ({
       }
       const startedAt = pollStartedAtRef.current ?? Date.now()
       if (Date.now() - startedAt > TEAMS_INSTALL_POLL_TIMEOUT_MS) {
-        clearTeamsInstallPending()
-        setWaitingForInstall(false)
-        pollStartedAtRef.current = null
+        stopInstallWait()
         showError(t('teams_install_poll_timeout'))
         return
       }
-      await pollInstallStatus(installStateId, providerTenantId)
+      const finished = await pollInstallStatus(installStateId, providerTenantId)
+      if (finished) {
+        return
+      }
     }
 
     void tick()
@@ -155,6 +165,7 @@ export const TeamsInstallSection: React.FC<TeamsInstallSectionProps> = ({
     pollInstallStatus,
     providerTenantId,
     showError,
+    stopInstallWait,
     t,
     waitingForInstall,
   ])

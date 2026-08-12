@@ -662,6 +662,8 @@ const TRANSLATIONS_EN = {
   teams_install_ready: 'Teams tool created from the install. Opening the tool…',
   teams_install_poll_timeout:
     'Still waiting for Teams install. Confirm the app was added to a team, then try Connect again.',
+  teams_install_missing:
+    'No pending Teams install found for this session. Confirm Graph consent, then try Connect again.',
   teams_install_catalog_missing:
     'Could not build the Teams install link. Confirm the app package is in the tenant catalog and Graph admin consent succeeded.',
   install_status_pending:

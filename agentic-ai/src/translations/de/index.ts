@@ -671,6 +671,8 @@ const TRANSLATIONS_DE = {
     'Teams-Tool aus der Installation erstellt. Tool wird geöffnet…',
   teams_install_poll_timeout:
     'Immer noch keine Teams-Installation. Prüfen Sie, ob die App einem Team hinzugefügt wurde, und verbinden Sie erneut.',
+  teams_install_missing:
+    'Keine ausstehende Teams-Installation für diese Sitzung gefunden. Prüfen Sie die Graph-Einwilligung und verbinden Sie erneut.',
   teams_install_catalog_missing:
     'Teams-Installationslink konnte nicht erstellt werden. Prüfen Sie, ob das App-Paket im Mandanten-Katalog ist und die Graph-Admin-Einwilligung erteilt wurde.',
   install_status_pending:
