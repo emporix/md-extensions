@@ -100,11 +100,13 @@ const TableExtensions = ({
   return (
     <div className={className}>
       <SecondaryButton
+        size="small"
+        iconOnly
         onClick={() => setIsOpen(true)}
+        aria-label={t('global.tableExtensions.columns')}
         data-testid="table-extensions-open"
       >
         <BiSlider size={18} aria-hidden />
-        {t('global.tableExtensions.columns')}
       </SecondaryButton>
       <Dialog
         visible={isOpen}
