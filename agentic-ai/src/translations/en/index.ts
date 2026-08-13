@@ -178,9 +178,9 @@ const TRANSLATIONS_EN = {
     'When Slack or Teams is selected, attach exactly one matching native tool on the Tools tab.',
   teams_default_inbound_agent: 'Default inbound agent',
   teams_default_inbound_agent_tooltip:
-    'Optional. Agent that handles the first inbound Teams message on this team when no conversation exists yet. Saving assigns the Teams trigger and tool to that agent. Clear to disable cold inbound routing.',
+    'Optional. Agent that handles the first inbound Teams message on this team when no conversation exists yet. Saving assigns the Teams trigger and tool to that agent. Clear to disable routing for cold inbound traffic.',
   teams_default_inbound_agent_hint:
-    'Leave empty to disable cold inbound routing.',
+    'Leave empty to disable routing for cold inbound traffic.',
   teams_default_inbound_agent_not_found:
     'Selected default inbound agent was not found. Refresh and try again.',
   conversations: 'Conversations',
@@ -195,7 +195,7 @@ const TRANSLATIONS_EN = {
   not_available: 'N/A',
   teams_allowed_operations: 'Allowed operations',
   teams_allowed_operations_hint:
-    'Maximum operations this Teams tool may expose. Agents can further restrict the subset per attachment.',
+    'Operations this Teams tool is allowed to expose. Agents can further restrict the subset per attachment.',
   teams_agent_allowed_operations: 'Allowed actions for this agent',
   teams_agent_allowed_operations_hint:
     'Choose which Teams actions this agent may call. Options are limited by the tool configuration.',

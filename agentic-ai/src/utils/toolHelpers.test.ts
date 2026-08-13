@@ -101,6 +101,12 @@ describe('toolHelpers', () => {
         toolType: 'slack',
         draftToolType: 'teams',
       })
+    ).toBe(false)
+    expect(
+      shouldApplyTeamsGraphConsent({
+        isCreating: false,
+        draftToolType: 'teams',
+      })
     ).toBe(true)
     expect(
       shouldApplyTeamsGraphConsent({ isCreating: false, toolType: 'slack' })

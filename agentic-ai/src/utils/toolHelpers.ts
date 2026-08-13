@@ -30,7 +30,9 @@ export const shouldApplyTeamsGraphConsent = ({
   readonly toolType?: string | null
   readonly draftToolType?: string | null
 }): boolean =>
-  isCreating || toolType === 'teams' || draftToolType === 'teams'
+  isCreating ||
+  toolType === 'teams' ||
+  (!toolType?.trim() && draftToolType === 'teams')
 
 export const applyTeamsGraphConsentToTool = (
   prev: Tool | null,

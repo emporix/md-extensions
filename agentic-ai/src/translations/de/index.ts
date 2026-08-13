@@ -179,9 +179,9 @@ const TRANSLATIONS_DE = {
     'Bei Slack- oder Teams-Auswahl muss auf der Registerkarte Tools genau ein passendes natives Tool zugewiesen sein.',
   teams_default_inbound_agent: 'Standard-Eingangsagent',
   teams_default_inbound_agent_tooltip:
-    'Optional. Agent, der die erste eingehende Teams-Nachricht in diesem Team verarbeitet, wenn noch keine Konversation existiert. Beim Speichern werden Teams-Trigger und Tool diesem Agenten zugewiesen. Leer lassen, um Cold-Inbound-Routing zu deaktivieren.',
+    'Optional. Agent, der die erste eingehende Teams-Nachricht in diesem Team verarbeitet, wenn noch keine Konversation existiert. Beim Speichern werden Teams-Trigger und Tool diesem Agenten zugewiesen. Leer lassen, um Routing für Cold-Inbound-Traffic zu deaktivieren.',
   teams_default_inbound_agent_hint:
-    'Leer lassen, um Cold-Inbound-Routing zu deaktivieren.',
+    'Leer lassen, um Routing für Cold-Inbound-Traffic zu deaktivieren.',
   teams_default_inbound_agent_not_found:
     'Ausgewählter Standard-Eingangsagent wurde nicht gefunden. Aktualisieren und erneut versuchen.',
   conversations: 'Konversationen',
@@ -196,7 +196,7 @@ const TRANSLATIONS_DE = {
   not_available: 'k. A.',
   teams_allowed_operations: 'Erlaubte Operationen',
   teams_allowed_operations_hint:
-    'Maximale Operationen, die dieses Teams-Tool bereitstellen darf. Agenten können die Teilmenge pro Zuordnung weiter einschränken.',
+    'Operationen, die dieses Teams-Tool bereitstellen darf. Agenten können die Teilmenge pro Zuordnung weiter einschränken.',
   teams_agent_allowed_operations: 'Erlaubte Aktionen für diesen Agenten',
   teams_agent_allowed_operations_hint:
     'Wählen Sie, welche Teams-Aktionen dieser Agent aufrufen darf. Die Optionen sind durch die Tool-Konfiguration begrenzt.',
