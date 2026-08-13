@@ -20,6 +20,7 @@ import {
   createEmptyTool,
   createEmptyTeamsTool,
   applyTeamsGraphConsentToTool,
+  shouldApplyTeamsGraphConsent,
 } from '../../utils/toolHelpers'
 import { countTeamsToolsForTeam } from '../../utils/teamsRoutingHelpers'
 import { countSlackToolsForTeam } from '../../utils/slackRoutingHelpers'
@@ -199,6 +200,10 @@ const ToolDetailPage: React.FC = () => {
       return
     }
 
+    if (!isCreating && loading) {
+      return
+    }
+
     teamsConsentHandledRef.current = true
 
     const callback: TeamsGraphConsentCallback = {
@@ -217,11 +222,19 @@ const ToolDetailPage: React.FC = () => {
       restoreTeamsInstallDraft(draft)
     }
 
+    const isTeamsConsentTarget = shouldApplyTeamsGraphConsent({
+      isCreating,
+      toolType: tool?.type,
+      draftToolType: draft?.toolType,
+    })
+
     if (callback.status === 'success') {
-      applyTeamsGraphConsent(callback)
-      setActiveTab('general')
-      setTool((prev) => applyTeamsGraphConsentToTool(prev, callback, draft))
-      showSuccess(t('teams_graph_consent_success'))
+      if (isTeamsConsentTarget) {
+        applyTeamsGraphConsent(callback)
+        setActiveTab('general')
+        setTool((prev) => applyTeamsGraphConsentToTool(prev, callback, draft))
+        showSuccess(t('teams_graph_consent_success'))
+      }
     } else if (callback.status === 'error') {
       applyTeamsGraphConsent(callback)
       showError(
@@ -238,9 +251,11 @@ const ToolDetailPage: React.FC = () => {
     applyTeamsGraphConsent,
     isCreating,
     loadTeamsInstallDraft,
+    loading,
     location.pathname,
     restoreTeamsInstallDraft,
     searchParams,
+    tool?.type,
     setSearchParams,
     showError,
     showSuccess,

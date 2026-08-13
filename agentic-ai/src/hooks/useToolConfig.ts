@@ -548,14 +548,19 @@ export const useToolConfig = ({
   const applyTeamsGraphConsent = useCallback(
     (callback: TeamsGraphConsentCallback) => {
       if (callback.status === 'success' && callback.providerTenantId?.trim()) {
-        setState((prev) => ({
-          ...prev,
-          toolType: 'teams',
-          config: applyTeamsToolDefaults({
-            ...prev.config,
-            tenantId: callback.providerTenantId?.trim(),
-          }),
-        }))
+        setState((prev) => {
+          if (!isCreating && prev.toolType !== 'teams') {
+            return prev
+          }
+          return {
+            ...prev,
+            toolType: 'teams',
+            config: applyTeamsToolDefaults({
+              ...(prev.toolType === 'teams' ? prev.config : {}),
+              tenantId: callback.providerTenantId?.trim(),
+            }),
+          }
+        })
         clearTeamsToolInstallDraft()
         return
       }
@@ -564,7 +569,7 @@ export const useToolConfig = ({
         clearTeamsToolInstallDraft()
       }
     },
-    []
+    [isCreating]
   )
 
   const loadTeamsInstallDraft = useCallback(

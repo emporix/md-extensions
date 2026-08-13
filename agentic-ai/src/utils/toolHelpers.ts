@@ -21,6 +21,17 @@ export const createEmptyTeamsTool = (tenantId?: string): Tool => ({
   enabled: true,
 })
 
+export const shouldApplyTeamsGraphConsent = ({
+  isCreating = false,
+  toolType,
+  draftToolType,
+}: {
+  readonly isCreating?: boolean
+  readonly toolType?: string | null
+  readonly draftToolType?: string | null
+}): boolean =>
+  isCreating || toolType === 'teams' || draftToolType === 'teams'
+
 export const applyTeamsGraphConsentToTool = (
   prev: Tool | null,
   callback: TeamsGraphConsentCallback,
@@ -31,7 +42,7 @@ export const applyTeamsGraphConsentToTool = (
   type: 'teams',
   enabled: prev?.enabled ?? true,
   config: {
-    ...(prev?.config ?? {}),
+    ...(prev?.type === 'teams' ? (prev.config ?? {}) : {}),
     ...(callback.providerTenantId?.trim()
       ? { tenantId: callback.providerTenantId.trim() }
       : draft?.tenantId?.trim()

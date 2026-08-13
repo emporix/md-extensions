@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   applyTeamsGraphConsentToTool,
   createEmptyTeamsTool,
+  shouldApplyTeamsGraphConsent,
 } from './toolHelpers'
 
 describe('toolHelpers', () => {
@@ -63,5 +64,46 @@ describe('toolHelpers', () => {
       enabled: true,
       config: { tenantId: 'tenant-from-draft' },
     })
+  })
+
+  it('does not merge non-teams config fields into teams tool', () => {
+    expect(
+      applyTeamsGraphConsentToTool(
+        {
+          id: 'slack-1',
+          name: 'Slack',
+          type: 'slack',
+          enabled: true,
+          config: { teamId: 'T123', botToken: 'secret' },
+        },
+        { status: 'success', providerTenantId: 'aad-1' },
+        { toolType: 'teams', installStateId: 'state-1' }
+      )
+    ).toEqual({
+      id: 'slack-1',
+      name: 'Slack',
+      type: 'teams',
+      enabled: true,
+      config: { tenantId: 'aad-1' },
+    })
+  })
+
+  it('allows graph consent only for create flow or teams tools', () => {
+    expect(
+      shouldApplyTeamsGraphConsent({ isCreating: true, toolType: 'slack' })
+    ).toBe(true)
+    expect(
+      shouldApplyTeamsGraphConsent({ isCreating: false, toolType: 'teams' })
+    ).toBe(true)
+    expect(
+      shouldApplyTeamsGraphConsent({
+        isCreating: false,
+        toolType: 'slack',
+        draftToolType: 'teams',
+      })
+    ).toBe(true)
+    expect(
+      shouldApplyTeamsGraphConsent({ isCreating: false, toolType: 'slack' })
+    ).toBe(false)
   })
 })
