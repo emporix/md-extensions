@@ -10,14 +10,22 @@ export interface TeamsGraphConsentCallback {
 }
 
 export interface TeamsToolInstallDraft {
-  toolId: string
-  toolName: string
+  toolId?: string
+  toolName?: string
   toolType: string
   tenantId?: string
   installStateId: string
 }
 
 export const TEAMS_TOOL_DRAFT_STORAGE_KEY = 'emporix.teamsToolInstallDraft'
+export const TEAMS_INSTALL_PENDING_STORAGE_KEY = 'emporix.teamsInstallPending'
+export const TEAMS_INSTALL_POLL_INTERVAL_MS = 2500
+export const TEAMS_INSTALL_POLL_TIMEOUT_MS = 5 * 60 * 1000
+
+export interface TeamsInstallPending {
+  installStateId: string
+  providerTenantId: string
+}
 
 const normalizeHashPath = (hashPath: string): string => {
   const trimmed = hashPath.trim()
@@ -136,7 +144,7 @@ export const readTeamsToolInstallDraft = (
 
   try {
     const draft = JSON.parse(raw) as TeamsToolInstallDraft
-    if (!draft?.toolId?.trim() || !draft.installStateId?.trim()) {
+    if (!draft?.installStateId?.trim() || !draft.toolType?.trim()) {
       return null
     }
     if (installStateId && draft.installStateId !== installStateId) {
@@ -150,4 +158,35 @@ export const readTeamsToolInstallDraft = (
 
 export const clearTeamsToolInstallDraft = (): void => {
   sessionStorage.removeItem(TEAMS_TOOL_DRAFT_STORAGE_KEY)
+}
+
+export const saveTeamsInstallPending = (pending: TeamsInstallPending): void => {
+  sessionStorage.setItem(
+    TEAMS_INSTALL_PENDING_STORAGE_KEY,
+    JSON.stringify(pending)
+  )
+}
+
+export const readTeamsInstallPending = (): TeamsInstallPending | null => {
+  const raw = sessionStorage.getItem(TEAMS_INSTALL_PENDING_STORAGE_KEY)
+  if (!raw) {
+    return null
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as TeamsInstallPending
+    if (!parsed?.installStateId?.trim() || !parsed?.providerTenantId?.trim()) {
+      return null
+    }
+    return {
+      installStateId: parsed.installStateId.trim(),
+      providerTenantId: parsed.providerTenantId.trim(),
+    }
+  } catch {
+    return null
+  }
+}
+
+export const clearTeamsInstallPending = (): void => {
+  sessionStorage.removeItem(TEAMS_INSTALL_PENDING_STORAGE_KEY)
 }

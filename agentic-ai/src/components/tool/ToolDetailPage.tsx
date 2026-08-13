@@ -16,7 +16,12 @@ import { getEntityLoadErrorMessage } from '../../utils/errorHelpers'
 import { getCustomAgents } from '../../services/agentService'
 import { hasConversations } from '../../services/conversationsService'
 import { CustomAgent } from '../../types/Agent'
-import { createEmptyTool } from '../../utils/toolHelpers'
+import {
+  createEmptyTool,
+  createEmptyTeamsTool,
+  applyTeamsGraphConsentToTool,
+  shouldApplyTeamsGraphConsent,
+} from '../../utils/toolHelpers'
 import { countTeamsToolsForTeam } from '../../utils/teamsRoutingHelpers'
 import { countSlackToolsForTeam } from '../../utils/slackRoutingHelpers'
 import { isCommunicationNativeToolType } from '../../utils/communicationRoutingHelpers'
@@ -59,6 +64,7 @@ const ToolDetailPage: React.FC = () => {
   const { toolId } = useParams<{ toolId: string }>()
   const isCreating = location.pathname.endsWith('/add')
   const teamsConsentHandledRef = useRef(false)
+  const createToolSeededRef = useRef(false)
 
   const [tool, setTool] = useState<Tool | null>(null)
   const [availableAgents, setAvailableAgents] = useState<CustomAgent[]>([])
@@ -70,11 +76,27 @@ const ToolDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (isCreating) {
-      setTool(createEmptyTool())
+      if (!createToolSeededRef.current) {
+        createToolSeededRef.current = true
+        const consentStatus = searchParams.get('teamsGraphConsent')
+        const providerTenantId =
+          searchParams.get('providerTenantId')?.trim() || undefined
+        if (consentStatus) {
+          setTool(
+            createEmptyTeamsTool(
+              consentStatus === 'success' ? providerTenantId : undefined
+            )
+          )
+        } else {
+          setTool(createEmptyTool())
+        }
+      }
       setError(null)
       setLoading(false)
       return
     }
+
+    createToolSeededRef.current = false
 
     if (!toolId) {
       setError(t('tool_not_found'))
@@ -178,6 +200,10 @@ const ToolDetailPage: React.FC = () => {
       return
     }
 
+    if (!isCreating && loading) {
+      return
+    }
+
     teamsConsentHandledRef.current = true
 
     const callback: TeamsGraphConsentCallback = {
@@ -196,10 +222,19 @@ const ToolDetailPage: React.FC = () => {
       restoreTeamsInstallDraft(draft)
     }
 
+    const isTeamsConsentTarget = shouldApplyTeamsGraphConsent({
+      isCreating,
+      toolType: tool?.type,
+      draftToolType: draft?.toolType,
+    })
+
     if (callback.status === 'success') {
-      applyTeamsGraphConsent(callback)
-      showSuccess(t('teams_graph_consent_success'))
-      setActiveTab('settings')
+      if (isTeamsConsentTarget) {
+        applyTeamsGraphConsent(callback)
+        setActiveTab('general')
+        setTool((prev) => applyTeamsGraphConsentToTool(prev, callback, draft))
+        showSuccess(t('teams_graph_consent_success'))
+      }
     } else if (callback.status === 'error') {
       applyTeamsGraphConsent(callback)
       showError(
@@ -216,9 +251,11 @@ const ToolDetailPage: React.FC = () => {
     applyTeamsGraphConsent,
     isCreating,
     loadTeamsInstallDraft,
+    loading,
     location.pathname,
     restoreTeamsInstallDraft,
     searchParams,
+    tool?.type,
     setSearchParams,
     showError,
     showSuccess,
@@ -450,7 +487,7 @@ const ToolDetailPage: React.FC = () => {
           )}
 
           {state.toolType === 'teams' &&
-            (isCreating || !state.config.tenantId?.trim()) && (
+            (isCreating || !state.config.teamId?.trim()) && (
               <ToolDetailSection titleKey="install_teams">
                 <TeamsInstallSection
                   providerTenantId={state.config.tenantId ?? ''}
@@ -461,6 +498,9 @@ const ToolDetailPage: React.FC = () => {
                   onProviderTenantIdChange={(value) =>
                     updateConfig('tenantId', value)
                   }
+                  onInstallReady={(readyToolId) => {
+                    navigate(`/tools/${readyToolId}/edit`, { replace: true })
+                  }}
                 />
               </ToolDetailSection>
             )}

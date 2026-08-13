@@ -107,19 +107,32 @@ export const useToolConfig = ({
   useEffect(() => {
     if (tool) {
       const loadedConfig = mergeRagEmporixConfigOnLoad(tool)
-      setState({
-        toolId: tool.id ?? '',
-        toolName: tool.name ?? '',
-        toolType: tool.type ?? '',
-        config:
-          tool.type === 'teams'
-            ? applyTeamsToolDefaults(loadedConfig)
-            : tool.type === 'slack'
-              ? applySlackToolDefaults(loadedConfig)
-              : loadedConfig,
+      setState((prev) => {
+        if (
+          isCreating &&
+          !(tool.id ?? '').trim() &&
+          prev.toolType === 'teams' &&
+          !!prev.config.tenantId?.trim() &&
+          (tool.type === 'slack' || !tool.type) &&
+          !(tool.config?.tenantId ?? '').trim()
+        ) {
+          return prev
+        }
+
+        return {
+          toolId: tool.id ?? '',
+          toolName: tool.name ?? '',
+          toolType: tool.type ?? '',
+          config:
+            tool.type === 'teams'
+              ? applyTeamsToolDefaults(loadedConfig)
+              : tool.type === 'slack'
+                ? applySlackToolDefaults(loadedConfig)
+                : loadedConfig,
+        }
       })
     }
-  }, [tool])
+  }, [isCreating, tool])
 
   useEffect(() => {
     if (
@@ -520,9 +533,9 @@ export const useToolConfig = ({
   const restoreTeamsInstallDraft = useCallback(
     (draft: TeamsToolInstallDraft) => {
       setState((prev) => ({
-        toolId: draft.toolId,
-        toolName: draft.toolName || prev.toolName,
-        toolType: draft.toolType || 'teams',
+        toolId: draft.toolId?.trim() || prev.toolId,
+        toolName: draft.toolName?.trim() || prev.toolName,
+        toolType: draft.toolType || prev.toolType || 'teams',
         config: applyTeamsToolDefaults({
           ...prev.config,
           tenantId: draft.tenantId ?? prev.config.tenantId,
@@ -535,13 +548,19 @@ export const useToolConfig = ({
   const applyTeamsGraphConsent = useCallback(
     (callback: TeamsGraphConsentCallback) => {
       if (callback.status === 'success' && callback.providerTenantId?.trim()) {
-        setState((prev) => ({
-          ...prev,
-          config: applyTeamsToolDefaults({
-            ...prev.config,
-            tenantId: callback.providerTenantId?.trim(),
-          }),
-        }))
+        setState((prev) => {
+          if (!isCreating && prev.toolType !== 'teams') {
+            return prev
+          }
+          return {
+            ...prev,
+            toolType: 'teams',
+            config: applyTeamsToolDefaults({
+              ...(prev.toolType === 'teams' ? prev.config : {}),
+              tenantId: callback.providerTenantId?.trim(),
+            }),
+          }
+        })
         clearTeamsToolInstallDraft()
         return
       }
@@ -550,7 +569,7 @@ export const useToolConfig = ({
         clearTeamsToolInstallDraft()
       }
     },
-    []
+    [isCreating]
   )
 
   const loadTeamsInstallDraft = useCallback(
