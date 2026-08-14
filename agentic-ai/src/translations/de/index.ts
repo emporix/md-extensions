@@ -215,7 +215,7 @@ const TRANSLATIONS_DE = {
     'Leer lassen, um Cold-Inbound-Routing zu deaktivieren.',
   slack_allowed_operations: 'Erlaubte Operationen',
   slack_allowed_operations_hint:
-    'Maximale Operationen, die dieses Slack-Tool bereitstellen darf. Agenten können die Teilmenge pro Zuordnung weiter einschränken.',
+    'Operationen, die dieses Slack-Tool bereitstellen darf. Agenten können die Teilmenge pro Zuordnung weiter einschränken.',
   slack_agent_allowed_operations: 'Erlaubte Aktionen für diesen Agenten',
   slack_agent_allowed_operations_hint:
     'Wähle, welche Slack-Aktionen dieser Agent ausführen darf. Optionen sind durch die Tool-Konfiguration begrenzt.',

@@ -371,8 +371,6 @@ h1 .details-title-with-back {
 
 /* Content sections */
 .details-content {
-  background-color: white;
-  border-radius: var(--border-radius-md);
   padding: var(--spacing-lg);
   margin: var(--spacing-sm);
 }
@@ -1097,11 +1095,11 @@ h1 .details-title-with-back {
 }
 
 .btn-text-primary {
-  color: var(--color-primary);
+  color: var(--color-brand-primary);
 }
 
 .btn-text-primary:hover {
-  color: var(--color-primary-hover);
+  color: var(--blue-5-hover);
 }
 
 /* ========================================

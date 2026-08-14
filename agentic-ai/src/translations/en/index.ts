@@ -214,7 +214,7 @@ const TRANSLATIONS_EN = {
     'Leave empty to disable cold inbound routing.',
   slack_allowed_operations: 'Allowed operations',
   slack_allowed_operations_hint:
-    'Maximum operations this Slack tool may expose. Agents can further restrict the subset per attachment.',
+    'Operations this Slack tool is allowed to expose. Agents can further restrict the subset per attachment.',
   slack_agent_allowed_operations: 'Allowed actions for this agent',
   slack_agent_allowed_operations_hint:
     'Choose which Slack actions this agent may call. Options are limited by the tool configuration.',

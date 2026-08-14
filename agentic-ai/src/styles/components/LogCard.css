@@ -115,6 +115,9 @@
 
 .log-messages-datatable,
 .unified-logs-datatable {
+  --log-row-collapsed-min-height: calc(
+    (0.8rem * var(--line-height-tight)) + var(--space-xs) + var(--font-size-sm)
+  );
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
 }
@@ -224,13 +227,25 @@
 .unified-logs-datatable .p-datatable-tbody > tr td {
   border-bottom: none;
   border-top: none;
-  vertical-align: top;
+  /* Override PrimeReact / browser td default (vertical-align: middle) */
+  vertical-align: top !important;
+}
+
+.log-messages-datatable.p-datatable .p-datatable-tbody > tr > td.col-severity,
+.log-messages-datatable.p-datatable .p-datatable-tbody > tr > td.col-timestamp,
+.log-messages-datatable.p-datatable .p-datatable-tbody > tr > td.col-agent,
+.unified-logs-datatable.p-datatable .p-datatable-tbody > tr > td.col-severity,
+.unified-logs-datatable.p-datatable .p-datatable-tbody > tr > td.col-timestamp,
+.unified-logs-datatable.p-datatable .p-datatable-tbody > tr > td.col-agent {
+  display: table-cell !important;
+  vertical-align: top !important;
 }
 
 .log-messages-datatable .p-datatable-scrollable-body table tbody tr td,
 .unified-logs-datatable .p-datatable-scrollable-body table tbody tr td {
   border-bottom: none;
   border-top: none;
+  vertical-align: top !important;
 }
 
 .log-messages-datatable .p-datatable-tbody > tr:hover,
@@ -288,7 +303,7 @@
   white-space: pre-wrap;
   word-wrap: break-word;
   font-size: var(--font-size-sm);
-  line-height: var(--font-size-sm);
+  line-height: var(--line-height-tight);
   color: var(--grey-8);
 }
 
@@ -336,22 +351,33 @@
   height: var(--space-lg);
 }
 
-.log-message-content {
-  max-width: 100%;
+.log-meta-cell {
+  display: flex;
+  align-items: center;
+  min-height: var(--log-row-collapsed-min-height);
+  width: 100%;
   box-sizing: border-box;
 }
 
-.log-message-content--collapsible {
+.log-message-content {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: center;
   gap: var(--space-xs);
-  cursor: pointer;
-  box-sizing: border-box;
+  max-width: 100%;
   width: 100%;
+  box-sizing: border-box;
+  min-height: var(--log-row-collapsed-min-height);
+}
+
+.log-message-content--collapsible {
+  cursor: pointer;
+  justify-content: flex-start;
 }
 
 .log-message-toggle {
+  flex-shrink: 0;
   align-self: flex-start;
   margin: 0;
   padding: 0;
@@ -365,7 +391,7 @@
   white-space: pre-wrap;
   font-family: var(--font-mono);
   font-size: 0.8rem;
-  line-height: 1.4;
+  line-height: var(--line-height-tight);
 }
 
 .log-message-highlight {
