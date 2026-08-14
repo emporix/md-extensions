@@ -292,7 +292,7 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
             error={error}
             title={title}
             className="log-messages-datatable"
-            messageMaxLines={2}
+            messageMaxLines={1}
             expandMessageTimestamp={scrollToMessage}
           />
         )}

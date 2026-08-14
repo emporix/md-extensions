@@ -83,8 +83,7 @@ export const useCollapsibleText = (
     element.style.maxHeight = previousMaxHeight
     element.style.overflow = previousOverflow
 
-    // Require a meaningful overflow (not just subpixel / exactly-fitting wraps).
-    setShowToggle(fullHeight > clampHeight + Math.max(2, lineHeight * 0.35))
+    setShowToggle(fullHeight > clampHeight + Math.max(1, lineHeight * 0.1))
   }, [content, maxLines])
 
   useLayoutEffect(() => {

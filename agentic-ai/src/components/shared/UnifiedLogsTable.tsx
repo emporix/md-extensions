@@ -30,6 +30,8 @@ import DateFilterTemplate from './DateFilterTemplate'
 import { AnalyzeLogsDialog } from './AnalyzeLogsDialog'
 import starsIcon from '../../assets/stars_icon.svg'
 
+const META_COLUMN_BODY_STYLE = { verticalAlign: 'top' as const }
+
 interface UnifiedLogsTableProps {
   messages?: LogMessage[]
   loading?: boolean
@@ -191,11 +193,17 @@ const UnifiedLogsTable = forwardRef<
     }, [])
 
     const severityBodyTemplate = (rowData: LogMessage) => {
-      return <SeverityBadge severity={rowData.severity} />
+      return (
+        <div className="log-meta-cell">
+          <SeverityBadge severity={rowData.severity} />
+        </div>
+      )
     }
 
     const timestampBodyTemplate = (rowData: LogMessage) => {
-      return formatTimestamp(rowData.timestamp)
+      return (
+        <div className="log-meta-cell">{formatTimestamp(rowData.timestamp)}</div>
+      )
     }
 
     const messageFilterValue =
@@ -235,7 +243,7 @@ const UnifiedLogsTable = forwardRef<
     }
 
     const agentIdBodyTemplate = (rowData: LogMessage) => {
-      return rowData.agentId || ''
+      return <div className="log-meta-cell">{rowData.agentId || ''}</div>
     }
 
     const tableData = messages || []
@@ -351,6 +359,7 @@ const UnifiedLogsTable = forwardRef<
               headerClassName="col-severity"
               bodyClassName="col-severity"
               filterHeaderClassName="col-severity"
+              bodyStyle={META_COLUMN_BODY_STYLE}
               sortable
               filter
               filterMatchMode={FilterMatchMode.EQUALS}
@@ -365,6 +374,7 @@ const UnifiedLogsTable = forwardRef<
               headerClassName="col-timestamp"
               bodyClassName="col-timestamp"
               filterHeaderClassName="col-timestamp"
+              bodyStyle={META_COLUMN_BODY_STYLE}
               sortable
               filter
               filterElement={dateFilterElement}
@@ -378,6 +388,7 @@ const UnifiedLogsTable = forwardRef<
               headerClassName="col-agent"
               bodyClassName="col-agent"
               filterHeaderClassName="col-agent"
+              bodyStyle={META_COLUMN_BODY_STYLE}
               sortable
               filter
               filterPlaceholder={t('filter_by_agent_id')}
