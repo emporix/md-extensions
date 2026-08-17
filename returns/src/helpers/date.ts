@@ -1,6 +1,27 @@
 import i18n from '../translations/i18n'
 import type { TFunction } from 'i18next'
 
+export type HourFormat = '12' | '24'
+
+export const getLocaleHourFormat = (locale: string): HourFormat =>
+  Intl.DateTimeFormat(locale, { hour: 'numeric' }).resolvedOptions().hour12
+    ? '12'
+    : '24'
+
+export const toCalendarDate = (value: unknown): Date | undefined => {
+  if (!value) {
+    return undefined
+  }
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? undefined : value
+  }
+  if (typeof value === 'string' || typeof value === 'number') {
+    const parsed = new Date(value)
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed
+  }
+  return undefined
+}
+
 const getLocalizedDate = (
   date: Date,
   locale: string,

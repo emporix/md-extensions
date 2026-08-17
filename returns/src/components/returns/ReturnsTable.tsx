@@ -157,7 +157,7 @@ const ReturnsTable = ({ className = '' }: { readonly className?: string }) => {
           />
         ),
         filterElement: (options: DataTableColumnFilterElementOptions) => (
-          <DateFilterTemplate filterOptions={options} />
+          <DateFilterTemplate filterOptions={options} showTime />
         ),
       },
       {
@@ -186,7 +186,7 @@ const ReturnsTable = ({ className = '' }: { readonly className?: string }) => {
           />
         ),
         filterElement: (options: DataTableColumnFilterElementOptions) => (
-          <DateFilterTemplate filterOptions={options} />
+          <DateFilterTemplate filterOptions={options} showTime />
         ),
       },
       {

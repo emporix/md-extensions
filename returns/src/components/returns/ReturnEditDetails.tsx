@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { Controller, type Control, type FieldErrors } from 'react-hook-form'
 import { BsPersonFill } from 'react-icons/bs'
 import {
+  Calendar,
   DataTable,
-  DateValue,
   Dropdown,
   InputSwitch,
   InputText,
@@ -16,6 +16,7 @@ import {
 import InputField from '../shared/InputField'
 import FormGrid from '../shared/FormGrid'
 import FormGridRow from '../shared/FormGridRow'
+import EmptyContent from '../shared/EmptyContent'
 import ReturnEditDetailsExpansion from './ReturnEditDetailsExpansion'
 import TotalMoneyValue from './TotalMoneyValue'
 import { usePermissions } from '../../context/PermissionsProvider'
@@ -27,6 +28,7 @@ import {
 } from '../../models/Returns.model'
 import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
 import { HOST_ORDER_PATH } from '../../constants/paths'
+import { toCalendarDate } from '../../helpers/date'
 import styles from './ReturnEditDetails.module.scss'
 
 interface ReturnEditDetailsProps {
@@ -40,7 +42,7 @@ const ReturnEditDetails = ({
   control,
   errors,
 }: ReturnEditDetailsProps) => {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const [expandedRows, setExpandedRows] = useState<ReturnOrder[]>()
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.RETURNS_MANAGER)
@@ -72,18 +74,20 @@ const ReturnEditDetails = ({
               className={styles.thirdField}
               label={t('returns.details.createdDate')}
             >
-              <DateValue
-                date={returnDetails?.metadata.createdAt}
-                locale={i18n.language}
+              <Calendar
+                value={toCalendarDate(returnDetails?.metadata.createdAt)}
+                dateFormat={t('global.dateFormat')}
+                disabled
               />
             </InputField>
             <InputField
               className={styles.thirdField}
               label={t('returns.details.expiryDate')}
             >
-              <DateValue
-                date={returnDetails?.expiryDate}
-                locale={i18n.language}
+              <Calendar
+                value={toCalendarDate(returnDetails?.expiryDate)}
+                dateFormat={t('global.dateFormat')}
+                disabled
               />
             </InputField>
             <Controller
@@ -97,6 +101,7 @@ const ReturnEditDetails = ({
                   <Dropdown
                     disabled={!canManage}
                     value={field.value}
+                    placeholder=""
                     options={getArrayFromEnum(ReturnStatus).map((status) => ({
                       label: status,
                       value: status,
@@ -172,7 +177,7 @@ const ReturnEditDetails = ({
                   className={styles.submitterField}
                 >
                   <div className={styles.submitter}>
-                    <BsPersonFill size={20} aria-hidden />
+                    <BsPersonFill size={20} color="var(--grey-5)" aria-hidden />
                     <div>
                       {field.value?.firstName && field.value?.lastName
                         ? `${field.value.firstName} ${field.value.lastName}`
@@ -188,6 +193,7 @@ const ReturnEditDetails = ({
 
       <DataTable
         dataKey="id"
+        className={styles.table}
         value={returnDetails?.orders ?? []}
         columns={columns}
         expandedRows={expandedRows}
@@ -202,6 +208,7 @@ const ReturnEditDetails = ({
         paginator={false}
         showHeaders={false}
         pagination={{ totalRecords: returnDetails?.orders?.length ?? 0 }}
+        emptyTemplate={<EmptyContent text={t('global.noDataFound')} />}
         rowActions={(returnOrder: ReturnOrder) => (
           <SecondaryButton
             disabled={!canViewOrders}

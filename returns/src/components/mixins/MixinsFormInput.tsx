@@ -1,5 +1,11 @@
 import { useCallback } from 'react'
-import { Dropdown, InputSwitch, InputText } from '@emporix/component-library'
+import { useTranslation } from 'react-i18next'
+import {
+  Calendar,
+  Dropdown,
+  InputSwitch,
+  InputText,
+} from '@emporix/component-library'
 import LocalizedInput from '../shared/LocalizedInput'
 import {
   LocalizedMixin,
@@ -8,6 +14,7 @@ import {
   MixinsFormItem,
   MixinsFormItemType,
 } from './helpers'
+import { toCalendarDate } from '../../helpers/date'
 import Localized from '../../models/Localized.model'
 
 interface MixinsFormInputProps {
@@ -24,41 +31,10 @@ interface MixinsFormInputProps {
 /**
  * Renders one mixin field.
  *
- * MD/`products` used PrimeReact `InputNumber` / `Calendar` / `InputMask` here.
- * The component library exposes no equivalents, so numeric, date and time
- * fields use native input types through CL `InputText` (which forwards `type`).
- * Same stored value shape, native picker instead of a PrimeReact overlay.
+ * Date and date-time use CL `Calendar` (PrimeReact overlay, styles in the
+ * library). Numeric and time fields still use native input types through CL
+ * `InputText` until InputNumber / InputMask are promoted.
  */
-
-/** `datetime-local` needs `YYYY-MM-DDTHH:mm`; the API stores ISO-8601. */
-const toDateTimeLocalValue = (value: unknown): string => {
-  if (typeof value !== 'string' || !value) {
-    return ''
-  }
-  const parsed = new Date(value)
-  if (Number.isNaN(parsed.getTime())) {
-    return ''
-  }
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(
-    parsed.getDate()
-  )}T${pad(parsed.getHours())}:${pad(parsed.getMinutes())}`
-}
-
-/** `date` needs `YYYY-MM-DD`. */
-const toDateValue = (value: unknown): string => {
-  if (typeof value !== 'string' || !value) {
-    return ''
-  }
-  const parsed = new Date(value)
-  if (Number.isNaN(parsed.getTime())) {
-    return ''
-  }
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(
-    parsed.getDate()
-  )}`
-}
 
 const MixinsFormInput = ({
   item,
@@ -67,6 +43,7 @@ const MixinsFormInput = ({
   disabled = false,
   className = '',
 }: MixinsFormInputProps) => {
+  const { t } = useTranslation()
   const isReadonly: boolean = item.isReadonly ?? false
   const isDisabled = disabled || isReadonly
   const type =
@@ -138,27 +115,37 @@ const MixinsFormInput = ({
         )
       case MixinsFormItemType.date:
         return (
-          <InputText
+          <Calendar
             className={className}
-            type="date"
-            value={toDateValue(value)}
+            value={toCalendarDate(value)}
+            dateFormat={t('global.dateFormat')}
             disabled={isDisabled}
-            onChange={(e) => {
-              const raw = e.target.value
-              onInputChange(item.key, raw ? new Date(raw).toISOString() : '')
+            showButtonBar
+            onChange={(event) => {
+              const next = event.value
+              onInputChange(
+                item.key,
+                next instanceof Date ? next.toISOString() : ''
+              )
             }}
           />
         )
       case MixinsFormItemType.dateTime:
         return (
-          <InputText
+          <Calendar
             className={className}
-            type="datetime-local"
-            value={toDateTimeLocalValue(value)}
+            value={toCalendarDate(value)}
+            dateFormat={t('global.dateFormat')}
             disabled={isDisabled}
-            onChange={(e) => {
-              const raw = e.target.value
-              onInputChange(item.key, raw ? new Date(raw).toISOString() : '')
+            showTime
+            hourFormat="24"
+            showButtonBar
+            onChange={(event) => {
+              const next = event.value
+              onInputChange(
+                item.key,
+                next instanceof Date ? next.toISOString() : ''
+              )
             }}
           />
         )
@@ -197,7 +184,7 @@ const MixinsFormInput = ({
           </div>
         )
     }
-  }, [type, value, item, className, isDisabled, onInputChange])
+  }, [type, value, item, className, isDisabled, onInputChange, t])
 
   return <>{getField()}</>
 }

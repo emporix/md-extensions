@@ -1,103 +1,114 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
-  InputText,
+  Calendar,
+  type CalendarChangeEvent,
   type DataTableColumnFilterElementOptions,
 } from '@emporix/component-library'
+import { getLocaleHourFormat } from '../../helpers/date'
 import styles from './DateFilterTemplate.module.scss'
 
 interface DateFilterTemplateProps {
   readonly filterOptions: DataTableColumnFilterElementOptions
   readonly selectionMode?: 'single' | 'range'
+  readonly showTime?: boolean
+}
+
+const toDateValue = (
+  value: unknown,
+  selectionMode: 'single' | 'range'
+): Date | Date[] | undefined => {
+  if (!value) {
+    return undefined
+  }
+  if (value instanceof Date) {
+    return value
+  }
+  if (typeof value === 'string') {
+    return new Date(value)
+  }
+  if (Array.isArray(value)) {
+    const dates = value.map((entry) => new Date(entry || ''))
+    return selectionMode === 'single' ? dates[0] : dates
+  }
+  return undefined
 }
 
 /**
  * Column filter for date fields.
  *
- * MD used PrimeReact `Calendar`; the component library exposes no date picker,
- * so this uses native `<input type="date">` through CL `InputText`. The filter
- * value contract is unchanged: an `[fromISO, toISO]` pair, or `undefined` when
- * cleared.
+ * Wraps CL `Calendar` (PrimeReact overlay, styles encapsulated in the library).
+ * Filter value contract is an `[fromISO, toISO]` pair, or `undefined` when
+ * cleared — same as MD `DateFilterTemplate`.
  */
-
-/** `<input type="date">` needs `YYYY-MM-DD`. */
-const toDateInputValue = (value: unknown): string => {
-  if (!value) {
-    return ''
-  }
-  const parsed = value instanceof Date ? value : new Date(String(value))
-  if (Number.isNaN(parsed.getTime())) {
-    return ''
-  }
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${parsed.getFullYear()}-${pad(parsed.getMonth() + 1)}-${pad(
-    parsed.getDate()
-  )}`
-}
-
-const startOfDayIso = (value: string) => new Date(value).toISOString()
-
-const endOfDayIso = (value: string) => {
-  const date = new Date(value)
-  date.setHours(23, 59, 59, 999)
-  return date.toISOString()
-}
-
 export const DateFilterTemplate = ({
   filterOptions,
   selectionMode = 'single',
+  showTime = false,
 }: DateFilterTemplateProps) => {
-  const [fromValue, toValue] = useMemo(() => {
-    const value = filterOptions.value
-    if (Array.isArray(value)) {
-      return [toDateInputValue(value[0]), toDateInputValue(value[1])]
+  const { t, i18n } = useTranslation()
+  const [rangeValue, setRangeValue] = useState<Date[]>()
+
+  useEffect(() => {
+    if (!filterOptions.value) {
+      setRangeValue(undefined)
+    } else if (Array.isArray(filterOptions.value)) {
+      setRangeValue(filterOptions.value.map((entry: string) => new Date(entry)))
     }
-    const single = toDateInputValue(value)
-    return [single, single]
   }, [filterOptions.value])
 
-  const apply = (next: string[] | undefined) => {
-    filterOptions.filterApplyCallback(next, filterOptions.index)
-  }
+  const handleChange = (event: CalendarChangeEvent) => {
+    if (selectionMode === 'range') {
+      if (Array.isArray(event.value)) {
+        const start = event.value[0]
+        const end = event.value[1]
+        setRangeValue([start, end])
+        if (start && end) {
+          filterOptions.filterApplyCallback(
+            [start.toISOString(), end.toISOString()],
+            filterOptions.index
+          )
+        } else if (!start && !end) {
+          setRangeValue(undefined)
+          filterOptions.filterApplyCallback(undefined, filterOptions.index)
+        }
+      } else {
+        setRangeValue(undefined)
+        filterOptions.filterApplyCallback(undefined, filterOptions.index)
+      }
+      return
+    }
 
-  if (selectionMode === 'single') {
-    return (
-      <InputText
-        className={styles.dateFilter}
-        type="date"
-        value={fromValue}
-        onChange={(e) => {
-          const raw = e.target.value
-          apply(raw ? [startOfDayIso(raw), endOfDayIso(raw)] : undefined)
-        }}
-      />
+    const date = event.value instanceof Date ? event.value : undefined
+    if (!date) {
+      filterOptions.filterApplyCallback(undefined, filterOptions.index)
+      return
+    }
+    filterOptions.filterApplyCallback(
+      [date.toISOString(), date.toISOString()],
+      filterOptions.index
     )
   }
 
-  const applyRange = (from: string, to: string) => {
-    if (!from && !to) {
-      apply(undefined)
-      return
+  const calendarValue = useMemo(() => {
+    if (selectionMode === 'range') {
+      return rangeValue ?? toDateValue(filterOptions.value, selectionMode)
     }
-    if (from && to) {
-      apply([startOfDayIso(from), endOfDayIso(to)])
-    }
-  }
+    return toDateValue(filterOptions.value, selectionMode)
+  }, [rangeValue, filterOptions.value, selectionMode])
 
   return (
-    <div className={styles.range}>
-      <InputText
-        className={styles.dateFilter}
-        type="date"
-        value={fromValue}
-        onChange={(e) => applyRange(e.target.value, toValue)}
-      />
-      <InputText
-        className={styles.dateFilter}
-        type="date"
-        value={toValue}
-        onChange={(e) => applyRange(fromValue, e.target.value)}
-      />
-    </div>
+    <Calendar
+      className={styles.dateFilter}
+      style={{ minWidth: showTime ? '220px' : '180px' }}
+      value={calendarValue}
+      onChange={handleChange}
+      selectionMode={selectionMode}
+      dateFormat={t('global.dateFormat')}
+      showTime={showTime}
+      hourFormat={getLocaleHourFormat(i18n.language)}
+      showButtonBar
+    />
   )
 }
 
