@@ -1,10 +1,11 @@
 import { ReactNode } from 'react'
 import { FiInfo } from 'react-icons/fi'
+import { textToTitleCase } from '../../helpers/utils'
 import styles from './InputField.module.scss'
 
 type InputFieldProps = {
   readonly checkbox?: boolean
-  readonly className: string
+  readonly className?: string
   readonly label: string
   readonly children: ReactNode
   readonly required?: boolean
@@ -14,7 +15,7 @@ type InputFieldProps = {
 }
 
 const InputField = ({
-  className,
+  className = '',
   error,
   label,
   children,
@@ -25,12 +26,12 @@ const InputField = ({
 }: InputFieldProps) => {
   return (
     <div
-      className={`${styles.field} ${className} ${styles.wrapper} ${
+      className={`${styles.field} ${className} ${
         checkbox ? styles.checkboxField : ''
       }`}
     >
       <label className={styles.label} htmlFor={htmlFor}>
-        {label}
+        {textToTitleCase(label)}
         {required && <span className={styles.required}>*</span>}
         {tooltip && (
           <span

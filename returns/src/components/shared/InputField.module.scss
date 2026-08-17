@@ -1,16 +1,19 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  padding: 0.5rem;
+  box-sizing: border-box;
   min-width: 0;
 }
 
 .label {
-  display: block;
+  display: flex;
+  align-items: center;
   font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
+  color: var(--grey-9, var(--color-text-primary));
   font-size: 0.875rem;
   line-height: var(--line-height-base);
+  margin-bottom: 0.5rem;
 }
 
 .required {

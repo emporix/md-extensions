@@ -204,6 +204,7 @@ const ReturnEditPage = () => {
                 {t('global.discard')}
               </SecondaryButton>
               <PrimaryButton
+                className={styles.saveButton}
                 disabled={!isDirty || !isValid}
                 onClick={handleSubmit(onSubmit)}
               >

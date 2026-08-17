@@ -3,7 +3,8 @@
 }
 
 .rowContent {
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -0.5rem;
+  margin-right: -0.5rem;
 }

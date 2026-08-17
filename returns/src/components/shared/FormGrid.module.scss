@@ -1,5 +1,5 @@
 .form {
-  display: grid;
-  gap: 1rem;
+  display: flex;
+  flex-direction: column;
   max-width: 50rem;
 }

@@ -1,4 +1,4 @@
-import { PrimaryButton } from '@emporix/component-library'
+import { DataTableEmptyState, PrimaryButton } from '@emporix/component-library'
 import { Link } from 'react-router'
 import styles from './EmptyContent.module.scss'
 
@@ -9,6 +9,7 @@ type EmptyContentProps = {
   readonly link?: string
   readonly action?: () => void
   readonly managerPermissions?: boolean
+  readonly showEmptyIcon?: boolean
 }
 
 const EmptyContent = ({
@@ -18,6 +19,7 @@ const EmptyContent = ({
   link,
   action,
   managerPermissions = true,
+  showEmptyIcon = true,
 }: EmptyContentProps) => {
   const actionButton = buttonLabel ? (
     <PrimaryButton disabled={!managerPermissions} onClick={action}>
@@ -27,7 +29,7 @@ const EmptyContent = ({
 
   return (
     <div className={[styles.emptyState, className].filter(Boolean).join(' ')}>
-      <p className={styles.message}>{text}</p>
+      <DataTableEmptyState message={text} showIcon={showEmptyIcon} />
       {actionButton &&
         (link ? (
           <Link to={link} className={styles.actionLink}>
