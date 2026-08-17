@@ -1,13 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import {
-  createForm,
-  MixinsFormItem,
-  MixinsFormItemType,
-} from './helpers'
+import { createForm, MixinsFormItem, MixinsFormItemType } from './helpers'
 
 const item = (
-  overrides: Partial<MixinsFormItem> &
-    Pick<MixinsFormItem, 'key' | 'type'>
+  overrides: Partial<MixinsFormItem> & Pick<MixinsFormItem, 'key' | 'type'>
 ): MixinsFormItem => ({
   name: overrides.key,
   isRequired: false,
@@ -53,7 +48,11 @@ describe('createForm', () => {
       item({ key: 'advertisement', type: MixinsFormItemType.localized }),
       item({ key: 'boolean', type: MixinsFormItemType.boolean }),
       item({ key: 'time', type: MixinsFormItemType.time, isRequired: true }),
-      item({ key: 'number', type: MixinsFormItemType.integer, isRequired: true }),
+      item({
+        key: 'number',
+        type: MixinsFormItemType.integer,
+        isRequired: true,
+      }),
     ])
 
     expect(form.boolean).toBe(false)
