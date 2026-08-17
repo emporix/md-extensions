@@ -22,6 +22,7 @@ Step-by-step workflow for porting an MD module to `md-extensions`.
 | `docs/MODULE_MIGRATION_PLAYBOOK.md` | Policy, federation contract, AppState matrix, provider stack, QA, Firebase, decisions log |
 | `docs/REUSABLE_FROM_USERS_AND_GROUPS.md` | Tier 1/2/3 copy inventory (what to take, adapt, skip) |
 | `docs/MIGRATED_MODULES.md` | Registry of extracted remotes (update after every migration) |
+| `docs/CL_WIDGET_STATUS.md` | PrimeReact → CL lookup (`in-cl` / `partial` / `missing`). Do not copy gap lists into this skill. |
 | [reference.md](reference.md) | FAQ, validation greps, anti-patterns, local dev loop |
 
 **Canonical scaffold:** clone [md-module-template](https://github.com/emporix/md-module-template) branch **`md-module-migration`**, absorb into `md-extensions/{kebab}/` (remove nested `.git`). Align Tier 1 with **all playbook-aligned remotes** in `MIGRATED_MODULES.md` (not U&G alone; not `products`; not template `master`).
@@ -38,7 +39,7 @@ Step-by-step workflow for porting an MD module to `md-extensions`.
 3. Pick federation `name` = MD route `key` (camelCase).
 4. Pick a **unique local Vite port** (claim from `MIGRATED_MODULES.md` "Next free local port").
 5. Run audit greps (playbook §7 + below).
-6. Verify CL exports every PrimeReact / MdDataTable replacement; prefer **CL ≥ 2.2.0** for `ConfirmBox` / `BackButton` / `DateValue`, **CL ≥ 2.3.0** for `SectionBox`, **CL ≥ 2.4.0** for `Editor` / `FileUpload` / `ProgressBar`.
+6. Verify CL exports every PrimeReact / MdDataTable replacement: inventory `primereact` imports, then look up each path in **`docs/CL_WIDGET_STATUS.md`**. Prefer **CL ≥ 2.2.0** for `ConfirmBox` / `BackButton` / `DateValue`, **CL ≥ 2.3.0** for `SectionBox`, **CL ≥ 2.4.0** for `Editor` / `FileUpload` / `ProgressBar`, **CL ≥ 2.5.0** for `InputSwitch` / `StatusBadge` / `Tabs` `disabled`+`keepMounted`, **CL ≥ 2.7.0** for `Calendar`.
 7. Align `@emporix/api-calls` semver with call signatures used by the module.
 8. Decide Mode A (permanent `url:`) vs Mode B (GateComponent + toggle). Prefer Mode A when there is no useful built-in fallback.
 9. **Feature-parity audit** and **CL widget-gap check** (below) — both belong *before* Phase 2, not before Phase 5.
@@ -57,9 +58,9 @@ Read the MD module's JSX end to end and list every **capability**, not just comp
 
 ### CL widget-gap check
 
-If the module needs a PrimeReact widget CL does not export, **do not add `primereact` to the remote** and do not silently descope. Promote it to CL as Pattern B (skill `migrate-to-component-library`), release, then pin. CL already bundles `primereact`, so this costs consumers nothing.
+Lookup SoT: **`docs/CL_WIDGET_STATUS.md`**. Do not trust gap names copied into this skill (they go stale — e.g. `InputSwitch` landed in CL 2.5.0).
 
-Known gaps: **no `Sidebar`, no `InputSwitch`, and `Checkbox` has no `label` prop.** `brands` worked around the first two using CL `Dialog` + `Checkbox` for `TableExtensions` — acceptable when function and persisted shape are preserved, but confirm the presentation change with the user.
+If the module needs a PrimeReact widget with status `missing`, **do not add `primereact` to the remote** and do not silently descope. Promote it to CL (skill `migrate-to-component-library`, ask Pattern A vs B), release, then pin. Native substitutes listed in that doc (`InputText type="number|time"`, Dialog for Sidebar) are the only allowed workarounds — confirm presentation with the user.
 
 ```bash
 # Cross-module imports
@@ -161,10 +162,10 @@ ToastProvider (CL)
 | CL component | Delta from MD |
 |--------------|---------------|
 | `ConfirmBox` | `message` is **required**; MD's local one took `title` only. Supply a real message — do not just repeat the title. |
-| `Tabs` | **No per-tab `disabled`.** MD greys out tabs (e.g. Media before first save). Hiding the tab instead is a UX change — confirm with the user, or render the tab with disabled content. |
+| `Tabs` | `disabled` on `TabItem` + `keepMounted` since **2.5.0** (≡ Prime `renderActiveOnly={false}`). Pin ≥ 2.5.0 if MD used either. |
 | `Checkbox` | No `label` prop — render your own `<label htmlFor>`. |
 | `DataTable` | Row actions come from the `rowActions` prop, not a column. If MD let users toggle an "actions" column via `TableExtensions`, that column no longer exists to toggle. |
-| — | No `Sidebar`, no `InputSwitch`. |
+| Remaining widgets | Look up `docs/CL_WIDGET_STATUS.md`. Do not add gap names to this table. |
 
 ## Phase 3 — MD host wiring (hard gate)
 
@@ -203,7 +204,7 @@ Create Hosting sites, register `.firebaserc` + `firebase.json`, copy workflow YA
 
 Bugbot + second model on full diff. Append 1–3 rows to playbook decisions log. Update this skill if steps were wrong.
 
-**Required registry update:** add/refresh row in `docs/MIGRATED_MODULES.md` + bump "Next free local port". Refresh `REUSABLE_FROM_USERS_AND_GROUPS.md` if Tier 1 inventory changed.
+**Required registry update:** add/refresh row in `docs/MIGRATED_MODULES.md` + bump "Next free local port". Refresh `REUSABLE_FROM_USERS_AND_GROUPS.md` if Tier 1 inventory changed. If you promoted a Prime widget to CL, move its row in `docs/CL_WIDGET_STATUS.md`.
 
 ## Phase 8 — PRs, merge order, release
 

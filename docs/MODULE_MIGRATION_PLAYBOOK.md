@@ -4,13 +4,14 @@ Living guide for extracting Management Dashboard modules into `md-extensions` fe
 
 **Migrated modules registry (update after every migration):** [MIGRATED_MODULES.md](./MIGRATED_MODULES.md)  
 **Agent copy inventory:** [REUSABLE_FROM_USERS_AND_GROUPS.md](./REUSABLE_FROM_USERS_AND_GROUPS.md) — Tier 1 from **all** playbook-aligned remotes (not U&G alone).  
+**PrimeReact → CL lookup:** [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md) — grep MD for `primereact`, look up each import (`in-cl` / `partial` / `missing`).  
 **First pilot:** `users-and-groups` (COP-5598). **Second:** `customer-groups` (COP-6096) — see registry.
 
 ## 1. Prerequisites
 
 - `@emporix/component-library` **≥ 2.0.0** (Pattern B widgets bundle `primereact` / theme / primeicons; remotes must not depend on or import `primereact` directly).
-- Required CL primitives for typical ports: Dialog, DataTable, Menu, ToastProvider, Checkbox, RadioButton, AutoComplete, Message, ProgressSpinner, FilterMatchMode (re-exported).
-- Prefer **CL ≥ 2.2.0** shells when exported: `ConfirmBox`, `BackButton`, `DateValue` (delete local U&G copies once pinned).
+- **Widget coverage:** [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md) is the lookup SoT. Inventory MD `primereact` imports, then import `in-cl`, use listed stand-ins for `partial`, and **promote** `missing` widgets to CL before adding `primereact` to a remote.
+- Prefer **CL ≥ 2.2.0** shells when exported: `ConfirmBox`, `BackButton`, `DateValue` (delete local U&G copies once pinned). Later floors: `SectionBox` 2.3.0, `Editor`/`FileUpload`/`ProgressBar` 2.4.0, `InputSwitch`/`StatusBadge`/`Tabs` `disabled`+`keepMounted` 2.5.0, `Calendar` 2.7.0.
 - **CL replacement policy:** import CL components **directly** in feature code. Add a local thin wrapper **only** when the app must inject dependencies the library deliberately omits (i18n, tenant languages, config) — same pattern as `LocalizedInput`. Do not wrap CL widgets "for consistency" when props can be passed at the call site.
 - Ticket interview checklist:
   - Scope: which routes move vs stay in MD?
@@ -90,7 +91,7 @@ Key rules (detail in REUSABLE):
 - **CL ≥ 2.2.0** → import `ConfirmBox`, `BackButton`, `DateValue`, `ProgressSpinner` directly; no pass-through wrappers unless app deps are required (`LocalizedInput` pattern).
 - **Promote-to-CL gate:** before third-copying a shared shell already in a prior remote, ask the user whether to migrate it to CL first.
 - **SCSS Modules** for feature UI — no global / unscoped styles, no inline styles.
-- **CL primitives** only (`InputText`, `Dropdown`, `DataTable`, `Tabs`, `Dialog`, `FilterMatchMode`, …). Never add `primereact` / `primeicons` deps or CSS.
+- **CL primitives** only — look up each MD `primereact` import in [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md). Never add `primereact` / `primeicons` deps or CSS.
 - **Lean `InputField`** from prior remote — never MD `InputField` (ProductDataProvider).
 
 ## 6. MD wiring recipe (hard gate)
@@ -121,7 +122,7 @@ Before porting, run:
 # External imports from other MD modules
 rg "from ['\"].*modules/(?!usersAndGroups)" src/modules/{module}/
 
-# PrimeReact inventory (target: CL rewrite)
+# PrimeReact inventory (target: CL rewrite) — look up each path in docs/CL_WIDGET_STATUS.md
 rg "from 'primereact" src/modules/{module}/
 
 # Stray build artifacts
@@ -255,7 +256,9 @@ Do **not** claim "identical to U&G" after a reduce — `diff -rq` will (and shou
 | 2026-08-12 | Promote MD `p-button-secondary-small` + `p-button-icon-only` as CL `SecondaryButton` `size="small"` + `iconOnly` (2.6.0); remotes must not keep a local `.openButton` override | Local SCSS overrides of CL SecondaryButton for toolbar icon controls | brands + returns (+ any TableExtensions consumer) |
 | 2026-08-07 | Guidance buried in a reference table gets skipped mid-port. Icon-glyph parity sat in a CL-deltas table and still regressed on run 3, so it moved into Phase 2 as an explicit grep step plus an after-edit hook check | Assume a documented delta will be recalled at the right moment | All remotes |
 | 2026-08-10 | Promote to CL rather than substitute when the widget is generic: Returns needed a boolean toggle, currency display and a status pill, so CL 2.5.0 added `InputSwitch` / `MoneyValue` / `StatusBadge` and extended `Tabs` with `disabled` + `keepMounted`. Substitute only where the widget is niche (see next row) | Local copies in the remote; adding `primereact`; descoping the screens | All remotes |
-| 2026-08-10 | Where CL has no equivalent and the widget is niche, use native input types through CL `InputText` (which forwards `type`): `number` for `InputNumber`, `date`/`datetime-local` for `Calendar`, `time` for `InputMask "99:99"`. Stored value shape is unchanged; the picker is the browser's. Same escape hatch as Brands' Dialog-for-Sidebar | Blocking the migration on another CL release; adding `primereact` for three field types | All remotes |
+| 2026-08-10 | Where CL has no equivalent and the widget is niche, use native input types through CL `InputText` (which forwards `type`): `number` for `InputNumber`, ~~`date`/`datetime-local` for `Calendar`~~ **superseded 2026-08-17** by CL `Calendar` (2.7.0). `time` still substitutes for `InputMask "99:99"`. Stored value shape is unchanged | Blocking the migration on another CL release; adding `primereact` for three field types | All remotes |
+| 2026-08-17 | Promote PrimeReact `Calendar` to CL as Pattern B (`Calendar` + `CalendarChangeEvent`, 2.7.0). Overlay styles travel via `panelClassName` so the same control works in form fields and table column filters (body-appended popup). `returns` `DateFilterTemplate` and mixin date/datetime fields consume it; keep a thin remote wrapper only for the `[fromISO, toISO]` filter contract | Native `<input type="date">`; adding `primereact` to the remote; a local datepicker copy | All remotes |
+| 2026-08-17 | PrimeReact → CL coverage lives in [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md) (lookup SoT). Skill / playbook / registry **link** it; do not copy gap lists. MD `primereact@8.7.0` vs CL 2.7.0. Highest remaining gaps: `InputNumber`, `Skeleton`, `Chips`, `Tree`/`TreeTable`, `InputMask`, `Sidebar`. | Embedding stale “no InputSwitch” lists in the skill and MIGRATED_MODULES deltas | All remotes |
 | 2026-08-10 | Port the mixins subsystem from the `returns` remote, not `products` — `products` is not playbook SoT and still imports `primereact` (`InputNumber`, `Calendar`, `InputMask`, `InputSwitch`). `@emporix/api-calls` already exports the schema and mixin calls, so no local axios client is needed | Copying `products/src/components/shared/mixins` verbatim; building a local axios client for schema fetches | Remotes with mixin-backed entities |
 | 2026-08-10 | Mixin **table columns** are a separate feature from mixin **form tabs** — `TableExtensions` needs `schemaType` + `MixinColumns` and `ConfigurationProvider` needs `getTableMixinColumns`. A literal component diff misses it, exactly like column visibility (2026-08-05) | Porting `useMixinsForm` only and assuming the list table is at parity | Remotes with mixin-backed entities |
 | 2026-08-10 | Re-home i18n keys the ported shells reference into the remote's own namespace: `products.mixins.*` → `global.mixins.*`, and add an `errors` namespace for `errors.shared.cantBeBlank`. MD's `t('email')` had no key at all and rendered the raw key — fixed to `global.email` here | Keeping another module's namespace prefix; porting a missing-key bug forward | All remotes |

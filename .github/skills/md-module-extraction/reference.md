@@ -1,6 +1,6 @@
 # MD Module Extraction — Reference
 
-FAQ, validation greps, and anti-patterns for the extraction workflow. For the step-by-step phases, see [SKILL.md](SKILL.md). For policy and federation contract, see the [playbook](../../docs/MODULE_MIGRATION_PLAYBOOK.md). For copy inventory, see [REUSABLE](../../docs/REUSABLE_FROM_USERS_AND_GROUPS.md).
+FAQ, validation greps, and anti-patterns for the extraction workflow. For the step-by-step phases, see [SKILL.md](SKILL.md). For policy and federation contract, see the [playbook](../../docs/MODULE_MIGRATION_PLAYBOOK.md). For copy inventory, see [REUSABLE](../../docs/REUSABLE_FROM_USERS_AND_GROUPS.md). For PrimeReact → CL coverage, see [CL_WIDGET_STATUS](../../docs/CL_WIDGET_STATUS.md).
 
 ## AppState FAQ
 
@@ -24,6 +24,9 @@ A: Only when the library component is context-free and the remote must inject ap
 
 **Q: Shared UI already exists in a prior remote — copy again?**  
 A: **Ask first.** If `@emporix/component-library` already exports it → import directly. If only prior remotes have a local copy → prompt the user to migrate to CL now (skill `migrate-to-component-library`, Pattern A vs B) or keep a local copy for this remote. Do not silently third-copy forever.
+
+**Q: Does CL export the PrimeReact widget this module uses?**  
+A: Look up the `primereact/{path}` in [CL_WIDGET_STATUS.md](../../docs/CL_WIDGET_STATUS.md) (`in-cl` / `partial` / `missing`). Do not trust gap lists copied into this skill or the registry — they go stale.
 
 **Q: Global CSS vs SCSS Modules?**  
 A: Prefer **SCSS Modules** (`Component.module.scss`) co-located with the component. Avoid unscoped / global class names for feature UI — when federated into MD, host global styles can override them (and vice versa). Keep remote `index.css` to minimal shell resets only. No inline styles.
