@@ -38,8 +38,8 @@ const GroupMembers = () => {
   const { hasPermission } = usePermissions()
   const [isDeleting, setIsDeleting] = useState(false)
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
-  const { isEntraIdGroupsSyncEnabled } = useEntraIdGroupsSync()
-  const canAddMembers = canManage && !isEntraIdGroupsSyncEnabled
+  const { areManualMutationsRestricted } = useEntraIdGroupsSync()
+  const canAddMembers = canManage && !areManualMutationsRestricted
   const { paginationParams, onPageCallback } = usePagination(
     undefined,
     true,

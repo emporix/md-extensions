@@ -48,8 +48,8 @@ const GroupPageActions = (props: Props) => {
   const { showSuccess, showError } = useToast()
   const { navigate } = useCustomNavigate()
   const { syncUserAccessControls, templates } = usePermissions()
-  const { isEntraIdGroupsSyncEnabled } = useEntraIdGroupsSync()
-  const canAddMembers = managerPermissions && !isEntraIdGroupsSyncEnabled
+  const { areManualMutationsRestricted } = useEntraIdGroupsSync()
+  const canAddMembers = managerPermissions && !areManualMutationsRestricted
 
   const { group, syncGroup, groupType } = useGroupData()
   const [isMembersDialogOpened, setIsMembersDialogOpened] = useState(false)

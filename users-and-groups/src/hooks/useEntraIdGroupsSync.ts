@@ -6,9 +6,12 @@ export const useEntraIdGroupsSync = () => {
   const isEntraIdGroupsSyncEnabled = isToggleValid(
     ENTRAID_GROUPS_SYNC_FEATURE_TOGGLE
   )
+  const areManualMutationsRestricted =
+    togglesLoading || isEntraIdGroupsSyncEnabled
 
   return {
     isEntraIdGroupsSyncEnabled,
+    areManualMutationsRestricted,
     togglesLoading,
   }
 }

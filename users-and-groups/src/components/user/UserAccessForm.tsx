@@ -24,8 +24,8 @@ const UserAccessForm = () => {
   const { showError } = useToast()
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
-  const { isEntraIdGroupsSyncEnabled } = useEntraIdGroupsSync()
-  const canAssignGroups = canManage && !isEntraIdGroupsSyncEnabled
+  const { areManualMutationsRestricted } = useEntraIdGroupsSync()
+  const canAssignGroups = canManage && !areManualMutationsRestricted
 
   const { userId } = useParams()
   const [groups, setGroups] = useState<Group[]>([])

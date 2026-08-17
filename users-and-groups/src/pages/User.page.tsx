@@ -46,7 +46,7 @@ const UserPage = () => {
   const { showSuccess, showError } = useToast()
   const { navigate } = useCustomNavigate()
   const toggles = useFeatureToggles()
-  const { isEntraIdGroupsSyncEnabled } = useEntraIdGroupsSync()
+  const { areManualMutationsRestricted } = useEntraIdGroupsSync()
   const tabIds = useMemo(
     () =>
       toggles.isToggleValid(AUDIT_LOG_FEATURE_TOGGLE)
@@ -57,10 +57,9 @@ const UserPage = () => {
   const { activeTab, onTabChange } = useTabs(tabIds, true)
   const { syncUserAccessControls, hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
-  const canSaveUser = canManage && !isEntraIdGroupsSyncEnabled
-
   const { userId } = useParams()
   const [user, setUser] = useState<User>()
+  const canSaveUser = canManage && (!!userId || !areManualMutationsRestricted)
 
   useEffect(() => {
     if (!userId) return
@@ -104,6 +103,9 @@ const UserPage = () => {
     if (!user) return
     try {
       const payload = mapUserFormToPayload(data, user)
+      if (areManualMutationsRestricted) {
+        payload.groupIds = user.groupIds
+      }
       await makeCall(() => updateUser(user.id, payload), blockPanel)
       await makeCall(syncUserAccessControls, blockPanel)
       showSuccess(t('usersAndGroups.users.toasts.editUser.success'))

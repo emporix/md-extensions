@@ -22,12 +22,12 @@ const UsersAndGroupsPage = () => {
   const { navigate } = useCustomNavigate()
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
-  const { isEntraIdGroupsSyncEnabled } = useEntraIdGroupsSync()
+  const { areManualMutationsRestricted } = useEntraIdGroupsSync()
 
   const moduleActions = useMemo(() => {
     const isUserTab = activeTab === 'users'
     const key = isUserTab ? 'createUser' : 'createGroup'
-    const canCreateUser = canManage && !isEntraIdGroupsSyncEnabled
+    const canCreateUser = canManage && !areManualMutationsRestricted
     return (
       <PrimaryButton
         disabled={isUserTab ? !canCreateUser : !canManage}
@@ -36,7 +36,7 @@ const UsersAndGroupsPage = () => {
         {t(`usersAndGroups.buttons.${key}`)}
       </PrimaryButton>
     )
-  }, [activeTab, canManage, isEntraIdGroupsSyncEnabled, navigate, t])
+  }, [activeTab, areManualMutationsRestricted, canManage, navigate, t])
 
   const tabs = useMemo(
     () => [
