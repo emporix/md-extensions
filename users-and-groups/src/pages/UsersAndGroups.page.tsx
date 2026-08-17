@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PrimaryButton, Tabs } from '@emporix/component-library'
 import HeaderSection from '../components/shared/HeaderSection'
+import EntraIdSyncBanner from '../components/shared/EntraIdSyncBanner'
 import { useTabs } from '../hooks/useTabs'
 import GroupsTable from '../components/usersAndGroups/GroupsTable'
 import useCustomNavigate from '../hooks/useCustomNavigate'
@@ -10,6 +11,7 @@ import { usePermissions } from '../context/PermissionsProvider'
 import { GroupUserTypes } from '../models/Groups.model'
 import { EmployeeDomains } from '../configs/accessControls'
 import { groupAddPath, userAddPath } from '../constants/paths'
+import { useEntraIdGroupsSync } from '../hooks/useEntraIdGroupsSync'
 import styles from './UsersAndGroupsPage.module.scss'
 
 const TABS = ['users', 'groups']
@@ -20,19 +22,21 @@ const UsersAndGroupsPage = () => {
   const { navigate } = useCustomNavigate()
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
+  const { isEntraIdGroupsSyncEnabled } = useEntraIdGroupsSync()
 
   const moduleActions = useMemo(() => {
     const isUserTab = activeTab === 'users'
     const key = isUserTab ? 'createUser' : 'createGroup'
+    const canCreateUser = canManage && !isEntraIdGroupsSyncEnabled
     return (
       <PrimaryButton
-        disabled={!canManage}
+        disabled={isUserTab ? !canCreateUser : !canManage}
         onClick={() => navigate(isUserTab ? userAddPath() : groupAddPath())}
       >
         {t(`usersAndGroups.buttons.${key}`)}
       </PrimaryButton>
     )
-  }, [activeTab, canManage, navigate, t])
+  }, [activeTab, canManage, isEntraIdGroupsSyncEnabled, navigate, t])
 
   const tabs = useMemo(
     () => [
@@ -56,6 +60,7 @@ const UsersAndGroupsPage = () => {
         title={t('usersAndGroups.titles.main')}
         moduleActions={moduleActions}
       />
+      <EntraIdSyncBanner />
       <Tabs
         tabs={tabs}
         activeTabId={activeTab ?? 'users'}

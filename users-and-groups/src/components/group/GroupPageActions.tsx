@@ -26,6 +26,7 @@ import { makeCall } from '../../helpers/api'
 import { GroupUserTypes } from '../../models/Groups.model'
 import { usePermissions } from '../../context/PermissionsProvider'
 import styles from './GroupPageActions.module.scss'
+import { useEntraIdGroupsSync } from '../../hooks/useEntraIdGroupsSync'
 
 interface Props {
   activeTab: string | undefined
@@ -47,6 +48,8 @@ const GroupPageActions = (props: Props) => {
   const { showSuccess, showError } = useToast()
   const { navigate } = useCustomNavigate()
   const { syncUserAccessControls, templates } = usePermissions()
+  const { isEntraIdGroupsSyncEnabled } = useEntraIdGroupsSync()
+  const canAddMembers = managerPermissions && !isEntraIdGroupsSyncEnabled
 
   const { group, syncGroup, groupType } = useGroupData()
   const [isMembersDialogOpened, setIsMembersDialogOpened] = useState(false)
@@ -173,7 +176,7 @@ const GroupPageActions = (props: Props) => {
       ) : (
         <>
           <PrimaryButton
-            disabled={!managerPermissions}
+            disabled={!canAddMembers}
             onClick={() => setIsMembersDialogOpened(true)}
           >
             {t('usersAndGroups.groups.buttons.addMembers')}

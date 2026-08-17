@@ -21,6 +21,7 @@ import { usePermissions } from '../../context/PermissionsProvider'
 import BatchDeleteButton from '../../components/shared/BatchDeleteButton'
 import usePagination, { PaginationProps } from '../../hooks/usePagination'
 import { EmployeeDomains } from '../../configs/accessControls'
+import { useEntraIdGroupsSync } from '../../hooks/useEntraIdGroupsSync'
 
 import { groupDetailPath } from '../../constants/paths'
 import styles from './GroupsTable.module.scss'
@@ -38,6 +39,7 @@ const GroupsTable = (props: Props) => {
   const { refresh, setRefreshValue } = useRefresh()
   const { columns } = useGroupsTableColumns()
   const { navigate } = useCustomNavigate()
+  const { isEntraIdGroupsSyncEnabled } = useEntraIdGroupsSync()
   const location = useLocation()
   const { hasPermission } = usePermissions()
   const [isDeleting, setIsDeleting] = useState(false)
@@ -45,6 +47,7 @@ const GroupsTable = (props: Props) => {
   const { paginationParams, onPageCallback, onFilterCallback, onSortCallback } =
     usePagination()
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
+  const canAddMembers = canManage && !isEntraIdGroupsSyncEnabled
 
   const [isLoading, setIsLoading] = useState(false)
   const [groups, setGroups] = useState<Group[]>([])
@@ -142,13 +145,13 @@ const GroupsTable = (props: Props) => {
               tooltip: t(
                 'usersAndGroups.groups.tables.groups.actions.addMembers'
               ),
-              disabled: !canManage,
+              disabled: !canAddMembers,
             },
           ]}
         />
       )
     },
-    [canManage, groupUserType]
+    [canAddMembers, canManage, groupUserType]
   )
 
   const pagination: DataTablePaginationState = {

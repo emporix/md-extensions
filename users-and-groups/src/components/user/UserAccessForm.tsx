@@ -13,6 +13,7 @@ import { Dropdown, InputText, useToast } from '@emporix/component-library'
 import { UserFormFields } from '../../helpers/users/users.helpers'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { EmployeeDomains } from '../../configs/accessControls'
+import { useEntraIdGroupsSync } from '../../hooks/useEntraIdGroupsSync'
 import styles from './UserAccessForm.module.scss'
 
 const UserAccessForm = () => {
@@ -23,6 +24,8 @@ const UserAccessForm = () => {
   const { showError } = useToast()
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
+  const { isEntraIdGroupsSyncEnabled } = useEntraIdGroupsSync()
+  const canAssignGroups = canManage && !isEntraIdGroupsSyncEnabled
 
   const { userId } = useParams()
   const [groups, setGroups] = useState<Group[]>([])
@@ -59,7 +62,7 @@ const UserAccessForm = () => {
               filter
               multiple
               display="chip"
-              disabled={!canManage}
+              disabled={!canAssignGroups}
               value={field.value ?? []}
               onChange={(e) => {
                 field.onChange(e.value)
