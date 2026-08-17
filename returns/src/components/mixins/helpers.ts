@@ -296,9 +296,9 @@ export const defaultValueFromType = (type: MixinsFormItemType) => {
     case MixinsFormItemType.enum:
       return ''
     case MixinsFormItemType.date:
-      return ''
+      return new Date().toISOString()
     case MixinsFormItemType.dateTime:
-      return ''
+      return new Date().toISOString()
     case MixinsFormItemType.time:
       return ''
     case MixinsFormItemType.localized:
@@ -312,18 +312,29 @@ export const defaultValueFromType = (type: MixinsFormItemType) => {
   }
 }
 
+export const defaultValueForMixinItem = (
+  item: MixinsFormItem,
+  isArrayElement = false
+) => {
+  const type =
+    isArrayElement && item.arrayType !== undefined ? item.arrayType : item.type
+  if (type === MixinsFormItemType.enum) {
+    return item.enum && item.enum.length > 0 ? item.enum[0] : ''
+  }
+  return defaultValueFromType(type)
+}
+
 export const createForm = (items: MixinsFormItem[]) => {
-  let defaultValues: Record<string, unknown> = {}
+  const defaultValues: Record<string, unknown> = {}
   for (const item of items) {
+    let current = defaultValues
     const keys = item.key.split('.')
-    let i = 0
-    while (i < keys.length - 1) {
+    for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i]
-      defaultValues[key] = defaultValues[key] || {}
-      defaultValues = defaultValues[key] as Record<string, unknown>
-      i++
+      current[key] = current[key] || {}
+      current = current[key] as Record<string, unknown>
     }
-    defaultValues[keys[i]] = defaultValueFromType(item.type)
+    current[keys[keys.length - 1]] = defaultValueForMixinItem(item)
   }
   return defaultValues
 }

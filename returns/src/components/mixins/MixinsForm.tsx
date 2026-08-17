@@ -19,7 +19,7 @@ import {
   convertFromIdValuePair,
   convertToIdValuePair,
   createForm,
-  defaultValueFromType,
+  defaultValueForMixinItem,
   MixinsFormItem,
   MixinsFormItemType,
   MixinsFormMetadata,
@@ -169,7 +169,7 @@ const ArrayComponent = ({
     <MixinsSectionBox
       key={item.key}
       append={() =>
-        append({ id: uuidv4(), value: defaultValueFromType(item.type) })
+        append({ id: uuidv4(), value: defaultValueForMixinItem(item, true) })
       }
       name={getUiLangValue(item.name)}
     >
@@ -310,39 +310,39 @@ const MixinsForm = ({
     [metadata, onSave]
   )
 
-  return (
-    <>
-      <div className={styles.actions}>
-        <SecondaryButton
-          onClick={resetForm}
-          disabled={!formState.isDirty || !managerPermissions}
-        >
-          {t('global.discard')}
-        </SecondaryButton>
-        <PrimaryButton
-          disabled={
-            !formState.isValid || !formState.isDirty || !managerPermissions
-          }
-          onClick={handleSubmit(onSubmit)}
-        >
-          {t('global.save')}
-        </PrimaryButton>
-      </div>
+  const headerActions = (
+    <div className={styles.actions}>
+      <SecondaryButton
+        onClick={resetForm}
+        disabled={!formState.isDirty || !managerPermissions}
+      >
+        {t('global.discard')}
+      </SecondaryButton>
+      <PrimaryButton
+        disabled={
+          !formState.isValid || !formState.isDirty || !managerPermissions
+        }
+        onClick={handleSubmit(onSubmit)}
+      >
+        {t('global.save')}
+      </PrimaryButton>
+    </div>
+  )
 
-      <SectionBox name={name}>
-        <FormProvider {...methods}>
-          {items !== undefined &&
-            items.length > 0 &&
-            renderItems(
-              items,
-              undefined,
-              control,
-              managerPermissions,
-              getUiLangValue
-            )}
-        </FormProvider>
-      </SectionBox>
-    </>
+  return (
+    <SectionBox name={name} actions={headerActions}>
+      <FormProvider {...methods}>
+        {items !== undefined &&
+          items.length > 0 &&
+          renderItems(
+            items,
+            undefined,
+            control,
+            managerPermissions,
+            getUiLangValue
+          )}
+      </FormProvider>
+    </SectionBox>
   )
 }
 

@@ -1,8 +1,7 @@
 .actions {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
   gap: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
 }
 
 .fieldRow {
