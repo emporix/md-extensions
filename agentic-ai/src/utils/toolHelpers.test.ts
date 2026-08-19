@@ -2,10 +2,21 @@ import { describe, expect, it } from 'vitest'
 import {
   applyTeamsGraphConsentToTool,
   createEmptyTeamsTool,
+  createEmptyTool,
   shouldApplyTeamsGraphConsent,
 } from './toolHelpers'
 
 describe('toolHelpers', () => {
+  it('creates empty tool without a default type', () => {
+    expect(createEmptyTool()).toEqual({
+      id: '',
+      name: '',
+      type: '',
+      config: {},
+      enabled: true,
+    })
+  })
+
   it('creates empty teams tool with optional tenant id', () => {
     expect(createEmptyTeamsTool()).toEqual({
       id: '',

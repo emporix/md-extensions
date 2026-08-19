@@ -17,6 +17,7 @@ import {
   toggleDomainTool,
   toggleNativeTool,
 } from '../../../utils/agentToolsHelpers'
+import { isDynamicMcpServer } from '../../../utils/mcpHelpers'
 import { AgentToolTypeTags } from '../../shared/AgentToolTypeTags'
 import { isCommunicationNativeToolType } from '../../../utils/communicationRoutingHelpers'
 import {
@@ -580,6 +581,12 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
     id: server.id,
     label: server.name,
     disabled: server.enabled === false,
+    tags: isDynamicMcpServer(server)
+      ? [
+          t('dynamic_mcp_tag'),
+          t('mcp_tools_count', { count: server.tools?.length ?? 0 }),
+        ]
+      : undefined,
   }))
   const customSelectedItems: ToolListItem[] = mcpServers
     .filter((server) => server.type === 'custom' && server.mcpServer?.id)

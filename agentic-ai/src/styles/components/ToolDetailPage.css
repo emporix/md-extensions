@@ -148,6 +148,17 @@
   border-bottom-color: var(--color-brand-primary);
 }
 
+.tool-detail-tab:disabled,
+.tool-detail-tab-disabled {
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+.tool-detail-tab:disabled:hover,
+.tool-detail-tab-disabled:hover {
+  color: var(--text-disabled);
+}
+
 .tool-detail-content {
   display: flex;
   flex-direction: column;
