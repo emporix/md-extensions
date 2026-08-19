@@ -875,6 +875,7 @@ const TRANSLATIONS_DE = {
   filter_by_session_id: 'Nach Sitzungs-ID filtern',
   filter_by_timestamp: 'Nach Zeitstempel filtern',
   filter_by_error_count: 'Nach Fehleranzahl filtern',
+  filter_by_duration: 'Nach Dauer filtern',
   filter_by_started_at: 'Nach Startzeit filtern',
   filter_by_last_activity: 'Nach letzter Aktivität filtern',
   filter_by_severity: 'Nach Schweregrad filtern',

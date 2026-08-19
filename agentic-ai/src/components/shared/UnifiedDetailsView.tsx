@@ -10,7 +10,7 @@ import { ImportResultSection } from './ImportResultSection'
 import { ExportResultSection } from './ExportResultSection'
 import { LogMessage } from '../../types/Log'
 import { ImportResultSummary, ExportResult } from '../../types/Job'
-import { formatTimestamp } from '../../utils/formatHelpers'
+import { formatTimestamp, normalizeDuration } from '../../utils/formatHelpers'
 import { useScrollToMessage } from '../../hooks/useScrollToMessage'
 import { getJobTypeDisplay } from '../../constants/logConstants'
 
@@ -220,7 +220,7 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
       <InfoCard
         key="duration"
         label={t('duration')}
-        value={t('duration_seconds', { count: duration })}
+        value={t('duration_seconds', { count: normalizeDuration(duration) })}
       />
     )
   }

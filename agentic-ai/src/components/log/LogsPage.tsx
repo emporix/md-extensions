@@ -36,6 +36,7 @@ import {
   handleDataTableSort,
   handleDataTablePage,
 } from '../../utils/dataTableHelpers'
+import { normalizeDuration } from '../../utils/formatHelpers'
 
 const LogsPage: React.FC = () => {
   const appState = useAppState()
@@ -140,6 +141,7 @@ const LogsPage: React.FC = () => {
     requestId: { value: null, matchMode: FilterMatchMode.CONTAINS },
     sessionId: { value: null, matchMode: FilterMatchMode.CONTAINS },
     lastActivity: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    duration: { value: null, matchMode: FilterMatchMode.CONTAINS },
     severity: { value: null, matchMode: FilterMatchMode.EQUALS },
   })
 
@@ -231,6 +233,7 @@ const LogsPage: React.FC = () => {
               sessionId: 'sessionId',
               lastActivity: 'metadata.createdAt',
               createdAt: 'metadata.createdAt',
+              duration: 'duration',
               severity: 'severity',
             }
           : {
@@ -249,17 +252,13 @@ const LogsPage: React.FC = () => {
       setSortField(newSortField)
       setSortOrder(newSortOrder)
 
-      // Get current agentId from URL for filtering
-      const urlParams = new URLSearchParams(location.search)
-      const agentIdParam = urlParams.get('agentId')
-
       if (viewMode === 'requests') {
-        sortLogs(apiField, apiOrder, agentIdParam || undefined)
+        sortLogs(apiField, apiOrder)
       } else {
-        sortJobs(apiField, apiOrder, agentIdParam || undefined)
+        sortJobs(apiField, apiOrder)
       }
     },
-    [sortLogs, sortJobs, sortField, sortOrder, viewMode, location.search]
+    [sortLogs, sortJobs, sortField, sortOrder, viewMode]
   )
 
   const handleLogsPageChangeDataTable = useCallback(
@@ -340,6 +339,11 @@ const LogsPage: React.FC = () => {
 
   const resultBodyTemplate = (rowData: LogSummary) => {
     return <SeverityBadge severity={rowData.severity} />
+  }
+
+  const durationBodyTemplate = (rowData: LogSummary) => {
+    if (rowData.duration == null) return '—'
+    return t('duration_seconds', { count: normalizeDuration(rowData.duration) })
   }
 
   const severityFilterElement = useCallback(
@@ -535,6 +539,18 @@ const LogsPage: React.FC = () => {
             sortable
             filter
             filterElement={dateFilterElement}
+            showFilterMenu={false}
+            showClearButton={false}
+          />
+          <Column
+            field="duration"
+            header={t('duration')}
+            body={durationBodyTemplate}
+            headerClassName="col-sm"
+            bodyClassName="col-sm"
+            sortable
+            filter
+            filterPlaceholder={t('filter_by_duration')}
             showFilterMenu={false}
             showClearButton={false}
           />

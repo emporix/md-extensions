@@ -2,7 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import BaseCard from '../shared/BaseCard'
 import { LogSummary } from '../../types/Log'
-import { formatTimestamp } from '../../utils/formatHelpers'
+import { formatTimestamp, normalizeDuration } from '../../utils/formatHelpers'
 
 interface LogCardProps {
   log: LogSummary
@@ -30,9 +30,9 @@ const LogCard: React.FC<LogCardProps> = ({ log, onClick }) => {
     const parts = []
     parts.push(`${log.messageCount} ${t('messages')}`)
 
-    if (log.duration) {
+    if (log.duration != null) {
       parts.push(
-        `${t('duration')}: ${t('duration_seconds', { count: log.duration })}`
+        `${t('duration')}: ${t('duration_seconds', { count: normalizeDuration(log.duration) })}`
       )
     }
 
