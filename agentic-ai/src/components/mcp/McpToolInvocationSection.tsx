@@ -47,10 +47,14 @@ export const McpToolInvocationSection = ({
   )
   const functionOptions = useMemo(
     () =>
-      functions.map((fn) => ({
-        label: `${fn.name} (${fn.id})`,
-        value: fn.id,
-      })),
+      [...functions]
+        .sort((a, b) =>
+          a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+        )
+        .map((fn) => ({
+          label: `${fn.name} (${fn.id})`,
+          value: fn.id,
+        })),
     [functions]
   )
 
