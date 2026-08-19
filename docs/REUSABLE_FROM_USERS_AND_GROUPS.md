@@ -66,7 +66,8 @@ Paths below are relative to a playbook-aligned remote (historically `users-and-g
 | `DropdownFilter` | `DropdownFilter.tsx` | DataTable column filter → CL Dropdown |
 | `LocalizedInput` | `LocalizedInput.tsx` | **Required thin wrapper** — injects languages + i18n toggle labels into context-free CL |
 | `DotIndicator` | `DotIndicator.tsx` | Boolean status dot (optional; prefer CSS Modules if you touch it) |
-| `TableExtensions` | `brands/src/components/shared/TableExtensions.tsx` | Column visibility persisted per config key. Only in `brands` (playbook-aligned) and `products` (not SoT). Needs the `ConfigurationProvider` table-config surface from `brands`. CL has no Sidebar/InputSwitch, so it uses Dialog + Checkbox. |
+| `TableExtensions` | `brands/src/components/shared/TableExtensions.tsx` | Column visibility persisted per config key. Needs the `ConfigurationProvider` table-config surface from `brands`. Copy sibling `SidePanel` (CL has no Sidebar). Toggles are CL `InputSwitch` (CL ≥ 2.5.0). |
+| `SidePanel` | `brands/src/components/shared/SidePanel.tsx` | Right-side drawer standing in for PrimeReact `Sidebar`. Required by `TableExtensions`. |
 | `AssetsViewer` / `MediaAssetUpload` | `brands/src/components/shared/` | Media grid + upload on CL `FileUpload`/`ProgressBar` (CL ≥ 2.4.0). Asset tiles need a host route — see the `brands` row in the registry. |
 
 Also copy matching `*.module.scss` / `*.scss` next to each component.

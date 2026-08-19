@@ -172,10 +172,10 @@ const BrandPage = () => {
       {
         id: 'media',
         label: t('brands.tabs.media'),
-        // Assets hang off a persisted brand id, so media is unavailable
-        // until the brand has been created (matches management-dashboard).
+        // Assets hang off a persisted brand id. Keep the tab visible but
+        // disabled until the brand has been created (matches MD TabPanel).
         disabled: !id,
-        content: (
+        content: id ? (
           <>
             <AssetsViewer
               assets={assets}
@@ -185,20 +185,18 @@ const BrandPage = () => {
             />
             <MediaAssetUpload
               type={MediaRefIdType.BRAND}
-              id={id as string}
+              id={id}
               refresh={setRefreshValue}
               managerPermissions={canManage}
               multiple={false}
               currentAsset={assets.length === 0 ? undefined : assets[0]}
             />
           </>
-        ),
+        ) : null,
       },
     ],
     [assets, canManage, control, id, setRefreshValue, t]
   )
-
-  const visibleTabs = tabs.filter((tab) => !tab.disabled)
 
   return (
     <>
@@ -224,7 +222,7 @@ const BrandPage = () => {
         }
       />
       <Tabs
-        tabs={visibleTabs}
+        tabs={tabs}
         activeTabId={activeTab ?? 'details'}
         onTabChange={onTabChange}
       />
