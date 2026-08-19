@@ -68,7 +68,8 @@ Paths below are relative to a playbook-aligned remote (historically `users-and-g
 | `DropdownFilter` | `DropdownFilter.tsx` | DataTable column filter → CL Dropdown |
 | `LocalizedInput` | `LocalizedInput.tsx` | **Required thin wrapper** — injects languages + i18n toggle labels into context-free CL |
 | `DotIndicator` | `DotIndicator.tsx` | Boolean status dot (optional; prefer CSS Modules if you touch it) |
-| `TableExtensions` | `brands/src/components/shared/TableExtensions.tsx` (then `returns` for mixin columns + `InputSwitch`) | Column visibility persisted per config key. Needs the `ConfigurationProvider` table-config surface from `brands`. **Sidebar** is still missing in CL — `brands` used Dialog + Checkbox (pre-2.5.0). New remotes on CL ≥ 2.5.0 should use CL `InputSwitch` like `returns`. Current widget status: [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md). |
+| `TableExtensions` | `brands/src/components/shared/TableExtensions.tsx` (then `returns` for mixin columns) | Column visibility persisted per config key. Needs the `ConfigurationProvider` table-config surface from `brands`. Copy sibling `SidePanel` (CL has no Sidebar). Toggles are CL `InputSwitch` (CL ≥ 2.5.0). Current widget status: [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md). |
+| `SidePanel` | `brands/src/components/shared/SidePanel.tsx` or `returns/...` | Right-side drawer standing in for PrimeReact `Sidebar`. Required by `TableExtensions`. |
 | `AssetsViewer` / `MediaAssetUpload` | `brands/src/components/shared/` | Media grid + upload on CL `FileUpload`/`ProgressBar` (CL ≥ 2.4.0). Asset tiles need a host route — see the `brands` row in the registry. |
 
 Also copy matching `*.module.scss` / `*.scss` next to each component.

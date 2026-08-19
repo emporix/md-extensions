@@ -1,21 +1,24 @@
 .columns {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
 }
 
 .column {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  margin-top: 1.5rem; // MD: `mt-4` on each row
 
   label {
+    flex-grow: 1;
+    margin-left: 0.5rem; // MD: `ml-2`
     cursor: pointer;
+    color: #495057;
   }
 }
 
 .footer {
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
+  margin-top: 1.5rem; // MD: `mt-4` on Save
 }

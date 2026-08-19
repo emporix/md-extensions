@@ -44,7 +44,7 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/dialog` | `in-cl` | `Dialog` / `ConfirmBox` | 1.10.0 / 2.2.0 | 35 | Confirm flows → `ConfirmBox` (`message` is required). |
 | `primereact/tabview` | `in-cl` | `Tabs` / `TabItem` | 2.0.0 | 29 | `disabled` on `TabItem` + `keepMounted` (≡ `renderActiveOnly={false}`) since **2.5.0**. |
 | `primereact/calendar` | `in-cl` | `Calendar` | **2.7.0** | 23 | Pattern B. Overlay via `panelClassName` (table filters). Do **not** fall back to `<input type="date">` when Calendar is available. |
-| `primereact/inputswitch` | `in-cl` | `InputSwitch` | **2.5.0** | 21 | `brands` TableExtensions used Checkbox because it shipped before 2.5.0. New remotes: use `InputSwitch` (`returns`). |
+| `primereact/inputswitch` | `in-cl` | `InputSwitch` | **2.5.0** | 21 | Use in `TableExtensions` (`brands`, `returns`). |
 | `primereact/datatable` | `in-cl` | `DataTable` | 1.10.0 | 19 | `rowActions` prop, not an actions column. Filter APIs + `FilterMatchMode` since 2.0.0. |
 | `primereact/checkbox` | `in-cl` | `Checkbox` | 1.10.0 | 14 | **No** `label` prop — render `<label htmlFor>`. |
 | `primereact/progressspinner` | `in-cl` | `ProgressSpinner` | 2.0.0 | 11+ | Also imported from barrel. |
@@ -71,7 +71,7 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/inputmask` | `missing` | — | — | 4 | Documented substitute: `InputText` `type="time"` for `"99:99"` masks. Promote for other masks. |
 | `primereact/chip` | `missing` | — | — | 3 | Single chip (display), not `Chips` input. |
 | `primereact/divider` | `missing` | — | — | 3 | Form section separators. |
-| `primereact/sidebar` | `missing` | — | — | 1 | `TableExtensions.tsx`. Documented substitute: CL `Dialog`. `brands` did this; confirm presentation with the user. |
+| `primereact/sidebar` | `missing` | — | — | 1 | `TableExtensions.tsx`. Documented substitute: local `SidePanel` (right drawer, 20rem) + CL `InputSwitch`. Copy from `returns` or `brands` `components/shared/SidePanel`. Do not fall back to CL `Dialog` + `Checkbox`. |
 | `primereact/paginator` | `missing` | — | — | 1 | Standalone (`EntityChangelogTab`). Table pagination is already on CL `DataTable`. `customer-groups` used custom control + CL `Dropdown`. |
 | `primereact/panel` | `missing` | — | — | 1 | `ProductPricesPanelForm.tsx`. CL `SectionBox` may replace layout panels. |
 | `primereact/splitbutton` | `missing` | — | — | 1 | `AddNewContactButton.tsx`. |
@@ -116,7 +116,7 @@ Order by MD usage. Ask the user before implementing; Pattern A vs B is mandatory
 3. `Chips` (10)
 4. `Tree` / `TreeTable` (6 / 4)
 5. `InputMask` (4) — unless `type="time"` is enough
-6. `Sidebar` (1, but `TableExtensions` is common) — or keep Dialog substitute
+6. `Sidebar` (1, but `TableExtensions` is common) — or keep the local `SidePanel` substitute
 7. `Tag` / Prime `Badge` if `StatusBadge` is the wrong shape
 
 ## When this file is wrong
