@@ -20,6 +20,11 @@ export const getDynamicMcpToolCounts = (mcpServer: Pick<McpServer, 'tools'>) => 
   return { enabled, total: tools.length }
 }
 
+export const getEnabledDynamicToolNames = (tools?: McpTool[]): string[] =>
+  (tools ?? [])
+    .filter((tool) => tool.enabled !== false && Boolean(tool.name))
+    .map((tool) => tool.name)
+
 export const createEmptyMcpTool = (): McpTool => ({
   name: '',
   description: '',

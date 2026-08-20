@@ -10,6 +10,7 @@ import {
   createEmptyMcpDraft,
   createEmptyMcpServer,
   createEmptyMcpTool,
+  getEnabledDynamicToolNames,
   getMcpTransportLabel,
   getMcpTransportOptions,
   switchMcpServerType,
@@ -214,5 +215,22 @@ describe('switchMcpServerType', () => {
     expect(switched.enabled).toBe(false)
     expect(switched.config).toEqual({ url: '' })
     expect(switched.tools).toBeUndefined()
+  })
+})
+
+describe('getEnabledDynamicToolNames', () => {
+  it('returns enabled tool names and skips disabled or empty names', () => {
+    expect(
+      getEnabledDynamicToolNames([
+        { name: 'alpha', enabled: true },
+        { name: 'beta', enabled: false },
+        { name: '', enabled: true },
+        { name: 'gamma' },
+      ])
+    ).toEqual(['alpha', 'gamma'])
+  })
+
+  it('returns empty array when tools undefined', () => {
+    expect(getEnabledDynamicToolNames(undefined)).toEqual([])
   })
 })

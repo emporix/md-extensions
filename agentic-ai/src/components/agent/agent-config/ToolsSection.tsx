@@ -13,12 +13,23 @@ import {
   getNativeToolSectionTags,
   getNativeToolTags,
   getSelectedDomainTools,
-  toggleCustomMcpServer,
+  getSelectedDynamicMcpTools,
+  formatManagedMcpServerLabel,
+  hasManagedMcpAttachmentsChanged,
+  isManagedAgentMcp,
+  normalizeManagedMcpAttachments,
   toggleDomainTool,
+  toggleDynamicMcpTool,
+  toggleManagedMcpServer,
   toggleNativeTool,
 } from '../../../utils/agentToolsHelpers'
-import { isDynamicMcpServer } from '../../../utils/mcpHelpers'
+import {
+  getDynamicMcpToolCounts,
+  getEnabledDynamicToolNames,
+  isDynamicMcpServer,
+} from '../../../utils/mcpHelpers'
 import { AgentToolTypeTags } from '../../shared/AgentToolTypeTags'
+import { NestedCheckboxList } from './NestedCheckboxList'
 import { isCommunicationNativeToolType } from '../../../utils/communicationRoutingHelpers'
 import {
   getSlackToolAllowedOperations,
@@ -64,6 +75,8 @@ interface ToolsAccordionSectionProps {
   isExpanded: boolean
   isLoading?: boolean
   loadingLabel?: string
+  selectedCountLabelKey?: string
+  noSelectedLabelKey?: string
   showItemTags?: boolean
   renderItemRowSuffix?: (
     item: ToolListItem,
@@ -87,6 +100,8 @@ const ToolsAccordionSection: React.FC<ToolsAccordionSectionProps> = ({
   isExpanded,
   isLoading = false,
   loadingLabel,
+  selectedCountLabelKey = 'selected_tools_count',
+  noSelectedLabelKey = 'no_tools_selected',
   showItemTags = false,
   renderItemRowSuffix,
   renderSelectedItemExtension,
@@ -127,8 +142,8 @@ const ToolsAccordionSection: React.FC<ToolsAccordionSectionProps> = ({
           <div className="agent-detail-tools-accordion-right">
             <span className="agent-detail-tools-selection-label">
               {selectedCount > 0
-                ? t('selected_tools_count', { count: selectedCount })
-                : t('no_tools_selected')}
+                ? t(selectedCountLabelKey, { count: selectedCount })
+                : t(noSelectedLabelKey)}
             </span>
             {selectedCount > 0 ? (
               <div className="agent-detail-tools-selected-chips">
@@ -360,12 +375,45 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
 
   const handleCustomMcpToggle = useCallback(
     (serverId: string, checked: boolean) => {
+      const managedMcp = availableMcpServers.find((server) => server.id === serverId)
+      const mcpType =
+        managedMcp && isDynamicMcpServer(managedMcp) ? 'dynamic' : 'custom'
       onFieldChange(
         'mcpServers',
-        toggleCustomMcpServer(mcpServers, serverId, checked)
+        toggleManagedMcpServer(mcpServers, serverId, checked, mcpType)
       )
     },
-    [mcpServers, onFieldChange]
+    [availableMcpServers, mcpServers, onFieldChange]
+  )
+
+  const handleDynamicMcpToolToggle = useCallback(
+    (serverId: string, toolName: string, checked: boolean) => {
+      const managedMcp = availableMcpServers.find((server) => server.id === serverId)
+      const enabledToolNames = getEnabledDynamicToolNames(managedMcp?.tools)
+      const currentTools = getSelectedDynamicMcpTools(
+        mcpServers,
+        serverId,
+        enabledToolNames
+      )
+      if (
+        !checked &&
+        currentTools.length <= 1 &&
+        currentTools.includes(toolName)
+      ) {
+        return
+      }
+      onFieldChange(
+        'mcpServers',
+        toggleDynamicMcpTool(
+          mcpServers,
+          serverId,
+          toolName,
+          checked,
+          enabledToolNames
+        )
+      )
+    },
+    [availableMcpServers, mcpServers, onFieldChange]
   )
 
   const filterItems = useCallback(
@@ -463,6 +511,16 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
     }
   }, [searchQuery])
 
+  useEffect(() => {
+    if (availableMcpServers.length === 0) {
+      return
+    }
+    const next = normalizeManagedMcpAttachments(mcpServers, availableMcpServers)
+    if (hasManagedMcpAttachmentsChanged(mcpServers, next)) {
+      onFieldChange('mcpServers', next)
+    }
+  }, [availableMcpServers, mcpServers, onFieldChange])
+
   const renderCommunicationNativeToolExtension = useCallback(
     (item: ToolListItem, isSelected: boolean) => {
       if (!isCommunicationNativeToolType(item.toolType) || !isSelected) {
@@ -482,34 +540,63 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
       const selectedOperations = nativeTool?.allowedOperations ?? allowedByTool
 
       return (
-        <div className="agent-detail-tools-nested-actions">
-          <span className="agent-detail-tools-nested-actions-title">
-            {t(`${tool.type}_agent_allowed_operations`)}
-          </span>
-          {allowedByTool.map((operation) => (
-            <label
-              key={`${item.id}-${operation}`}
-              className="agent-detail-tools-nested-action-row"
-              htmlFor={`agent-${tool.type}-op-${item.id}-${operation}`}
-            >
-              <Checkbox
-                inputId={`agent-${tool.type}-op-${item.id}-${operation}`}
-                checked={selectedOperations.includes(operation)}
-                onChange={(event) =>
-                  handleCommunicationOperationToggle(
-                    item.id,
-                    operation,
-                    event.checked ?? false
-                  )
-                }
-              />
-              <span>{t(`${tool.type}_operation_${operation}`, operation)}</span>
-            </label>
-          ))}
-        </div>
+        <NestedCheckboxList
+          title={t(`${tool.type}_agent_allowed_operations`)}
+          inputIdPrefix={`agent-${tool.type}-op-${item.id}`}
+          items={allowedByTool.map((operation) => ({
+            id: operation,
+            label: t(`${tool.type}_operation_${operation}`),
+            checked: selectedOperations.includes(operation),
+          }))}
+          onToggle={(operation, checked) =>
+            handleCommunicationOperationToggle(item.id, operation, checked)
+          }
+        />
       )
     },
     [availableTools, handleCommunicationOperationToggle, nativeTools, t]
+  )
+
+  const renderDynamicMcpToolExtension = useCallback(
+    (item: ToolListItem, isSelected: boolean) => {
+      if (!isSelected) {
+        return null
+      }
+      const managedMcp = availableMcpServers.find((server) => server.id === item.id)
+      if (!managedMcp || !isDynamicMcpServer(managedMcp)) {
+        return null
+      }
+      const enabledToolNames = getEnabledDynamicToolNames(managedMcp.tools)
+      if (enabledToolNames.length === 0) {
+        return null
+      }
+      const selectedTools = getSelectedDynamicMcpTools(
+        mcpServers,
+        item.id,
+        enabledToolNames
+      )
+
+      return (
+        <NestedCheckboxList
+          title={t('dynamic_mcp_agent_tools')}
+          inputIdPrefix={`agent-dynamic-mcp-tool-${item.id}`}
+          items={enabledToolNames.map((toolName) => ({
+            id: toolName,
+            label: toolName,
+            checked: selectedTools.includes(toolName),
+          }))}
+          onToggle={(toolName, checked) =>
+            handleDynamicMcpToolToggle(item.id, toolName, checked)
+          }
+        />
+      )
+    },
+    [
+      availableMcpServers,
+      handleDynamicMcpToolToggle,
+      mcpServers,
+      t,
+    ]
   )
 
   const domainSections = sortedDomains
@@ -577,30 +664,58 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
   const showNativeSection =
     availableTools.length > 0 && isSectionVisible(nativeAllItems)
 
+  const getDynamicMcpTags = useCallback(
+    (managed: ManagedMcpServer | undefined): string[] | undefined => {
+      if (!managed || !isDynamicMcpServer(managed)) {
+        return undefined
+      }
+      return [
+        t('dynamic_mcp_tag'),
+        t('mcp_tools_count', { count: getDynamicMcpToolCounts(managed).total }),
+      ]
+    },
+    [t]
+  )
+
+  const getManagedMcpHeaderLabel = useCallback(
+    (
+      managed: ManagedMcpServer | undefined,
+      serverId: string,
+      fallbackName: string
+    ): string => {
+      if (!managed || !isDynamicMcpServer(managed)) {
+        return fallbackName
+      }
+      const enabledToolNames = getEnabledDynamicToolNames(managed.tools)
+      const toolNames = getSelectedDynamicMcpTools(
+        mcpServers,
+        serverId,
+        enabledToolNames
+      )
+      return formatManagedMcpServerLabel(fallbackName, toolNames, true)
+    },
+    [mcpServers]
+  )
+
   const customAllItems: ToolListItem[] = availableMcpServers.map((server) => ({
     id: server.id,
     label: server.name,
     disabled: server.enabled === false,
-    tags: isDynamicMcpServer(server)
-      ? [
-          t('dynamic_mcp_tag'),
-          t('mcp_tools_count', { count: server.tools?.length ?? 0 }),
-        ]
-      : undefined,
+    tags: getDynamicMcpTags(server),
   }))
   const customSelectedItems: ToolListItem[] = mcpServers
-    .filter((server) => server.type === 'custom' && server.mcpServer?.id)
+    .filter(isManagedAgentMcp)
     .map((server) => {
-      const managed = availableMcpServers.find(
-        (item) => item.id === server.mcpServer?.id
-      )
+      const serverId = server.mcpServer?.id ?? ''
+      const managed = availableMcpServers.find((item) => item.id === serverId)
+      const fallbackName = managed?.name ?? serverId
       return {
-        id: server.mcpServer?.id ?? '',
-        label: managed?.name ?? server.mcpServer?.id ?? '',
+        id: serverId,
+        label: getManagedMcpHeaderLabel(managed, serverId, fallbackName),
       }
     })
     .filter((item) => item.id)
-  const customTags = [t('custom_mcp_tag')]
+  const mcpSectionTags = [t('custom_mcp_tag'), t('dynamic_mcp_tag'),]
   const customVisibleItems = filterItems(customAllItems)
   const showCustomSection =
     availableMcpServers.length > 0 && isSectionVisible(customAllItems)
@@ -640,13 +755,17 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
         {showCustomSection ? (
           <ToolsAccordionSection
             sectionId="custom"
-            title={t('custom_mcp_servers')}
-            tags={customTags}
+            title={t('mcp_servers')}
+            tags={mcpSectionTags}
             selectedItems={customSelectedItems}
             availableItems={customVisibleItems}
             isExpanded={expandedSections.has('custom')}
             isLoading={mcpServersLoading}
             loadingLabel={t('loading_mcp_servers')}
+            selectedCountLabelKey="selected_mcp_servers_count"
+            noSelectedLabelKey="no_mcp_servers_selected"
+            showItemTags
+            renderSelectedItemExtension={renderDynamicMcpToolExtension}
             onToggleExpand={handleToggleSection}
             onToggleItem={handleCustomMcpToggle}
             onRemoveItem={(serverId) => handleCustomMcpToggle(serverId, false)}

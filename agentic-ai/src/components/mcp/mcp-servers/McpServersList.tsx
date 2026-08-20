@@ -9,6 +9,7 @@ import {
   getMcpServerDescription,
   isDynamicMcpServer,
 } from '../../../utils/mcpHelpers'
+import { isManagedAgentMcp } from '../../../utils/agentToolsHelpers'
 import { McpServerForm } from './McpServerForm'
 
 interface McpServersListProps {
@@ -56,7 +57,7 @@ export const McpServersList: React.FC<McpServersListProps> = ({
     }
 
     const customServerId = mcpServer.mcpServer?.id
-    if (mcpServer.type === 'custom' && customServerId) {
+    if (isManagedAgentMcp(mcpServer) && customServerId) {
       const customServer = availableMcpServers.find(
         (server) => server.id === customServerId
       )
@@ -87,10 +88,14 @@ export const McpServersList: React.FC<McpServersListProps> = ({
       {mcpServers.map((mcpServer, idx) => {
         const serverInfo = getMcpServerDisplayInfo(mcpServer)
         const isDisabled = !serverInfo.enabled
-        const dynamicTools =
+        const dynamicCatalogTools =
           serverInfo.managedServer && isDynamicMcpServer(serverInfo.managedServer)
             ? serverInfo.managedServer.tools ?? []
             : []
+        const dynamicToolNamesToDisplay =
+          mcpServer.type === 'dynamic' && mcpServer.tools?.length
+            ? mcpServer.tools
+            : dynamicCatalogTools.map((tool) => tool.name)
 
         return (
           <div
@@ -169,14 +174,21 @@ export const McpServersList: React.FC<McpServersListProps> = ({
                       ))}
                     </div>
                   ) : null}
-                  {dynamicTools.length > 0 ? (
+                  {dynamicToolNamesToDisplay.length > 0 ? (
                     <div className="mcp-server-tools">
-                      {dynamicTools.map((tool) => (
-                        <span className="mcp-server-tool-chip" key={tool.name}>
-                          {tool.name}
-                          {tool.enabled === false ? ` (${t('disabled')})` : ''}
-                        </span>
-                      ))}
+                      {dynamicToolNamesToDisplay.map((toolName) => {
+                        const catalogTool = dynamicCatalogTools.find(
+                          (tool) => tool.name === toolName
+                        )
+                        return (
+                          <span className="mcp-server-tool-chip" key={toolName}>
+                            {toolName}
+                            {catalogTool?.enabled === false
+                              ? ` (${t('disabled')})`
+                              : ''}
+                          </span>
+                        )
+                      })}
                     </div>
                   ) : null}
                 </div>
