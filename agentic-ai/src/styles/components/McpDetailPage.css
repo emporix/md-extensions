@@ -285,6 +285,7 @@
 
 .mcp-detail-tool-card-header-main .p-inputswitch {
   flex-shrink: 0;
+  margin-left: var(--space-xs);
 }
 
 .mcp-detail-tool-card-title {

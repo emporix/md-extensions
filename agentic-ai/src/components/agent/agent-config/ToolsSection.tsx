@@ -191,6 +191,7 @@ const ToolsAccordionSection: React.FC<ToolsAccordionSectionProps> = ({
                   const isSelected = selectedItems.some(
                     (selected) => selected.id === item.id
                   )
+                  const isSelectionBlocked = Boolean(item.disabled && !isSelected)
                   const extension = renderSelectedItemExtension?.(
                     item,
                     isSelected
@@ -202,16 +203,20 @@ const ToolsAccordionSection: React.FC<ToolsAccordionSectionProps> = ({
                       className={`agent-detail-tools-item${item.disabled ? ' agent-detail-tools-item--disabled' : ''}`}
                     >
                       <label
-                        className={`agent-detail-tools-row${item.disabled ? ' agent-detail-tools-row--disabled' : ''}`}
+                        className={`agent-detail-tools-row${isSelectionBlocked ? ' agent-detail-tools-row--disabled' : ''}`}
                         htmlFor={`agent-tool-${sectionId}-${item.id}`}
                       >
                         <Checkbox
                           inputId={`agent-tool-${sectionId}-${item.id}`}
                           checked={isSelected}
-                          disabled={item.disabled}
-                          onChange={(event) =>
-                            onToggleItem(item.id, event.checked ?? false)
-                          }
+                          disabled={isSelectionBlocked}
+                          onChange={(event) => {
+                            const checked = event.checked ?? false
+                            if (item.disabled && checked) {
+                              return
+                            }
+                            onToggleItem(item.id, checked)
+                          }}
                         />
                         <span className="agent-detail-tools-row-label-wrap">
                           <span className="agent-detail-tools-row-label">
@@ -305,6 +310,9 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
   const handleNativeToolToggle = useCallback(
     (toolId: string, checked: boolean) => {
       const tool = availableTools.find((item) => item.id === toolId)
+      if (checked && tool?.enabled === false) {
+        return
+      }
       let nextNativeTools = nativeTools
       if (tool?.type === 'teams') {
         nextNativeTools = toggleTeamsNativeTool(
@@ -376,6 +384,9 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
   const handleCustomMcpToggle = useCallback(
     (serverId: string, checked: boolean) => {
       const managedMcp = availableMcpServers.find((server) => server.id === serverId)
+      if (checked && managedMcp?.enabled === false) {
+        return
+      }
       const mcpType =
         managedMcp && isDynamicMcpServer(managedMcp) ? 'dynamic' : 'custom'
       onFieldChange(

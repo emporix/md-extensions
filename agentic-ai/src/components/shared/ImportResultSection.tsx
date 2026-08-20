@@ -1,19 +1,23 @@
-import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { ImportResultSummary } from '../../types/Job'
+import { ImportedItem, ImportResultSummary } from '../../types/Job'
+import { ImportEntityDetails } from './ImportEntityDetails'
 import { ContentSection } from './ContentSection'
+import {
+  getImportStateClassName,
+  getImportStateLabel,
+} from '../../utils/importDetails'
 
 interface ImportResultSectionProps {
   importResult: ImportResultSummary
 }
 
-export const ImportResultSection: React.FC<ImportResultSectionProps> = ({
+export const ImportResultSection = ({
   importResult,
-}) => {
+}: ImportResultSectionProps) => {
   const { t } = useTranslation()
 
   const renderSummaryItem = (
-    items: Array<{ id: string; name: string; state: string }>,
+    items: ImportedItem[],
     icon: string,
     labelKey: string
   ) => {
@@ -26,19 +30,24 @@ export const ImportResultSection: React.FC<ImportResultSectionProps> = ({
         <div className="summary-item-header">
           <i className={`pi ${icon}`} />
           <span>
-            {t(labelKey, labelKey)} ({items.length})
+            {t(labelKey)} ({items.length})
           </span>
         </div>
         <ul className="summary-list">
           {items.map((item, idx) => (
-            <li key={idx} className="summary-list-item">
-              <span className="item-name">{item.name}</span>
-              <span className="item-detail">ID: {item.id}</span>
-              <span
-                className={`item-state state-${item.state.toLowerCase().replace('_', '-')}`}
-              >
-                {item.state}
+            <li key={item.id || idx} className="summary-list-item">
+              <div className="summary-list-item-header">
+                <span className="item-name">{item.name}</span>
+                <span
+                  className={`item-state ${getImportStateClassName(item.state)}`}
+                >
+                  {getImportStateLabel(t, item.state)}
+                </span>
+              </div>
+              <span className="item-detail">
+                {t('import_item_id', { id: item.id })}
               </span>
+              <ImportEntityDetails details={item.details} />
             </li>
           ))}
         </ul>
@@ -47,13 +56,10 @@ export const ImportResultSection: React.FC<ImportResultSectionProps> = ({
   }
 
   return (
-    <ContentSection
-      icon="pi-download"
-      title={t('import_result', 'Import Result')}
-    >
+    <ContentSection icon="pi-download" title={t('import_result')}>
       {importResult.summary && (
         <div className="result-summary">
-          <div className="summary-title">{t('summary', 'Summary')}</div>
+          <div className="summary-title">{t('summary')}</div>
           <div className="summary-grid">
             {renderSummaryItem(
               importResult.summary.agents,

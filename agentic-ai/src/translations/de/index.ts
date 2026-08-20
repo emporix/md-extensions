@@ -55,6 +55,19 @@ const TRANSLATIONS_DE = {
     'Elemente, die als "Zu erstellen" markiert sind, müssen manuell hinzugefügt werden.',
   token_required_note:
     'Bitte stellen Sie sicher, dass die erforderlichen Tokens bereitgestellt werden, bevor Sie die importierten Entitäten aktivieren.',
+  exists: 'Existiert',
+  failed: 'Fehlgeschlagen',
+  import_details_MISSING_FUNCTION:
+    'Funktion "{{objectId}}" für Tool "{{objectName}}" wurde nicht gefunden. Importiertes Tool wurde deaktiviert.',
+  import_details_MISSING_TOKEN: 'Token "{{objectId}}" wurde nicht gefunden.',
+  import_details_NOT_IMPORTABLE:
+    '"{{objectName}}" kann nicht importiert werden. Erstellen Sie manuell Slack/Teams-Tools auf diesem Mandanten.',
+  import_details_ALREADY_EXISTS:
+    '"{{objectName}}" existiert bereits auf diesem Mandanten und wurde übersprungen.',
+  import_details_AGENT_IMPORTED_DISABLED: 'Agent(en) wurden deaktiviert',
+  import_details_IMPORT_FAILED: 'Import fehlgeschlagen: {{message}}',
+  import_generic_error: 'Agent konnte nicht importiert werden',
+  import_item_id: 'ID: {{id}}',
   agents: 'Agenten',
   being_copied: 'wird kopiert',
   please_wait: 'Bitte warten Sie, während wir die Agentenvorlage kopieren...',
@@ -601,6 +614,8 @@ const TRANSLATIONS_DE = {
   mcp_validation_tool_field_required: '{{tool}} {{field}} ist erforderlich',
   mcp_validation_tool_name_duplicate:
     "Tool-Namen müssen eindeutig sein: '{{name}}'",
+  mcp_validation_enabled_tool_required:
+    'Aktivieren Sie mindestens ein Tool, bevor Sie diesen MCP-Server aktivieren.',
   unknown_mcp_server: 'Unbekannter Server',
   invalid_mcp_configuration: 'Ungültige Konfiguration',
   add: 'Hinzufügen',

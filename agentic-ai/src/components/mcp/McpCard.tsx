@@ -4,8 +4,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faServer } from '@fortawesome/free-solid-svg-icons'
 import BaseCard from '../shared/BaseCard'
 import {
+  getDynamicMcpToolCounts,
   getMcpServerBadgeLabel,
   getMcpServerDescription,
+  isDynamicMcpServer,
 } from '../../utils/mcpHelpers'
 
 const McpCard = ({
@@ -15,6 +17,10 @@ const McpCard = ({
   onRemove,
 }: McpCardProps) => {
   const { t } = useTranslation()
+  const { enabled: enabledToolCount } = getDynamicMcpToolCounts(mcpServer)
+  const isMcpActive = mcpServer.enabled !== false
+  const cannotEnable =
+    isDynamicMcpServer(mcpServer) && !isMcpActive && enabledToolCount === 0
 
   return (
     <BaseCard
@@ -25,6 +31,10 @@ const McpCard = ({
       badge={getMcpServerBadgeLabel(t, mcpServer)}
       enabled={mcpServer.enabled}
       onToggleActive={onToggleActive}
+      switchDisabled={cannotEnable}
+      switchDisabledTitle={
+        cannotEnable ? t('mcp_validation_enabled_tool_required') : undefined
+      }
       actions={[
         {
           icon: 'pi pi-cog',

@@ -50,7 +50,7 @@ export const McpToolCard = ({
       <div className="mcp-detail-tool-card-header">
         <div className="mcp-detail-tool-card-header-main">
           <InputSwitch
-            checked={tool.enabled ?? true}
+            checked={tool.enabled !== false}
             onChange={(event) => onChange({ ...tool, enabled: event.value })}
           />
           <h3 className="mcp-detail-tool-card-title">{title}</h3>

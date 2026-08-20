@@ -13,6 +13,10 @@ import { useDeleteConfirmation } from './useDeleteConfirmation'
 import { useUpsertItem } from './useUpsertItem'
 import { useToast } from '../contexts/ToastContext'
 import { ApiClientError } from '../services/apiClient'
+import {
+  getDynamicMcpToolCounts,
+  isDynamicMcpServer,
+} from '../utils/mcpHelpers'
 
 export const useMcp = () => {
   const appState = useAppState()
@@ -83,6 +87,15 @@ export const useMcp = () => {
         )
         if (!currentMcpServer) {
           throw new Error(t('mcp_server_not_found'))
+        }
+
+        if (enabled && isDynamicMcpServer(currentMcpServer)) {
+          const { enabled: enabledToolCount } =
+            getDynamicMcpToolCounts(currentMcpServer)
+          if (enabledToolCount === 0) {
+            showError(t('mcp_validation_enabled_tool_required'))
+            return
+          }
         }
 
         setMcpServers((prev) =>

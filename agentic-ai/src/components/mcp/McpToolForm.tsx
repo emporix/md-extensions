@@ -37,8 +37,11 @@ export const McpToolForm = ({
   onChange,
 }: McpToolFormProps) => {
   const { t } = useTranslation()
+  const isEnabled = tool.enabled !== false
   const nameInvalid =
-    tool.name.trim().length > 0 && !MCP_TOOL_NAME_PATTERN.test(tool.name.trim())
+    isEnabled &&
+    tool.name.trim().length > 0 &&
+    !MCP_TOOL_NAME_PATTERN.test(tool.name.trim())
 
   const updateTool = (patch: Partial<McpTool>) => {
     onChange({ ...tool, ...patch })
@@ -71,7 +74,7 @@ export const McpToolForm = ({
             <InputText
               value={tool.name}
               onChange={(event) => updateTool({ name: event.target.value })}
-              className={`w-full${nameInvalid || !tool.name.trim() ? ' p-invalid' : ''}`}
+              className={`w-full${isEnabled && (nameInvalid || !tool.name.trim()) ? ' p-invalid' : ''}`}
               placeholder={t('mcp_tool_name_placeholder')}
             />
             {nameInvalid ? (
@@ -101,7 +104,7 @@ export const McpToolForm = ({
           <InputTextarea
             value={tool.prompt ?? ''}
             onChange={(event) => updateTool({ prompt: event.target.value })}
-            className={`w-full mcp-tool-form-prompt-input${!tool.prompt?.trim() ? ' p-invalid' : ''}`}
+            className={`w-full mcp-tool-form-prompt-input${isEnabled && !tool.prompt?.trim() ? ' p-invalid' : ''}`}
             placeholder={t('mcp_tool_prompt_placeholder')}
           />
         </div>
@@ -115,6 +118,7 @@ export const McpToolForm = ({
         functionsLoading={functionsLoading}
         functionsLoadError={functionsLoadError}
         featureDisabled={featureDisabled}
+        required={isEnabled}
         onFunctionIdChange={(functionId) =>
           updateConfig({
             invocation: {
@@ -153,6 +157,7 @@ export const McpToolForm = ({
       <McpToolInputSchemaField
         value={tool.config?.inputSchema ?? ''}
         onChange={(inputSchema) => updateConfig({ inputSchema })}
+        required={isEnabled}
       />
 
       <McpToolRequiredScopesField
