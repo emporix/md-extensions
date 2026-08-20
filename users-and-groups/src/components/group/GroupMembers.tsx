@@ -20,6 +20,7 @@ import { EmployeeDomains } from '../../configs/accessControls'
 import BatchDeleteButton from '../../components/shared/BatchDeleteButton'
 import EmptyTable from '../../components/shared/EmptyTable'
 import usePagination from '../../hooks/usePagination'
+import { useEntraIdGroupsSync } from '../../hooks/useEntraIdGroupsSync'
 import styles from './GroupMembers.module.scss'
 
 const GroupMembers = () => {
@@ -37,6 +38,8 @@ const GroupMembers = () => {
   const { hasPermission } = usePermissions()
   const [isDeleting, setIsDeleting] = useState(false)
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
+  const { areManualMutationsRestricted } = useEntraIdGroupsSync()
+  const canAddMembers = canManage && !areManualMutationsRestricted
   const { paginationParams, onPageCallback } = usePagination(
     undefined,
     true,
@@ -129,6 +132,7 @@ const GroupMembers = () => {
           })}
           buttonLabel={t('usersAndGroups.groups.buttons.addMembers')}
           action={() => setIsMembersDialogOpened(true)}
+          managerPermissions={canAddMembers}
         />
       ) : (
         <DataTable

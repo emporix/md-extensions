@@ -22,6 +22,7 @@ import { EmployeeDomains } from '../configs/accessControls'
 import { useFeatureToggles } from '../context/FeatureTogglesProvider'
 import { AUDIT_LOG_FEATURE_TOGGLE } from '../configs/auditLog.config'
 import EntityChangelogTab from '../components/auditLog/EntityChangelogTab'
+import EntraIdSyncBanner from '../components/shared/EntraIdSyncBanner'
 
 const BASE_TABS = ['details', 'members']
 
@@ -112,6 +113,7 @@ const GroupPage = () => {
           ) : undefined
         }
       />
+      <EntraIdSyncBanner />
       <Tabs
         tabs={visibleTabs}
         activeTabId={activeTab ?? 'details'}

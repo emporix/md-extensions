@@ -21,6 +21,7 @@ import { usePermissions } from '../../context/PermissionsProvider'
 import BatchDeleteButton from '../../components/shared/BatchDeleteButton'
 import usePagination, { PaginationProps } from '../../hooks/usePagination'
 import { EmployeeDomains } from '../../configs/accessControls'
+import { useEntraIdGroupsSync } from '../../hooks/useEntraIdGroupsSync'
 
 import { groupDetailPath } from '../../constants/paths'
 import styles from './GroupsTable.module.scss'
@@ -38,6 +39,7 @@ const GroupsTable = (props: Props) => {
   const { refresh, setRefreshValue } = useRefresh()
   const { columns } = useGroupsTableColumns()
   const { navigate } = useCustomNavigate()
+  const { areManualMutationsRestricted } = useEntraIdGroupsSync()
   const location = useLocation()
   const { hasPermission } = usePermissions()
   const [isDeleting, setIsDeleting] = useState(false)
@@ -45,6 +47,7 @@ const GroupsTable = (props: Props) => {
   const { paginationParams, onPageCallback, onFilterCallback, onSortCallback } =
     usePagination()
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
+  const canAddMembers = canManage && !areManualMutationsRestricted
 
   const [isLoading, setIsLoading] = useState(false)
   const [groups, setGroups] = useState<Group[]>([])
@@ -81,44 +84,47 @@ const GroupsTable = (props: Props) => {
     }
   }
 
-  const deleteGroups = async (groups: Group[], force = false) => {
-    setIsLoading(true)
-    setIsDeleting(true)
-    let updatedGroups = [...groups]
-    for (const group of groups) {
-      if (!group.id) return
-      try {
-        await deleteGroup(group.id, force)
-        updatedGroups = updatedGroups.filter((g) => g.id !== group.id)
-        showSuccess(
-          t('usersAndGroups.groups.toasts.deleteGroup.success', {
-            name: getContentLangValue(group.name),
-          })
-        )
-        setRefreshValue()
-        if (force) {
-          setGroupToForceDelete(undefined)
-          if (updatedGroups.length > 0) {
-            await deleteGroups(updatedGroups)
+  const deleteGroups = useCallback(
+    async (groupsToDelete: Group[], force = false) => {
+      setIsLoading(true)
+      setIsDeleting(true)
+      let updatedGroups = [...groupsToDelete]
+      for (const group of groupsToDelete) {
+        if (!group.id) return
+        try {
+          await deleteGroup(group.id, force)
+          updatedGroups = updatedGroups.filter((g) => g.id !== group.id)
+          showSuccess(
+            t('usersAndGroups.groups.toasts.deleteGroup.success', {
+              name: getContentLangValue(group.name),
+            })
+          )
+          setRefreshValue()
+          if (force) {
+            setGroupToForceDelete(undefined)
+            if (updatedGroups.length > 0) {
+              await deleteGroups(updatedGroups)
+            }
+          }
+        } catch (e: unknown) {
+          if (force) {
+            console.error(e)
+            showError(
+              t('usersAndGroups.groups.toasts.deleteGroup.error'),
+              getApiErrorDetails(e)
+            )
+          } else {
+            setIsLoading(false)
+            setGroupToForceDelete(group)
           }
         }
-      } catch (e: unknown) {
-        if (force) {
-          console.error(e)
-          showError(
-            t('usersAndGroups.groups.toasts.deleteGroup.error'),
-            getApiErrorDetails(e)
-          )
-        } else {
-          setIsLoading(false)
-          setGroupToForceDelete(group)
-        }
       }
-    }
-    setSelectedGroups(updatedGroups)
-    setIsLoading(false)
-    setIsDeleting(false)
-  }
+      setSelectedGroups(updatedGroups)
+      setIsLoading(false)
+      setIsDeleting(false)
+    },
+    [deleteGroup, getContentLangValue, setRefreshValue, showError, showSuccess, t]
+  )
 
   const tableActionsTemplate = useCallback(
     (group: Group) => {
@@ -142,13 +148,21 @@ const GroupsTable = (props: Props) => {
               tooltip: t(
                 'usersAndGroups.groups.tables.groups.actions.addMembers'
               ),
-              disabled: !canManage,
+              disabled: !canAddMembers,
             },
           ]}
         />
       )
     },
-    [canManage, groupUserType]
+    [
+      canAddMembers,
+      canManage,
+      deleteGroups,
+      location.pathname,
+      location.search,
+      navigate,
+      t,
+    ]
   )
 
   const pagination: DataTablePaginationState = {
