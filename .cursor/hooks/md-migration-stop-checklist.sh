@@ -51,6 +51,14 @@ checklist = """If this session migrated an MD module to md-extensions, verify be
 6) Cleanup: retain MD files still imported by sibling routes (e.g. Customer Groups)
 7) Lockfile: published CL semver (no file:/link); Firebase sites created before first deploy
 8) QA: extension typecheck+lint+test:run+build:dev; update playbook decisions log
+9) Git: Jira key came from the user (asked if a ticket exists; got number/URL — never invented, never
+    defaulted to the epic); branch feature/{KEY}-###-desc and every commit '{KEY}-### Sentence case'
+    (git-workflow); squash before merge
+10) Feature parity: audited the MD module for capabilities a component diff hides
+    (TableExtensions/column visibility, links to host-owned routes, exact pi pi-* glyphs, px sizing)
+11) Widget gaps: needed-but-missing CL widgets promoted to CL (Pattern B) — never primereact in the remote
+12) Merge order: md-extensions PR merges and deploys FIRST; curl remoteEntry.js for 200 before merging the MD PR
+13) Rendered it: structural gates prove nothing about the UI — open the preview or run the remote standalone
 Skill: md-module-extraction | Docs: MODULE_MIGRATION_PLAYBOOK.md + REUSABLE_FROM_USERS_AND_GROUPS.md"""
 
 MIGRATION_RE = re.compile(
