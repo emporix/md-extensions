@@ -18,7 +18,10 @@ export const getProjectFunctions = async (
     const functions = await api.get<ProjectCloudFunction[]>(
       `/automation/${appState.tenant}/projects/functions`
     )
-    return { functions, featureDisabled: false }
+    return {
+      functions: Array.isArray(functions) ? functions : [],
+      featureDisabled: false,
+    }
   } catch (error) {
     if (error instanceof ApiClientError && error.status === 404) {
       return { functions: [], featureDisabled: false }

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { TFunction } from 'i18next'
-import { McpToolInvocationMethod } from '../types/Mcp'
+import {
+  CustomMcpServerTransportType,
+  McpToolInvocationMethod,
+} from '../types/Mcp'
 import { ValidationError } from './validation'
 import { validateDynamicMcpServer, validateMcpServer } from './mcpValidationHelpers'
 
@@ -19,7 +22,7 @@ describe('validateDynamicMcpServer', () => {
           id: 'mcp-dynamic',
           name: 'Dynamic MCP',
           type: 'dynamic',
-          transport: 'streamable_http' as never,
+          transport: CustomMcpServerTransportType.STREAMABLE_HTTP,
           enabled: true,
           tools: [
             {
@@ -48,7 +51,7 @@ describe('validateDynamicMcpServer', () => {
           id: 'mcp-dynamic',
           name: 'Dynamic MCP',
           type: 'dynamic',
-          transport: 'streamable_http' as never,
+          transport: CustomMcpServerTransportType.STREAMABLE_HTTP,
           tools: [
             {
               name: 'create-return',
@@ -88,7 +91,7 @@ describe('validateMcpServer', () => {
           id: 'mcp-custom',
           name: 'Custom MCP',
           type: 'custom',
-          transport: 'sse' as never,
+          transport: CustomMcpServerTransportType.SSE,
           config: { url: 'https://example.com/mcp' },
         },
         mockT
