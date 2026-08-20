@@ -104,7 +104,7 @@ const UserPage = () => {
     try {
       const payload = mapUserFormToPayload(data, user)
       if (areManualMutationsRestricted) {
-        payload.groupIds = user.groupIds
+        payload.groupIds = user.groupIds ?? []
       }
       await makeCall(() => updateUser(user.id, payload), blockPanel)
       await makeCall(syncUserAccessControls, blockPanel)
