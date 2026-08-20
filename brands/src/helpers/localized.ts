@@ -1,11 +1,11 @@
 import type Localized from '../models/Localized.model'
 
-export type LocalizedInput = Localized | string | undefined
+export type LocalizedInput = Localized | string | null | undefined
 
 /**
  * Converts all keys of a Localized object to lowercase.
  * For example: { en: 'test', 'de-AT': 'test2' } becomes { en: 'test', 'de-at': 'test2' }.
- * Returns string or undefined unchanged when input is not an object.
+ * Returns string, null, or undefined unchanged when input is not an object.
  */
 export function localizedKeysToLowerCase(
   input: LocalizedInput
