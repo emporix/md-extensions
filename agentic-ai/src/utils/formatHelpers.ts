@@ -114,3 +114,6 @@ export const formatDateObject = (dateObj: string): string => {
     return dateObj
   }
 }
+
+export const normalizeDuration = (duration: number): number =>
+  Math.max(0, duration)

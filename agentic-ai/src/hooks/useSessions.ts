@@ -14,14 +14,16 @@ export const useSessions = () => {
   const [pageNumber, setPageNumber] = useState<number>(1)
   const [totalRecords, setTotalRecords] = useState<number>(0)
   const [filters, setFilters] = useState<Record<string, string>>({})
+  const [sortBy, setSortBy] = useState<string>('metadata.modifiedAt')
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC')
 
   const logService = useMemo(() => new LogService(appState), [appState])
 
   const fetchSessions = useCallback(
     async (
       agentId: string,
-      sortBy?: string,
-      sortOrder?: 'ASC' | 'DESC',
+      currentSortBy: string,
+      currentSortOrder: 'ASC' | 'DESC',
       newPageSize?: number,
       newPageNumber?: number,
       newFilters?: Record<string, string>
@@ -38,8 +40,8 @@ export const useSessions = () => {
           currentPageSize,
           currentPageNumber,
           currentFilters,
-          sortBy,
-          sortOrder
+          currentSortBy,
+          currentSortOrder
         )
 
         setSessions(response.data)
@@ -59,20 +61,6 @@ export const useSessions = () => {
     (agentId: string) => {
       return fetchSessions(
         agentId || '',
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        filters
-      )
-    },
-    [fetchSessions, filters]
-  )
-
-  const sortSessions = useCallback(
-    (sortBy: string, sortOrder: 'ASC' | 'DESC', agentId: string) => {
-      return fetchSessions(
-        agentId || '',
         sortBy,
         sortOrder,
         undefined,
@@ -80,7 +68,15 @@ export const useSessions = () => {
         filters
       )
     },
-    [fetchSessions, filters]
+    [fetchSessions, filters, sortBy, sortOrder]
+  )
+
+  const sortSessions = useCallback(
+    (newSortBy: string, newSortOrder: 'ASC' | 'DESC') => {
+      setSortBy(newSortBy)
+      setSortOrder(newSortOrder)
+    },
+    []
   )
 
   const updateFilters = useCallback((newFilters: Record<string, string>) => {
@@ -104,8 +100,8 @@ export const useSessions = () => {
     const agentIdParam = urlParams.get('agentId')
     fetchSessions(
       agentIdParam || '',
-      'metadata.modifiedAt',
-      'DESC',
+      sortBy,
+      sortOrder,
       pageSize,
       pageNumber,
       filters
@@ -119,6 +115,8 @@ export const useSessions = () => {
     filtersString,
     filters,
     fetchSessions,
+    sortBy,
+    sortOrder,
   ])
 
   return {

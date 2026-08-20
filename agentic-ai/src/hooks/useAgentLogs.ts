@@ -17,13 +17,15 @@ export const useAgentLogs = () => {
   const [pageNumber, setPageNumber] = useState<number>(1)
   const [totalRecords, setTotalRecords] = useState<number>(0)
   const [filters, setFilters] = useState<Record<string, string>>({})
+  const [sortBy, setSortBy] = useState<string>('metadata.createdAt')
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC')
 
   const logService = useMemo(() => new LogService(appState), [appState])
 
   const fetchLogs = useCallback(
     async (
-      sortBy?: string,
-      sortOrder?: 'ASC' | 'DESC',
+      currentSortBy: string,
+      currentSortOrder: 'ASC' | 'DESC',
       newPageSize?: number,
       newPageNumber?: number,
       agentId?: string,
@@ -36,8 +38,8 @@ export const useAgentLogs = () => {
         const currentPageNumber = newPageNumber || pageNumber
         const currentFilters = newFilters !== undefined ? newFilters : filters
         const response = await logService.getAgentLogs(
-          sortBy,
-          sortOrder,
+          currentSortBy,
+          currentSortOrder,
           currentPageSize,
           currentPageNumber,
           agentId,
@@ -99,20 +101,6 @@ export const useAgentLogs = () => {
   const refreshLogs = useCallback(
     (agentId?: string) => {
       return fetchLogs(
-        'metadata.createdAt',
-        'DESC',
-        undefined,
-        undefined,
-        agentId,
-        filters
-      )
-    },
-    [fetchLogs, filters]
-  )
-
-  const sortLogs = useCallback(
-    (sortBy: string, sortOrder: 'ASC' | 'DESC', agentId?: string) => {
-      return fetchLogs(
         sortBy,
         sortOrder,
         undefined,
@@ -121,7 +109,15 @@ export const useAgentLogs = () => {
         filters
       )
     },
-    [fetchLogs, filters]
+    [fetchLogs, filters, sortBy, sortOrder]
+  )
+
+  const sortLogs = useCallback(
+    (newSortBy: string, newSortOrder: 'ASC' | 'DESC') => {
+      setSortBy(newSortBy)
+      setSortOrder(newSortOrder)
+    },
+    []
   )
 
   const updateFilters = useCallback((newFilters: Record<string, string>) => {
@@ -144,14 +140,23 @@ export const useAgentLogs = () => {
     const urlParams = new URLSearchParams(location.search)
     const agentIdParam = urlParams.get('agentId')
     fetchLogs(
-      'metadata.createdAt',
-      'DESC',
+      sortBy,
+      sortOrder,
       pageSize,
       pageNumber,
       agentIdParam || undefined,
       filters
     )
-  }, [pageSize, pageNumber, location.search, filtersString, fetchLogs, filters])
+  }, [
+    pageSize,
+    pageNumber,
+    location.search,
+    filtersString,
+    fetchLogs,
+    filters,
+    sortBy,
+    sortOrder,
+  ])
 
   return {
     logs,

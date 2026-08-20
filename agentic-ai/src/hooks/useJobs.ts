@@ -17,13 +17,15 @@ export const useJobs = () => {
   const [pageNumber, setPageNumber] = useState<number>(1)
   const [totalRecords, setTotalRecords] = useState<number>(0)
   const [filters, setFilters] = useState<Record<string, string>>({})
+  const [sortBy, setSortBy] = useState<string>('metadata.createdAt')
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC')
 
   const jobService = useMemo(() => new JobService(appState), [appState])
 
   const fetchJobs = useCallback(
     async (
-      sortBy?: string,
-      sortOrder?: 'ASC' | 'DESC',
+      currentSortBy: string,
+      currentSortOrder: 'ASC' | 'DESC',
       newPageSize?: number,
       newPageNumber?: number,
       agentId?: string,
@@ -36,8 +38,8 @@ export const useJobs = () => {
         const currentPageNumber = newPageNumber || pageNumber
         const currentFilters = newFilters !== undefined ? newFilters : filters
         const response = await jobService.getJobs(
-          sortBy,
-          sortOrder,
+          currentSortBy,
+          currentSortOrder,
           currentPageSize,
           currentPageNumber,
           agentId,
@@ -80,20 +82,6 @@ export const useJobs = () => {
   const refreshJobs = useCallback(
     (agentId?: string) => {
       return fetchJobs(
-        'metadata.createdAt',
-        'DESC',
-        undefined,
-        undefined,
-        agentId,
-        filters
-      )
-    },
-    [fetchJobs, filters]
-  )
-
-  const sortJobs = useCallback(
-    (sortBy: string, sortOrder: 'ASC' | 'DESC', agentId?: string) => {
-      return fetchJobs(
         sortBy,
         sortOrder,
         undefined,
@@ -102,7 +90,15 @@ export const useJobs = () => {
         filters
       )
     },
-    [fetchJobs, filters]
+    [fetchJobs, filters, sortBy, sortOrder]
+  )
+
+  const sortJobs = useCallback(
+    (newSortBy: string, newSortOrder: 'ASC' | 'DESC') => {
+      setSortBy(newSortBy)
+      setSortOrder(newSortOrder)
+    },
+    []
   )
 
   const updateFilters = useCallback((newFilters: Record<string, string>) => {
@@ -125,14 +121,23 @@ export const useJobs = () => {
     const urlParams = new URLSearchParams(location.search)
     const agentIdParam = urlParams.get('agentId')
     fetchJobs(
-      'metadata.createdAt',
-      'DESC',
+      sortBy,
+      sortOrder,
       pageSize,
       pageNumber,
       agentIdParam || undefined,
       filters
     )
-  }, [pageSize, pageNumber, location.search, filtersString, fetchJobs, filters])
+  }, [
+    pageSize,
+    pageNumber,
+    location.search,
+    filtersString,
+    fetchJobs,
+    filters,
+    sortBy,
+    sortOrder,
+  ])
 
   return {
     jobs,
