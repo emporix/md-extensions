@@ -1,0 +1,14 @@
+.table {
+  width: 100%;
+}
+
+.headerActions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.saveButton:disabled {
+  background-color: #d6e3f5;
+  border-color: #d6e3f5;
+  color: #9cbbe3;
+}

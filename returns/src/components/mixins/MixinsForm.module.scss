@@ -1,0 +1,36 @@
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.fieldRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  width: 100%;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+}
+
+.arrayItem {
+  margin: 0.5em 0;
+}
+
+.arrayItemControl {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.removeButton {
+  flex-shrink: 0;
+}
+
+.emptyArray {
+  color: var(--color-text-secondary);
+  font-style: italic;
+}

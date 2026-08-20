@@ -22,6 +22,7 @@ Step-by-step workflow for porting an MD module to `md-extensions`.
 | `docs/MODULE_MIGRATION_PLAYBOOK.md` | Policy, federation contract, AppState matrix, provider stack, QA, Firebase, decisions log |
 | `docs/REUSABLE_FROM_USERS_AND_GROUPS.md` | Tier 1/2/3 copy inventory (what to take, adapt, skip) |
 | `docs/MIGRATED_MODULES.md` | Registry of extracted remotes (update after every migration) |
+| `docs/CL_WIDGET_STATUS.md` | PrimeReact → CL lookup (`in-cl` / `partial` / `missing`). Do not copy gap lists into this skill. |
 | [reference.md](reference.md) | FAQ, validation greps, anti-patterns, local dev loop |
 
 **Canonical scaffold:** clone [md-module-template](https://github.com/emporix/md-module-template) branch **`md-module-migration`**, absorb into `md-extensions/{kebab}/` (remove nested `.git`). Align Tier 1 with **all playbook-aligned remotes** in `MIGRATED_MODULES.md` (not U&G alone; not `products`; not template `master`).
@@ -35,7 +36,7 @@ Step-by-step workflow for porting an MD module to `md-extensions`.
 3. Pick federation `name` = MD route `key` (camelCase).
 4. Pick a **unique local Vite port** (claim from `MIGRATED_MODULES.md` "Next free local port").
 5. Run audit greps (playbook §7 + below).
-6. Verify CL exports every PrimeReact / MdDataTable replacement; prefer **CL ≥ 2.2.0** for `ConfirmBox` / `BackButton` / `DateValue`.
+6. Verify CL exports every PrimeReact / MdDataTable replacement: look up each MD `primereact` import in **`docs/CL_WIDGET_STATUS.md`**. Prefer **CL ≥ 2.2.0** for `ConfirmBox` / `BackButton` / `DateValue`.
 7. Align `@emporix/api-calls` semver with call signatures used by the module.
 8. Decide Mode A (permanent `url:`) vs Mode B (GateComponent + toggle). Prefer Mode A when there is no useful built-in fallback.
 

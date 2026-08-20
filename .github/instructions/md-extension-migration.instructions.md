@@ -7,6 +7,7 @@ applyTo: "**/RemoteComponent.tsx,**/vite.config.ts,**/AppState.model.ts,**/src/*
 Playbook: `docs/MODULE_MIGRATION_PLAYBOOK.md` (§11–§12 for derived remotes).  
 **Registry (update every migration):** `docs/MIGRATED_MODULES.md`.  
 Copy inventory: `docs/REUSABLE_FROM_USERS_AND_GROUPS.md` (Tier 1 from all playbook-aligned remotes).  
+**PrimeReact → CL lookup:** `docs/CL_WIDGET_STATUS.md`.  
 **Skill (canonical):** `.github/skills/md-module-extraction/` (also `.cursor/skills/` / `.claude/skills/`).  
 **Host wiring:** `management-dashboard/.github/instructions/federated-module-wiring.instructions.md` (not this file).
 
@@ -42,7 +43,7 @@ ToastProvider → DashboardProvider → PermissionsProvider → ConfigurationPro
 
 ## UI policy
 
-- Primitives: `@emporix/component-library` only (CL ≥ 2.0.0 bundles Pattern B Prime CSS).
+- Primitives: `@emporix/component-library` only (CL ≥ 2.0.0 bundles Pattern B Prime CSS). Look up each MD `primereact` import in `docs/CL_WIDGET_STATUS.md` — never add `primereact` to the remote.
 - Copy layout composites from prior playbook-aligned remotes `components/shared/` (HeaderSection, SectionBox, FormGrid, lean InputField, …).
 - Prefer CL ≥ 2.2.0 for `ConfirmBox`, `BackButton`, `DateValue`, `ProgressSpinner` — **import directly**; delete local duplicates. Thin wrappers only when app deps are required (i18n / languages / config), same as `LocalizedInput`.
 - Before copying a shared UI piece already present in a prior remote, **ask the user** whether to migrate it to CL (`migrate-to-component-library` skill) instead of another local copy.
