@@ -1,36 +1,28 @@
-import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { McpCardProps } from '../../types/Mcp'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faServer } from '@fortawesome/free-solid-svg-icons'
 import BaseCard from '../shared/BaseCard'
-import { getMcpTransportLabel } from '../../utils/mcpHelpers'
+import {
+  getMcpServerBadgeLabel,
+  getMcpServerDescription,
+} from '../../utils/mcpHelpers'
 
-const McpCard: React.FC<McpCardProps> = ({
+const McpCard = ({
   mcpServer,
   onToggleActive,
   onConfigure,
   onRemove,
-}) => {
+}: McpCardProps) => {
   const { t } = useTranslation()
-
-  const getDescription = () => {
-    const parts: string[] = [`${t('url')}: ${mcpServer.config.url}`]
-    if (mcpServer.config.authorizationHeaderName) {
-      parts.push(
-        `${t('authorization_header_name')}: ${mcpServer.config.authorizationHeaderName}`
-      )
-    }
-    return parts.join('\n')
-  }
 
   return (
     <BaseCard
       id={mcpServer.id}
       title={mcpServer.name}
-      description={getDescription()}
+      description={getMcpServerDescription(t, mcpServer)}
       icon={<FontAwesomeIcon icon={faServer} />}
-      badge={getMcpTransportLabel(t, mcpServer.transport)}
+      badge={getMcpServerBadgeLabel(t, mcpServer)}
       enabled={mcpServer.enabled}
       onToggleActive={onToggleActive}
       actions={[

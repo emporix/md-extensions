@@ -262,8 +262,11 @@ const TRANSLATIONS_DE = {
   available_tools_list_heading: 'Verfügbare Tools',
   no_tools_selected: 'Keine Tools ausgewählt',
   selected_tools_count: 'Ausgewählte Tools ({{count}})',
+  selected_mcp_servers_count: 'Ausgewählte MCP-Server ({{count}})',
+  no_mcp_servers_selected: 'Keine MCP-Server ausgewählt',
   custom_mcp_tag: 'Benutzerdefiniertes MCP',
   custom_mcp_servers: 'Benutzerdefinierte MCP-Server',
+  dynamic_mcp_agent_tools: 'Tools für diesen Agenten',
   loading_mcp_servers: 'MCP-Server werden geladen...',
   expand_section: 'Abschnitt erweitern',
   collapse_section: 'Abschnitt einklappen',
@@ -503,7 +506,6 @@ const TRANSLATIONS_DE = {
 
   // MCP Servers
   mcp_servers: 'MCP-Server',
-  mcp_servers_description: 'Verwalten Sie Ihre Model Context Protocol Server',
   failed_to_load_mcp_servers: 'MCP-Server konnten nicht geladen werden',
   no_mcp_servers: 'Keine MCP-Server verfügbar',
   add_new_mcp_server: 'NEUEN MCP-SERVER HINZUFÜGEN',
@@ -511,8 +513,7 @@ const TRANSLATIONS_DE = {
   new_mcp_server: 'Neuer MCP-Server',
   back_to_mcp_servers: 'Zurück zu MCP-Servern',
   error_loading_mcp_server: 'Fehler beim Laden des MCP-Servers',
-  mcp_detail_subtitle:
-    'MCP-Server-Verbindungseinstellungen für Agenten konfigurieren.',
+  mcp_detail_subtitle: 'MCP-Server-Einstellungen für Agenten konfigurieren.',
   mcp_server_created_successfully: 'MCP-Server erfolgreich erstellt!',
   mcp_server_configuration: 'MCP-Server-Konfiguration',
   mcp_server_id: 'MCP-Server-ID',
@@ -551,6 +552,55 @@ const TRANSLATIONS_DE = {
   mcp_server_disabled: 'Dieser MCP-Server ist derzeit deaktiviert',
   mcp_tools_selected: '{{count}} Tools ausgewählt',
   custom_mcp_server: 'Benutzerdefinierter MCP-Server',
+  dynamic_mcp_server: 'Dynamischer MCP-Server',
+  dynamic_mcp_tag: 'Dynamisches MCP',
+  dynamic_mcp_tools_summary: '{{enabled}} von {{total}} Tools aktiv',
+  dynamic_mcp_no_tools: 'Noch keine Tools konfiguriert.',
+  mcp_server_type: 'MCP-Server-Typ',
+  select_mcp_server_type: 'MCP-Server-Typ auswählen',
+  mcp_tools_count: '{{count}} Tools',
+  mcp_tool_add: 'Tool hinzufügen',
+  mcp_tool_collapse: 'Tool einklappen',
+  mcp_tool_remove: 'Tool entfernen',
+  mcp_tool_remove_last_disabled:
+    'Dynamische MCP-Server müssen mindestens ein Tool enthalten.',
+  mcp_tool_unnamed: 'Tool {{index}}',
+  mcp_tool_name: 'Tool-Name',
+  mcp_tool_name_placeholder: 'Tool-Namen eingeben (ohne Leerzeichen)',
+  mcp_tool_name_no_whitespace:
+    'Der Tool-Name darf keine Leerzeichen enthalten.',
+  mcp_tool_description_placeholder: 'Tool-Beschreibung eingeben',
+  mcp_tool_prompt: 'Tool-Prompt',
+  mcp_tool_prompt_placeholder:
+    'Beschreiben Sie, wann der Agent dieses Tool aufrufen soll',
+  mcp_tool_required_scopes: 'Erforderliche Berechtigungen',
+  mcp_tool_input_schema: 'Input-Schema',
+  mcp_tool_input_schema_placeholder:
+    'JSON Schema als JSON-String eingeben',
+  mcp_tool_input_schema_invalid_json:
+    'Input-Schema muss gültiges JSON sein',
+  mcp_tool_input_schema_invalid_schema:
+    'Input-Schema muss ein gültiges JSON Schema sein',
+  mcp_tool_function_id: 'Cloud-Function',
+  mcp_tool_function_id_placeholder:
+    'Cloud-Function auswählen oder eingeben',
+  mcp_tool_http_method: 'HTTP-Methode',
+  mcp_tool_args_location: 'Argument-Position',
+  mcp_tool_args_location_body: 'Request-Body',
+  mcp_tool_args_location_query: 'Query-String',
+  mcp_tool_functions_feature_disabled:
+    'Cloud Functions sind für diesen Mandanten nicht verfügbar. Cloud-Function manuell eingeben.',
+  mcp_tool_functions_load_error: 'Cloud Functions konnten nicht geladen werden.',
+  mcp_tool_scopes_load_error: 'IAM-Berechtigungen konnten nicht geladen werden.',
+  mcp_validation_mcp_id_required: 'MCP-Server-ID ist erforderlich',
+  mcp_validation_mcp_name_required: 'MCP-Server-Name ist erforderlich',
+  mcp_validation_mcp_url_required: 'MCP-Server-URL ist erforderlich',
+  mcp_validation_mcp_url_invalid: 'MCP-Server-URL muss eine gültige URL sein',
+  mcp_validation_mcp_id_format:
+    'MCP-Server-ID darf nur Buchstaben, Zahlen, Unterstriche und Bindestriche enthalten (1-66 Zeichen)',
+  mcp_validation_tool_field_required: '{{tool}} {{field}} ist erforderlich',
+  mcp_validation_tool_name_duplicate:
+    "Tool-Namen müssen eindeutig sein: '{{name}}'",
   unknown_mcp_server: 'Unbekannter Server',
   invalid_mcp_configuration: 'Ungültige Konfiguration',
   add: 'Hinzufügen',

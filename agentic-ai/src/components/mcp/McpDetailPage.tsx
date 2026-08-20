@@ -1,22 +1,35 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from 'primereact/button'
 import { Message } from 'primereact/message'
 import { ProgressSpinner } from 'primereact/progressspinner'
-import { McpServer } from '../../types/Mcp'
+import {
+  CustomMcpServerTransportType,
+  ManagedMcpServerType,
+  McpServer,
+} from '../../types/Mcp'
 import { useAppState } from '../../contexts/AppStateContext'
 import { getMcpServer } from '../../services/mcpService'
 import { getEntityLoadErrorMessage } from '../../utils/errorHelpers'
-import { createEmptyMcpServer } from '../../utils/mcpHelpers'
+import {
+  createEmptyMcpDraft,
+  isDynamicMcpServer,
+  switchMcpServerType,
+} from '../../utils/mcpHelpers'
 import { useMcpConfig } from '../../hooks/useMcpConfig'
+import { useDynamicMcpConfig } from '../../hooks/useDynamicMcpConfig'
 import { useAgentTokensCatalog } from '../../hooks/useAgentTokensCatalog'
+import { useProjectFunctions } from '../../hooks/useProjectFunctions'
+import { useIamScopes } from '../../hooks/useIamScopes'
+import { useFeatureToggles } from '../../hooks/useFeatureToggles'
 import { McpGeneralSection } from './McpGeneralSection'
 import { McpConnectionSection } from './McpConnectionSection'
 import { McpDetailSection } from './McpDetailSection'
+import { McpToolsEditor } from './McpToolsEditor'
 import { DetailStatusDot } from '../shared/DetailStatusDot'
 
-const McpDetailPage: React.FC = () => {
+const McpDetailPage = () => {
   const appState = useAppState()
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -28,12 +41,28 @@ const McpDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const isDynamic = isDynamicMcpServer(mcpServer ?? {})
+  const mcpServerType = mcpServer?.type ?? ''
+  const typeSelected = !!mcpServerType
+
   const { tokens: catalogTokens, loading: tokensLoading } =
     useAgentTokensCatalog()
+  const { toggles, loading: togglesLoading } = useFeatureToggles()
+  const {
+    functions,
+    loading: functionsLoading,
+    featureDisabled,
+    error: functionsLoadError,
+  } = useProjectFunctions(isDynamic)
+  const {
+    scopes,
+    loading: scopesLoading,
+    error: scopesLoadError,
+  } = useIamScopes(isDynamic)
 
   useEffect(() => {
     if (isCreating) {
-      setMcpServer(createEmptyMcpServer())
+      setMcpServer(createEmptyMcpDraft())
       setError(null)
       setLoading(false)
       return
@@ -90,20 +119,94 @@ const McpDetailPage: React.FC = () => {
     navigate('/mcp')
   }, [navigate])
 
-  const { state, saving, updateField, handleSave, isFormValid } = useMcpConfig({
-    mcpServer,
+  const customConfig = useMcpConfig({
+    mcpServer: isDynamic ? null : mcpServer,
     isCreating,
     onSave: handleSaveSuccess,
   })
 
+  const dynamicConfig = useDynamicMcpConfig({
+    mcpServer: isDynamic ? mcpServer : null,
+    isCreating,
+    onSave: handleSaveSuccess,
+  })
+
+  const handleMcpTypeChange = useCallback(
+    (type: ManagedMcpServerType) => {
+      if (!isCreating || !mcpServer || mcpServer.type === type) {
+        return
+      }
+
+      setMcpServer(
+        switchMcpServerType(type, {
+          id: isDynamic
+            ? dynamicConfig.state.mcpServerId
+            : customConfig.state.mcpServerId,
+          name: isDynamic
+            ? dynamicConfig.state.mcpServerName
+            : customConfig.state.mcpServerName,
+          enabled: mcpServer.enabled,
+        })
+      )
+    },
+    [
+      customConfig.state.mcpServerId,
+      customConfig.state.mcpServerName,
+      dynamicConfig.state.mcpServerId,
+      dynamicConfig.state.mcpServerName,
+      isCreating,
+      isDynamic,
+      mcpServer,
+    ]
+  )
+
+  const handleIdChange = useCallback(
+    (value: string) => {
+      if (isDynamic) {
+        dynamicConfig.updateField('mcpServerId', value)
+      } else {
+        customConfig.updateField('mcpServerId', value)
+      }
+    },
+    [customConfig, dynamicConfig, isDynamic]
+  )
+
+  const handleNameChange = useCallback(
+    (value: string) => {
+      if (isDynamic) {
+        dynamicConfig.updateField('mcpServerName', value)
+      } else {
+        customConfig.updateField('mcpServerName', value)
+      }
+    },
+    [customConfig, dynamicConfig, isDynamic]
+  )
+
+  const handleTransportChange = useCallback(
+    (value: CustomMcpServerTransportType) => {
+      customConfig.updateField('transport', value)
+    },
+    [customConfig]
+  )
+
+  const generalState = isDynamic ? dynamicConfig.state : customConfig.state
+
   const mcpServerDisplayName = useMemo(() => {
-    if (state.mcpServerName.trim()) {
-      return state.mcpServerName
+    if (generalState.mcpServerName.trim()) {
+      return generalState.mcpServerName
     }
     return isCreating
       ? t('new_mcp_server')
-      : state.mcpServerId || t('new_mcp_server')
-  }, [isCreating, state.mcpServerId, state.mcpServerName, t])
+      : generalState.mcpServerId || t('new_mcp_server')
+  }, [generalState.mcpServerId, generalState.mcpServerName, isCreating, t])
+
+  const saving = isDynamic ? dynamicConfig.saving : customConfig.saving
+  const isFormValid =
+    typeSelected &&
+    (isDynamic ? dynamicConfig.isFormValid : customConfig.isFormValid)
+  const handleSave = isDynamic
+    ? dynamicConfig.handleSave
+    : customConfig.handleSave
 
   if (loading) {
     return (
@@ -187,23 +290,61 @@ const McpDetailPage: React.FC = () => {
       <div className="mcp-detail-content">
         <McpDetailSection titleKey="general">
           <McpGeneralSection
-            mcpServerId={state.mcpServerId}
-            mcpServerName={state.mcpServerName}
+            mcpServerId={generalState.mcpServerId}
+            mcpServerName={generalState.mcpServerName}
+            mcpServerType={mcpServerType}
+            transport={
+              isCreating || typeSelected
+                ? isDynamic
+                  ? CustomMcpServerTransportType.STREAMABLE_HTTP
+                  : customConfig.state.transport
+                : undefined
+            }
             isEditing={!isCreating && !!mcpServer.id}
-            onFieldChange={updateField}
+            hostingEnabled={toggles.emporixHosting}
+            optionsReady={!togglesLoading}
+            transportDisabled={isDynamic}
+            onIdChange={handleIdChange}
+            onNameChange={handleNameChange}
+            onMcpServerTypeChange={handleMcpTypeChange}
+            onTransportChange={handleTransportChange}
           />
         </McpDetailSection>
-        <McpDetailSection titleKey="connection">
-          <McpConnectionSection
-            url={state.url}
-            transport={state.transport}
-            authorizationHeaderName={state.authorizationHeaderName}
-            authorizationHeaderToken={state.authorizationHeaderToken}
-            tokens={catalogTokens}
-            tokensLoading={tokensLoading}
-            onFieldChange={updateField}
-          />
-        </McpDetailSection>
+
+        {typeSelected &&
+          (isDynamic ? (
+            <McpDetailSection titleKey="mcp_tools" plain>
+              <McpToolsEditor
+                tools={dynamicConfig.state.tools}
+                isCreating={isCreating}
+                functions={functions}
+                functionsLoading={functionsLoading}
+                functionsLoadError={functionsLoadError}
+                featureDisabled={featureDisabled}
+                scopes={scopes}
+                scopesLoading={scopesLoading}
+                scopesLoadError={scopesLoadError}
+                onToolChange={dynamicConfig.updateTool}
+                onAddTool={dynamicConfig.addTool}
+                onRemoveTool={dynamicConfig.removeTool}
+              />
+            </McpDetailSection>
+          ) : (
+            <McpDetailSection titleKey="connection">
+              <McpConnectionSection
+                url={customConfig.state.url}
+                authorizationHeaderName={
+                  customConfig.state.authorizationHeaderName
+                }
+                authorizationHeaderToken={
+                  customConfig.state.authorizationHeaderToken
+                }
+                tokens={catalogTokens}
+                tokensLoading={tokensLoading}
+                onFieldChange={customConfig.updateField}
+              />
+            </McpDetailSection>
+          ))}
       </div>
     </div>
   )

@@ -11,6 +11,7 @@
 @import './components/TokenDetailPage.css';
 @import './components/OAuthDetailPage.css';
 @import './components/McpDetailPage.css';
+@import './components/McpServersList.css';
 @import './components/AgentFilterDslEditor.css';
 @import './components/ToolDetailPage.css';
 @import './components/LogCard.css';
