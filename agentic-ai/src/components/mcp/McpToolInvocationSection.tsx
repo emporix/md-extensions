@@ -22,6 +22,7 @@ interface McpToolInvocationSectionProps {
   functionsLoading: boolean
   functionsLoadError?: string | null
   featureDisabled: boolean
+  required?: boolean
   onFunctionIdChange: (value: string) => void
   onMethodChange: (value: McpToolInvocationMethod | string) => void
   onArgsLocationChange: (value: McpToolInvocationArgsLocation | string) => void
@@ -35,6 +36,7 @@ export const McpToolInvocationSection = ({
   functionsLoading,
   functionsLoadError,
   featureDisabled,
+  required = true,
   onFunctionIdChange,
   onMethodChange,
   onArgsLocationChange,
@@ -86,13 +88,13 @@ export const McpToolInvocationSection = ({
         <div className="form-field">
           <label className="field-label">
             {t('mcp_tool_function_id')}
-            <McpRequiredMark />
+            {required ? <McpRequiredMark /> : null}
           </label>
           {showManualFunctionId ? (
             <InputText
               value={functionId}
               onChange={(event) => onFunctionIdChange(event.target.value)}
-              className={`w-full${!functionId.trim() ? ' p-invalid' : ''}`}
+              className={`w-full${required && !functionId.trim() ? ' p-invalid' : ''}`}
               placeholder={t('mcp_tool_function_id_placeholder')}
             />
           ) : (
@@ -100,7 +102,7 @@ export const McpToolInvocationSection = ({
               value={functionId || null}
               options={functionOptions}
               onChange={(event) => onFunctionIdChange(event.value ?? '')}
-              className={`w-full${!functionId.trim() ? ' p-invalid' : ''}`}
+              className={`w-full${required && !functionId.trim() ? ' p-invalid' : ''}`}
               placeholder={t('mcp_tool_function_id_placeholder')}
               filter
               showClear
@@ -112,7 +114,7 @@ export const McpToolInvocationSection = ({
         <div className="form-field">
           <label className="field-label">
             {t('mcp_tool_http_method')}
-            <McpRequiredMark />
+            {required ? <McpRequiredMark /> : null}
           </label>
           <Dropdown
             value={method}

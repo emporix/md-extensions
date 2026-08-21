@@ -47,12 +47,16 @@ export const JsonSchemaTextField = ({
   )
 
   useEffect(() => {
+    if (!required) {
+      setError('')
+      return
+    }
     if (value.trim()) {
       validate(value)
     } else {
       setError('')
     }
-  }, [value, validate])
+  }, [value, validate, required])
 
   const handleFormat = () => {
     try {
@@ -73,13 +77,17 @@ export const JsonSchemaTextField = ({
       <InputTextarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        onBlur={() => validate(value)}
+        onBlur={() => {
+          if (required) {
+            validate(value)
+          }
+        }}
         rows={8}
-        className={`w-full${error ? ' p-invalid' : ''}`}
+        className={`w-full${required && error ? ' p-invalid' : ''}`}
         placeholder={t(placeholderKey)}
         spellCheck={false}
       />
-      {error ? <small className="p-error">{error}</small> : null}
+      {required && error ? <small className="p-error">{error}</small> : null}
       <div className="json-schema-text-field-actions">
         <Button
           type="button"

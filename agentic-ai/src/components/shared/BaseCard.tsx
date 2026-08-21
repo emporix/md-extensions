@@ -24,6 +24,7 @@ export interface BaseCardProps {
   onToggleActive?: (id: string, enabled: boolean) => void | Promise<void>
   onClick?: () => void
   switchDisabled?: boolean
+  switchDisabledTitle?: string
   children?: React.ReactNode
   headerContent?: React.ReactNode
   contentBadges?: React.ReactNode
@@ -42,6 +43,7 @@ const BaseCard: React.FC<BaseCardProps> = ({
   onToggleActive,
   onClick,
   switchDisabled = false,
+  switchDisabledTitle,
   children,
   headerContent,
   contentBadges,
@@ -104,7 +106,10 @@ const BaseCard: React.FC<BaseCardProps> = ({
               </span>
             </div>
           ) : (
-            <div className="switch-with-label">
+            <div
+              className="switch-with-label"
+              title={switchDisabled ? switchDisabledTitle : undefined}
+            >
               <InputSwitch
                 checked={isActive}
                 onChange={(e) => handleToggleActive(e.value)}

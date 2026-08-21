@@ -3,11 +3,13 @@ import { JsonSchemaTextField } from '../shared/JsonSchemaTextField'
 interface McpToolInputSchemaFieldProps {
   value: string
   onChange: (value: string) => void
+  required?: boolean
 }
 
 export const McpToolInputSchemaField = ({
   value,
   onChange,
+  required = true,
 }: McpToolInputSchemaFieldProps) => (
   <JsonSchemaTextField
     value={value}
@@ -16,7 +18,7 @@ export const McpToolInputSchemaField = ({
     placeholderKey="mcp_tool_input_schema_placeholder"
     invalidJsonKey="mcp_tool_input_schema_invalid_json"
     invalidSchemaKey="mcp_tool_input_schema_invalid_schema"
-    required
+    required={required}
     className="mcp-tool-input-schema-field"
   />
 )

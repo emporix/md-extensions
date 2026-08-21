@@ -1,5 +1,6 @@
 import { AgentTemplate, CustomAgent, LocalizedString } from '../types/Agent'
-import { AppState, ImportSummaryState } from '../types/common'
+import { AppState } from '../types/common'
+import { ImportAgentsResult } from '../types/Job'
 import { getLanguagesFromStorage } from '../hooks/useLanguages'
 import { COMMERCE_FILTER_ASSISTANT_I18N_KEYS } from '../utils/agentFilterDslHelpers'
 import { getBundleHelperTemplateIds } from '../utils/agentTemplateBundles'
@@ -372,27 +373,10 @@ export const exportAgents = async (
 export const importAgents = async (
   appState: AppState,
   jsonBody: unknown
-): Promise<{
-  importedAt: string
-  summary: {
-    agents: Array<{ id: string; name: string; state: ImportSummaryState }>
-    tools: Array<{ id: string; name: string; state: ImportSummaryState }>
-    mcpServers: Array<{ id: string; name: string; state: ImportSummaryState }>
-  }
-  message: string
-}> => {
+): Promise<ImportAgentsResult> => {
   const api = getApiClient(appState)
-  return await api.post<{
-    importedAt: string
-    summary: {
-      agents: Array<{ id: string; name: string; state: ImportSummaryState }>
-      tools: Array<{ id: string; name: string; state: ImportSummaryState }>
-      mcpServers: Array<{
-        id: string
-        name: string
-        state: ImportSummaryState
-      }>
-    }
-    message: string
-  }>(`/ai-service/${appState.tenant}/agentic/agents/import`, jsonBody)
+  return await api.post<ImportAgentsResult>(
+    `/ai-service/${appState.tenant}/agentic/agents/import`,
+    jsonBody
+  )
 }

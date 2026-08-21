@@ -48,6 +48,7 @@ export const useDynamicMcpConfig = ({
           mcpServer.tools && mcpServer.tools.length > 0
             ? mcpServer.tools.map((tool) => ({
                 ...tool,
+                enabled: tool.enabled !== false,
                 config: {
                   requiredScopes: tool.config?.requiredScopes ?? [],
                   inputSchema:
@@ -97,6 +98,10 @@ export const useDynamicMcpConfig = ({
   }, [])
 
   const isToolValid = useCallback((tool: McpTool) => {
+    if (tool.enabled === false) {
+      return true
+    }
+
     const name = tool.name.trim()
     const inputSchema = tool.config?.inputSchema?.trim() ?? ''
 
@@ -124,8 +129,13 @@ export const useDynamicMcpConfig = ({
       return false
     }
 
+    const mcpEnabled = mcpServer?.enabled ?? true
+    if (mcpEnabled && !state.tools.some((tool) => tool.enabled !== false)) {
+      return false
+    }
+
     return state.tools.every(isToolValid)
-  }, [isCreating, isToolValid, state.mcpServerId, state.mcpServerName, state.tools])
+  }, [isCreating, isToolValid, mcpServer?.enabled, state.mcpServerId, state.mcpServerName, state.tools])
 
   const handleSave = useCallback(async () => {
     if (!mcpServer || !isFormValid()) {

@@ -54,6 +54,19 @@ const TRANSLATIONS_EN = {
   TO_CREATE_note: 'Items marked as "To be created" need to be added manually.',
   token_required_note:
     'Please make sure that required tokens are provided before enabling the imported entities.',
+  exists: 'Exists',
+  failed: 'Failed',
+  import_details_MISSING_FUNCTION:
+    'Function "{{objectId}}" for tool "{{objectName}}" was not found. Imported tool has been disabled.',
+  import_details_MISSING_TOKEN: 'Token "{{objectId}}" was not found.',
+  import_details_NOT_IMPORTABLE:
+    '"{{objectName}}" cannot be imported. Create Slack/Teams tools manually on this tenant.',
+  import_details_ALREADY_EXISTS:
+    '"{{objectName}}" already exists on this tenant and was skipped.',
+  import_details_AGENT_IMPORTED_DISABLED: 'Agent(s) have been disabled',
+  import_details_IMPORT_FAILED: 'Import failed: {{message}}',
+  import_generic_error: 'Failed to import agent',
+  import_item_id: 'ID: {{id}}',
   agents: 'Agents',
   being_copied: 'Being Copied',
   please_wait: 'Please wait while we copy the agent template...',
@@ -593,6 +606,8 @@ const TRANSLATIONS_EN = {
   mcp_validation_tool_field_required: '{{tool}} {{field}} is required',
   mcp_validation_tool_name_duplicate:
     "Tool names must be unique: '{{name}}'",
+  mcp_validation_enabled_tool_required:
+    'Enable at least one tool before enabling this MCP server.',
   unknown_mcp_server: 'Unknown Server',
   invalid_mcp_configuration: 'Invalid configuration',
   add: 'Add',

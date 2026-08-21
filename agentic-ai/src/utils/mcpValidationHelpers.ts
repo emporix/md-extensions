@@ -17,6 +17,9 @@ const assertRequired = (
 const getToolLabel = (index: number, t: TFunction): string =>
   t('mcp_tool_unnamed', { index: index + 1 })
 
+const hasEnabledDynamicTool = (tools: McpTool[]): boolean =>
+  tools.some((tool) => tool.enabled !== false)
+
 export const validateCustomMcpServer = (
   mcpServer: {
     id?: string
@@ -44,6 +47,10 @@ export const validateCustomMcpServer = (
 }
 
 export const validateMcpTool = (tool: McpTool, index: number, t: TFunction) => {
+  if (tool.enabled === false) {
+    return
+  }
+
   const toolLabel = getToolLabel(index, t)
 
   assertRequired(
@@ -123,10 +130,17 @@ export const validateDynamicMcpServer = (mcpServer: McpServer, t: TFunction) => 
     throw new ValidationError(t('mcp_tool_remove_last_disabled'), 'tools')
   }
 
+  if (mcpServer.enabled !== false && !hasEnabledDynamicTool(tools)) {
+    throw new ValidationError(t('mcp_validation_enabled_tool_required'), 'tools')
+  }
+
   const names = new Set<string>()
   tools.forEach((tool, index) => {
     validateMcpTool(tool, index, t)
     const key = tool.name.trim().toLowerCase()
+    if (!key) {
+      return
+    }
     if (names.has(key)) {
       throw new ValidationError(
         t('mcp_validation_tool_name_duplicate', { name: tool.name.trim() }),
