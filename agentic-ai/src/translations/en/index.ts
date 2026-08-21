@@ -60,7 +60,7 @@ const TRANSLATIONS_EN = {
     'Function "{{objectId}}" for tool "{{objectName}}" was not found. Imported tool has been disabled.',
   import_details_MISSING_TOKEN: 'Token "{{objectId}}" was not found.',
   import_details_NOT_IMPORTABLE:
-    '"{{objectName}}" cannot be imported. Create manually Slack/Teams tools on this tenant.',
+    '"{{objectName}}" cannot be imported. Create Slack/Teams tools manually on this tenant.',
   import_details_ALREADY_EXISTS:
     '"{{objectName}}" already exists on this tenant and was skipped.',
   import_details_AGENT_IMPORTED_DISABLED: 'Agent(s) have been disabled',

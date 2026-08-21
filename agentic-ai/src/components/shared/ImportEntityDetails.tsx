@@ -16,7 +16,7 @@ export const ImportEntityDetails = ({ details }: ImportEntityDetailsProps) => {
   return (
     <ul className="import-entity-details">
       {details.map((detail, index) => (
-        <li key={`${detail.code}-${detail.objectId ?? index}`}>
+        <li key={`${detail.code}-${detail.objectId ?? 'no-object'}-${index}`}>
           {formatImportDetails(t, detail)}
         </li>
       ))}
