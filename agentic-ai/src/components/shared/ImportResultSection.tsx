@@ -56,7 +56,7 @@ export const ImportResultSection = ({
   }
 
   return (
-    <ContentSection icon="pi-download" title={t('import_result')}>
+    <ContentSection icon="pi-download" title={t('import_result')} plain>
       {importResult.summary && (
         <div className="result-summary">
           <div className="summary-title">{t('summary')}</div>
