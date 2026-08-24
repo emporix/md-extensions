@@ -148,7 +148,7 @@ const ReturnsTable = ({ className = '' }: { readonly className?: string }) => {
         dataType: 'date',
         sortable: true,
         showFilterMenu: false,
-        showClearButton: false,
+        showClearButton: true,
         body: (rowData: Return) => (
           <DateValue
             date={rowData.metadata.createdAt}
@@ -157,7 +157,7 @@ const ReturnsTable = ({ className = '' }: { readonly className?: string }) => {
           />
         ),
         filterElement: (options: DataTableColumnFilterElementOptions) => (
-          <DateFilterTemplate filterOptions={options} showTime />
+          <DateFilterTemplate filterOptions={options} />
         ),
       },
       {
@@ -177,7 +177,7 @@ const ReturnsTable = ({ className = '' }: { readonly className?: string }) => {
         dataType: 'date',
         sortable: true,
         showFilterMenu: false,
-        showClearButton: false,
+        showClearButton: true,
         body: (rowData: Return) => (
           <DateValue
             date={rowData.expiryDate}
@@ -186,7 +186,7 @@ const ReturnsTable = ({ className = '' }: { readonly className?: string }) => {
           />
         ),
         filterElement: (options: DataTableColumnFilterElementOptions) => (
-          <DateFilterTemplate filterOptions={options} showTime />
+          <DateFilterTemplate filterOptions={options} />
         ),
       },
       {
@@ -196,7 +196,7 @@ const ReturnsTable = ({ className = '' }: { readonly className?: string }) => {
         filter: true,
         sortable: true,
         showFilterMenu: false,
-        showClearButton: false,
+        showClearButton: true,
         filterElement: (options: DataTableColumnFilterElementOptions) => (
           <Dropdown
             className={styles.statusFilter}
@@ -210,6 +210,16 @@ const ReturnsTable = ({ className = '' }: { readonly className?: string }) => {
               })),
             ]}
             onChange={(e) => options.filterApplyCallback(e.value || undefined)}
+            valueTemplate={(option) =>
+              option?.value ? (
+                <StatusBadge
+                  status={String(option.value)}
+                  color={ReturnStatusColor[option.value as ReturnStatus]}
+                />
+              ) : (
+                <span>{option?.label}</span>
+              )
+            }
             itemTemplate={(option) =>
               option?.value ? (
                 <StatusBadge
