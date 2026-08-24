@@ -40,6 +40,9 @@ const GroupMembers = () => {
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
   const { areManualMutationsRestricted } = useEntraIdGroupsSync()
   const canAddMembers = canManage && !areManualMutationsRestricted
+  const canRemoveMembers =
+    canManage &&
+    (groupType === GroupUserTypes.CUSTOMER || !areManualMutationsRestricted)
   const { paginationParams, onPageCallback } = usePagination(
     undefined,
     true,
@@ -97,7 +100,7 @@ const GroupMembers = () => {
     (member: User) => {
       const actions = [
         {
-          disabled: !canManage,
+          disabled: !canRemoveMembers,
           icon: <BsXCircleFill size={16} />,
           onClick: () => removeMembers([member]),
           tooltip: t(
@@ -107,7 +110,7 @@ const GroupMembers = () => {
       ]
       return <TableActions actions={actions} />
     },
-    [removeMembers, canManage, t]
+    [removeMembers, canRemoveMembers, t]
   )
 
   const membersPagination: DataTablePaginationState = {
@@ -118,7 +121,7 @@ const GroupMembers = () => {
   return (
     <>
       <BatchDeleteButton
-        disabled={selectedMembers.length === 0 || !canManage}
+        disabled={selectedMembers.length === 0 || !canRemoveMembers}
         className={styles.batchActionButton}
         pluralsPath="usersAndGroups.groups.tables.members"
         selected={selectedMembers}

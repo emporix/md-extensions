@@ -9,7 +9,7 @@ export default {
   },
   warnings: {
     entraIdSyncEnabled:
-      'Die Entra-ID-Gruppensynchronisierung ist für diesen Tenant aktiviert. Mitarbeiterzugriff wird in Entra ID verwaltet. Manuelles Anlegen von Benutzern und Zuweisen zu Gruppen ist deaktiviert; Benutzer können weiterhin aus Gruppen entfernt werden.',
+      'Die Entra-ID-Gruppensynchronisierung ist für diesen Tenant aktiviert. Mitarbeiterzugriff wird in Entra ID verwaltet. Manuelles Anlegen von Benutzern sowie Zuweisen zu oder Entfernen aus Gruppen ist deaktiviert.',
   },
   tabs: {
     users: 'Benutzer',

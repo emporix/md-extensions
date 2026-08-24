@@ -9,7 +9,7 @@ export default {
   },
   warnings: {
     entraIdSyncEnabled:
-      'Entra ID groups synchronization is enabled for this tenant. Employee access is managed in Entra ID. Manual user creation and group assignment are disabled; you can still remove users from groups.',
+      'Entra ID groups synchronization is enabled for this tenant. Employee access is managed in Entra ID. Manual user creation and group assignment or removal are disabled.',
   },
   tabs: {
     users: 'Users',
