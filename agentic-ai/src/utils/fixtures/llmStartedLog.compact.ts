@@ -1,0 +1,3 @@
+/** Real backend LLM started log excerpt (escaped newlines as returned by API). */
+export const realLlmStartedLogFixture =
+  "LLM started (run #1) for agent: 'google-complaint-agent' with prompts: ['System: You are the Complaint orchestrator for Emporix B2B commerce.\\n\\n## Specialists\\n\\n1. **Complaint Categorization**\\n2. **Complaint Audit**\\n\\nHuman: Missing invoice for order EON13643\\nAI: [{'name': 'transfer_to_google_complaint_categorization'}]\\nTool: transferred\\nAI: [{'name': 'transfer_back_to_google_complaint_agent'}]\\nTool: Successfully transferred back to google_complaint_agent']"

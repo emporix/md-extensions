@@ -106,6 +106,7 @@ export const ExportResultSection: React.FC<ExportResultSectionProps> = ({
       icon="pi-upload"
       title={t('export_result', 'Export Result')}
       headerAction={downloadButton}
+      plain
     >
       {decodedData && (
         <div className="result-summary">

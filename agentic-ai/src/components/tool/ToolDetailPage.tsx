@@ -7,21 +7,29 @@ import {
   useSearchParams,
 } from 'react-router'
 import { Button } from 'primereact/button'
+import { InputTextarea } from 'primereact/inputtextarea'
 import { Message } from 'primereact/message'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { Tool } from '../../types/Tool'
 import { useAppState } from '../../contexts/AppStateContext'
-import { getTools } from '../../services/toolsService'
+import { getTool, getTools } from '../../services/toolsService'
+import { getEntityLoadErrorMessage } from '../../utils/errorHelpers'
 import { getCustomAgents } from '../../services/agentService'
 import { hasConversations } from '../../services/conversationsService'
 import { CustomAgent } from '../../types/Agent'
-import { createEmptyTool } from '../../utils/toolHelpers'
+import {
+  createEmptyTool,
+  createEmptyTeamsTool,
+  applyTeamsGraphConsentToTool,
+  shouldApplyTeamsGraphConsent,
+} from '../../utils/toolHelpers'
 import { countTeamsToolsForTeam } from '../../utils/teamsRoutingHelpers'
 import { countSlackToolsForTeam } from '../../utils/slackRoutingHelpers'
 import { isCommunicationNativeToolType } from '../../utils/communicationRoutingHelpers'
 import { useToolConfig } from '../../hooks/useToolConfig'
 import { useFeatureToggles } from '../../hooks/useFeatureToggles'
 import { ToolGeneralSection } from './ToolGeneralSection'
+import { ToolRequiredMark } from './ToolRequiredMark'
 import { ToolDetailSection } from './ToolDetailSection'
 import { DetailStatusDot } from '../shared/DetailStatusDot'
 import { SlackToolSection } from './SlackToolSection'
@@ -58,6 +66,7 @@ const ToolDetailPage: React.FC = () => {
   const { toolId } = useParams<{ toolId: string }>()
   const isCreating = location.pathname.endsWith('/add')
   const teamsConsentHandledRef = useRef(false)
+  const createToolSeededRef = useRef(false)
 
   const [tool, setTool] = useState<Tool | null>(null)
   const [availableAgents, setAvailableAgents] = useState<CustomAgent[]>([])
@@ -69,11 +78,27 @@ const ToolDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (isCreating) {
-      setTool(createEmptyTool())
+      if (!createToolSeededRef.current) {
+        createToolSeededRef.current = true
+        const consentStatus = searchParams.get('teamsGraphConsent')
+        const providerTenantId =
+          searchParams.get('providerTenantId')?.trim() || undefined
+        if (consentStatus) {
+          setTool(
+            createEmptyTeamsTool(
+              consentStatus === 'success' ? providerTenantId : undefined
+            )
+          )
+        } else {
+          setTool(createEmptyTool())
+        }
+      }
       setError(null)
       setLoading(false)
       return
     }
+
+    createToolSeededRef.current = false
 
     if (!toolId) {
       setError(t('tool_not_found'))
@@ -88,20 +113,19 @@ const ToolDetailPage: React.FC = () => {
       setLoading(true)
       setError(null)
       try {
-        const tools = await getTools(appState)
+        const fetchedTool = await getTool(appState, toolId)
         if (cancelled) return
 
-        const foundTool = tools.find((item) => item.id === toolId)
-        if (!foundTool) {
-          setError(t('tool_not_found'))
-          setTool(null)
-          return
-        }
-
-        setTool(foundTool)
-      } catch {
+        setTool(fetchedTool)
+      } catch (err) {
         if (!cancelled) {
-          setError(t('error_loading_tool'))
+          setError(
+            getEntityLoadErrorMessage(
+              err,
+              { notFoundKey: 'tool_not_found', errorKey: 'error_loading_tool' },
+              t
+            )
+          )
           setTool(null)
         }
       } finally {
@@ -166,7 +190,7 @@ const ToolDetailPage: React.FC = () => {
     onAgentsUpdated: setAvailableAgents,
   })
 
-  const { toggles } = useFeatureToggles()
+  const { toggles, loading: togglesLoading } = useFeatureToggles()
 
   useEffect(() => {
     if (teamsConsentHandledRef.current) {
@@ -175,6 +199,10 @@ const ToolDetailPage: React.FC = () => {
 
     const consentStatus = searchParams.get('teamsGraphConsent')
     if (!consentStatus) {
+      return
+    }
+
+    if (!isCreating && loading) {
       return
     }
 
@@ -196,10 +224,19 @@ const ToolDetailPage: React.FC = () => {
       restoreTeamsInstallDraft(draft)
     }
 
+    const isTeamsConsentTarget = shouldApplyTeamsGraphConsent({
+      isCreating,
+      toolType: tool?.type,
+      draftToolType: draft?.toolType,
+    })
+
     if (callback.status === 'success') {
-      applyTeamsGraphConsent(callback)
-      showSuccess(t('teams_graph_consent_success'))
-      setActiveTab('settings')
+      if (isTeamsConsentTarget) {
+        applyTeamsGraphConsent(callback)
+        setActiveTab('general')
+        setTool((prev) => applyTeamsGraphConsentToTool(prev, callback, draft))
+        showSuccess(t('teams_graph_consent_success'))
+      }
     } else if (callback.status === 'error') {
       applyTeamsGraphConsent(callback)
       showError(
@@ -216,9 +253,11 @@ const ToolDetailPage: React.FC = () => {
     applyTeamsGraphConsent,
     isCreating,
     loadTeamsInstallDraft,
+    loading,
     location.pathname,
     restoreTeamsInstallDraft,
     searchParams,
+    tool?.type,
     setSearchParams,
     showError,
     showSuccess,
@@ -304,6 +343,14 @@ const ToolDetailPage: React.FC = () => {
       setActiveTab('general')
     }
   }, [activeTab, visibleTabs])
+
+  const settingsLocked = isCreating && !state.toolType
+
+  useEffect(() => {
+    if (settingsLocked && activeTab === 'settings') {
+      setActiveTab('general')
+    }
+  }, [activeTab, settingsLocked])
 
   const teamConfigConflict =
     state.toolType === 'teams' &&
@@ -433,15 +480,31 @@ const ToolDetailPage: React.FC = () => {
               toolId={state.toolId}
               toolName={state.toolName}
               toolType={state.toolType}
-              prompt={state.config.prompt ?? ''}
-              showPrompt={showPrompt}
               isEditing={isEditing}
               msTeamsEnabled={toggles.msTeams}
+              optionsReady={!togglesLoading}
               onFieldChange={updateField}
               onToolTypeChange={(value) => updateField('toolType', value)}
-              onPromptChange={(value) => updateConfig('prompt', value)}
             />
           </ToolDetailSection>
+
+          {showPrompt && (
+            <ToolDetailSection titleKey="prompt">
+              <div className="form-field">
+                <label className="field-label">
+                  {t('prompt')}
+                  <ToolRequiredMark />
+                </label>
+                <InputTextarea
+                  value={state.config.prompt ?? ''}
+                  onChange={(event) => updateConfig('prompt', event.target.value)}
+                  className={`w-full${!(state.config.prompt ?? '').trim() ? ' p-invalid' : ''}`}
+                  placeholder={t('enter_prompt')}
+                  rows={3}
+                />
+              </div>
+            </ToolDetailSection>
+          )}
 
           {state.toolType === 'slack' && isCreating && (
             <ToolDetailSection titleKey="install_slack">
@@ -450,7 +513,7 @@ const ToolDetailPage: React.FC = () => {
           )}
 
           {state.toolType === 'teams' &&
-            (isCreating || !state.config.tenantId?.trim()) && (
+            (isCreating || !state.config.teamId?.trim()) && (
               <ToolDetailSection titleKey="install_teams">
                 <TeamsInstallSection
                   providerTenantId={state.config.tenantId ?? ''}
@@ -461,6 +524,9 @@ const ToolDetailPage: React.FC = () => {
                   onProviderTenantIdChange={(value) =>
                     updateConfig('tenantId', value)
                   }
+                  onInstallReady={(readyToolId) => {
+                    navigate(`/tools/${readyToolId}/edit`, { replace: true })
+                  }}
                 />
               </ToolDetailSection>
             )}
@@ -610,16 +676,22 @@ const ToolDetailPage: React.FC = () => {
 
         <div className="tool-detail-tab-bar-row">
           <nav className="tool-detail-tab-bar" aria-label={t('tool_tabs')}>
-            {visibleTabs.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`tool-detail-tab${activeTab === tab.key ? ' tool-detail-tab-active' : ''}`}
-                onClick={() => setActiveTab(tab.key)}
-              >
-                {t(tab.labelKey)}
-              </button>
-            ))}
+            {visibleTabs.map((tab) => {
+              const isSettingsTab = tab.key === 'settings'
+              const isTabDisabled = isSettingsTab && settingsLocked
+
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  className={`tool-detail-tab${activeTab === tab.key ? ' tool-detail-tab-active' : ''}${isTabDisabled ? ' tool-detail-tab-disabled' : ''}`}
+                  onClick={() => setActiveTab(tab.key)}
+                  disabled={isTabDisabled}
+                >
+                  {t(tab.labelKey)}
+                </button>
+              )
+            })}
           </nav>
         </div>
       </div>

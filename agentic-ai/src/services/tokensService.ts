@@ -12,6 +12,16 @@ export const getTokens = async (appState: AppState): Promise<Token[]> => {
   return await api.get<Token[]>(`/ai-service/${appState.tenant}/agentic/tokens`)
 }
 
+export const getToken = async (
+  appState: AppState,
+  tokenId: string
+): Promise<Token> => {
+  const api = getApiClient(appState)
+  return await api.get<Token>(
+    `/ai-service/${appState.tenant}/agentic/tokens/${tokenId}`
+  )
+}
+
 export const upsertToken = async (
   appState: AppState,
   token: Token

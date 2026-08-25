@@ -148,6 +148,17 @@
   border-bottom-color: var(--color-brand-primary);
 }
 
+.tool-detail-tab:disabled,
+.tool-detail-tab-disabled {
+  color: var(--text-disabled);
+  cursor: not-allowed;
+}
+
+.tool-detail-tab:disabled:hover,
+.tool-detail-tab-disabled:hover {
+  color: var(--text-disabled);
+}
+
 .tool-detail-content {
   display: flex;
   flex-direction: column;
@@ -197,7 +208,7 @@
 .tool-detail-slack-install-description {
   margin: 0;
   font-size: var(--font-size-sm);
-  line-height: 1.285;
+  line-height: var(--line-height-tight);
   color: var(--text-body-secondary);
 }
 
@@ -205,7 +216,7 @@
   margin: var(--space-sm) 0 var(--space-md);
   padding-left: var(--space-lg);
   font-size: var(--font-size-sm);
-  line-height: 1.5;
+  line-height: var(--line-height-base);
   color: var(--text-body-secondary);
 }
 
@@ -218,20 +229,20 @@
 }
 
 .tool-detail-teams-install-team-id-guide-title {
-  font-weight: var(--font-weight-semibold, 600);
-  color: var(--text-body-primary, inherit);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-heading);
 }
 
 .tool-detail-teams-install-team-id-guide-method {
   margin-bottom: var(--space-xs);
-  font-weight: var(--font-weight-medium, 500);
+  font-weight: var(--font-weight-medium);
 }
 
 .tool-detail-teams-install-substeps {
   margin: 0 0 var(--space-sm);
   padding-left: var(--space-lg);
   font-size: var(--font-size-sm);
-  line-height: 1.5;
+  line-height: var(--line-height-base);
   color: var(--text-body-secondary);
 }
 
@@ -244,10 +255,10 @@
   margin-top: var(--space-xs);
   padding: var(--space-sm);
   border-radius: var(--radius-sm);
-  background: var(--surface-secondary, #f3f4f6);
-  font-family: var(--font-family-mono, monospace);
-  font-size: var(--font-size-xs, 0.75rem);
-  line-height: 1.4;
+  background: var(--color-code-bg);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-tight);
   word-break: break-word;
   white-space: pre-wrap;
 }
@@ -260,7 +271,7 @@
 }
 
 .tool-detail-teams-install-actions .p-button-secondary {
-  height: 32px;
+  height: var(--control-height-sm);
 }
 
 .tool-detail-teams-install-action-group {
@@ -273,7 +284,7 @@
 .tool-detail-section-description {
   margin: 0 0 var(--space-md);
   font-size: var(--font-size-sm);
-  line-height: 1.285;
+  line-height: var(--line-height-tight);
   color: var(--text-body-secondary);
 }
 
@@ -289,8 +300,8 @@
 }
 
 .tool-detail-slack-install-btn-icon {
-  width: 20px;
-  height: 20px;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
   flex-shrink: 0;
   display: block;
 }

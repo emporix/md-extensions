@@ -128,34 +128,172 @@ export const toggleNativeTool = (
   return nativeTools.filter((tool) => tool.id !== toolId)
 }
 
-export const isCustomMcpAttached = (
+export const isManagedAgentMcp = (server: McpServer): boolean =>
+  (server.type === 'custom' || server.type === 'dynamic') &&
+  Boolean(server.mcpServer?.id)
+
+export const isManagedMcpAttached = (
   mcpServers: McpServer[],
   serverId: string
 ): boolean =>
   mcpServers.some(
-    (server) => server.type === 'custom' && server.mcpServer?.id === serverId
+    (server) =>
+      isManagedAgentMcp(server) && server.mcpServer?.id === serverId
   )
 
-export const toggleCustomMcpServer = (
+export const getAttachedManagedMcp = (
+  mcpServers: McpServer[],
+  serverId: string
+): McpServer | undefined =>
+  mcpServers.find(
+    (server) =>
+      isManagedAgentMcp(server) && server.mcpServer?.id === serverId
+  )
+
+export const toggleManagedMcpServer = (
   mcpServers: McpServer[],
   serverId: string,
-  checked: boolean
+  checked: boolean,
+  mcpType: 'custom' | 'dynamic'
 ): McpServer[] => {
   if (checked) {
-    if (isCustomMcpAttached(mcpServers, serverId)) {
+    if (isManagedMcpAttached(mcpServers, serverId)) {
       return mcpServers
     }
 
     return [
       ...mcpServers,
-      {
-        type: 'custom' as const,
-        mcpServer: { id: serverId },
-      },
+      mcpType === 'dynamic'
+        ? { type: 'dynamic' as const, mcpServer: { id: serverId } }
+        : { type: 'custom' as const, mcpServer: { id: serverId } },
     ]
   }
 
   return mcpServers.filter(
-    (server) => !(server.type === 'custom' && server.mcpServer?.id === serverId)
+    (server) =>
+      !(isManagedAgentMcp(server) && server.mcpServer?.id === serverId)
   )
 }
+
+export const getSelectedDynamicMcpTools = (
+  mcpServers: McpServer[],
+  serverId: string,
+  enabledToolNames: string[]
+): string[] => {
+  const attached = getAttachedManagedMcp(mcpServers, serverId)
+  if (!attached) {
+    return []
+  }
+  if (attached.tools == null || attached.tools.length === 0) {
+    return enabledToolNames
+  }
+  const enabledSet = new Set(enabledToolNames)
+  return attached.tools.filter((toolName) => enabledSet.has(toolName))
+}
+
+export const formatManagedMcpServerLabel = (
+  serverName: string,
+  toolNames: string[],
+  includeTools: boolean
+): string => {
+  if (!includeTools || toolNames.length === 0) {
+    return serverName
+  }
+  return `${serverName} (${toolNames.join(', ')})`
+}
+
+const sameToolSet = (left: string[], right: string[]): boolean => {
+  if (left.length !== right.length) {
+    return false
+  }
+  const sortedRight = [...right].sort((a, b) => a.localeCompare(b))
+  return [...left]
+    .sort((a, b) => a.localeCompare(b))
+    .every((name, index) => name === sortedRight[index])
+}
+
+export const toggleDynamicMcpTool = (
+  mcpServers: McpServer[],
+  serverId: string,
+  toolName: string,
+  checked: boolean,
+  enabledToolNames: string[]
+): McpServer[] => {
+  const existing = getAttachedManagedMcp(mcpServers, serverId)
+  const currentTools = existing
+    ? getSelectedDynamicMcpTools(mcpServers, serverId, enabledToolNames)
+    : []
+
+  const nextTools = checked
+    ? currentTools.includes(toolName)
+      ? currentTools
+      : [...currentTools, toolName]
+    : currentTools.filter((tool) => tool !== toolName)
+
+  const uniqueSorted = [...new Set(nextTools)].sort((a, b) =>
+    a.localeCompare(b)
+  )
+
+  if (uniqueSorted.length === 0) {
+    return mcpServers
+  }
+
+  const nextEntry: McpServer = sameToolSet(uniqueSorted, enabledToolNames)
+    ? { type: 'dynamic', mcpServer: { id: serverId } }
+    : { type: 'dynamic', mcpServer: { id: serverId }, tools: uniqueSorted }
+
+  if (existing) {
+    return mcpServers.map((server) =>
+      isManagedAgentMcp(server) && server.mcpServer?.id === serverId
+        ? nextEntry
+        : server
+    )
+  }
+
+  return [...mcpServers, nextEntry]
+}
+
+export const hasManagedMcpAttachmentsChanged = (
+  current: McpServer[],
+  next: McpServer[]
+): boolean => {
+  if (current.length !== next.length) {
+    return true
+  }
+  return next.some((server, index) => {
+    const previous = current[index]
+    if (server.type !== previous?.type) {
+      return true
+    }
+    if (server.mcpServer?.id !== previous?.mcpServer?.id) {
+      return true
+    }
+    const nextTools = server.tools ?? []
+    const previousTools = previous?.tools ?? []
+    if (nextTools.length !== previousTools.length) {
+      return true
+    }
+    return nextTools.some((tool, toolIndex) => tool !== previousTools[toolIndex])
+  })
+}
+
+export const normalizeManagedMcpAttachments = (
+  mcpServers: McpServer[],
+  managedMcpServers: { id: string; type?: string }[]
+): McpServer[] =>
+  mcpServers.map((server) => {
+    if (!isManagedAgentMcp(server)) {
+      return server
+    }
+    const mcpType = managedMcpServers.find(
+      (item) => item.id === server.mcpServer?.id
+    )?.type
+    if (mcpType === 'dynamic' && server.type !== 'dynamic') {
+      return { ...server, type: 'dynamic' as const }
+    }
+    if (mcpType === 'custom' && server.type === 'dynamic') {
+      const { tools: _tools, ...rest } = server
+      return { type: 'custom' as const, mcpServer: rest.mcpServer }
+    }
+    return server
+  })

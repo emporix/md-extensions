@@ -1,9 +1,22 @@
 import { AgentTemplate, CustomAgent, LocalizedString } from '../types/Agent'
-import { AppState, ImportSummaryState } from '../types/common'
+import { AppState } from '../types/common'
+import { ImportAgentsResult } from '../types/Job'
 import { getLanguagesFromStorage } from '../hooks/useLanguages'
 import { COMMERCE_FILTER_ASSISTANT_I18N_KEYS } from '../utils/agentFilterDslHelpers'
+import { getBundleHelperTemplateIds } from '../utils/agentTemplateBundles'
 import { JSON_SCHEMA_ASSISTANT_I18N_KEYS } from '../utils/jsonSchemaAssistantHelpers'
+import { LOG_ANALYSIS_ASSISTANT_I18N_KEYS } from '../utils/logAnalysisAssistantHelpers'
 import { ApiClient } from './apiClient'
+
+export class BundleHelperTemplateNotFoundError extends Error {
+  readonly helperTemplateId: string
+
+  constructor(helperTemplateId: string) {
+    super('BundleHelperTemplateNotFoundError')
+    this.name = 'BundleHelperTemplateNotFoundError'
+    this.helperTemplateId = helperTemplateId
+  }
+}
 
 const filterLocalizedString = (
   localizedString: LocalizedString
@@ -43,10 +56,16 @@ export const JSON_SCHEMA_ASSISTANT_TEMPLATE_ID = 'json-schema-assistant'
 
 export const JSON_SCHEMA_ASSISTANT_AGENT_ID = 'json-schema-assistant'
 
+export const LOG_ANALYSIS_ASSISTANT_TEMPLATE_ID = 'log-analysis-assistant'
+
+export const LOG_ANALYSIS_ASSISTANT_AGENT_ID = 'log-analysis-assistant'
+
 export type ChatWithAgentOptions = {
   readonly emptyResponseKey?: string
+  readonly sessionId?: string
   readonly onToken?: (accumulated: string) => void
   readonly onToolActivity?: (toolName: string | null) => void
+  readonly onSessionId?: (sessionId: string) => void
 }
 
 export const chatWithAgent = async (
@@ -56,12 +75,16 @@ export const chatWithAgent = async (
   options: ChatWithAgentOptions = {}
 ): Promise<string> => {
   const emptyResponseKey =
-    options.emptyResponseKey ?? COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse
+    options.emptyResponseKey ??
+    COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse
   const api = getApiClient(appState)
   const body = { agentId, message }
   const stream = api.postSse(
     `/ai-service/${appState.tenant}/agentic/chat-stream`,
-    body
+    body,
+    options.sessionId
+      ? { headers: { 'session-id': options.sessionId } }
+      : undefined
   )
 
   let text = ''
@@ -87,6 +110,9 @@ export const chatWithAgent = async (
     }
 
     if (event.type === 'done') {
+      if (event.sessionId) {
+        options.onSessionId?.(event.sessionId)
+      }
       break
     }
   }
@@ -98,53 +124,61 @@ export const chatWithAgent = async (
   return trimmed
 }
 
-export const createCommerceFilterDslAgent = async (
-  appState: AppState
+type CreateTemplateAgentParams = {
+  readonly templateId: string
+  readonly agentId: string
+  readonly templateNotFoundKey: string
+}
+
+const createTemplateAgent = async (
+  appState: AppState,
+  { templateId, agentId, templateNotFoundKey }: CreateTemplateAgentParams
 ): Promise<{ success: boolean }> => {
   const templates = await getAgentTemplates(appState)
-  const template = templates.find(
-    (t) => t.id === COMMERCE_FILTER_DSL_AGENT_TEMPLATE_ID
-  )
+  const template = templates.find((item) => item.id === templateId)
   if (!template) {
-    throw new Error(COMMERCE_FILTER_ASSISTANT_I18N_KEYS.templateNotFound)
+    throw new Error(templateNotFoundKey)
   }
   const result = await copyTemplate(
     appState,
-    COMMERCE_FILTER_DSL_AGENT_TEMPLATE_ID,
-    COMMERCE_FILTER_DSL_AGENT_ID,
+    templateId,
+    agentId,
     { ...template.name },
     { ...template.description },
     template.userPrompt
   )
-  await patchCustomAgent(appState, COMMERCE_FILTER_DSL_AGENT_ID, [
+  await patchCustomAgent(appState, agentId, [
     { op: 'REPLACE', path: '/enabled', value: true },
   ])
   return result
 }
 
+export const createCommerceFilterDslAgent = async (
+  appState: AppState
+): Promise<{ success: boolean }> =>
+  createTemplateAgent(appState, {
+    templateId: COMMERCE_FILTER_DSL_AGENT_TEMPLATE_ID,
+    agentId: COMMERCE_FILTER_DSL_AGENT_ID,
+    templateNotFoundKey: COMMERCE_FILTER_ASSISTANT_I18N_KEYS.templateNotFound,
+  })
+
 export const createJsonSchemaAssistantAgent = async (
   appState: AppState
-): Promise<{ success: boolean }> => {
-  const templates = await getAgentTemplates(appState)
-  const template = templates.find(
-    (item) => item.id === JSON_SCHEMA_ASSISTANT_TEMPLATE_ID
-  )
-  if (!template) {
-    throw new Error(JSON_SCHEMA_ASSISTANT_I18N_KEYS.templateNotFound)
-  }
-  const result = await copyTemplate(
-    appState,
-    JSON_SCHEMA_ASSISTANT_TEMPLATE_ID,
-    JSON_SCHEMA_ASSISTANT_AGENT_ID,
-    { ...template.name },
-    { ...template.description },
-    template.userPrompt
-  )
-  await patchCustomAgent(appState, JSON_SCHEMA_ASSISTANT_AGENT_ID, [
-    { op: 'REPLACE', path: '/enabled', value: true },
-  ])
-  return result
-}
+): Promise<{ success: boolean }> =>
+  createTemplateAgent(appState, {
+    templateId: JSON_SCHEMA_ASSISTANT_TEMPLATE_ID,
+    agentId: JSON_SCHEMA_ASSISTANT_AGENT_ID,
+    templateNotFoundKey: JSON_SCHEMA_ASSISTANT_I18N_KEYS.templateNotFound,
+  })
+
+export const createLogAnalysisAssistantAgent = async (
+  appState: AppState
+): Promise<{ success: boolean }> =>
+  createTemplateAgent(appState, {
+    templateId: LOG_ANALYSIS_ASSISTANT_TEMPLATE_ID,
+    agentId: LOG_ANALYSIS_ASSISTANT_AGENT_ID,
+    templateNotFoundKey: LOG_ANALYSIS_ASSISTANT_I18N_KEYS.templateNotFound,
+  })
 
 export const getAgentTemplates = async (
   appState: AppState
@@ -161,6 +195,16 @@ export const getCustomAgents = async (
   const api = getApiClient(appState)
   return await api.get<CustomAgent[]>(
     `/ai-service/${appState.tenant}/agentic/agents`
+  )
+}
+
+export const getCustomAgent = async (
+  appState: AppState,
+  agentId: string
+): Promise<CustomAgent> => {
+  const api = getApiClient(appState)
+  return await api.get<CustomAgent>(
+    `/ai-service/${appState.tenant}/agentic/agents/${agentId}`
   )
 }
 
@@ -181,6 +225,59 @@ export const copyTemplate = async (
       description: filterLocalizedString(description),
       userPrompt: userPrompt,
     }
+  )
+}
+
+export const copyTemplateWithBundle = async (
+  appState: AppState,
+  primaryTemplate: AgentTemplate,
+  id: string,
+  name: LocalizedString,
+  description: LocalizedString,
+  userPrompt: string
+): Promise<{ success: boolean }> => {
+  const helperTemplateIds = getBundleHelperTemplateIds(primaryTemplate.id)
+
+  if (helperTemplateIds.length > 0) {
+    const [templates, existingAgents] = await Promise.all([
+      getAgentTemplates(appState),
+      getCustomAgents(appState),
+    ])
+    const existingIds = new Set(existingAgents.map((agent) => agent.id))
+
+    for (const helperTemplateId of helperTemplateIds) {
+      if (existingIds.has(helperTemplateId)) {
+        continue
+      }
+
+      const helperTemplate = templates.find(
+        (template) => template.id === helperTemplateId
+      )
+      if (!helperTemplate) {
+        throw new BundleHelperTemplateNotFoundError(helperTemplateId)
+      }
+
+      await copyTemplate(
+        appState,
+        helperTemplateId,
+        helperTemplateId,
+        { ...helperTemplate.name },
+        { ...helperTemplate.description },
+        helperTemplate.userPrompt
+      )
+      await patchCustomAgent(appState, helperTemplateId, [
+        { op: 'REPLACE', path: '/enabled', value: true },
+      ])
+    }
+  }
+
+  return copyTemplate(
+    appState,
+    primaryTemplate.id,
+    id,
+    name,
+    description,
+    userPrompt
   )
 }
 
@@ -276,27 +373,10 @@ export const exportAgents = async (
 export const importAgents = async (
   appState: AppState,
   jsonBody: unknown
-): Promise<{
-  importedAt: string
-  summary: {
-    agents: Array<{ id: string; name: string; state: ImportSummaryState }>
-    tools: Array<{ id: string; name: string; state: ImportSummaryState }>
-    mcpServers: Array<{ id: string; name: string; state: ImportSummaryState }>
-  }
-  message: string
-}> => {
+): Promise<ImportAgentsResult> => {
   const api = getApiClient(appState)
-  return await api.post<{
-    importedAt: string
-    summary: {
-      agents: Array<{ id: string; name: string; state: ImportSummaryState }>
-      tools: Array<{ id: string; name: string; state: ImportSummaryState }>
-      mcpServers: Array<{
-        id: string
-        name: string
-        state: ImportSummaryState
-      }>
-    }
-    message: string
-  }>(`/ai-service/${appState.tenant}/agentic/agents/import`, jsonBody)
+  return await api.post<ImportAgentsResult>(
+    `/ai-service/${appState.tenant}/agentic/agents/import`,
+    jsonBody
+  )
 }

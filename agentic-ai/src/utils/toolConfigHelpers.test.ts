@@ -97,7 +97,7 @@ describe('isToolFormValid slack config', () => {
     ).toBe(true)
   })
 
-  it('accepts slack tools with empty allowedOperations for backward compatibility', () => {
+  it('rejects slack tools with empty allowedOperations', () => {
     expect(
       isToolFormValid({
         toolName: 'Slack Support',
@@ -109,7 +109,7 @@ describe('isToolFormValid slack config', () => {
         },
         isCreating: false,
       })
-    ).toBe(true)
+    ).toBe(false)
   })
 
   it('requires botToken when creating slack tools', () => {

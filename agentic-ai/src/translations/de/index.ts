@@ -55,6 +55,19 @@ const TRANSLATIONS_DE = {
     'Elemente, die als "Zu erstellen" markiert sind, müssen manuell hinzugefügt werden.',
   token_required_note:
     'Bitte stellen Sie sicher, dass die erforderlichen Tokens bereitgestellt werden, bevor Sie die importierten Entitäten aktivieren.',
+  exists: 'Existiert',
+  failed: 'Fehlgeschlagen',
+  import_details_MISSING_FUNCTION:
+    'Funktion "{{objectId}}" für Tool "{{objectName}}" wurde nicht gefunden. Importiertes Tool wurde deaktiviert.',
+  import_details_MISSING_TOKEN: 'Token "{{objectId}}" wurde nicht gefunden.',
+  import_details_NOT_IMPORTABLE:
+    '"{{objectName}}" kann nicht importiert werden. Erstellen Sie manuell Slack/Teams-Tools auf diesem Mandanten.',
+  import_details_ALREADY_EXISTS:
+    '"{{objectName}}" existiert bereits auf diesem Mandanten und wurde übersprungen.',
+  import_details_AGENT_IMPORTED_DISABLED: 'Agent(en) wurden deaktiviert',
+  import_details_IMPORT_FAILED: 'Import fehlgeschlagen: {{message}}',
+  import_generic_error: 'Agent konnte nicht importiert werden',
+  import_item_id: 'ID: {{id}}',
   agents: 'Agenten',
   being_copied: 'wird kopiert',
   please_wait: 'Bitte warten Sie, während wir die Agentenvorlage kopieren...',
@@ -71,6 +84,11 @@ const TRANSLATIONS_DE = {
   // Add Agent Dialog
   customize_agent_subtitle:
     'Passen Sie Name und Beschreibung an, damit sie besser zu Ihrer Aufgabe passen.',
+  agent_bundle_install_notice:
+    'Beim Installieren dieses Agenten werden zuerst diese Hilfsagenten erstellt: {{names}}.',
+  bundle_helper_template_not_found:
+    'Hilfsagent-Vorlage nicht gefunden: {{templateId}}.',
+  agent_created_successfully: 'Agent erfolgreich erstellt!',
   agent_name: 'Agent Name',
   enter_agent_name: 'Agent Namen eingeben',
   description: 'Beschreibung',
@@ -170,13 +188,13 @@ const TRANSLATIONS_DE = {
   trigger_type_commerce: 'Commerce-Ereignis',
   trigger_type_slack: 'Slack',
   trigger_type_teams: 'Microsoft Teams',
-  support_trigger_types_hint:
-    'Wählen Sie mindestens einen Kanal-Trigger. Bei Teams muss auf der Registerkarte Tools genau ein Teams-Tool zugewiesen sein.',
+  channel_trigger_tool_hint:
+    'Bei Slack- oder Teams-Auswahl muss auf der Registerkarte Tools genau ein passendes natives Tool zugewiesen sein.',
   teams_default_inbound_agent: 'Standard-Eingangsagent',
   teams_default_inbound_agent_tooltip:
-    'Optional. Agent, der die erste eingehende Teams-Nachricht in diesem Team verarbeitet, wenn noch keine Konversation existiert. Beim Speichern werden Teams-Trigger und Tool diesem Agenten zugewiesen. Leer lassen, um Cold-Inbound-Routing zu deaktivieren.',
+    'Optional. Agent, der die erste eingehende Teams-Nachricht in diesem Team verarbeitet, wenn noch keine Konversation existiert. Beim Speichern werden Teams-Trigger und Tool diesem Agenten zugewiesen. Leer lassen, um Routing für Cold-Inbound-Traffic zu deaktivieren.',
   teams_default_inbound_agent_hint:
-    'Leer lassen, um Cold-Inbound-Routing zu deaktivieren.',
+    'Leer lassen, um Routing für Cold-Inbound-Traffic zu deaktivieren.',
   teams_default_inbound_agent_not_found:
     'Ausgewählter Standard-Eingangsagent wurde nicht gefunden. Aktualisieren und erneut versuchen.',
   conversations: 'Konversationen',
@@ -191,7 +209,7 @@ const TRANSLATIONS_DE = {
   not_available: 'k. A.',
   teams_allowed_operations: 'Erlaubte Operationen',
   teams_allowed_operations_hint:
-    'Maximale Operationen, die dieses Teams-Tool bereitstellen darf. Agenten können die Teilmenge pro Zuordnung weiter einschränken.',
+    'Operationen, die dieses Teams-Tool bereitstellen darf. Agenten können die Teilmenge pro Zuordnung weiter einschränken.',
   teams_agent_allowed_operations: 'Erlaubte Aktionen für diesen Agenten',
   teams_agent_allowed_operations_hint:
     'Wählen Sie, welche Teams-Aktionen dieser Agent aufrufen darf. Die Optionen sind durch die Tool-Konfiguration begrenzt.',
@@ -210,7 +228,7 @@ const TRANSLATIONS_DE = {
     'Leer lassen, um Cold-Inbound-Routing zu deaktivieren.',
   slack_allowed_operations: 'Erlaubte Operationen',
   slack_allowed_operations_hint:
-    'Maximale Operationen, die dieses Slack-Tool bereitstellen darf. Agenten können die Teilmenge pro Zuordnung weiter einschränken.',
+    'Operationen, die dieses Slack-Tool bereitstellen darf. Agenten können die Teilmenge pro Zuordnung weiter einschränken.',
   slack_agent_allowed_operations: 'Erlaubte Aktionen für diesen Agenten',
   slack_agent_allowed_operations_hint:
     'Wähle, welche Slack-Aktionen dieser Agent ausführen darf. Optionen sind durch die Tool-Konfiguration begrenzt.',
@@ -257,11 +275,45 @@ const TRANSLATIONS_DE = {
   available_tools_list_heading: 'Verfügbare Tools',
   no_tools_selected: 'Keine Tools ausgewählt',
   selected_tools_count: 'Ausgewählte Tools ({{count}})',
+  selected_mcp_servers_count: 'Ausgewählte MCP-Server ({{count}})',
+  no_mcp_servers_selected: 'Keine MCP-Server ausgewählt',
   custom_mcp_tag: 'Benutzerdefiniertes MCP',
   custom_mcp_servers: 'Benutzerdefinierte MCP-Server',
+  dynamic_mcp_agent_tools: 'Tools für diesen Agenten',
   loading_mcp_servers: 'MCP-Server werden geladen...',
   expand_section: 'Abschnitt erweitern',
   collapse_section: 'Abschnitt einklappen',
+  expand_text: 'Text erweitern',
+  collapse_text: 'Text einklappen',
+  show_all: 'Alle anzeigen',
+  show_less: 'Weniger anzeigen',
+  copy_all_logs: 'Alle Protokolle kopieren',
+  copy_all_logs_to_clipboard: 'Alle Protokolle in die Zwischenablage kopieren',
+  logs_copied_to_clipboard: 'Protokolle in die Zwischenablage kopiert',
+  failed_to_copy_logs: 'Protokolle konnten nicht kopiert werden',
+  analyze_logs: 'Protokolle analysieren',
+  analyze_logs_dialog_title: 'Protokolle analysieren',
+  log_analysis_assistant_checking:
+    'Verfügbarkeit des Hilfsagenten wird geprüft...',
+  log_analysis_assistant_intro:
+    'Nutzen Sie einen dedizierten Hilfsagenten zur Analyse dieser Protokolle. Sie können ihn einmalig aus unseren vordefinierten Vorlagen erstellen.',
+  log_analysis_assistant_enable: 'Hilfsagenten aktivieren',
+  log_analysis_assistant_agent_created: 'Hilfsagent erstellt.',
+  log_analysis_assistant_agent_exists: 'Hilfsagent existiert bereits.',
+  log_analysis_assistant_create_failed:
+    'Hilfsagent konnte nicht erstellt oder aktiviert werden.',
+  log_analysis_assistant_chat_failed:
+    'Der Hilfsagent hat keine verwertbare Antwort geliefert.',
+  log_analysis_assistant_empty_response:
+    'Der Hilfsagent hat eine leere Nachricht zurückgegeben.',
+  log_analysis_assistant_template_not_found:
+    'Die Vorlage für den Protokollanalyse-Hilfsagenten ist für diesen Mandanten nicht verfügbar.',
+  log_analysis_assistant_enable_failed:
+    'Der vorhandene Hilfsagent konnte nicht aktiviert werden.',
+  log_analysis_starting:
+    '{{count}} Protokollnachrichten auf Laufzeitfehler prüfen',
+  log_analysis_chat_placeholder: 'Stellen Sie eine Folgefrage...',
+  send: 'Senden',
   no_tools: 'Keine Tools verfügbar',
   add_new_tool: 'NEUES TOOL HINZUFÜGEN',
   new_tool: 'Neues Tool',
@@ -467,7 +519,6 @@ const TRANSLATIONS_DE = {
 
   // MCP Servers
   mcp_servers: 'MCP-Server',
-  mcp_servers_description: 'Verwalten Sie Ihre Model Context Protocol Server',
   failed_to_load_mcp_servers: 'MCP-Server konnten nicht geladen werden',
   no_mcp_servers: 'Keine MCP-Server verfügbar',
   add_new_mcp_server: 'NEUEN MCP-SERVER HINZUFÜGEN',
@@ -475,8 +526,7 @@ const TRANSLATIONS_DE = {
   new_mcp_server: 'Neuer MCP-Server',
   back_to_mcp_servers: 'Zurück zu MCP-Servern',
   error_loading_mcp_server: 'Fehler beim Laden des MCP-Servers',
-  mcp_detail_subtitle:
-    'MCP-Server-Verbindungseinstellungen für Agenten konfigurieren.',
+  mcp_detail_subtitle: 'MCP-Server-Einstellungen für Agenten konfigurieren.',
   mcp_server_created_successfully: 'MCP-Server erfolgreich erstellt!',
   mcp_server_configuration: 'MCP-Server-Konfiguration',
   mcp_server_id: 'MCP-Server-ID',
@@ -515,6 +565,57 @@ const TRANSLATIONS_DE = {
   mcp_server_disabled: 'Dieser MCP-Server ist derzeit deaktiviert',
   mcp_tools_selected: '{{count}} Tools ausgewählt',
   custom_mcp_server: 'Benutzerdefinierter MCP-Server',
+  dynamic_mcp_server: 'Dynamischer MCP-Server',
+  dynamic_mcp_tag: 'Dynamisches MCP',
+  dynamic_mcp_tools_summary: '{{enabled}} von {{total}} Tools aktiv',
+  dynamic_mcp_no_tools: 'Noch keine Tools konfiguriert.',
+  mcp_server_type: 'MCP-Server-Typ',
+  select_mcp_server_type: 'MCP-Server-Typ auswählen',
+  mcp_tools_count: '{{count}} Tools',
+  mcp_tool_add: 'Tool hinzufügen',
+  mcp_tool_collapse: 'Tool einklappen',
+  mcp_tool_remove: 'Tool entfernen',
+  mcp_tool_remove_last_disabled:
+    'Dynamische MCP-Server müssen mindestens ein Tool enthalten.',
+  mcp_tool_unnamed: 'Tool {{index}}',
+  mcp_tool_name: 'Tool-Name',
+  mcp_tool_name_placeholder: 'Tool-Namen eingeben (ohne Leerzeichen)',
+  mcp_tool_name_no_whitespace:
+    'Der Tool-Name darf keine Leerzeichen enthalten.',
+  mcp_tool_description_placeholder: 'Tool-Beschreibung eingeben',
+  mcp_tool_prompt: 'Tool-Prompt',
+  mcp_tool_prompt_placeholder:
+    'Beschreiben Sie, wann der Agent dieses Tool aufrufen soll',
+  mcp_tool_required_scopes: 'Erforderliche Berechtigungen',
+  mcp_tool_input_schema: 'Input-Schema',
+  mcp_tool_input_schema_placeholder:
+    'JSON Schema als JSON-String eingeben',
+  mcp_tool_input_schema_invalid_json:
+    'Input-Schema muss gültiges JSON sein',
+  mcp_tool_input_schema_invalid_schema:
+    'Input-Schema muss ein gültiges JSON Schema sein',
+  mcp_tool_function_id: 'Cloud-Function',
+  mcp_tool_function_id_placeholder:
+    'Cloud-Function auswählen oder eingeben',
+  mcp_tool_http_method: 'HTTP-Methode',
+  mcp_tool_args_location: 'Argument-Position',
+  mcp_tool_args_location_body: 'Request-Body',
+  mcp_tool_args_location_query: 'Query-String',
+  mcp_tool_functions_feature_disabled:
+    'Cloud Functions sind für diesen Mandanten nicht verfügbar. Cloud-Function manuell eingeben.',
+  mcp_tool_functions_load_error: 'Cloud Functions konnten nicht geladen werden.',
+  mcp_tool_scopes_load_error: 'IAM-Berechtigungen konnten nicht geladen werden.',
+  mcp_validation_mcp_id_required: 'MCP-Server-ID ist erforderlich',
+  mcp_validation_mcp_name_required: 'MCP-Server-Name ist erforderlich',
+  mcp_validation_mcp_url_required: 'MCP-Server-URL ist erforderlich',
+  mcp_validation_mcp_url_invalid: 'MCP-Server-URL muss eine gültige URL sein',
+  mcp_validation_mcp_id_format:
+    'MCP-Server-ID darf nur Buchstaben, Zahlen, Unterstriche und Bindestriche enthalten (1-66 Zeichen)',
+  mcp_validation_tool_field_required: '{{tool}} {{field}} ist erforderlich',
+  mcp_validation_tool_name_duplicate:
+    "Tool-Namen müssen eindeutig sein: '{{name}}'",
+  mcp_validation_enabled_tool_required:
+    'Aktivieren Sie mindestens ein Tool, bevor Sie diesen MCP-Server aktivieren.',
   unknown_mcp_server: 'Unbekannter Server',
   invalid_mcp_configuration: 'Ungültige Konfiguration',
   add: 'Hinzufügen',
@@ -606,38 +707,44 @@ const TRANSLATIONS_DE = {
   install_emporix_teams_ai: 'Emporix Microsoft Teams AI installieren',
   connect_teams: 'Microsoft Teams verbinden',
   teams_install_description:
-    'Richten Sie Emporix AI in Ihrem Microsoft-365-Mandanten ein. Ein Teams-Administrator muss die Emporix-App zuerst im Mandanten-Katalog bereitstellen. Erteilen Sie dann die Graph-Admin-Einwilligung, installieren Sie die App für Benutzer und vervollständigen Sie die Einstellungen.',
+    'Drei Schritte richten Emporix in Microsoft Teams ein. Mandanten-ID und Team-ID werden automatisch gesetzt — kein GUID-Einfügen.',
   grant_teams_graph_consent: 'Graph-Admin-Einwilligung erteilen',
-  teams_graph_consent_tenant_hint:
-    'Azure-AD-Mandanten-ID (Entra ID) des Kunden. Wird für Graph-Admin-Einwilligung und mandantenspezifische Teams-Installationslinks verwendet.',
-  teams_graph_consent_requires_tenant_id:
-    'Geben Sie die Azure-AD-Mandanten-ID ein, bevor Sie die Graph-Admin-Einwilligung erteilen.',
+  teams_connect_requires_consent:
+    'Zuerst Schritt 2 abschließen. Die Mandanten-ID kommt aus der Graph-Admin-Einwilligung.',
+  teams_consent_then_connect_hint:
+    'Beginnen Sie mit Schritt 2 — Microsoft lässt Sie den Kundenmandanten wählen. Danach verbinden und die App einem Team hinzufügen.',
+  teams_consent_tenant_bound:
+    'Mandant gebunden: {{tenantId}}. Weiter mit Schritt 3.',
   teams_graph_consent_url_missing:
     'Graph-Admin-Einwilligung ist im AI-Service nicht konfiguriert.',
   teams_graph_consent_success:
-    'Graph-Admin-Einwilligung erteilt. Öffnen Sie Einstellungen, geben Sie Ihre Team-ID ein und speichern Sie.',
+    'Graph-Admin-Einwilligung erteilt. Weiter mit Microsoft Teams verbinden.',
   teams_graph_consent_error: 'Graph-Admin-Einwilligung fehlgeschlagen',
   teams_graph_consent_unknown:
     'Graph-Admin-Einwilligung lieferte ein unbekanntes Ergebnis',
-  teams_install_requires_tool_id:
-    'Legen Sie auf dem Tab Allgemein zuerst eine Tool-ID fest. Nach der Admin-Einwilligung leitet Microsoft zurück zu diesem Tool-Editor.',
-  teams_install_step_tenant_id:
-    'Geben Sie die Azure-AD-Mandanten-ID des Kunden im Feld oben ein.',
   teams_install_step_org_catalog:
     'Teams-Administrator: Laden Sie das App-Paket unten herunter und laden Sie es im Teams-Admincenter unter Teams-Apps → Apps verwalten hoch. Setzen Sie die App auf Zugelassen und weisen Sie sie bei Bedarf per App-Berechtigungsrichtlinie zu. Nur einmal pro Kundenmandant erforderlich.',
   teams_install_step_graph_consent:
-    'Erteilen Sie die Admin-Einwilligung für die Emporix-Graph-App (erforderlich für ausgehende Zusammenarbeit und Bot-Installation in Gruppenchats). Verwenden Sie unten Graph-Admin-Einwilligung erteilen.',
+    'Erteilen Sie die Admin-Einwilligung für die Emporix-Graph-App (erforderlich für ausgehende Zusammenarbeit und Bot-Installation in Gruppenchats). Verwenden Sie unten Graph-Admin-Einwilligung erteilen — ohne Mandanten-GUID einzugeben.',
   teams_install_step_connect:
-    'Klicken Sie auf Microsoft Teams verbinden, um die Installationsseite im Kundenmandanten zu öffnen. Fügen Sie die App einem Team hinzu (nicht nur für den persönlichen Gebrauch). Schlägt der Link fehl, prüfen Sie, ob die App im Mandanten-Katalog vorhanden ist und die Mandanten-ID stimmt.',
+    'Klicken Sie auf Microsoft Teams verbinden und fügen Sie die App einem Team hinzu (nicht nur persönlich). Emporix erfasst die Team-ID aus der Installation.',
+  teams_install_step_auto_tool:
+    'Nach der Installation öffnet diese Seite das neue Teams-Tool mit bereits gesetzter Mandanten- und Team-ID. Optional Standard-Inbound-Agent konfigurieren.',
+  teams_install_waiting:
+    'Warte darauf, dass die App einem Team hinzugefügt wird… Lassen Sie diesen Tab geöffnet.',
+  teams_install_ready:
+    'Teams-Tool aus der Installation erstellt. Tool wird geöffnet…',
+  teams_install_poll_timeout:
+    'Immer noch keine Teams-Installation. Prüfen Sie, ob die App einem Team hinzugefügt wurde, und verbinden Sie erneut.',
+  teams_install_missing:
+    'Keine ausstehende Teams-Installation für diese Sitzung gefunden. Prüfen Sie die Graph-Einwilligung und verbinden Sie erneut.',
+  teams_install_catalog_missing:
+    'Teams-Installationslink konnte nicht erstellt werden. Prüfen Sie, ob das App-Paket im Mandanten-Katalog ist und die Graph-Admin-Einwilligung erteilt wurde.',
   install_status_pending:
-    'Die Installation bleibt ausstehend, bis die App im Mandanten-Katalog vorhanden ist, ein Benutzer sie installiert hat und der Bot seine erste Aktivität empfangen hat.',
-  teams_install_step_sideload:
-    'Fallback: Laden Sie das Emporix-App-Paket über Teams → Apps → Apps verwalten → Benutzerdefinierte App hochladen hoch (erfordert Richtlinie für benutzerdefinierte Apps).',
-  teams_install_step_settings:
-    'Öffnen Sie den Tab Einstellungen: fügen Sie die Team-ID mithilfe der Anleitung unter dem Feld Team-ID ein, bestätigen Sie die Mandanten-ID, konfigurieren Sie erlaubte Operationen und speichern Sie. Die Team-ID kann nach dem ersten Speichern nicht mehr geändert werden.',
+    'Die Installation ist fertig, wenn jemand die App einem Team hinzufügt und der Bot das Installationsereignis empfängt.',
   teams_install_how_to_find_team_id: 'So ermitteln Sie die Team-ID',
   teams_install_team_id_intro:
-    'Die Team-ID ist die Microsoft-365-Gruppen-ID (GUID) des Zielteams — derselbe Wert wie groupId in einem Teams-Teamlink.',
+    'Die Team-ID ist die Microsoft-365-Gruppen-ID (GUID) des Zielteams — derselbe Wert wie groupId in einem Teams-Teamlink. Bevorzugen Sie Verbinden, damit sie automatisch gesetzt wird.',
   teams_install_team_id_method_teams_app_title: 'Über Microsoft Teams',
   teams_install_team_id_method_teams_app_1:
     'Öffnen Sie Teams und wählen Sie das Zielteam in der Seitenleiste.',
@@ -654,8 +761,7 @@ const TRANSLATIONS_DE = {
     'Beispiel: …?groupId=0efcc002-6001-4a21-991b-8ba10bac0612&tenantId=… — fügen Sie den groupId-Wert als Team-ID ein.',
   teams_install_team_id_team_scope_warning:
     'Die App muss einem Team hinzugefügt werden. Eine reine persönliche Installation hat keine Team-ID.',
-  teams_install_state_id_hint:
-    'Installations-Korrelations-ID: {{id}}. Teilen Sie diese mit dem Support, wenn Sie Hilfe bei der Installation benötigen.',
+  teams_install_state_id_hint: 'Support-Referenz: {{id}}',
   open_teams_apps: 'Teams (Web) öffnen',
   download_teams_app_package: 'App-Paket herunterladen',
   open_teams_admin_center: 'Teams-Admincenter öffnen',
@@ -665,11 +771,11 @@ const TRANSLATIONS_DE = {
   tenant_id: 'Mandanten-ID (AAD)',
   enter_tenant_id: 'Azure AD-Mandanten-ID eingeben',
   teams_team_id_hint:
-    'Microsoft-365-Gruppen-ID (GUID) des Zielteams. Kopieren Sie groupId aus einem Teamlink oder die Gruppen-ID aus dem Teams-Admincenter (siehe So ermitteln Sie die Team-ID unten). Vor dem Speichern prüfen — die Team-ID kann später nicht geändert werden.',
+    'Microsoft-365-Gruppen-ID des Zielteams. Wird automatisch gesetzt, wenn Sie verbinden und die App einem Team hinzufügen. Nach dem Speichern nicht mehr änderbar.',
   teams_team_id_hint_immutable:
     'Die Team-ID kann nach der Erstellung des Tools nicht mehr geändert werden.',
   teams_tenant_id_hint:
-    'Azure-AD-Mandanten-ID aus der Bot-Installationsaktivität (channelData.tenant.id). Erforderlich, um Ihren Microsoft-365-Mandanten an dieses Tool zu binden.',
+    'Azure-AD-Mandanten-ID. Wird nach der Graph-Admin-Einwilligung automatisch gesetzt.',
   teams_tenant_id_hint_immutable:
     'Die Mandanten-ID kann nach der Erstellung des Tools nicht mehr geändert werden.',
 
@@ -789,6 +895,7 @@ const TRANSLATIONS_DE = {
   message: 'Nachricht',
   errors: 'Fehler',
   duration: 'Dauer',
+  duration_seconds: '{{count}} Sek.',
   agent: 'Agent',
   no_messages: 'Keine Nachrichten gefunden',
   result: 'Ergebnis',
@@ -803,8 +910,10 @@ const TRANSLATIONS_DE = {
   agent_type: 'Agent-Typ',
   job_type: 'Job-Typ',
   response: 'Antwort',
+  communication: 'Kommunikation',
+  no_content: 'Kein Inhalt',
   created_at: 'Erstellt am',
-  related_logs: 'Verwandte Protokolle',
+  related_logs: 'Protokolle',
   trigger_agent: 'Auslöser-Agent',
   included_agents: 'Beteiligte Agenten',
   no_logs_found: 'Keine Protokolle gefunden',
@@ -831,6 +940,7 @@ const TRANSLATIONS_DE = {
   filter_by_session_id: 'Nach Sitzungs-ID filtern',
   filter_by_timestamp: 'Nach Zeitstempel filtern',
   filter_by_error_count: 'Nach Fehleranzahl filtern',
+  filter_by_duration: 'Nach Dauer filtern',
   filter_by_started_at: 'Nach Startzeit filtern',
   filter_by_last_activity: 'Nach letzter Aktivität filtern',
   filter_by_severity: 'Nach Schweregrad filtern',

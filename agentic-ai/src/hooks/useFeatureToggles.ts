@@ -7,6 +7,7 @@ import {
 
 const DEFAULT_TOGGLES: AgenticFeatureToggles = {
   msTeams: false,
+  emporixHosting: false,
 }
 
 export const useFeatureToggles = () => {

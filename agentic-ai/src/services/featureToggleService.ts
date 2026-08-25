@@ -7,9 +7,11 @@ export interface FeatureToggleDto {
 
 export interface AgenticFeatureToggles {
   msTeams: boolean
+  emporixHosting: boolean
 }
 
 const MS_TEAMS_FEATURE = 'ms-teams'
+const EMPORIX_HOSTING_FEATURE = 'emporixHosting'
 
 const toggleCacheKey = (appState: AppState): string => appState.tenant
 
@@ -43,14 +45,15 @@ export const getAgenticFeatureToggles = async (
 
   let pending = inFlight.get(key)
   if (!pending) {
-    pending = fetchFeatureEnabled(appState, MS_TEAMS_FEATURE).then(
-      (msTeams) => {
-        const value: AgenticFeatureToggles = { msTeams }
-        resolvedCache.set(key, value)
-        inFlight.delete(key)
-        return value
-      }
-    )
+    pending = Promise.all([
+      fetchFeatureEnabled(appState, MS_TEAMS_FEATURE),
+      fetchFeatureEnabled(appState, EMPORIX_HOSTING_FEATURE),
+    ]).then(([msTeams, emporixHosting]) => {
+      const value: AgenticFeatureToggles = { msTeams, emporixHosting }
+      resolvedCache.set(key, value)
+      inFlight.delete(key)
+      return value
+    })
     inFlight.set(key, pending)
   }
 
@@ -62,6 +65,13 @@ export const isMsTeamsFeatureEnabled = async (
 ): Promise<boolean> => {
   const { msTeams } = await getAgenticFeatureToggles(appState)
   return msTeams
+}
+
+export const isEmporixHostingFeatureEnabled = async (
+  appState: AppState
+): Promise<boolean> => {
+  const { emporixHosting } = await getAgenticFeatureToggles(appState)
+  return emporixHosting
 }
 
 /** Test-only: reset module cache between tests */

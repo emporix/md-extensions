@@ -13,6 +13,10 @@ import { useDeleteConfirmation } from './useDeleteConfirmation'
 import { useUpsertItem } from './useUpsertItem'
 import { useToast } from '../contexts/ToastContext'
 import { ApiClientError } from '../services/apiClient'
+import {
+  getDynamicMcpToolCounts,
+  isDynamicMcpServer,
+} from '../utils/mcpHelpers'
 
 export const useMcp = () => {
   const appState = useAppState()
@@ -56,7 +60,10 @@ export const useMcp = () => {
       setLoading(true)
       setError(null)
       const fetchedMcpServers = await getMcpServers(appState)
-      setMcpServers(fetchedMcpServers)
+      const sortedMcpServers = [...fetchedMcpServers].sort((a, b) =>
+        a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+      )
+      setMcpServers(sortedMcpServers)
     } catch (err) {
       const message = formatApiError(err, t('failed_to_load_mcp_servers'))
       setError(message)
@@ -80,6 +87,15 @@ export const useMcp = () => {
         )
         if (!currentMcpServer) {
           throw new Error(t('mcp_server_not_found'))
+        }
+
+        if (enabled && isDynamicMcpServer(currentMcpServer)) {
+          const { enabled: enabledToolCount } =
+            getDynamicMcpToolCounts(currentMcpServer)
+          if (enabledToolCount === 0) {
+            showError(t('mcp_validation_enabled_tool_required'))
+            return
+          }
         }
 
         setMcpServers((prev) =>
@@ -194,7 +210,7 @@ export const useMcp = () => {
   }, [loadMcpServers])
 
   useEffect(() => {
-    loadMcpServers()
+    void loadMcpServers()
   }, [loadMcpServers])
 
   return {

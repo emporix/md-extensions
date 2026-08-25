@@ -1,5 +1,6 @@
 import { McpServer } from '../types/Mcp'
 import { AppState } from '../types/common'
+import { buildMcpServerUpsertPayload } from '../utils/mcpHelpers'
 import { ApiClient } from './apiClient'
 
 const getApiClient = (appState: AppState): ApiClient => new ApiClient(appState)
@@ -20,18 +21,23 @@ export const getMcpServers = async (
   }
 }
 
+export const getMcpServer = async (
+  appState: AppState,
+  mcpServerId: string
+): Promise<McpServer> => {
+  const api = getApiClient(appState)
+  return await api.get<McpServer>(
+    `/ai-service/${appState.tenant}/agentic/mcp-servers/${mcpServerId}`
+  )
+}
+
 export const upsertMcpServer = async (
   appState: AppState,
   mcpServer: McpServer
 ): Promise<McpServer> => {
   try {
     const api = getApiClient(appState)
-    const payload = {
-      name: mcpServer.name,
-      transport: mcpServer.transport,
-      config: mcpServer.config,
-      enabled: mcpServer.enabled,
-    }
+    const payload = buildMcpServerUpsertPayload(mcpServer)
     const saved = await api.put<McpServer>(
       `/ai-service/${appState.tenant}/agentic/mcp-servers/${mcpServer.id}`,
       payload

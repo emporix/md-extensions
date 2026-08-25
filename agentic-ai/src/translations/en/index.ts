@@ -54,6 +54,19 @@ const TRANSLATIONS_EN = {
   TO_CREATE_note: 'Items marked as "To be created" need to be added manually.',
   token_required_note:
     'Please make sure that required tokens are provided before enabling the imported entities.',
+  exists: 'Exists',
+  failed: 'Failed',
+  import_details_MISSING_FUNCTION:
+    'Function "{{objectId}}" for tool "{{objectName}}" was not found. Imported tool has been disabled.',
+  import_details_MISSING_TOKEN: 'Token "{{objectId}}" was not found.',
+  import_details_NOT_IMPORTABLE:
+    '"{{objectName}}" cannot be imported. Create Slack/Teams tools manually on this tenant.',
+  import_details_ALREADY_EXISTS:
+    '"{{objectName}}" already exists on this tenant and was skipped.',
+  import_details_AGENT_IMPORTED_DISABLED: 'Agent(s) have been disabled',
+  import_details_IMPORT_FAILED: 'Import failed: {{message}}',
+  import_generic_error: 'Failed to import agent',
+  import_item_id: 'ID: {{id}}',
   agents: 'Agents',
   being_copied: 'Being Copied',
   please_wait: 'Please wait while we copy the agent template...',
@@ -65,6 +78,11 @@ const TRANSLATIONS_EN = {
   // Add Agent Dialog
   customize_agent_subtitle:
     'Customize name and description to suit it better to your task.',
+  agent_bundle_install_notice:
+    'Installing this agent also creates these helpers first: {{names}}.',
+  bundle_helper_template_not_found:
+    'Bundle helper template not found: {{templateId}}.',
+  agent_created_successfully: 'Agent created successfully!',
   agent_name: 'Agent Name',
   enter_agent_name: 'Enter agent name',
   description: 'Description',
@@ -169,13 +187,13 @@ const TRANSLATIONS_EN = {
   trigger_type_commerce: 'Commerce Event',
   trigger_type_slack: 'Slack',
   trigger_type_teams: 'Microsoft Teams',
-  support_trigger_types_hint:
-    'Select at least one channel trigger. When Teams is selected, attach exactly one Teams tool on the Tools tab.',
+  channel_trigger_tool_hint:
+    'When Slack or Teams is selected, attach exactly one matching native tool on the Tools tab.',
   teams_default_inbound_agent: 'Default inbound agent',
   teams_default_inbound_agent_tooltip:
-    'Optional. Agent that handles the first inbound Teams message on this team when no conversation exists yet. Saving assigns the Teams trigger and tool to that agent. Clear to disable cold inbound routing.',
+    'Optional. Agent that handles the first inbound Teams message on this team when no conversation exists yet. Saving assigns the Teams trigger and tool to that agent. Clear to disable routing for cold inbound traffic.',
   teams_default_inbound_agent_hint:
-    'Leave empty to disable cold inbound routing.',
+    'Leave empty to disable routing for cold inbound traffic.',
   teams_default_inbound_agent_not_found:
     'Selected default inbound agent was not found. Refresh and try again.',
   conversations: 'Conversations',
@@ -190,7 +208,7 @@ const TRANSLATIONS_EN = {
   not_available: 'N/A',
   teams_allowed_operations: 'Allowed operations',
   teams_allowed_operations_hint:
-    'Maximum operations this Teams tool may expose. Agents can further restrict the subset per attachment.',
+    'Operations this Teams tool is allowed to expose. Agents can further restrict the subset per attachment.',
   teams_agent_allowed_operations: 'Allowed actions for this agent',
   teams_agent_allowed_operations_hint:
     'Choose which Teams actions this agent may call. Options are limited by the tool configuration.',
@@ -209,7 +227,7 @@ const TRANSLATIONS_EN = {
     'Leave empty to disable cold inbound routing.',
   slack_allowed_operations: 'Allowed operations',
   slack_allowed_operations_hint:
-    'Maximum operations this Slack tool may expose. Agents can further restrict the subset per attachment.',
+    'Operations this Slack tool is allowed to expose. Agents can further restrict the subset per attachment.',
   slack_agent_allowed_operations: 'Allowed actions for this agent',
   slack_agent_allowed_operations_hint:
     'Choose which Slack actions this agent may call. Options are limited by the tool configuration.',
@@ -256,11 +274,44 @@ const TRANSLATIONS_EN = {
   available_tools_list_heading: 'Available tools',
   no_tools_selected: 'No Tools Selected',
   selected_tools_count: 'Selected tools ({{count}})',
+  selected_mcp_servers_count: 'Selected MCP servers ({{count}})',
+  no_mcp_servers_selected: 'No MCP servers selected',
   custom_mcp_tag: 'Custom MCP',
   custom_mcp_servers: 'Custom MCP Servers',
+  dynamic_mcp_agent_tools: 'Tools for this agent',
   loading_mcp_servers: 'Loading MCP servers...',
   expand_section: 'Expand section',
   collapse_section: 'Collapse section',
+  expand_text: 'Expand text',
+  collapse_text: 'Collapse text',
+  show_all: 'Show all',
+  show_less: 'Show less',
+  copy_all_logs: 'Copy all logs',
+  copy_all_logs_to_clipboard: 'Copy all logs to clipboard',
+  logs_copied_to_clipboard: 'Logs copied to clipboard',
+  failed_to_copy_logs: 'Failed to copy logs to clipboard',
+  analyze_logs: 'Analyze logs',
+  analyze_logs_dialog_title: 'Analyze Logs',
+  log_analysis_assistant_checking:
+    'Checking whether the helper agent is available...',
+  log_analysis_assistant_intro:
+    'Use a dedicated helper agent to analyze these logs. You can create it once from our predefined templates.',
+  log_analysis_assistant_enable: 'Enable helper agent',
+  log_analysis_assistant_agent_created: 'Helper agent created.',
+  log_analysis_assistant_agent_exists: 'Helper agent already exists.',
+  log_analysis_assistant_create_failed:
+    'Could not create or enable the helper agent.',
+  log_analysis_assistant_chat_failed:
+    'The helper agent did not return a usable response.',
+  log_analysis_assistant_empty_response:
+    'The helper agent returned an empty message.',
+  log_analysis_assistant_template_not_found:
+    'The log analysis helper template is not available for this tenant.',
+  log_analysis_assistant_enable_failed:
+    'Could not enable the existing helper agent.',
+  log_analysis_starting: 'Review {{count}} log messages for runtime failures',
+  log_analysis_chat_placeholder: 'Ask a follow-up question...',
+  send: 'Send',
   no_tools: 'No tools available',
   add_new_tool: 'ADD NEW TOOL',
   new_tool: 'New Tool',
@@ -470,7 +521,7 @@ const TRANSLATIONS_EN = {
   new_mcp_server: 'New MCP Server',
   back_to_mcp_servers: 'Back to MCP servers',
   error_loading_mcp_server: 'Failed to load MCP server',
-  mcp_detail_subtitle: 'Configure MCP server connection settings for agents.',
+  mcp_detail_subtitle: 'Configure MCP server settings for agents.',
   mcp_server_created_successfully: 'MCP Server created successfully!',
   mcp_server_configuration: 'MCP Server Configuration',
   mcp_server_id: 'MCP Server ID',
@@ -509,6 +560,54 @@ const TRANSLATIONS_EN = {
   mcp_server_disabled: 'This MCP server is currently disabled',
   mcp_tools_selected: '{{count}} tools selected',
   custom_mcp_server: 'Custom MCP Server',
+  dynamic_mcp_server: 'Dynamic MCP Server',
+  dynamic_mcp_tag: 'Dynamic MCP',
+  dynamic_mcp_tools_summary: '{{enabled}} of {{total}} tools enabled',
+  dynamic_mcp_no_tools: 'No tools configured yet.',
+  mcp_server_type: 'MCP server type',
+  select_mcp_server_type: 'Select MCP server type',
+  mcp_tools_count: '{{count}} tools',
+  mcp_tool_add: 'Add tool',
+  mcp_tool_collapse: 'Collapse tool',
+  mcp_tool_remove: 'Remove tool',
+  mcp_tool_remove_last_disabled:
+    'Dynamic MCP servers must keep at least one tool.',
+  mcp_tool_unnamed: 'Tool {{index}}',
+  mcp_tool_name: 'Tool name',
+  mcp_tool_name_placeholder: 'Enter tool name (no spaces)',
+  mcp_tool_name_no_whitespace: 'Tool name must not contain whitespace.',
+  mcp_tool_description_placeholder: 'Enter tool description',
+  mcp_tool_prompt: 'Tool prompt',
+  mcp_tool_prompt_placeholder:
+    'Describe when the agent should call this tool',
+  mcp_tool_required_scopes: 'Required scopes',
+  mcp_tool_input_schema: 'Input schema',
+  mcp_tool_input_schema_placeholder:
+    'Enter JSON Schema as a JSON string',
+  mcp_tool_input_schema_invalid_json: 'Input schema must be valid JSON',
+  mcp_tool_input_schema_invalid_schema:
+    'Input schema must be valid JSON Schema',
+  mcp_tool_function_id: 'Cloud Function',
+  mcp_tool_function_id_placeholder: 'Select or enter cloud function',
+  mcp_tool_http_method: 'HTTP method',
+  mcp_tool_args_location: 'Arguments location',
+  mcp_tool_args_location_body: 'Request body',
+  mcp_tool_args_location_query: 'Query string',
+  mcp_tool_functions_feature_disabled:
+    'Cloud functions are unavailable for this tenant. Enter the function ID manually.',
+  mcp_tool_functions_load_error: 'Failed to load cloud functions.',
+  mcp_tool_scopes_load_error: 'Failed to load IAM scopes.',
+  mcp_validation_mcp_id_required: 'MCP Server ID is required',
+  mcp_validation_mcp_name_required: 'MCP Server name is required',
+  mcp_validation_mcp_url_required: 'MCP Server URL is required',
+  mcp_validation_mcp_url_invalid: 'MCP Server URL must be a valid URL',
+  mcp_validation_mcp_id_format:
+    'MCP Server ID must contain only letters, numbers, underscores, and hyphens (1-66 characters)',
+  mcp_validation_tool_field_required: '{{tool}} {{field}} is required',
+  mcp_validation_tool_name_duplicate:
+    "Tool names must be unique: '{{name}}'",
+  mcp_validation_enabled_tool_required:
+    'Enable at least one tool before enabling this MCP server.',
   unknown_mcp_server: 'Unknown Server',
   invalid_mcp_configuration: 'Invalid configuration',
   add: 'Add',
@@ -600,37 +699,42 @@ const TRANSLATIONS_EN = {
   install_emporix_teams_ai: 'Install Emporix Microsoft Teams AI',
   connect_teams: 'Connect Microsoft Teams',
   teams_install_description:
-    'Set up Emporix AI in your Microsoft 365 tenant. A Teams admin must add the Emporix app to your tenant catalog first. Then grant Graph admin consent, install the app for users, and complete Settings.',
+    'Three actions set up Emporix in Microsoft Teams. Tenant ID and Team ID are filled automatically — no GUID paste.',
   grant_teams_graph_consent: 'Grant Graph admin consent',
-  teams_graph_consent_tenant_hint:
-    'Customer Azure AD (Entra ID) tenant ID. Used for Graph admin consent and tenant-scoped Teams install links.',
-  teams_graph_consent_requires_tenant_id:
-    'Enter the Azure AD tenant ID before granting Graph admin consent.',
+  teams_connect_requires_consent:
+    'Complete step 2 first. Tenant ID is filled from Graph admin consent.',
+  teams_consent_then_connect_hint:
+    'Start with step 2 — Microsoft asks you to pick the customer tenant. Then connect and add the app to a team.',
+  teams_consent_tenant_bound:
+    'Tenant bound: {{tenantId}}. Continue with step 3.',
   teams_graph_consent_url_missing:
     'Graph admin consent is not configured on the AI service.',
   teams_graph_consent_success:
-    'Graph admin consent granted. Open Settings and enter your Team ID, then save.',
+    'Graph admin consent granted. Continue with Connect Microsoft Teams.',
   teams_graph_consent_error: 'Graph admin consent failed',
   teams_graph_consent_unknown: 'Graph admin consent returned an unknown result',
-  teams_install_requires_tool_id:
-    'Set a Tool ID on the General tab before starting install steps. Microsoft redirects back to this tool editor after admin consent.',
-  teams_install_step_tenant_id:
-    'Enter the customer Azure AD tenant ID in the field above.',
   teams_install_step_org_catalog:
     'Teams admin: download the app package below, then upload it in Teams Admin Center → Teams apps → Manage apps. Set the app to Allowed and assign it via app permission policy if required. Only needed once per customer tenant.',
   teams_install_step_graph_consent:
-    'Grant admin consent for the Emporix Graph app (required for outbound collaboration and group chat bot installation). Use Grant Graph admin consent below.',
+    'Grant admin consent for the Emporix Graph app (required for outbound collaboration and group chat bot installation). Use Grant Graph admin consent below — no tenant GUID typing.',
   teams_install_step_connect:
-    'Click Connect Microsoft Teams to open the install page in the customer tenant. When installing, add the app to a team (not personal use only). If the link fails, confirm the app is in the tenant catalog and the tenant ID is correct.',
+    'Click Connect Microsoft Teams, then add the app to a team (not personal use only). Emporix captures Team ID from the install.',
+  teams_install_step_auto_tool:
+    'When install completes, this page opens the new Teams tool with Tenant ID and Team ID already set. Configure the default inbound agent if needed, then save any extra settings.',
+  teams_install_waiting:
+    'Waiting for the app to be added to a team… Keep this tab open.',
+  teams_install_ready: 'Teams tool created from the install. Opening the tool…',
+  teams_install_poll_timeout:
+    'Still waiting for Teams install. Confirm the app was added to a team, then try Connect again.',
+  teams_install_missing:
+    'No pending Teams install found for this session. Confirm Graph consent, then try Connect again.',
+  teams_install_catalog_missing:
+    'Could not build the Teams install link. Confirm the app package is in the tenant catalog and Graph admin consent succeeded.',
   install_status_pending:
-    'Installation stays pending until the app is in your tenant catalog, a user has installed it, and the bot has received its first activity.',
-  teams_install_step_sideload:
-    'Fallback: upload the Emporix app package via Teams → Apps → Manage your apps → Upload a custom app (requires custom-app upload policy).',
-  teams_install_step_settings:
-    'Open the Settings tab: paste the Team ID using the guide under the Team ID field, confirm Tenant ID, configure allowed operations, then save. Team ID cannot be changed after the first save.',
+    'Installation finishes when someone adds the app to a team and the bot receives the install event.',
   teams_install_how_to_find_team_id: 'How to find Team ID',
   teams_install_team_id_intro:
-    'Team ID is the Microsoft 365 Group ID (GUID) of the target Teams team—the same value as groupId in a Teams team link.',
+    'Team ID is the Microsoft 365 Group ID (GUID) of the target Teams team—the same value as groupId in a Teams team link. Prefer Connect install so this is filled automatically.',
   teams_install_team_id_method_teams_app_title: 'From Microsoft Teams',
   teams_install_team_id_method_teams_app_1:
     'Open Teams and select the target team in the sidebar.',
@@ -647,8 +751,7 @@ const TRANSLATIONS_EN = {
     'Example: …?groupId=0efcc002-6001-4a21-991b-8ba10bac0612&tenantId=… — paste the groupId value as Team ID.',
   teams_install_team_id_team_scope_warning:
     'The app must be added to a team. Personal-only installation has no Team ID.',
-  teams_install_state_id_hint:
-    'Install correlation ID: {{id}}. Share this with support if you need help with installation.',
+  teams_install_state_id_hint: 'Support reference: {{id}}',
   open_teams_apps: 'Open Teams (web)',
   download_teams_app_package: 'Download app package',
   open_teams_admin_center: 'Open Teams Admin Center',
@@ -658,11 +761,11 @@ const TRANSLATIONS_EN = {
   tenant_id: 'Tenant ID (AAD)',
   enter_tenant_id: 'Enter Azure AD tenant ID',
   teams_team_id_hint:
-    'Microsoft 365 Group ID (GUID) of the target Teams team. Copy groupId from a team link or Group ID from Teams Admin Center (see How to find Team ID below). Verify before saving—Team ID cannot be changed later.',
+    'Microsoft 365 Group ID of the target team. Filled automatically when you Connect and add the app to a team. Cannot be changed after save.',
   teams_team_id_hint_immutable:
     'Team ID cannot be changed after the tool is created.',
   teams_tenant_id_hint:
-    'Azure AD tenant ID from bot install activity (channelData.tenant.id). Required to bind your Microsoft 365 tenant to this tool.',
+    'Azure AD tenant ID. Filled automatically after Graph admin consent.',
   teams_tenant_id_hint_immutable:
     'Tenant ID cannot be changed after the tool is created.',
 
@@ -782,6 +885,7 @@ const TRANSLATIONS_EN = {
   message: 'Message',
   errors: 'errors',
   duration: 'Duration',
+  duration_seconds: '{{count}} sec',
   agent: 'Agent',
   no_messages: 'No messages found',
   result: 'Result',
@@ -795,8 +899,10 @@ const TRANSLATIONS_EN = {
   agent_type: 'Agent Type',
   job_type: 'Job Type',
   response: 'Response',
+  communication: 'Communication',
+  no_content: 'No content',
   created_at: 'Created At',
-  related_logs: 'Related Logs',
+  related_logs: 'Logs',
   trigger_agent: 'Trigger Agent',
   included_agents: 'Included Agents',
   started: 'Started At',
@@ -824,6 +930,7 @@ const TRANSLATIONS_EN = {
   filter_by_session_id: 'Filter by Session ID',
   filter_by_timestamp: 'Filter by Timestamp',
   filter_by_error_count: 'Filter by Error Count',
+  filter_by_duration: 'Filter by Duration',
   filter_by_started_at: 'Filter by Started At',
   filter_by_last_activity: 'Filter by Last Activity',
   filter_by_severity: 'Filter by Severity',

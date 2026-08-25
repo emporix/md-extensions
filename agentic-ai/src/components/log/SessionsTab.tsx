@@ -1,6 +1,5 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation } from 'react-router'
 import {
   DataTable,
   DataTableFilterMeta,
@@ -31,11 +30,7 @@ interface SessionsTabProps {
   changePage: (pageNumber: number) => void
   changePageSize: (pageSize: number) => void
   updateFilters: (filters: Record<string, string>) => void
-  sortSessions: (
-    sortBy: string,
-    sortOrder: 'ASC' | 'DESC',
-    agentId: string
-  ) => void
+  sortSessions: (sortBy: string, sortOrder: 'ASC' | 'DESC') => void
 }
 
 const SessionsTab: React.FC<SessionsTabProps> = ({
@@ -52,7 +47,6 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
   sortSessions,
 }) => {
   const { t } = useTranslation()
-  const location = useLocation()
   const [sortField, setSortField] = useState<string>('metadata.modifiedAt')
   const [sortOrder, setSortOrder] = useState<1 | -1>(-1)
 
@@ -107,12 +101,9 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
       setSortField(newSortField)
       setSortOrder(newSortOrder)
 
-      const urlParams = new URLSearchParams(location.search)
-      const agentIdParam = urlParams.get('agentId') || ''
-
-      sortSessions(apiField, apiOrder, agentIdParam)
+      sortSessions(apiField, apiOrder)
     },
-    [sortSessions, sortField, sortOrder, location.search]
+    [sortSessions, sortField, sortOrder]
   )
 
   useEffect(() => {

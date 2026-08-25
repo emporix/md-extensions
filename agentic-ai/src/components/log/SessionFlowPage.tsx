@@ -8,10 +8,98 @@ import { Button } from 'primereact/button'
 import { useAppState } from '../../contexts/AppStateContext'
 import { BasePage } from '../shared/BasePage'
 import { SeverityBadge } from '../shared/SeverityBadge'
+import {
+  CollapsibleText,
+  CollapsibleTextToggle,
+  useCollapsibleText,
+} from '../shared/CollapsibleText'
 import { useSessionFlow } from '../../hooks/useSessionFlow'
 import { LogService } from '../../services/logService'
+import { normalizeEscapedNewlines } from '../../utils/formatHelpers'
 import '../../styles/components/SessionFlowPage.css'
 import { LogMessage } from '../../types/Log'
+
+const SESSION_MESSAGE_MAX_LINES = 5
+
+type TimelineFlowItemData = {
+  status: string
+  date: string
+  message: string
+  agentId: string
+  agentColor?: string
+  logId: string
+  messageTimestamp: string
+}
+
+type TimelineFlowItemProps = {
+  readonly item: TimelineFlowItemData
+  readonly onClick: () => void
+}
+
+const TimelineFlowItem = ({ item, onClick }: TimelineFlowItemProps) => {
+  const normalizedMessage = normalizeEscapedNewlines(item.message)
+  const collapsible = useCollapsibleText(
+    normalizedMessage,
+    SESSION_MESSAGE_MAX_LINES
+  )
+  const hasToggle = collapsible.showToggle
+
+  const handleItemClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement
+    if (target.closest('.collapsible-text-toggle, .timeline-header-actions')) {
+      return
+    }
+    onClick()
+  }
+
+  const stopActionPropagation = (event: React.SyntheticEvent) => {
+    event.stopPropagation()
+  }
+
+  return (
+    <div
+      className="timeline-item timeline-item-interactive"
+      style={{
+        background: item.agentColor || '#fff',
+        borderLeft: `4px solid ${item.agentColor ? 'rgba(0,0,0,0.1)' : '#e5e7eb'}`,
+      }}
+      onClick={handleItemClick}
+    >
+      <div className="timeline-header">
+        <strong>
+          {item.date} ({item.agentId})
+        </strong>
+        <div
+          className="timeline-header-actions"
+          onClick={stopActionPropagation}
+          onMouseDown={stopActionPropagation}
+          onPointerDown={stopActionPropagation}
+        >
+          <SeverityBadge severity={item.status} />
+        </div>
+      </div>
+      <div
+        className={`timeline-message-body${hasToggle ? ' timeline-message-body--collapsible' : ''}`.trim()}
+      >
+        <CollapsibleText
+          as="div"
+          content={normalizedMessage}
+          className="timeline-message"
+          isExpanded={collapsible.isExpanded}
+          textRef={collapsible.textRef}
+          collapsedStyle={collapsible.collapsedStyle}
+        />
+        <CollapsibleTextToggle
+          isExpanded={collapsible.isExpanded}
+          onToggle={collapsible.toggle}
+          visible={hasToggle}
+          showLabel
+          className="timeline-message-toggle"
+        />
+      </div>
+    </div>
+  )
+}
 
 const SessionFlowPage: React.FC = () => {
   const appState = useAppState()
@@ -196,8 +284,8 @@ const SessionFlowPage: React.FC = () => {
     <BasePage
       loading={loading}
       error={error}
-      title={`${t('session', 'Session')} - ${sessionId}`}
-      backButtonLabel={t('back_to_sessions', 'Back to Sessions')}
+      title={`${t('session')} - ${sessionId}`}
+      backButtonLabel={t('back_to_sessions')}
       onBack={handleBackToLogs}
       className="session-flow"
     >
@@ -209,7 +297,7 @@ const SessionFlowPage: React.FC = () => {
           >
             <i className="pi pi-filter agent-filter-collapsed-icon"></i>
             <div className="agent-filter-collapsed-text">
-              {t('agent_filter', 'Agent Filter')}
+              {t('agent_filter')}
             </div>
             <span className="agent-filter-collapsed-badge">
               {selectedAgents.size}
@@ -222,9 +310,7 @@ const SessionFlowPage: React.FC = () => {
             <div className="agent-filter-header">
               <div className="agent-filter-title-container">
                 <i className="pi pi-filter agent-filter-title-icon"></i>
-                <h3 className="agent-filter-title">
-                  {t('agent_filter', 'Agent Filter')}
-                </h3>
+                <h3 className="agent-filter-title">{t('agent_filter')}</h3>
               </div>
               <Button
                 icon="pi pi-times"
@@ -238,17 +324,15 @@ const SessionFlowPage: React.FC = () => {
               <InputText
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={t('search_agents', 'Search agents...')}
+                placeholder={t('search_agents')}
                 className="agent-filter-search"
               />
             </div>
 
             <div className="agent-filter-stats-header">
-              <span className="agent-filter-stats-label">
-                {t('agents', 'Agents')}
-              </span>
+              <span className="agent-filter-stats-label">{t('agents')}</span>
               <span className="agent-filter-stats-badge">
-                {selectedAgents.size} {t('of', 'of')} {agentStats.length}
+                {selectedAgents.size} {t('of')} {agentStats.length}
               </span>
             </div>
 
@@ -294,39 +378,28 @@ const SessionFlowPage: React.FC = () => {
             {loading ? (
               <div className="loading-state">
                 <i className="pi pi-spin pi-spinner loading-spinner"></i>
-                <div>{t('loading_logs', 'Loading logs...')}</div>
+                <div>{t('loading_logs')}</div>
               </div>
             ) : items.length === 0 ? (
               <div className="empty-state">
                 <i className="pi pi-calendar empty-state-icon"></i>
                 <div>
                   {selectedAgents.size === 0
-                    ? t('no_agents_selected', 'No agents selected')
-                    : t('no_logs_found', 'No logs found')}
+                    ? t('no_agents_selected')
+                    : t('no_logs_found')}
                 </div>
               </div>
             ) : (
               <Timeline
                 value={items}
                 content={(item) => (
-                  <div
-                    className="timeline-item timeline-item-interactive"
-                    style={{
-                      background: item.agentColor || '#fff',
-                      borderLeft: `4px solid ${item.agentColor ? 'rgba(0,0,0,0.1)' : '#e5e7eb'}`,
-                    }}
+                  <TimelineFlowItem
+                    key={item.logId}
+                    item={item}
                     onClick={() =>
                       handleFlowLogClick(item.logId, item.messageTimestamp)
                     }
-                  >
-                    <div className="timeline-header">
-                      <strong>
-                        {item.date} ({item.agentId})
-                      </strong>
-                      <SeverityBadge severity={item.status} />
-                    </div>
-                    <div className="timeline-message">{item.message}</div>
-                  </div>
+                  />
                 )}
                 marker={(item) => (
                   <div

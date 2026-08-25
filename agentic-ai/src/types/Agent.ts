@@ -1,9 +1,8 @@
 export interface McpServer {
-  type: 'predefined' | 'custom'
-  domain?: string // For predefined servers
-  tools?: string[] // For predefined servers
+  type: 'predefined' | 'custom' | 'dynamic'
+  domain?: string
+  tools?: string[]
   mcpServer?: {
-    // For custom servers (references MCP management)
     id: string
   }
 }

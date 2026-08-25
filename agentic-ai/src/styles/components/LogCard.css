@@ -115,6 +115,9 @@
 
 .log-messages-datatable,
 .unified-logs-datatable {
+  --log-row-collapsed-min-height: calc(
+    (0.8rem * var(--line-height-tight)) + var(--space-xs) + var(--font-size-sm)
+  );
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
 }
@@ -132,6 +135,8 @@
 
 .log-messages-datatable .p-datatable-scrollable-body,
 .unified-logs-datatable .p-datatable-scrollable-body {
+  position: relative;
+  z-index: 0;
   overflow-y: auto !important;
   overflow-x: hidden;
 }
@@ -139,6 +144,18 @@
 .log-messages-datatable .p-datatable-scrollable-wrapper,
 .unified-logs-datatable .p-datatable-scrollable-wrapper {
   position: relative;
+}
+
+.log-messages-datatable .p-datatable-scrollable-header,
+.unified-logs-datatable .p-datatable-scrollable-header {
+  position: relative;
+  z-index: 2;
+  background: var(--bg-secondary);
+}
+
+.log-messages-datatable .p-datatable-scrollable-header .p-datatable-thead > tr > th,
+.unified-logs-datatable .p-datatable-scrollable-header .p-datatable-thead > tr > th {
+  background: var(--bg-secondary);
 }
 
 .log-messages-datatable .p-datatable-scrollable-body::-webkit-scrollbar,
@@ -210,13 +227,25 @@
 .unified-logs-datatable .p-datatable-tbody > tr td {
   border-bottom: none;
   border-top: none;
-  vertical-align: top;
+  /* Override PrimeReact / browser td default (vertical-align: middle) */
+  vertical-align: top !important;
+}
+
+.log-messages-datatable.p-datatable .p-datatable-tbody > tr > td.col-severity,
+.log-messages-datatable.p-datatable .p-datatable-tbody > tr > td.col-timestamp,
+.log-messages-datatable.p-datatable .p-datatable-tbody > tr > td.col-agent,
+.unified-logs-datatable.p-datatable .p-datatable-tbody > tr > td.col-severity,
+.unified-logs-datatable.p-datatable .p-datatable-tbody > tr > td.col-timestamp,
+.unified-logs-datatable.p-datatable .p-datatable-tbody > tr > td.col-agent {
+  display: table-cell !important;
+  vertical-align: top !important;
 }
 
 .log-messages-datatable .p-datatable-scrollable-body table tbody tr td,
 .unified-logs-datatable .p-datatable-scrollable-body table tbody tr td {
   border-bottom: none;
   border-top: none;
+  vertical-align: top !important;
 }
 
 .log-messages-datatable .p-datatable-tbody > tr:hover,
@@ -224,16 +253,157 @@
   background: var(--bg-hover);
 }
 
+/* Communication panel (Message | Response) */
+.communication-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.communication-panel {
+  height: 215px;
+}
+
+.communication-panel-columns {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-md);
+  height: 100%;
+  min-height: 0;
+}
+
+.communication-panel-column {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+  min-height: 0;
+  padding: 0 var(--space-sm);
+}
+
+.communication-panel-column-title {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--font-size-base);
+  color: var(--grey-8);
+}
+
+.communication-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.communication-panel-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-tight);
+  color: var(--grey-8);
+}
+
+.communication-panel-empty {
+  font-size: var(--font-size-sm);
+  line-height: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.communication-panel-divider {
+  flex-shrink: 0;
+  width: 1px;
+  align-self: stretch;
+  background: var(--grey-4);
+}
+
+.unified-logs-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.unified-logs-section-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+.unified-logs-copy-all,
+.unified-logs-analyze {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.unified-logs-analyze {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.unified-logs-analyze-icon {
+  width: var(--space-lg);
+  height: var(--space-lg);
+}
+
+.log-meta-cell {
+  display: flex;
+  align-items: center;
+  min-height: var(--log-row-collapsed-min-height);
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .log-message-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--space-xs);
   max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: var(--log-row-collapsed-min-height);
+}
+
+.log-message-content--collapsible {
+  cursor: pointer;
+  justify-content: flex-start;
+}
+
+.log-message-toggle {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin: 0;
+  padding: 0;
 }
 
 .log-message-text {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
   word-break: break-word;
   white-space: pre-wrap;
   font-family: var(--font-mono);
   font-size: 0.8rem;
-  line-height: 1.4;
+  line-height: var(--line-height-tight);
+}
+
+.log-message-highlight {
+  background: var(--color-yellow-200);
+  color: inherit;
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+.log-messages-datatable .p-datatable-tbody > tr td.col-message,
+.unified-logs-datatable .p-datatable-tbody > tr td.col-message {
+  overflow: visible;
 }
 
 /* ========================================
@@ -288,6 +458,33 @@
 @media (max-width: 768px) {
   .log-details-info {
     grid-template-columns: 1fr;
+  }
+
+  .details-info-columns {
+    flex-direction: column;
+  }
+
+  .details-info-divider {
+    width: 100%;
+    height: 1px;
+  }
+
+  .communication-panel {
+    height: auto;
+    min-height: 215px;
+  }
+
+  .communication-panel-columns {
+    flex-direction: column;
+  }
+
+  .communication-panel-divider {
+    width: 100%;
+    height: 1px;
+  }
+
+  .communication-panel-body {
+    max-height: 160px;
   }
   
   .log-meta-item {

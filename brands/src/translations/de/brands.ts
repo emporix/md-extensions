@@ -9,7 +9,7 @@ export default {
       actions: 'Aktionen',
     },
     filters: {
-      searchByName: 'Nach Namen suchen',
+      name: 'Nach Namen suchen',
     },
   },
   addBrand: 'Neue Marke hinzufügen',
