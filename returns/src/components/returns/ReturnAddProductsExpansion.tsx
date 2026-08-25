@@ -18,6 +18,10 @@ interface ReturnAddProductsExpansionProps {
   readonly onSelect: (orderId: string, entries: ReturnEntry[]) => unknown
 }
 
+const stopRowEvent = (event: { stopPropagation: () => void }) => {
+  event.stopPropagation()
+}
+
 const ReturnAddProductsExpansion = ({
   order,
   onSelect,
@@ -63,23 +67,29 @@ const ReturnAddProductsExpansion = ({
         field: 'reason.code',
         hidden: readonly,
         body: (entry: ReturnEntry) => {
-          if (!selectedEntries.some((e) => e.id === entry.id)) {
+          const selected = selectedEntries.find((item) => item.id === entry.id)
+          if (!selected) {
             return '--'
           }
           return (
-            <InputText
-              value={entry.reason?.code ?? ''}
-              onChange={(e) => {
-                const next = e.target.value
-                setSelectedEntries((prev) =>
-                  prev.map((item) =>
-                    item.id === entry.id
-                      ? { ...item, reason: { ...item.reason, code: next } }
-                      : item
+            <div onClick={stopRowEvent} onKeyDown={stopRowEvent}>
+              <InputText
+                value={selected.reason?.code ?? ''}
+                onChange={(e) => {
+                  const next = e.target.value
+                  setSelectedEntries((prev) =>
+                    prev.map((item) =>
+                      item.id === entry.id
+                        ? {
+                            ...item,
+                            reason: { ...item.reason, code: next },
+                          }
+                        : item
+                    )
                   )
-                )
-              }}
-            />
+                }}
+              />
+            </div>
           )
         },
       },
@@ -89,23 +99,29 @@ const ReturnAddProductsExpansion = ({
         field: 'reason.details',
         hidden: readonly,
         body: (entry: ReturnEntry) => {
-          if (!selectedEntries.some((e) => e.id === entry.id)) {
+          const selected = selectedEntries.find((item) => item.id === entry.id)
+          if (!selected) {
             return '--'
           }
           return (
-            <InputText
-              value={entry.reason?.details ?? ''}
-              onChange={(e) => {
-                const next = e.target.value
-                setSelectedEntries((prev) =>
-                  prev.map((item) =>
-                    item.id === entry.id
-                      ? { ...item, reason: { ...item.reason, details: next } }
-                      : item
+            <div onClick={stopRowEvent} onKeyDown={stopRowEvent}>
+              <InputText
+                value={selected.reason?.details ?? ''}
+                onChange={(e) => {
+                  const next = e.target.value
+                  setSelectedEntries((prev) =>
+                    prev.map((item) =>
+                      item.id === entry.id
+                        ? {
+                            ...item,
+                            reason: { ...item.reason, details: next },
+                          }
+                        : item
+                    )
                   )
-                )
-              }}
-            />
+                }}
+              />
+            </div>
           )
         },
       },
@@ -115,13 +131,14 @@ const ReturnAddProductsExpansion = ({
         header: t('returns.details.item.quantity'),
         hidden: readonly,
         body: (entry: ReturnEntry) => {
-          if (!selectedEntries.some((e) => e.id === entry.id)) {
+          const selected = selectedEntries.find((item) => item.id === entry.id)
+          if (!selected) {
             return entry.amount
           }
           return (
-            <div onClick={(e) => e.stopPropagation()}>
+            <div onClick={stopRowEvent} onKeyDown={stopRowEvent}>
               <Dropdown
-                value={String(entry.quantity || entry.amount)}
+                value={String(selected.quantity || entry.amount)}
                 options={Array.from({ length: entry.amount }, (_, i) => ({
                   label: String(i + 1),
                   value: String(i + 1),
@@ -167,9 +184,18 @@ const ReturnAddProductsExpansion = ({
       columns={columns.filter((column) => !column.hidden)}
       selectionMode={readonly ? null : 'multiple'}
       selection={selectedEntries}
-      onSelectionChange={(selection) =>
-        setSelectedEntries(selection as ReturnEntry[])
-      }
+      onSelectionChange={(selection) => {
+        const nextSelection = selection as ReturnEntry[]
+        // Keep edited reason/quantity when the table re-emits row objects
+        // from `value` (which still hold the empty defaults).
+        setSelectedEntries(
+          nextSelection.map(
+            (entry) =>
+              selectedEntries.find((selected) => selected.id === entry.id) ??
+              entry
+          )
+        )
+      }}
       pagination={{ totalRecords: data.length }}
       paginator={false}
     />
