@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Controller } from 'react-hook-form'
 import {
   DataTable,
+  FieldLabel,
   InputText,
   SectionBox,
   type DataTableColumnProps,
@@ -10,7 +11,6 @@ import {
 
 import { useReturnForm } from '../../contexts/ReturnForm.provider'
 import TableActions from '../shared/TableActions'
-import InputField from '../shared/InputField'
 import FormGrid from '../shared/FormGrid'
 import FormGridRow from '../shared/FormGridRow'
 import ReturnAddProductsExpansion from './ReturnAddProductsExpansion'
@@ -73,44 +73,36 @@ const ReturnAddProducts = ({ review = false }: ReturnAddProductsProps) => {
               control={control}
               name="reason.code"
               render={({ field }) => (
-                <InputField
-                  label={t('returns.details.returnCode')}
+                <InputText
                   className={styles.codeField}
+                  label={t('returns.details.returnCode')}
                   error={errors.reason?.code?.message}
-                >
-                  <InputText
-                    data-testid="code-input"
-                    value={field.value || ''}
-                    onChange={field.onChange}
-                    readOnly={review}
-                  />
-                </InputField>
+                  data-testid="code-input"
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                  readOnly={review}
+                />
               )}
             />
             <Controller
               control={control}
               name="reason.details"
               render={({ field }) => (
-                <InputField
-                  label={t('returns.details.returnReason')}
+                <InputText
                   className={styles.detailsField}
+                  label={t('returns.details.returnReason')}
                   error={errors.reason?.details?.message}
-                >
-                  <InputText
-                    data-testid="details-input"
-                    value={field.value || ''}
-                    onChange={field.onChange}
-                    readOnly={review}
-                  />
-                </InputField>
+                  data-testid="details-input"
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                  readOnly={review}
+                />
               )}
             />
           </FormGridRow>
           {review && (
-            <InputField
-              className={styles.customerField}
-              label={t('returns.create.selectedCustomer')}
-            >
+            <div className={styles.customerField}>
+              <FieldLabel>{t('returns.create.selectedCustomer')}</FieldLabel>
               {selectedCustomer ? (
                 `${selectedCustomer.firstName} ${selectedCustomer.lastName}`
               ) : (
@@ -118,7 +110,7 @@ const ReturnAddProducts = ({ review = false }: ReturnAddProductsProps) => {
                   {t('returns.create.noCustomerSelected')}
                 </div>
               )}
-            </InputField>
+            </div>
           )}
         </FormGrid>
       </SectionBox>

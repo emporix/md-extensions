@@ -16,6 +16,12 @@
   flex-direction: column;
 }
 
+.field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .arrayItem {
   margin: 0.5em 0;
 }

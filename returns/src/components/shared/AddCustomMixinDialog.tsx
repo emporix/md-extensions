@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Dialog, InputText, PrimaryButton } from '@emporix/component-library'
 import { useTranslation } from 'react-i18next'
-import InputField from './InputField'
 import LocalizedInput from './LocalizedInput'
 import type Localized from '../../models/Localized.model'
 import type { DisplayMixin } from '../../models/DisplayMixin'
@@ -68,25 +67,19 @@ const AddCustomMixinDialog = ({
         </PrimaryButton>
       }
     >
-      <InputField
+      <LocalizedInput
         className={styles.field}
         label={t('global.tableExtensions.addCustomMixinDialog.columnLabel')}
-      >
-        <LocalizedInput
-          value={customMixinLabel}
-          onChange={(val) => setCustomMixinLabel(val ?? {})}
-        />
-      </InputField>
-      <InputField
+        value={customMixinLabel}
+        onChange={(val) => setCustomMixinLabel(val ?? {})}
+      />
+      <InputText
         className={styles.field}
         label={t('global.tableExtensions.addCustomMixinDialog.columnKey')}
-      >
-        <InputText
-          value={customMixinKey}
-          data-testid="add-custom-mixin-dialog-column-key-input"
-          onChange={(e) => setCustomMixinKey(e.target.value)}
-        />
-      </InputField>
+        value={customMixinKey}
+        data-testid="add-custom-mixin-dialog-column-key-input"
+        onChange={(e) => setCustomMixinKey(e.target.value)}
+      />
     </Dialog>
   )
 }

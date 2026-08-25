@@ -1,5 +1,6 @@
 import { ReactNode, useCallback, useEffect } from 'react'
 import {
+  FieldLabel,
   PrimaryButton,
   SecondaryButton,
   SectionBox,
@@ -27,7 +28,6 @@ import {
 } from './helpers'
 import MixinsSectionBox from './MixinsSectionBox'
 import MixinsFormInput from './MixinsFormInput'
-import InputField from '../shared/InputField'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import { Mixins } from '../../models/Mixins.model'
 import Localized from '../../models/Localized.model'
@@ -122,13 +122,15 @@ const ArrayComponent = ({
                   item.type !== MixinsFormItemType.unknown && item.isRequired,
               }}
               render={({ field: controllerField }) => (
-                <InputField
-                  className=""
-                  required={
-                    item.type !== MixinsFormItemType.unknown && item.isRequired
-                  }
-                  label={`${index + 1} `}
-                >
+                <div className={styles.field}>
+                  <FieldLabel
+                    required={
+                      item.type !== MixinsFormItemType.unknown &&
+                      item.isRequired
+                    }
+                  >
+                    {`${index + 1} `}
+                  </FieldLabel>
                   <div className={styles.arrayItemControl}>
                     <MixinsFormInput
                       disabled={!managerPermissions}
@@ -145,7 +147,7 @@ const ArrayComponent = ({
                       <HiMinus size={20} />
                     </SecondaryButton>
                   </div>
-                </InputField>
+                </div>
               )}
             />
           </div>
@@ -263,18 +265,21 @@ const renderItem = (
         required: item.type !== MixinsFormItemType.unknown && item.isRequired,
       }}
       render={({ field: controllerField }) => (
-        <InputField
-          className=""
-          required={item.type !== MixinsFormItemType.unknown && item.isRequired}
-          label={getUiLangValue(item.name)}
-        >
+        <div className={styles.field}>
+          <FieldLabel
+            required={
+              item.type !== MixinsFormItemType.unknown && item.isRequired
+            }
+          >
+            {getUiLangValue(item.name)}
+          </FieldLabel>
           <MixinsFormInput
             disabled={!managerPermissions}
             item={item}
             value={controllerField.value}
             onInputChange={(_key, value) => controllerField.onChange(value)}
           />
-        </InputField>
+        </div>
       )}
     />
   )

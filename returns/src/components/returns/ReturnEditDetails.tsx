@@ -6,6 +6,7 @@ import {
   Calendar,
   DataTable,
   Dropdown,
+  FieldLabel,
   InputSwitch,
   InputText,
   SecondaryButton,
@@ -13,7 +14,6 @@ import {
   type DataTableColumnProps,
 } from '@emporix/component-library'
 
-import InputField from '../shared/InputField'
 import FormGrid from '../shared/FormGrid'
 import FormGridRow from '../shared/FormGridRow'
 import EmptyContent from '../shared/EmptyContent'
@@ -70,45 +70,36 @@ const ReturnEditDetails = ({
       >
         <FormGrid>
           <FormGridRow>
-            <InputField
+            <Calendar
               className={styles.thirdField}
               label={t('returns.details.createdDate')}
-            >
-              <Calendar
-                value={toCalendarDate(returnDetails?.metadata.createdAt)}
-                dateFormat={t('global.dateFormat')}
-                disabled
-              />
-            </InputField>
-            <InputField
+              value={toCalendarDate(returnDetails?.metadata.createdAt)}
+              dateFormat={t('global.dateFormat')}
+              disabled
+            />
+            <Calendar
               className={styles.thirdField}
               label={t('returns.details.expiryDate')}
-            >
-              <Calendar
-                value={toCalendarDate(returnDetails?.expiryDate)}
-                dateFormat={t('global.dateFormat')}
-                disabled
-              />
-            </InputField>
+              value={toCalendarDate(returnDetails?.expiryDate)}
+              dateFormat={t('global.dateFormat')}
+              disabled
+            />
             <Controller
               control={control}
               name="approvalStatus"
               render={({ field }) => (
-                <InputField
+                <Dropdown
                   className={styles.halfField}
                   label={t('returns.details.status')}
-                >
-                  <Dropdown
-                    disabled={!canManage}
-                    value={field.value}
-                    placeholder=""
-                    options={getArrayFromEnum(ReturnStatus).map((status) => ({
-                      label: status,
-                      value: status,
-                    }))}
-                    onChange={(e) => field.onChange(e.value)}
-                  />
-                </InputField>
+                  disabled={!canManage}
+                  value={field.value}
+                  placeholder=""
+                  options={getArrayFromEnum(ReturnStatus).map((status) => ({
+                    label: status,
+                    value: status,
+                  }))}
+                  onChange={(e) => field.onChange(e.value)}
+                />
               )}
             />
           </FormGridRow>
@@ -117,36 +108,30 @@ const ReturnEditDetails = ({
               control={control}
               name="reason.code"
               render={({ field }) => (
-                <InputField
-                  label={t('returns.details.returnCode')}
+                <InputText
                   className={styles.codeField}
+                  label={t('returns.details.returnCode')}
                   error={errors.reason?.code?.message}
-                >
-                  <InputText
-                    readOnly={!canManage}
-                    data-testid="code-input"
-                    value={field.value || ''}
-                    onChange={field.onChange}
-                  />
-                </InputField>
+                  readOnly={!canManage}
+                  data-testid="code-input"
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                />
               )}
             />
             <Controller
               control={control}
               name="reason.details"
               render={({ field }) => (
-                <InputField
-                  label={t('returns.details.returnReason')}
+                <InputText
                   className={styles.detailsField}
+                  label={t('returns.details.returnReason')}
                   error={errors.reason?.details?.message}
-                >
-                  <InputText
-                    readOnly={!canManage}
-                    data-testid="details-input"
-                    value={field.value || ''}
-                    onChange={field.onChange}
-                  />
-                </InputField>
+                  readOnly={!canManage}
+                  data-testid="details-input"
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                />
               )}
             />
           </FormGridRow>
@@ -155,27 +140,28 @@ const ReturnEditDetails = ({
               control={control}
               name="received"
               render={({ field }) => (
-                <InputField
-                  label={t('returns.details.received')}
-                  className={styles.switchField}
-                  error={errors.received?.message}
-                >
+                <div className={styles.switchField}>
+                  <FieldLabel>{t('returns.details.received')}</FieldLabel>
                   <InputSwitch
                     disabled={!canManage}
                     checked={field.value}
                     onChange={(e) => field.onChange(e.value)}
+                    invalid={Boolean(errors.received?.message)}
                   />
-                </InputField>
+                  {errors.received?.message ? (
+                    <span className={styles.error}>
+                      {errors.received.message}
+                    </span>
+                  ) : null}
+                </div>
               )}
             />
             <Controller
               control={control}
               name="submitter"
               render={({ field }) => (
-                <InputField
-                  label={t('returns.details.submittedBy')}
-                  className={styles.submitterField}
-                >
+                <div className={styles.submitterField}>
+                  <FieldLabel>{t('returns.details.submittedBy')}</FieldLabel>
                   <div className={styles.submitter}>
                     <BsPersonFill size={20} color="var(--grey-5)" aria-hidden />
                     <div>
@@ -184,7 +170,7 @@ const ReturnEditDetails = ({
                         : '-'}
                     </div>
                   </div>
-                </InputField>
+                </div>
               )}
             />
           </FormGridRow>
