@@ -14,7 +14,7 @@ A: No. Host may pass optional `user` for contract compatibility only.
 A: Required in AppState. Seed ConfigurationProvider and sync on `appState` changes.
 
 **Q: InputField or FormField?**  
-A: Copy U&G lean `InputField` from `components/shared/InputField.tsx`. Never MD `InputField`. There is no CL `FormField` replacement for that wrapper.
+A: Prefer each CL control's built-in `label` / `error` / `required` / `tooltip` props — do **not** wrap `InputText`, `Dropdown`, `Calendar`, `LocalizedInput`, etc. in lean `InputField` or standalone `FieldLabel`. Use `FieldLabel` only when the child has no label API (e.g. `InputSwitch`, plain text). Skip copying lean `InputField` when every field can use built-in labels. Never MD `InputField` (ProductDataProvider). There is no CL `FormField` replacement for that wrapper.
 
 **Q: Local ConfirmBox / BackButton / DateValue?**  
 A: On CL ≥ 2.2.0, import from `@emporix/component-library` **directly** in feature components and delete local copies. Do **not** add a pass-through wrapper. Cascade to sibling remotes when bumping.

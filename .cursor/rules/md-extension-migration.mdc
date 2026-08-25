@@ -50,7 +50,7 @@ ToastProvider → DashboardProvider → PermissionsProvider → ConfigurationPro
 - Prefer CL ≥ 2.2.0 for `ConfirmBox`, `BackButton`, `DateValue`, `ProgressSpinner` — **import directly**; delete local duplicates. Thin wrappers only when app deps are required (i18n / languages / config), same as `LocalizedInput`.
 - Before copying a shared UI piece already present in a prior remote, **ask the user** whether to migrate it to CL (`migrate-to-component-library` skill) instead of another local copy.
 - **SCSS Modules** for feature UI — avoid global / unscoped styles that MD global CSS can override (or that leak into the host). Minimal `index.css` shell only; no inline styles.
-- **Never** copy MD `InputField` (ProductDataProvider). Copy lean `InputField` from a prior remote.
+- **Never** copy MD `InputField` (ProductDataProvider). Prefer CL built-in `label` / `error` props; use `FieldLabel` only when the child has no label API. Copy lean `InputField` from a prior remote only if still needed.
 - No `primereact` / `primeicons` deps or CSS in the remote — only `@emporix/component-library/styles` at entry.
 
 ## API

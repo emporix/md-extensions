@@ -40,7 +40,7 @@ ToastProvider → DashboardProvider → PermissionsProvider → ConfigurationPro
 
 - Primitives: `@emporix/component-library` only (CL ≥ 2.0.0 bundles Pattern B Prime CSS).
 - Copy layout composites from U&G `components/shared/` (HeaderSection, SectionBox, FormGrid, ConfirmBox, …).
-- **Never** copy MD `InputField` (ProductDataProvider). Copy U&G lean `InputField`.
+- **Never** copy MD `InputField` (ProductDataProvider). Prefer CL built-in `label` / `error` props; use `FieldLabel` only when the child has no label API. Copy lean `InputField` from a prior remote only if still needed.
 - No `primereact` / `primeicons` deps or CSS in the remote — only `@emporix/component-library/styles` at entry.
 
 ## API

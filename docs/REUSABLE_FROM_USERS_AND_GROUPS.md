@@ -64,7 +64,7 @@ Paths below are relative to a playbook-aligned remote (historically `users-and-g
 | `TableActions` | `TableActions.tsx` | Row edit/delete + overflow menu |
 | `BatchDeleteButton` | `BatchDeleteButton.tsx` | Bulk delete + confirm |
 | `LoadingLayout` | `LoadingLayout.tsx` | Full-area spinner — prefer CL `ProgressSpinner` inside (no extra spinner wrapper) |
-| Lean `InputField` | `InputField.tsx` | Label/error/tooltip wrapper — **not** MD's ProductData-coupled InputField |
+| Lean `InputField` | Prefer **not** copying — CL controls with `label`/`error` props replace it. Keep only if you still wrap non-labeled children | Label/error/tooltip wrapper — **not** MD's ProductData-coupled InputField. Prefer built-in CL labels; use CL `FieldLabel` only when the child has no `label` prop |
 | `DropdownFilter` | `DropdownFilter.tsx` | DataTable column filter → CL Dropdown |
 | `LocalizedInput` | `LocalizedInput.tsx` | **Required thin wrapper** — injects languages + i18n toggle labels into context-free CL |
 | `DotIndicator` | `DotIndicator.tsx` | Boolean status dot (optional; prefer CSS Modules if you touch it) |
@@ -93,7 +93,7 @@ A second independent run of the Brands migration (Aug 2026) hit all of these:
 
 ### Copy what the module uses, not the whole table
 
-Tier 1 is a menu, not a mandate. Skip shells the module genuinely has no use for — a Brands-style module needs no `DateValue` (renders no dates), and the lean `InputField` is redundant once you use CL `InputText` / `Editor`, which already render `FieldLabel` themselves. Copying them anyway leaves dead files that the next reader assumes are load-bearing. Conversely, do not skip a **provider** on the same reasoning (see playbook §4).
+Tier 1 is a menu, not a mandate. Skip shells the module genuinely has no use for — a Brands-style module needs no `DateValue` (renders no dates), and the lean `InputField` is redundant once you use CL controls' built-in `label` / `error` props (`InputText`, `Dropdown`, `Calendar`, `Editor`, …). Prefer those props over wrapping with lean `InputField` or standalone `FieldLabel`; use `FieldLabel` only for children without a label API. Copying unused shells leaves dead files that the next reader assumes are load-bearing. Conversely, do not skip a **provider** on the same reasoning (see playbook §4).
 
 ### Forms: use `react-hook-form`
 

@@ -97,7 +97,7 @@ Import these when the remote needs them; they are not Prime replacements:
 
 | CL export | Min CL | Use |
 |-----------|--------|-----|
-| `FieldLabel` | 2.1.0 | Shared label + required + tooltip |
+| `FieldLabel` | 2.1.0 | Shared label + required + tooltip. **Avoid** when the control already has `label` — use the built-in prop on `InputText` / `Dropdown` / `Calendar` / `LocalizedInput` / etc. Reserve `FieldLabel` for children with no label API (e.g. `InputSwitch`, plain text). |
 | `LocalizedInput` | 2.1.0 | Context-free; remote wraps to inject languages (`LocalizedInput` pattern) |
 | `DateValue` | 2.2.0 | Formatted dates — import directly |
 | `BackButton` | 2.2.0 | Header back — import directly |
