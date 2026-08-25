@@ -34,20 +34,20 @@ const ReturnAddCustomers = () => {
     paginationParams,
     onPageCallback,
     setTotalCount,
-    totalCount,
     setPaginationParams,
   } = usePagination(DEFAULT_PAGINATION_PROPS, false)
 
+  // MD relied on row-click toggle for single select; keep it so body clicks
+  // still select when CL suppresses the row selection event after onRowClick.
   const toggleCustomerSelection = useCallback(
     (customer: Customer) => {
-      if (selectedCustomer && selectedCustomer.id === customer.id) {
+      if (selectedCustomer?.id === customer.id) {
         selectCustomer(null)
       } else {
         selectCustomer(customer)
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedCustomer]
+    [selectedCustomer, selectCustomer]
   )
 
   const onFilterCallback = (event: DataTableFilterEvent) => {
@@ -90,18 +90,30 @@ const ReturnAddCustomers = () => {
 
   const pagination: DataTablePaginationState = {
     ...paginationParams,
-    totalRecords: totalCount,
+    totalRecords: totalCustomers,
   }
+
+  // Prefer the row instance from `value` so dataKey matching stays stable.
+  const selectionRow =
+    selectedCustomer == null
+      ? null
+      : (customers.find((customer) => customer.id === selectedCustomer.id) ??
+        selectedCustomer)
 
   return (
     <DataTable
       dataKey="id"
       value={customers}
       columns={columns}
-      selection={selectedCustomer ? [selectedCustomer] : []}
-      onSelectionChange={(selection) =>
-        selectCustomer((selection as Customer[])[0] ?? null)
-      }
+      selection={selectionRow}
+      onSelectionChange={(next) => {
+        // Single mode yields one row; tolerate an array if a caller passes one.
+        if (Array.isArray(next)) {
+          selectCustomer((next[0] as Customer | undefined) ?? null)
+          return
+        }
+        selectCustomer((next as Customer | null) ?? null)
+      }}
       selectionMode="single"
       onRowClick={(row) => toggleCustomerSelection(row as Customer)}
       pagination={pagination}
