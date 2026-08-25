@@ -91,6 +91,9 @@ export const useReturnForm = () => useContext(ReturnFormContext)
 const parseReturnOrders = (orderToEntries: Map<string, ReturnEntry[]>) => {
   const returnOrders: ReturnOrder[] = []
   orderToEntries.forEach((entries, orderId) => {
+    if (entries.length === 0) {
+      return
+    }
     returnOrders.push({
       id: orderId,
       items: entries.map(
@@ -311,7 +314,13 @@ export const ReturnFormProvider = ({
   const selectProduct = (orderId: string, entries: ReturnEntry[]) => {
     setSelectedEntriesMap((prev) => {
       const next = new Map<string, ReturnEntry[]>(prev)
-      next.set(orderId, entries)
+      // Expansion mounts with [] and would leave `{ id, items: [] }` in the
+      // form, which fails `items.min(1)` and keeps Save disabled forever.
+      if (entries.length === 0) {
+        next.delete(orderId)
+      } else {
+        next.set(orderId, entries)
+      }
       setValue('orders', parseReturnOrders(next), { shouldValidate: true })
       return next
     })

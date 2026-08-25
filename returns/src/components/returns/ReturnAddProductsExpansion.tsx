@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   DataTable,
@@ -32,8 +32,17 @@ const ReturnAddProductsExpansion = ({
   const [selectedEntries, setSelectedEntries] = useState<ReturnEntry[]>(
     selectedEntriesMap.get(order.id) ?? []
   )
+  const hasSyncedRef = useRef(false)
 
   useEffect(() => {
+    // Skip the initial empty mount sync — it used to write `{ items: [] }` into
+    // the form for every expanded order and block Save via items.min(1).
+    if (!hasSyncedRef.current) {
+      hasSyncedRef.current = true
+      if (selectedEntries.length === 0) {
+        return
+      }
+    }
     onSelect(order.id, selectedEntries)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEntries])
