@@ -9,6 +9,12 @@
   padding: 0.5rem;
   box-sizing: border-box;
   min-width: 0;
+
+  // CL InputText/Calendar use min-width: 200px; allow shrink in narrow columns
+  > * {
+    min-width: 0;
+    width: 100%;
+  }
 }
 
 .halfField {
@@ -17,6 +23,11 @@
   padding: 0.5rem;
   box-sizing: border-box;
   min-width: 0;
+
+  > * {
+    min-width: 0;
+    width: 100%;
+  }
 }
 
 .codeField {
@@ -25,6 +36,11 @@
   padding: 0.5rem;
   box-sizing: border-box;
   min-width: 0;
+
+  > * {
+    min-width: 0;
+    width: 100%;
+  }
 }
 
 .detailsField {
@@ -33,6 +49,11 @@
   padding: 0.5rem;
   box-sizing: border-box;
   min-width: 0;
+
+  > * {
+    min-width: 0;
+    width: 100%;
+  }
 }
 
 .switchField {

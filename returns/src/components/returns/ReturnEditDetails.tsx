@@ -70,36 +70,39 @@ const ReturnEditDetails = ({
       >
         <FormGrid>
           <FormGridRow>
-            <Calendar
-              className={styles.thirdField}
-              label={t('returns.details.createdDate')}
-              value={toCalendarDate(returnDetails?.metadata.createdAt)}
-              dateFormat={t('global.dateFormat')}
-              disabled
-            />
-            <Calendar
-              className={styles.thirdField}
-              label={t('returns.details.expiryDate')}
-              value={toCalendarDate(returnDetails?.expiryDate)}
-              dateFormat={t('global.dateFormat')}
-              disabled
-            />
+            <div className={styles.thirdField}>
+              <Calendar
+                label={t('returns.details.createdDate')}
+                value={toCalendarDate(returnDetails?.metadata.createdAt)}
+                dateFormat={t('global.dateFormat')}
+                disabled
+              />
+            </div>
+            <div className={styles.thirdField}>
+              <Calendar
+                label={t('returns.details.expiryDate')}
+                value={toCalendarDate(returnDetails?.expiryDate)}
+                dateFormat={t('global.dateFormat')}
+                disabled
+              />
+            </div>
             <Controller
               control={control}
               name="approvalStatus"
               render={({ field }) => (
-                <Dropdown
-                  className={styles.halfField}
-                  label={t('returns.details.status')}
-                  disabled={!canManage}
-                  value={field.value}
-                  placeholder=""
-                  options={getArrayFromEnum(ReturnStatus).map((status) => ({
-                    label: status,
-                    value: status,
-                  }))}
-                  onChange={(e) => field.onChange(e.value)}
-                />
+                <div className={styles.halfField}>
+                  <Dropdown
+                    label={t('returns.details.status')}
+                    disabled={!canManage}
+                    value={field.value}
+                    placeholder=""
+                    options={getArrayFromEnum(ReturnStatus).map((status) => ({
+                      label: status,
+                      value: status,
+                    }))}
+                    onChange={(e) => field.onChange(e.value)}
+                  />
+                </div>
               )}
             />
           </FormGridRow>
@@ -108,30 +111,32 @@ const ReturnEditDetails = ({
               control={control}
               name="reason.code"
               render={({ field }) => (
-                <InputText
-                  className={styles.codeField}
-                  label={t('returns.details.returnCode')}
-                  error={errors.reason?.code?.message}
-                  readOnly={!canManage}
-                  data-testid="code-input"
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                />
+                <div className={styles.codeField}>
+                  <InputText
+                    label={t('returns.details.returnCode')}
+                    error={errors.reason?.code?.message}
+                    readOnly={!canManage}
+                    data-testid="code-input"
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  />
+                </div>
               )}
             />
             <Controller
               control={control}
               name="reason.details"
               render={({ field }) => (
-                <InputText
-                  className={styles.detailsField}
-                  label={t('returns.details.returnReason')}
-                  error={errors.reason?.details?.message}
-                  readOnly={!canManage}
-                  data-testid="details-input"
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                />
+                <div className={styles.detailsField}>
+                  <InputText
+                    label={t('returns.details.returnReason')}
+                    error={errors.reason?.details?.message}
+                    readOnly={!canManage}
+                    data-testid="details-input"
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  />
+                </div>
               )}
             />
           </FormGridRow>

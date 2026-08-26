@@ -73,30 +73,32 @@ const ReturnAddProducts = ({ review = false }: ReturnAddProductsProps) => {
               control={control}
               name="reason.code"
               render={({ field }) => (
-                <InputText
-                  className={styles.codeField}
-                  label={t('returns.details.returnCode')}
-                  error={errors.reason?.code?.message}
-                  data-testid="code-input"
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                  readOnly={review}
-                />
+                <div className={styles.codeField}>
+                  <InputText
+                    label={t('returns.details.returnCode')}
+                    error={errors.reason?.code?.message}
+                    data-testid="code-input"
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                    readOnly={review}
+                  />
+                </div>
               )}
             />
             <Controller
               control={control}
               name="reason.details"
               render={({ field }) => (
-                <InputText
-                  className={styles.detailsField}
-                  label={t('returns.details.returnReason')}
-                  error={errors.reason?.details?.message}
-                  data-testid="details-input"
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                  readOnly={review}
-                />
+                <div className={styles.detailsField}>
+                  <InputText
+                    label={t('returns.details.returnReason')}
+                    error={errors.reason?.details?.message}
+                    data-testid="details-input"
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                    readOnly={review}
+                  />
+                </div>
               )}
             />
           </FormGridRow>
