@@ -17,7 +17,7 @@ Emporix Management Dashboard extension module — a Module Federation remote bui
 | `src/models/` | Domain types (`AppState`, `Returns`, `ApiError`) |
 | `src/helpers/` | Pure helpers (`settings.helpers.ts` for standalone dev) |
 | `src/api/` | Emporix REST API layer (`@emporix/api-calls`, `bootstrap.ts`) |
-| `src/context/` | `DashboardProvider` — host `tenant`, `language`, `token` |
+| `src/context/` | `ExtensionProvider` / `useExtensionContext` — host `tenant`, `language`, `token` |
 | `src/translations/{locale}/` | i18n keys (react-i18next) |
 | `vite.config.ts` | Module Federation config, CORS, shared dependencies |
 
@@ -39,19 +39,22 @@ These rules are maintained centrally in the [frontend-ai-rules](https://github.c
 | `primereact.mdc` | `primereact.instructions.md` | `primereact.md` | PrimeReact widgets (if applicable) |
 | `module-federation.mdc` | `module-federation.instructions.md` | `module-federation.md` | Module Federation (if applicable) |
 | `contributing-global-rules.mdc` | `contributing-global-rules.instructions.md` | `contributing-global-rules.md` | After feature work / upstream rule proposals |
+| `md-extension-migration.mdc` | `md-extension-migration.instructions.md` | `md-extension-migration.md` | MD→md-extensions remote extraction (federation, AppState, CL) |
+| `md-extension-port-validation.mdc` | `md-extension-port-validation.instructions.md` | `md-extension-port-validation.md` | Post-port anti-pattern greps / lockfile / Firebase gates |
 
 ## Workflow Skills (from frontend-ai-rules)
 
 | Cursor | Copilot | Claude Code | Purpose |
 |--------|---------|-------------|---------|
 | `.cursor/skills/contribute-global-rule/` | `.github/skills/contribute-global-rule/` | `.claude/skills/contribute-global-rule/` | Open PR in frontend-ai-rules after approved lesson |
+| `.cursor/skills/md-module-extraction/` | `.github/skills/md-module-extraction/` | `.claude/skills/md-module-extraction/` | Extract MD module to md-extensions federated remote |
 
 ## Project-Specific Rules
 
 <!-- CUSTOMIZE: List rules added locally for this project -->
 | File | When loaded |
 |------|-------------|
-| `extension-module-template.mdc` | Always — overrides and template-only patterns (federation host, API auth, standalone dev) |
+| `extension-module-template.instructions.md` | Local extension module overrides and migration patterns |
 
 <!-- CUSTOMIZE: Replace KEY with your Jira project key -->
 **Git:** `{feature|fix|release}/{KEY}-###-kebab-description` branches, `{KEY}-### Sentence case description` commits — details in `git-workflow`.
