@@ -77,8 +77,8 @@ export default {
     viewOrder: 'View order',
   },
   errors: {
-    minOrders: 'Must chose at least one order',
-    minProducts: 'Must chose at least one product',
+    minOrders: 'Must choose at least one order',
+    minProducts: 'Must choose at least one product',
   },
   toasts: {
     errorUpdate: 'Error while updating the return',

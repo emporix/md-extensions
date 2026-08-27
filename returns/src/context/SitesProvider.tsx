@@ -26,24 +26,28 @@ const SiteContext = createContext<SitesContextType>({
 export const useSites = () => useContext(SiteContext)
 
 export const SitesProvider = ({ children }: PropsWithChildren) => {
-  const { token } = useDashboardContext()
+  const { token, tenant } = useDashboardContext()
   const { getSites } = useSitesApi()
   const [sites, setSites] = useState<Site[]>([])
   const [currentSite, setCurrentSite] = useState<Site>()
 
   useEffect(() => {
-    if (!token) return
+    if (!token || !tenant) return
     ;(async () => {
-      const newSites: Site[] = await getSites()
-      const defaultSite = newSites.find((site) => site.default)
-      if (defaultSite) {
-        setCurrentSite(defaultSite)
-      } else if (newSites[0]) {
-        setCurrentSite(newSites[0])
+      try {
+        const newSites: Site[] = await getSites()
+        const defaultSite = newSites.find((site) => site.default)
+        if (defaultSite) {
+          setCurrentSite(defaultSite)
+        } else if (newSites[0]) {
+          setCurrentSite(newSites[0])
+        }
+        setSites(newSites)
+      } catch (error) {
+        console.error('Error fetching sites:', error)
       }
-      setSites(newSites)
     })()
-  }, [token, getSites])
+  }, [token, tenant, getSites])
 
   const updateCurrentSite = (site?: Site) => {
     setCurrentSite(site)

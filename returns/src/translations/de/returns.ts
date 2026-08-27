@@ -8,7 +8,7 @@ export default {
     first: 'Generell',
   },
   create: {
-    submit: 'Retoure erstelln',
+    submit: 'Retoure erstellen',
     selectedCustomer: 'Selektierter Kunde',
     noSelectedCustomer: 'Kein Kunde selektiert',
     notSelectedCustomer:

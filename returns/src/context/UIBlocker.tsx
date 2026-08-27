@@ -3,7 +3,7 @@ import classnames from 'classnames'
 import { ProgressSpinner } from '@emporix/component-library'
 import { useTranslation } from 'react-i18next'
 import { Props } from '../helpers/props'
-import styles from './UIBlcoker.module.scss'
+import styles from './UIBlocker.module.scss'
 
 const UIBlockerContext = createContext({
   blockPanel: (_isBlocked: boolean) => {
