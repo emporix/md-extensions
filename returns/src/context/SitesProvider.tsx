@@ -11,7 +11,7 @@ import { useDashboardContext } from './Dashboard.context'
 
 type SitesContextType = {
   sites: Site[] | undefined
-  updateCurrentSite: (code?: Site) => void
+  updateCurrentSite: (site?: Site) => void
   currentSite: Site | undefined
 }
 

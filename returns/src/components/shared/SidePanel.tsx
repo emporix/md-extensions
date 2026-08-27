@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { FiX } from 'react-icons/fi'
 
@@ -24,14 +24,25 @@ const SidePanel = ({
   children,
   'data-testid': dataTestId,
 }: SidePanelProps) => {
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const onHideRef = useRef(onHide)
+  onHideRef.current = onHide
+
   useEffect(() => {
     if (!visible) {
       return
     }
 
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null
+
+    closeButtonRef.current?.focus()
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        onHide()
+        onHideRef.current()
       }
     }
 
@@ -42,8 +53,9 @@ const SidePanel = ({
     return () => {
       document.removeEventListener('keydown', onKeyDown)
       document.body.style.overflow = previousOverflow
+      previouslyFocused?.focus()
     }
-  }, [visible, onHide])
+  }, [visible])
 
   if (!visible || typeof document === 'undefined') {
     return null
@@ -66,6 +78,7 @@ const SidePanel = ({
       >
         <div className={styles.header}>
           <button
+            ref={closeButtonRef}
             type="button"
             className={styles.close}
             onClick={onHide}
