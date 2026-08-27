@@ -1,5 +1,7 @@
 ---
-description: Federation, AppState, provider order, and CL-only UI for MD extension remotes
+description: >-
+  Scaffold a new MD extension remote from md-module-template@md-module-migration;
+  federation, AppState, provider order, and CL-only UI for remotes
 globs: "**/RemoteComponent.tsx,**/vite.config.ts,**/AppState.model.ts,**/src/**"
 alwaysApply: false
 ---
@@ -13,7 +15,17 @@ Copy inventory: `docs/REUSABLE_FROM_USERS_AND_GROUPS.md` (Tier 1 from all playbo
 **Skill (canonical):** `.cursor/skills/md-module-extraction/` (also `.claude/skills/` / `.github/skills/`).  
 **Host wiring:** `management-dashboard/.cursor/rules/federated-module-wiring.mdc` (not this file).
 
-**Scaffold:** clone [md-module-template](https://github.com/emporix/md-module-template) branch **`md-module-migration`**, absorb into `md-extensions/{kebab}/` (`rm -rf .git`). Align Tier 1 with **playbook-aligned remotes** in `MIGRATED_MODULES.md` (not U&G alone; not `products`; not template `master`).
+**Folder scaffold (required):** clone [md-module-template](https://github.com/emporix/md-module-template/tree/md-module-migration) branch **`md-module-migration`**:
+
+```bash
+git clone -b md-module-migration --single-branch \
+  https://github.com/emporix/md-module-template.git {kebab}
+rm -rf {kebab}/.git
+```
+
+Do **not** `cp -R` / rsync `users-and-groups`, `brands`, `returns`, or template `master`.
+
+**Tier 1 copy:** playbook-aligned remotes in `MIGRATED_MODULES.md` — not U&G alone, not `products`, not template `master`. U&G is a reference implementation, not the scaffold source.
 
 ## Federation
 

@@ -3,7 +3,9 @@ name: md-module-extraction
 description: >-
   Extract a Management Dashboard module into an md-extensions federated remote.
   Use when the user mentions "extract MD module", "migrate module to md-extensions",
-  "federated module", COP-5597 epic work, or external-module feature toggles.
+  "new migration", "scaffold remote", "create federated module",
+  "new md-extensions module", "federated module", COP-5597 epic work,
+  or external-module feature toggles.
 ---
 
 # MD Module Extraction
@@ -25,7 +27,7 @@ Step-by-step workflow for porting an MD module to `md-extensions`.
 | `docs/CL_WIDGET_STATUS.md` | PrimeReact → CL lookup (`in-cl` / `partial` / `missing`). Do not copy gap lists into this skill. |
 | [reference.md](reference.md) | FAQ, validation greps, anti-patterns, local dev loop |
 
-**Canonical scaffold:** clone [md-module-template](https://github.com/emporix/md-module-template) branch **`md-module-migration`**, absorb into `md-extensions/{kebab}/` (remove nested `.git`). Align Tier 1 with **all playbook-aligned remotes** in `MIGRATED_MODULES.md` (not U&G alone; not `products`; not template `master`).
+**Canonical scaffold:** clone [md-module-template @ `md-module-migration`](https://github.com/emporix/md-module-template/tree/md-module-migration) (`git clone -b md-module-migration --single-branch …`), absorb into `md-extensions/{kebab}/` (`rm -rf .git`). Do **not** copy another remote folder. Align Tier 1 with **all playbook-aligned remotes** in `MIGRATED_MODULES.md` (not U&G alone; not `products`; not template `master`).
 
 **Pilots so far:** see `MIGRATED_MODULES.md`.
 
@@ -75,7 +77,16 @@ rg "from ['\"].*{module}|usersAndGroups\." management-dashboard/src --glob '!*.m
 
 ## Phase 0 — Scaffold
 
-Clone template into `md-extensions/`, absorb, rename federation `name` + ports + package. Details: playbook §1 "Scaffold starter".
+**Required.** Do **not** `cp -R` / rsync `users-and-groups`, `brands`, `returns`, or any other remote as the new folder. Do **not** clone template `master`.
+
+```bash
+cd md-extensions
+git clone -b md-module-migration --single-branch \
+  https://github.com/emporix/md-module-template.git {kebab-module}
+rm -rf {kebab-module}/.git   # absorb into the md-extensions monorepo
+```
+
+Then rename federation `name`, pin the next free port from `MIGRATED_MODULES.md`, scrub leftovers, `npm install`. Align Tier 1 with **playbook-aligned remotes** (not the template folder as domain code). Details also in playbook §1 "Scaffold starter".
 
 Key checks: `strictPort: true`, `"dev": "vite --mode dev"`, `VITE_API_URL` (not `BASE_URL`), published CL semver, no nested `.git`.
 

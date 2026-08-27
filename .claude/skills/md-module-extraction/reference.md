@@ -35,16 +35,16 @@ A: Prefer **SCSS Modules** (`Component.module.scss`) co-located with the compone
 
 Host Vite often shares `react-router-dom`; remotes share/import `react-router` (v7). Match the **pilot U&G** remote (`react-router` in `shared` + imports). Do not invent a third package mix without verifying federation at runtime.
 
-## products vs users-and-groups vs customer-groups
+## products vs green-field vs derived remotes
 
-| Topic | products | users-and-groups (SoT) | customer-groups (derived) |
-|-------|----------|------------------------|---------------------------|
-| Scaffold source | Avoid for new ports | **Use this** | Copy U&G then reduce |
-| PermissionsProvider | May vary / AppState | Required remote provider | Same as U&G (slim OK) |
-| Scope | Products domain | Employee users + groups | Customer groups only |
-| Local port | varies | `5173` | `5174` + `strictPort` |
-| MD mode | typically A | was B → A | Mode A from day one |
-| Template | Start from `md-module-migration` branch | Same | Same — absorb then reduce |
+| Topic | products (legacy) | Green-field remote | Derived (e.g. customer-groups) |
+|-------|-------------------|--------------------|--------------------------------|
+| Folder scaffold | Avoid | `md-module-template` @ `md-module-migration` | Same clone, then reduce |
+| Tier 1 copy | Avoid | All playbook-aligned remotes in `MIGRATED_MODULES.md` | Same |
+| PermissionsProvider | May vary / AppState | Required remote provider | Same (slim OK) |
+| Scope | Products domain | New MD module domain | Subtype of a prior remote |
+| Local port | varies | Next free from registry | Own `strictPort` |
+| MD mode | typically A | Prefer Mode A | Mode A from day one |
 
 ## Validation greps (run after domain port)
 
@@ -80,6 +80,43 @@ rg '"node_modules/@emporix/component-library"' -A2 "md-extensions/$MODULE/packag
 # MD wiring (Phase 3 hard gate):
 rg "key:\s*'$KEY'" management-dashboard/src/router/module-routes.tsx
 rg "VITE_.*_URL" management-dashboard/.env*
+
+# --- Visual / parity drift (added after COP-6180 brands) ---
+
+# MD global CSS variables leaking into remote SCSS — expect ZERO:
+rg -- "--grey-|--blue-|var\(--red\)" "$SRC"
+
+# Local SectionBox copy — expect ZERO (CL >= 2.3.0 exports it):
+fd -t f 'SectionBox' "$SRC"
+
+# quill must be 1.x wherever CL Editor is used; Quill 2 breaks
+# PrimeReact 8's clipboard.convert(html) and silently loads no content:
+rg '"quill"' md-extensions/*/package.json component-library/package.json
+
+# Local node_modules drifting from the lockfile will make you code against
+# the wrong library major. Expect no "invalid":
+(cd "md-extensions/$MODULE" && npm ls primereact @emporix/component-library 2>&1 | rg invalid)
+
+# Host-owned routes linked from the remote — each hit needs a deliberate
+# decision + comment (no in-remote route exists for these):
+rg "window\.location\.(assign|href)" "$SRC"
+
+# PrimeReact inventory — then look up each path in docs/CL_WIDGET_STATUS.md:
+rg "from ['\"]primereact|MdDataTable|ProductDataProvider|InputField" \
+  "management-dashboard/src/modules/{Module}"* "management-dashboard/src/components/{module}"*
+
+# Capabilities that vanish silently in a component-by-component port —
+# run against the MD source module BEFORE Phase 2:
+rg "TableExtensions|fetchVisibleColumns|tableConfigurationKey" \
+  "management-dashboard/src/modules/{Module}"* "management-dashboard/src/components/{module}"*
+rg "pi pi-" "management-dashboard/src/modules/{Module}"*   # exact glyphs to match
+```
+
+**Deployment reality check** (a green workflow only proves it deployed):
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' \
+  "https://emporix-$MODULE-develop.web.app/assets/remoteEntry.js"   # want 200
 ```
 
 ## Common anti-patterns
@@ -111,6 +148,17 @@ rg "VITE_.*_URL" management-dashboard/.env*
 - Jest syntax in Vitest tests
 - Using `VITE_API_BASE_URL` instead of `VITE_API_URL`
 - Blindly keeping U&G `usePagination(..., 'members')` when MD used shared `page`/`rows`
+- Committing without the Jira key (`{KEY}-### Sentence case`) or branching without it — retrofitting means rewriting history
+- Creating a Jira ticket without first asking whether one already exists (ask for the number or URL if it does), or inventing a key / defaulting to the COP-5597 epic when unsure
+- Auditing for `TableExtensions` (or any capability invisible in a component diff) only at Phase 5, after the port is "done"
+- Adding `primereact` to a remote because CL lacks a widget — promote it to CL as Pattern B instead (lookup `docs/CL_WIDGET_STATUS.md`; do not copy gap lists into the skill)
+- Pairing PrimeReact 8's `Editor` with `quill` 2.x (silently loads no existing content; pin `^1.3.7`)
+- Swapping MD's `pi pi-*` glyphs for react-icons without checking the shape matches (filled vs outline)
+- Converting MD's fixed px control sizing to `rem` during the port
+- Copying `SectionBox` locally instead of importing it from CL ≥ 2.3.0
+- Trusting local `node_modules` over the lockfile when coding against a library API (`npm ls` reports `invalid` on drift)
+- Merging the host PR before the remote is deployed and serving a `200` on `remoteEntry.js`
+- Declaring done on structural gates alone — none of them prove the UI renders correctly
 
 ## Local dev loop
 

@@ -35,16 +35,16 @@ A: Prefer **SCSS Modules** (`Component.module.scss`) co-located with the compone
 
 Host Vite often shares `react-router-dom`; remotes share/import `react-router` (v7). Match the **pilot U&G** remote (`react-router` in `shared` + imports). Do not invent a third package mix without verifying federation at runtime.
 
-## products vs users-and-groups vs customer-groups
+## products vs green-field vs derived remotes
 
-| Topic | products | users-and-groups (SoT) | customer-groups (derived) |
-|-------|----------|------------------------|---------------------------|
-| Scaffold source | Avoid for new ports | **Use this** | Copy U&G then reduce |
-| PermissionsProvider | May vary / AppState | Required remote provider | Same as U&G (slim OK) |
-| Scope | Products domain | Employee users + groups | Customer groups only |
-| Local port | varies | `5173` | `5174` + `strictPort` |
-| MD mode | typically A | was B → A | Mode A from day one |
-| Template | Start from `md-module-migration` branch | Same | Same — absorb then reduce |
+| Topic | products (legacy) | Green-field remote | Derived (e.g. customer-groups) |
+|-------|-------------------|--------------------|--------------------------------|
+| Folder scaffold | Avoid | `md-module-template` @ `md-module-migration` | Same clone, then reduce |
+| Tier 1 copy | Avoid | All playbook-aligned remotes in `MIGRATED_MODULES.md` | Same |
+| PermissionsProvider | May vary / AppState | Required remote provider | Same (slim OK) |
+| Scope | Products domain | New MD module domain | Subtype of a prior remote |
+| Local port | varies | Next free from registry | Own `strictPort` |
+| MD mode | typically A | Prefer Mode A | Mode A from day one |
 
 ## Validation greps (run after domain port)
 
