@@ -20,24 +20,10 @@ import { ReturnFormProvider } from './contexts/ReturnForm.provider'
 import './translations/i18n'
 
 type RemoteComponentProps = {
-  readonly appState?: AppState
+  readonly appState: AppState
 }
 
-const defaultAppState: AppState = {
-  tenant: 'default',
-  language: 'en',
-  token: 'default',
-  contentLanguage: 'en',
-  currency: undefined,
-  user: undefined,
-  onError: () => {
-    // NOOP
-  },
-}
-
-const RemoteComponent = ({
-  appState = defaultAppState,
-}: RemoteComponentProps) => {
+const RemoteComponent = ({ appState }: RemoteComponentProps) => {
   useApiCredentials(appState.tenant, appState.token)
 
   const { i18n } = useTranslation()

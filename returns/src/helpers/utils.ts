@@ -15,7 +15,7 @@ export const isNullable = (value: unknown) => {
 }
 
 export const removeObjectEmptyValues = (obj: Record<string, unknown>) => {
-  for (const key in obj) {
+  for (const key of Object.keys(obj)) {
     const value = obj[key]
     if (isObject(value)) {
       removeObjectEmptyValues(value)

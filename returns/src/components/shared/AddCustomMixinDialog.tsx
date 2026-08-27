@@ -24,10 +24,7 @@ const AddCustomMixinDialog = ({
   const [customMixinLabel, setCustomMixinLabel] = useState<Localized>({})
   const [customMixinKey, setCustomMixinKey] = useState('')
 
-  const isEdit = useMemo(
-    () => defaultDisplayMixin?.key !== '',
-    [defaultDisplayMixin]
-  )
+  const isEdit = Boolean(defaultDisplayMixin?.key)
 
   useEffect(() => {
     if (isOpen && defaultDisplayMixin) {
