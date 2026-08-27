@@ -14,10 +14,10 @@ Emporix Management Dashboard extension module — a Module Federation remote bui
 | `src/App.tsx` | Standalone dev shell (mock `appState` when not embedded in the dashboard) |
 | `src/main.tsx` | Local dev bootstrap |
 | `src/pages/` | Route-level page components |
-| `src/models/` | Domain types (`AppState`, `Product`, `ApiError`) |
+| `src/models/` | Domain types (`AppState`, `Returns`, `ApiError`) |
 | `src/helpers/` | Pure helpers (`settings.helpers.ts` for standalone dev) |
 | `src/api/` | Emporix REST API layer (`@emporix/api-calls`, `bootstrap.ts`) |
-| `src/context/` | `ExtensionProvider` — host `tenant`, `language`, `token` |
+| `src/context/` | `DashboardProvider` — host `tenant`, `language`, `token` |
 | `src/translations/{locale}/` | i18n keys (react-i18next) |
 | `vite.config.ts` | Module Federation config, CORS, shared dependencies |
 

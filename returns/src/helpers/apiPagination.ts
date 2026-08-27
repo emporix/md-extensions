@@ -11,11 +11,10 @@ export type ApiPaginationProps = {
   [key: string]: unknown
 }
 
-/** Bridge dashboard pagination state to @emporix/api-calls call signatures */
 /** Bridges dashboard DataTable state to @emporix/api-calls pagination params */
 export const toApiPagination = (
   pagination: Partial<DashboardPaginationProps>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- bridge to api-calls PaginationProps
 ): any => pagination
 
 export const apiPagination = (

@@ -1,5 +1,5 @@
 import { DataTableEmptyState, PrimaryButton } from '@emporix/component-library'
-import { Link } from 'react-router'
+import { useNavigate } from 'react-router'
 import styles from './EmptyContent.module.scss'
 
 type EmptyContentProps = {
@@ -21,23 +21,28 @@ const EmptyContent = ({
   managerPermissions = true,
   showEmptyIcon = true,
 }: EmptyContentProps) => {
-  const actionButton = buttonLabel ? (
-    <PrimaryButton disabled={!managerPermissions} onClick={action}>
-      {buttonLabel}
-    </PrimaryButton>
-  ) : null
+  const navigate = useNavigate()
+
+  const handleClick = () => {
+    if (link) {
+      void navigate(link)
+      return
+    }
+    action?.()
+  }
 
   return (
     <div className={[styles.emptyState, className].filter(Boolean).join(' ')}>
       <DataTableEmptyState message={text} showIcon={showEmptyIcon} />
-      {actionButton &&
-        (link ? (
-          <Link to={link} className={styles.actionLink}>
-            {actionButton}
-          </Link>
-        ) : (
-          actionButton
-        ))}
+      {buttonLabel ? (
+        <PrimaryButton
+          className={styles.actionLink}
+          disabled={!managerPermissions}
+          onClick={handleClick}
+        >
+          {buttonLabel}
+        </PrimaryButton>
+      ) : null}
     </div>
   )
 }
