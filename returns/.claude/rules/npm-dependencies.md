@@ -45,7 +45,7 @@ Git dependencies cause problems in CI (SSH auth, missing `prepare` builds, slowe
 
 ## When git URLs are acceptable
 
-- **`frontend-ai-rules`** as a `devDependency` — synced via `postinstall`; use `git+https://github.com/emporix/frontend-ai-rules.git#master` per that repo's README.
+- **`frontend-ai-rules`** as a `devDependency` — synced via `postinstall`; use `git+https://github.com/emporix/frontend-ai-rules.git#md-module-migration`.
 - **Unpublished forks or emergency patches** — only until a version is published to npm; then switch back to semver.
 
 ## After publishing a new library version

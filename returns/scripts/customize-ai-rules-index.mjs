@@ -28,6 +28,9 @@ const projectRuleRow =
 const genericDirectoryMap =
   /<!-- CUSTOMIZE: Add a directory map for your project -->\n## Directory Map\n\n\| Path \| Purpose \|\n\|------\|---------\|\n\| `src\/pages\/` \| Route-level page components \|\n\| `src\/components\/\{feature\}\/` \| Feature UI components \|\n\| `src\/models\/` \| Domain types \|\n\| `src\/helpers\/` \| Pure business logic — \*\*never mutate models in components\*\* \|\n\| `src\/api\/` or `src\/services\/` \| REST API \/ service layer \(if applicable\) \|\n\| `src\/context\/` \| Data providers \|\n\| `src\/translations\/\{locale\}\/` \| i18n keys \(react-i18next\) \|/
 
+const frontendAiRulesPin =
+  'git+https://github.com/emporix/frontend-ai-rules.git#md-module-migration'
+
 const customize = (content) =>
   content
     .replace(
@@ -36,11 +39,18 @@ const customize = (content) =>
     )
     .replace(genericDirectoryMap, `## Directory Map\n\n${directoryMap}`)
     .replace(/\| _\(add project rules here\)_ \| \|/, projectRuleRow)
+    .replaceAll(
+      'git+https://github.com/emporix/frontend-ai-rules.git#master',
+      frontendAiRulesPin
+    )
 
 const tasks = [
   '.cursorrules',
   '.github/copilot-instructions.md',
   '.claude/CLAUDE.md',
+  '.cursor/rules/npm-dependencies.mdc',
+  '.github/instructions/npm-dependencies.instructions.md',
+  '.claude/rules/npm-dependencies.md',
 ]
 
 for (const relativePath of tasks) {
