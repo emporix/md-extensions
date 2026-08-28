@@ -19,11 +19,9 @@ import { useGroupData } from '../context/Group.provider'
 import { usePermissions } from '../context/PermissionsProvider'
 import { GroupRoleProvider } from '../context/GroupRole.provider'
 import { EmployeeDomains } from '../configs/accessControls'
-import { useFeatureToggles } from '../context/FeatureTogglesProvider'
-import { AUDIT_LOG_FEATURE_TOGGLE } from '../configs/auditLog.config'
 import EntityChangelogTab from '../components/auditLog/EntityChangelogTab'
 
-const BASE_TABS = ['details', 'members']
+const TABS = ['details', 'members', 'audit-log']
 
 const GroupPage = () => {
   const { t } = useTranslation()
@@ -31,15 +29,7 @@ const GroupPage = () => {
     defaultValues: createGroupForm(),
     mode: 'onChange',
   })
-  const toggles = useFeatureToggles()
-  const tabIds = useMemo(
-    () =>
-      toggles.isToggleValid(AUDIT_LOG_FEATURE_TOGGLE)
-        ? [...BASE_TABS, 'audit-log']
-        : BASE_TABS,
-    [toggles]
-  )
-  const { activeTab, onTabChange } = useTabs(tabIds, true)
+  const { activeTab, onTabChange } = useTabs(TABS, true)
   const { navigate } = useCustomNavigate()
   const { getContentLangValue } = useLocalizedValue()
   const { hasPermission } = usePermissions()
@@ -49,7 +39,7 @@ const GroupPage = () => {
   const { group } = useGroupData()
 
   // Keep details mounted across GroupPage re-renders (form dirty updates,
-  // i18n, toggles). Remounting GroupDetails would reset() and clear isDirty.
+  // i18n). Remounting GroupDetails would reset() and clear isDirty.
   const detailsContent = useMemo(
     () => (
       <GroupRoleProvider>
@@ -74,25 +64,21 @@ const GroupPage = () => {
         content: membersContent,
         disabled: !group,
       },
-      ...(toggles.isToggleValid(AUDIT_LOG_FEATURE_TOGGLE)
-        ? [
-            {
-              id: 'audit-log',
-              label: t('auditLog.entityChangelog.tab'),
-              disabled: !group,
-              content:
-                groupId && group ? (
-                  <EntityChangelogTab
-                    entity="group"
-                    entityId={groupId}
-                    isActive={activeTab === 'audit-log'}
-                  />
-                ) : null,
-            },
-          ]
-        : []),
+      {
+        id: 'audit-log',
+        label: t('auditLog.entityChangelog.tab'),
+        disabled: !group,
+        content:
+          groupId && group ? (
+            <EntityChangelogTab
+              entity="group"
+              entityId={groupId}
+              isActive={activeTab === 'audit-log'}
+            />
+          ) : null,
+      },
     ],
-    [activeTab, detailsContent, group, groupId, membersContent, t, toggles]
+    [activeTab, detailsContent, group, groupId, membersContent, t]
   )
 
   const visibleTabs = tabs.filter((tab) => !tab.disabled)
