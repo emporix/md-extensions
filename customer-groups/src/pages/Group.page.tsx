@@ -21,19 +21,26 @@ import { GroupRoleProvider } from '../context/GroupRole.provider'
 import { EmployeeDomains } from '../configs/accessControls'
 import EntityChangelogTab from '../components/auditLog/EntityChangelogTab'
 
-const TABS = ['details', 'members', 'audit-log']
-
 const GroupPage = () => {
   const { t } = useTranslation()
   const methods = useForm<GroupFormFields>({
     defaultValues: createGroupForm(),
     mode: 'onChange',
   })
-  const { activeTab, onTabChange } = useTabs(TABS, true)
   const { navigate } = useCustomNavigate()
   const { getContentLangValue } = useLocalizedValue()
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
+  const canViewAuditLog = hasPermission(EmployeeDomains.AUDIT_LOG_VIEWER)
+
+  const tabIds = useMemo(
+    () =>
+      canViewAuditLog
+        ? ['details', 'members', 'audit-log']
+        : ['details', 'members'],
+    [canViewAuditLog]
+  )
+  const { activeTab, onTabChange } = useTabs(tabIds, true)
 
   const { groupId } = useParams()
   const { group } = useGroupData()
@@ -51,8 +58,8 @@ const GroupPage = () => {
 
   const membersContent = useMemo(() => <GroupMembers />, [])
 
-  const tabs = useMemo(
-    () => [
+  const tabs = useMemo(() => {
+    const baseTabs = [
       {
         id: 'details',
         label: t('usersAndGroups.groups.tabs.details'),
@@ -64,6 +71,14 @@ const GroupPage = () => {
         content: membersContent,
         disabled: !group,
       },
+    ]
+
+    if (!canViewAuditLog) {
+      return baseTabs
+    }
+
+    return [
+      ...baseTabs,
       {
         id: 'audit-log',
         label: t('auditLog.entityChangelog.tab'),
@@ -77,9 +92,16 @@ const GroupPage = () => {
             />
           ) : null,
       },
-    ],
-    [activeTab, detailsContent, group, groupId, membersContent, t]
-  )
+    ]
+  }, [
+    activeTab,
+    canViewAuditLog,
+    detailsContent,
+    group,
+    groupId,
+    membersContent,
+    t,
+  ])
 
   const visibleTabs = tabs.filter((tab) => !tab.disabled)
 

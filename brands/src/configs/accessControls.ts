@@ -359,6 +359,8 @@ export enum AccessControlsForEmployee {
   ACCESS_CONTROLS_VIEWER = '1ac869fc-d548-4ec8-8e06-c01491314220',
   ACCESS_CONTROLS_MANAGER = '4ac869fc-d548-4ec8-8e06-c01491314189',
   ADMIN_STATISTICS_MANAGER = '4ac869fc-d548-4ec8-8e06-c01491314203',
+  AUDIT_LOG_VIEWER = '1ac869fc-d548-4ec8-8e06-c01491314240',
+  AUDIT_LOG_MANAGER = '4ac869fc-d548-4ec8-8e06-c01491314236',
 }
 
 export enum EmployeeDomains {
@@ -443,6 +445,8 @@ export enum EmployeeDomains {
   ACCESS_CONTROLS_MANAGER = 'Access Controls Manager',
   MEDIA_VIEWER = 'Media Viewer',
   MEDIA_MANAGER = 'Media Manager',
+  AUDIT_LOG_VIEWER = 'Audit Log Viewer',
+  AUDIT_LOG_MANAGER = 'Audit Log Manager',
 }
 
 export const EMPLOYEE_DOMAINS: Domain[] = [
@@ -919,5 +923,13 @@ export const EMPLOYEE_ADMIN_DOMAINS: Domain[] = [
   {
     id: EmployeeDomains.ADMIN_STATISTICS_MANAGER,
     accessControls: [AccessControlsForEmployee.ADMIN_STATISTICS_MANAGER],
+  },
+  {
+    id: EmployeeDomains.AUDIT_LOG_VIEWER,
+    accessControls: [AccessControlsForEmployee.AUDIT_LOG_VIEWER],
+  },
+  {
+    id: EmployeeDomains.AUDIT_LOG_MANAGER,
+    accessControls: [AccessControlsForEmployee.AUDIT_LOG_MANAGER],
   },
 ]
