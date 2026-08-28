@@ -57,11 +57,15 @@ export const MixinColumns = ({
   }, [tenant, tableConfigurationKey, tableConfigurations])
 
   useEffect(() => {
-    // Offer every mixin that is not already selected.
+    // Offer mixins that are not already saved as columns, matching MD MixinColumns.
     setActiveMixinOptions(
       mixinColumns
         .filter((mixin) =>
-          defaultSelectedMixins.every((selected) => mixin.key !== selected.key)
+          defaultSelectedMixins.length > 0
+            ? defaultSelectedMixins.every(
+                (selected) => mixin.key !== selected.key
+              )
+            : true
         )
         .sort((a, b) => a.key.localeCompare(b.key))
     )
@@ -114,10 +118,13 @@ export const MixinColumns = ({
         filter
         disabled={!managerPermission}
         placeholder={t('global.tableExtensions.selectMixin')}
-        options={activeMixinOptions.map((mixin) => ({
-          label: mixin.key,
-          value: mixin.key,
-        }))}
+        options={activeMixinOptions}
+        optionLabel="key"
+        optionValue="key"
+        panelClassName={styles.dropdownPanel}
+        itemTemplate={(option) => (
+          <span title={option.key}>{option.key}</span>
+        )}
         onChange={(e) => {
           const picked = activeMixinOptions.find(
             (mixin) => mixin.key === e.value
