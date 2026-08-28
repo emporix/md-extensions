@@ -41,8 +41,13 @@ const CompanySelector = ({
     async (selected: string | string[]) => {
       const id = Array.isArray(selected) ? selected[0] : selected
       if (!id) return []
-      const entity = await getLegalEntity(id)
-      return entity ? [entity] : []
+      try {
+        const entity = await getLegalEntity(id)
+        return entity ? [entity] : []
+      } catch (e) {
+        console.error('Error resolving company:', e)
+        return []
+      }
     },
     [getLegalEntity]
   )

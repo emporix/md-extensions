@@ -168,7 +168,10 @@ const GroupDetailsGeneralForm = ({ groupId }: GroupDetailsGeneralFormProps) => {
               render={({ field }) => (
                 <CompanySelector
                   value={field.value ?? undefined}
-                  onChange={(value) => field.onChange(value ?? '')}
+                  onChange={(val) =>
+                    field.onChange((Array.isArray(val) ? val[0] : val) ?? '')
+                  }
+                  disabled={!canManage}
                   canManage={canManage}
                   canView={canViewCompanies}
                 />
