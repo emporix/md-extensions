@@ -1,5 +1,8 @@
 import { useCallback } from 'react'
-import { fetchLegalEntitiesCall } from '@emporix/api-calls'
+import {
+  fetchLegalEntitiesCall,
+  fetchLegalEntityCall,
+} from '@emporix/api-calls'
 import { useDashboardContext } from '../../context/Dashboard.context'
 import type { PaginationProps } from '../../hooks/usePagination'
 import { toApiPagination } from '../../helpers/apiPagination'
@@ -19,5 +22,15 @@ export const useCustomerManagementApi = () => {
     [tenant]
   )
 
-  return { getLegalEntities }
+  const getLegalEntity = useCallback(
+    (legalEntityId: string) => {
+      if (tenant) {
+        return fetchLegalEntityCall(tenant, legalEntityId)
+      }
+      return Promise.reject(new Error('No tenant'))
+    },
+    [tenant]
+  )
+
+  return { getLegalEntities, getLegalEntity }
 }
