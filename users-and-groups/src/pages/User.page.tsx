@@ -28,12 +28,8 @@ import {
   UserFormFields,
 } from '../helpers/users/users.helpers'
 import { listPath, userDetailPath } from '../constants/paths'
-import { useFeatureToggles } from '../context/FeatureTogglesProvider'
-import { AUDIT_LOG_FEATURE_TOGGLE } from '../configs/auditLog.config'
 import EntityChangelogTab from '../components/auditLog/EntityChangelogTab'
 import styles from './UserPage.module.scss'
-
-const BASE_TABS = ['details', 'access']
 
 const UserPage = () => {
   const { t } = useTranslation()
@@ -43,17 +39,18 @@ const UserPage = () => {
   const { handleSubmit, formState, reset } = methods
   const { showSuccess, showError } = useToast()
   const { navigate } = useCustomNavigate()
-  const toggles = useFeatureToggles()
-  const tabIds = useMemo(
-    () =>
-      toggles.isToggleValid(AUDIT_LOG_FEATURE_TOGGLE)
-        ? [...BASE_TABS, 'audit-log']
-        : BASE_TABS,
-    [toggles]
-  )
-  const { activeTab, onTabChange } = useTabs(tabIds, true)
   const { syncUserAccessControls, hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
+  const canViewAuditLog = hasPermission(EmployeeDomains.AUDIT_LOG_VIEWER)
+
+  const tabIds = useMemo(
+    () =>
+      canViewAuditLog
+        ? ['details', 'access', 'audit-log']
+        : ['details', 'access'],
+    [canViewAuditLog]
+  )
+  const { activeTab, onTabChange } = useTabs(tabIds, true)
 
   const { userId } = useParams()
   const [user, setUser] = useState<User>()
@@ -118,8 +115,8 @@ const UserPage = () => {
     return `${firstName} ${lastName}`.trim()
   }, [user])
 
-  const tabs = useMemo(
-    () => [
+  const tabs = useMemo(() => {
+    const baseTabs = [
       {
         id: 'details',
         label: t('usersAndGroups.users.tabs.details'),
@@ -138,25 +135,28 @@ const UserPage = () => {
           </SectionBox>
         ),
       },
-      ...(toggles.isToggleValid(AUDIT_LOG_FEATURE_TOGGLE)
-        ? [
-            {
-              id: 'audit-log',
-              label: t('auditLog.entityChangelog.tab'),
-              disabled: !userId,
-              content: userId ? (
-                <EntityChangelogTab
-                  entity="employee"
-                  entityId={userId}
-                  isActive={activeTab === 'audit-log'}
-                />
-              ) : null,
-            },
-          ]
-        : []),
-    ],
-    [activeTab, t, toggles, userId]
-  )
+    ]
+
+    if (!canViewAuditLog) {
+      return baseTabs
+    }
+
+    return [
+      ...baseTabs,
+      {
+        id: 'audit-log',
+        label: t('auditLog.entityChangelog.tab'),
+        disabled: !userId,
+        content: userId ? (
+          <EntityChangelogTab
+            entity="employee"
+            entityId={userId}
+            isActive={activeTab === 'audit-log'}
+          />
+        ) : null,
+      },
+    ]
+  }, [activeTab, canViewAuditLog, t, userId])
 
   return (
     <FormProvider {...methods}>
