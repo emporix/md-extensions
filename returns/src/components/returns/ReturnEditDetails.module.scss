@@ -1,0 +1,101 @@
+.section {
+  width: 100%;
+  margin-bottom: var(--spacing-md);
+}
+
+.thirdField {
+  flex: 0 0 25%;
+  max-width: 25%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  min-width: 0;
+
+  // CL InputText/Calendar use min-width: 200px; allow shrink in narrow columns
+  > * {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+.halfField {
+  flex: 0 0 50%;
+  max-width: 50%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  min-width: 0;
+
+  > * {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+.codeField {
+  flex: 0 0 25%;
+  max-width: 25%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  min-width: 0;
+
+  > * {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+.detailsField {
+  flex: 0 0 75%;
+  max-width: 75%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  min-width: 0;
+
+  > * {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+.switchField {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 16.6667%;
+  max-width: 16.6667%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.submitterField {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 33.3333%;
+  max-width: 33.3333%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.error {
+  color: var(--red-500, #ef4444);
+  font-size: 0.875rem;
+}
+
+.submitter {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.table {
+  width: 100%;
+}
+
+.viewOrderButton {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}

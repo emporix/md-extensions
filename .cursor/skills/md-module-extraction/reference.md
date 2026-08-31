@@ -1,6 +1,6 @@
 # MD Module Extraction — Reference
 
-FAQ, validation greps, and anti-patterns for the extraction workflow. For the step-by-step phases, see [SKILL.md](SKILL.md). For policy and federation contract, see the [playbook](../../docs/MODULE_MIGRATION_PLAYBOOK.md). For copy inventory, see [REUSABLE](../../docs/REUSABLE_FROM_USERS_AND_GROUPS.md).
+FAQ, validation greps, and anti-patterns for the extraction workflow. For the step-by-step phases, see [SKILL.md](SKILL.md). For policy and federation contract, see the [playbook](../../docs/MODULE_MIGRATION_PLAYBOOK.md). For copy inventory, see [REUSABLE](../../docs/REUSABLE_FROM_USERS_AND_GROUPS.md). For PrimeReact → CL coverage, see [CL_WIDGET_STATUS](../../docs/CL_WIDGET_STATUS.md).
 
 ## AppState FAQ
 
@@ -14,7 +14,7 @@ A: No. Host may pass optional `user` for contract compatibility only.
 A: Required in AppState. Seed ConfigurationProvider and sync on `appState` changes.
 
 **Q: InputField or FormField?**  
-A: Copy U&G lean `InputField` from `components/shared/InputField.tsx`. Never MD `InputField`. There is no CL `FormField` replacement for that wrapper.
+A: Prefer each CL control's built-in `label` / `error` / `required` / `tooltip` props — do **not** wrap `InputText`, `Dropdown`, `Calendar`, `LocalizedInput`, etc. in lean `InputField` or standalone `FieldLabel`. Use `FieldLabel` only when the child has no label API (e.g. `InputSwitch`, plain text). Skip copying lean `InputField` when every field can use built-in labels. Never MD `InputField` (ProductDataProvider). There is no CL `FormField` replacement for that wrapper.
 
 **Q: Local ConfirmBox / BackButton / DateValue?**  
 A: On CL ≥ 2.2.0, import from `@emporix/component-library` **directly** in feature components and delete local copies. Do **not** add a pass-through wrapper. Cascade to sibling remotes when bumping.
@@ -25,6 +25,9 @@ A: Only when the library component is context-free and the remote must inject ap
 **Q: Shared UI already exists in a prior remote — copy again?**  
 A: **Ask first.** If `@emporix/component-library` already exports it → import directly. If only prior remotes have a local copy → prompt the user to migrate to CL now (skill `migrate-to-component-library`, Pattern A vs B) or keep a local copy for this remote. Do not silently third-copy forever.
 
+**Q: Does CL export the PrimeReact widget this module uses?**  
+A: Look up the `primereact/{path}` in [CL_WIDGET_STATUS.md](../../docs/CL_WIDGET_STATUS.md) (`in-cl` / `partial` / `missing`). Do not trust gap lists copied into this skill or the registry — they go stale.
+
 **Q: Global CSS vs SCSS Modules?**  
 A: Prefer **SCSS Modules** (`Component.module.scss`) co-located with the component. Avoid unscoped / global class names for feature UI — when federated into MD, host global styles can override them (and vice versa). Keep remote `index.css` to minimal shell resets only. No inline styles.
 
@@ -32,16 +35,16 @@ A: Prefer **SCSS Modules** (`Component.module.scss`) co-located with the compone
 
 Host Vite often shares `react-router-dom`; remotes share/import `react-router` (v7). Match the **pilot U&G** remote (`react-router` in `shared` + imports). Do not invent a third package mix without verifying federation at runtime.
 
-## products vs users-and-groups vs customer-groups
+## products vs green-field vs derived remotes
 
-| Topic | products | users-and-groups (SoT) | customer-groups (derived) |
-|-------|----------|------------------------|---------------------------|
-| Scaffold source | Avoid for new ports | **Use this** | Copy U&G then reduce |
-| PermissionsProvider | May vary / AppState | Required remote provider | Same as U&G (slim OK) |
-| Scope | Products domain | Employee users + groups | Customer groups only |
-| Local port | varies | `5173` | `5174` + `strictPort` |
-| MD mode | typically A | was B → A | Mode A from day one |
-| Template | Start from `md-module-migration` branch | Same | Same — absorb then reduce |
+| Topic | products (legacy) | Green-field remote | Derived (e.g. customer-groups) |
+|-------|-------------------|--------------------|--------------------------------|
+| Folder scaffold | Avoid | `md-module-template` @ `md-module-migration` | Same clone, then reduce |
+| Tier 1 copy | Avoid | All playbook-aligned remotes in `MIGRATED_MODULES.md` | Same |
+| PermissionsProvider | May vary / AppState | Required remote provider | Same (slim OK) |
+| Scope | Products domain | New MD module domain | Subtype of a prior remote |
+| Local port | varies | Next free from registry | Own `strictPort` |
+| MD mode | typically A | Prefer Mode A | Mode A from day one |
 
 ## Validation greps (run after domain port)
 
@@ -98,6 +101,10 @@ rg '"quill"' md-extensions/*/package.json component-library/package.json
 # decision + comment (no in-remote route exists for these):
 rg "window\.location\.(assign|href)" "$SRC"
 
+# PrimeReact inventory — then look up each path in docs/CL_WIDGET_STATUS.md:
+rg "from ['\"]primereact|MdDataTable|ProductDataProvider|InputField" \
+  "management-dashboard/src/modules/{Module}"* "management-dashboard/src/components/{module}"*
+
 # Capabilities that vanish silently in a component-by-component port —
 # run against the MD source module BEFORE Phase 2:
 rg "TableExtensions|fetchVisibleColumns|tableConfigurationKey" \
@@ -144,7 +151,7 @@ curl -s -o /dev/null -w '%{http_code}\n' \
 - Committing without the Jira key (`{KEY}-### Sentence case`) or branching without it — retrofitting means rewriting history
 - Creating a Jira ticket without first asking whether one already exists (ask for the number or URL if it does), or inventing a key / defaulting to the COP-5597 epic when unsure
 - Auditing for `TableExtensions` (or any capability invisible in a component diff) only at Phase 5, after the port is "done"
-- Adding `primereact` to a remote because CL lacks a widget — promote it to CL as Pattern B instead
+- Adding `primereact` to a remote because CL lacks a widget — promote it to CL as Pattern B instead (lookup `docs/CL_WIDGET_STATUS.md`; do not copy gap lists into the skill)
 - Pairing PrimeReact 8's `Editor` with `quill` 2.x (silently loads no existing content; pin `^1.3.7`)
 - Swapping MD's `pi pi-*` glyphs for react-icons without checking the shape matches (filled vs outline)
 - Converting MD's fixed px control sizing to `rem` during the port

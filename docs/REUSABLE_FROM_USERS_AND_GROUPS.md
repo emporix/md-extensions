@@ -8,6 +8,7 @@
 **Tier 1 sources:** every **playbook-aligned** remote in that registry (newest first when they diverge) — do **not** depend on U&G alone.  
 **Starter clone:** [md-module-template](https://github.com/emporix/md-module-template) branch **`md-module-migration`** (absorb into monorepo — playbook §1).  
 **Full workflow:** [MODULE_MIGRATION_PLAYBOOK.md](./MODULE_MIGRATION_PLAYBOOK.md)  
+**PrimeReact → CL lookup:** [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md)  
 **Skill (canonical):** `md-extensions/.cursor/skills/md-module-extraction/SKILL.md`  
 **Host wiring:** `management-dashboard/.cursor/rules/federated-module-wiring.mdc`
 
@@ -20,8 +21,9 @@
 1. Read the [playbook](./MODULE_MIGRATION_PLAYBOOK.md) for federation contract, MD wiring, QA, and cleanup.
 2. Check [MIGRATED_MODULES.md](./MIGRATED_MODULES.md) for which remotes are Tier 1 sources and any deltas since U&G.
 3. Use **this file** as the copy inventory: what to take from prior remotes, what to adapt, what to skip.
-4. For the step-by-step workflow, follow the **skill** (`.cursor/skills/md-module-extraction/SKILL.md`).
-5. After the migration: update the registry, refresh this inventory if needed, append 1–3 playbook decisions-log rows.
+4. Look up every MD `primereact` import in [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md) before rewriting UI.
+5. For the step-by-step workflow, follow the **skill** (`.cursor/skills/md-module-extraction/SKILL.md`).
+6. After the migration: update the registry, refresh this inventory if needed, append 1–3 playbook decisions-log rows, and move rows in `CL_WIDGET_STATUS.md` if you promoted a widget.
 
 **Default strategy:** copy Tier 1 from the **best/newest playbook-aligned remote** that has the piece (often U&G; check `customer-groups` and later remotes for CL-adopted shells). Prefer `@emporix/component-library` when it already exports the component. Do **not** invent a shared package unless several modules already diverge from copy-paste.
 
@@ -62,12 +64,12 @@ Paths below are relative to a playbook-aligned remote (historically `users-and-g
 | `TableActions` | `TableActions.tsx` | Row edit/delete + overflow menu |
 | `BatchDeleteButton` | `BatchDeleteButton.tsx` | Bulk delete + confirm |
 | `LoadingLayout` | `LoadingLayout.tsx` | Full-area spinner — prefer CL `ProgressSpinner` inside (no extra spinner wrapper) |
-| Lean `InputField` | `InputField.tsx` | Label/error/tooltip wrapper — **not** MD's ProductData-coupled InputField |
+| Lean `InputField` | Prefer **not** copying — CL controls with `label`/`error` props replace it. Keep only if you still wrap non-labeled children | Label/error/tooltip wrapper — **not** MD's ProductData-coupled InputField. Prefer built-in CL labels; use CL `FieldLabel` only when the child has no `label` prop |
 | `DropdownFilter` | `DropdownFilter.tsx` | DataTable column filter → CL Dropdown |
 | `LocalizedInput` | `LocalizedInput.tsx` | **Required thin wrapper** — injects languages + i18n toggle labels into context-free CL |
 | `DotIndicator` | `DotIndicator.tsx` | Boolean status dot (optional; prefer CSS Modules if you touch it) |
-| `TableExtensions` | `brands/src/components/shared/TableExtensions.tsx` | Column visibility persisted per config key. Needs the `ConfigurationProvider` table-config surface from `brands`. Copy sibling `SidePanel` (CL has no Sidebar). Toggles are CL `InputSwitch` (CL ≥ 2.5.0). |
-| `SidePanel` | `brands/src/components/shared/SidePanel.tsx` | Right-side drawer standing in for PrimeReact `Sidebar`. Required by `TableExtensions`. |
+| `TableExtensions` | `brands/src/components/shared/TableExtensions.tsx` (then `returns` for mixin columns) | Column visibility persisted per config key. Needs the `ConfigurationProvider` table-config surface from `brands`. Copy sibling `SidePanel` (CL has no Sidebar). Toggles are CL `InputSwitch` (CL ≥ 2.5.0). Current widget status: [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md). |
+| `SidePanel` | `brands/src/components/shared/SidePanel.tsx` or `returns/...` | Right-side drawer standing in for PrimeReact `Sidebar`. Required by `TableExtensions`. |
 | `AssetsViewer` / `MediaAssetUpload` | `brands/src/components/shared/` | Media grid + upload on CL `FileUpload`/`ProgressBar` (CL ≥ 2.4.0). Asset tiles need a host route — see the `brands` row in the registry. |
 
 Also copy matching `*.module.scss` / `*.scss` next to each component.
@@ -91,7 +93,7 @@ A second independent run of the Brands migration (Aug 2026) hit all of these:
 
 ### Copy what the module uses, not the whole table
 
-Tier 1 is a menu, not a mandate. Skip shells the module genuinely has no use for — a Brands-style module needs no `DateValue` (renders no dates), and the lean `InputField` is redundant once you use CL `InputText` / `Editor`, which already render `FieldLabel` themselves. Copying them anyway leaves dead files that the next reader assumes are load-bearing. Conversely, do not skip a **provider** on the same reasoning (see playbook §4).
+Tier 1 is a menu, not a mandate. Skip shells the module genuinely has no use for — a Brands-style module needs no `DateValue` (renders no dates), and the lean `InputField` is redundant once you use CL controls' built-in `label` / `error` props (`InputText`, `Dropdown`, `Calendar`, `Editor`, …). Prefer those props over wrapping with lean `InputField` or standalone `FieldLabel`; use `FieldLabel` only for children without a label API. Copying unused shells leaves dead files that the next reader assumes are load-bearing. Conversely, do not skip a **provider** on the same reasoning (see playbook §4).
 
 ### Forms: use `react-hook-form`
 

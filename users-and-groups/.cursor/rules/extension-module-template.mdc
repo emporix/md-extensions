@@ -1,13 +1,16 @@
 ---
-description: Extension module template — overrides and project-only patterns (not in frontend-ai-rules)
+description: Extension module template — overrides and project-only patterns
+globs: "**/RemoteComponent.tsx,**/vite.config.ts,**/AppState.model.ts,**/src/**"
 alwaysApply: true
 ---
 
 # Extension Module Template
 
-Emporix **Management Dashboard extension module** — Module Federation remote. Generic rules come from [frontend-ai-rules](https://github.com/emporix/frontend-ai-rules). This file holds **overrides and template-only** conventions.
+Emporix **Management Dashboard extension module** — Module Federation remote. Generic rules come from `frontend-ai-rules`. This file holds **overrides and template-only** conventions.
 
-**Reference implementation:** Users & Groups (`COP-5598`) — see `md-extensions/docs/MODULE_MIGRATION_PLAYBOOK.md` and `md-extensions/users-and-groups/src/RemoteComponent.tsx`.
+**Creating a new remote:** clone [md-module-template @ `md-module-migration`](https://github.com/emporix/md-module-template/tree/md-module-migration) into `md-extensions/{kebab}/` and absorb (`rm -rf .git`). This file is overrides for an *existing* remote — **not** the scaffold source. Do **not** copy `users-and-groups` (or any other remote) as the new folder.
+
+**Reference implementation (patterns):** Users & Groups (`COP-5598`) — see `md-extensions/docs/MODULE_MIGRATION_PLAYBOOK.md` and `md-extensions/users-and-groups/src/RemoteComponent.tsx`. Tier 1 copy from **all** playbook-aligned remotes in `MIGRATED_MODULES.md`.
 
 ## Overrides (this project wins over global rules)
 
@@ -30,7 +33,7 @@ Shared API client: `setApiCredentials` / `useApiCredentials` in `src/api/bootstr
 - `DashboardProvider` wraps routes; read host values with `useDashboardContext()`
 - Sync language on host change: `i18n.changeLanguage(appState.language)` in `RemoteComponent`
 - Never hardcode tenant or token
-- Federation `name`: `usersAndGroups` (must match MD route key)
+- Federation `name`: `{camelCase MD route key}` (must match host route `key` and `ExternalModule.moduleName`)
 
 ```typescript
 <ToastProvider>
