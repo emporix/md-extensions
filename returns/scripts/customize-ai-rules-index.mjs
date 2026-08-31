@@ -17,7 +17,7 @@ const directoryMap = [
   '| `src/models/` | Domain types (`AppState`, `Returns`, `ApiError`) |',
   '| `src/helpers/` | Pure helpers (`settings.helpers.ts` for standalone dev) |',
   '| `src/api/` | Emporix REST API layer (`@emporix/api-calls`, `bootstrap.ts`) |',
-  '| `src/context/` | `ExtensionProvider` / `useExtensionContext` — host `tenant`, `language`, `token` |',
+  '| `src/context/` | `DashboardProvider` / `useDashboardContext` — host `tenant`, `language`, `token` |',
   '| `src/translations/{locale}/` | i18n keys (react-i18next) |',
   '| `vite.config.ts` | Module Federation config, CORS, shared dependencies |',
 ].join('\n')
@@ -31,8 +31,8 @@ const genericDirectoryMap =
 const frontendAiRulesPin =
   'git+https://github.com/emporix/frontend-ai-rules.git#md-module-migration'
 
-const customize = (content) =>
-  content
+const customize = (content, relativePath) => {
+  let next = content
     .replace(
       /<!-- CUSTOMIZE: Describe your app in one line -->\nReact \+ TypeScript \+ Vite frontend application\./,
       projectDescription
@@ -44,6 +44,13 @@ const customize = (content) =>
       frontendAiRulesPin
     )
 
+  if (relativePath.includes('api-data')) {
+    next = next.replaceAll('VITE_API_BASE_URL', 'VITE_API_URL')
+  }
+
+  return next
+}
+
 const tasks = [
   '.cursorrules',
   '.github/copilot-instructions.md',
@@ -51,12 +58,15 @@ const tasks = [
   '.cursor/rules/npm-dependencies.mdc',
   '.github/instructions/npm-dependencies.instructions.md',
   '.claude/rules/npm-dependencies.md',
+  '.cursor/rules/api-data.mdc',
+  '.github/instructions/api-data.instructions.md',
+  '.claude/rules/api-data.md',
 ]
 
 for (const relativePath of tasks) {
   const filePath = resolve(rootDir, relativePath)
   const content = await readFile(filePath, 'utf8')
-  await writeFile(filePath, customize(content))
+  await writeFile(filePath, customize(content, relativePath))
 }
 
 console.log('Customized AI rules index files for extension module template.')

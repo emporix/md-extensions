@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useSchemaApi } from './api/schema'
 import { parseMixinColumns } from '../helpers/schema.helper'
 import type { DisplayMixin } from '../models/DisplayMixin'
@@ -8,7 +7,6 @@ import type { SchemaType } from '../models/Schema.model'
 /** Mixin keys available as table columns for a schema type. */
 export const useMixinColumns = (schemaType: SchemaType | string) => {
   const [mixinColumns, setMixinColumns] = useState<DisplayMixin[]>([])
-  const { i18n } = useTranslation()
   const { getSchemas } = useSchemaApi()
 
   useEffect(() => {
@@ -20,7 +18,7 @@ export const useMixinColumns = (schemaType: SchemaType | string) => {
         console.error(error)
       }
     })()
-  }, [schemaType, getSchemas, i18n.language])
+  }, [schemaType, getSchemas])
 
   return { mixinColumns }
 }

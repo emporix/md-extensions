@@ -45,7 +45,7 @@ const MixinsSectionBox = ({
           </SecondaryButton>
         )}
       </div>
-      <div data-test-id="section-box" className={styles.body}>
+      <div data-testid="section-box" className={styles.body}>
         {children}
       </div>
     </div>

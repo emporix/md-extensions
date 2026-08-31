@@ -1,6 +1,6 @@
 ---
 description: Unit test patterns and requirements
-globs: **/*.test.ts,**/*.test.tsx
+globs: "**/*.test.ts,**/*.test.tsx"
 alwaysApply: false
 ---
 

@@ -94,7 +94,7 @@ const TableActions = ({
     let hidden: CustomAction[]
     if (onEdit) {
       shown.push({
-        icon: <BsPencilFill data-test-id="edit-button" size={16} />,
+        icon: <BsPencilFill data-testid="edit-button" size={16} />,
         onClick: onEdit,
         tooltip: t('global.edit'),
         disabled: disabled || editDisabled,
@@ -102,7 +102,7 @@ const TableActions = ({
     }
     if (onDelete) {
       shown.push({
-        icon: <BsTrashFill data-test-id="delete-button" size={16} />,
+        icon: <BsTrashFill data-testid="delete-button" size={16} />,
         onClick: handleDeleteClick,
         tooltip: t('global.delete'),
         disabled: !managerPermission || disabled || deleteDisabled,

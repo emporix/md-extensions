@@ -1,6 +1,6 @@
 ---
 description: Module Federation entry points and Vite federation config
-globs: **/RemoteComponent.tsx,**/vite.config.ts,**/main.tsx
+globs: "**/RemoteComponent.tsx,**/vite.config.ts,**/main.tsx"
 alwaysApply: false
 ---
 

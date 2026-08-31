@@ -14,7 +14,7 @@ Skip this rule if the project uses only GraphQL or another data layer — adapt 
 
 ## Configuration
 
-- Use environment variables for base URLs and keys (e.g. `import.meta.env.VITE_API_BASE_URL`).
+- Use environment variables for base URLs and keys (e.g. `import.meta.env.VITE_API_URL`).
 - Never hardcode secrets or environment-specific URLs.
 - Document required env vars in `.env.example` or README.
 
@@ -43,7 +43,7 @@ Skip this rule if the project uses only GraphQL or another data layer — adapt 
 // src/api/products.api.ts
 import type { Product } from '../models/Product.model'
 
-const getBaseUrl = () => import.meta.env.VITE_API_BASE_URL as string
+const getBaseUrl = () => import.meta.env.VITE_API_URL as string
 
 export class ApiError extends Error {
   constructor(
