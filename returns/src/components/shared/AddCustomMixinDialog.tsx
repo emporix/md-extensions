@@ -27,10 +27,19 @@ const AddCustomMixinDialog = ({
   const isEdit = Boolean(defaultDisplayMixin?.key)
 
   useEffect(() => {
-    if (isOpen && defaultDisplayMixin) {
+    if (!isOpen) {
+      return
+    }
+    // MixinColumns passes EMPTY_MIXIN (`key: ''`) for create. That object is
+    // truthy, so reset whenever there is no mixin key — not only when the
+    // prop is omitted.
+    if (defaultDisplayMixin?.key) {
       setCustomMixinLabel(defaultDisplayMixin.label)
       setCustomMixinKey(defaultDisplayMixin.key)
+      return
     }
+    setCustomMixinLabel({})
+    setCustomMixinKey('')
   }, [defaultDisplayMixin, isOpen])
 
   const isValid = useMemo(

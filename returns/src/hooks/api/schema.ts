@@ -10,6 +10,8 @@ import { Reference, Schema } from '../../models/Schema.model'
 import { MixinsSchema } from '../../models/Mixins.model'
 import { useDashboardContext } from '../../context/Dashboard.context'
 
+const isMissingVersion = (version: number): boolean => !Number.isFinite(version)
+
 /**
  * Read-only slice of the schema API — the Returns detail page only renders
  * mixin forms, it never authors schemas.
@@ -38,7 +40,7 @@ export const useSchemaApi = () => {
       if (!id) {
         return Promise.reject(new Error('No id provided'))
       }
-      if (!version) {
+      if (isMissingVersion(version)) {
         return Promise.reject(new Error('No version provided'))
       }
       return getSchemaCall(tenant, id, version) as unknown as Promise<Schema>
@@ -67,7 +69,7 @@ export const useSchemaApi = () => {
       if (!id) {
         return Promise.reject(new Error('No id provided'))
       }
-      if (!version) {
+      if (isMissingVersion(version)) {
         return Promise.reject(new Error('No version provided'))
       }
       return getReferenceCall(
