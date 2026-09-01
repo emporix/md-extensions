@@ -1,0 +1,214 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import {
+  DataTable,
+  Dropdown,
+  InputText,
+  MoneyValue,
+  type DataTableColumnProps,
+} from '@emporix/component-library'
+
+import { useReturnForm } from '../../contexts/ReturnForm.provider'
+import type { Order } from '../../models/Order.model'
+import type { ReturnEntry } from '../../models/Returns.model'
+
+interface ReturnAddProductsExpansionProps {
+  readonly readonly?: boolean
+  readonly order: Order
+  readonly onSelect: (orderId: string, entries: ReturnEntry[]) => unknown
+}
+
+const stopRowEvent = (event: { stopPropagation: () => void }) => {
+  event.stopPropagation()
+}
+
+const ReturnAddProductsExpansion = ({
+  order,
+  onSelect,
+  readonly = false,
+}: ReturnAddProductsExpansionProps) => {
+  const { t, i18n } = useTranslation()
+  const { selectedEntriesMap } = useReturnForm()
+  const [selectedEntries, setSelectedEntries] = useState<ReturnEntry[]>(
+    selectedEntriesMap.get(order.id) ?? []
+  )
+  const hasSyncedRef = useRef(false)
+
+  useEffect(() => {
+    // Skip the initial empty mount sync — it used to write `{ items: [] }` into
+    // the form for every expanded order and block Save via items.min(1).
+    if (!hasSyncedRef.current) {
+      hasSyncedRef.current = true
+      if (selectedEntries.length === 0) {
+        return
+      }
+    }
+    onSelect(order.id, selectedEntries)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedEntries])
+
+  const data = useMemo(
+    (): ReturnEntry[] =>
+      order.entries.map((entry) => ({
+        ...entry,
+        quantity: entry.amount,
+        reason: { code: '', details: '' },
+      })),
+    [order.entries]
+  )
+
+  const columns: DataTableColumnProps[] = useMemo(
+    () => [
+      {
+        columnKey: 'id',
+        field: 'id',
+        header: t('returns.details.item.id'),
+        sortable: true,
+      },
+      {
+        columnKey: 'name',
+        field: 'product.name',
+        header: t('returns.details.item.name'),
+      },
+      {
+        columnKey: 'returnCode',
+        header: t('returns.details.returnCode'),
+        field: 'reason.code',
+        hidden: readonly,
+        body: (entry: ReturnEntry) => {
+          const selected = selectedEntries.find((item) => item.id === entry.id)
+          if (!selected) {
+            return '--'
+          }
+          return (
+            <div onClick={stopRowEvent} onKeyDown={stopRowEvent}>
+              <InputText
+                value={selected.reason?.code ?? ''}
+                onChange={(e) => {
+                  const next = e.target.value
+                  setSelectedEntries((prev) =>
+                    prev.map((item) =>
+                      item.id === entry.id
+                        ? {
+                            ...item,
+                            reason: { ...item.reason, code: next },
+                          }
+                        : item
+                    )
+                  )
+                }}
+              />
+            </div>
+          )
+        },
+      },
+      {
+        columnKey: 'returnReason',
+        header: t('returns.details.returnReason'),
+        field: 'reason.details',
+        hidden: readonly,
+        body: (entry: ReturnEntry) => {
+          const selected = selectedEntries.find((item) => item.id === entry.id)
+          if (!selected) {
+            return '--'
+          }
+          return (
+            <div onClick={stopRowEvent} onKeyDown={stopRowEvent}>
+              <InputText
+                value={selected.reason?.details ?? ''}
+                onChange={(e) => {
+                  const next = e.target.value
+                  setSelectedEntries((prev) =>
+                    prev.map((item) =>
+                      item.id === entry.id
+                        ? {
+                            ...item,
+                            reason: { ...item.reason, details: next },
+                          }
+                        : item
+                    )
+                  )
+                }}
+              />
+            </div>
+          )
+        },
+      },
+      {
+        columnKey: 'amount',
+        field: 'amount',
+        header: t('returns.details.item.quantity'),
+        hidden: readonly,
+        body: (entry: ReturnEntry) => {
+          const selected = selectedEntries.find((item) => item.id === entry.id)
+          if (!selected) {
+            return entry.amount
+          }
+          return (
+            <div onClick={stopRowEvent} onKeyDown={stopRowEvent}>
+              <Dropdown
+                value={String(selected.quantity || entry.amount)}
+                options={Array.from({ length: entry.amount }, (_, i) => ({
+                  label: String(i + 1),
+                  value: String(i + 1),
+                }))}
+                onChange={(e) => {
+                  const next = Number(e.value)
+                  setSelectedEntries((prev) =>
+                    prev.map((item) =>
+                      item.id === entry.id ? { ...item, quantity: next } : item
+                    )
+                  )
+                }}
+              />
+            </div>
+          )
+        },
+      },
+      {
+        columnKey: 'total',
+        field: 'total',
+        align: 'right',
+        header: t('returns.details.item.total'),
+        hidden: readonly,
+        body: (entry: ReturnEntry) => (
+          <MoneyValue
+            currency={order.currency}
+            locale={i18n.language}
+            value={
+              entry.calculatedPrice?.finalPrice?.grossValue ?? entry.totalPrice
+            }
+          />
+        ),
+      },
+    ],
+
+    [i18n.language, t, selectedEntries, readonly, order.currency]
+  )
+
+  return (
+    <DataTable
+      dataKey="id"
+      value={data}
+      columns={columns.filter((column) => !column.hidden)}
+      selectionMode={readonly ? null : 'multiple'}
+      selection={selectedEntries}
+      onSelectionChange={(selection) => {
+        const nextSelection = selection as ReturnEntry[]
+        // Keep edited reason/quantity when the table re-emits row objects
+        // from `value` (which still hold the empty defaults).
+        setSelectedEntries(
+          nextSelection.map(
+            (entry) =>
+              selectedEntries.find((selected) => selected.id === entry.id) ??
+              entry
+          )
+        )
+      }}
+      pagination={{ totalRecords: data.length }}
+      paginator={false}
+    />
+  )
+}
+
+export default ReturnAddProductsExpansion

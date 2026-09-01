@@ -65,7 +65,10 @@ export const useTools = () => {
       setError(null)
 
       const fetchedTools = await getTools(appState)
-      setTools(fetchedTools)
+      const sortedTools = [...fetchedTools].sort((a, b) =>
+        a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+      )
+      setTools(sortedTools)
     } catch (err) {
       const message = formatApiError(err, 'Failed to load tools')
       setError(message)

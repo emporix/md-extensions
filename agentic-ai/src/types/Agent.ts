@@ -1,9 +1,8 @@
 export interface McpServer {
-  type: 'predefined' | 'custom'
-  domain?: string // For predefined servers
-  tools?: string[] // For predefined servers
+  type: 'predefined' | 'custom' | 'dynamic'
+  domain?: string
+  tools?: string[]
   mcpServer?: {
-    // For custom servers (references MCP management)
     id: string
   }
 }
@@ -80,6 +79,11 @@ export enum GrantType {
   CLIENT_CREDENTIALS = 'client_credentials',
 }
 
+export interface FileProcessingConfig {
+  useResponsesApi?: boolean
+  extraModelKey?: string
+}
+
 export interface LlmConfig {
   model: string
   temperature?: number
@@ -100,6 +104,7 @@ export interface LlmConfig {
     oauth?: {
       id: string
     }
+    fileProcessingConfig?: FileProcessingConfig
   }
 }
 

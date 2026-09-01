@@ -12,6 +12,7 @@ interface ContentSectionProps {
   children?: ReactNode
   headerAction?: ReactNode
   maxLines?: number
+  plain?: boolean
 }
 
 export const ContentSection: React.FC<ContentSectionProps> = ({
@@ -21,6 +22,7 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
   children,
   headerAction,
   maxLines,
+  plain = false,
 }) => {
   const isCollapsible = content !== undefined && maxLines !== undefined
   const collapsible = useCollapsibleText(content ?? '', maxLines ?? 2)
@@ -51,7 +53,7 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
         )}
       </div>
       <div
-        className={`content-box${canToggle ? ' content-box--collapsible' : ''}`}
+        className={`content-box${plain ? ' content-box--plain' : ''}${canToggle ? ' content-box--collapsible' : ''}`}
         onClick={handleContentClick}
       >
         {content !== undefined ? (

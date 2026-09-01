@@ -4,13 +4,14 @@ Living guide for extracting Management Dashboard modules into `md-extensions` fe
 
 **Migrated modules registry (update after every migration):** [MIGRATED_MODULES.md](./MIGRATED_MODULES.md)  
 **Agent copy inventory:** [REUSABLE_FROM_USERS_AND_GROUPS.md](./REUSABLE_FROM_USERS_AND_GROUPS.md) — Tier 1 from **all** playbook-aligned remotes (not U&G alone).  
+**PrimeReact → CL lookup:** [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md) — grep MD for `primereact`, look up each import (`in-cl` / `partial` / `missing`).  
 **First pilot:** `users-and-groups` (COP-5598). **Second:** `customer-groups` (COP-6096) — see registry.
 
 ## 1. Prerequisites
 
 - `@emporix/component-library` **≥ 2.0.0** (Pattern B widgets bundle `primereact` / theme / primeicons; remotes must not depend on or import `primereact` directly).
-- Required CL primitives for typical ports: Dialog, DataTable, Menu, ToastProvider, Checkbox, RadioButton, AutoComplete, Message, ProgressSpinner, FilterMatchMode (re-exported).
-- Prefer **CL ≥ 2.2.0** shells when exported: `ConfirmBox`, `BackButton`, `DateValue` (delete local U&G copies once pinned).
+- **Widget coverage:** [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md) is the lookup SoT. Inventory MD `primereact` imports, then import `in-cl`, use listed stand-ins for `partial`, and **promote** `missing` widgets to CL before adding `primereact` to a remote.
+- Prefer **CL ≥ 2.2.0** shells when exported: `ConfirmBox`, `BackButton`, `DateValue` (delete local U&G copies once pinned). Later floors: `SectionBox` 2.3.0, `Editor`/`FileUpload`/`ProgressBar` 2.4.0, `InputSwitch`/`StatusBadge`/`Tabs` `disabled`+`keepMounted` 2.5.0, `Calendar` 2.7.0.
 - **CL replacement policy:** import CL components **directly** in feature code. Add a local thin wrapper **only** when the app must inject dependencies the library deliberately omits (i18n, tenant languages, config) — same pattern as `LocalizedInput`. Do not wrap CL widgets "for consistency" when props can be passed at the call site.
 - Ticket interview checklist:
   - Scope: which routes move vs stay in MD?
@@ -41,7 +42,7 @@ Then rename federation `name`, scrub leftovers, pin a unique port (see [MIGRATED
 | Expose | `./RemoteComponent` → `src/RemoteComponent.tsx` |
 | Router | `HashRouter` inside remote; host uses `BrowserRouter` |
 | Env var | `VITE_{MODULE_SCREAMING_SNAKE}_URL` → `.../assets/remoteEntry.js` |
-| Shared deps | `react`, `react-dom`, `react-router`, `react-i18next`, `chart.js`, `quill` — versions must match host |
+| Shared deps | `react`, `react-dom`, `react-router`, `react-i18next` — versions must match host. **Do not add `chart.js` / `quill`**: they were template-era entries, the aligned remotes do not share them, and CL now bundles what needs them. Sharing a dep the remote does not import is dead weight. |
 
 **Never** use generic federation names like `extension`.
 
@@ -59,20 +60,25 @@ Host passes AppState via `ExternalModule` → `DynamicComponent`.
 
 ## 4. Provider stack template
 
-Order (outer → inner):
+Order (outer → inner). **All seven are the default — copy them all.** Omit one only when you can show the module needs none of its data, and say so in the PR:
 
 ```
 ToastProvider (CL)
-→ DashboardProvider
-→ PermissionsProvider
-→ ConfigurationProvider (if languages/currencies)
+→ DashboardProvider          appState from the host
+→ PermissionsProvider        fetches IAM access controls itself (never via AppState)
+→ FeatureTogglesProvider
+→ ConfigurationProvider      languages / currencies / contentLanguage (+ table config)
 → SitesProvider
-→ UIBlockerProvider (optional)
+→ UIBlockerProvider
 → HashRouter + routes
-→ RefreshValuesProvider (module shell / Outlet)
+→ RefreshValuesProvider      (module shell / Outlet)
 ```
 
-Reference: `md-extensions/users-and-groups/src/RemoteComponent.tsx`, `md-extensions/products/src/RemoteComponent.tsx`.
+`RemoteComponent` must also import `@emporix/component-library/styles` once, call `useApiCredentials(tenant, token)`, sync `i18n.changeLanguage(appState.language)`, and export `RemoteComponent` **named + default**.
+
+> This list previously omitted `FeatureTogglesProvider` and hedged `ConfigurationProvider`/`UIBlockerProvider` as conditional. A from-the-docs re-run duly shipped five providers, losing feature toggles and site scoping — with typecheck, lint and build all green, because nothing fails until a screen reads that context. Treat trimming as a decision that needs evidence.
+
+Reference: `md-extensions/brands/src/RemoteComponent.tsx` (all seven), `md-extensions/users-and-groups/src/RemoteComponent.tsx`.
 
 ## 5. Hybrid composite policy
 
@@ -85,8 +91,9 @@ Key rules (detail in REUSABLE):
 - **CL ≥ 2.2.0** → import `ConfirmBox`, `BackButton`, `DateValue`, `ProgressSpinner` directly; no pass-through wrappers unless app deps are required (`LocalizedInput` pattern).
 - **Promote-to-CL gate:** before third-copying a shared shell already in a prior remote, ask the user whether to migrate it to CL first.
 - **SCSS Modules** for feature UI — no global / unscoped styles, no inline styles.
-- **CL primitives** only (`InputText`, `Dropdown`, `DataTable`, `Tabs`, `Dialog`, `FilterMatchMode`, …). Never add `primereact` / `primeicons` deps or CSS.
-- **Lean `InputField`** from prior remote — never MD `InputField` (ProductDataProvider).
+- **CL primitives** only — look up each MD `primereact` import in [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md). Never add `primereact` / `primeicons` deps or CSS.
+- **Labels:** prefer each CL control's built-in `label` / `error` / `required` / `tooltip` props (`InputText`, `Dropdown`, `Calendar`, `LocalizedInput`, …). Do **not** wrap those controls in lean `InputField` or standalone `FieldLabel`. Use `FieldLabel` only when the child has no label API (e.g. `InputSwitch`, plain text, custom content). Skip copying lean `InputField` when every form field can use built-in labels.
+- **Lean `InputField`** from a prior remote only if you still need a label wrapper — never MD `InputField` (ProductDataProvider).
 
 ## 6. MD wiring recipe (hard gate)
 
@@ -116,7 +123,7 @@ Before porting, run:
 # External imports from other MD modules
 rg "from ['\"].*modules/(?!usersAndGroups)" src/modules/{module}/
 
-# PrimeReact inventory (target: CL rewrite)
+# PrimeReact inventory (target: CL rewrite) — look up each path in docs/CL_WIDGET_STATUS.md
 rg "from 'primereact" src/modules/{module}/
 
 # Stray build artifacts
@@ -231,6 +238,34 @@ Do **not** claim "identical to U&G" after a reduce — `diff -rq` will (and shou
 | 2026-08-03 | Group details: stabilize tab content + skip `reset()` while `formState.isDirty` so accessControls-only `setValue({ shouldDirty })` enables Save; register `accessControls` and subscribe Save via `useFormState` | Relying on remount-safe tab JSX + templates-gated reset (wipes dirty on parent re-render) | customer-groups + users-and-groups |
 | 2026-08-03 | Post-migration verify (COP-6096): federation triangle + MD Mode A envs pass; develop/stage/prod Firebase hosting sites exist (`emporix-customer-groups*`) — prod may still need first deploy for remoteEntry | Treat site list empty as “site missing”; treat empty site (no deploy) as separate deploy step | customer-groups |
 | 2026-08-03 | Access controls assignment: drive updates through `useController`/`field.onChange` (not bare `setValue`); seed form with `mode: 'onChange'` + `trigger()` after reset; Save uses `dirtyFields.accessControls` | Assuming `setValue(..., { shouldDirty: true })` alone flips Save for array fields | customer-groups + users-and-groups |
+| 2026-08-05 | Promote missing widgets to CL (Pattern B) rather than adding `primereact` to a remote — Brands needed rich text + media upload, so CL 2.4.0 added `Editor` / `FileUpload` / `ProgressBar` | Add `primereact` to the remote (as `products` does), or descope the screens | All remotes |
+| 2026-08-05 | Pin `quill@^1.3.7` wherever PrimeReact 8's `Editor` is used: it calls `clipboard.convert(htmlString)` (Quill 1 API), so Quill 2 silently loads no existing content. MD still ships the broken pairing | Assume newest `quill` works; trust that the editor renders = it works | CL + any Editor consumer |
+| 2026-08-05 | Substitute CL `Dialog` + `Checkbox` where CL lacks `Sidebar` / `InputSwitch` (Brands `TableExtensions`); function and persisted shape preserved, presentation differs. **Superseded 2026-08-18:** use local `SidePanel` + CL `InputSwitch` (2.5.0+) | Block the migration on another CL release, or silently drop the feature | Remotes needing column visibility |
+| 2026-08-18 | Brands `TableExtensions` backfilled to MD/returns presentation: local `SidePanel` (right drawer) + CL `InputSwitch`. Copy `SidePanel` with `TableExtensions`; do not ship Dialog+Checkbox for column visibility | Keep the migrate-time Dialog substitute after InputSwitch exists in CL | brands + any TableExtensions consumer |
+| 2026-08-05 | Where a ported screen links to a host-owned route with no remote equivalent (Brands media tiles → `/media-assets/:id`), use `window.location.assign` and comment it as the escape hatch | Silently drop the link, or add `permissions`/navigation to AppState | All remotes |
+| 2026-08-05 | Audit MD screens for `TableExtensions` before Phase 5 — column visibility is invisible in a literal component diff and its loss is a user-facing regression | Assume the aligned remotes' feature set is complete parity | All modules |
+| 2026-08-05 | Verify a scaffold's own CI gates run non-interactively (template `ensure-cors-origin.mjs` prompts on a TTY and exits 1 headless) before trusting the deploy workflow | Copy workflow YAMLs and assume the build steps behave in CI | Remotes from md-module-template |
 | 2026-08-07 | Remotes must expose **named + default** `RemoteComponent` (`export { RemoteComponent }; export default RemoteComponent`) so Vite federation returns `{ default: Component }` and MD `loadRemoteModule` can keep `return module.default`. Default-only exposes unwrap to a bare function → host NotFound/404. U&G worked by accident (`jsxRuntimeExports as j` in the expose chunk). | Host dual-shape unwrap (`module?.default ?? module`); relying on accidental jsx-runtime named leaks | All remotes (fixed first on customer-groups) |
 | 2026-08-07 | Group details `isDirty` remount guard: skip `reset()` only when `initializedGroupKeyRef` is still `null` (tab remount with FormProvider surviving). Always reset when the group id changes so dirty edits cannot leak across routes | Broad `if (isDirty) return` that also skipped reset on A→B navigation | customer-groups + users-and-groups |
 | 2026-08-07 | Audit changelog paginator: custom control + CL `Dropdown` (no `primereact/paginator`); restore lean U&G `InputField` in customer-groups shared/ | Leaving PrimeReact in derived remotes; MD ProductDataProvider InputField | customer-groups (+ U&G sync) |
+| 2026-08-07 | Re-run a finished migration from the docs alone (fresh agent, no session context) and diff against the real result — divergences are documentation defects, not agent error. The Brands re-run produced 84 files vs 100 and silently dropped two providers | Assume the docs are sufficient because the migration succeeded once | All modules |
+| 2026-08-07 | Name the form library explicitly: `react-hook-form`, never MD's `useForm` (NavigationConfirmProvider-coupled). Absent that, a re-run hand-reconstructed the MD hook from call sites | Leave the form approach implicit in the aligned remotes | All remotes |
+| 2026-08-07 | Spell out the full seven-provider stack and require justification to omit any — a re-run shipped five, losing feature toggles and site scoping with everything still green | "See playbook §4 for the template" | All remotes |
+| 2026-08-07 | Treat Tier 1 as copy-then-fix, not verbatim: `EmptyTable` imports a local `SectionBox`, the media shells carry MD CSS vars, `global.ts` lacks keys the shells use, and ported shells reference another module's i18n namespace | "Copy entire src/components/shared/" | All remotes |
+| 2026-08-07 | Keep CL's documented CSS-variable list a pointer to `src/styles/index.scss`, never a copy — the stale copy listed 11 of 56 tokens and a wrong `--color-primary`, so a re-run hardcoded a hex for a token that existed | Inline the token table in the rule | component-library |
+| 2026-08-07 | Stop the doc-verification loop at "no material divergence", not "identical output". Three from-scratch re-runs of Brands converged on providers, exports, form library and naming, but never on file count (81/85 vs 100) because skipping unused Tier 1 shells and choosing `components/media/` over `components/shared/` are legitimate judgment | Iterate until byte-identical | All modules |
+| 2026-08-07 | A re-run beating the reference is a signal to fix the reference: run 2 used `pi pi-download` where `brands` still had `BsDownload`, so the reference was corrected | Treat the shipped implementation as ground truth | All modules |
+| 2026-08-12 | Promote MD `p-button-secondary-small` + `p-button-icon-only` as CL `SecondaryButton` `size="small"` + `iconOnly` (2.6.0); remotes must not keep a local `.openButton` override | Local SCSS overrides of CL SecondaryButton for toolbar icon controls | brands + returns (+ any TableExtensions consumer) |
+| 2026-08-07 | Guidance buried in a reference table gets skipped mid-port. Icon-glyph parity sat in a CL-deltas table and still regressed on run 3, so it moved into Phase 2 as an explicit grep step plus an after-edit hook check | Assume a documented delta will be recalled at the right moment | All remotes |
+| 2026-08-10 | Promote to CL rather than substitute when the widget is generic: Returns needed a boolean toggle, currency display and a status pill, so CL 2.5.0 added `InputSwitch` / `MoneyValue` / `StatusBadge` and extended `Tabs` with `disabled` + `keepMounted`. Substitute only where the widget is niche (see next row) | Local copies in the remote; adding `primereact`; descoping the screens | All remotes |
+| 2026-08-10 | Where CL has no equivalent and the widget is niche, use native input types through CL `InputText` (which forwards `type`): `number` for `InputNumber`, ~~`date`/`datetime-local` for `Calendar`~~ **superseded 2026-08-17** by CL `Calendar` (2.7.0). `time` still substitutes for `InputMask "99:99"`. Stored value shape is unchanged | Blocking the migration on another CL release; adding `primereact` for three field types | All remotes |
+| 2026-08-17 | Promote PrimeReact `Calendar` to CL as Pattern B (`Calendar` + `CalendarChangeEvent`, 2.7.0). Overlay styles travel via `panelClassName` so the same control works in form fields and table column filters (body-appended popup). `returns` `DateFilterTemplate` and mixin date/datetime fields consume it; keep a thin remote wrapper only for the `[fromISO, toISO]` filter contract | Native `<input type="date">`; adding `primereact` to the remote; a local datepicker copy | All remotes |
+| 2026-08-17 | PrimeReact → CL coverage lives in [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md) (lookup SoT). Skill / playbook / registry **link** it; do not copy gap lists. MD `primereact@8.7.0` vs CL 2.7.0. Highest remaining gaps: `InputNumber`, `Skeleton`, `Chips`, `Tree`/`TreeTable`, `InputMask`, `Sidebar`. | Embedding stale “no InputSwitch” lists in the skill and MIGRATED_MODULES deltas | All remotes |
+| 2026-08-10 | Port the mixins subsystem from the `returns` remote, not `products` — `products` is not playbook SoT and still imports `primereact` (`InputNumber`, `Calendar`, `InputMask`, `InputSwitch`). `@emporix/api-calls` already exports the schema and mixin calls, so no local axios client is needed | Copying `products/src/components/shared/mixins` verbatim; building a local axios client for schema fetches | Remotes with mixin-backed entities |
+| 2026-08-10 | Mixin **table columns** are a separate feature from mixin **form tabs** — `TableExtensions` needs `schemaType` + `MixinColumns` and `ConfigurationProvider` needs `getTableMixinColumns`. A literal component diff misses it, exactly like column visibility (2026-08-05) | Porting `useMixinsForm` only and assuming the list table is at parity | Remotes with mixin-backed entities |
+| 2026-08-10 | Re-home i18n keys the ported shells reference into the remote's own namespace: `products.mixins.*` → `global.mixins.*`, and add an `errors` namespace for `errors.shared.cantBeBlank`. MD's `t('email')` had no key at all and rendered the raw key — fixed to `global.email` here | Keeping another module's namespace prefix; porting a missing-key bug forward | All remotes |
+| 2026-08-10 | Tier 1 must be taken from a branch that is actually merged. `brands` is playbook-aligned but unmerged, so `git checkout master` deleted its source; extract it with `git archive <branch> -- <dir>` before copying, and branch the new remote off `master` so it stays independent | Branching the new remote off the unmerged source branch; assuming files on disk are on your base branch | All remotes |
+| 2026-08-24 | Prefer CL built-in `label` / `error` props over lean `InputField` or standalone `FieldLabel`. Use `FieldLabel` only for controls/content without a label API (`InputSwitch`, plain text). `returns` dropped lean `InputField` after migrating forms this way | Wrapping every CL input in `InputField`/`FieldLabel`; keeping a dead lean `InputField` copy | All remotes |
+| 2026-08-25 | CL `DataTable` lazy empty-state must use `value.length === 0`, not `totalRecords === 0` — otherwise controlled `selection` is cleared while rows are still loading/present (broke Returns customer radio pick). Radio selection needs Pattern B CL radio styles (checkbox-like selected look) | Treating `totalRecords` as the empty signal; leaving radio unstyled vs MD | CL + remotes using lazy DataTable selection |
+| 2026-08-25 | Expansion-row form fields must bind to the selected-entries store (not the static row `data`) so edits survive re-renders/selection changes; stopPropagation on controls inside expandable rows | Reading/writing only the expansion `data` prop while updates go elsewhere | Remotes with expandable selection tables |
+| 2026-08-25 | Do not sync empty product selection on expansion mount into the create form — it leaves `{ id, items: [] }` entries that fail `items.min(1)` and keep Save/`isValid` false even when other orders have products. Delete empty map keys; skip empty lists when building form `orders` | Calling `onSelect(orderId, [])` on every expand; keeping empty orders in `form.orders` | Remotes with expandable multi-select line items |

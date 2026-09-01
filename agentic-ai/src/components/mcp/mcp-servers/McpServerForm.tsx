@@ -6,6 +6,11 @@ import { Button } from 'primereact/button'
 import { McpServer } from '../../../types/Agent'
 import { McpServer as ManagedMcpServer } from '../../../types/Mcp'
 import { MCP_SERVERS, McpKey } from '../../../utils/constants'
+import { isDynamicMcpServer } from '../../../utils/mcpHelpers'
+
+const resolveFormServerType = (
+  type?: McpServer['type']
+): 'predefined' | 'custom' => (type === 'predefined' ? 'predefined' : 'custom')
 
 interface McpServerFormProps {
   onAdd: (mcpServer: McpServer) => void
@@ -25,8 +30,8 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
   editingMcpServer,
 }) => {
   const { t } = useTranslation()
-  const [serverType, setServerType] = useState<'predefined' | 'custom'>(
-    editingMcpServer?.type || 'predefined'
+  const [serverType, setServerType] = useState<'predefined' | 'custom'>(() =>
+    resolveFormServerType(editingMcpServer?.type)
   )
   const [selectedDomain, setSelectedDomain] = useState<McpKey>(
     (editingMcpServer?.domain as McpKey) || 'order'
@@ -68,12 +73,25 @@ export const McpServerForm: React.FC<McpServerFormProps> = ({
         tools: selectedTools,
       })
     } else if (serverType === 'custom' && selectedCustomServerId) {
-      onAdd({
-        type: 'custom',
+      const managedMcp = availableMcpServers.find(
+        (server) => server.id === selectedCustomServerId
+      )
+      const mcpType =
+        managedMcp && isDynamicMcpServer(managedMcp) ? 'dynamic' : 'custom'
+      const entry: McpServer = {
+        type: mcpType,
         mcpServer: {
           id: selectedCustomServerId,
         },
-      })
+      }
+      if (
+        mcpType === 'dynamic' &&
+        editingMcpServer?.mcpServer?.id === selectedCustomServerId &&
+        editingMcpServer.tools?.length
+      ) {
+        entry.tools = editingMcpServer.tools
+      }
+      onAdd(entry)
     }
   }
 

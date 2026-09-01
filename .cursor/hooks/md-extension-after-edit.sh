@@ -31,6 +31,11 @@ if not target:
     print("{}")
     sys.exit(0)
 
+# Normalise to absolute. Editors may hand us a repo-relative path, and the
+# commonpath() check below raises ValueError when mixing relative with
+# absolute — which previously made the hook silently no-op.
+target = os.path.abspath(target)
+
 norm = target.replace("\\", "/")
 rel = ""
 try:
@@ -45,6 +50,7 @@ interesting = (
     or norm.endswith("/vite.config.ts")
     or norm.endswith("/package.json")
     or norm.endswith("/RemoteComponent.tsx")
+    or norm.endswith("/tsconfig.app.json")
 )
 if not (in_extensions_tree and interesting):
     print("{}")
@@ -74,6 +80,77 @@ if "/administration/" in text and (
     base in ("paths.ts", "RemoteComponent.tsx") or "navigate" in base.lower()
 ):
     issues.append("Prefer Hash-relative paths (constants/paths.ts), not host /administration/ URLs.")
+
+# --- Added after COP-6180 (brands): visual / parity drift ---
+
+if norm.endswith((".scss", ".css")) and re.search(r"--grey-|--blue-|var\(--red\)", text):
+    issues.append(
+        "MD global CSS variable in remote styles — map to component-library tokens "
+        "(or a local SCSS variable when CL has no equivalent)."
+    )
+
+if base in ("SectionBox.tsx", "SectionBox.module.scss", "SectionBox.scss"):
+    issues.append(
+        "Local SectionBox copy — component-library >= 2.3.0 exports SectionBox/SectionTitle; import it instead."
+    )
+
+if re.search(r"from ['\"].*hooks/useForm['\"]", text) or base == "useForm.ts":
+    issues.append(
+        "MD useForm is coupled to NavigationConfirmProvider — use react-hook-form, as customer-groups/brands do. "
+        "Do not port or reconstruct it."
+    )
+
+if base == "RemoteComponent.tsx":
+    if "export { RemoteComponent }" not in text:
+        issues.append(
+            "RemoteComponent must be exported named AND default — a default-only expose unwraps to a bare "
+            "function and the host's loadRemoteModule (module.default) gets undefined."
+        )
+    missing = [
+        p for p in (
+            "ToastProvider", "DashboardProvider", "PermissionsProvider", "FeatureTogglesProvider",
+            "ConfigurationProvider", "SitesProvider", "UIBlockerProvider",
+        )
+        if p not in text
+    ]
+    if missing:
+        issues.append(
+            "Provider stack is missing: " + ", ".join(missing)
+            + ". Copy all seven unless the module provably needs none of a provider's data (skill Phase 2b)."
+        )
+
+# Glyph parity: MD renders these actions with specific primeicons. Swapping in a
+# react-icons lookalike silently changes the shape (filled vs outline trash, etc.).
+if base in ("AssetsViewer.tsx", "TableActions.tsx", "MediaAssetUpload.tsx"):
+    for icon_name, pi_class in (("Trash", "pi pi-trash"), ("Download", "pi pi-download")):
+        if re.search(rf"<Bs{icon_name}\w*|<Fi{icon_name}\w*", text) and pi_class not in text:
+            issues.append(
+                f"{base} renders a {icon_name.lower()} action with react-icons; management-dashboard uses "
+                f"`{pi_class}`. Confirm the glyph matches — primeicons ships inside "
+                "@emporix/component-library/styles, so `pi pi-*` needs no extra dependency."
+            )
+
+if re.search(r"window\.location\.(assign|href)", text):
+    issues.append(
+        "Navigating to a host-owned route: no in-remote route exists for it. Confirm the choice with the user "
+        "and comment why (see AssetsViewer in brands)."
+    )
+
+if base == "package.json":
+    m = re.search(r'"quill"\s*:\s*"[^0-9]*(\d+)', text)
+    if m and m.group(1) != "1":
+        issues.append(
+            "quill must be 1.x with PrimeReact 8's Editor — Quill 2 changed clipboard.convert() and the "
+            "editor silently loads no existing content."
+        )
+    if re.search(r'"(chart\.js|quill)"\s*:', text) and "/brands/" not in norm:
+        issues.append("Template leftovers (chart.js / quill) — drop unless this module actually needs them.")
+
+if base == "tsconfig.app.json" and '"exclude"' not in text:
+    issues.append(
+        'tsconfig.app.json needs "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"] — '
+        "otherwise copied helper tests break typecheck."
+    )
 
 if not issues:
     print("{}")

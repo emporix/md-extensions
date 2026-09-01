@@ -31,7 +31,7 @@ These rules are maintained centrally in the [frontend-ai-rules](https://github.c
 | `ui-components.mdc` | `ui-components.instructions.md` | `ui-components.md` | Component and page work |
 | `testing.mdc` | `testing.instructions.md` | `testing.md` | Test files |
 | `api-data.mdc` | `api-data.instructions.md` | `api-data.md` | API / service layer |
-| `npm-dependencies.mdc` | `npm-dependencies.instructions.md` | `npm-dependencies.md` | `package.json` / lockfiles — npm semver vs git URLs |
+| `npm-dependencies.mdc` | `npm-dependencies.instructions.md` | `npm-dependencies.md` | `package.json` / lockfiles — semver only; no `file:` or git URLs |
 | `performance.mdc` | `performance.instructions.md` | `performance.md` | Component performance |
 | `git-workflow.mdc` | `git-workflow.instructions.md` | `git-workflow.md` | Commits / branches |
 | `emporix-component-library.mdc` | `emporix-component-library.instructions.md` | `emporix-component-library.md` | Shared UI primitives |

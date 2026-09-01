@@ -8,7 +8,7 @@ import type {
 export const createEmptyTool = (): Tool => ({
   id: '',
   name: '',
-  type: 'slack',
+  type: '',
   config: {},
   enabled: true,
 })

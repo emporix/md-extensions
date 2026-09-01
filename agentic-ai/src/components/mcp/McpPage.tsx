@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import McpCard from './McpCard'
@@ -7,7 +7,7 @@ import { McpServer } from '../../types/Mcp'
 import { useMcp } from '../../hooks/useMcp'
 import { ConfirmDialog } from '../shared/ConfirmDialog'
 
-const McpPage: React.FC = () => {
+const McpPage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const {
