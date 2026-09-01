@@ -1,62 +1,56 @@
-import React from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { InputText } from 'primereact/inputtext'
-import { Dropdown } from 'primereact/dropdown'
 import { getToolTypeLabel } from '../../utils/toolHelpers'
+import {
+  FeatureGatedTypeOption,
+  FeatureGatedTypeSection,
+} from '../shared/FeatureGatedTypeSection'
 import { ToolRequiredMark } from './ToolRequiredMark'
-
-interface ToolTypeSectionProps {
-  toolType: string
-  isEditing: boolean
-  msTeamsEnabled: boolean
-  onToolTypeChange: (value: string) => void
-}
 
 const TOOL_TYPE_OPTIONS = [
   { labelKey: 'slack', value: 'slack' },
   { labelKey: 'microsoft_teams', value: 'teams' },
   { labelKey: 'rag_custom', value: 'rag_custom' },
   { labelKey: 'rag_emporix', value: 'rag_emporix' },
-] as const
+] as const satisfies readonly FeatureGatedTypeOption<string>[]
 
-export const ToolTypeSection: React.FC<ToolTypeSectionProps> = ({
+interface ToolTypeSectionProps {
+  toolType: string
+  isEditing: boolean
+  msTeamsEnabled: boolean
+  optionsReady?: boolean
+  onToolTypeChange: (value: string) => void
+}
+
+export const ToolTypeSection = ({
   toolType,
   isEditing,
   msTeamsEnabled,
+  optionsReady = true,
   onToolTypeChange,
-}) => {
+}: ToolTypeSectionProps) => {
   const { t } = useTranslation()
 
-  const toolTypeOptions = TOOL_TYPE_OPTIONS.filter(
-    (option) =>
-      msTeamsEnabled || option.value !== 'teams' || toolType === 'teams'
-  ).map((option) => ({
-    label: t(option.labelKey),
-    value: option.value,
-  }))
+  const toolTypeOptions = useMemo(
+    () =>
+      TOOL_TYPE_OPTIONS.filter(
+        (option) =>
+          msTeamsEnabled || option.value !== 'teams' || toolType === 'teams'
+      ),
+    [msTeamsEnabled, toolType]
+  )
 
   return (
-    <div className="form-field">
-      <label className="field-label">
-        {t('tool_type')}
-        {!isEditing && <ToolRequiredMark />}
-      </label>
-      {isEditing ? (
-        <InputText
-          value={getToolTypeLabel(t, toolType)}
-          className="w-full"
-          disabled
-        />
-      ) : (
-        <Dropdown
-          value={toolType}
-          options={toolTypeOptions}
-          onChange={(event) => onToolTypeChange(event.value)}
-          className={`w-full${!toolType ? ' p-invalid' : ''}`}
-          placeholder={t('select_tool_type')}
-          appendTo="self"
-        />
-      )}
-    </div>
+    <FeatureGatedTypeSection
+      labelKey="tool_type"
+      placeholderKey="select_tool_type"
+      selectedType={toolType}
+      isEditing={isEditing}
+      optionsReady={optionsReady}
+      options={toolTypeOptions}
+      getSelectedLabel={(type) => getToolTypeLabel(t, type)}
+      requiredMark={<ToolRequiredMark />}
+      onTypeChange={onToolTypeChange}
+    />
   )
 }

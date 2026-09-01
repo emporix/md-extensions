@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useToast } from '../contexts/ToastContext'
 import {
@@ -15,14 +15,19 @@ import {
   JSON_SCHEMA_ASSISTANT_AGENT_ID,
   chatWithAgent,
   createJsonSchemaAssistantAgent,
-  getCustomAgents,
-  patchCustomAgent,
 } from '../services/agentService'
-import { ApiClientError } from '../services/apiClient'
 import { formatApiError } from '../utils/errorHelpers'
+import { useHelperAgentProvisioning } from './useHelperAgentProvisioning'
 
 const isAssistantServiceI18nMessage = (message: string): boolean =>
   JSON_SCHEMA_ASSISTANT_I18N_MESSAGES.includes(message)
+
+const JSON_SCHEMA_HELPER_I18N_KEYS = {
+  agentCreated: 'json_schema_assistant_agent_created',
+  agentExists: 'json_schema_assistant_agent_exists',
+  createFailed: 'json_schema_assistant_create_failed',
+  enableFailed: 'json_schema_assistant_enable_failed',
+} as const
 
 export interface UseJsonSchemaAssistantParams {
   visible: boolean
@@ -37,14 +42,10 @@ export const useJsonSchemaAssistant = ({
 }: UseJsonSchemaAssistantParams) => {
   const appState = useAppState()
   const { t } = useTranslation()
-  const { showSuccess, showError, showInfo } = useToast()
+  const { showSuccess, showError } = useToast()
 
   const [assistantPrompt, setAssistantPrompt] = useState('')
   const [assistantError, setAssistantError] = useState<string | null>(null)
-  const [helperAgentPresent, setHelperAgentPresent] = useState<boolean | null>(
-    null
-  )
-  const [provisioningAgent, setProvisioningAgent] = useState(false)
   const [assistantWorking, setAssistantWorking] = useState(false)
   const [assistantStreamText, setAssistantStreamText] = useState('')
   const [assistantToolName, setAssistantToolName] = useState<string | null>(
@@ -61,81 +62,19 @@ export const useJsonSchemaAssistant = ({
     [t]
   )
 
-  useEffect(() => {
-    setHelperAgentPresent(null)
-  }, [appState.tenant])
-
-  useEffect(() => {
-    if (!visible || helperAgentPresent !== null) {
-      return
-    }
-
-    let cancelled = false
-    void (async () => {
-      try {
-        const agents = await getCustomAgents(appState)
-        if (!cancelled) {
-          setHelperAgentPresent(
-            agents.some((agent) => agent.id === JSON_SCHEMA_ASSISTANT_AGENT_ID)
-          )
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setHelperAgentPresent(false)
-          showError(
-            formatApiError(err, t('helper_agent_availability_check_failed'))
-          )
-        }
-      }
-    })()
-
-    return () => {
-      cancelled = true
-    }
-  }, [visible, appState, helperAgentPresent, showError, t])
-
-  const handleEnableHelperAgent = useCallback(async () => {
-    setProvisioningAgent(true)
+  const handleBeforeEnableHelperAgent = useCallback(() => {
     setAssistantError(null)
-    try {
-      await createJsonSchemaAssistantAgent(appState)
-      setHelperAgentPresent(true)
-      showSuccess(t('json_schema_assistant_agent_created'))
-    } catch (err) {
-      if (err instanceof ApiClientError && err.status === 409) {
-        try {
-          await patchCustomAgent(appState, JSON_SCHEMA_ASSISTANT_AGENT_ID, [
-            { op: 'REPLACE', path: '/enabled', value: true },
-          ])
-          setHelperAgentPresent(true)
-          showInfo(t('json_schema_assistant_agent_exists'))
-        } catch (patchErr) {
-          showError(
-            resolveAssistantErrorMessage(
-              patchErr,
-              'json_schema_assistant_enable_failed'
-            )
-          )
-        }
-      } else {
-        showError(
-          resolveAssistantErrorMessage(
-            err,
-            'json_schema_assistant_create_failed'
-          )
-        )
-      }
-    } finally {
-      setProvisioningAgent(false)
-    }
-  }, [
-    appState,
-    resolveAssistantErrorMessage,
-    showError,
-    showInfo,
-    showSuccess,
-    t,
-  ])
+  }, [])
+
+  const { helperAgentPresent, provisioningAgent, handleEnableHelperAgent } =
+    useHelperAgentProvisioning({
+      agentId: JSON_SCHEMA_ASSISTANT_AGENT_ID,
+      shouldCheck: visible,
+      createAgent: createJsonSchemaAssistantAgent,
+      i18nKeys: JSON_SCHEMA_HELPER_I18N_KEYS,
+      resolveErrorMessage: resolveAssistantErrorMessage,
+      onBeforeEnable: handleBeforeEnableHelperAgent,
+    })
 
   const handleAssistantGenerate = useCallback(async () => {
     if (!assistantPrompt.trim()) {

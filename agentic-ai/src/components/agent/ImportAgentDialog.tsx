@@ -1,13 +1,20 @@
-import React, { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Dialog } from 'primereact/dialog'
 import { Button } from 'primereact/button'
 import { ProgressBar } from 'primereact/progressbar'
 import { Badge } from 'primereact/badge'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons'
 import { importAgents } from '../../services/agentService'
-import { ImportSummaryState } from '../../types/common'
+import { ImportedItem, ImportAgentsResult } from '../../types/Job'
+import { ImportEntityDetails } from '../shared/ImportEntityDetails'
+import {
+  getImportStateLabel,
+  getImportStateSeverity,
+  hasImportFailures,
+  shouldShowLegacyTokenNote,
+} from '../../utils/importDetails'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../contexts/ToastContext'
 
@@ -17,25 +24,19 @@ interface ImportAgentDialogProps {
   onImport: () => void
 }
 
-const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
+const ImportAgentDialog = ({
   visible,
   onHide,
   onImport,
-}) => {
+}: ImportAgentDialogProps) => {
   const appState = useAppState()
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
   const [isDragOver, setIsDragOver] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
-  const [importResult, setImportResult] = useState<{
-    importedAt: string
-    summary: {
-      agents: Array<{ id: string; name: string; state: ImportSummaryState }>
-      tools: Array<{ id: string; name: string; state: ImportSummaryState }>
-      mcpServers: Array<{ id: string; name: string; state: ImportSummaryState }>
-    }
-    message: string
-  } | null>(null)
+  const [importResult, setImportResult] = useState<ImportAgentsResult | null>(
+    null
+  )
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelect = useCallback(
@@ -43,7 +44,7 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
       if (!file) return
 
       if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
-        showError(t('invalid_file_type', 'Please select a valid JSON file'))
+        showError(t('invalid_file_type'))
         return
       }
 
@@ -51,22 +52,15 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
 
       try {
         const fileContent = await file.text()
-
         const parsedJson = JSON.parse(fileContent)
-
         const result = await importAgents(appState, parsedJson)
 
         setImportResult(result)
-        showSuccess(
-          result.message ||
-            t('agent_imported_successfully', 'Agent imported successfully')
-        )
+        showSuccess(result.message || t('agent_imported_successfully'))
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : 'Failed to import agent'
-        showError(
-          `${t('error_importing_agent', 'Error importing agent')}: ${errorMessage}`
-        )
+          err instanceof Error ? err.message : t('import_generic_error')
+        showError(`${t('error_importing_agent')}: ${errorMessage}`)
       } finally {
         setIsImporting(false)
       }
@@ -126,59 +120,52 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
     handleHide()
   }, [onImport, handleHide])
 
-  const getStateLabel = (state: ImportSummaryState) => {
-    switch (state) {
-      case 'ENABLED':
-        return t('enabled', 'Enabled')
-      case 'DISABLED':
-        return t('disabled', 'Disabled')
-      case 'TO_CREATE':
-        return t('TO_CREATE', 'To Import')
-      case 'EXISTS':
-        return t('exists', 'Exists')
-      default:
-        return state
-    }
-  }
+  const renderSummaryItems = (items: ImportedItem[]) =>
+    items.map((item, idx) => (
+      <div key={item.id || idx} className="import-summary-item">
+        <div className="import-summary-item-header">
+          <span className="import-item-name">{item.name}</span>
+          <Badge
+            value={getImportStateLabel(t, item.state)}
+            severity={getImportStateSeverity(item.state)}
+          />
+        </div>
+        <ImportEntityDetails details={item.details} />
+      </div>
+    ))
 
-  const getStateSeverity = (state: ImportSummaryState) => {
-    switch (state) {
-      case 'ENABLED':
-        return 'success'
-      case 'DISABLED':
-        return 'warning'
-      case 'TO_CREATE':
-        return 'info'
-      case 'EXISTS':
-        return 'success'
-      default:
-        return undefined
-    }
-  }
+  const allImportedItems = importResult
+    ? [
+        ...importResult.summary.agents,
+        ...importResult.summary.tools,
+        ...importResult.summary.mcpServers,
+      ]
+    : []
+  const hasFailures = hasImportFailures(allImportedItems)
 
   const footer = isImporting ? (
     <div className="dialog-actions">
       <Button
         type="button"
-        label={t('cancel', 'Cancel')}
+        label={t('cancel')}
         onClick={handleHide}
         className="p-button-secondary"
       />
     </div>
   ) : importResult ? (
     <div className="dialog-actions">
-      <Button type="button" label={t('ok', 'OK')} onClick={handleSummaryOk} />
+      <Button type="button" label={t('ok')} onClick={handleSummaryOk} />
     </div>
   ) : (
     <div className="dialog-actions">
       <Button
         type="button"
-        label={t('cancel', 'Cancel')}
+        label={t('cancel')}
         onClick={handleHide}
         className="p-button-secondary"
       />
       <Button
-        label={t('browse_files', 'Browse Files')}
+        label={t('browse_files')}
         icon="pi pi-folder-open"
         onClick={handleBrowseClick}
         className="p-button-primary"
@@ -190,7 +177,7 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
     <Dialog
       visible={visible}
       onHide={handleHide}
-      header={t('import_agent', 'Import Agent')}
+      header={t('import_agent')}
       footer={footer}
       className="import-agent-dialog"
       modal
@@ -202,45 +189,30 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
         {isImporting ? (
           <div className="add-agent-loading-state">
             <div className="agent-icon loading-icon">📥</div>
-            <h2 className="dialog-title loading-title">
-              {t('importing', 'Importing...')}
-            </h2>
+            <h2 className="dialog-title loading-title">{t('importing')}</h2>
             <ProgressBar mode="indeterminate" style={{ height: '6px' }} />
-            <p className="loading-text">
-              {t(
-                'please_wait_import',
-                'Please wait while we import the agent...'
-              )}
-            </p>
+            <p className="loading-text">{t('please_wait_import')}</p>
           </div>
         ) : importResult ? (
           <div className="import-summary">
             <div className="import-summary-header">
-              <div className="success-icon">
-                <FontAwesomeIcon icon={faCheck} />
+              <div
+                className={`import-summary-icon${hasFailures ? ' import-summary-icon--warning' : ''}`}
+              >
+                <FontAwesomeIcon
+                  icon={hasFailures ? faTriangleExclamation : faCheck}
+                />
               </div>
-              <h2 className="dialog-title">
-                {t('import_completed', 'Import Completed')}
-              </h2>
+              <h2 className="dialog-title">{t('import_completed')}</h2>
               <p className="import-summary-message">{importResult.message}</p>
             </div>
 
             <div className="import-summary-sections">
               {importResult.summary.agents.length > 0 && (
                 <div className="import-summary-section">
-                  <h3 className="import-section-title">
-                    {t('agents', 'Agents')}
-                  </h3>
+                  <h3 className="import-section-title">{t('agents')}</h3>
                   <div className="import-summary-items">
-                    {importResult.summary.agents.map((agent, idx) => (
-                      <div key={idx} className="import-summary-item">
-                        <span className="import-item-name">{agent.name}</span>
-                        <Badge
-                          value={getStateLabel(agent.state)}
-                          severity={getStateSeverity(agent.state)}
-                        />
-                      </div>
-                    ))}
+                    {renderSummaryItems(importResult.summary.agents)}
                   </div>
                 </div>
               )}
@@ -248,69 +220,35 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
               {importResult.summary.tools.length > 0 && (
                 <div className="import-summary-section">
                   <h3 className="import-section-title">
-                    {t('tools', 'Tools')}
+                    {t('tools')}
                     {importResult.summary.tools.some(
-                      (t) => t.state === 'TO_CREATE'
+                      (tool) => tool.state === 'TO_CREATE'
                     ) && (
                       <i
                         className="pi pi-info-circle import-info-icon"
-                        title={t(
-                          'TO_CREATE_note',
-                          'Items marked as "To Import" need to be added manually.'
-                        )}
+                        title={t('TO_CREATE_note')}
                       />
                     )}
                   </h3>
                   <div className="import-summary-items">
-                    {importResult.summary.tools.map((tool, idx) => (
-                      <div key={idx} className="import-summary-item">
-                        <span className="import-item-name">{tool.name}</span>
-                        <Badge
-                          value={getStateLabel(tool.state)}
-                          severity={getStateSeverity(tool.state)}
-                        />
-                      </div>
-                    ))}
+                    {renderSummaryItems(importResult.summary.tools)}
                   </div>
                 </div>
               )}
 
               {importResult.summary.mcpServers.length > 0 && (
                 <div className="import-summary-section">
-                  <h3 className="import-section-title">
-                    {t('mcp_servers', 'MCP Servers')}
-                  </h3>
+                  <h3 className="import-section-title">{t('mcp_servers')}</h3>
                   <div className="import-summary-items">
-                    {importResult.summary.mcpServers.map((server, idx) => (
-                      <div key={idx} className="import-summary-item">
-                        <span className="import-item-name">{server.name}</span>
-                        <Badge
-                          value={getStateLabel(server.state)}
-                          severity={getStateSeverity(server.state)}
-                        />
-                      </div>
-                    ))}
+                    {renderSummaryItems(importResult.summary.mcpServers)}
                   </div>
                 </div>
               )}
             </div>
 
-            {(importResult.summary.agents.some(
-              (a) => a.state === 'ENABLED' || a.state === 'DISABLED'
-            ) ||
-              importResult.summary.tools.some(
-                (t) => t.state === 'ENABLED' || t.state === 'DISABLED'
-              ) ||
-              importResult.summary.mcpServers.some(
-                (s) => s.state === 'ENABLED' || s.state === 'DISABLED'
-              )) && (
+            {shouldShowLegacyTokenNote(allImportedItems) && (
               <div className="import-summary-note">
-                <p>
-                  {t(
-                    'token_required_note',
-                    'Please make sure that required tokens are provided before enabling the imported entities.'
-                  )}
-                </p>
+                <p>{t('token_required_note')}</p>
               </div>
             )}
           </div>
@@ -332,12 +270,8 @@ const ImportAgentDialog: React.FC<ImportAgentDialogProps> = ({
 
             <div className="drop-zone-content">
               <i className="pi pi-download drop-zone-icon"></i>
-              <p className="drop-zone-title">
-                {t('drag_drop_file', 'Drag & drop your JSON file here')}
-              </p>
-              <p className="drop-zone-subtitle">
-                {t('or_click_to_browse', 'or click to browse files')}
-              </p>
+              <p className="drop-zone-title">{t('drag_drop_file')}</p>
+              <p className="drop-zone-subtitle">{t('or_click_to_browse')}</p>
             </div>
           </div>
         )}

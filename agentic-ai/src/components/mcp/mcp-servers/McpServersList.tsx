@@ -5,6 +5,11 @@ import { McpServer as ManagedMcpServer } from '../../../types/Mcp'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faServer, faCog } from '@fortawesome/free-solid-svg-icons'
 import { MCP_SERVERS, McpKey } from '../../../utils/constants'
+import {
+  getMcpServerDescription,
+  isDynamicMcpServer,
+} from '../../../utils/mcpHelpers'
+import { isManagedAgentMcp } from '../../../utils/agentToolsHelpers'
 import { McpServerForm } from './McpServerForm'
 
 interface McpServersListProps {
@@ -47,11 +52,12 @@ export const McpServersList: React.FC<McpServersListProps> = ({
           count: mcpServer.tools?.length ?? 0,
         }),
         enabled: true,
+        managedServer: undefined,
       }
     }
 
     const customServerId = mcpServer.mcpServer?.id
-    if (mcpServer.type === 'custom' && customServerId) {
+    if (isManagedAgentMcp(mcpServer) && customServerId) {
       const customServer = availableMcpServers.find(
         (server) => server.id === customServerId
       )
@@ -59,8 +65,11 @@ export const McpServersList: React.FC<McpServersListProps> = ({
         name: customServer?.name ?? customServerId,
         icon: faServer,
         type: 'custom' as const,
-        details: customServer?.config.url ?? t('custom_mcp_server'),
+        details: customServer
+          ? getMcpServerDescription(t, customServer)
+          : t('custom_mcp_server'),
         enabled: customServer?.enabled !== false,
+        managedServer: customServer,
       }
     }
 
@@ -70,6 +79,7 @@ export const McpServersList: React.FC<McpServersListProps> = ({
       type: 'unknown' as const,
       details: t('invalid_mcp_configuration'),
       enabled: false,
+      managedServer: undefined,
     }
   }
 
@@ -78,6 +88,14 @@ export const McpServersList: React.FC<McpServersListProps> = ({
       {mcpServers.map((mcpServer, idx) => {
         const serverInfo = getMcpServerDisplayInfo(mcpServer)
         const isDisabled = !serverInfo.enabled
+        const dynamicCatalogTools =
+          serverInfo.managedServer && isDynamicMcpServer(serverInfo.managedServer)
+            ? serverInfo.managedServer.tools ?? []
+            : []
+        const dynamicToolNamesToDisplay =
+          mcpServer.type === 'dynamic' && mcpServer.tools?.length
+            ? mcpServer.tools
+            : dynamicCatalogTools.map((tool) => tool.name)
 
         return (
           <div
@@ -138,13 +156,16 @@ export const McpServersList: React.FC<McpServersListProps> = ({
                     <span className="mcp-server-type-badge">
                       {serverInfo.type === 'predefined'
                         ? t('emporix')
-                        : t('custom')}
+                        : serverInfo.managedServer &&
+                            isDynamicMcpServer(serverInfo.managedServer)
+                          ? t('dynamic_mcp_tag')
+                          : t('custom')}
                     </span>
                     <span className="mcp-server-details-text">
                       {serverInfo.details}
                     </span>
                   </div>
-                  {mcpServer.type === 'predefined' && mcpServer.tools && (
+                  {mcpServer.type === 'predefined' && mcpServer.tools ? (
                     <div className="mcp-server-tools">
                       {mcpServer.tools.map((tool: string) => (
                         <span className="mcp-server-tool-chip" key={tool}>
@@ -152,7 +173,24 @@ export const McpServersList: React.FC<McpServersListProps> = ({
                         </span>
                       ))}
                     </div>
-                  )}
+                  ) : null}
+                  {dynamicToolNamesToDisplay.length > 0 ? (
+                    <div className="mcp-server-tools">
+                      {dynamicToolNamesToDisplay.map((toolName) => {
+                        const catalogTool = dynamicCatalogTools.find(
+                          (tool) => tool.name === toolName
+                        )
+                        return (
+                          <span className="mcp-server-tool-chip" key={toolName}>
+                            {toolName}
+                            {catalogTool?.enabled === false
+                              ? ` (${t('disabled')})`
+                              : ''}
+                          </span>
+                        )
+                      })}
+                    </div>
+                  ) : null}
                 </div>
               </>
             )}

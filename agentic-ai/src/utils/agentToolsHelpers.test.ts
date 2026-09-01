@@ -6,9 +6,14 @@ import {
   getNativeToolTags,
   getPredefinedMcpForDomain,
   getSelectedDomainTools,
-  isCustomMcpAttached,
-  toggleCustomMcpServer,
+  getSelectedDynamicMcpTools,
+  formatManagedMcpServerLabel,
+  hasManagedMcpAttachmentsChanged,
+  isManagedMcpAttached,
+  normalizeManagedMcpAttachments,
   toggleDomainTool,
+  toggleDynamicMcpTool,
+  toggleManagedMcpServer,
   toggleNativeTool,
 } from './agentToolsHelpers'
 import { McpServer, NativeTool } from '../types/Agent'
@@ -100,11 +105,11 @@ describe('agentToolsHelpers', () => {
     expect(original).toEqual(originalCopy)
   })
 
-  it('toggleCustomMcpServer attaches and detaches custom servers', () => {
-    expect(isCustomMcpAttached([], 'custom-1')).toBe(false)
+  it('toggleManagedMcpServer attaches and detaches custom servers', () => {
+    expect(isManagedMcpAttached([], 'custom-1')).toBe(false)
 
-    const attached = toggleCustomMcpServer([], 'custom-1', true)
-    expect(isCustomMcpAttached(attached, 'custom-1')).toBe(true)
+    const attached = toggleManagedMcpServer([], 'custom-1', true, 'custom')
+    expect(isManagedMcpAttached(attached, 'custom-1')).toBe(true)
     expect(attached).toEqual([
       {
         type: 'custom',
@@ -112,8 +117,172 @@ describe('agentToolsHelpers', () => {
       },
     ])
 
-    const detached = toggleCustomMcpServer(attached, 'custom-1', false)
+    const detached = toggleManagedMcpServer(attached, 'custom-1', false, 'custom')
     expect(detached).toEqual([])
+  })
+
+  it('toggleManagedMcpServer attaches dynamic servers without tools', () => {
+    const attached = toggleManagedMcpServer([], 'dyn-1', true, 'dynamic')
+    expect(attached).toEqual([
+      {
+        type: 'dynamic',
+        mcpServer: { id: 'dyn-1' },
+      },
+    ])
+  })
+
+  it('getSelectedDynamicMcpTools returns all enabled tools when tools omitted', () => {
+    const attached = toggleManagedMcpServer([], 'dyn-1', true, 'dynamic')
+    const catalog = ['alpha', 'beta']
+    expect(getSelectedDynamicMcpTools(attached, 'dyn-1', catalog)).toEqual(
+      catalog
+    )
+  })
+
+  it('getSelectedDynamicMcpTools returns all enabled tools for custom-typed attached ref', () => {
+    const attached: McpServer[] = [
+      { type: 'custom', mcpServer: { id: 'dyn-1' } },
+    ]
+    const catalog = ['alpha', 'beta']
+    expect(getSelectedDynamicMcpTools(attached, 'dyn-1', catalog)).toEqual(
+      catalog
+    )
+  })
+
+  it('getSelectedDynamicMcpTools intersects subset with catalog', () => {
+    const attached: McpServer[] = [
+      {
+        type: 'dynamic',
+        mcpServer: { id: 'dyn-1' },
+        tools: ['alpha', 'removed-from-catalog'],
+      },
+    ]
+    expect(getSelectedDynamicMcpTools(attached, 'dyn-1', ['alpha', 'beta'])).toEqual(
+      ['alpha']
+    )
+  })
+
+  it('toggleDynamicMcpTool writes subset and omits tools when all selected', () => {
+    const catalog = ['alpha', 'beta']
+    const attached = toggleManagedMcpServer([], 'dyn-1', true, 'dynamic')
+    const subset = toggleDynamicMcpTool(
+      attached,
+      'dyn-1',
+      'alpha',
+      false,
+      catalog
+    )
+    expect(subset).toEqual([
+      {
+        type: 'dynamic',
+        mcpServer: { id: 'dyn-1' },
+        tools: ['beta'],
+      },
+    ])
+
+    const allSelected = toggleDynamicMcpTool(
+      subset,
+      'dyn-1',
+      'alpha',
+      true,
+      catalog
+    )
+    expect(allSelected).toEqual([
+      {
+        type: 'dynamic',
+        mcpServer: { id: 'dyn-1' },
+      },
+    ])
+  })
+
+  it('toggleDynamicMcpTool on custom-typed ref upgrades to dynamic without wiping selection', () => {
+    const catalog = ['alpha', 'beta']
+    const attached: McpServer[] = [
+      { type: 'custom', mcpServer: { id: 'dyn-1' } },
+    ]
+    const subset = toggleDynamicMcpTool(
+      attached,
+      'dyn-1',
+      'alpha',
+      false,
+      catalog
+    )
+    expect(subset).toEqual([
+      {
+        type: 'dynamic',
+        mcpServer: { id: 'dyn-1' },
+        tools: ['beta'],
+      },
+    ])
+  })
+
+  it('toggleDynamicMcpTool keeps attachment when last tool is unchecked', () => {
+    const catalog = ['alpha']
+    const attached = toggleManagedMcpServer([], 'dyn-1', true, 'dynamic')
+    const unchanged = toggleDynamicMcpTool(
+      attached,
+      'dyn-1',
+      'alpha',
+      false,
+      catalog
+    )
+    expect(unchanged).toEqual(attached)
+  })
+
+  it('normalizeManagedMcpAttachments upgrades custom refs to dynamic', () => {
+    const result = normalizeManagedMcpAttachments(
+      [{ type: 'custom', mcpServer: { id: 'dyn-1' } }],
+      [{ id: 'dyn-1', type: 'dynamic' }]
+    )
+    expect(result).toEqual([
+      { type: 'dynamic', mcpServer: { id: 'dyn-1' } },
+    ])
+  })
+
+  it('normalizeManagedMcpAttachments downgrades dynamic to custom and strips tools', () => {
+    const result = normalizeManagedMcpAttachments(
+      [
+        {
+          type: 'dynamic',
+          mcpServer: { id: 'custom-1' },
+          tools: ['alpha'],
+        },
+      ],
+      [{ id: 'custom-1', type: 'custom' }]
+    )
+    expect(result).toEqual([
+      { type: 'custom', mcpServer: { id: 'custom-1' } },
+    ])
+  })
+
+  it('normalizeManagedMcpAttachments does not mutate original mcpServers', () => {
+    const original: McpServer[] = [
+      { type: 'custom', mcpServer: { id: 'dyn-1' } },
+    ]
+    const originalCopy = structuredClone(original)
+    normalizeManagedMcpAttachments(original, [{ id: 'dyn-1', type: 'dynamic' }])
+    expect(original).toEqual(originalCopy)
+  })
+
+  it('hasManagedMcpAttachmentsChanged detects type and tools changes', () => {
+    const current: McpServer[] = [
+      { type: 'custom', mcpServer: { id: 'dyn-1' } },
+    ]
+    const next: McpServer[] = [
+      { type: 'dynamic', mcpServer: { id: 'dyn-1' } },
+    ]
+    expect(hasManagedMcpAttachmentsChanged(current, next)).toBe(true)
+    expect(hasManagedMcpAttachmentsChanged(current, current)).toBe(false)
+  })
+
+  it('formatManagedMcpServerLabel appends tool names in brackets for dynamic MCP', () => {
+    expect(
+      formatManagedMcpServerLabel('Orders MCP', ['alpha', 'beta'], true)
+    ).toBe('Orders MCP (alpha, beta)')
+    expect(formatManagedMcpServerLabel('Custom MCP', [], true)).toBe('Custom MCP')
+    expect(
+      formatManagedMcpServerLabel('Custom MCP', ['alpha'], false)
+    ).toBe('Custom MCP')
   })
 
   it('formatDomainSectionTitle uses domain name', () => {

@@ -1,13 +1,23 @@
+import { ImportDetailsCode, ImportSummaryState } from './common'
+
 export interface JobMetadata {
   version: number
   createdAt: string
   modifiedAt: string
 }
 
+export interface ImportDetails {
+  code: ImportDetailsCode
+  objectId?: string | null
+  objectName?: string | null
+  message?: string | null
+}
+
 export interface ImportedItem {
   id: string
   name: string
-  state: string
+  state: ImportSummaryState
+  details?: ImportDetails[]
 }
 
 export interface ImportResultSummary {
@@ -17,6 +27,10 @@ export interface ImportResultSummary {
     mcpServers: ImportedItem[]
   }
   message: string
+}
+
+export interface ImportAgentsResult extends ImportResultSummary {
+  importedAt: string
 }
 
 export interface ExportResult {

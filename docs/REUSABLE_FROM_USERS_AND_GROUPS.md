@@ -8,6 +8,7 @@
 **Tier 1 sources:** every **playbook-aligned** remote in that registry (newest first when they diverge) — do **not** depend on U&G alone.  
 **Starter clone:** [md-module-template](https://github.com/emporix/md-module-template) branch **`md-module-migration`** (absorb into monorepo — playbook §1).  
 **Full workflow:** [MODULE_MIGRATION_PLAYBOOK.md](./MODULE_MIGRATION_PLAYBOOK.md)  
+**PrimeReact → CL lookup:** [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md)  
 **Skill (canonical):** `md-extensions/.cursor/skills/md-module-extraction/SKILL.md`  
 **Host wiring:** `management-dashboard/.cursor/rules/federated-module-wiring.mdc`
 
@@ -20,8 +21,9 @@
 1. Read the [playbook](./MODULE_MIGRATION_PLAYBOOK.md) for federation contract, MD wiring, QA, and cleanup.
 2. Check [MIGRATED_MODULES.md](./MIGRATED_MODULES.md) for which remotes are Tier 1 sources and any deltas since U&G.
 3. Use **this file** as the copy inventory: what to take from prior remotes, what to adapt, what to skip.
-4. For the step-by-step workflow, follow the **skill** (`.cursor/skills/md-module-extraction/SKILL.md`).
-5. After the migration: update the registry, refresh this inventory if needed, append 1–3 playbook decisions-log rows.
+4. Look up every MD `primereact` import in [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md) before rewriting UI.
+5. For the step-by-step workflow, follow the **skill** (`.cursor/skills/md-module-extraction/SKILL.md`).
+6. After the migration: update the registry, refresh this inventory if needed, append 1–3 playbook decisions-log rows, and move rows in `CL_WIDGET_STATUS.md` if you promoted a widget.
 
 **Default strategy:** copy Tier 1 from the **best/newest playbook-aligned remote** that has the piece (often U&G; check `customer-groups` and later remotes for CL-adopted shells). Prefer `@emporix/component-library` when it already exports the component. Do **not** invent a shared package unless several modules already diverge from copy-paste.
 
@@ -51,7 +53,7 @@ Paths below are relative to a playbook-aligned remote (historically `users-and-g
 |-----------|------|------|
 | `HeaderSection` | `HeaderSection.tsx` | Page title, back, actions |
 | `BackButton` | Prefer CL ≥ 2.2.0 — **import directly** | Used by HeaderSection |
-| `SectionBox` | `SectionBox.tsx` (+ `.scss` / `.module.scss`) | Named section panel |
+| `SectionBox` | Prefer CL ≥ 2.3.0 — **import directly** | Named section panel (do not copy locally; `brands` dropped its copy). **`EmptyTable.tsx` still imports `./SectionBox` — patch that import to CL when you copy it**, otherwise "copy Tier 1 verbatim" and "never copy SectionBox locally" contradict each other. |
 | `FormGrid` | `FormGrid.tsx` | Form layout |
 | `FormGridRow` | `FormGridRow.tsx` | Form row |
 | `EmptyContent` | `EmptyContent.tsx` | Empty state + optional CTA |
@@ -62,12 +64,44 @@ Paths below are relative to a playbook-aligned remote (historically `users-and-g
 | `TableActions` | `TableActions.tsx` | Row edit/delete + overflow menu |
 | `BatchDeleteButton` | `BatchDeleteButton.tsx` | Bulk delete + confirm |
 | `LoadingLayout` | `LoadingLayout.tsx` | Full-area spinner — prefer CL `ProgressSpinner` inside (no extra spinner wrapper) |
-| Lean `InputField` | `InputField.tsx` | Label/error/tooltip wrapper — **not** MD's ProductData-coupled InputField |
+| Lean `InputField` | Prefer **not** copying — CL controls with `label`/`error` props replace it. Keep only if you still wrap non-labeled children | Label/error/tooltip wrapper — **not** MD's ProductData-coupled InputField. Prefer built-in CL labels; use CL `FieldLabel` only when the child has no `label` prop |
 | `DropdownFilter` | `DropdownFilter.tsx` | DataTable column filter → CL Dropdown |
 | `LocalizedInput` | `LocalizedInput.tsx` | **Required thin wrapper** — injects languages + i18n toggle labels into context-free CL |
 | `DotIndicator` | `DotIndicator.tsx` | Boolean status dot (optional; prefer CSS Modules if you touch it) |
+| `TableExtensions` | `brands/src/components/shared/TableExtensions.tsx` (then `returns` for mixin columns) | Column visibility persisted per config key. Needs the `ConfigurationProvider` table-config surface from `brands`. Copy sibling `SidePanel` (CL has no Sidebar). Toggles are CL `InputSwitch` (CL ≥ 2.5.0). Current widget status: [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md). |
+| `SidePanel` | `brands/src/components/shared/SidePanel.tsx` or `returns/...` | Right-side drawer standing in for PrimeReact `Sidebar`. Required by `TableExtensions`. |
+| `AssetsViewer` / `MediaAssetUpload` | `brands/src/components/shared/` | Media grid + upload on CL `FileUpload`/`ProgressBar` (CL ≥ 2.4.0). Asset tiles need a host route — see the `brands` row in the registry. |
 
 Also copy matching `*.module.scss` / `*.scss` next to each component.
+
+### Copying Tier 1 is not verbatim — fix these every time
+
+A second independent run of the Brands migration (Aug 2026) hit all of these:
+
+- **`EmptyTable.tsx`** imports `./SectionBox` — repoint at CL (above).
+- **`AssetsViewer.tsx` / `MediaAssetUpload.tsx`** carry MD global CSS variables (`--grey-*`, `--blue-*`, `var(--red)`) — i.e. the copy sources violate the anti-pattern grep in `reference.md`. Map them to CL tokens (see `component-library` `styling` rule; `src/styles/index.scss` is the token source of truth) or a local SCSS variable.
+- **`global.ts` is not a complete set.** Copied shells reference keys it lacks (`global.toasts.errorUploadAssets`, `global.fieldRequired`, `global.tableExtensions.*`, `global.more`, `global.action`). Grep the shells you copied for `t('global.` and add every missing key to **both** locales.
+- **Ported shared components carry another module's i18n namespace.** `AssetsViewer`/`MediaAssetUpload` read `categories.media.*` — keys owned by MD's Categories module. Re-home them under **your module's** namespace (`{module}.media.*`), not a new top-level one, so the remote owns all its keys.
+- **`global` keys the copied shells need, with the names to use** (invent nothing — a re-run guessed `global.tableExtensions.title` where the shipped remotes use `columns`):
+
+  ```
+  global.fieldRequired
+  global.tableExtensions.columns      global.tableExtensions.saveError
+  global.toasts.errorUploadAssets
+  global.more                          global.action
+  ```
+
+### Copy what the module uses, not the whole table
+
+Tier 1 is a menu, not a mandate. Skip shells the module genuinely has no use for — a Brands-style module needs no `DateValue` (renders no dates), and the lean `InputField` is redundant once you use CL controls' built-in `label` / `error` props (`InputText`, `Dropdown`, `Calendar`, `Editor`, …). Prefer those props over wrapping with lean `InputField` or standalone `FieldLabel`; use `FieldLabel` only for children without a label API. Copying unused shells leaves dead files that the next reader assumes are load-bearing. Conversely, do not skip a **provider** on the same reasoning (see playbook §4).
+
+### Forms: use `react-hook-form`
+
+**Do not port MD's `hooks/useForm.ts`.** It is coupled to `NavigationConfirmProvider`, is absent from every aligned remote, and is not in this inventory — a verification run wasted effort hand-reconstructing it from call sites. `customer-groups` and `brands` both use **`react-hook-form`** (already a dependency): `useForm` + `Controller` for field wiring, `formState.isDirty` / `isValid` for save/discard enablement, `reset(mapEntityToForm(entity))` after load and after save.
+
+### Page and file naming
+
+Follow the aligned remotes so diffs stay comparable: `pages/{Entity}.page.tsx` for a detail/edit screen and `pages/{Entities}.page.tsx` for a list (e.g. `Brand.page.tsx`, `Brands.page.tsx`) — **not** `BrandAddEdit.page.tsx` / `BrandsList.page.tsx`. Table components live in `components/{module}/{Entities}Table.tsx`, and column definitions in `hooks/use{Entities}TableColumns.tsx`.
 
 **i18n:** copy `src/translations/{en,de}/global.ts` — required by delete confirm, pagination, toasts, table actions.
 

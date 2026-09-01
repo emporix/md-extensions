@@ -1,8 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AgentTemplate, LocalizedString } from '../types/Agent'
-import { copyTemplate } from '../services/agentService'
+import {
+  BundleHelperTemplateNotFoundError,
+  copyTemplateWithBundle,
+} from '../services/agentService'
 import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
+import { formatApiError } from '../utils/errorHelpers'
 
 type Step = 'form' | 'loading' | 'success' | 'error'
 
@@ -22,6 +27,7 @@ export const useAddAgentDialog = ({
   onHide,
 }: UseAddAgentDialogProps) => {
   const appState = useAppState()
+  const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
   const [step, setStep] = useState<Step>('form')
   const [agentId, setAgentId] = useState('')
@@ -58,9 +64,9 @@ export const useAddAgentDialog = ({
     }, 200)
 
     try {
-      await copyTemplate(
+      await copyTemplateWithBundle(
         appState,
-        agentTemplate.id,
+        agentTemplate,
         agentId,
         agentName,
         description,
@@ -75,10 +81,14 @@ export const useAddAgentDialog = ({
       }, 500)
     } catch (error) {
       clearInterval(progressInterval)
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to create agent'
-      setErrorMessage(errorMessage)
-      showError(`Error creating agent: ${errorMessage}`)
+      const message =
+        error instanceof BundleHelperTemplateNotFoundError
+          ? t('bundle_helper_template_not_found', {
+              templateId: error.helperTemplateId,
+            })
+          : formatApiError(error, t('error_creating_agent'))
+      setErrorMessage(message)
+      showError(message)
       setStep('error')
     }
   }, [
@@ -89,17 +99,27 @@ export const useAddAgentDialog = ({
     agentTemplate,
     appState,
     showError,
+    t,
   ])
 
   const handleOk = useCallback(() => {
     if (step === 'success') {
-      showSuccess('Agent created successfully!')
+      showSuccess(t('agent_created_successfully'))
       onSave(agentName, description, agentTemplate?.id || '')
     }
     onHide()
     setStep('form')
     setProgress(0)
-  }, [step, agentName, description, agentTemplate, onSave, onHide, showSuccess])
+  }, [
+    step,
+    agentName,
+    description,
+    agentTemplate,
+    onSave,
+    onHide,
+    showSuccess,
+    t,
+  ])
 
   const handleDiscard = useCallback(() => {
     onHide()

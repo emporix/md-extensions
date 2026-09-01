@@ -5,7 +5,9 @@ import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
 import { upsertMcpServer as upsertMcpServerApi } from '../services/mcpService'
 import { formatApiError } from '../utils/errorHelpers'
-import { sanitizeIdInput, validateMcpServer } from '../utils/validation'
+import { isDynamicMcpServer } from '../utils/mcpHelpers'
+import { sanitizeIdInput } from '../utils/validation'
+import { validateMcpServer } from '../utils/mcpValidationHelpers'
 
 interface UseMcpConfigProps {
   mcpServer: McpServer | null
@@ -36,22 +38,24 @@ export const useMcpConfig = ({
     mcpServerId: '',
     mcpServerName: '',
     url: '',
-    transport: CustomMcpServerTransportType.SSE,
+    transport: CustomMcpServerTransportType.STREAMABLE_HTTP,
     authorizationHeaderName: '',
     authorizationHeaderToken: '',
   })
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    if (mcpServer) {
+    if (mcpServer && !isDynamicMcpServer(mcpServer)) {
       setState({
         mcpServerId: mcpServer.id ?? '',
         mcpServerName: mcpServer.name ?? '',
-        url: mcpServer.config.url ?? '',
-        transport: mcpServer.transport,
-        authorizationHeaderName: mcpServer.config.authorizationHeaderName ?? '',
+        url: mcpServer.config?.url ?? '',
+        transport:
+          mcpServer.transport ??
+          CustomMcpServerTransportType.STREAMABLE_HTTP,
+        authorizationHeaderName: mcpServer.config?.authorizationHeaderName ?? '',
         authorizationHeaderToken:
-          mcpServer.config.authorizationHeaderToken?.id ?? '',
+          mcpServer.config?.authorizationHeaderToken?.id ?? '',
       })
     }
   }, [mcpServer])
@@ -82,12 +86,13 @@ export const useMcpConfig = ({
   }, [isCreating, state.mcpServerId, state.mcpServerName, state.url])
 
   const handleSave = useCallback(async () => {
-    if (!mcpServer || !isFormValid()) {
+    if (!mcpServer || !isFormValid() || isDynamicMcpServer(mcpServer)) {
       return
     }
 
     const updatedMcpServer: McpServer = {
       ...mcpServer,
+      type: 'custom',
       id: state.mcpServerId,
       name: state.mcpServerName,
       transport: state.transport,
@@ -104,7 +109,7 @@ export const useMcpConfig = ({
     }
 
     try {
-      validateMcpServer(updatedMcpServer)
+      validateMcpServer(updatedMcpServer, t)
       setSaving(true)
       await upsertMcpServerApi(appState, updatedMcpServer)
       showSuccess(

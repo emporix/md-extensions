@@ -11,6 +11,7 @@ import { BasePage } from '../shared/BasePage'
 import { ConfirmDialog } from '../shared/ConfirmDialog'
 import { useAgents } from '../../hooks/useAgents'
 import { AgentTemplate, CustomAgent } from '../../types/Agent'
+import { filterVisibleAgentTemplates } from '../../utils/agentTemplateBundles'
 
 const AgentsView = memo(() => {
   const { t } = useTranslation()
@@ -90,15 +91,12 @@ const AgentsView = memo(() => {
           ? `${error} | ${customAgentsError}`
           : error || customAgentsError
       }
-      title={t('custom_ai_agents', 'Agentic AI')}
-      addButtonLabel={t('add_new_agent', 'ADD NEW AGENT')}
+      title={t('custom_ai_agents')}
+      addButtonLabel={t('add_new_agent')}
       onAdd={handleAddNewAgent}
       deleteConfirmVisible={deleteConfirmVisible}
-      deleteConfirmTitle={t('delete_agent', 'Delete Agent')}
-      deleteConfirmMessage={t(
-        'delete_agent_confirmation',
-        'Are you sure you want to delete this agent? This action cannot be undone.'
-      )}
+      deleteConfirmTitle={t('delete_agent')}
+      deleteConfirmMessage={t('delete_agent_confirmation')}
       onDeleteConfirm={confirmDelete}
       onDeleteCancel={hideDeleteConfirm}
       className="agents"
@@ -106,12 +104,12 @@ const AgentsView = memo(() => {
       {/* My Agents Section */}
       <div className="my-agents-section">
         <div className="section-title-with-actions">
-          <h2 className="section-title">{t('my_agents', 'My Agents')}</h2>
+          <h2 className="section-title">{t('my_agents')}</h2>
           <button
             className="import-action-button"
             onClick={() => setShowImportDialog(true)}
-            title={t('import_agent', 'Import Agent')}
-            aria-label={t('import_agent', 'Import Agent')}
+            title={t('import_agent')}
+            aria-label={t('import_agent')}
           >
             <i className="pi pi-download"></i>
           </button>
@@ -135,7 +133,7 @@ const AgentsView = memo(() => {
           </div>
         ) : (
           <div className="no-agents-message">
-            <p>{t('no_custom_agents', 'No custom agents created yet.')}</p>
+            <p>{t('no_custom_agents')}</p>
           </div>
         )}
       </div>
@@ -143,14 +141,9 @@ const AgentsView = memo(() => {
       {/* Predefined Agents Section */}
       <div className="predefined-agents-section">
         <div className="section-header">
-          <h2 className="section-title">
-            {t('predefined_agents', 'Predefined Agents')}
-          </h2>
+          <h2 className="section-title">{t('predefined_agents')}</h2>
           <p className="section-description">
-            {t(
-              'predefined_agents_description',
-              'We have number of available Agents in our system. Add any to your list, rename it, to make the desired achievement.'
-            )}
+            {t('predefined_agents_description')}
           </p>
         </div>
 
@@ -158,7 +151,7 @@ const AgentsView = memo(() => {
           <Message severity="error" text={error} />
         ) : (
           <div className="agents-grid">
-            {agents.map((agent) => (
+            {filterVisibleAgentTemplates(agents).map((agent) => (
               <PredefinedAgentCard
                 key={agent.id}
                 agent={agent}
@@ -173,6 +166,7 @@ const AgentsView = memo(() => {
       <AddAgentDialog
         visible={showAddAgentDialog}
         agentTemplate={selectedAgentTemplate}
+        templates={agents}
         onHide={handleCloseDialog}
         onSave={handleSaveAgent}
       />
@@ -186,14 +180,11 @@ const AgentsView = memo(() => {
       <ErrorBoundary>
         <ConfirmDialog
           visible={forceDeleteConfirmVisible}
-          title={t('force_delete_agent', 'Force Delete Agent')}
-          message={t(
-            'force_delete_agent_message',
-            'Agent is used by other agents or has active collaborations.\nBy deleting it, the agent will be removed from collaborations and related agents may be affected.'
-          )}
+          title={t('force_delete_agent')}
+          message={t('force_delete_agent_message')}
           onConfirm={confirmForceDelete}
           onHide={hideForceDeleteConfirm}
-          confirmLabel={t('force_delete', 'Force Delete')}
+          confirmLabel={t('force_delete')}
           severity="warning"
         />
       </ErrorBoundary>

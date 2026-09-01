@@ -104,16 +104,6 @@ export const validateTool = (tool: { id?: string; name?: string }) => {
   validateName(tool.name, 'Tool')
 }
 
-export const validateMcpServer = (mcpServer: {
-  id?: string
-  name?: string
-  config?: { url?: string }
-}) => {
-  validateId(mcpServer.id, 'MCP Server')
-  validateName(mcpServer.name, 'MCP Server')
-  validateUrl(mcpServer.config?.url, 'MCP Server URL')
-}
-
 export const validateOAuth = (oauth: {
   id?: string
   url?: string

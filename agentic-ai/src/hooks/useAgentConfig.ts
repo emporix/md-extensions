@@ -38,9 +38,11 @@ import {
   areSlackAgentToolsValid,
   getSelectedSlackToolIds,
   slackNativeToolHasAllowedOperations,
-  SLACK_TRIGGER,
 } from '../utils/slackRoutingHelpers'
-import { COLLABORATION_TRIGGER_TYPES } from '../utils/constants'
+import {
+  isSlackTriggerToolValidationValid,
+  isTeamsTriggerToolValidationValid,
+} from '../utils/agentTriggerValidationHelpers'
 import { Tool } from '../types/Tool'
 
 interface UseAgentConfigProps {
@@ -142,22 +144,9 @@ export const useAgentConfig = ({
   useEffect(() => {
     if (agent) {
       const agentType = agent.type || 'custom'
-      const loadedTriggerTypes = agent.triggers?.map(
-        (trigger) => trigger.type
-      ) || ['endpoint']
-      const collaborationTriggers =
-        COLLABORATION_TRIGGER_TYPES as readonly string[]
-      const supportTriggerTypes = loadedTriggerTypes.filter((type) =>
-        collaborationTriggers.includes(type)
-      )
-      const triggerTypes =
-        agentType === 'support'
-          ? supportTriggerTypes.length > 0
-            ? supportTriggerTypes
-            : ['slack']
-          : loadedTriggerTypes.filter(
-              (type) => !collaborationTriggers.includes(type)
-            )
+      const triggerTypes = agent.triggers?.map((trigger) => trigger.type) || [
+        'endpoint',
+      ]
 
       setState({
         agentId: agent.id,
@@ -482,11 +471,6 @@ export const useAgentConfig = ({
       state.outputFormat
     )
 
-    const supportTriggerValidation =
-      state.agentType !== 'support' ||
-      state.triggerTypes.includes(SLACK_TRIGGER) ||
-      state.triggerTypes.includes(TEAMS_TRIGGER)
-
     const selectedSlackToolCount = getSelectedSlackToolIds(
       state.nativeTools,
       availableTools
@@ -496,15 +480,15 @@ export const useAgentConfig = ({
       availableTools
     ).length
 
-    const supportSlackTriggerToolValidation =
-      state.agentType !== 'support' ||
-      !state.triggerTypes.includes(SLACK_TRIGGER) ||
-      selectedSlackToolCount === 1
+    const slackTriggerToolValidation = isSlackTriggerToolValidationValid(
+      state.triggerTypes,
+      selectedSlackToolCount
+    )
 
-    const supportTeamsTriggerToolValidation =
-      state.agentType !== 'support' ||
-      !state.triggerTypes.includes(TEAMS_TRIGGER) ||
-      selectedTeamsToolCount === 1
+    const teamsTriggerToolValidation = isTeamsTriggerToolValidationValid(
+      state.triggerTypes,
+      selectedTeamsToolCount
+    )
 
     const teamsToolValidation =
       areTeamsAgentToolsValid(state.nativeTools, availableTools) &&
@@ -537,9 +521,8 @@ export const useAgentConfig = ({
       commerceFilterValidation &&
       collaborationValidation &&
       outputFormatValidation &&
-      supportTriggerValidation &&
-      supportSlackTriggerToolValidation &&
-      supportTeamsTriggerToolValidation &&
+      slackTriggerToolValidation &&
+      teamsTriggerToolValidation &&
       teamsToolValidation &&
       slackToolValidation
     )

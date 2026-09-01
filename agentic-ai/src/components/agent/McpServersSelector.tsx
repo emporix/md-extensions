@@ -6,6 +6,7 @@ import { getMcpServers } from '../../services/mcpService'
 import { useAppState } from '../../contexts/AppStateContext'
 import { McpServersList } from '../mcp/mcp-servers/McpServersList'
 import { McpServerForm } from '../mcp/mcp-servers/McpServerForm'
+import { isManagedAgentMcp } from '../../utils/agentToolsHelpers'
 
 interface McpServersSelectorProps {
   mcpServers: McpServer[]
@@ -83,20 +84,21 @@ export const McpServersSelector: React.FC<McpServersSelectorProps> = ({
     setShowAddForm(false)
   }, [])
 
-  // Compute taken IDs/domains excluding the item currently being edited
-  const existingCustomServerIds = mcpServers
+  const existingManagedServerIds = mcpServers
     .filter(
       (server, idx) =>
-        idx !== editingIndex && server.type === 'custom' && server.mcpServer?.id
+        idx !== editingIndex && isManagedAgentMcp(server)
     )
-    .map((server) => server.mcpServer!.id)
+    .map((server) => server.mcpServer?.id)
+    .filter((id): id is string => Boolean(id))
 
   const existingDomains = mcpServers
     .filter(
       (server, idx) =>
         idx !== editingIndex && server.type === 'predefined' && server.domain
     )
-    .map((server) => server.domain!)
+    .map((server) => server.domain)
+    .filter((domain): domain is string => Boolean(domain))
 
   return (
     <div className="mcp-servers-section">
@@ -121,7 +123,7 @@ export const McpServersSelector: React.FC<McpServersSelectorProps> = ({
         onUpdate={handleUpdateMcpServer}
         onCancelEdit={handleCancelEdit}
         editingIndex={editingIndex}
-        existingServerIds={existingCustomServerIds}
+        existingServerIds={existingManagedServerIds}
         existingDomains={existingDomains}
       />
 
@@ -130,7 +132,7 @@ export const McpServersSelector: React.FC<McpServersSelectorProps> = ({
           onAdd={handleAddMcpServer}
           onCancel={handleCancelAdd}
           availableMcpServers={availableMcpServers}
-          existingServerIds={existingCustomServerIds}
+          existingServerIds={existingManagedServerIds}
           existingDomains={existingDomains}
         />
       )}
