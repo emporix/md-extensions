@@ -41,6 +41,8 @@ interface ModelSectionProps {
   selfHostedAuthHeaderName: string
   selfHostedTokenId: string
   oauthId: string
+  fileProcessingUseResponsesApi: boolean
+  fileProcessingExtraModelKey: string
   modelsByProvider: Map<LlmModelProvider, LlmModel[]>
   modelsLoading: boolean
   modelsFetched: boolean
@@ -68,6 +70,8 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   selfHostedAuthHeaderName,
   selfHostedTokenId,
   oauthId,
+  fileProcessingUseResponsesApi,
+  fileProcessingExtraModelKey,
   modelsByProvider,
   modelsLoading,
   modelsFetched,
@@ -610,35 +614,37 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
           </div>
 
           {isSelfHosted && (
-            <div className="agent-detail-model-self-hosted-row">
-              <div className="form-field">
-                <label className="field-label">{t('base_provider')}</label>
-                <Dropdown
-                  value={baseProvider || null}
-                  options={baseProviderOptions}
-                  onChange={(event) =>
-                    onFieldChange('baseProvider', event.value ?? '')
-                  }
-                  className="w-full"
-                  placeholder={t('select_base_provider')}
-                  showClear
-                  appendTo="self"
-                />
-              </div>
+            <>
+              <div className="agent-detail-model-self-hosted-row">
+                <div className="form-field">
+                  <label className="field-label">{t('base_provider')}</label>
+                  <Dropdown
+                    value={baseProvider || null}
+                    options={baseProviderOptions}
+                    onChange={(event) =>
+                      onFieldChange('baseProvider', event.value ?? '')
+                    }
+                    className="w-full"
+                    placeholder={t('select_base_provider')}
+                    showClear
+                    appendTo="self"
+                  />
+                </div>
 
-              <div className="form-field">
-                <label className="field-label">
-                  {t('self_hosted_url')}
-                  <span className="agent-detail-required"> *</span>
-                </label>
-                <InputText
-                  value={selfHostedUrl}
-                  onChange={(event) =>
-                    onFieldChange('selfHostedUrl', event.target.value)
-                  }
-                  className={`w-full${!selfHostedUrl.trim() ? ' p-invalid' : ''}`}
-                  placeholder={t('enter_self_hosted_url')}
-                />
+                <div className="form-field">
+                  <label className="field-label">
+                    {t('self_hosted_url')}
+                    <span className="agent-detail-required"> *</span>
+                  </label>
+                  <InputText
+                    value={selfHostedUrl}
+                    onChange={(event) =>
+                      onFieldChange('selfHostedUrl', event.target.value)
+                    }
+                    className={`w-full${!selfHostedUrl.trim() ? ' p-invalid' : ''}`}
+                    placeholder={t('enter_self_hosted_url')}
+                  />
+                </div>
               </div>
 
               <SelfHostedAuthSection
@@ -653,7 +659,65 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
                 showValidation={isCreateMode}
                 onFieldChange={onFieldChange}
               />
-            </div>
+
+              <div className="agent-detail-model-self-hosted-row">
+                <div className="form-field agent-detail-model-memory-field">
+                  <span
+                    className="field-label agent-detail-model-memory-field-spacer"
+                    aria-hidden="true"
+                  >
+                    {t('extra_model_key')}
+                  </span>
+                  <div className="agent-detail-model-memory-switch">
+                    <InputSwitch
+                      inputId="self-hosted-use-responses-api"
+                      checked={fileProcessingUseResponsesApi}
+                      onChange={(event) =>
+                        onFieldChange(
+                          'fileProcessingUseResponsesApi',
+                          event.value
+                        )
+                      }
+                    />
+                    <label
+                      className="field-label agent-detail-model-memory-label"
+                      htmlFor="self-hosted-use-responses-api"
+                    >
+                      {t('use_responses_api')}
+                      <i
+                        className="pi pi-info-circle field-label-help-icon agent-detail-use-responses-api-help"
+                        data-pr-tooltip={t('use_responses_api_tooltip')}
+                        data-pr-position="top"
+                      />
+                    </label>
+                    <Tooltip target=".agent-detail-use-responses-api-help" />
+                  </div>
+                </div>
+
+                <div className="form-field">
+                  <label className="field-label">
+                    {t('extra_model_key')}
+                    <i
+                      className="pi pi-info-circle field-label-help-icon agent-detail-extra-model-key-help"
+                      data-pr-tooltip={t('extra_model_key_tooltip')}
+                      data-pr-position="top"
+                    />
+                  </label>
+                  <Tooltip target=".agent-detail-extra-model-key-help" />
+                  <InputText
+                    value={fileProcessingExtraModelKey}
+                    onChange={(event) =>
+                      onFieldChange(
+                        'fileProcessingExtraModelKey',
+                        event.target.value
+                      )
+                    }
+                    className="w-full"
+                    placeholder={t('enter_extra_model_key')}
+                  />
+                </div>
+              </div>
+            </>
           )}
         </div>
       </section>

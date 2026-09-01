@@ -334,6 +334,8 @@ const AgentDetailPage: React.FC = () => {
           selfHostedAuthHeaderName={state.selfHostedAuthHeaderName}
           selfHostedTokenId={state.selfHostedTokenId}
           oauthId={state.oauthId}
+          fileProcessingUseResponsesApi={state.fileProcessingUseResponsesApi}
+          fileProcessingExtraModelKey={state.fileProcessingExtraModelKey}
           modelsByProvider={modelsByProvider}
           modelsLoading={modelsLoading}
           modelsFetched={modelsFetched}

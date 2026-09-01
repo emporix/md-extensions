@@ -86,6 +86,8 @@ interface AgentConfigState {
   selfHostedAuthHeaderName: string
   selfHostedTokenId: string
   oauthId: string
+  fileProcessingUseResponsesApi: boolean
+  fileProcessingExtraModelKey: string
   commerceEvents: string[]
   commerceEventFilter: AgentCommerceFilterDsl | null
 }
@@ -131,6 +133,8 @@ export const useAgentConfig = ({
     selfHostedAuthHeaderName: '',
     selfHostedTokenId: '',
     oauthId: '',
+    fileProcessingUseResponsesApi: false,
+    fileProcessingExtraModelKey: '',
     commerceEvents: [],
     commerceEventFilter: null,
   })
@@ -196,6 +200,12 @@ export const useAgentConfig = ({
             oauthId: '',
           }
         })(),
+        fileProcessingUseResponsesApi:
+          !!agent.llmConfig?.selfHostedParams?.fileProcessingConfig
+            ?.useResponsesApi,
+        fileProcessingExtraModelKey:
+          agent.llmConfig?.selfHostedParams?.fileProcessingConfig
+            ?.extraModelKey || '',
         ...(() => {
           const raw = agent.triggers?.find(
             (trigger) => trigger.type === 'commerce_events'
@@ -299,6 +309,14 @@ export const useAgentConfig = ({
               baseConfig.selfHostedParams.authorizationHeaderToken = {
                 id: state.selfHostedTokenId,
               }
+            }
+          }
+
+          const extraModelKey = state.fileProcessingExtraModelKey.trim()
+          if (state.fileProcessingUseResponsesApi || extraModelKey) {
+            baseConfig.selfHostedParams.fileProcessingConfig = {
+              useResponsesApi: state.fileProcessingUseResponsesApi,
+              ...(extraModelKey ? { extraModelKey } : {}),
             }
           }
         }

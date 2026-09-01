@@ -666,6 +666,13 @@ const TRANSLATIONS_EN = {
   // Self-hosted LLM translations
   self_hosted_url: 'Self-hosted URL',
   enter_self_hosted_url: 'Enter self-hosted URL',
+  use_responses_api: 'Use Responses API',
+  use_responses_api_tooltip:
+    'Use the Responses API for file processing on this self-hosted model.',
+  extra_model_key: 'Extra Model Key',
+  extra_model_key_tooltip:
+    'Optional extra model identifier used for file processing.',
+  enter_extra_model_key: 'Enter extra model key',
   authorization_token: 'Authorization Token',
   use_oauth_authentication: 'Use OAuth authentication',
   oauth_url: 'OAuth URL',
