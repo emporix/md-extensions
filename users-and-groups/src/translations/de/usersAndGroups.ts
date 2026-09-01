@@ -7,6 +7,10 @@ export default {
     createUser: 'Neuen Benutzer hinzufügen',
     createGroup: 'Neue Gruppe hinzufügen',
   },
+  warnings: {
+    entraIdSyncEnabled:
+      'Die Entra-ID-Gruppensynchronisierung ist für diesen Tenant aktiviert. Mitarbeiterzugriff wird in Entra ID verwaltet. Manuelles Anlegen von Benutzern sowie Zuweisen zu oder Entfernen aus Gruppen ist deaktiviert.',
+  },
   tabs: {
     users: 'Benutzer',
     groups: 'Gruppen',

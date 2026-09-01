@@ -29,6 +29,8 @@ import {
 } from '../helpers/users/users.helpers'
 import { listPath, userDetailPath } from '../constants/paths'
 import EntityChangelogTab from '../components/auditLog/EntityChangelogTab'
+import EntraIdSyncBanner from '../components/shared/EntraIdSyncBanner'
+import { useEntraIdGroupsSync } from '../hooks/useEntraIdGroupsSync'
 import styles from './UserPage.module.scss'
 
 const UserPage = () => {
@@ -39,6 +41,7 @@ const UserPage = () => {
   const { handleSubmit, formState, reset } = methods
   const { showSuccess, showError } = useToast()
   const { navigate } = useCustomNavigate()
+  const { areManualMutationsRestricted } = useEntraIdGroupsSync()
   const { syncUserAccessControls, hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
   const canViewAuditLog = hasPermission(EmployeeDomains.AUDIT_LOG_VIEWER)
@@ -54,6 +57,7 @@ const UserPage = () => {
 
   const { userId } = useParams()
   const [user, setUser] = useState<User>()
+  const canSaveUser = canManage && (!!userId || !areManualMutationsRestricted)
 
   useEffect(() => {
     if (!userId) return
@@ -97,6 +101,9 @@ const UserPage = () => {
     if (!user) return
     try {
       const payload = mapUserFormToPayload(data, user)
+      if (areManualMutationsRestricted) {
+        payload.groupIds = user.groupIds ?? []
+      }
       await makeCall(() => updateUser(user.id, payload), blockPanel)
       await makeCall(syncUserAccessControls, blockPanel)
       showSuccess(t('usersAndGroups.users.toasts.editUser.success'))
@@ -168,13 +175,13 @@ const UserPage = () => {
           <div className={styles.headerActions}>
             <SecondaryButton
               className={styles.discardButton}
-              disabled={!formState.isDirty || !canManage}
+              disabled={!formState.isDirty || !canSaveUser}
               onClick={() => reset()}
             >
               {t('global.discard')}
             </SecondaryButton>
             <PrimaryButton
-              disabled={!formState.isValid || !formState.isDirty || !canManage}
+              disabled={!formState.isValid || !formState.isDirty || !canSaveUser}
               onClick={handleSubmit(user ? submitEditUser : submitCreateUser)}
             >
               {t('global.save')}
@@ -182,6 +189,7 @@ const UserPage = () => {
           </div>
         }
       />
+      <EntraIdSyncBanner />
       <Tabs
         tabs={tabs}
         activeTabId={activeTab ?? 'details'}

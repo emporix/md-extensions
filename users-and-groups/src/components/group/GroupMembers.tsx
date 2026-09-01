@@ -20,6 +20,7 @@ import { EmployeeDomains } from '../../configs/accessControls'
 import BatchDeleteButton from '../../components/shared/BatchDeleteButton'
 import EmptyTable from '../../components/shared/EmptyTable'
 import usePagination from '../../hooks/usePagination'
+import { useEntraIdGroupsSync } from '../../hooks/useEntraIdGroupsSync'
 import styles from './GroupMembers.module.scss'
 
 const GroupMembers = () => {
@@ -37,6 +38,11 @@ const GroupMembers = () => {
   const { hasPermission } = usePermissions()
   const [isDeleting, setIsDeleting] = useState(false)
   const canManage = hasPermission(EmployeeDomains.USERS_AND_GROUPS_MANAGER)
+  const { areManualMutationsRestricted } = useEntraIdGroupsSync()
+  const canAddMembers = canManage && !areManualMutationsRestricted
+  const canRemoveMembers =
+    canManage &&
+    (groupType === GroupUserTypes.CUSTOMER || !areManualMutationsRestricted)
   const { paginationParams, onPageCallback } = usePagination(
     undefined,
     true,
@@ -94,7 +100,7 @@ const GroupMembers = () => {
     (member: User) => {
       const actions = [
         {
-          disabled: !canManage,
+          disabled: !canRemoveMembers,
           icon: <BsXCircleFill size={16} />,
           onClick: () => removeMembers([member]),
           tooltip: t(
@@ -104,7 +110,7 @@ const GroupMembers = () => {
       ]
       return <TableActions actions={actions} />
     },
-    [removeMembers, canManage, t]
+    [removeMembers, canRemoveMembers, t]
   )
 
   const membersPagination: DataTablePaginationState = {
@@ -115,7 +121,7 @@ const GroupMembers = () => {
   return (
     <>
       <BatchDeleteButton
-        disabled={selectedMembers.length === 0 || !canManage}
+        disabled={selectedMembers.length === 0 || !canRemoveMembers}
         className={styles.batchActionButton}
         pluralsPath="usersAndGroups.groups.tables.members"
         selected={selectedMembers}
@@ -129,6 +135,7 @@ const GroupMembers = () => {
           })}
           buttonLabel={t('usersAndGroups.groups.buttons.addMembers')}
           action={() => setIsMembersDialogOpened(true)}
+          managerPermissions={canAddMembers}
         />
       ) : (
         <DataTable

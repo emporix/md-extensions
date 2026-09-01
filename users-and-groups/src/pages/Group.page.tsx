@@ -20,6 +20,7 @@ import { usePermissions } from '../context/PermissionsProvider'
 import { GroupRoleProvider } from '../context/GroupRole.provider'
 import { EmployeeDomains } from '../configs/accessControls'
 import EntityChangelogTab from '../components/auditLog/EntityChangelogTab'
+import EntraIdSyncBanner from '../components/shared/EntraIdSyncBanner'
 
 const GroupPage = () => {
   const { t } = useTranslation()
@@ -120,6 +121,7 @@ const GroupPage = () => {
           ) : undefined
         }
       />
+      <EntraIdSyncBanner />
       <Tabs
         tabs={visibleTabs}
         activeTabId={activeTab ?? 'details'}

@@ -7,6 +7,10 @@ export default {
     createUser: 'Create New User',
     createGroup: 'Create New Group',
   },
+  warnings: {
+    entraIdSyncEnabled:
+      'Entra ID groups synchronization is enabled for this tenant. Employee access is managed in Entra ID. Manual user creation and group assignment or removal are disabled.',
+  },
   tabs: {
     users: 'Users',
     groups: 'Groups',

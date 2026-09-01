@@ -90,4 +90,5 @@ const RemoteComponent = ({
   )
 }
 
+export { RemoteComponent }
 export default RemoteComponent
