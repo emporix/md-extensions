@@ -80,6 +80,11 @@ export enum GrantType {
   CLIENT_CREDENTIALS = 'client_credentials',
 }
 
+export interface FileProcessingConfig {
+  useResponsesApi?: boolean
+  extraModelKey?: string
+}
+
 export interface LlmConfig {
   model: string
   temperature?: number
@@ -100,6 +105,7 @@ export interface LlmConfig {
     oauth?: {
       id: string
     }
+    fileProcessingConfig?: FileProcessingConfig
   }
 }
 

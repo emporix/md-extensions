@@ -59,29 +59,58 @@ export const SelfHostedAuthSection: React.FC<SelfHostedAuthSectionProps> = ({
 
   return (
     <>
-      <div className="form-field agent-detail-model-memory-field agent-detail-self-hosted-auth-toggle">
-        <div className="agent-detail-model-memory-switch">
-          <InputSwitch
-            inputId="self-hosted-use-oauth"
-            checked={useOAuth}
-            onChange={(event) =>
-              onFieldChange('selfHostedUseOAuth', event.value)
-            }
-          />
-          <label
-            className="field-label agent-detail-model-memory-label"
-            htmlFor="self-hosted-use-oauth"
+      <div className="agent-detail-model-self-hosted-row">
+        <div className="form-field agent-detail-model-memory-field">
+          <span
+            className="field-label agent-detail-model-memory-field-spacer"
+            aria-hidden="true"
           >
-            {t('use_oauth_authentication')}
-          </label>
+            {t('oauth')}
+          </span>
+          <div className="agent-detail-model-memory-switch">
+            <InputSwitch
+              inputId="self-hosted-use-oauth"
+              checked={useOAuth}
+              onChange={(event) =>
+                onFieldChange('selfHostedUseOAuth', event.value)
+              }
+            />
+            <label
+              className="field-label agent-detail-model-memory-label"
+              htmlFor="self-hosted-use-oauth"
+            >
+              {t('use_oauth_authentication')}
+            </label>
+          </div>
         </div>
-      </div>
 
-      {!useOAuth ? (
-        <>
+        {useOAuth && (
           <div className="form-field">
             <label className="field-label">
-              {t('authorization_header_name')} ({t('optional')})
+              {t('oauth')}
+              <span className="agent-detail-required"> *</span>
+            </label>
+            <Dropdown
+              value={oauthId || null}
+              options={oauthOptions}
+              onChange={(event) => onFieldChange('oauthId', event.value ?? '')}
+              className={`w-full${showValidation && !oauthId.trim() ? ' p-invalid' : ''}`}
+              placeholder={
+                oauthsLoading ? t('loading_oauths') : t('select_oauth')
+              }
+              disabled={oauthsLoading}
+              showClear
+              appendTo="self"
+            />
+          </div>
+        )}
+      </div>
+
+      {!useOAuth && (
+        <div className="agent-detail-model-self-hosted-row">
+          <div className="form-field">
+            <label className="field-label">
+              {t('authorization_header_name')}
             </label>
             <InputText
               value={authHeaderName}
@@ -95,7 +124,7 @@ export const SelfHostedAuthSection: React.FC<SelfHostedAuthSectionProps> = ({
 
           <div className="form-field">
             <label className="field-label">
-              {t('authorization_token')} ({t('optional')})
+              {t('authorization_token')}
             </label>
             <Dropdown
               value={authHeaderTokenId || null}
@@ -112,25 +141,6 @@ export const SelfHostedAuthSection: React.FC<SelfHostedAuthSectionProps> = ({
               appendTo="self"
             />
           </div>
-        </>
-      ) : (
-        <div className="form-field">
-          <label className="field-label">
-            {t('oauth')}
-            <span className="agent-detail-required"> *</span>
-          </label>
-          <Dropdown
-            value={oauthId || null}
-            options={oauthOptions}
-            onChange={(event) => onFieldChange('oauthId', event.value ?? '')}
-            className={`w-full${showValidation && !oauthId.trim() ? ' p-invalid' : ''}`}
-            placeholder={
-              oauthsLoading ? t('loading_oauths') : t('select_oauth')
-            }
-            disabled={oauthsLoading}
-            showClear
-            appendTo="self"
-          />
         </div>
       )}
     </>
