@@ -4,7 +4,7 @@ import {
   mapAgentChatStreamEvent,
   readSseStream,
 } from '../utils/sseHelpers'
-import { MAX_ZIP_DOWNLOAD_BYTES } from '../utils/functionZipSource.helpers'
+import { MAX_ZIP_DOWNLOAD_BYTES } from '../constants/zipLimits'
 
 interface ErrorDetail {
   field: string

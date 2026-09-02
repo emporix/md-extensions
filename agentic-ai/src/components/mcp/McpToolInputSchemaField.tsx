@@ -30,7 +30,7 @@ export const McpToolInputSchemaField = ({
   const { t } = useTranslation()
   const [dialogVisible, setDialogVisible] = useState(false)
   const functionSelected = functionId.trim().length > 0
-  const generateButtonId = useId()
+  const generateButtonId = `mcp-schema-generate-${useId().replace(/:/g, '')}`
 
   const assistantContext = useMemo(
     () => ({

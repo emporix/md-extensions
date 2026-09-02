@@ -1,11 +1,19 @@
 import JSZip from 'jszip'
+import {
+  MAX_ZIP_DOWNLOAD_BYTES,
+  MAX_ZIP_SOURCE_ENTRIES,
+  MAX_ZIP_UNCOMPRESSED_BYTES,
+  MAX_ZIP_SOURCE_FILE_BYTES,
+} from '../constants/zipLimits'
+
+export {
+  MAX_ZIP_DOWNLOAD_BYTES,
+  MAX_ZIP_SOURCE_ENTRIES,
+  MAX_ZIP_UNCOMPRESSED_BYTES,
+  MAX_ZIP_SOURCE_FILE_BYTES,
+}
 
 const normalizeSlashes = (path: string) => path.replace(/\\/g, '/')
-
-export const MAX_ZIP_DOWNLOAD_BYTES = 20 * 1024 * 1024
-export const MAX_ZIP_SOURCE_ENTRIES = 500
-export const MAX_ZIP_UNCOMPRESSED_BYTES = 50 * 1024 * 1024
-export const MAX_ZIP_SOURCE_FILE_BYTES = 2 * 1024 * 1024
 
 export const isZipJunkPath = (path: string): boolean => {
   const normalized = normalizeSlashes(path)
