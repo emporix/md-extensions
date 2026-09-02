@@ -89,8 +89,9 @@ export const McpServersList: React.FC<McpServersListProps> = ({
         const serverInfo = getMcpServerDisplayInfo(mcpServer)
         const isDisabled = !serverInfo.enabled
         const dynamicCatalogTools =
-          serverInfo.managedServer && isDynamicMcpServer(serverInfo.managedServer)
-            ? serverInfo.managedServer.tools ?? []
+          serverInfo.managedServer &&
+          isDynamicMcpServer(serverInfo.managedServer)
+            ? (serverInfo.managedServer.tools ?? [])
             : []
         const dynamicToolNamesToDisplay =
           mcpServer.type === 'dynamic' && mcpServer.tools?.length

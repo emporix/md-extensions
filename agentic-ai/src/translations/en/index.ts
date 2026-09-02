@@ -574,20 +574,36 @@ const TRANSLATIONS_EN = {
     'Dynamic MCP servers must keep at least one tool.',
   mcp_tool_unnamed: 'Tool {{index}}',
   mcp_tool_name: 'Tool name',
-  mcp_tool_name_placeholder: 'Enter tool name (no spaces)',
-  mcp_tool_name_no_whitespace: 'Tool name must not contain whitespace.',
+  mcp_tool_name_placeholder: 'Enter tool name (letters, numbers, underscore)',
+  mcp_tool_name_no_whitespace:
+    'Tool name may contain only letters, numbers, and underscores.',
   mcp_tool_description_placeholder: 'Enter tool description',
   mcp_tool_prompt: 'Tool prompt',
   mcp_tool_prompt_placeholder:
-    'Describe when the agent should call this tool',
+    'Describe when the agent should call this tool (e.g. Fetch a paginated list of all active products from the system)',
   mcp_tool_required_scopes: 'Required scopes',
   mcp_tool_input_schema: 'Input schema',
-  mcp_tool_input_schema_placeholder:
-    'Enter JSON Schema as a JSON string',
+  mcp_tool_input_schema_placeholder: 'Enter JSON Schema as a JSON string',
   mcp_tool_input_schema_invalid_json: 'Input schema must be valid JSON',
   mcp_tool_input_schema_invalid_schema:
     'Input schema must be valid JSON Schema',
+  mcp_tool_input_schema_generate_disabled_tooltip:
+    'Select a cloud function to generate input schema from its deployment source.',
+  mcp_tool_input_schema_assistant_intro:
+    'Use the JSON Schema helper agent to infer an input schema from the cloud function source in the latest media deployment. Enable the helper agent once from our predefined templates.',
+  mcp_tool_input_schema_assistant_ready:
+    'Click Apply to download the latest function deployment, analyze its source, and generate the input schema.',
+  mcp_tool_input_schema_generate_working:
+    'Generating input schema from cloud function source…',
+  mcp_tool_input_schema_generate_applied: 'Input schema generated and applied.',
+  mcp_tool_input_schema_generate_no_media:
+    'No media deployment found for this cloud function. Upload a deployment zip first.',
+  mcp_tool_input_schema_generate_no_source:
+    'No readable source files found in the latest function deployment.',
+  mcp_tool_input_schema_generate_no_function:
+    'Select a cloud function before generating input schema.',
   mcp_tool_function_id: 'Cloud Function',
+  mcp_tool_create_function: 'Create cloud function',
   mcp_tool_function_id_placeholder: 'Select or enter cloud function',
   mcp_tool_http_method: 'HTTP method',
   mcp_tool_args_location: 'Arguments location',
@@ -596,6 +612,7 @@ const TRANSLATIONS_EN = {
   mcp_tool_functions_feature_disabled:
     'Cloud functions are unavailable for this tenant. Enter the function ID manually.',
   mcp_tool_functions_load_error: 'Failed to load cloud functions.',
+  mcp_tool_functions_refresh: 'Reload cloud functions',
   mcp_tool_scopes_load_error: 'Failed to load IAM scopes.',
   mcp_validation_mcp_id_required: 'MCP Server ID is required',
   mcp_validation_mcp_name_required: 'MCP Server name is required',
@@ -604,8 +621,7 @@ const TRANSLATIONS_EN = {
   mcp_validation_mcp_id_format:
     'MCP Server ID must contain only letters, numbers, underscores, and hyphens (1-66 characters)',
   mcp_validation_tool_field_required: '{{tool}} {{field}} is required',
-  mcp_validation_tool_name_duplicate:
-    "Tool names must be unique: '{{name}}'",
+  mcp_validation_tool_name_duplicate: "Tool names must be unique: '{{name}}'",
   mcp_validation_enabled_tool_required:
     'Enable at least one tool before enabling this MCP server.',
   unknown_mcp_server: 'Unknown Server',
@@ -615,6 +631,40 @@ const TRANSLATIONS_EN = {
   type: 'Type',
   mcp: 'MCP',
   mcp_tools: 'Tools',
+  mcp_tools_autopopulate_hint:
+    'When you select a cloud function, a helper agent can analyze its deployment source and autopopulate the tool fields below.',
+  mcp_tool_from_function_dialog_title: 'Generate tool from cloud function',
+  mcp_tool_from_function_assistant_intro:
+    'Use the MCP tool helper agent to analyze the cloud function source and generate tool name, prompt, HTTP settings, input schema, and required scopes. Enable the helper agent once from our predefined templates.',
+  mcp_tool_from_function_assistant_ready:
+    'Click Apply to download the latest function deployment, analyze its source, and autopopulate this tool.',
+  mcp_tool_from_function_generate_working:
+    'Generating tool definition from cloud function source…',
+  mcp_tool_from_function_applied:
+    'Tool fields autopopulated from cloud function.',
+  mcp_tool_from_function_no_function:
+    'Select a cloud function before generating the tool.',
+  mcp_tool_from_function_no_media:
+    'No media deployment found for this cloud function. Upload a deployment zip first.',
+  mcp_tool_from_function_no_source:
+    'No readable source files found in the latest function deployment.',
+  mcp_tool_from_function_assistant_empty_response:
+    'The helper agent returned an empty response.',
+  mcp_tool_from_function_assistant_template_not_found:
+    'The MCP tool helper agent template is not available.',
+  mcp_tool_from_function_assistant_extract_failed:
+    'Could not extract a tool definition from the helper agent response.',
+  mcp_tool_from_function_assistant_apply_failed:
+    'The helper agent response did not contain any usable tool fields.',
+  mcp_tool_from_function_assistant_chat_failed:
+    'Failed to generate the tool from the cloud function.',
+  mcp_tool_from_function_assistant_agent_created: 'Helper agent created.',
+  mcp_tool_from_function_assistant_agent_exists:
+    'Helper agent already exists and was enabled.',
+  mcp_tool_from_function_assistant_create_failed:
+    'Could not create or enable the helper agent.',
+  mcp_tool_from_function_assistant_enable_failed:
+    'Could not enable the existing helper agent.',
   name: 'Name',
   transport_layer: 'Transport layer',
   headers: 'Headers',

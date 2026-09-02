@@ -5,7 +5,10 @@ import { Button } from 'primereact/button'
 import { ProgressBar } from 'primereact/progressbar'
 import { Badge } from 'primereact/badge'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons'
+import {
+  faCheck,
+  faTriangleExclamation,
+} from '@fortawesome/free-solid-svg-icons'
 import { importAgents } from '../../services/agentService'
 import { ImportedItem, ImportAgentsResult } from '../../types/Job'
 import { ImportEntityDetails } from '../shared/ImportEntityDetails'

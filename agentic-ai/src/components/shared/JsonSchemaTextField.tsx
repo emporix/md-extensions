@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { Button } from 'primereact/button'
@@ -17,6 +17,7 @@ interface JsonSchemaTextFieldProps {
   invalidSchemaKey: string
   required?: boolean
   className?: string
+  extraActions?: ReactNode
 }
 
 export const JsonSchemaTextField = ({
@@ -28,6 +29,7 @@ export const JsonSchemaTextField = ({
   invalidSchemaKey,
   required = false,
   className = '',
+  extraActions,
 }: JsonSchemaTextFieldProps) => {
   const { t } = useTranslation()
   const [error, setError] = useState('')
@@ -89,6 +91,7 @@ export const JsonSchemaTextField = ({
       />
       {required && error ? <small className="p-error">{error}</small> : null}
       <div className="json-schema-text-field-actions">
+        {extraActions}
         <Button
           type="button"
           label={t('format_json_schema')}

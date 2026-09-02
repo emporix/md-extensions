@@ -4,6 +4,7 @@ import {
   mapAgentChatStreamEvent,
   readSseStream,
 } from '../utils/sseHelpers'
+import { MAX_ZIP_DOWNLOAD_BYTES } from '../utils/functionZipSource.helpers'
 
 interface ErrorDetail {
   field: string
@@ -133,6 +134,49 @@ export class ApiClient {
     }
 
     return payload as T as T
+  }
+
+  /**
+   * GET binary response (e.g. media download). Parses JSON/text only for error responses.
+   */
+  async getArrayBuffer(path: string, init?: RequestInit): Promise<ArrayBuffer> {
+    const { headers: extraHeaders, ...restInit } = init || {}
+    const headers = new Headers(
+      this.buildHeaders(extraHeaders as Record<string, string> | undefined)
+    )
+    headers.delete('Content-Type')
+    const response = await fetch(this.buildUrl(path), {
+      method: 'GET',
+      headers,
+      ...restInit,
+    })
+    if (!response.ok) {
+      const payload = await this.readResponsePayload(response)
+      this.throwApiClientError(response, payload)
+    }
+
+    const contentLength = response.headers.get('content-length')
+    if (contentLength) {
+      const declaredSize = Number.parseInt(contentLength, 10)
+      if (
+        Number.isFinite(declaredSize) &&
+        declaredSize > MAX_ZIP_DOWNLOAD_BYTES
+      ) {
+        throw new ApiClientError(
+          `Response exceeds maximum size of ${MAX_ZIP_DOWNLOAD_BYTES} bytes`,
+          response.status
+        )
+      }
+    }
+
+    const buffer = await response.arrayBuffer()
+    if (buffer.byteLength > MAX_ZIP_DOWNLOAD_BYTES) {
+      throw new ApiClientError(
+        `Response exceeds maximum size of ${MAX_ZIP_DOWNLOAD_BYTES} bytes`,
+        response.status
+      )
+    }
+    return buffer
   }
 
   async get<T>(path: string, init?: RequestInit): Promise<T> {

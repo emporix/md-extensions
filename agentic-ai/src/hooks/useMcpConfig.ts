@@ -51,9 +51,9 @@ export const useMcpConfig = ({
         mcpServerName: mcpServer.name ?? '',
         url: mcpServer.config?.url ?? '',
         transport:
-          mcpServer.transport ??
-          CustomMcpServerTransportType.STREAMABLE_HTTP,
-        authorizationHeaderName: mcpServer.config?.authorizationHeaderName ?? '',
+          mcpServer.transport ?? CustomMcpServerTransportType.STREAMABLE_HTTP,
+        authorizationHeaderName:
+          mcpServer.config?.authorizationHeaderName ?? '',
         authorizationHeaderToken:
           mcpServer.config?.authorizationHeaderToken?.id ?? '',
       })

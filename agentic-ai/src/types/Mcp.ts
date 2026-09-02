@@ -52,6 +52,7 @@ export interface ProjectCloudFunction {
   id: string
   name: string
   runtime: string
+  streaming?: boolean
 }
 
 export interface McpServer {

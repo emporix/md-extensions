@@ -8,13 +8,15 @@ import {
 } from '../types/Mcp'
 import { TFunction } from 'i18next'
 
-export const MCP_TOOL_NAME_PATTERN = /^\S+$/
+export const MCP_TOOL_NAME_PATTERN = /^[A-Za-z0-9_]+$/
 
 export const isDynamicMcpServer = (
   mcpServer: Pick<McpServer, 'type'>
 ): boolean => mcpServer.type === 'dynamic'
 
-export const getDynamicMcpToolCounts = (mcpServer: Pick<McpServer, 'tools'>) => {
+export const getDynamicMcpToolCounts = (
+  mcpServer: Pick<McpServer, 'tools'>
+) => {
   const tools = mcpServer.tools ?? []
   const enabled = tools.filter((tool) => tool.enabled !== false).length
   return { enabled, total: tools.length }
@@ -95,7 +97,9 @@ const buildMcpToolUpsertPayload = (tool: McpTool) => {
 
   return {
     name: tool.name.trim(),
-    ...(tool.description?.trim() ? { description: tool.description.trim() } : {}),
+    ...(tool.description?.trim()
+      ? { description: tool.description.trim() }
+      : {}),
     prompt: tool.prompt?.trim() ?? '',
     enabled: tool.enabled ?? true,
     config: {
@@ -141,7 +145,11 @@ export const buildMcpServerUpsertPayload = (
         ? { authorizationHeaderName: config.authorizationHeaderName.trim() }
         : {}),
       ...(config?.authorizationHeaderToken?.id
-        ? { authorizationHeaderToken: { id: config.authorizationHeaderToken.id } }
+        ? {
+            authorizationHeaderToken: {
+              id: config.authorizationHeaderToken.id,
+            },
+          }
         : {}),
     },
   }
@@ -212,6 +220,12 @@ export const getMcpToolInvocationMethodOptions = () =>
   }))
 
 export const getMcpToolArgsLocationOptions = (t: TFunction) => [
-  { label: t('mcp_tool_args_location_body'), value: McpToolInvocationArgsLocation.BODY },
-  { label: t('mcp_tool_args_location_query'), value: McpToolInvocationArgsLocation.QUERY },
+  {
+    label: t('mcp_tool_args_location_body'),
+    value: McpToolInvocationArgsLocation.BODY,
+  },
+  {
+    label: t('mcp_tool_args_location_query'),
+    value: McpToolInvocationArgsLocation.QUERY,
+  },
 ]
