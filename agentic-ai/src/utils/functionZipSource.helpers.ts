@@ -185,6 +185,31 @@ export type FunctionZipSourceFile = {
   content: string
 }
 
+type ZipCompressedData = {
+  uncompressedSize?: unknown
+}
+
+type ZipObjectWithPrivateData = {
+  _data?: ZipCompressedData | Promise<unknown>
+}
+
+export const readDeclaredUncompressedSize = (
+  fileObject: JSZip.JSZipObject
+): number | null => {
+  const data = (fileObject as ZipObjectWithPrivateData)._data
+  if (data === undefined || data === null || typeof data !== 'object') {
+    return null
+  }
+  if (data instanceof Promise) {
+    return null
+  }
+  const size = data.uncompressedSize
+  if (typeof size !== 'number' || !Number.isFinite(size) || size < 0) {
+    return null
+  }
+  return size
+}
+
 export const loadFunctionZipSourceFiles = async (
   archiveData: ArrayBuffer
 ): Promise<FunctionZipSourceFile[]> => {
@@ -214,6 +239,15 @@ export const loadFunctionZipSourceFiles = async (
     }
 
     try {
+      const declaredSize = readDeclaredUncompressedSize(fileObject)
+      if (
+        declaredSize !== null &&
+        (declaredSize > MAX_ZIP_SOURCE_FILE_BYTES ||
+          totalUncompressedBytes + declaredSize > MAX_ZIP_UNCOMPRESSED_BYTES)
+      ) {
+        continue
+      }
+
       const binary = await fileObject.async('uint8array')
       if (binary.byteLength > MAX_ZIP_SOURCE_FILE_BYTES) {
         continue

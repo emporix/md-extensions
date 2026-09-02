@@ -56,7 +56,7 @@ export const McpToolCard = ({
           />
         </div>
         <div className="mcp-detail-tool-card-header-main">
-          <span className="mcp-detail-tool-card-title">{title}</span>
+          <h3 className="mcp-detail-tool-card-title">{title}</h3>
           {description ? (
             <span className="mcp-detail-tool-card-description">
               {description}

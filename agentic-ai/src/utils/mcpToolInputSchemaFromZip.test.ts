@@ -7,6 +7,7 @@ import {
 import { buildMcpToolInputSchemaPrompt } from './mcpToolInputSchemaPrompt.helpers'
 import { formatZipSourceBlocksForPrompt } from './functionZipSourcePrompt.helpers'
 import {
+  MAX_ZIP_SOURCE_FILE_BYTES,
   hasZipPathTraversalSegment,
   isFunctionSourceTextFilePath,
   loadFunctionZipSourceFiles,
@@ -162,6 +163,16 @@ describe('functionZipSource.helpers', () => {
       'src/handler.js',
       'src/types.ts',
     ])
+  })
+
+  it('skips zip entries whose declared uncompressed size exceeds the per-file cap', async () => {
+    const zip = new JSZip()
+    zip.file('small.js', 'export const ok = true')
+    zip.file('huge.js', 'x'.repeat(MAX_ZIP_SOURCE_FILE_BYTES + 1))
+    const buffer = await zip.generateAsync({ type: 'arraybuffer' })
+
+    const files = await loadFunctionZipSourceFiles(buffer)
+    expect(files.map((file) => file.path)).toEqual(['small.js'])
   })
 
   it('truncates files when prompt budget exceeded', () => {
