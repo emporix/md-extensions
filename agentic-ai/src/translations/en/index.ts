@@ -587,21 +587,6 @@ const TRANSLATIONS_EN = {
   mcp_tool_input_schema_invalid_json: 'Input schema must be valid JSON',
   mcp_tool_input_schema_invalid_schema:
     'Input schema must be valid JSON Schema',
-  mcp_tool_input_schema_generate_disabled_tooltip:
-    'Select a cloud function to generate input schema from its deployment source.',
-  mcp_tool_input_schema_assistant_intro:
-    'Use the JSON Schema helper agent to infer an input schema from the cloud function source in the latest media deployment. Enable the helper agent once from our predefined templates.',
-  mcp_tool_input_schema_assistant_ready:
-    'Click Apply to download the latest function deployment, analyze its source, and generate the input schema.',
-  mcp_tool_input_schema_generate_working:
-    'Generating input schema from cloud function source…',
-  mcp_tool_input_schema_generate_applied: 'Input schema generated and applied.',
-  mcp_tool_input_schema_generate_no_media:
-    'No media deployment found for this cloud function. Upload a deployment zip first.',
-  mcp_tool_input_schema_generate_no_source:
-    'No readable source files found in the latest function deployment.',
-  mcp_tool_input_schema_generate_no_function:
-    'Select a cloud function before generating input schema.',
   mcp_tool_function_id: 'Cloud Function',
   mcp_tool_create_function: 'Create cloud function',
   mcp_tool_function_id_placeholder: 'Select or enter cloud function',

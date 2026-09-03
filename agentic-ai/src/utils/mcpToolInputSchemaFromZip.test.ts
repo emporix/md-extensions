@@ -4,7 +4,6 @@ import {
   getLatestDeploymentMediaId,
   sortFunctionDeploymentsByCreatedAtDesc,
 } from './functionDeploymentMedia.helpers'
-import { buildMcpToolInputSchemaPrompt } from './mcpToolInputSchemaPrompt.helpers'
 import { formatZipSourceBlocksForPrompt } from './functionZipSourcePrompt.helpers'
 import {
   MAX_ZIP_SOURCE_FILE_BYTES,
@@ -122,9 +121,9 @@ describe('functionZipSource.helpers', () => {
       formatZipSourceBlocksForPrompt(
         [{ path: 'large.js', content: 'x'.repeat(150_000) }],
         'Infer schema.',
-        'mcp_tool_input_schema_generate_no_source'
+        'mcp_tool_from_function_no_source'
       )
-    ).toThrow('mcp_tool_input_schema_generate_no_source')
+    ).toThrow('mcp_tool_from_function_no_source')
   })
 
   it('accepts js, typescript, and python source and project files', () => {
@@ -183,25 +182,5 @@ describe('functionZipSource.helpers', () => {
     const result = truncateZipSourceFilesForPrompt(files, 500)
     expect(result.truncated).toBe(true)
     expect(result.files.length).toBeLessThan(files.length)
-  })
-})
-
-describe('mcpToolInputSchemaPrompt.helpers', () => {
-  it('builds prompt with tool context and source blocks', () => {
-    const prompt = buildMcpToolInputSchemaPrompt(
-      {
-        toolName: 'listProducts',
-        toolDescription: 'List products',
-        functionId: 'fn-123',
-        httpMethod: 'POST',
-        argsLocation: 'body',
-      },
-      [{ path: 'index.js', content: 'module.exports = {}' }]
-    )
-
-    expect(prompt).toContain('Tool name: listProducts')
-    expect(prompt).toContain('Cloud function ID: fn-123')
-    expect(prompt).toContain('// index.js')
-    expect(prompt).toContain('JSON Schema')
   })
 })

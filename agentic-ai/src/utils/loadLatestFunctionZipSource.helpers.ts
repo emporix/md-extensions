@@ -15,12 +15,6 @@ export const MCP_TOOL_FROM_FUNCTION_ZIP_I18N_KEYS = {
   noSource: 'mcp_tool_from_function_no_source',
 } as const
 
-export const MCP_TOOL_INPUT_SCHEMA_ZIP_I18N_KEYS = {
-  noFunction: 'mcp_tool_input_schema_generate_no_function',
-  noMedia: 'mcp_tool_input_schema_generate_no_media',
-  noSource: 'mcp_tool_input_schema_generate_no_source',
-} as const
-
 export type FunctionZipLoadI18nKeys = {
   readonly noFunction: string
   readonly noMedia: string

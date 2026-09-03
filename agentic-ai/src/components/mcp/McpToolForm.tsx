@@ -227,13 +227,6 @@ export const McpToolForm = ({
         value={tool.config?.inputSchema ?? ''}
         onChange={(inputSchema) => updateConfig({ inputSchema })}
         required={isEnabled}
-        functionId={tool.config?.invocation?.functionId ?? ''}
-        toolName={tool.name}
-        toolDescription={tool.description}
-        httpMethod={
-          tool.config?.invocation?.method ?? McpToolInvocationMethod.POST
-        }
-        argsLocation={tool.config?.invocation?.argsLocation}
       />
 
       <McpToolRequiredScopesField

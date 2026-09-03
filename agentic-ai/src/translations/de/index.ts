@@ -593,22 +593,6 @@ const TRANSLATIONS_DE = {
   mcp_tool_input_schema_invalid_json: 'Input-Schema muss gültiges JSON sein',
   mcp_tool_input_schema_invalid_schema:
     'Input-Schema muss ein gültiges JSON Schema sein',
-  mcp_tool_input_schema_generate_disabled_tooltip:
-    'Wählen Sie eine Cloud-Function, um das Input-Schema aus dem Deployment-Quellcode zu generieren.',
-  mcp_tool_input_schema_assistant_intro:
-    'Nutzen Sie den JSON-Schema-Hilfeagenten, um ein Input-Schema aus dem Quellcode der Cloud-Function im neuesten Media-Deployment abzuleiten. Aktivieren Sie den Hilfeagenten einmalig aus unseren vordefinierten Vorlagen.',
-  mcp_tool_input_schema_assistant_ready:
-    'Klicken Sie auf Anwenden, um das neueste Function-Deployment herunterzuladen, den Quellcode zu analysieren und das Input-Schema zu generieren.',
-  mcp_tool_input_schema_generate_working:
-    'Input-Schema wird aus dem Cloud-Function-Quellcode generiert…',
-  mcp_tool_input_schema_generate_applied:
-    'Input-Schema wurde generiert und übernommen.',
-  mcp_tool_input_schema_generate_no_media:
-    'Für diese Cloud-Function wurde kein Media-Deployment gefunden. Laden Sie zuerst ein Deployment-Zip hoch.',
-  mcp_tool_input_schema_generate_no_source:
-    'Im neuesten Function-Deployment wurden keine lesbaren Quelldateien gefunden.',
-  mcp_tool_input_schema_generate_no_function:
-    'Wählen Sie eine Cloud-Function, bevor Sie das Input-Schema generieren.',
   mcp_tool_function_id: 'Cloud-Function',
   mcp_tool_create_function: 'Cloud-Function erstellen',
   mcp_tool_function_id_placeholder: 'Cloud-Function auswählen oder eingeben',
