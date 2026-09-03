@@ -117,7 +117,12 @@ describe('agentToolsHelpers', () => {
       },
     ])
 
-    const detached = toggleManagedMcpServer(attached, 'custom-1', false, 'custom')
+    const detached = toggleManagedMcpServer(
+      attached,
+      'custom-1',
+      false,
+      'custom'
+    )
     expect(detached).toEqual([])
   })
 
@@ -157,9 +162,9 @@ describe('agentToolsHelpers', () => {
         tools: ['alpha', 'removed-from-catalog'],
       },
     ]
-    expect(getSelectedDynamicMcpTools(attached, 'dyn-1', ['alpha', 'beta'])).toEqual(
-      ['alpha']
-    )
+    expect(
+      getSelectedDynamicMcpTools(attached, 'dyn-1', ['alpha', 'beta'])
+    ).toEqual(['alpha'])
   })
 
   it('toggleDynamicMcpTool writes subset and omits tools when all selected', () => {
@@ -234,9 +239,7 @@ describe('agentToolsHelpers', () => {
       [{ type: 'custom', mcpServer: { id: 'dyn-1' } }],
       [{ id: 'dyn-1', type: 'dynamic' }]
     )
-    expect(result).toEqual([
-      { type: 'dynamic', mcpServer: { id: 'dyn-1' } },
-    ])
+    expect(result).toEqual([{ type: 'dynamic', mcpServer: { id: 'dyn-1' } }])
   })
 
   it('normalizeManagedMcpAttachments downgrades dynamic to custom and strips tools', () => {
@@ -250,9 +253,7 @@ describe('agentToolsHelpers', () => {
       ],
       [{ id: 'custom-1', type: 'custom' }]
     )
-    expect(result).toEqual([
-      { type: 'custom', mcpServer: { id: 'custom-1' } },
-    ])
+    expect(result).toEqual([{ type: 'custom', mcpServer: { id: 'custom-1' } }])
   })
 
   it('normalizeManagedMcpAttachments does not mutate original mcpServers', () => {
@@ -268,9 +269,7 @@ describe('agentToolsHelpers', () => {
     const current: McpServer[] = [
       { type: 'custom', mcpServer: { id: 'dyn-1' } },
     ]
-    const next: McpServer[] = [
-      { type: 'dynamic', mcpServer: { id: 'dyn-1' } },
-    ]
+    const next: McpServer[] = [{ type: 'dynamic', mcpServer: { id: 'dyn-1' } }]
     expect(hasManagedMcpAttachmentsChanged(current, next)).toBe(true)
     expect(hasManagedMcpAttachmentsChanged(current, current)).toBe(false)
   })
@@ -279,10 +278,12 @@ describe('agentToolsHelpers', () => {
     expect(
       formatManagedMcpServerLabel('Orders MCP', ['alpha', 'beta'], true)
     ).toBe('Orders MCP (alpha, beta)')
-    expect(formatManagedMcpServerLabel('Custom MCP', [], true)).toBe('Custom MCP')
-    expect(
-      formatManagedMcpServerLabel('Custom MCP', ['alpha'], false)
-    ).toBe('Custom MCP')
+    expect(formatManagedMcpServerLabel('Custom MCP', [], true)).toBe(
+      'Custom MCP'
+    )
+    expect(formatManagedMcpServerLabel('Custom MCP', ['alpha'], false)).toBe(
+      'Custom MCP'
+    )
   })
 
   it('formatDomainSectionTitle uses domain name', () => {

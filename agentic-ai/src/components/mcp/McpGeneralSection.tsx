@@ -2,7 +2,10 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { InputText } from 'primereact/inputtext'
 import { Dropdown } from 'primereact/dropdown'
-import { CustomMcpServerTransportType, ManagedMcpServerType } from '../../types/Mcp'
+import {
+  CustomMcpServerTransportType,
+  ManagedMcpServerType,
+} from '../../types/Mcp'
 import { getMcpTransportOptions } from '../../utils/mcpHelpers'
 import { McpRequiredMark } from './McpRequiredMark'
 import { McpTypeSection } from './McpTypeSection'

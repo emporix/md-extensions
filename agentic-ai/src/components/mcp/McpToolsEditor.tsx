@@ -12,6 +12,7 @@ interface McpToolsEditorProps {
   functionsLoading: boolean
   functionsLoadError?: string | null
   featureDisabled: boolean
+  onRefreshFunctions: () => void
   scopes: IamScope[]
   scopesLoading: boolean
   scopesLoadError?: string | null
@@ -27,6 +28,7 @@ export const McpToolsEditor = ({
   functionsLoading,
   functionsLoadError,
   featureDisabled,
+  onRefreshFunctions,
   scopes,
   scopesLoading,
   scopesLoadError,
@@ -112,6 +114,7 @@ export const McpToolsEditor = ({
           functionsLoading={functionsLoading}
           functionsLoadError={functionsLoadError}
           featureDisabled={featureDisabled}
+          onRefreshFunctions={onRefreshFunctions}
           scopes={scopes}
           scopesLoading={scopesLoading}
           scopesLoadError={scopesLoadError}

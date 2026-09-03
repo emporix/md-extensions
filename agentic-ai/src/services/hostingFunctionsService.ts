@@ -1,4 +1,5 @@
 import { ProjectCloudFunction } from '../types/Mcp'
+import { FunctionDeploymentsResponse } from '../types/FunctionDeployment'
 import { AppState } from '../types/common'
 import { ApiClient, ApiClientError } from './apiClient'
 
@@ -31,4 +32,24 @@ export const getProjectFunctions = async (
     }
     throw error
   }
+}
+
+export const getFunctionDeployments = async (
+  appState: AppState,
+  functionId: string
+): Promise<FunctionDeploymentsResponse> => {
+  const api = getApiClient(appState)
+  return api.get<FunctionDeploymentsResponse>(
+    `/automation/${appState.tenant}/projects/functions/${encodeURIComponent(functionId)}/deployments`
+  )
+}
+
+export const downloadMediaAssetZip = async (
+  appState: AppState,
+  mediaId: string
+): Promise<ArrayBuffer> => {
+  const api = getApiClient(appState)
+  return api.getArrayBuffer(
+    `/media/${appState.tenant}/assets/${encodeURIComponent(mediaId)}/download`
+  )
 }

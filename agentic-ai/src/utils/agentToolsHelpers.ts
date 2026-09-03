@@ -137,8 +137,7 @@ export const isManagedMcpAttached = (
   serverId: string
 ): boolean =>
   mcpServers.some(
-    (server) =>
-      isManagedAgentMcp(server) && server.mcpServer?.id === serverId
+    (server) => isManagedAgentMcp(server) && server.mcpServer?.id === serverId
   )
 
 export const getAttachedManagedMcp = (
@@ -146,8 +145,7 @@ export const getAttachedManagedMcp = (
   serverId: string
 ): McpServer | undefined =>
   mcpServers.find(
-    (server) =>
-      isManagedAgentMcp(server) && server.mcpServer?.id === serverId
+    (server) => isManagedAgentMcp(server) && server.mcpServer?.id === serverId
   )
 
 export const toggleManagedMcpServer = (
@@ -273,7 +271,9 @@ export const hasManagedMcpAttachmentsChanged = (
     if (nextTools.length !== previousTools.length) {
       return true
     }
-    return nextTools.some((tool, toolIndex) => tool !== previousTools[toolIndex])
+    return nextTools.some(
+      (tool, toolIndex) => tool !== previousTools[toolIndex]
+    )
   })
 }
 

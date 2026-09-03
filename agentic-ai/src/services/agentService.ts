@@ -5,6 +5,7 @@ import { getLanguagesFromStorage } from '../hooks/useLanguages'
 import { COMMERCE_FILTER_ASSISTANT_I18N_KEYS } from '../utils/agentFilterDslHelpers'
 import { getBundleHelperTemplateIds } from '../utils/agentTemplateBundles'
 import { JSON_SCHEMA_ASSISTANT_I18N_KEYS } from '../utils/jsonSchemaAssistantHelpers'
+import { MCP_TOOL_FROM_FUNCTION_ASSISTANT_I18N_KEYS } from '../utils/mcpToolFromFunctionAssistantHelpers'
 import { LOG_ANALYSIS_ASSISTANT_I18N_KEYS } from '../utils/logAnalysisAssistantHelpers'
 import { ApiClient } from './apiClient'
 
@@ -59,6 +60,12 @@ export const JSON_SCHEMA_ASSISTANT_AGENT_ID = 'json-schema-assistant'
 export const LOG_ANALYSIS_ASSISTANT_TEMPLATE_ID = 'log-analysis-assistant'
 
 export const LOG_ANALYSIS_ASSISTANT_AGENT_ID = 'log-analysis-assistant'
+
+export const MCP_TOOL_FROM_FUNCTION_ASSISTANT_TEMPLATE_ID =
+  'mcp-tool-from-function-assistant'
+
+export const MCP_TOOL_FROM_FUNCTION_ASSISTANT_AGENT_ID =
+  'mcp-tool-from-function-assistant'
 
 export type ChatWithAgentOptions = {
   readonly emptyResponseKey?: string
@@ -178,6 +185,16 @@ export const createLogAnalysisAssistantAgent = async (
     templateId: LOG_ANALYSIS_ASSISTANT_TEMPLATE_ID,
     agentId: LOG_ANALYSIS_ASSISTANT_AGENT_ID,
     templateNotFoundKey: LOG_ANALYSIS_ASSISTANT_I18N_KEYS.templateNotFound,
+  })
+
+export const createMcpToolFromFunctionAssistantAgent = async (
+  appState: AppState
+): Promise<{ success: boolean }> =>
+  createTemplateAgent(appState, {
+    templateId: MCP_TOOL_FROM_FUNCTION_ASSISTANT_TEMPLATE_ID,
+    agentId: MCP_TOOL_FROM_FUNCTION_ASSISTANT_AGENT_ID,
+    templateNotFoundKey:
+      MCP_TOOL_FROM_FUNCTION_ASSISTANT_I18N_KEYS.templateNotFound,
   })
 
 export const getAgentTemplates = async (

@@ -202,7 +202,9 @@ const UnifiedLogsTable = forwardRef<
 
     const timestampBodyTemplate = (rowData: LogMessage) => {
       return (
-        <div className="log-meta-cell">{formatTimestamp(rowData.timestamp)}</div>
+        <div className="log-meta-cell">
+          {formatTimestamp(rowData.timestamp)}
+        </div>
       )
     }
 
