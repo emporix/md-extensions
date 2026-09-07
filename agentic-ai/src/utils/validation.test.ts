@@ -5,7 +5,10 @@ import {
   McpToolInvocationMethod,
 } from '../types/Mcp'
 import { ValidationError } from './validation'
-import { validateDynamicMcpServer, validateMcpServer } from './mcpValidationHelpers'
+import {
+  validateDynamicMcpServer,
+  validateMcpServer,
+} from './mcpValidationHelpers'
 
 const mockT = ((key: string, options?: Record<string, unknown>) => {
   if (options) {
@@ -26,7 +29,7 @@ describe('validateDynamicMcpServer', () => {
           enabled: true,
           tools: [
             {
-              name: 'create-return',
+              name: 'create_return',
               prompt: 'Create return',
               enabled: true,
               config: {
@@ -55,7 +58,7 @@ describe('validateDynamicMcpServer', () => {
           enabled: true,
           tools: [
             {
-              name: 'create-return',
+              name: 'create_return',
               prompt: 'Create return',
               enabled: true,
               config: {
@@ -96,13 +99,42 @@ describe('validateDynamicMcpServer', () => {
           enabled: true,
           tools: [
             {
-              name: 'broken-tool',
+              name: 'broken_tool',
               prompt: 'Broken',
               enabled: true,
               config: {
                 inputSchema: '{"type":"object"}',
                 invocation: {
                   functionId: '',
+                  method: McpToolInvocationMethod.POST,
+                },
+              },
+            },
+          ],
+        },
+        mockT
+      )
+    ).toThrow(ValidationError)
+  })
+
+  it('rejects enabled tool name with hyphen', () => {
+    expect(() =>
+      validateDynamicMcpServer(
+        {
+          id: 'mcp-dynamic',
+          name: 'Dynamic MCP',
+          type: 'dynamic',
+          transport: CustomMcpServerTransportType.STREAMABLE_HTTP,
+          enabled: true,
+          tools: [
+            {
+              name: 'create-return',
+              prompt: 'Create return',
+              enabled: true,
+              config: {
+                inputSchema: '{"type":"object"}',
+                invocation: {
+                  functionId: 'fn-create-return',
                   method: McpToolInvocationMethod.POST,
                 },
               },
@@ -183,7 +215,7 @@ describe('validateDynamicMcpServer', () => {
           enabled: true,
           tools: [
             {
-              name: 'create-return',
+              name: 'create_return',
               prompt: 'Create return',
               enabled: true,
               config: {
@@ -223,7 +255,7 @@ describe('validateDynamicMcpServer', () => {
           transport: CustomMcpServerTransportType.STREAMABLE_HTTP,
           tools: [
             {
-              name: 'create-return',
+              name: 'create_return',
               prompt: 'One',
               config: {
                 inputSchema: '{"type":"object"}',
@@ -234,7 +266,7 @@ describe('validateDynamicMcpServer', () => {
               },
             },
             {
-              name: 'Create-Return',
+              name: 'Create_Return',
               prompt: 'Two',
               config: {
                 inputSchema: '{"type":"object"}',

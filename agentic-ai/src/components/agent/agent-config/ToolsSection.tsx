@@ -191,7 +191,9 @@ const ToolsAccordionSection: React.FC<ToolsAccordionSectionProps> = ({
                   const isSelected = selectedItems.some(
                     (selected) => selected.id === item.id
                   )
-                  const isSelectionBlocked = Boolean(item.disabled && !isSelected)
+                  const isSelectionBlocked = Boolean(
+                    item.disabled && !isSelected
+                  )
                   const extension = renderSelectedItemExtension?.(
                     item,
                     isSelected
@@ -383,7 +385,9 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
 
   const handleCustomMcpToggle = useCallback(
     (serverId: string, checked: boolean) => {
-      const managedMcp = availableMcpServers.find((server) => server.id === serverId)
+      const managedMcp = availableMcpServers.find(
+        (server) => server.id === serverId
+      )
       if (checked && managedMcp?.enabled === false) {
         return
       }
@@ -399,7 +403,9 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
 
   const handleDynamicMcpToolToggle = useCallback(
     (serverId: string, toolName: string, checked: boolean) => {
-      const managedMcp = availableMcpServers.find((server) => server.id === serverId)
+      const managedMcp = availableMcpServers.find(
+        (server) => server.id === serverId
+      )
       const enabledToolNames = getEnabledDynamicToolNames(managedMcp?.tools)
       const currentTools = getSelectedDynamicMcpTools(
         mcpServers,
@@ -573,7 +579,9 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
       if (!isSelected) {
         return null
       }
-      const managedMcp = availableMcpServers.find((server) => server.id === item.id)
+      const managedMcp = availableMcpServers.find(
+        (server) => server.id === item.id
+      )
       if (!managedMcp || !isDynamicMcpServer(managedMcp)) {
         return null
       }
@@ -602,12 +610,7 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
         />
       )
     },
-    [
-      availableMcpServers,
-      handleDynamicMcpToolToggle,
-      mcpServers,
-      t,
-    ]
+    [availableMcpServers, handleDynamicMcpToolToggle, mcpServers, t]
   )
 
   const domainSections = sortedDomains
@@ -726,7 +729,7 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
       }
     })
     .filter((item) => item.id)
-  const mcpSectionTags = [t('custom_mcp_tag'), t('dynamic_mcp_tag'),]
+  const mcpSectionTags = [t('custom_mcp_tag'), t('dynamic_mcp_tag')]
   const customVisibleItems = filterItems(customAllItems)
   const showCustomSection =
     availableMcpServers.length > 0 && isSectionVisible(customAllItems)

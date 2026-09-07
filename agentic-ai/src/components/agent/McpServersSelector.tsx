@@ -85,10 +85,7 @@ export const McpServersSelector: React.FC<McpServersSelectorProps> = ({
   }, [])
 
   const existingManagedServerIds = mcpServers
-    .filter(
-      (server, idx) =>
-        idx !== editingIndex && isManagedAgentMcp(server)
-    )
+    .filter((server, idx) => idx !== editingIndex && isManagedAgentMcp(server))
     .map((server) => server.mcpServer?.id)
     .filter((id): id is string => Boolean(id))
 

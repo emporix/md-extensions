@@ -28,7 +28,10 @@ const interpolatingT = ((key: string, options?: Record<string, string>) => {
   if (!template) {
     return key
   }
-  return template.replace(/\{\{(\w+)\}\}/g, (_, name: string) => options?.[name] ?? '')
+  return template.replace(
+    /\{\{(\w+)\}\}/g,
+    (_, name: string) => options?.[name] ?? ''
+  )
 }) as unknown as TFunction
 
 describe('hasImportDetails', () => {

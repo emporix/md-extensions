@@ -38,15 +38,17 @@ export const AssistantStreamPreview = ({
         aria-live="polite"
         aria-busy={working}
       >
-        {working && !streamText && (
-          <ProgressSpinner
-            className="assistant-stream-preview-spinner"
-            aria-hidden="true"
-          />
-        )}
-        <span className="assistant-stream-preview-label">
-          {working ? t(workingLabelKey) : t('assistant_stream_complete')}
-        </span>
+        <div className="assistant-stream-preview-status">
+          {working && !streamText && (
+            <ProgressSpinner
+              className="assistant-stream-preview-spinner"
+              aria-hidden="true"
+            />
+          )}
+          <span className="assistant-stream-preview-label">
+            {working ? t(workingLabelKey) : t('assistant_stream_complete')}
+          </span>
+        </div>
         {toolName && (
           <span className="assistant-stream-preview-tool">
             {t('assistant_stream_running_tool', { toolName })}

@@ -579,32 +579,34 @@ const TRANSLATIONS_DE = {
     'Dynamische MCP-Server müssen mindestens ein Tool enthalten.',
   mcp_tool_unnamed: 'Tool {{index}}',
   mcp_tool_name: 'Tool-Name',
-  mcp_tool_name_placeholder: 'Tool-Namen eingeben (ohne Leerzeichen)',
+  mcp_tool_name_placeholder:
+    'Tool-Namen eingeben (Buchstaben, Zahlen, Unterstrich)',
   mcp_tool_name_no_whitespace:
-    'Der Tool-Name darf keine Leerzeichen enthalten.',
+    'Der Tool-Name darf nur Buchstaben, Zahlen und Unterstriche enthalten.',
   mcp_tool_description_placeholder: 'Tool-Beschreibung eingeben',
   mcp_tool_prompt: 'Tool-Prompt',
   mcp_tool_prompt_placeholder:
-    'Beschreiben Sie, wann der Agent dieses Tool aufrufen soll',
+    'Beschreiben Sie, wann der Agent dieses Tool aufrufen soll (z. B. Eine paginierte Liste aller aktiven Produkte aus dem System abrufen)',
   mcp_tool_required_scopes: 'Erforderliche Berechtigungen',
   mcp_tool_input_schema: 'Input-Schema',
-  mcp_tool_input_schema_placeholder:
-    'JSON Schema als JSON-String eingeben',
-  mcp_tool_input_schema_invalid_json:
-    'Input-Schema muss gültiges JSON sein',
+  mcp_tool_input_schema_placeholder: 'JSON Schema als JSON-String eingeben',
+  mcp_tool_input_schema_invalid_json: 'Input-Schema muss gültiges JSON sein',
   mcp_tool_input_schema_invalid_schema:
     'Input-Schema muss ein gültiges JSON Schema sein',
   mcp_tool_function_id: 'Cloud-Function',
-  mcp_tool_function_id_placeholder:
-    'Cloud-Function auswählen oder eingeben',
+  mcp_tool_create_function: 'Cloud-Function erstellen',
+  mcp_tool_function_id_placeholder: 'Cloud-Function auswählen oder eingeben',
   mcp_tool_http_method: 'HTTP-Methode',
   mcp_tool_args_location: 'Argument-Position',
   mcp_tool_args_location_body: 'Request-Body',
   mcp_tool_args_location_query: 'Query-String',
   mcp_tool_functions_feature_disabled:
     'Cloud Functions sind für diesen Mandanten nicht verfügbar. Cloud-Function manuell eingeben.',
-  mcp_tool_functions_load_error: 'Cloud Functions konnten nicht geladen werden.',
-  mcp_tool_scopes_load_error: 'IAM-Berechtigungen konnten nicht geladen werden.',
+  mcp_tool_functions_load_error:
+    'Cloud Functions konnten nicht geladen werden.',
+  mcp_tool_functions_refresh: 'Cloud Functions neu laden',
+  mcp_tool_scopes_load_error:
+    'IAM-Berechtigungen konnten nicht geladen werden.',
   mcp_validation_mcp_id_required: 'MCP-Server-ID ist erforderlich',
   mcp_validation_mcp_name_required: 'MCP-Server-Name ist erforderlich',
   mcp_validation_mcp_url_required: 'MCP-Server-URL ist erforderlich',
@@ -623,6 +625,40 @@ const TRANSLATIONS_DE = {
   type: 'Typ',
   mcp: 'MCP',
   mcp_tools: 'Tools',
+  mcp_tools_autopopulate_hint:
+    'Wenn Sie eine Cloud-Function auswählen, kann ein Hilfeagent den Deployment-Quellcode analysieren und die Tool-Felder unten automatisch ausfüllen.',
+  mcp_tool_from_function_dialog_title: 'Tool aus Cloud-Function generieren',
+  mcp_tool_from_function_assistant_intro:
+    'Nutzen Sie den MCP-Tool-Hilfeagenten, um den Cloud-Function-Quellcode zu analysieren und Tool-Name, Prompt, HTTP-Einstellungen, Input-Schema und erforderliche Berechtigungen zu generieren. Aktivieren Sie den Hilfeagenten einmalig aus unseren vordefinierten Vorlagen.',
+  mcp_tool_from_function_assistant_ready:
+    'Klicken Sie auf Anwenden, um das neueste Function-Deployment herunterzuladen, den Quellcode zu analysieren und dieses Tool automatisch auszufüllen.',
+  mcp_tool_from_function_generate_working:
+    'Tool-Definition wird aus dem Cloud-Function-Quellcode generiert…',
+  mcp_tool_from_function_applied:
+    'Tool-Felder wurden aus der Cloud-Function übernommen.',
+  mcp_tool_from_function_no_function:
+    'Wählen Sie eine Cloud-Function, bevor Sie das Tool generieren.',
+  mcp_tool_from_function_no_media:
+    'Für diese Cloud-Function wurde kein Media-Deployment gefunden. Laden Sie zuerst ein Deployment-Zip hoch.',
+  mcp_tool_from_function_no_source:
+    'Im neuesten Function-Deployment wurden keine lesbaren Quelldateien gefunden.',
+  mcp_tool_from_function_assistant_empty_response:
+    'Der Hilfeagent hat eine leere Antwort zurückgegeben.',
+  mcp_tool_from_function_assistant_template_not_found:
+    'Die MCP-Tool-Hilfeagent-Vorlage ist nicht verfügbar.',
+  mcp_tool_from_function_assistant_extract_failed:
+    'Aus der Hilfeagent-Antwort konnte keine Tool-Definition extrahiert werden.',
+  mcp_tool_from_function_assistant_apply_failed:
+    'Die Hilfeagent-Antwort enthielt keine verwendbaren Tool-Felder.',
+  mcp_tool_from_function_assistant_chat_failed:
+    'Das Tool konnte nicht aus der Cloud-Function generiert werden.',
+  mcp_tool_from_function_assistant_agent_created: 'Hilfeagent wurde erstellt.',
+  mcp_tool_from_function_assistant_agent_exists:
+    'Hilfeagent existiert bereits und wurde aktiviert.',
+  mcp_tool_from_function_assistant_create_failed:
+    'Der Hilfeagent konnte nicht erstellt oder aktiviert werden.',
+  mcp_tool_from_function_assistant_enable_failed:
+    'Der vorhandene Hilfeagent konnte nicht aktiviert werden.',
   name: 'Name',
   transport_layer: 'Transport-Schicht',
   headers: 'Header',

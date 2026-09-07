@@ -54,7 +54,9 @@ export const useHelperAgentProvisioning = ({
       try {
         const agents = await getCustomAgents(appState)
         if (!cancelled) {
-          setHelperAgentPresent(agents.some((agent) => agent.id === agentId))
+          setHelperAgentPresent(
+            agents.some((agent) => agent.id === agentId && agent.enabled)
+          )
         }
       } catch (err) {
         if (!cancelled) {

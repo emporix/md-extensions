@@ -8,6 +8,7 @@ import {
   McpToolInvocationMethod,
   ProjectCloudFunction,
 } from '../../types/Mcp'
+import { HOSTING_PAGE_PATH } from '../../constants/paths'
 import {
   getMcpToolArgsLocationOptions,
   getMcpToolInvocationMethodOptions,
@@ -23,7 +24,9 @@ interface McpToolInvocationSectionProps {
   functionsLoadError?: string | null
   featureDisabled: boolean
   required?: boolean
+  onRefreshFunctions: () => void
   onFunctionIdChange: (value: string) => void
+  onFunctionSelected: (value: string) => void
   onMethodChange: (value: McpToolInvocationMethod | string) => void
   onArgsLocationChange: (value: McpToolInvocationArgsLocation | string) => void
 }
@@ -37,7 +40,9 @@ export const McpToolInvocationSection = ({
   functionsLoadError,
   featureDisabled,
   required = true,
+  onRefreshFunctions,
   onFunctionIdChange,
+  onFunctionSelected,
   onMethodChange,
   onArgsLocationChange,
 }: McpToolInvocationSectionProps) => {
@@ -50,6 +55,7 @@ export const McpToolInvocationSection = ({
   const functionOptions = useMemo(
     () =>
       [...functions]
+        .filter((fn) => fn.streaming !== true)
         .sort((a, b) =>
           a.name.toLowerCase().localeCompare(b.name.toLowerCase())
         )
@@ -61,10 +67,7 @@ export const McpToolInvocationSection = ({
   )
 
   const showManualFunctionId =
-    featureDisabled ||
-    !!functionsLoadError ||
-    functionsLoading ||
-    functionOptions.length === 0
+    featureDisabled || !!functionsLoadError || functionOptions.length === 0
 
   return (
     <div className="mcp-tool-invocation-section">
@@ -86,10 +89,35 @@ export const McpToolInvocationSection = ({
 
       <div className="mcp-detail-form-row mcp-tool-invocation-row">
         <div className="form-field">
-          <label className="field-label">
-            {t('mcp_tool_function_id')}
-            {required ? <McpRequiredMark /> : null}
-          </label>
+          <div className="mcp-tool-function-label-row">
+            <label className="field-label">
+              {t('mcp_tool_function_id')}
+              {required ? <McpRequiredMark /> : null}
+            </label>
+            <a
+              href={HOSTING_PAGE_PATH}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mcp-tool-create-function-btn"
+            >
+              {t('mcp_tool_create_function')}
+              <i className="pi pi-external-link" aria-hidden="true" />
+            </a>
+            <button
+              type="button"
+              className="mcp-tool-functions-refresh-btn"
+              aria-label={t('mcp_tool_functions_refresh')}
+              title={t('mcp_tool_functions_refresh')}
+              disabled={functionsLoading}
+              onClick={onRefreshFunctions}
+            >
+              <i
+                className={
+                  functionsLoading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'
+                }
+              />
+            </button>
+          </div>
           {showManualFunctionId ? (
             <InputText
               value={functionId}
@@ -101,7 +129,7 @@ export const McpToolInvocationSection = ({
             <Dropdown
               value={functionId || null}
               options={functionOptions}
-              onChange={(event) => onFunctionIdChange(event.value ?? '')}
+              onChange={(event) => onFunctionSelected(event.value ?? '')}
               className={`w-full${required && !functionId.trim() ? ' p-invalid' : ''}`}
               placeholder={t('mcp_tool_function_id_placeholder')}
               filter

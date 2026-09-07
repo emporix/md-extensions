@@ -53,6 +53,7 @@ const McpDetailPage = () => {
     loading: functionsLoading,
     featureDisabled,
     error: functionsLoadError,
+    reload: refreshFunctions,
   } = useProjectFunctions(isDynamic)
   const {
     scopes,
@@ -313,7 +314,11 @@ const McpDetailPage = () => {
 
         {typeSelected &&
           (isDynamic ? (
-            <McpDetailSection titleKey="mcp_tools" plain>
+            <McpDetailSection
+              titleKey="mcp_tools"
+              descriptionKey="mcp_tools_autopopulate_hint"
+              plain
+            >
               <McpToolsEditor
                 tools={dynamicConfig.state.tools}
                 isCreating={isCreating}
@@ -321,6 +326,7 @@ const McpDetailPage = () => {
                 functionsLoading={functionsLoading}
                 functionsLoadError={functionsLoadError}
                 featureDisabled={featureDisabled}
+                onRefreshFunctions={refreshFunctions}
                 scopes={scopes}
                 scopesLoading={scopesLoading}
                 scopesLoadError={scopesLoadError}

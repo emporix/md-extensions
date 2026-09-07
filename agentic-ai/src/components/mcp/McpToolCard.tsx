@@ -13,6 +13,7 @@ interface McpToolCardProps {
   functionsLoading: boolean
   functionsLoadError?: string | null
   featureDisabled: boolean
+  onRefreshFunctions: () => void
   scopes: IamScope[]
   scopesLoading: boolean
   scopesLoadError?: string | null
@@ -30,6 +31,7 @@ export const McpToolCard = ({
   functionsLoading,
   functionsLoadError,
   featureDisabled,
+  onRefreshFunctions,
   scopes,
   scopesLoading,
   scopesLoadError,
@@ -39,8 +41,7 @@ export const McpToolCard = ({
 }: McpToolCardProps) => {
   const { t } = useTranslation()
 
-  const title =
-    tool.name.trim() || t('mcp_tool_unnamed', { index: index + 1 })
+  const title = tool.name.trim() || t('mcp_tool_unnamed', { index: index + 1 })
   const description = tool.description?.trim()
 
   return (
@@ -48,15 +49,26 @@ export const McpToolCard = ({
       className={`mcp-detail-tool-card${expanded ? '' : ' mcp-detail-tool-card--collapsed'}`}
     >
       <div className="mcp-detail-tool-card-header">
-        <div className="mcp-detail-tool-card-header-main">
+        <div className="mcp-detail-tool-card-header-switch">
           <InputSwitch
             checked={tool.enabled !== false}
             onChange={(event) => onChange({ ...tool, enabled: event.value })}
           />
+        </div>
+        <div className="mcp-detail-tool-card-header-main">
           <h3 className="mcp-detail-tool-card-title">{title}</h3>
           {description ? (
-            <span className="mcp-detail-tool-card-description">{description}</span>
+            <span className="mcp-detail-tool-card-description">
+              {description}
+            </span>
           ) : null}
+          <button
+            type="button"
+            className="mcp-detail-tool-card-header-toggle"
+            aria-expanded={expanded}
+            aria-label={expanded ? t('mcp_tool_collapse') : t('edit')}
+            onClick={onToggleExpand}
+          />
         </div>
         <div className="mcp-server-actions">
           <button
@@ -89,6 +101,7 @@ export const McpToolCard = ({
             functionsLoading={functionsLoading}
             functionsLoadError={functionsLoadError}
             featureDisabled={featureDisabled}
+            onRefreshFunctions={onRefreshFunctions}
             scopes={scopes}
             scopesLoading={scopesLoading}
             scopesLoadError={scopesLoadError}

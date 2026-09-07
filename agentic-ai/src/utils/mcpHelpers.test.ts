@@ -13,6 +13,7 @@ import {
   getEnabledDynamicToolNames,
   getMcpTransportLabel,
   getMcpTransportOptions,
+  MCP_TOOL_NAME_PATTERN,
   switchMcpServerType,
 } from './mcpHelpers'
 
@@ -232,5 +233,18 @@ describe('getEnabledDynamicToolNames', () => {
 
   it('returns empty array when tools undefined', () => {
     expect(getEnabledDynamicToolNames(undefined)).toEqual([])
+  })
+})
+
+describe('MCP_TOOL_NAME_PATTERN', () => {
+  it('allows letters, numbers, and underscores', () => {
+    expect(MCP_TOOL_NAME_PATTERN.test('create_return')).toBe(true)
+    expect(MCP_TOOL_NAME_PATTERN.test('Tool_1')).toBe(true)
+  })
+
+  it('rejects whitespace, hyphen, and other symbols', () => {
+    expect(MCP_TOOL_NAME_PATTERN.test('create return')).toBe(false)
+    expect(MCP_TOOL_NAME_PATTERN.test('create-return')).toBe(false)
+    expect(MCP_TOOL_NAME_PATTERN.test('create.return')).toBe(false)
   })
 })

@@ -497,7 +497,9 @@ const ToolDetailPage: React.FC = () => {
                 </label>
                 <InputTextarea
                   value={state.config.prompt ?? ''}
-                  onChange={(event) => updateConfig('prompt', event.target.value)}
+                  onChange={(event) =>
+                    updateConfig('prompt', event.target.value)
+                  }
                   className={`w-full${!(state.config.prompt ?? '').trim() ? ' p-invalid' : ''}`}
                   placeholder={t('enter_prompt')}
                   rows={3}

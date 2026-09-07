@@ -51,12 +51,12 @@ export const useDynamicMcpConfig = ({
                 enabled: tool.enabled !== false,
                 config: {
                   requiredScopes: tool.config?.requiredScopes ?? [],
-                  inputSchema:
-                    tool.config?.inputSchema ?? '{"type":"object"}',
+                  inputSchema: tool.config?.inputSchema ?? '{"type":"object"}',
                   invocation: {
                     functionId: tool.config?.invocation?.functionId ?? '',
                     method: tool.config?.invocation?.method ?? 'POST',
-                    argsLocation: tool.config?.invocation?.argsLocation ?? 'body',
+                    argsLocation:
+                      tool.config?.invocation?.argsLocation ?? 'body',
                   },
                 },
               }))
@@ -69,8 +69,7 @@ export const useDynamicMcpConfig = ({
     (field: DynamicMcpConfigField, value: string) => {
       setState((prev) => ({
         ...prev,
-        [field]:
-          field === 'mcpServerId' ? sanitizeIdInput(value) : value,
+        [field]: field === 'mcpServerId' ? sanitizeIdInput(value) : value,
       }))
     },
     []
@@ -79,7 +78,9 @@ export const useDynamicMcpConfig = ({
   const updateTool = useCallback((index: number, tool: McpTool) => {
     setState((prev) => ({
       ...prev,
-      tools: prev.tools.map((existing, idx) => (idx === index ? tool : existing)),
+      tools: prev.tools.map((existing, idx) =>
+        idx === index ? tool : existing
+      ),
     }))
   }, [])
 
@@ -135,7 +136,14 @@ export const useDynamicMcpConfig = ({
     }
 
     return state.tools.every(isToolValid)
-  }, [isCreating, isToolValid, mcpServer?.enabled, state.mcpServerId, state.mcpServerName, state.tools])
+  }, [
+    isCreating,
+    isToolValid,
+    mcpServer?.enabled,
+    state.mcpServerId,
+    state.mcpServerName,
+    state.tools,
+  ])
 
   const handleSave = useCallback(async () => {
     if (!mcpServer || !isFormValid()) {

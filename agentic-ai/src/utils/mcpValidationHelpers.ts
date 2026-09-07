@@ -35,7 +35,11 @@ export const validateCustomMcpServer = (
   }
 
   assertRequired(mcpServer.name, t('mcp_validation_mcp_name_required'), 'name')
-  assertRequired(mcpServer.config?.url, t('mcp_validation_mcp_url_required'), 'url')
+  assertRequired(
+    mcpServer.config?.url,
+    t('mcp_validation_mcp_url_required'),
+    'url'
+  )
 
   if (mcpServer.config?.url?.trim()) {
     try {
@@ -116,7 +120,10 @@ export const validateMcpTool = (tool: McpTool, index: number, t: TFunction) => {
   )
 }
 
-export const validateDynamicMcpServer = (mcpServer: McpServer, t: TFunction) => {
+export const validateDynamicMcpServer = (
+  mcpServer: McpServer,
+  t: TFunction
+) => {
   assertRequired(mcpServer.id, t('mcp_validation_mcp_id_required'), 'id')
 
   if (mcpServer.id && !isValidIdFormat(mcpServer.id.trim())) {
@@ -131,7 +138,10 @@ export const validateDynamicMcpServer = (mcpServer: McpServer, t: TFunction) => 
   }
 
   if (mcpServer.enabled !== false && !hasEnabledDynamicTool(tools)) {
-    throw new ValidationError(t('mcp_validation_enabled_tool_required'), 'tools')
+    throw new ValidationError(
+      t('mcp_validation_enabled_tool_required'),
+      'tools'
+    )
   }
 
   const names = new Set<string>()
