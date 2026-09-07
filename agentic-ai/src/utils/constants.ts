@@ -124,6 +124,38 @@ export const MCP_SERVERS = {
       'update-quote',
     ],
   },
+  importtool: {
+    name: 'Import Tool MCP',
+    tools: [
+      'cancel-import-run',
+      'check-schema-drift',
+      'create-import-job',
+      'create-import-stream',
+      'delete-import-schedule',
+      'generate-stream-mappings',
+      'get-import-job',
+      'get-import-limits',
+      'get-import-run',
+      'get-import-run-errors',
+      'get-import-schedule',
+      'get-import-stats',
+      'get-stream-mappings',
+      'list-import-connections',
+      'list-import-jobs',
+      'list-import-runs',
+      'list-source-fields',
+      'list-target-fields',
+      'preview-stream-mappings',
+      'retry-failed-records',
+      'search-imported-data',
+      'set-import-schedule',
+      'set-stream-mappings',
+      'test-import-connection',
+      'trigger-import-run',
+      'update-import-job',
+      'update-import-stream',
+    ],
+  },
 } as const
 
 export type McpKey = keyof typeof MCP_SERVERS
@@ -142,6 +174,7 @@ export const MCP_DOMAIN_TAGS: Record<McpKey, readonly string[]> = {
   frontend: ['Cart', 'Checkout', 'Quote', 'Return', 'Customer'],
   extensibility: ['Custom Type', 'Custom Instance'],
   customer: ['Customer', 'Legal Entity', 'Location', 'Email'],
+  importtool: ['Import Job', 'Stream', 'Mapping', 'Run', 'Connection'],
 }
 
 export const COLLABORATION_TRIGGER_TYPES = ['slack', 'teams'] as const
