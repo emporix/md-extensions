@@ -3,6 +3,7 @@ import {
   buildAgentCommerceFilterDsl,
   COMMERCE_FILTER_PARSE_I18N_KEYS,
   commerceTriggerExtractEvents,
+  commerceTriggerExtractEventScopes,
   commerceTriggerExtractFilter,
   composeConditions,
   defaultCommerceFilterDsl,
@@ -85,6 +86,26 @@ describe('agentFilterDslHelpers', () => {
       })
     ).toEqual([])
     expect(commerceTriggerExtractEvents(null)).toEqual([])
+  })
+
+  it('commerceTriggerExtractEventScopes reads eventScopes only', () => {
+    expect(
+      commerceTriggerExtractEventScopes({
+        eventScopes: ['order.order_read', 'product.product_read'],
+      })
+    ).toEqual(['order.order_read', 'product.product_read'])
+    expect(
+      commerceTriggerExtractEventScopes({
+        events: ['x'],
+        eventScopes: ['', '  ', 1, 'cart.cart_read'],
+      })
+    ).toEqual(['cart.cart_read'])
+    expect(
+      commerceTriggerExtractEventScopes({
+        events: ['x'],
+      })
+    ).toEqual([])
+    expect(commerceTriggerExtractEventScopes(null)).toEqual([])
   })
 
   it('commerceTriggerExtractFilter reads explicit filter only', () => {
@@ -179,6 +200,24 @@ describe('agentFilterDslHelpers', () => {
   it('mergeCommerceTriggerPersistedConfig omits filter when null', () => {
     expect(mergeCommerceTriggerPersistedConfig(['a', 'b'], null)).toEqual({
       events: ['a', 'b'],
+    })
+  })
+
+  it('mergeCommerceTriggerPersistedConfig includes eventScopes when present', () => {
+    expect(
+      mergeCommerceTriggerPersistedConfig(['a'], null, [
+        'order.order_read',
+        'product.product_read',
+      ])
+    ).toEqual({
+      events: ['a'],
+      eventScopes: ['order.order_read', 'product.product_read'],
+    })
+  })
+
+  it('mergeCommerceTriggerPersistedConfig omits empty eventScopes', () => {
+    expect(mergeCommerceTriggerPersistedConfig(['a'], null, [])).toEqual({
+      events: ['a'],
     })
   })
 

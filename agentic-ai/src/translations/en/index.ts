@@ -820,6 +820,11 @@ const TRANSLATIONS_EN = {
   error_loading_commerce_events: 'Failed to fetch commerce events',
   commerce_event_filter: 'Commerce Events constraints',
   commerce_event_filter_optional: '(optional)',
+  event_scopes: 'Event Scopes',
+  select_event_scopes: 'Select event scopes',
+  event_scopes_load_error: 'Failed to load IAM scopes.',
+  event_scopes_tooltip:
+    'IAM scopes used to obtain an Emporix token when this agent runs from a Commerce Event. When left empty then the agent does not receive emporix-token.',
 
   commerce_filter_tab_form: 'Filter',
   commerce_filter_tab_json: 'Condition',

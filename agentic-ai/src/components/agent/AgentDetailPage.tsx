@@ -27,6 +27,7 @@ import { useAgentTokensCatalog } from '../../hooks/useAgentTokensCatalog'
 import { useAgentOAuthCatalog } from '../../hooks/useAgentOAuthCatalog'
 import { useLlmModelsCatalog } from '../../hooks/useLlmModelsCatalog'
 import { useCommerceEvents } from '../../hooks/useCommerceEvents'
+import { useMyIamScopes } from '../../hooks/useMyIamScopes'
 import {
   cleanAgentForConfig,
   createEmptyAgent,
@@ -237,6 +238,14 @@ const AgentDetailPage: React.FC = () => {
     onHide: handleNavigateBack,
   })
 
+  const isCommerceTriggerSelected =
+    state.triggerTypes.includes('commerce_events')
+  const {
+    scopes: iamScopes,
+    loading: iamScopesLoading,
+    error: iamScopesLoadError,
+  } = useMyIamScopes(isCommerceTriggerSelected)
+
   const agentDisplayName = useMemo(() => {
     const localizedName = getLocalizedValue(
       state.agentName,
@@ -293,11 +302,15 @@ const AgentDetailPage: React.FC = () => {
           triggerTypes={state.triggerTypes}
           commerceEvents={state.commerceEvents}
           commerceEventFilter={state.commerceEventFilter}
+          eventScopes={state.eventScopes}
           requiredScopes={state.requiredScopes}
           onFieldChange={handleFieldChange}
           commerceEventCatalog={commerceEventCatalog}
           commerceCatalogLoading={commerceCatalogLoading}
           commerceCatalogError={commerceCatalogError}
+          iamScopes={iamScopes}
+          iamScopesLoading={iamScopesLoading}
+          iamScopesLoadError={iamScopesLoadError}
           msTeamsEnabled={toggles.msTeams}
         />
       )

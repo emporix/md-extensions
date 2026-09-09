@@ -347,6 +347,17 @@ export const commerceTriggerExtractEvents = (
   return raw.filter((e): e is string => typeof e === 'string')
 }
 
+export const commerceTriggerExtractEventScopes = (
+  config: Record<string, unknown> | null | undefined
+): string[] => {
+  if (!config) return []
+  const raw = config.eventScopes
+  if (!Array.isArray(raw)) return []
+  return raw.filter(
+    (scope): scope is string => typeof scope === 'string' && !!scope.trim()
+  )
+}
+
 export const commerceTriggerExtractFilter = (
   config: Record<string, unknown> | null | undefined
 ): AgentCommerceFilterDsl | null => {
@@ -371,13 +382,17 @@ const serializeFilterForPersist = (
 
 export const mergeCommerceTriggerPersistedConfig = (
   commerceEvents: string[],
-  filterDsl: AgentCommerceFilterDsl | null
+  filterDsl: AgentCommerceFilterDsl | null,
+  eventScopes: string[] = []
 ): Record<string, unknown> => {
   const cfg: Record<string, unknown> = {
     events: [...commerceEvents],
   }
   if (filterDsl !== null) {
     cfg.filter = serializeFilterForPersist(filterDsl)
+  }
+  if (eventScopes.length > 0) {
+    cfg.eventScopes = [...eventScopes]
   }
   return cfg
 }

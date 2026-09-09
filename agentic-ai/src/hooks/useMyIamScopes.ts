@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppState } from '../contexts/AppStateContext'
-import { getIamScopes, IamScope } from '../services/iamScopesService'
+import { getMyIamScopes, IamScope } from '../services/iamScopesService'
 
-export const useIamScopes = (
+export const useMyIamScopes = (
   enabled = true,
-  errorKey = 'mcp_tool_scopes_load_error'
+  errorKey = 'event_scopes_load_error'
 ) => {
   const appState = useAppState()
   const { t } = useTranslation()
@@ -22,7 +22,7 @@ export const useIamScopes = (
     setError(null)
 
     try {
-      const result = await getIamScopes(appState)
+      const result = await getMyIamScopes(appState)
       setScopes(result)
     } catch {
       setScopes([])
