@@ -27,7 +27,7 @@ import { useAgentTokensCatalog } from '../../hooks/useAgentTokensCatalog'
 import { useAgentOAuthCatalog } from '../../hooks/useAgentOAuthCatalog'
 import { useLlmModelsCatalog } from '../../hooks/useLlmModelsCatalog'
 import { useCommerceEvents } from '../../hooks/useCommerceEvents'
-import { useIamScopes } from '../../hooks/useIamScopes'
+import { useMyIamScopes } from '../../hooks/useMyIamScopes'
 import {
   cleanAgentForConfig,
   createEmptyAgent,
@@ -244,7 +244,7 @@ const AgentDetailPage: React.FC = () => {
     scopes: iamScopes,
     loading: iamScopesLoading,
     error: iamScopesLoadError,
-  } = useIamScopes(isCommerceTriggerSelected, 'event_scopes_load_error')
+  } = useMyIamScopes(isCommerceTriggerSelected)
 
   const agentDisplayName = useMemo(() => {
     const localizedName = getLocalizedValue(
