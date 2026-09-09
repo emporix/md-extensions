@@ -18,6 +18,7 @@ import { hasAnyLocalizedValue } from '../utils/agentHelpers'
 import {
   AgentCommerceFilterDsl,
   commerceTriggerExtractEvents,
+  commerceTriggerExtractEventScopes,
   commerceTriggerExtractFilter,
   mergeCommerceTriggerPersistedConfig,
   isCommerceFilterValid,
@@ -90,6 +91,7 @@ interface AgentConfigState {
   fileProcessingExtraModelKey: string
   commerceEvents: string[]
   commerceEventFilter: AgentCommerceFilterDsl | null
+  eventScopes: string[]
 }
 
 export const useAgentConfig = ({
@@ -137,6 +139,7 @@ export const useAgentConfig = ({
     fileProcessingExtraModelKey: '',
     commerceEvents: [],
     commerceEventFilter: null,
+    eventScopes: [],
   })
 
   const [saving, setSaving] = useState(false)
@@ -213,6 +216,7 @@ export const useAgentConfig = ({
           return {
             commerceEvents: commerceTriggerExtractEvents(raw ?? null),
             commerceEventFilter: commerceTriggerExtractFilter(raw ?? null),
+            eventScopes: commerceTriggerExtractEventScopes(raw ?? null),
           }
         })(),
       })
@@ -232,7 +236,8 @@ export const useAgentConfig = ({
         triggerType === 'commerce_events'
           ? mergeCommerceTriggerPersistedConfig(
               state.commerceEvents,
-              state.commerceEventFilter
+              state.commerceEventFilter,
+              state.eventScopes
             )
           : null,
     }))

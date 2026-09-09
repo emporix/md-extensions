@@ -831,6 +831,11 @@ const TRANSLATIONS_DE = {
   error_loading_commerce_events: 'Fehler beim Laden der Commerce-Ereignisse',
   commerce_event_filter: 'Bedingungen für Commerce-Ereignisse',
   commerce_event_filter_optional: '(optional)',
+  event_scopes: 'Event-Bereiche',
+  select_event_scopes: 'Event-Bereiche auswählen',
+  event_scopes_load_error: 'IAM-Berechtigungen konnten nicht geladen werden.',
+  event_scopes_tooltip:
+    'IAM-Berechtigungen, mit denen bei einem Commerce-Ereignis ein Emporix-Token für den Agenten geholt wird. Wenn leer, erhält der Agent kein emporix-token.',
 
   commerce_filter_tab_form: 'Filter',
   commerce_filter_tab_json: 'Bedingung',

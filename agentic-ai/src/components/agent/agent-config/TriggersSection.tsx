@@ -2,10 +2,12 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'primereact/button'
 import { MultiSelect } from 'primereact/multiselect'
+import { Message } from 'primereact/message'
 import { Tooltip } from 'primereact/tooltip'
 import { getTriggerTypes } from '../../../utils/constants'
 import { type AgentCommerceFilterDsl } from '../../../utils/agentFilterDslHelpers'
 import { hasChannelTrigger } from '../../../utils/agentTriggerValidationHelpers'
+import { IamScope } from '../../../services/iamScopesService'
 import { AgentFilterDslEditor } from './AgentFilterDslEditor'
 import starsIcon from '../../../assets/stars_icon.svg'
 
@@ -13,6 +15,7 @@ type TriggersSectionProps = {
   readonly triggerTypes: string[]
   readonly commerceEvents: string[]
   readonly commerceEventFilter: AgentCommerceFilterDsl | null
+  readonly eventScopes: string[]
   readonly requiredScopes: string[]
   readonly onFieldChange: (
     field: string,
@@ -21,6 +24,9 @@ type TriggersSectionProps = {
   readonly commerceEventCatalog: string[]
   readonly commerceCatalogLoading: boolean
   readonly commerceCatalogError: string | null
+  readonly iamScopes: IamScope[]
+  readonly iamScopesLoading: boolean
+  readonly iamScopesLoadError: string | null
   readonly msTeamsEnabled?: boolean
 }
 
@@ -28,11 +34,15 @@ export const TriggersSection = ({
   triggerTypes,
   commerceEvents,
   commerceEventFilter,
+  eventScopes,
   requiredScopes,
   onFieldChange,
   commerceEventCatalog,
   commerceCatalogLoading,
   commerceCatalogError,
+  iamScopes,
+  iamScopesLoading,
+  iamScopesLoadError,
   msTeamsEnabled = false,
 }: TriggersSectionProps) => {
   const { t } = useTranslation()
@@ -65,9 +75,11 @@ export const TriggersSection = ({
     if (!wasCommerce && isCommerce) {
       onFieldChange('commerceEvents', [])
       onFieldChange('commerceEventFilter', null)
+      onFieldChange('eventScopes', [])
     } else if (wasCommerce && !isCommerce) {
       onFieldChange('commerceEvents', [])
       onFieldChange('commerceEventFilter', null)
+      onFieldChange('eventScopes', [])
     }
   }
 
@@ -83,6 +95,19 @@ export const TriggersSection = ({
 
     return [...selectedOptions, ...catalogOptions]
   }, [commerceEventCatalog, commerceEvents])
+
+  const eventScopeOptions = useMemo(() => {
+    const catalogIds = new Set(iamScopes.map((scope) => scope.id))
+    const selectedOptions = eventScopes
+      .filter((scopeId) => scopeId.trim() && !catalogIds.has(scopeId))
+      .map((scopeId) => ({ label: scopeId, value: scopeId }))
+    const catalogOptions = iamScopes.map((scope) => ({
+      label: scope.id,
+      value: scope.id,
+    }))
+
+    return [...selectedOptions, ...catalogOptions]
+  }, [iamScopes, eventScopes])
 
   const renderRequiredScopes = () => (
     <div className="form-field">
@@ -151,6 +176,41 @@ export const TriggersSection = ({
     </div>
   )
 
+  const renderEventScopesField = () => (
+    <div
+      className={`form-field agent-detail-commerce-events-field${isCommerceTriggerSelected ? '' : ' agent-detail-commerce-events-field--disabled'}`}
+    >
+      <label className="field-label">
+        {t('event_scopes')}
+        <i
+          className="pi pi-info-circle field-label-help-icon event-scopes-help-icon"
+          data-pr-tooltip={t('event_scopes_tooltip')}
+          data-pr-position="top"
+        />
+      </label>
+      <Tooltip target=".event-scopes-help-icon" />
+      {isCommerceTriggerSelected && iamScopesLoadError ? (
+        <Message severity="warn" text={iamScopesLoadError} />
+      ) : null}
+      <MultiSelect
+        value={isCommerceTriggerSelected ? eventScopes : []}
+        options={eventScopeOptions}
+        onChange={(e) => {
+          if (!isCommerceTriggerSelected || iamScopesLoading) {
+            return
+          }
+          onFieldChange('eventScopes', (e.value as string[]) ?? [])
+        }}
+        className={`w-full${iamScopesLoading && isCommerceTriggerSelected ? ' agent-detail-commerce-events-field--loading' : ''}`}
+        display="chip"
+        filter={isCommerceTriggerSelected && !iamScopesLoading}
+        placeholder={t('select_event_scopes')}
+        appendTo="self"
+        disabled={!isCommerceTriggerSelected || iamScopesLoading}
+      />
+    </div>
+  )
+
   const renderConstraintsEditor = () => {
     if (!isCommerceTriggerSelected) {
       return null
@@ -201,7 +261,10 @@ export const TriggersSection = ({
           {t('triggers_section_title')}
         </h2>
         <section className="agent-detail-section">
-          <div className="agent-detail-form-row">{renderRequiredScopes()}</div>
+          <div className="agent-detail-form-row">
+            {renderRequiredScopes()}
+            {renderEventScopesField()}
+          </div>
 
           <div className="agent-detail-form-row">
             <div className="form-field">

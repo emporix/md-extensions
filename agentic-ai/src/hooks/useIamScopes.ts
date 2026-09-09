@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { useAppState } from '../contexts/AppStateContext'
 import { getIamScopes, IamScope } from '../services/iamScopesService'
 
-export const useIamScopes = (enabled = true) => {
+export const useIamScopes = (
+  enabled = true,
+  errorKey = 'mcp_tool_scopes_load_error'
+) => {
   const appState = useAppState()
   const { t } = useTranslation()
   const [scopes, setScopes] = useState<IamScope[]>([])
@@ -23,11 +26,11 @@ export const useIamScopes = (enabled = true) => {
       setScopes(result)
     } catch {
       setScopes([])
-      setError(t('mcp_tool_scopes_load_error'))
+      setError(t(errorKey))
     } finally {
       setLoading(false)
     }
-  }, [appState, enabled, t])
+  }, [appState, enabled, errorKey, t])
 
   useEffect(() => {
     void reload()
