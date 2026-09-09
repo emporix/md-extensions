@@ -13,7 +13,7 @@ const TRANSLATIONS_DE = {
   my_agents: 'Meine Agenten',
   predefined_agents: 'Vordefinierte Agenten',
   predefined_agents_description:
-    'Wir haben eine Reihe von verfügbaren Agenten in unserem System. Fügen Sie beliebige zu Ihrer Liste hinzu, benennen Sie sie um, um das gewünschte Ziel zu erreichen.',
+    'Wir haben eine Reihe von Agenten in unserem System. Fügen Sie beliebige Agenten zu Ihrer Liste hinzu und benennen Sie sie um, um sie an Ihre Bedürfnisse anzupassen und Ihr gewünschtes Ergebnis zu erzielen.',
   no_custom_agents: 'Noch keine benutzerdefinierten Agenten erstellt.',
   edit: 'Bearbeiten',
   configure: 'Konfigurieren',

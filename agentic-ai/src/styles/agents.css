@@ -147,8 +147,15 @@ body,
   font-size: 1rem;
 }
 
-.section-header {
+.predefined-agents-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   margin-bottom: var(--space-2xl);
+}
+
+.predefined-agents-header .section-title {
+  margin: 0;
 }
 
 .section-description {
