@@ -140,7 +140,7 @@ const AgentsView = memo(() => {
 
       {/* Predefined Agents Section */}
       <div className="predefined-agents-section">
-        <div className="section-header">
+        <div className="predefined-agents-header">
           <h2 className="section-title">{t('predefined_agents')}</h2>
           <p className="section-description">
             {t('predefined_agents_description')}

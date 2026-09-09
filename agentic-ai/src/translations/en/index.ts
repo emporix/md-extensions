@@ -13,7 +13,7 @@ const TRANSLATIONS_EN = {
   my_agents: 'My Agents',
   predefined_agents: 'Predefined Agents',
   predefined_agents_description:
-    'We have number of available Agents in our system. Add any to your list, rename it, to make the desired achievement.',
+    'We have a number of agents available in our system. Add any agent to your list and rename it to suit your needs and achieve your desired outcome.',
   no_custom_agents: 'No custom agents created yet.',
   edit: 'edit',
   configure: 'Configure',
