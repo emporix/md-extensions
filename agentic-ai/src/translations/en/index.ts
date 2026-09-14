@@ -933,6 +933,8 @@ const TRANSLATIONS_EN = {
   errors: 'errors',
   duration: 'Duration',
   duration_seconds: '{{count}} sec',
+  token_usage: 'Tokens',
+  token_usage_input_output: '{{prompt}} in / {{completion}} out',
   agent: 'Agent',
   no_messages: 'No messages found',
   result: 'Result',

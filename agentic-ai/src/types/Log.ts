@@ -34,6 +34,8 @@ export interface RequestLogs {
   messages: LogMessage[]
   metadata: Metadata
   duration?: number
+  promptTokens?: number
+  completionTokens?: number
 }
 export interface SessionLogs {
   sessionId: string
@@ -43,4 +45,6 @@ export interface SessionLogs {
   messages?: LogMessage[]
   metadata: Metadata
   duration?: number
+  promptTokens?: number
+  completionTokens?: number
 }

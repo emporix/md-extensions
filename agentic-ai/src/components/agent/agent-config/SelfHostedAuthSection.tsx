@@ -123,9 +123,7 @@ export const SelfHostedAuthSection: React.FC<SelfHostedAuthSectionProps> = ({
           </div>
 
           <div className="form-field">
-            <label className="field-label">
-              {t('authorization_token')}
-            </label>
+            <label className="field-label">{t('authorization_token')}</label>
             <Dropdown
               value={authHeaderTokenId || null}
               options={tokenOptions}

@@ -28,6 +28,8 @@ interface UnifiedDetailsViewProps {
   requestId?: string
   createdAt?: string | null
   duration?: number
+  promptTokens?: number
+  completionTokens?: number
 
   status?: string
 
@@ -54,6 +56,8 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
   requestId,
   createdAt,
   duration,
+  promptTokens,
+  completionTokens,
   status,
   jobType,
   importResult,
@@ -158,6 +162,8 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
     Boolean(requestId) ||
     Boolean(jobType) ||
     (duration !== undefined && duration !== null) ||
+    promptTokens != null ||
+    completionTokens != null ||
     Boolean(createdAt) ||
     Boolean(status)
 
@@ -221,6 +227,19 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
         key="duration"
         label={t('duration')}
         value={t('duration_seconds', { count: normalizeDuration(duration) })}
+      />
+    )
+  }
+
+  if (promptTokens != null || completionTokens != null) {
+    infoFields.push(
+      <InfoCard
+        key="tokens"
+        label={t('token_usage')}
+        value={t('token_usage_input_output', {
+          prompt: (promptTokens ?? 0).toLocaleString(),
+          completion: (completionTokens ?? 0).toLocaleString(),
+        })}
       />
     )
   }

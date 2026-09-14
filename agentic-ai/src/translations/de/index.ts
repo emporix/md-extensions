@@ -944,6 +944,8 @@ const TRANSLATIONS_DE = {
   errors: 'Fehler',
   duration: 'Dauer',
   duration_seconds: '{{count}} Sek.',
+  token_usage: 'Tokens',
+  token_usage_input_output: 'Eingabe {{prompt}} / Ausgabe {{completion}}',
   agent: 'Agent',
   no_messages: 'Keine Nachrichten gefunden',
   result: 'Ergebnis',
