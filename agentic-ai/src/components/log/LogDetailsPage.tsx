@@ -59,6 +59,8 @@ const LogDetailsPage: React.FC = () => {
       response={extractedResponse}
       messages={selectedLog?.messages}
       duration={selectedLog?.duration}
+      promptTokens={selectedLog?.promptTokens}
+      completionTokens={selectedLog?.completionTokens}
       createdAt={
         selectedLog?.metadata?.createdAt
           ? String(selectedLog.metadata.createdAt)

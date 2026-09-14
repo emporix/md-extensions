@@ -78,6 +78,8 @@ const JobDetailsPage: React.FC = () => {
       requestId={selectedJob?.requestId}
       createdAt={selectedJob?.metadata?.createdAt}
       duration={log?.duration}
+      promptTokens={log?.promptTokens}
+      completionTokens={log?.completionTokens}
       status={selectedJob?.status}
       jobType={selectedJob?.type}
       importResult={selectedJob?.importResult}
