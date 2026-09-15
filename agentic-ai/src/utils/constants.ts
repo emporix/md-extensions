@@ -140,6 +140,7 @@ export const MCP_SERVERS = {
       'get-import-schedule',
       'get-import-stats',
       'get-stream-mappings',
+      'list-connection-resources',
       'list-import-connections',
       'list-import-jobs',
       'list-import-runs',
