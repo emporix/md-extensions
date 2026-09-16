@@ -1,10 +1,11 @@
 import { Job, JobSummary } from '../types/Job'
 import { AppState } from '../types/common'
+import type { CursorPageResult, CursorParams } from '../types/CursorPagination'
 import { ApiClient } from './apiClient'
 import {
   getApiHeaders,
   buildQueryParams,
-  parseTotalCount,
+  parseCursorHeaders,
 } from '../utils/apiHelpers'
 
 export class JobService {
@@ -37,16 +38,17 @@ export class JobService {
     sortBy?: string,
     sortOrder?: 'ASC' | 'DESC',
     pageSize?: number,
-    pageNumber?: number,
     agentId?: string,
-    filters?: Record<string, string>
-  ): Promise<{ data: JobSummary[]; totalCount: number }> {
+    filters?: Record<string, string>,
+    cursor?: CursorParams | null
+  ): Promise<CursorPageResult<JobSummary>> {
     const queryString = buildQueryParams(
       {
         sortBy,
         sortOrder,
         pageSize,
-        pageNumber,
+        next: cursor?.next,
+        prev: cursor?.prev,
         agentId,
         filters,
       },
@@ -56,15 +58,15 @@ export class JobService {
       }
     )
     const url = `/ai-service/${this.tenant}/jobs${queryString}`
-    const headers = getApiHeaders(true)
+    const headers = getApiHeaders()
 
     const response = await this.api.getWithHeaders<Job[]>(url, { headers })
     const jobs = response.data
-    const totalCount = parseTotalCount(response.headers)
+    const { nextCursor, prevCursor } = parseCursorHeaders(response.headers)
 
     const data = jobs.map((job) => this.transformToSummary(job))
 
-    return { data, totalCount }
+    return { data, nextCursor, prevCursor }
   }
 
   async getJobDetails(jobId: string): Promise<Job> {

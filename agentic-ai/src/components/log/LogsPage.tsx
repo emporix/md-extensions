@@ -16,6 +16,7 @@ import { SeverityBadge } from '../shared/SeverityBadge'
 import { StatusBadge } from '../shared/StatusBadge'
 import DateFilterTemplate from '../shared/DateFilterTemplate'
 import MetricsPanel from '../shared/MetricsPanel'
+import CursorPaginator from '../shared/CursorPaginator'
 import { LogSummary } from '../../types/Log'
 import { JobSummary } from '../../types/Job'
 import { useAgentLogs } from '../../hooks/useAgentLogs'
@@ -34,7 +35,6 @@ import {
 import {
   convertSeverityFiltersToApi,
   handleDataTableSort,
-  handleDataTablePage,
 } from '../../utils/dataTableHelpers'
 import { normalizeDuration } from '../../utils/formatHelpers'
 
@@ -98,13 +98,14 @@ const LogsPage: React.FC = () => {
     loading,
     error,
     pageSize: logsPageSize,
-    pageNumber: logsPageNumber,
-    totalRecords: logsTotalRecords,
+    nextCursor: logsNextCursor,
+    prevCursor: logsPrevCursor,
     refreshLogs,
     sortLogs,
-    changePage: changeLogsPage,
     changePageSize: changeLogsPageSize,
     updateFilters: updateLogFilters,
+    goNext: goLogsNext,
+    goPrevious: goLogsPrevious,
   } = useAgentLogs()
 
   const {
@@ -112,13 +113,14 @@ const LogsPage: React.FC = () => {
     loading: jobsLoading,
     error: jobsError,
     pageSize: jobsPageSize,
-    pageNumber: jobsPageNumber,
-    totalRecords: jobsTotalRecords,
+    nextCursor: jobsNextCursor,
+    prevCursor: jobsPrevCursor,
     refreshJobs,
     sortJobs,
-    changePage: changeJobsPage,
     changePageSize: changeJobsPageSize,
     updateFilters: updateJobFilters,
+    goNext: goJobsNext,
+    goPrevious: goJobsPrevious,
   } = useJobs()
 
   const {
@@ -126,13 +128,14 @@ const LogsPage: React.FC = () => {
     loading: sessionsLoading,
     error: sessionsError,
     pageSize: sessionsPageSize,
-    pageNumber: sessionsPageNumber,
-    totalRecords: sessionsTotalRecords,
+    nextCursor: sessionsNextCursor,
+    prevCursor: sessionsPrevCursor,
     refreshSessions,
     sortSessions,
-    changePage: changeSessionsPage,
     changePageSize: changeSessionsPageSize,
     updateFilters: updateSessionFilters,
+    goNext: goSessionsNext,
+    goPrevious: goSessionsPrevious,
   } = useSessions()
 
   // PrimeReact filter state for logs
@@ -261,70 +264,6 @@ const LogsPage: React.FC = () => {
     [sortLogs, sortJobs, sortField, sortOrder, viewMode]
   )
 
-  const handleLogsPageChangeDataTable = useCallback(
-    (event: DataTablePFSEvent) => {
-      const [action, value] = handleDataTablePage(event, logsPageSize)
-      if (action === 'pageSize') {
-        changeLogsPageSize(value)
-      } else {
-        changeLogsPage(value)
-      }
-    },
-    [changeLogsPage, changeLogsPageSize, logsPageSize]
-  )
-
-  const handleJobsPageChangeDataTable = useCallback(
-    (event: DataTablePFSEvent) => {
-      const [action, value] = handleDataTablePage(event, jobsPageSize)
-      if (action === 'pageSize') {
-        changeJobsPageSize(value)
-      } else {
-        changeJobsPage(value)
-      }
-    },
-    [changeJobsPage, changeJobsPageSize, jobsPageSize]
-  )
-
-  useEffect(() => {
-    const apiFilters = convertSeverityFiltersToApi(
-      logFilters,
-      {
-        agentId: 'triggerAgentId',
-        lastActivity: 'metadata.createdAt',
-      },
-      ['lastActivity']
-    )
-
-    updateLogFilters(apiFilters)
-  }, [logFilters, updateLogFilters])
-
-  useEffect(() => {
-    const apiFilters = convertSeverityFiltersToApi(
-      jobFilters,
-      {
-        createdAt: 'metadata.createdAt',
-      },
-      ['createdAt']
-    )
-
-    Object.entries(jobFilters).forEach(([key, filterMeta]) => {
-      if (
-        filterMeta &&
-        typeof filterMeta === 'object' &&
-        'value' in filterMeta
-      ) {
-        const value = filterMeta.value
-        if (value !== null && value !== undefined && String(value).trim()) {
-          if (key === 'type') {
-            apiFilters[key] = convertJobTypeToApi(String(value).trim())
-          }
-        }
-      }
-    })
-
-    updateJobFilters(apiFilters)
-  }, [jobFilters, updateJobFilters])
-
   const formatTimestamp = (timestamp: string) => {
     try {
       const date = timestamp.includes('T')
@@ -447,18 +386,56 @@ const LogsPage: React.FC = () => {
   )
 
   // Memoize filter change handlers to prevent unnecessary re-renders
-  const handleLogFilterChange = useCallback((e: DataTablePFSEvent) => {
-    setLogFilters(e.filters as DataTableFilterMeta)
-  }, [])
+  const handleLogFilterChange = useCallback(
+    (e: DataTablePFSEvent) => {
+      const nextFilters = e.filters as DataTableFilterMeta
+      setLogFilters(nextFilters)
+      const apiFilters = convertSeverityFiltersToApi(
+        nextFilters,
+        {
+          agentId: 'triggerAgentId',
+          lastActivity: 'metadata.createdAt',
+        },
+        ['lastActivity']
+      )
+      updateLogFilters(apiFilters)
+    },
+    [updateLogFilters]
+  )
 
-  const handleJobFilterChange = useCallback((e: DataTablePFSEvent) => {
-    setJobFilters(e.filters as DataTableFilterMeta)
-  }, [])
+  const handleJobFilterChange = useCallback(
+    (e: DataTablePFSEvent) => {
+      const nextFilters = e.filters as DataTableFilterMeta
+      setJobFilters(nextFilters)
+      const apiFilters = convertSeverityFiltersToApi(
+        nextFilters,
+        {
+          createdAt: 'metadata.createdAt',
+        },
+        ['createdAt']
+      )
+
+      Object.entries(nextFilters).forEach(([key, filterMeta]) => {
+        if (
+          filterMeta &&
+          typeof filterMeta === 'object' &&
+          'value' in filterMeta
+        ) {
+          const value = filterMeta.value
+          if (value !== null && value !== undefined && String(value).trim()) {
+            if (key === 'type') {
+              apiFilters[key] = convertJobTypeToApi(String(value).trim())
+            }
+          }
+        }
+      })
+
+      updateJobFilters(apiFilters)
+    },
+    [updateJobFilters]
+  )
 
   const renderLogsTable = useMemo(() => {
-    // Calculate first index - ensure it's always valid
-    const firstIndex = Math.max(0, (logsPageNumber - 1) * logsPageSize)
-
     return (
       <div className="logs-table-container">
         <DataTable
@@ -479,17 +456,8 @@ const LogsPage: React.FC = () => {
           onFilter={handleLogFilterChange}
           filterDisplay="row"
           lazy={true}
-          paginator={logs.length > 0 || logsTotalRecords > 0}
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          first={firstIndex}
+          paginator={false}
           rows={logsPageSize}
-          totalRecords={logsTotalRecords}
-          onPage={handleLogsPageChangeDataTable}
-          rowsPerPageOptions={[10, 25, 50, 100]}
-          currentPageReportTemplate={t(
-            'global.pagination',
-            'Showing {first} to {last} of {totalRecords} entries'
-          )}
         >
           <Column
             field="agentId"
@@ -568,30 +536,41 @@ const LogsPage: React.FC = () => {
             showClearButton={false}
           />
         </DataTable>
+        {(logs.length > 0 || logsNextCursor || logsPrevCursor) && (
+          <CursorPaginator
+            nextCursor={logsNextCursor}
+            prevCursor={logsPrevCursor}
+            rows={logsPageSize}
+            isLoading={loading}
+            onNext={goLogsNext}
+            onPrevious={goLogsPrevious}
+            onRowsChange={changeLogsPageSize}
+          />
+        )}
       </div>
     )
   }, [
     dateFilterElement,
     timestampBodyTemplate,
     logs,
-    logsPageNumber,
     logsPageSize,
-    logsTotalRecords,
+    logsNextCursor,
+    logsPrevCursor,
+    loading,
     logFilters,
     sortField,
     sortOrder,
     handleLogClick,
     handleSort,
     handleLogFilterChange,
-    handleLogsPageChangeDataTable,
+    goLogsNext,
+    goLogsPrevious,
+    changeLogsPageSize,
     severityFilterElement,
     t,
   ])
 
   const renderJobsTable = useMemo(() => {
-    // Calculate first index - ensure it's always valid
-    const firstIndex = Math.max(0, (jobsPageNumber - 1) * jobsPageSize)
-
     return (
       <div className="logs-table-container">
         <DataTable
@@ -612,17 +591,8 @@ const LogsPage: React.FC = () => {
           onFilter={handleJobFilterChange}
           filterDisplay="row"
           lazy={true}
-          paginator={jobs.length > 0 || jobsTotalRecords > 0}
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          first={firstIndex}
+          paginator={false}
           rows={jobsPageSize}
-          totalRecords={jobsTotalRecords}
-          onPage={handleJobsPageChangeDataTable}
-          rowsPerPageOptions={[10, 25, 50, 100]}
-          currentPageReportTemplate={t(
-            'global.pagination',
-            'Showing {first} to {last} of {totalRecords} entries'
-          )}
         >
           <Column
             field="id"
@@ -685,13 +655,25 @@ const LogsPage: React.FC = () => {
             showClearButton={false}
           />
         </DataTable>
+        {(jobs.length > 0 || jobsNextCursor || jobsPrevCursor) && (
+          <CursorPaginator
+            nextCursor={jobsNextCursor}
+            prevCursor={jobsPrevCursor}
+            rows={jobsPageSize}
+            isLoading={jobsLoading}
+            onNext={goJobsNext}
+            onPrevious={goJobsPrevious}
+            onRowsChange={changeJobsPageSize}
+          />
+        )}
       </div>
     )
   }, [
     jobs,
-    jobsPageNumber,
     jobsPageSize,
-    jobsTotalRecords,
+    jobsNextCursor,
+    jobsPrevCursor,
+    jobsLoading,
     jobFilters,
     sortField,
     sortOrder,
@@ -699,7 +681,9 @@ const LogsPage: React.FC = () => {
     handleJobClick,
     handleSort,
     handleJobFilterChange,
-    handleJobsPageChangeDataTable,
+    goJobsNext,
+    goJobsPrevious,
+    changeJobsPageSize,
     jobStatusFilterElement,
     jobStatusBodyTemplate,
     jobTypeFilterElement,
@@ -729,11 +713,6 @@ const LogsPage: React.FC = () => {
       setHasLoadedOnce((prev) => ({ ...prev, jobs: true }))
     }
   }, [jobsLoading, viewMode, hasLoadedOnce.jobs])
-
-  // Reset hasLoadedOnce when view mode changes
-  useEffect(() => {
-    // Don't reset - keep track per view mode
-  }, [viewMode])
 
   // Only show loading on initial load, never on filter/pagination changes
   const currentLoading = useMemo(() => {
@@ -788,12 +767,13 @@ const LogsPage: React.FC = () => {
             loading={sessionsLoading}
             error={sessionsError}
             pageSize={sessionsPageSize}
-            pageNumber={sessionsPageNumber}
-            totalRecords={sessionsTotalRecords}
-            changePage={changeSessionsPage}
+            nextCursor={sessionsNextCursor}
+            prevCursor={sessionsPrevCursor}
             changePageSize={changeSessionsPageSize}
             updateFilters={updateSessionFilters}
             sortSessions={sortSessions}
+            goNext={goSessionsNext}
+            goPrevious={goSessionsPrevious}
           />
         </TabPanel>
       </TabView>

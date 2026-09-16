@@ -3,6 +3,8 @@ export interface QueryParamsOptions {
   sortOrder?: 'ASC' | 'DESC'
   pageSize?: number
   pageNumber?: number
+  next?: string
+  prev?: string
   agentId?: string
   toolId?: string
   filters?: Record<string, string>
@@ -45,6 +47,12 @@ export const buildQueryParams = (
   }
   if (params.pageNumber) {
     queryParams.append('pageNumber', params.pageNumber.toString())
+  }
+  if (params.next) {
+    queryParams.append('next', params.next)
+  }
+  if (params.prev) {
+    queryParams.append('prev', params.prev)
   }
   if (params.fields) {
     queryParams.append('fields', params.fields)
@@ -93,4 +101,13 @@ export const parseTotalCount = (headers: Headers): number => {
     headers.get('x-total-count') || headers.get('X-Total-Count') || '0',
     10
   )
+}
+
+export const parseCursorHeaders = (
+  headers: Headers
+): { nextCursor: string | null; prevCursor: string | null } => {
+  return {
+    nextCursor: headers.get('x-next-cursor'),
+    prevCursor: headers.get('x-prev-cursor'),
+  }
 }

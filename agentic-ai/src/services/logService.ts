@@ -1,11 +1,12 @@
 import { RequestLogs, LogSummary, SessionLogs } from '../types/Log'
 import { AppState } from '../types/common'
+import type { CursorPageResult, CursorParams } from '../types/CursorPagination'
 import { ApiClient } from './apiClient'
 import { formatDateObject } from '../utils/formatHelpers'
 import {
   getApiHeaders,
   buildQueryParams,
-  parseTotalCount,
+  parseCursorHeaders,
 } from '../utils/apiHelpers'
 
 export class LogService {
@@ -39,16 +40,17 @@ export class LogService {
     sortBy?: string,
     sortOrder?: 'ASC' | 'DESC',
     pageSize?: number,
-    pageNumber?: number,
     agentId?: string,
-    filters?: Record<string, string>
-  ): Promise<{ data: LogSummary[]; totalCount: number }> {
+    filters?: Record<string, string>,
+    cursor?: CursorParams | null
+  ): Promise<CursorPageResult<LogSummary>> {
     const queryString = buildQueryParams(
       {
         sortBy,
         sortOrder,
         pageSize,
-        pageNumber,
+        next: cursor?.next,
+        prev: cursor?.prev,
         agentId,
         filters,
         // Only fetch required fields for list view, exclude full messages content due to performance reasons
@@ -61,17 +63,17 @@ export class LogService {
       }
     )
     const url = `/ai-service/${this.tenant}/agentic/logs/requests${queryString}`
-    const headers = getApiHeaders(true)
+    const headers = getApiHeaders()
 
     const response = await this.api.getWithHeaders<RequestLogs[]>(url, {
       headers,
     })
     const logs = response.data
-    const totalCount = parseTotalCount(response.headers)
+    const { nextCursor, prevCursor } = parseCursorHeaders(response.headers)
 
     const data = logs.map((log) => this.transformToSummary(log))
 
-    return { data, totalCount }
+    return { data, nextCursor, prevCursor }
   }
 
   async getAgentLogDetails(logId: string): Promise<RequestLogs> {
@@ -90,31 +92,6 @@ export class LogService {
       { headers }
     )
     return response.data.length > 0 ? response.data[0] : null
-  }
-
-  async getAgentLogsByAgentId(
-    agentId: string,
-    pageSize?: number,
-    pageNumber?: number
-  ): Promise<{ data: LogSummary[]; totalCount: number }> {
-    const queryString = buildQueryParams(
-      { agentId, pageSize, pageNumber },
-      {
-        agentIdField: 'triggerAgentId',
-        exactMatchFields: ['severity'],
-      }
-    )
-    const headers = getApiHeaders(true)
-    const response = await this.api.getWithHeaders<RequestLogs[]>(
-      `/ai-service/${this.tenant}/agentic/logs/requests${queryString}`,
-      { headers }
-    )
-
-    const logs = response.data
-    const totalCount = parseTotalCount(response.headers)
-    const data = logs?.map((log) => this.transformToSummary(log))
-
-    return { data, totalCount }
   }
 
   async getAgentLogsByRequestId(
@@ -137,17 +114,18 @@ export class LogService {
   async getSessions(
     agentId?: string,
     pageSize?: number,
-    pageNumber?: number,
     filters?: Record<string, string>,
     sortBy?: string,
-    sortOrder?: 'ASC' | 'DESC'
-  ): Promise<{ data: SessionLogs[]; totalCount: number }> {
+    sortOrder?: 'ASC' | 'DESC',
+    cursor?: CursorParams | null
+  ): Promise<CursorPageResult<SessionLogs>> {
     const queryString = buildQueryParams(
       {
         sortBy: sortBy || 'metadata.modifiedAt',
         sortOrder: sortOrder || 'DESC',
         pageSize,
-        pageNumber,
+        next: cursor?.next,
+        prev: cursor?.prev,
         agentId,
         filters,
       },
@@ -158,14 +136,14 @@ export class LogService {
     )
 
     const url = `/ai-service/${this.tenant}/agentic/logs/sessions${queryString}`
-    const headers = getApiHeaders(true)
+    const headers = getApiHeaders()
     const response = await this.api.getWithHeaders<SessionLogs[]>(url, {
       headers,
     })
 
-    const totalCount = parseTotalCount(response.headers)
+    const { nextCursor, prevCursor } = parseCursorHeaders(response.headers)
 
-    return { data: response.data, totalCount }
+    return { data: response.data, nextCursor, prevCursor }
   }
 
   async getSessionById(sessionId: string): Promise<SessionLogs> {

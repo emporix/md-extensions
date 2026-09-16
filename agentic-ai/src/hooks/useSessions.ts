@@ -1,21 +1,34 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router'
 import { useAppState } from '../contexts/AppStateContext'
 import { LogService } from '../services/logService'
 import { SessionLogs } from '../types/Log'
+import { useCursorPagination } from './useCursorPagination'
 
 export const useSessions = () => {
+  const { t } = useTranslation()
   const appState = useAppState()
   const location = useLocation()
   const [sessions, setSessions] = useState<SessionLogs[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pageSize, setPageSize] = useState<number>(10)
-  const [pageNumber, setPageNumber] = useState<number>(1)
-  const [totalRecords, setTotalRecords] = useState<number>(0)
   const [filters, setFilters] = useState<Record<string, string>>({})
   const [sortBy, setSortBy] = useState<string>('metadata.modifiedAt')
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC')
+  const loadRequestIdRef = useRef(0)
+
+  const {
+    cursor,
+    nextCursor,
+    prevCursor,
+    setCursors,
+    resetCursor,
+    goNext,
+    goPrevious,
+    cursorKey,
+  } = useCursorPagination()
 
   const logService = useMemo(() => new LogService(appState), [appState])
 
@@ -25,48 +38,49 @@ export const useSessions = () => {
       currentSortBy: string,
       currentSortOrder: 'ASC' | 'DESC',
       newPageSize?: number,
-      newPageNumber?: number,
       newFilters?: Record<string, string>
     ) => {
+      const requestId = ++loadRequestIdRef.current
+      const requestCursor = cursor
       try {
         setLoading(true)
         setError(null)
         const currentPageSize = newPageSize || pageSize
-        const currentPageNumber = newPageNumber || pageNumber
         const currentFilters = newFilters !== undefined ? newFilters : filters
 
         const response = await logService.getSessions(
           agentId || undefined,
           currentPageSize,
-          currentPageNumber,
           currentFilters,
           currentSortBy,
-          currentSortOrder
+          currentSortOrder,
+          requestCursor
         )
 
+        if (requestId !== loadRequestIdRef.current) return
+        if (requestCursor && response.data.length === 0) {
+          resetCursor()
+          return
+        }
         setSessions(response.data)
-        setTotalRecords(response.totalCount)
+        setCursors(response.nextCursor, response.prevCursor)
       } catch (err) {
+        if (requestId !== loadRequestIdRef.current) return
         setError(
-          err instanceof Error ? err.message : 'Failed to fetch sessions'
+          err instanceof Error ? err.message : t('failed_to_fetch_sessions')
         )
       } finally {
-        setLoading(false)
+        if (requestId === loadRequestIdRef.current) {
+          setLoading(false)
+        }
       }
     },
-    [pageSize, pageNumber, filters, logService]
+    [pageSize, filters, logService, cursor, resetCursor, setCursors, t]
   )
 
   const refreshSessions = useCallback(
     (agentId: string) => {
-      return fetchSessions(
-        agentId || '',
-        sortBy,
-        sortOrder,
-        undefined,
-        undefined,
-        filters
-      )
+      return fetchSessions(agentId || '', sortBy, sortOrder, undefined, filters)
     },
     [fetchSessions, filters, sortBy, sortOrder]
   )
@@ -75,46 +89,53 @@ export const useSessions = () => {
     (newSortBy: string, newSortOrder: 'ASC' | 'DESC') => {
       setSortBy(newSortBy)
       setSortOrder(newSortOrder)
+      resetCursor()
     },
-    []
+    [resetCursor]
   )
 
-  const updateFilters = useCallback((newFilters: Record<string, string>) => {
-    setFilters(newFilters)
-    setPageNumber(1) // Reset to first page when filters change
-  }, [])
+  const updateFilters = useCallback(
+    (newFilters: Record<string, string>) => {
+      if (JSON.stringify(filters) === JSON.stringify(newFilters)) {
+        return
+      }
+      setFilters(newFilters)
+      resetCursor()
+    },
+    [filters, resetCursor]
+  )
 
-  const changePage = useCallback((newPageNumber: number) => {
-    setPageNumber(newPageNumber)
-  }, [])
-
-  const changePageSize = useCallback((newPageSize: number) => {
-    setPageSize(newPageSize)
-    setPageNumber(1)
-  }, [])
+  const changePageSize = useCallback(
+    (newPageSize: number) => {
+      setPageSize(newPageSize)
+      resetCursor()
+    },
+    [resetCursor]
+  )
 
   const filtersString = useMemo(() => JSON.stringify(filters), [filters])
+
+  const fetchSessionsRef = useRef(fetchSessions)
+  fetchSessionsRef.current = fetchSessions
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search)
     const agentIdParam = urlParams.get('agentId')
-    fetchSessions(
+    const parsedFilters = JSON.parse(filtersString) as Record<string, string>
+    fetchSessionsRef.current(
       agentIdParam || '',
       sortBy,
       sortOrder,
       pageSize,
-      pageNumber,
-      filters
+      parsedFilters
     )
   }, [
     pageSize,
-    pageNumber,
+    cursorKey,
     appState.tenant,
     appState.token,
     location.search,
     filtersString,
-    filters,
-    fetchSessions,
     sortBy,
     sortOrder,
   ])
@@ -124,13 +145,14 @@ export const useSessions = () => {
     loading,
     error,
     pageSize,
-    pageNumber,
-    totalRecords,
+    nextCursor,
+    prevCursor,
     filters,
     refreshSessions,
     sortSessions,
-    changePage,
     changePageSize,
     updateFilters,
+    goNext,
+    goPrevious,
   }
 }

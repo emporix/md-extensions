@@ -1,11 +1,13 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useLocation } from 'react-router'
 import { useAppState } from '../../contexts/AppStateContext'
 import UnifiedDetailsView from '../shared/UnifiedDetailsView'
-import { useJobs } from '../../hooks/useJobs'
-import { RequestLogs } from '../../types/Log'
+import type { Job } from '../../types/Job'
+import type { RequestLogs } from '../../types/Log'
+import { JobService } from '../../services/jobService'
 import { LogService } from '../../services/logService'
+import { useCancellableLoad } from '../../hooks/useCancellableLoad'
 
 const JobDetailsPage: React.FC = () => {
   const appState = useAppState()
@@ -19,26 +21,36 @@ const JobDetailsPage: React.FC = () => {
     string | null
   >(null)
 
-  const { selectedJob, detailsLoading, detailsError, fetchJobDetails } =
-    useJobs()
+  const jobService = useMemo(() => new JobService(appState), [appState])
+  const logService = useMemo(() => new LogService(appState), [appState])
+  const fallbackError = t('failed_to_fetch_job_details')
+
+  const loadJobDetails = useCallback(() => {
+    if (!jobId) {
+      return Promise.reject(new Error(fallbackError))
+    }
+    return jobService.getJobDetails(jobId)
+  }, [fallbackError, jobId, jobService])
+
+  const {
+    data: selectedJob,
+    loading: detailsLoading,
+    error: detailsError,
+  } = useCancellableLoad<Job>({
+    enabled: Boolean(jobId),
+    load: loadJobDetails,
+    fallbackError,
+  })
 
   useEffect(() => {
-    // Get agentId from URL parameters
     const urlParams = new URLSearchParams(location.search)
     const agentIdParam = urlParams.get('agentId')
     setAgentId(agentIdParam || undefined)
   }, [location.search])
 
-  useEffect(() => {
-    if (jobId) {
-      fetchJobDetails(jobId)
-    }
-  }, [jobId, fetchJobDetails])
-
   const fetchLogsByRequestId = useCallback(
     async (requestId: string) => {
       try {
-        const logService = new LogService(appState)
         const logsData = await logService.getAgentLogsByRequestId(requestId)
         setLog(logsData)
         setLastFetchedRequestId(requestId)
@@ -46,7 +58,7 @@ const JobDetailsPage: React.FC = () => {
         console.error(err)
       }
     },
-    [appState]
+    [logService]
   )
 
   useEffect(() => {
@@ -60,7 +72,6 @@ const JobDetailsPage: React.FC = () => {
   }, [selectedJob, fetchLogsByRequestId, lastFetchedRequestId])
 
   const handleBackToJobs = () => {
-    // Navigate back to jobs tab with agentId if available
     const queryParams = agentId ? `?agentId=${agentId}` : ''
     navigate(`/logs/jobs${queryParams}`)
   }

@@ -1,24 +1,34 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router'
-import { LogSummary, RequestLogs } from '../types/Log'
+import { LogSummary } from '../types/Log'
 import { useAppState } from '../contexts/AppStateContext'
 import { LogService } from '../services/logService'
+import { useCursorPagination } from './useCursorPagination'
 
 export const useAgentLogs = () => {
+  const { t } = useTranslation()
   const appState = useAppState()
   const location = useLocation()
   const [logs, setLogs] = useState<LogSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedLog, setSelectedLog] = useState<RequestLogs | null>(null)
-  const [detailsLoading, setDetailsLoading] = useState(false)
-  const [detailsError, setDetailsError] = useState<string | null>(null)
   const [pageSize, setPageSize] = useState<number>(10)
-  const [pageNumber, setPageNumber] = useState<number>(1)
-  const [totalRecords, setTotalRecords] = useState<number>(0)
   const [filters, setFilters] = useState<Record<string, string>>({})
   const [sortBy, setSortBy] = useState<string>('metadata.createdAt')
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC')
+  const loadRequestIdRef = useRef(0)
+
+  const {
+    cursor,
+    nextCursor,
+    prevCursor,
+    setCursors,
+    resetCursor,
+    goNext,
+    goPrevious,
+    cursorKey,
+  } = useCursorPagination()
 
   const logService = useMemo(() => new LogService(appState), [appState])
 
@@ -27,87 +37,46 @@ export const useAgentLogs = () => {
       currentSortBy: string,
       currentSortOrder: 'ASC' | 'DESC',
       newPageSize?: number,
-      newPageNumber?: number,
       agentId?: string,
       newFilters?: Record<string, string>
     ) => {
+      const requestId = ++loadRequestIdRef.current
+      const requestCursor = cursor
       try {
         setLoading(true)
         setError(null)
         const currentPageSize = newPageSize || pageSize
-        const currentPageNumber = newPageNumber || pageNumber
         const currentFilters = newFilters !== undefined ? newFilters : filters
         const response = await logService.getAgentLogs(
           currentSortBy,
           currentSortOrder,
           currentPageSize,
-          currentPageNumber,
           agentId,
-          currentFilters
+          currentFilters,
+          requestCursor
         )
+        if (requestId !== loadRequestIdRef.current) return
+        if (requestCursor && response.data.length === 0) {
+          resetCursor()
+          return
+        }
         setLogs(response.data)
-        setTotalRecords(response.totalCount)
+        setCursors(response.nextCursor, response.prevCursor)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch logs')
+        if (requestId !== loadRequestIdRef.current) return
+        setError(err instanceof Error ? err.message : t('failed_to_fetch_logs'))
       } finally {
-        setLoading(false)
+        if (requestId === loadRequestIdRef.current) {
+          setLoading(false)
+        }
       }
     },
-    [pageSize, pageNumber, filters, logService]
+    [pageSize, filters, logService, cursor, resetCursor, setCursors, t]
   )
-
-  const fetchLogDetails = useCallback(
-    async (logId: string) => {
-      try {
-        setDetailsLoading(true)
-        setDetailsError(null)
-        const logDetails = await logService.getAgentLogDetails(logId)
-        setSelectedLog(logDetails)
-      } catch (err) {
-        setDetailsError(
-          err instanceof Error ? err.message : 'Failed to fetch log details'
-        )
-      } finally {
-        setDetailsLoading(false)
-      }
-    },
-    [logService]
-  )
-
-  const fetchLogsByAgent = useCallback(
-    async (agentId: string) => {
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await logService.getAgentLogsByAgentId(agentId)
-        setLogs(response.data)
-        setTotalRecords(response.totalCount)
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to fetch logs for agent'
-        )
-      } finally {
-        setLoading(false)
-      }
-    },
-    [logService]
-  )
-
-  const clearSelectedLog = useCallback(() => {
-    setSelectedLog(null)
-    setDetailsError(null)
-  }, [])
 
   const refreshLogs = useCallback(
     (agentId?: string) => {
-      return fetchLogs(
-        sortBy,
-        sortOrder,
-        undefined,
-        undefined,
-        agentId,
-        filters
-      )
+      return fetchLogs(sortBy, sortOrder, undefined, agentId, filters)
     },
     [fetchLogs, filters, sortBy, sortOrder]
   )
@@ -116,66 +85,61 @@ export const useAgentLogs = () => {
     (newSortBy: string, newSortOrder: 'ASC' | 'DESC') => {
       setSortBy(newSortBy)
       setSortOrder(newSortOrder)
+      resetCursor()
     },
-    []
+    [resetCursor]
   )
 
-  const updateFilters = useCallback((newFilters: Record<string, string>) => {
-    setFilters(newFilters)
-    setPageNumber(1) // Reset to first page when filters change
-  }, [])
+  const updateFilters = useCallback(
+    (newFilters: Record<string, string>) => {
+      if (JSON.stringify(filters) === JSON.stringify(newFilters)) {
+        return
+      }
+      setFilters(newFilters)
+      resetCursor()
+    },
+    [filters, resetCursor]
+  )
 
-  const changePage = useCallback((newPageNumber: number) => {
-    setPageNumber(newPageNumber)
-  }, [])
-
-  const changePageSize = useCallback((newPageSize: number) => {
-    setPageSize(newPageSize)
-    setPageNumber(1)
-  }, [])
+  const changePageSize = useCallback(
+    (newPageSize: number) => {
+      setPageSize(newPageSize)
+      resetCursor()
+    },
+    [resetCursor]
+  )
 
   const filtersString = useMemo(() => JSON.stringify(filters), [filters])
+
+  const fetchLogsRef = useRef(fetchLogs)
+  fetchLogsRef.current = fetchLogs
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search)
     const agentIdParam = urlParams.get('agentId')
-    fetchLogs(
+    const parsedFilters = JSON.parse(filtersString) as Record<string, string>
+    fetchLogsRef.current(
       sortBy,
       sortOrder,
       pageSize,
-      pageNumber,
       agentIdParam || undefined,
-      filters
+      parsedFilters
     )
-  }, [
-    pageSize,
-    pageNumber,
-    location.search,
-    filtersString,
-    fetchLogs,
-    filters,
-    sortBy,
-    sortOrder,
-  ])
+  }, [pageSize, cursorKey, location.search, filtersString, sortBy, sortOrder])
 
   return {
     logs,
     loading,
     error,
-    selectedLog,
-    detailsLoading,
-    detailsError,
     pageSize,
-    pageNumber,
-    totalRecords,
+    nextCursor,
+    prevCursor,
     filters,
-    fetchLogDetails,
-    fetchLogsByAgent,
-    clearSelectedLog,
     refreshLogs,
     sortLogs,
-    changePage,
     changePageSize,
     updateFilters,
+    goNext,
+    goPrevious,
   }
 }

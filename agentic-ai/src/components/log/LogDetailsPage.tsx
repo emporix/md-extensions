@@ -1,46 +1,57 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useLocation } from 'react-router'
 import UnifiedDetailsView from '../shared/UnifiedDetailsView'
-import { useAgentLogs } from '../../hooks/useAgentLogs'
+import { useAppState } from '../../contexts/AppStateContext'
+import { LogService } from '../../services/logService'
+import type { RequestLogs } from '../../types/Log'
 import {
   extractInitialMessageFromLog,
   extractResponseFromLog,
 } from '../../utils/logHelpers'
+import { useCancellableLoad } from '../../hooks/useCancellableLoad'
 
 const LogDetailsPage: React.FC = () => {
+  const appState = useAppState()
   const { t } = useTranslation()
   const { logId } = useParams<{ logId: string }>()
   const navigate = useNavigate()
   const location = useLocation()
   const [agentId, setAgentId] = useState<string | undefined>()
 
-  const { selectedLog, detailsLoading, detailsError, fetchLogDetails } =
-    useAgentLogs()
+  const logService = useMemo(() => new LogService(appState), [appState])
+  const fallbackError = t('failed_to_fetch_log_details')
+
+  const loadLogDetails = useCallback(() => {
+    if (!logId) {
+      return Promise.reject(new Error(fallbackError))
+    }
+    return logService.getAgentLogDetails(logId)
+  }, [fallbackError, logId, logService])
+
+  const {
+    data: selectedLog,
+    loading: detailsLoading,
+    error: detailsError,
+  } = useCancellableLoad<RequestLogs>({
+    enabled: Boolean(logId),
+    load: loadLogDetails,
+    fallbackError,
+  })
 
   useEffect(() => {
-    // Get agentId from URL parameters
     const urlParams = new URLSearchParams(location.search)
     const agentIdParam = urlParams.get('agentId')
     setAgentId(agentIdParam || undefined)
   }, [location.search])
 
-  useEffect(() => {
-    if (logId) {
-      fetchLogDetails(logId)
-    }
-  }, [logId, fetchLogDetails])
-
   const handleBackToLogs = () => {
-    // Navigate back to requests tab with agentId if available
     const queryParams = agentId ? `?agentId=${agentId}` : ''
     navigate(`/logs/requests${queryParams}`)
   }
 
-  // Get scrollToMessage from session storage
   const scrollToMessage = sessionStorage.getItem('scrollToMessage')
 
-  // Extract message and response from log messages
   const extractedMessage = extractInitialMessageFromLog(selectedLog?.messages)
   const extractedResponse = extractResponseFromLog(selectedLog?.messages)
 
