@@ -15,7 +15,6 @@ const JobDetailsPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const [agentId, setAgentId] = useState<string | undefined>()
   const [log, setLog] = useState<RequestLogs | null>(null)
   const [lastFetchedRequestId, setLastFetchedRequestId] = useState<
     string | null
@@ -42,12 +41,6 @@ const JobDetailsPage: React.FC = () => {
     fallbackError,
   })
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search)
-    const agentIdParam = urlParams.get('agentId')
-    setAgentId(agentIdParam || undefined)
-  }, [location.search])
-
   const fetchLogsByRequestId = useCallback(
     async (requestId: string) => {
       try {
@@ -72,8 +65,7 @@ const JobDetailsPage: React.FC = () => {
   }, [selectedJob, fetchLogsByRequestId, lastFetchedRequestId])
 
   const handleBackToJobs = () => {
-    const queryParams = agentId ? `?agentId=${agentId}` : ''
-    navigate(`/logs/jobs${queryParams}`)
+    navigate({ pathname: '/logs/jobs', search: location.search })
   }
 
   return (

@@ -15,7 +15,13 @@ export interface BuildQueryParamsConfig {
   agentIdField?: string
   toolIdField?: string
   exactMatchFields?: string[]
+  uuidExactFields?: string[]
 }
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export const isUuid = (value: string): boolean => UUID_PATTERN.test(value.trim())
 
 export const getApiHeaders = (
   includeTotalCount: boolean = false
@@ -35,6 +41,7 @@ export const buildQueryParams = (
     agentIdField = 'agentId',
     toolIdField = 'toolId',
     exactMatchFields = [],
+    uuidExactFields = [],
   } = config
 
   const queryParams = new URLSearchParams()
@@ -81,6 +88,11 @@ export const buildQueryParams = (
               ? trimmedValue.toUpperCase()
               : trimmedValue
           qParts.push(`${field}:${finalValue}`)
+        } else if (
+          uuidExactFields.includes(field) &&
+          isUuid(trimmedValue)
+        ) {
+          qParts.push(`${field}:${trimmedValue}`)
         } else {
           qParts.push(`${field}:~(${trimmedValue})`)
         }

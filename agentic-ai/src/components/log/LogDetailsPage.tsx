@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate, useLocation } from 'react-router'
 import UnifiedDetailsView from '../shared/UnifiedDetailsView'
@@ -17,7 +17,6 @@ const LogDetailsPage: React.FC = () => {
   const { logId } = useParams<{ logId: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const [agentId, setAgentId] = useState<string | undefined>()
 
   const logService = useMemo(() => new LogService(appState), [appState])
   const fallbackError = t('failed_to_fetch_log_details')
@@ -39,15 +38,8 @@ const LogDetailsPage: React.FC = () => {
     fallbackError,
   })
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search)
-    const agentIdParam = urlParams.get('agentId')
-    setAgentId(agentIdParam || undefined)
-  }, [location.search])
-
   const handleBackToLogs = () => {
-    const queryParams = agentId ? `?agentId=${agentId}` : ''
-    navigate(`/logs/requests${queryParams}`)
+    navigate({ pathname: '/logs/requests', search: location.search })
   }
 
   const scrollToMessage = sessionStorage.getItem('scrollToMessage')

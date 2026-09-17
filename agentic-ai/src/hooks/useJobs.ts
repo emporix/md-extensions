@@ -5,6 +5,11 @@ import { JobSummary } from '../types/Job'
 import { useAppState } from '../contexts/AppStateContext'
 import { JobService } from '../services/jobService'
 import { useCursorPagination } from './useCursorPagination'
+import {
+  getLogListAgentId,
+  getNamespacedListKey,
+  parseLogListQuery,
+} from '../utils/logListQuery.helpers'
 
 export const useJobs = () => {
   const { t } = useTranslation()
@@ -13,10 +18,18 @@ export const useJobs = () => {
   const [jobs, setJobs] = useState<JobSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [pageSize, setPageSize] = useState<number>(10)
-  const [filters, setFilters] = useState<Record<string, string>>({})
-  const [sortBy, setSortBy] = useState<string>('metadata.createdAt')
-  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC')
+  const [pageSize, setPageSize] = useState<number>(
+    () => parseLogListQuery(location.search).jobs.rows
+  )
+  const [filters, setFilters] = useState<Record<string, string>>(
+    () => parseLogListQuery(location.search).jobs.apiFilters
+  )
+  const [sortBy, setSortBy] = useState<string>(
+    () => parseLogListQuery(location.search).jobs.apiSortBy
+  )
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>(
+    () => parseLogListQuery(location.search).jobs.apiSortOrder
+  )
   const loadRequestIdRef = useRef(0)
 
   const {
@@ -31,17 +44,24 @@ export const useJobs = () => {
   } = useCursorPagination()
 
   const jobService = useMemo(() => new JobService(appState), [appState])
+  const agentId = getLogListAgentId(location.search)
+  const listKey = `${agentId ?? ''}|${getNamespacedListKey(location.search, 'j')}`
+  const prevListKeyRef = useRef(listKey)
+  const searchRef = useRef(location.search)
+  searchRef.current = location.search
+  const cursorRef = useRef(cursor)
+  cursorRef.current = cursor
 
   const fetchJobs = useCallback(
     async (
       currentSortBy: string,
       currentSortOrder: 'ASC' | 'DESC',
       newPageSize?: number,
-      agentId?: string,
-      newFilters?: Record<string, string>
+      currentAgentId?: string,
+      newFilters?: Record<string, string>,
+      requestCursor = cursorRef.current
     ) => {
       const requestId = ++loadRequestIdRef.current
-      const requestCursor = cursor
       try {
         setLoading(true)
         setError(null)
@@ -51,7 +71,7 @@ export const useJobs = () => {
           currentSortBy,
           currentSortOrder,
           currentPageSize,
-          agentId,
+          currentAgentId,
           currentFilters,
           requestCursor
         )
@@ -71,61 +91,43 @@ export const useJobs = () => {
         }
       }
     },
-    [pageSize, filters, jobService, cursor, resetCursor, setCursors, t]
+    [pageSize, filters, jobService, resetCursor, setCursors, t]
   )
 
   const refreshJobs = useCallback(
-    (agentId?: string) => {
-      return fetchJobs(sortBy, sortOrder, undefined, agentId, filters)
+    (currentAgentId?: string) => {
+      return fetchJobs(sortBy, sortOrder, undefined, currentAgentId, filters)
     },
     [fetchJobs, filters, sortBy, sortOrder]
   )
-
-  const sortJobs = useCallback(
-    (newSortBy: string, newSortOrder: 'ASC' | 'DESC') => {
-      setSortBy(newSortBy)
-      setSortOrder(newSortOrder)
-      resetCursor()
-    },
-    [resetCursor]
-  )
-
-  const updateFilters = useCallback(
-    (newFilters: Record<string, string>) => {
-      if (JSON.stringify(filters) === JSON.stringify(newFilters)) {
-        return
-      }
-      setFilters(newFilters)
-      resetCursor()
-    },
-    [filters, resetCursor]
-  )
-
-  const changePageSize = useCallback(
-    (newPageSize: number) => {
-      setPageSize(newPageSize)
-      resetCursor()
-    },
-    [resetCursor]
-  )
-
-  const filtersString = useMemo(() => JSON.stringify(filters), [filters])
 
   const fetchJobsRef = useRef(fetchJobs)
   fetchJobsRef.current = fetchJobs
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(location.search)
-    const agentIdParam = urlParams.get('agentId')
-    const parsedFilters = JSON.parse(filtersString) as Record<string, string>
+    const query = parseLogListQuery(searchRef.current)
+    const listChanged = prevListKeyRef.current !== listKey
+    prevListKeyRef.current = listKey
+
+    setPageSize(query.jobs.rows)
+    setSortBy(query.jobs.apiSortBy)
+    setSortOrder(query.jobs.apiSortOrder)
+    setFilters(query.jobs.apiFilters)
+
+    if (listChanged && cursorKey) {
+      resetCursor()
+      return
+    }
+
     fetchJobsRef.current(
-      sortBy,
-      sortOrder,
-      pageSize,
-      agentIdParam || undefined,
-      parsedFilters
+      query.jobs.apiSortBy,
+      query.jobs.apiSortOrder,
+      query.jobs.rows,
+      query.agentId,
+      query.jobs.apiFilters,
+      listChanged ? null : cursorRef.current
     )
-  }, [pageSize, cursorKey, location.search, filtersString, sortBy, sortOrder])
+  }, [listKey, cursorKey, appState.tenant, appState.token, resetCursor])
 
   return {
     jobs,
@@ -134,11 +136,7 @@ export const useJobs = () => {
     pageSize,
     nextCursor,
     prevCursor,
-    filters,
     refreshJobs,
-    sortJobs,
-    changePageSize,
-    updateFilters,
     goNext,
     goPrevious,
   }

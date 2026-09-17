@@ -60,6 +60,7 @@ export class LogService {
       {
         agentIdField: 'triggerAgentId',
         exactMatchFields: ['severity', 'duration'],
+        uuidExactFields: ['requestId', 'sessionId'],
       }
     )
     const url = `/ai-service/${this.tenant}/agentic/logs/requests${queryString}`
@@ -132,6 +133,7 @@ export class LogService {
       {
         agentIdField: 'triggerAgentId',
         exactMatchFields: ['severity'],
+        uuidExactFields: ['sessionId'],
       }
     )
 

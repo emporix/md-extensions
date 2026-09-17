@@ -32,6 +32,7 @@ const TRANSLATIONS_EN = {
   failed_to_fetch_job_details: 'Failed to fetch job details',
   no_sessions_available: 'No sessions available',
   loading_sessions: 'Loading sessions...',
+  loading_jobs: 'Loading jobs...',
   last_activity: 'Last Activity',
   messages: 'Messages',
   back_to_logs: 'Back to Logs',

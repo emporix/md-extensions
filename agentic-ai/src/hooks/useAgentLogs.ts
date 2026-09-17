@@ -5,6 +5,11 @@ import { LogSummary } from '../types/Log'
 import { useAppState } from '../contexts/AppStateContext'
 import { LogService } from '../services/logService'
 import { useCursorPagination } from './useCursorPagination'
+import {
+  getLogListAgentId,
+  getNamespacedListKey,
+  parseLogListQuery,
+} from '../utils/logListQuery.helpers'
 
 export const useAgentLogs = () => {
   const { t } = useTranslation()
@@ -13,10 +18,18 @@ export const useAgentLogs = () => {
   const [logs, setLogs] = useState<LogSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [pageSize, setPageSize] = useState<number>(10)
-  const [filters, setFilters] = useState<Record<string, string>>({})
-  const [sortBy, setSortBy] = useState<string>('metadata.createdAt')
-  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC')
+  const [pageSize, setPageSize] = useState<number>(
+    () => parseLogListQuery(location.search).requests.rows
+  )
+  const [filters, setFilters] = useState<Record<string, string>>(
+    () => parseLogListQuery(location.search).requests.apiFilters
+  )
+  const [sortBy, setSortBy] = useState<string>(
+    () => parseLogListQuery(location.search).requests.apiSortBy
+  )
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>(
+    () => parseLogListQuery(location.search).requests.apiSortOrder
+  )
   const loadRequestIdRef = useRef(0)
 
   const {
@@ -31,17 +44,24 @@ export const useAgentLogs = () => {
   } = useCursorPagination()
 
   const logService = useMemo(() => new LogService(appState), [appState])
+  const agentId = getLogListAgentId(location.search)
+  const listKey = `${agentId ?? ''}|${getNamespacedListKey(location.search, 'r')}`
+  const prevListKeyRef = useRef(listKey)
+  const searchRef = useRef(location.search)
+  searchRef.current = location.search
+  const cursorRef = useRef(cursor)
+  cursorRef.current = cursor
 
   const fetchLogs = useCallback(
     async (
       currentSortBy: string,
       currentSortOrder: 'ASC' | 'DESC',
       newPageSize?: number,
-      agentId?: string,
-      newFilters?: Record<string, string>
+      currentAgentId?: string,
+      newFilters?: Record<string, string>,
+      requestCursor = cursorRef.current
     ) => {
       const requestId = ++loadRequestIdRef.current
-      const requestCursor = cursor
       try {
         setLoading(true)
         setError(null)
@@ -51,7 +71,7 @@ export const useAgentLogs = () => {
           currentSortBy,
           currentSortOrder,
           currentPageSize,
-          agentId,
+          currentAgentId,
           currentFilters,
           requestCursor
         )
@@ -71,61 +91,43 @@ export const useAgentLogs = () => {
         }
       }
     },
-    [pageSize, filters, logService, cursor, resetCursor, setCursors, t]
+    [pageSize, filters, logService, resetCursor, setCursors, t]
   )
 
   const refreshLogs = useCallback(
-    (agentId?: string) => {
-      return fetchLogs(sortBy, sortOrder, undefined, agentId, filters)
+    (currentAgentId?: string) => {
+      return fetchLogs(sortBy, sortOrder, undefined, currentAgentId, filters)
     },
     [fetchLogs, filters, sortBy, sortOrder]
   )
-
-  const sortLogs = useCallback(
-    (newSortBy: string, newSortOrder: 'ASC' | 'DESC') => {
-      setSortBy(newSortBy)
-      setSortOrder(newSortOrder)
-      resetCursor()
-    },
-    [resetCursor]
-  )
-
-  const updateFilters = useCallback(
-    (newFilters: Record<string, string>) => {
-      if (JSON.stringify(filters) === JSON.stringify(newFilters)) {
-        return
-      }
-      setFilters(newFilters)
-      resetCursor()
-    },
-    [filters, resetCursor]
-  )
-
-  const changePageSize = useCallback(
-    (newPageSize: number) => {
-      setPageSize(newPageSize)
-      resetCursor()
-    },
-    [resetCursor]
-  )
-
-  const filtersString = useMemo(() => JSON.stringify(filters), [filters])
 
   const fetchLogsRef = useRef(fetchLogs)
   fetchLogsRef.current = fetchLogs
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(location.search)
-    const agentIdParam = urlParams.get('agentId')
-    const parsedFilters = JSON.parse(filtersString) as Record<string, string>
+    const query = parseLogListQuery(searchRef.current)
+    const listChanged = prevListKeyRef.current !== listKey
+    prevListKeyRef.current = listKey
+
+    setPageSize(query.requests.rows)
+    setSortBy(query.requests.apiSortBy)
+    setSortOrder(query.requests.apiSortOrder)
+    setFilters(query.requests.apiFilters)
+
+    if (listChanged && cursorKey) {
+      resetCursor()
+      return
+    }
+
     fetchLogsRef.current(
-      sortBy,
-      sortOrder,
-      pageSize,
-      agentIdParam || undefined,
-      parsedFilters
+      query.requests.apiSortBy,
+      query.requests.apiSortOrder,
+      query.requests.rows,
+      query.agentId,
+      query.requests.apiFilters,
+      listChanged ? null : cursorRef.current
     )
-  }, [pageSize, cursorKey, location.search, filtersString, sortBy, sortOrder])
+  }, [listKey, cursorKey, appState.tenant, appState.token, resetCursor])
 
   return {
     logs,
@@ -134,11 +136,7 @@ export const useAgentLogs = () => {
     pageSize,
     nextCursor,
     prevCursor,
-    filters,
     refreshLogs,
-    sortLogs,
-    changePageSize,
-    updateFilters,
     goNext,
     goPrevious,
   }

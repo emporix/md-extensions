@@ -32,6 +32,7 @@ const TRANSLATIONS_DE = {
   failed_to_fetch_job_details: 'Job-Details konnten nicht geladen werden',
   no_sessions_available: 'Keine Sitzungen verfügbar',
   loading_sessions: 'Sitzungen werden geladen...',
+  loading_jobs: 'Jobs werden geladen...',
   last_activity: 'Letzte Aktivität',
   messages: 'Nachrichten',
   back_to_logs: 'Zurück zu Logs',
