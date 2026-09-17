@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { BasePage } from './BasePage'
 import UnifiedLogsTable from './UnifiedLogsTable'
 import { InfoCard } from './InfoCard'
@@ -68,6 +68,7 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
   scrollToMessage,
 }) => {
   const { t } = useTranslation()
+  const location = useLocation()
   const dataTableRef = useRef<React.ComponentRef<typeof UnifiedLogsTable>>(null)
 
   // Use the custom hook for scroll-to-message functionality
@@ -169,7 +170,7 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
 
   const infoSectionTitle = jobType ? t('job_details') : t('log_details')
   const sessionDetailsPath = sessionId
-    ? `/logs/sessions/${sessionId}${agentId ? `?agentId=${encodeURIComponent(agentId)}` : ''}`
+    ? { pathname: `/logs/sessions/${sessionId}`, search: location.search }
     : undefined
   const agentDetailsPath = agentId
     ? `/agents/${encodeURIComponent(agentId)}/edit`

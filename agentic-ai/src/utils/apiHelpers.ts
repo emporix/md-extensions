@@ -3,6 +3,8 @@ export interface QueryParamsOptions {
   sortOrder?: 'ASC' | 'DESC'
   pageSize?: number
   pageNumber?: number
+  next?: string
+  prev?: string
   agentId?: string
   toolId?: string
   filters?: Record<string, string>
@@ -13,7 +15,13 @@ export interface BuildQueryParamsConfig {
   agentIdField?: string
   toolIdField?: string
   exactMatchFields?: string[]
+  uuidExactFields?: string[]
 }
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export const isUuid = (value: string): boolean => UUID_PATTERN.test(value.trim())
 
 export const getApiHeaders = (
   includeTotalCount: boolean = false
@@ -33,6 +41,7 @@ export const buildQueryParams = (
     agentIdField = 'agentId',
     toolIdField = 'toolId',
     exactMatchFields = [],
+    uuidExactFields = [],
   } = config
 
   const queryParams = new URLSearchParams()
@@ -45,6 +54,12 @@ export const buildQueryParams = (
   }
   if (params.pageNumber) {
     queryParams.append('pageNumber', params.pageNumber.toString())
+  }
+  if (params.next) {
+    queryParams.append('next', params.next)
+  }
+  if (params.prev) {
+    queryParams.append('prev', params.prev)
   }
   if (params.fields) {
     queryParams.append('fields', params.fields)
@@ -73,6 +88,11 @@ export const buildQueryParams = (
               ? trimmedValue.toUpperCase()
               : trimmedValue
           qParts.push(`${field}:${finalValue}`)
+        } else if (
+          uuidExactFields.includes(field) &&
+          isUuid(trimmedValue)
+        ) {
+          qParts.push(`${field}:${trimmedValue}`)
         } else {
           qParts.push(`${field}:~(${trimmedValue})`)
         }
@@ -93,4 +113,13 @@ export const parseTotalCount = (headers: Headers): number => {
     headers.get('x-total-count') || headers.get('X-Total-Count') || '0',
     10
   )
+}
+
+export const parseCursorHeaders = (
+  headers: Headers
+): { nextCursor: string | null; prevCursor: string | null } => {
+  return {
+    nextCursor: headers.get('x-next-cursor'),
+    prevCursor: headers.get('x-prev-cursor'),
+  }
 }

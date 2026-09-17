@@ -1,5 +1,6 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLocation, useNavigate } from 'react-router'
 import {
   DataTable,
   DataTableFilterMeta,
@@ -13,11 +14,14 @@ import { formatTimestamp } from '../../utils/formatHelpers'
 import { SeverityBadge } from '../shared/SeverityBadge'
 import DateFilterTemplate from '../shared/DateFilterTemplate'
 import { SEVERITY_OPTIONS } from '../../constants/logConstants'
+import { handleDataTableSort } from '../../utils/dataTableHelpers'
+import CursorPaginator from '../shared/CursorPaginator'
 import {
-  handleDataTableSort,
-  handleDataTablePage,
-  convertSeverityFiltersToApi,
-} from '../../utils/dataTableHelpers'
+  SESSION_SORT_FIELD_MAP,
+  parseLogListQuery,
+  writeNamespacedParams,
+  type LogListQueryPatch,
+} from '../../utils/logListQuery.helpers'
 
 interface SessionsTabProps {
   onSessionClick?: (sessionId: string, agentId: string) => void
@@ -25,12 +29,10 @@ interface SessionsTabProps {
   loading: boolean
   error: string | null
   pageSize: number
-  pageNumber: number
-  totalRecords: number
-  changePage: (pageNumber: number) => void
-  changePageSize: (pageSize: number) => void
-  updateFilters: (filters: Record<string, string>) => void
-  sortSessions: (sortBy: string, sortOrder: 'ASC' | 'DESC') => void
+  nextCursor: string | null
+  prevCursor: string | null
+  goNext: () => void
+  goPrevious: () => void
 }
 
 const SessionsTab: React.FC<SessionsTabProps> = ({
@@ -39,25 +41,35 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
   loading,
   error,
   pageSize,
-  pageNumber,
-  totalRecords,
-  changePage,
-  changePageSize,
-  updateFilters: updateSessionFilters,
-  sortSessions,
+  nextCursor,
+  prevCursor,
+  goNext,
+  goPrevious,
 }) => {
   const { t } = useTranslation()
-  const [sortField, setSortField] = useState<string>('metadata.modifiedAt')
-  const [sortOrder, setSortOrder] = useState<1 | -1>(-1)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const listQuery = useMemo(
+    () => parseLogListQuery(location.search),
+    [location.search]
+  )
+  const sessionFilters = listQuery.sessions.filters
+  const sortField = listQuery.sessions.sortField
+  const sortOrder = listQuery.sessions.sortOrder
 
-  const [sessionFilters, setSessionFilters] = useState<DataTableFilterMeta>({
-    sessionId: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    triggerAgentId: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    agents: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'metadata.createdAt': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'metadata.modifiedAt': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    severity: { value: null, matchMode: FilterMatchMode.EQUALS },
-  })
+  const replaceListQuery = useCallback(
+    (patch: LogListQueryPatch) => {
+      const nextSearch = writeNamespacedParams(location.search, 's', patch)
+      if (nextSearch === (location.search || '')) {
+        return
+      }
+      navigate(
+        { pathname: location.pathname, search: nextSearch },
+        { replace: true }
+      )
+    },
+    [location.pathname, location.search, navigate]
+  )
 
   const handleSessionClick = useCallback(
     (session: SessionLogs) => {
@@ -68,54 +80,38 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
     [onSessionClick]
   )
 
-  const handleSessionFilterChange = useCallback((e: DataTablePFSEvent) => {
-    setSessionFilters(e.filters as DataTableFilterMeta)
-  }, [])
-
-  const handlePageChangeDataTable = useCallback(
-    (event: DataTablePFSEvent) => {
-      const [action, value] = handleDataTablePage(event, pageSize)
-      if (action === 'pageSize') {
-        changePageSize(value)
-      } else {
-        changePage(value)
-      }
+  const handleSessionFilterChange = useCallback(
+    (e: DataTablePFSEvent) => {
+      replaceListQuery({
+        filters: e.filters as DataTableFilterMeta,
+      })
     },
-    [changePage, changePageSize, pageSize]
+    [replaceListQuery]
   )
 
   const handleSort = useCallback(
     (event: DataTablePFSEvent) => {
-      const fieldMapping: Record<string, string> = {
-        sessionId: 'sessionId',
-        triggerAgentId: 'triggerAgentId',
-        agents: 'agents',
-        'metadata.createdAt': 'metadata.createdAt',
-        'metadata.modifiedAt': 'metadata.modifiedAt',
-        severity: 'severity',
-      }
-
-      const [apiField, apiOrder, newSortField, newSortOrder] =
-        handleDataTableSort(event, sortField, sortOrder, fieldMapping)
-
-      setSortField(newSortField)
-      setSortOrder(newSortOrder)
-
-      sortSessions(apiField, apiOrder)
+      const [, , newSortField, newSortOrder] = handleDataTableSort(
+        event,
+        sortField,
+        sortOrder,
+        SESSION_SORT_FIELD_MAP
+      )
+      replaceListQuery({
+        sortField: newSortField,
+        sortOrder: newSortOrder,
+      })
     },
-    [sortSessions, sortField, sortOrder]
+    [replaceListQuery, sortField, sortOrder]
   )
 
-  useEffect(() => {
-    const apiFilters = convertSeverityFiltersToApi(sessionFilters, undefined, [
-      'metadata.createdAt',
-      'metadata.modifiedAt',
-    ])
+  const handleRowsChange = useCallback(
+    (rows: number) => {
+      replaceListQuery({ rows })
+    },
+    [replaceListQuery]
+  )
 
-    updateSessionFilters(apiFilters)
-  }, [sessionFilters, updateSessionFilters])
-
-  // Track initial load to prevent loading overlay on filter changes
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
 
   useEffect(() => {
@@ -177,8 +173,6 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
   }
 
   const renderSessionsTable = useMemo(() => {
-    const firstIndex = Math.max(0, (pageNumber - 1) * pageSize)
-
     return (
       <div className="sessions-table-container">
         <DataTable
@@ -199,17 +193,8 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
           onFilter={handleSessionFilterChange}
           filterDisplay="row"
           lazy={true}
-          paginator={sessions.length > 0 || totalRecords > 0}
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          first={firstIndex}
+          paginator={false}
           rows={pageSize}
-          totalRecords={totalRecords}
-          onPage={handlePageChangeDataTable}
-          rowsPerPageOptions={[10, 25, 50, 100]}
-          currentPageReportTemplate={t(
-            'global.pagination',
-            'Showing {first} to {last} of {totalRecords} entries'
-          )}
         >
           <Column
             field="sessionId"
@@ -289,21 +274,35 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
             showClearButton={false}
           />
         </DataTable>
+        {(sessions.length > 0 || nextCursor || prevCursor) && (
+          <CursorPaginator
+            nextCursor={nextCursor}
+            prevCursor={prevCursor}
+            rows={pageSize}
+            isLoading={loading}
+            onNext={goNext}
+            onPrevious={goPrevious}
+            onRowsChange={handleRowsChange}
+          />
+        )}
       </div>
     )
   }, [
     dateFilterElement,
     sessions,
-    pageNumber,
     pageSize,
-    totalRecords,
+    nextCursor,
+    prevCursor,
+    loading,
     sessionFilters,
     sortField,
     sortOrder,
     handleSessionClick,
     handleSort,
     handleSessionFilterChange,
-    handlePageChangeDataTable,
+    goNext,
+    goPrevious,
+    handleRowsChange,
     severityFilterElement,
     t,
   ])

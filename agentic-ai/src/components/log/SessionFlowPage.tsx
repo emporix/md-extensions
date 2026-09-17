@@ -107,18 +107,11 @@ const SessionFlowPage: React.FC = () => {
   const { sessionId } = useParams<{ sessionId: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const [agentId, setAgentId] = useState<string | undefined>()
   const [selectedAgents, setSelectedAgents] = useState<Set<string>>(new Set())
   const [searchTerm, setSearchTerm] = useState('')
   const [isControlExpanded, setIsControlExpanded] = useState(false)
   const { flows, loading, error, fetchBySessionId } = useSessionFlow()
   const logService = useMemo(() => new LogService(appState), [appState])
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search)
-    const agentIdParam = urlParams.get('agentId')
-    setAgentId(agentIdParam || undefined)
-  }, [location.search])
 
   useEffect(() => {
     if (sessionId) {
@@ -135,8 +128,7 @@ const SessionFlowPage: React.FC = () => {
   }, [flows])
 
   const handleBackToLogs = () => {
-    const queryParams = agentId ? `?agentId=${agentId}` : ''
-    navigate(`/logs/sessions${queryParams}`)
+    navigate({ pathname: '/logs/sessions', search: location.search })
   }
 
   const handleFlowLogClick = async (
@@ -150,7 +142,10 @@ const SessionFlowPage: React.FC = () => {
     try {
       const log = await logService.getRequestLogs(requestId)
       if (log?.id) {
-        navigate(`/logs/requests/${log.id}`)
+        navigate({
+          pathname: `/logs/requests/${log.id}`,
+          search: location.search,
+        })
       }
     } catch (error) {
       console.error('Error fetching log details:', error)

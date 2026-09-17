@@ -16,6 +16,7 @@ import { SeverityBadge } from '../shared/SeverityBadge'
 import { StatusBadge } from '../shared/StatusBadge'
 import DateFilterTemplate from '../shared/DateFilterTemplate'
 import MetricsPanel from '../shared/MetricsPanel'
+import CursorPaginator from '../shared/CursorPaginator'
 import { LogSummary } from '../../types/Log'
 import { JobSummary } from '../../types/Job'
 import { useAgentLogs } from '../../hooks/useAgentLogs'
@@ -29,22 +30,27 @@ import {
   JOB_TYPE_OPTIONS,
   JOB_STATUS_OPTIONS,
   getJobTypeDisplay,
-  convertJobTypeToApi,
 } from '../../constants/logConstants'
-import {
-  convertSeverityFiltersToApi,
-  handleDataTableSort,
-  handleDataTablePage,
-} from '../../utils/dataTableHelpers'
+import { handleDataTableSort } from '../../utils/dataTableHelpers'
 import { normalizeDuration } from '../../utils/formatHelpers'
+import {
+  JOB_SORT_FIELD_MAP,
+  REQUEST_SORT_FIELD_MAP,
+  clearNamespacedListParams,
+  parseLogListQuery,
+  writeNamespacedParams,
+  type LogListQueryPatch,
+} from '../../utils/logListQuery.helpers'
 
 const LogsPage: React.FC = () => {
   const appState = useAppState()
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
-  const [sortField, setSortField] = useState<string>('lastActivity')
-  const [sortOrder, setSortOrder] = useState<1 | -1>(-1)
+  const listQuery = useMemo(
+    () => parseLogListQuery(location.search),
+    [location.search]
+  )
   const [viewMode, setViewMode] = useState<'requests' | 'jobs' | 'sessions'>(
     'requests'
   )
@@ -57,22 +63,18 @@ const LogsPage: React.FC = () => {
     if (path.includes('/logs/requests')) {
       setViewMode('requests')
       setActiveTabIndex(0)
-      setSortField('lastActivity')
     } else if (path.includes('/logs/jobs')) {
       setViewMode('jobs')
       setActiveTabIndex(1)
-      setSortField('createdAt')
     } else if (path.includes('/logs/sessions')) {
       setViewMode('sessions')
       setActiveTabIndex(2)
     }
   }, [location.pathname])
 
-  // Fetch agent name when agentId is in URL
   useEffect(() => {
     const fetchAgentName = async () => {
-      const urlParams = new URLSearchParams(location.search)
-      const agentIdParam = urlParams.get('agentId')
+      const agentIdParam = listQuery.agentId
 
       if (!agentIdParam) {
         setAgentName(null)
@@ -91,20 +93,18 @@ const LogsPage: React.FC = () => {
     }
 
     fetchAgentName()
-  }, [location.search, appState])
+  }, [listQuery.agentId, appState])
 
   const {
     logs,
     loading,
     error,
     pageSize: logsPageSize,
-    pageNumber: logsPageNumber,
-    totalRecords: logsTotalRecords,
+    nextCursor: logsNextCursor,
+    prevCursor: logsPrevCursor,
     refreshLogs,
-    sortLogs,
-    changePage: changeLogsPage,
-    changePageSize: changeLogsPageSize,
-    updateFilters: updateLogFilters,
+    goNext: goLogsNext,
+    goPrevious: goLogsPrevious,
   } = useAgentLogs()
 
   const {
@@ -112,13 +112,11 @@ const LogsPage: React.FC = () => {
     loading: jobsLoading,
     error: jobsError,
     pageSize: jobsPageSize,
-    pageNumber: jobsPageNumber,
-    totalRecords: jobsTotalRecords,
+    nextCursor: jobsNextCursor,
+    prevCursor: jobsPrevCursor,
     refreshJobs,
-    sortJobs,
-    changePage: changeJobsPage,
-    changePageSize: changeJobsPageSize,
-    updateFilters: updateJobFilters,
+    goNext: goJobsNext,
+    goPrevious: goJobsPrevious,
   } = useJobs()
 
   const {
@@ -126,54 +124,61 @@ const LogsPage: React.FC = () => {
     loading: sessionsLoading,
     error: sessionsError,
     pageSize: sessionsPageSize,
-    pageNumber: sessionsPageNumber,
-    totalRecords: sessionsTotalRecords,
+    nextCursor: sessionsNextCursor,
+    prevCursor: sessionsPrevCursor,
     refreshSessions,
-    sortSessions,
-    changePage: changeSessionsPage,
-    changePageSize: changeSessionsPageSize,
-    updateFilters: updateSessionFilters,
+    goNext: goSessionsNext,
+    goPrevious: goSessionsPrevious,
   } = useSessions()
 
-  // PrimeReact filter state for logs
-  const [logFilters, setLogFilters] = useState<DataTableFilterMeta>({
-    agentId: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    requestId: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    sessionId: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    lastActivity: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    duration: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    severity: { value: null, matchMode: FilterMatchMode.EQUALS },
-  })
+  // PrimeReact filter state is sourced from the URL
+  const logFilters = listQuery.requests.filters
+  const jobFilters = listQuery.jobs.filters
 
-  // PrimeReact filter state for jobs
-  const [jobFilters, setJobFilters] = useState<DataTableFilterMeta>({
-    id: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    agentId: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    type: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    status: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    createdAt: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  })
+  const replaceListQuery = useCallback(
+    (namespace: 'r' | 'j' | 's', patch: LogListQueryPatch) => {
+      const nextSearch = writeNamespacedParams(
+        location.search,
+        namespace,
+        patch
+      )
+      if (nextSearch === (location.search || '')) {
+        return
+      }
+      navigate(
+        { pathname: location.pathname, search: nextSearch },
+        { replace: true }
+      )
+    },
+    [location.pathname, location.search, navigate]
+  )
 
   const handleLogClick = useCallback(
     (log: LogSummary) => {
-      navigate(`/logs/requests/${log.id}`)
+      navigate({
+        pathname: `/logs/requests/${log.id}`,
+        search: location.search,
+      })
     },
-    [navigate]
+    [navigate, location.search]
   )
 
   const handleJobClick = useCallback(
     (job: JobSummary) => {
-      navigate(`/logs/jobs/${job.id}`)
+      navigate({
+        pathname: `/logs/jobs/${job.id}`,
+        search: location.search,
+      })
     },
-    [navigate]
+    [navigate, location.search]
   )
 
   const handleSessionClick = useCallback(
     (sessionId: string) => {
-      const urlParams = new URLSearchParams(location.search)
-      const agentIdParam = urlParams.get('agentId')
-      const queryString = agentIdParam ? `?agentId=${agentIdParam}` : ''
-      navigate(`/logs/sessions/${sessionId}${queryString}`)
+      navigate({
+        pathname: `/logs/sessions/${sessionId}`,
+        search: location.search,
+      })
     },
     [navigate, location.search]
   )
@@ -183,15 +188,12 @@ const LogsPage: React.FC = () => {
       setViewMode(newMode)
       const index = newMode === 'requests' ? 0 : newMode === 'jobs' ? 1 : 2
       setActiveTabIndex(index)
-
-      const defaultSortField =
-        newMode === 'requests' ? 'lastActivity' : 'createdAt'
-      setSortField(defaultSortField)
-      setSortOrder(-1 as 1 | -1)
-
-      navigate(`/logs/${newMode}`)
+      navigate({
+        pathname: `/logs/${newMode}`,
+        search: clearNamespacedListParams(location.search),
+      })
     },
-    [navigate]
+    [navigate, location.search]
   )
 
   const handleTabChange = useCallback(
@@ -206,124 +208,54 @@ const LogsPage: React.FC = () => {
   )
 
   const handleRefresh = useCallback(() => {
-    // Get current agentId from URL
-    const urlParams = new URLSearchParams(location.search)
-    const agentIdParam = urlParams.get('agentId')
+    const agentIdParam = listQuery.agentId
 
     if (viewMode === 'requests') {
-      refreshLogs(agentIdParam || undefined)
+      refreshLogs(agentIdParam)
     } else if (viewMode === 'jobs') {
-      refreshJobs(agentIdParam || undefined)
+      refreshJobs(agentIdParam)
     } else if (viewMode === 'sessions') {
       refreshSessions(agentIdParam || '')
     }
 
-    // Trigger metrics refresh (force cache refresh)
     setMetricsRefreshTrigger((prev) => prev + 1)
-  }, [refreshLogs, refreshJobs, refreshSessions, viewMode, location.search])
+  }, [refreshLogs, refreshJobs, refreshSessions, viewMode, listQuery.agentId])
 
-  const handleSort = useCallback(
+  const handleLogsSort = useCallback(
     (event: DataTablePFSEvent) => {
-      // Different mappings for requests vs jobs
-      const fieldMapping: Record<string, string> =
-        viewMode === 'requests'
-          ? {
-              agentId: 'triggerAgentId',
-              requestId: 'requestId',
-              sessionId: 'sessionId',
-              lastActivity: 'metadata.createdAt',
-              createdAt: 'metadata.createdAt',
-              duration: 'duration',
-              severity: 'severity',
-            }
-          : {
-              agentId: 'agentId',
-              requestId: 'requestId',
-              sessionId: 'sessionId',
-              lastActivity: 'metadata.createdAt',
-              createdAt: 'metadata.createdAt',
-            }
-
-      // Use helper to handle sort logic
-      const [apiField, apiOrder, newSortField, newSortOrder] =
-        handleDataTableSort(event, sortField, sortOrder, fieldMapping)
-
-      // Update local state
-      setSortField(newSortField)
-      setSortOrder(newSortOrder)
-
-      if (viewMode === 'requests') {
-        sortLogs(apiField, apiOrder)
-      } else {
-        sortJobs(apiField, apiOrder)
-      }
+      const [, , newSortField, newSortOrder] = handleDataTableSort(
+        event,
+        listQuery.requests.sortField,
+        listQuery.requests.sortOrder,
+        REQUEST_SORT_FIELD_MAP
+      )
+      replaceListQuery('r', {
+        sortField: newSortField,
+        sortOrder: newSortOrder,
+      })
     },
-    [sortLogs, sortJobs, sortField, sortOrder, viewMode]
+    [
+      listQuery.requests.sortField,
+      listQuery.requests.sortOrder,
+      replaceListQuery,
+    ]
   )
 
-  const handleLogsPageChangeDataTable = useCallback(
+  const handleJobsSort = useCallback(
     (event: DataTablePFSEvent) => {
-      const [action, value] = handleDataTablePage(event, logsPageSize)
-      if (action === 'pageSize') {
-        changeLogsPageSize(value)
-      } else {
-        changeLogsPage(value)
-      }
+      const [, , newSortField, newSortOrder] = handleDataTableSort(
+        event,
+        listQuery.jobs.sortField,
+        listQuery.jobs.sortOrder,
+        JOB_SORT_FIELD_MAP
+      )
+      replaceListQuery('j', {
+        sortField: newSortField,
+        sortOrder: newSortOrder,
+      })
     },
-    [changeLogsPage, changeLogsPageSize, logsPageSize]
+    [listQuery.jobs.sortField, listQuery.jobs.sortOrder, replaceListQuery]
   )
-
-  const handleJobsPageChangeDataTable = useCallback(
-    (event: DataTablePFSEvent) => {
-      const [action, value] = handleDataTablePage(event, jobsPageSize)
-      if (action === 'pageSize') {
-        changeJobsPageSize(value)
-      } else {
-        changeJobsPage(value)
-      }
-    },
-    [changeJobsPage, changeJobsPageSize, jobsPageSize]
-  )
-
-  useEffect(() => {
-    const apiFilters = convertSeverityFiltersToApi(
-      logFilters,
-      {
-        agentId: 'triggerAgentId',
-        lastActivity: 'metadata.createdAt',
-      },
-      ['lastActivity']
-    )
-
-    updateLogFilters(apiFilters)
-  }, [logFilters, updateLogFilters])
-
-  useEffect(() => {
-    const apiFilters = convertSeverityFiltersToApi(
-      jobFilters,
-      {
-        createdAt: 'metadata.createdAt',
-      },
-      ['createdAt']
-    )
-
-    Object.entries(jobFilters).forEach(([key, filterMeta]) => {
-      if (
-        filterMeta &&
-        typeof filterMeta === 'object' &&
-        'value' in filterMeta
-      ) {
-        const value = filterMeta.value
-        if (value !== null && value !== undefined && String(value).trim()) {
-          if (key === 'type') {
-            apiFilters[key] = convertJobTypeToApi(String(value).trim())
-          }
-        }
-      }
-    })
-
-    updateJobFilters(apiFilters)
-  }, [jobFilters, updateJobFilters])
 
   const formatTimestamp = (timestamp: string) => {
     try {
@@ -341,10 +273,15 @@ const LogsPage: React.FC = () => {
     return <SeverityBadge severity={rowData.severity} />
   }
 
-  const durationBodyTemplate = (rowData: LogSummary) => {
-    if (rowData.duration == null) return '—'
-    return t('duration_seconds', { count: normalizeDuration(rowData.duration) })
-  }
+  const durationBodyTemplate = useCallback(
+    (rowData: LogSummary) => {
+      if (rowData.duration == null) return '—'
+      return t('duration_seconds', {
+        count: normalizeDuration(rowData.duration),
+      })
+    },
+    [t]
+  )
 
   const severityFilterElement = useCallback(
     (options: ColumnFilterElementTemplateOptions) => {
@@ -447,18 +384,39 @@ const LogsPage: React.FC = () => {
   )
 
   // Memoize filter change handlers to prevent unnecessary re-renders
-  const handleLogFilterChange = useCallback((e: DataTablePFSEvent) => {
-    setLogFilters(e.filters as DataTableFilterMeta)
-  }, [])
+  const handleLogFilterChange = useCallback(
+    (e: DataTablePFSEvent) => {
+      replaceListQuery('r', {
+        filters: e.filters as DataTableFilterMeta,
+      })
+    },
+    [replaceListQuery]
+  )
 
-  const handleJobFilterChange = useCallback((e: DataTablePFSEvent) => {
-    setJobFilters(e.filters as DataTableFilterMeta)
-  }, [])
+  const handleJobFilterChange = useCallback(
+    (e: DataTablePFSEvent) => {
+      replaceListQuery('j', {
+        filters: e.filters as DataTableFilterMeta,
+      })
+    },
+    [replaceListQuery]
+  )
+
+  const handleLogsRowsChange = useCallback(
+    (rows: number) => {
+      replaceListQuery('r', { rows })
+    },
+    [replaceListQuery]
+  )
+
+  const handleJobsRowsChange = useCallback(
+    (rows: number) => {
+      replaceListQuery('j', { rows })
+    },
+    [replaceListQuery]
+  )
 
   const renderLogsTable = useMemo(() => {
-    // Calculate first index - ensure it's always valid
-    const firstIndex = Math.max(0, (logsPageNumber - 1) * logsPageSize)
-
     return (
       <div className="logs-table-container">
         <DataTable
@@ -472,24 +430,15 @@ const LogsPage: React.FC = () => {
           selectionMode="single"
           metaKeySelection={false}
           sortMode="single"
-          sortField={sortField}
-          sortOrder={sortOrder}
-          onSort={handleSort}
+          sortField={listQuery.requests.sortField}
+          sortOrder={listQuery.requests.sortOrder}
+          onSort={handleLogsSort}
           filters={logFilters}
           onFilter={handleLogFilterChange}
           filterDisplay="row"
           lazy={true}
-          paginator={logs.length > 0 || logsTotalRecords > 0}
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          first={firstIndex}
+          paginator={false}
           rows={logsPageSize}
-          totalRecords={logsTotalRecords}
-          onPage={handleLogsPageChangeDataTable}
-          rowsPerPageOptions={[10, 25, 50, 100]}
-          currentPageReportTemplate={t(
-            'global.pagination',
-            'Showing {first} to {last} of {totalRecords} entries'
-          )}
         >
           <Column
             field="agentId"
@@ -568,30 +517,42 @@ const LogsPage: React.FC = () => {
             showClearButton={false}
           />
         </DataTable>
+        {(logs.length > 0 || logsNextCursor || logsPrevCursor) && (
+          <CursorPaginator
+            nextCursor={logsNextCursor}
+            prevCursor={logsPrevCursor}
+            rows={logsPageSize}
+            isLoading={loading}
+            onNext={goLogsNext}
+            onPrevious={goLogsPrevious}
+            onRowsChange={handleLogsRowsChange}
+          />
+        )}
       </div>
     )
   }, [
     dateFilterElement,
     timestampBodyTemplate,
     logs,
-    logsPageNumber,
     logsPageSize,
-    logsTotalRecords,
+    logsNextCursor,
+    logsPrevCursor,
+    loading,
     logFilters,
-    sortField,
-    sortOrder,
+    listQuery.requests.sortField,
+    listQuery.requests.sortOrder,
     handleLogClick,
-    handleSort,
+    handleLogsSort,
     handleLogFilterChange,
-    handleLogsPageChangeDataTable,
+    goLogsNext,
+    goLogsPrevious,
+    handleLogsRowsChange,
     severityFilterElement,
+    durationBodyTemplate,
     t,
   ])
 
   const renderJobsTable = useMemo(() => {
-    // Calculate first index - ensure it's always valid
-    const firstIndex = Math.max(0, (jobsPageNumber - 1) * jobsPageSize)
-
     return (
       <div className="logs-table-container">
         <DataTable
@@ -605,24 +566,15 @@ const LogsPage: React.FC = () => {
           selectionMode="single"
           metaKeySelection={false}
           sortMode="single"
-          sortField={sortField}
-          sortOrder={sortOrder}
-          onSort={handleSort}
+          sortField={listQuery.jobs.sortField}
+          sortOrder={listQuery.jobs.sortOrder}
+          onSort={handleJobsSort}
           filters={jobFilters}
           onFilter={handleJobFilterChange}
           filterDisplay="row"
           lazy={true}
-          paginator={jobs.length > 0 || jobsTotalRecords > 0}
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          first={firstIndex}
+          paginator={false}
           rows={jobsPageSize}
-          totalRecords={jobsTotalRecords}
-          onPage={handleJobsPageChangeDataTable}
-          rowsPerPageOptions={[10, 25, 50, 100]}
-          currentPageReportTemplate={t(
-            'global.pagination',
-            'Showing {first} to {last} of {totalRecords} entries'
-          )}
         >
           <Column
             field="id"
@@ -685,21 +637,35 @@ const LogsPage: React.FC = () => {
             showClearButton={false}
           />
         </DataTable>
+        {(jobs.length > 0 || jobsNextCursor || jobsPrevCursor) && (
+          <CursorPaginator
+            nextCursor={jobsNextCursor}
+            prevCursor={jobsPrevCursor}
+            rows={jobsPageSize}
+            isLoading={jobsLoading}
+            onNext={goJobsNext}
+            onPrevious={goJobsPrevious}
+            onRowsChange={handleJobsRowsChange}
+          />
+        )}
       </div>
     )
   }, [
     jobs,
-    jobsPageNumber,
     jobsPageSize,
-    jobsTotalRecords,
+    jobsNextCursor,
+    jobsPrevCursor,
+    jobsLoading,
     jobFilters,
-    sortField,
-    sortOrder,
+    listQuery.jobs.sortField,
+    listQuery.jobs.sortOrder,
     dateFilterElement,
     handleJobClick,
-    handleSort,
+    handleJobsSort,
     handleJobFilterChange,
-    handleJobsPageChangeDataTable,
+    goJobsNext,
+    goJobsPrevious,
+    handleJobsRowsChange,
     jobStatusFilterElement,
     jobStatusBodyTemplate,
     jobTypeFilterElement,
@@ -708,8 +674,6 @@ const LogsPage: React.FC = () => {
     t,
   ])
 
-  // Track initial load to prevent loading overlay on filter changes
-  // Once data has loaded, never show loading overlay again (even on filter/pagination changes)
   const [hasLoadedOnce, setHasLoadedOnce] = useState<
     Record<'requests' | 'jobs', boolean>
   >({
@@ -717,34 +681,57 @@ const LogsPage: React.FC = () => {
     jobs: false,
   })
 
-  // Mark as loaded when data first arrives (only once per view mode)
   useEffect(() => {
-    if (viewMode === 'requests' && !loading && !hasLoadedOnce.requests) {
+    if (!loading) {
       setHasLoadedOnce((prev) => ({ ...prev, requests: true }))
     }
-  }, [loading, viewMode, hasLoadedOnce.requests])
+  }, [loading])
 
   useEffect(() => {
-    if (viewMode === 'jobs' && !jobsLoading && !hasLoadedOnce.jobs) {
+    if (!jobsLoading) {
       setHasLoadedOnce((prev) => ({ ...prev, jobs: true }))
     }
-  }, [jobsLoading, viewMode, hasLoadedOnce.jobs])
+  }, [jobsLoading])
 
-  // Reset hasLoadedOnce when view mode changes
-  useEffect(() => {
-    // Don't reset - keep track per view mode
-  }, [viewMode])
-
-  // Only show loading on initial load, never on filter/pagination changes
-  const currentLoading = useMemo(() => {
-    if (viewMode === 'requests') {
-      return !hasLoadedOnce.requests && loading
-    } else {
-      return !hasLoadedOnce.jobs && jobsLoading
+  const requestsTabContent = useMemo(() => {
+    if (!hasLoadedOnce.requests && loading) {
+      return (
+        <div className="loading-state">
+          <i className="pi pi-spin pi-spinner loading-spinner" />
+          <p className="loading-text">{t('loading_logs')}</p>
+        </div>
+      )
     }
-  }, [viewMode, hasLoadedOnce, loading, jobsLoading])
+    if (error) {
+      return (
+        <div className="error-state">
+          <i className="pi pi-exclamation-triangle error-icon" />
+          <p>{error}</p>
+        </div>
+      )
+    }
+    return renderLogsTable
+  }, [error, hasLoadedOnce.requests, loading, renderLogsTable, t])
 
-  const currentError = viewMode === 'requests' ? error : jobsError
+  const jobsTabContent = useMemo(() => {
+    if (!hasLoadedOnce.jobs && jobsLoading) {
+      return (
+        <div className="loading-state">
+          <i className="pi pi-spin pi-spinner loading-spinner" />
+          <p className="loading-text">{t('loading_jobs')}</p>
+        </div>
+      )
+    }
+    if (jobsError) {
+      return (
+        <div className="error-state">
+          <i className="pi pi-exclamation-triangle error-icon" />
+          <p>{jobsError}</p>
+        </div>
+      )
+    }
+    return renderJobsTable
+  }, [hasLoadedOnce.jobs, jobsError, jobsLoading, renderJobsTable, t])
 
   // Determine title based on whether agent name is available
   const pageTitle = agentName
@@ -752,8 +739,7 @@ const LogsPage: React.FC = () => {
     : t('agent_logs', 'Agent Logs')
 
   // Check if agentId is in URL to show back button
-  const urlParams = new URLSearchParams(location.search)
-  const agentIdParam = urlParams.get('agentId')
+  const agentIdParam = listQuery.agentId
   const hasAgentId = !!agentIdParam
 
   const handleBackToAgents = useCallback(() => {
@@ -762,8 +748,8 @@ const LogsPage: React.FC = () => {
 
   return (
     <BasePage
-      loading={currentLoading}
-      error={currentError}
+      loading={false}
+      error={null}
       title={pageTitle}
       refreshButtonLabel={t('refresh', 'Refresh')}
       onRefresh={handleRefresh}
@@ -778,9 +764,9 @@ const LogsPage: React.FC = () => {
 
       <TabView activeIndex={activeTabIndex} onTabChange={handleTabChange}>
         <TabPanel header={t('requests', 'Requests')}>
-          {renderLogsTable}
+          {requestsTabContent}
         </TabPanel>
-        <TabPanel header={t('jobs', 'Jobs')}>{renderJobsTable}</TabPanel>
+        <TabPanel header={t('jobs', 'Jobs')}>{jobsTabContent}</TabPanel>
         <TabPanel header={t('sessions', 'Sessions')}>
           <SessionsTab
             onSessionClick={handleSessionClick}
@@ -788,12 +774,10 @@ const LogsPage: React.FC = () => {
             loading={sessionsLoading}
             error={sessionsError}
             pageSize={sessionsPageSize}
-            pageNumber={sessionsPageNumber}
-            totalRecords={sessionsTotalRecords}
-            changePage={changeSessionsPage}
-            changePageSize={changeSessionsPageSize}
-            updateFilters={updateSessionFilters}
-            sortSessions={sortSessions}
+            nextCursor={sessionsNextCursor}
+            prevCursor={sessionsPrevCursor}
+            goNext={goSessionsNext}
+            goPrevious={goSessionsPrevious}
           />
         </TabPanel>
       </TabView>

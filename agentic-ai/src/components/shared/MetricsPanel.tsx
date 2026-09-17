@@ -10,6 +10,7 @@ import {
 import ResolutionEfficiencyKPI from './ResolutionEfficiencyKPI'
 import SessionSeverityChart from './SessionSeverityChart'
 import SessionErrorTrendChart from './SessionErrorTrendChart'
+import { getLogListAgentId } from '../../utils/logListQuery.helpers'
 import '../../styles/components/MetricsPanel.css'
 
 interface MetricsPanelProps {
@@ -33,13 +34,15 @@ const MetricsPanel: React.FC<MetricsPanelProps> = ({ refreshTrigger }) => {
     [appState]
   )
 
+  const agentId = useMemo(
+    () => getLogListAgentId(location.search),
+    [location.search]
+  )
+
   const fetchMetrics = useCallback(
     async (forceRefresh: boolean = false) => {
       try {
         setLoading(true)
-
-        const urlParams = new URLSearchParams(location.search)
-        const agentId = urlParams.get('agentId') || undefined
 
         const snapshot = await analyticsService.getDashboardSnapshot(
           agentId,
@@ -55,7 +58,7 @@ const MetricsPanel: React.FC<MetricsPanelProps> = ({ refreshTrigger }) => {
         setLoading(false)
       }
     },
-    [analyticsService, location.search]
+    [analyticsService, agentId]
   )
 
   useEffect(() => {
