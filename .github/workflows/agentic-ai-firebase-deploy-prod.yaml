@@ -34,6 +34,11 @@ jobs:
           cache: 'yarn'
           cache-dependency-path: ./agentic-ai/yarn.lock
 
+      - name: Use HTTPS instead of SSH for GitHub git dependencies
+        run: |
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+
       - run: yarn install
 
       - run: yarn build:prod
