@@ -133,50 +133,6 @@
       } ]
     },
     {
-      "target": "emporix-site-settings",
-      "public": "site-settings/dist",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "rewrites": [
-        {
-          "source": "**",
-          "destination": "/index.html"
-        }
-      ],
-      "headers": [ {
-        "source" : "**",
-        "headers": [ {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        } ]
-      } ]
-    },
-    {
-      "target": "emporix-site-settings-stage",
-      "public": "site-settings/dist",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "rewrites": [
-        {
-          "source": "**",
-          "destination": "/index.html"
-        }
-      ],
-      "headers": [ {
-        "source" : "**",
-        "headers": [ {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        } ]
-      } ]
-    },
-    {
       "target": "emporix-statistics-develop",
       "public": "statistics/dist",
       "ignore": [
