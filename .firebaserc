@@ -15,9 +15,6 @@
         "emporix-agentic-ai": [
           "emporix-agentic-ai"
         ],
-        "emporix-site-settings": [
-          "emporix-site-settings"
-        ],
         "emporix-dashboard-extension": [
           "emporix-dashboard-extension"
         ],
@@ -49,9 +46,6 @@
         "emporix-agentic-ai-stage": [
           "emporix-agentic-ai-stage"
         ],
-        "emporix-site-settings-stage": [
-          "emporix-site-settings-stage"
-        ],
         "emporix-dashboard-extension-stage": [
           "emporix-dashboard-extension-stage"
         ],
@@ -82,9 +76,6 @@
         ],
         "emporix-agentic-ai-develop": [
           "emporix-agentic-ai-develop"
-        ],
-        "emporix-site-settings-develop": [
-          "emporix-site-settings-develop"
         ],
         "emporix-dashboard-extension-develop": [
           "emporix-dashboard-extension-develop"

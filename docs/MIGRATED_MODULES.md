@@ -49,7 +49,7 @@ These live under `md-extensions/` but should **not** be used as the default scaf
 | Folder | Why exclude as SoT |
 |--------|--------------------|
 | `products` | Older AppState / permissions patterns; may still differ from U&G contract |
-| `statistics`, `dashboard`, `agentic-ai`, `algolia-synonyms`, `site-settings` | Often template-era (`extension` name) or domain-specific; verify before copying patterns |
+| `statistics`, `dashboard`, `agentic-ai`, `algolia-synonyms` | Often template-era (`extension` name) or domain-specific; verify before copying patterns |
 
 When in doubt, prefer the newest **playbook-aligned** remote in the table above.
 
