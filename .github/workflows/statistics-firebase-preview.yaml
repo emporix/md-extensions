@@ -37,12 +37,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-          cache: 'yarn'
-          cache-dependency-path: ./statistics/yarn.lock
+          cache: 'npm'
+          cache-dependency-path: ./statistics/package-lock.json
 
-      - run: yarn install
+      - run: npm ci
 
-      - run: yarn build:dev
+      - run: npm run build:dev
       - uses: FirebaseExtended/action-hosting-deploy@v0
         id: firebase-preview
         with:

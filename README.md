@@ -5,17 +5,17 @@ These extensions can be reused, cloned, and modified as needed.
 
 # Local setup
 
-1. `yarn install`
+1. `npm install`
 2. Start
-    * `yarn dev`
+    * `npm run dev`
 3. Application will run on http://localhost:5173/
 
 
 # Build and deployment
 
-1. `yarn build`
-2. Application is built to `./build`
-3. Upload `./build` to hosting
+1. `npm run build:dev` (or `build:stage` / `build:prod`)
+2. Application is built to `./dist`
+3. Upload `./dist` to hosting
 
 
 # License note
