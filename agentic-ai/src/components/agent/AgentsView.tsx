@@ -117,11 +117,9 @@ const AgentsView = memo(() => {
 
         {customAgentsError ? (
           <Message severity="error" text={customAgentsError} />
-        ) : customAgents.filter((agent) => !agent.handOff).length > 0 ? (
+        ) : customAgents.length > 0 ? (
           <div className="agents-grid">
-            {customAgents
-              .filter((agent) => !agent.handOff)
-              .map((agent) => (
+            {customAgents.map((agent) => (
                 <CustomAgentCard
                   key={agent.id}
                   agent={agent}
