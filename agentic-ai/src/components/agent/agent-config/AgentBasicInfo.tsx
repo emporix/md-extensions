@@ -1,22 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRobot } from '@fortawesome/free-solid-svg-icons'
 import { Button } from 'primereact/button'
 import { InputText } from 'primereact/inputtext'
 import { InputTextarea } from 'primereact/inputtextarea'
-import { MultiSelect } from 'primereact/multiselect'
+import { Chips } from 'primereact/chips'
 import { LocalizedString } from '../../../types/Agent'
 import { LocalizedInput } from '../../shared/LocalizedInput'
 import { IconPicker } from '../../shared/IconPicker'
 import { GenerateJsonSchemaDialog } from './GenerateJsonSchemaDialog'
 import { useToast } from '../../../contexts/ToastContext'
 import starsIcon from '../../../assets/stars_icon.svg'
-import {
-  getAgentTagOptions,
-  hasAnyLocalizedValue,
-  iconMap,
-} from '../../../utils/agentHelpers'
+import { hasAnyLocalizedValue, iconMap } from '../../../utils/agentHelpers'
 import { sanitizeIdInput } from '../../../utils/validation'
 import {
   getAgentOutputValidationMessage,
@@ -60,8 +56,6 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   const [outputValidationEnabled, setOutputValidationEnabled] = useState(false)
   const [generateJsonSchemaDialogVisible, setGenerateJsonSchemaDialogVisible] =
     useState(false)
-
-  const tagOptions = useMemo(() => getAgentTagOptions(tags), [tags])
 
   const applyOutputValidation = useCallback(
     (value: string, showToast = false) => {
@@ -214,16 +208,14 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
   const tagsField = (
     <div className="form-field agent-detail-tags-field">
       <label className="field-label">{t('tags')}</label>
-      <MultiSelect
+      <Chips
         value={tags}
-        options={tagOptions}
-        onChange={(e) => onFieldChange('tags', (e.value as string[]) ?? [])}
+        onChange={(event) =>
+          onFieldChange('tags', (event.value as string[]) ?? [])
+        }
         className="w-full"
-        display="chip"
-        showClear
-        maxSelectedLabels={3}
-        placeholder={t('select_tags')}
-        appendTo="self"
+        separator=", "
+        addOnBlur
       />
     </div>
   )

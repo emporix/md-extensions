@@ -13,6 +13,7 @@ interface ConfirmDialogProps {
   detail?: string
   confirmLabel?: string
   cancelLabel?: string
+  confirmClassName?: string
   severity?: 'danger' | 'warning' | 'info' | 'primary'
 }
 
@@ -33,6 +34,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   detail,
   confirmLabel,
   cancelLabel,
+  confirmClassName,
   severity = 'danger',
 }) => {
   const { t } = useTranslation()
@@ -80,7 +82,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         type="button"
         label={confirmLabel || t('delete')}
         onClick={onConfirm}
-        className={confirmButtonClass}
+        className={confirmClassName || confirmButtonClass}
       />
     </div>
   )

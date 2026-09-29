@@ -8,6 +8,7 @@
 @import './components/AddAgentDialog.css';
 @import './components/IconPicker.css';
 @import './components/AgentDetailPage.css';
+@import './components/AgentVersions.css';
 @import './components/TokenDetailPage.css';
 @import './components/OAuthDetailPage.css';
 @import './components/McpDetailPage.css';

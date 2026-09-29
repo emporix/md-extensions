@@ -199,8 +199,8 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
           <Column
             field="sessionId"
             header={t('session_id', 'Session ID')}
-            headerClassName="col-xl"
-            bodyClassName="col-xl"
+            headerClassName="col-lg"
+            bodyClassName="col-lg"
             sortable
             filter
             filterPlaceholder={t(
@@ -213,8 +213,8 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
           <Column
             field="triggerAgentId"
             header={t('trigger_agent', 'Trigger Agent')}
-            headerClassName="col-md"
-            bodyClassName="col-md"
+            headerClassName="col-xl"
+            bodyClassName="col-xl"
             sortable
             filter
             filterPlaceholder={t('filter_by_agent_id', 'Filter by Agent ID')}
@@ -225,8 +225,8 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
             field="agents"
             header={t('included_agents', 'Included Agents')}
             body={agentsBodyTemplate}
-            headerClassName="col-lg"
-            bodyClassName="col-lg"
+            headerClassName="col-xl"
+            bodyClassName="col-xl"
             sortable
             filter
             filterPlaceholder={t(
@@ -240,8 +240,8 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
             field="metadata.createdAt"
             header={t('started', 'Started At')}
             body={createDateTimeBodyTemplate('metadata.createdAt')}
-            headerClassName="col-datetime"
-            bodyClassName="col-datetime"
+            headerClassName="col-datetime-compact"
+            bodyClassName="col-datetime-compact"
             sortable
             filter
             filterElement={dateFilterElement}
@@ -252,8 +252,8 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
             field="metadata.modifiedAt"
             header={t('last_activity', 'Last Activity')}
             body={createDateTimeBodyTemplate('metadata.modifiedAt')}
-            headerClassName="col-datetime"
-            bodyClassName="col-datetime"
+            headerClassName="col-datetime-compact"
+            bodyClassName="col-datetime-compact"
             sortable
             filter
             filterElement={dateFilterElement}
@@ -264,8 +264,8 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
             field="severity"
             header={t('result', 'Result')}
             body={severityBodyTemplate}
-            headerClassName="col-result"
-            bodyClassName="col-result"
+            headerClassName="col-severity-compact"
+            bodyClassName="col-severity-compact"
             sortable
             filter
             filterElement={severityFilterElement}

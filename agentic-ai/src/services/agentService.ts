@@ -1,4 +1,9 @@
-import { AgentTemplate, CustomAgent, LocalizedString } from '../types/Agent'
+import {
+  AgentTemplate,
+  AgentWithVersions,
+  CustomAgent,
+  LocalizedString,
+} from '../types/Agent'
 import { AppState } from '../types/common'
 import { ImportAgentsResult } from '../types/Job'
 import { getLanguagesFromStorage } from '../hooks/useLanguages'
@@ -222,6 +227,16 @@ export const getCustomAgent = async (
   const api = getApiClient(appState)
   return await api.get<CustomAgent>(
     `/ai-service/${appState.tenant}/agentic/agents/${agentId}`
+  )
+}
+
+export const getAgentWithVersions = async (
+  appState: AppState,
+  agentId: string
+): Promise<AgentWithVersions> => {
+  const api = getApiClient(appState)
+  return await api.get<AgentWithVersions>(
+    `/ai-service/${appState.tenant}/agentic/agents/${agentId}?allVersions=true`
   )
 }
 

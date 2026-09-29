@@ -443,8 +443,8 @@ const LogsPage: React.FC = () => {
           <Column
             field="agentId"
             header={t('logs_agent_id', 'Agent ID')}
-            headerClassName="col-md"
-            bodyClassName="col-md"
+            headerClassName="col-lg"
+            bodyClassName="col-lg"
             sortable
             filter
             filterPlaceholder={t('filter_by_agent_id', 'Filter by Agent ID')}
@@ -483,8 +483,8 @@ const LogsPage: React.FC = () => {
             field="lastActivity"
             header={t('timestamp', 'Timestamp')}
             body={timestampBodyTemplate}
-            headerClassName="col-datetime"
-            bodyClassName="col-datetime"
+            headerClassName="col-datetime-compact"
+            bodyClassName="col-datetime-compact"
             sortable
             filter
             filterElement={dateFilterElement}
@@ -507,8 +507,8 @@ const LogsPage: React.FC = () => {
             field="severity"
             header={t('severity', 'Severity')}
             body={resultBodyTemplate}
-            headerClassName="col-result"
-            bodyClassName="col-result"
+            headerClassName="col-severity-compact"
+            bodyClassName="col-severity-compact"
             sortable
             filter
             filterMatchMode={FilterMatchMode.EQUALS}

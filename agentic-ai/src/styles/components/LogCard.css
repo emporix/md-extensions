@@ -119,7 +119,6 @@
     (0.8rem * var(--line-height-tight)) + var(--space-xs) + var(--font-size-sm)
   );
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
 }
 
 .log-messages-datatable table,
@@ -417,7 +416,6 @@
 
 .logs-datatable {
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
 }
 
 .logs-datatable .p-datatable-header {
