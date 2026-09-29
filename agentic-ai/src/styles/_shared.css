@@ -60,6 +60,32 @@
   background: var(--bg-hover);
 }
 
+.responsive-datatable {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.responsive-datatable.p-datatable-responsive-scroll > .p-datatable-wrapper {
+  max-width: 100%;
+}
+
+.responsive-datatable.p-datatable-responsive-scroll > .p-datatable-wrapper > table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.responsive-datatable th,
+.responsive-datatable td {
+  min-width: 0;
+  max-width: none;
+}
+
+.responsive-datatable td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .filter-dropdown-wide {
   min-width: 12rem;
 }
@@ -167,20 +193,6 @@
   min-width: var(--col-width-message-min);
 }
 
-/* Compact column variants for related/narrow tables */
-.col-severity-compact {
-  width: 70px;
-  min-width: 70px;
-  max-width: 70px;
-}
-
-.col-timestamp-compact,
-.col-datetime-compact {
-  width: var(--col-width-timestamp-compact);
-  min-width: var(--col-width-timestamp-compact);
-  max-width: var(--col-width-timestamp-compact);
-}
-
 /* Additional column width utilities */
 .col-sm {
   width: 100px;
@@ -207,12 +219,6 @@
   width: 80px;
   min-width: 80px;
   max-width: 80px;
-}
-
-.col-status-wide {
-  width: 100px;
-  min-width: 100px;
-  max-width: 100px;
 }
 
 /* ========================================

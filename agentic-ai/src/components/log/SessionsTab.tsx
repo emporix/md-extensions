@@ -126,7 +126,7 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
 
   const severityFilterElement = useCallback(
     (options: ColumnFilterElementTemplateOptions) => {
-      const placeholderText = t('select_result', 'Select Result')
+      const placeholderText = t('select_result')
       return (
         <Dropdown
           value={options.value}
@@ -141,7 +141,7 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
           onChange={(e) => options.filterApplyCallback(e.value)}
           itemTemplate={(option) => <SeverityBadge severity={option.value} />}
           placeholder={placeholderText}
-          className="p-column-filter filter-dropdown-wide"
+          className="p-column-filter"
           showClear
         />
       )
@@ -177,11 +177,9 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
       <div className="sessions-table-container">
         <DataTable
           value={sessions}
-          className="sessions-datatable"
-          emptyMessage={t(
-            'no_sessions_found_with_filters',
-            'No sessions found matching the filters'
-          )}
+          className="sessions-datatable responsive-datatable"
+          responsiveLayout="scroll"
+          emptyMessage={t('no_sessions_found_with_filters')}
           onRowClick={(e) => handleSessionClick(e.data)}
           selectionMode="single"
           metaKeySelection={false}
@@ -198,50 +196,40 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
         >
           <Column
             field="sessionId"
-            header={t('session_id', 'Session ID')}
-            headerClassName="col-lg"
-            bodyClassName="col-lg"
+            header={t('session_id')}
+            className="col-session-id"
             sortable
             filter
-            filterPlaceholder={t(
-              'filter_by_session_id',
-              'Filter by Session ID'
-            )}
+            filterPlaceholder={t('filter_by_session_id')}
             showFilterMenu={false}
             showClearButton={false}
           />
           <Column
             field="triggerAgentId"
-            header={t('trigger_agent', 'Trigger Agent')}
-            headerClassName="col-xl"
-            bodyClassName="col-xl"
+            header={t('trigger_agent')}
+            className="col-session-trigger"
             sortable
             filter
-            filterPlaceholder={t('filter_by_agent_id', 'Filter by Agent ID')}
+            filterPlaceholder={t('filter_by_agent_id')}
             showFilterMenu={false}
             showClearButton={false}
           />
           <Column
             field="agents"
-            header={t('included_agents', 'Included Agents')}
+            header={t('included_agents')}
             body={agentsBodyTemplate}
-            headerClassName="col-xl"
-            bodyClassName="col-xl"
+            className="col-session-agents"
             sortable
             filter
-            filterPlaceholder={t(
-              'filter_by_included_agents',
-              'Filter by Included Agents'
-            )}
+            filterPlaceholder={t('filter_by_included_agents')}
             showFilterMenu={false}
             showClearButton={false}
           />
           <Column
             field="metadata.createdAt"
-            header={t('started', 'Started At')}
+            header={t('started')}
             body={createDateTimeBodyTemplate('metadata.createdAt')}
-            headerClassName="col-datetime-compact"
-            bodyClassName="col-datetime-compact"
+            className="col-session-started"
             sortable
             filter
             filterElement={dateFilterElement}
@@ -250,10 +238,9 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
           />
           <Column
             field="metadata.modifiedAt"
-            header={t('last_activity', 'Last Activity')}
+            header={t('last_activity')}
             body={createDateTimeBodyTemplate('metadata.modifiedAt')}
-            headerClassName="col-datetime-compact"
-            bodyClassName="col-datetime-compact"
+            className="col-session-activity"
             sortable
             filter
             filterElement={dateFilterElement}
@@ -262,10 +249,9 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
           />
           <Column
             field="severity"
-            header={t('result', 'Result')}
+            header={t('result')}
             body={severityBodyTemplate}
-            headerClassName="col-severity-compact"
-            bodyClassName="col-severity-compact"
+            className="col-session-result"
             sortable
             filter
             filterElement={severityFilterElement}
@@ -312,7 +298,7 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
       <div className="loading-state">
         <i className="pi pi-spin pi-spinner loading-spinner" />
         <p className="loading-text">
-          {t('loading_sessions', 'Loading sessions...')}
+          {t('loading_sessions')}
         </p>
       </div>
     )

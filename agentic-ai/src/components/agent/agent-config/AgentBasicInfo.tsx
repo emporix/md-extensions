@@ -214,7 +214,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
           onFieldChange('tags', (event.value as string[]) ?? [])
         }
         className="w-full"
-        separator=", "
+        separator=","
         addOnBlur
       />
     </div>

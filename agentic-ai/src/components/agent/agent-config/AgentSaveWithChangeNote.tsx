@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from 'primereact/button'
+import { InputText } from 'primereact/inputtext'
 import { InputTextarea } from 'primereact/inputtextarea'
 
 type AgentSaveWithChangeNoteProps = {
@@ -46,16 +47,20 @@ const AgentSaveWithChangeNote = ({
             disabled={isDisabled}
           />
         ) : (
-          <button
-            type="button"
-            className={`agent-save-note-preview${preview ? '' : ' agent-save-note-preview-empty'}`}
+          <InputText
+            className="agent-save-note-preview"
+            value={preview}
+            readOnly={!isDisabled}
             title={fullNote || undefined}
             aria-label={t('agent_change_note_label')}
+            placeholder={t('agent_change_note_placeholder')}
             disabled={isDisabled}
-            onClick={() => setExpanded(true)}
-          >
-            {preview || t('agent_change_note_placeholder')}
-          </button>
+            onFocus={() => {
+              if (!isDisabled) {
+                setExpanded(true)
+              }
+            }}
+          />
         )}
       </div>
       <Button

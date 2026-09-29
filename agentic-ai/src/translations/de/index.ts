@@ -22,6 +22,7 @@ const TRANSLATIONS_DE = {
   session: 'Sitzung',
   load_flow: 'Ablauf Laden',
   sessions: 'Sitzungen',
+  logs: 'Logs',
   previous_page: 'Zurück',
   next_page: 'Weiter',
   rows_per_page: 'Zeilen pro Seite',
@@ -1070,6 +1071,9 @@ const TRANSLATIONS_DE = {
   filter_by_included_agents: 'Nach enthaltenen Agenten filtern',
   filter_by_message: 'Nach Nachricht filtern',
   select_severity: 'Schweregrad auswählen',
+  select_job_type: 'Job-Typ auswählen',
+  select_status: 'Status auswählen',
+  select_result: 'Ergebnis auswählen',
   clear_filters: 'Filter löschen',
   no_jobs_found_with_filters:
     'Keine Jobs gefunden, die den Filtern entsprechen',

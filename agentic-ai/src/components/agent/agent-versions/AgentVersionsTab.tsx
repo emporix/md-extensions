@@ -274,7 +274,8 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
         <DataTable
           value={rows}
           dataKey="id"
-          className="unified-logs-datatable"
+          className="unified-logs-datatable agent-versions-datatable responsive-datatable"
+          responsiveLayout="scroll"
           emptyMessage={t('no_agent_versions_found')}
           sortMode="single"
           sortField={sortField}
@@ -293,9 +294,7 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
             field="version"
             header={t('agent_version_column')}
             body={versionBody}
-            headerClassName="col-sm"
-            bodyClassName="col-sm"
-            filterHeaderClassName="col-sm"
+            className="col-sm"
             sortable
             filter
             filterPlaceholder={t('filter_by_version')}
@@ -306,9 +305,7 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
             field="authorLabel"
             header={t('agent_version_author')}
             body={authorBody}
-            headerClassName="col-agent"
-            bodyClassName="col-agent"
-            filterHeaderClassName="col-agent"
+            className="col-agent"
             sortable
             filter
             filterPlaceholder={t('filter_by_author')}
@@ -321,9 +318,7 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
             dataType="date"
             header={t('agent_version_date')}
             body={dateBody}
-            headerClassName="col-timestamp"
-            bodyClassName="col-timestamp"
-            filterHeaderClassName="col-timestamp"
+            className="col-timestamp"
             sortable
             filter
             filterElement={(options) => (
@@ -336,9 +331,7 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
             field="noteLabel"
             header={t('agent_version_change_note')}
             body={noteBody}
-            headerClassName="col-change-note"
-            bodyClassName="col-change-note"
-            filterHeaderClassName="col-change-note"
+            className="col-change-note"
             sortable
             filter
             filterPlaceholder={t('filter_by_change_note')}
@@ -348,8 +341,7 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
           <Column
             header={t('agent_version_actions')}
             body={actionBody}
-            headerClassName="col-lg"
-            bodyClassName="col-lg"
+            className="col-version-actions"
           />
         </DataTable>
       </div>
