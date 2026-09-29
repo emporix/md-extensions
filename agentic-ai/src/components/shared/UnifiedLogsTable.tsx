@@ -344,6 +344,8 @@ const UnifiedLogsTable = forwardRef<
             scrollable
             scrollHeight="800px"
             className={className}
+            size="small"
+            stripedRows
             emptyMessage={resolvedEmptyMessage}
             style={style}
             filters={filters}

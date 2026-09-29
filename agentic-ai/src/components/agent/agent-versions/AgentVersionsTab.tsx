@@ -192,41 +192,32 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
     }
   }, [agent, appState, onRolledBack, rollbackRow, showError, showSuccess, t])
 
-  const versionBody = (row: VersionTableRow) => (
-    <div className="log-meta-cell">
-      <span>{row.version}</span>
-    </div>
-  )
+  const versionBody = (row: VersionTableRow) => <span>{row.version}</span>
 
-  const dateBody = (row: VersionTableRow) => (
-    <div className="log-meta-cell">
-      {formatTimestamp(row.modifiedAt) || t('not_available')}
-    </div>
-  )
+  const dateBody = (row: VersionTableRow) =>
+    formatTimestamp(row.modifiedAt) || t('not_available')
 
   const authorBody = (row: VersionTableRow) => (
-    <div className="log-meta-cell agent-version-author" title={row.authorLabel}>
+    <span className="agent-version-author" title={row.authorLabel}>
       {row.authorLabel}
-    </div>
+    </span>
   )
 
   const noteBody = (row: VersionTableRow) => (
-    <div className="log-meta-cell">{row.noteLabel}</div>
+    <span title={row.noteLabel || undefined}>{row.noteLabel}</span>
   )
 
   const actionBody = (row: VersionTableRow) => {
     if (row.isCurrent) {
       return (
-        <div className="log-meta-cell">
-          <span className="base-badge badge-success agent-version-current-badge">
-            {t('agent_version_current')}
-          </span>
-        </div>
+        <span className="base-badge badge-success agent-version-current-badge">
+          {t('agent_version_current')}
+        </span>
       )
     }
 
     return (
-      <div className="log-meta-cell agent-version-actions">
+      <div className="agent-version-actions">
         <Button
           type="button"
           icon="pi pi-arrow-right-arrow-left"
@@ -274,7 +265,9 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
         <DataTable
           value={rows}
           dataKey="id"
-          className="unified-logs-datatable agent-versions-datatable responsive-datatable"
+          className="logs-datatable agent-versions-datatable responsive-datatable"
+          size="small"
+          stripedRows
           responsiveLayout="scroll"
           emptyMessage={t('no_agent_versions_found')}
           sortMode="single"
@@ -294,7 +287,7 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
             field="version"
             header={t('agent_version_column')}
             body={versionBody}
-            className="col-sm"
+            className="col-version"
             sortable
             filter
             filterPlaceholder={t('filter_by_version')}
@@ -305,7 +298,7 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
             field="authorLabel"
             header={t('agent_version_author')}
             body={authorBody}
-            className="col-agent"
+            className="col-version-author"
             sortable
             filter
             filterPlaceholder={t('filter_by_author')}
@@ -318,7 +311,7 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
             dataType="date"
             header={t('agent_version_date')}
             body={dateBody}
-            className="col-timestamp"
+            className="col-version-date"
             sortable
             filter
             filterElement={(options) => (
@@ -331,7 +324,7 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
             field="noteLabel"
             header={t('agent_version_change_note')}
             body={noteBody}
-            className="col-change-note"
+            className="col-version-change-note"
             sortable
             filter
             filterPlaceholder={t('filter_by_change_note')}
@@ -359,8 +352,8 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
           version: rollbackRow?.version ?? '',
         })}
         confirmLabel={t('agent_version_rollback_confirm')}
-        confirmClassName="agent-detail-save-btn"
         cancelLabel={t('cancel')}
+        severity="primary"
         onConfirm={() => {
           void handleConfirmRollback()
         }}
@@ -369,7 +362,6 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
             setRollbackRow(null)
           }
         }}
-        severity="warning"
       />
     </div>
   )

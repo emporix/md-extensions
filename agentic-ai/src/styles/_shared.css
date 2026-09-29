@@ -67,6 +67,7 @@
 
 .responsive-datatable.p-datatable-responsive-scroll > .p-datatable-wrapper {
   max-width: 100%;
+  overflow-y: hidden;
 }
 
 .responsive-datatable.p-datatable-responsive-scroll > .p-datatable-wrapper > table {
@@ -84,6 +85,27 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.responsive-datatable.p-datatable .p-datatable-tbody > tr > td {
+  height: 55px;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+.responsive-datatable.p-datatable-striped .p-datatable-tbody > tr {
+  background: var(--grey-0);
+}
+
+.responsive-datatable.p-datatable-striped .p-datatable-tbody > tr.p-row-odd {
+  background: #fff;
+}
+
+.responsive-datatable.p-datatable-striped .p-datatable-tbody > tr:hover,
+.responsive-datatable.p-datatable-striped .p-datatable-tbody > tr.p-selectable-row:hover {
+  background: var(--bg-hover);
 }
 
 .filter-dropdown-wide {

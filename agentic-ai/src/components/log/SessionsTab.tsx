@@ -178,6 +178,8 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
         <DataTable
           value={sessions}
           className="sessions-datatable responsive-datatable"
+          size="small"
+          stripedRows
           responsiveLayout="scroll"
           emptyMessage={t('no_sessions_found_with_filters')}
           onRowClick={(e) => handleSessionClick(e.data)}

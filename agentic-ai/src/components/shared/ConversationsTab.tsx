@@ -223,6 +223,8 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
           value={conversations}
           emptyMessage={t('no_conversations_found_with_filters')}
           className="unified-logs-datatable conversations-datatable"
+          size="small"
+          stripedRows
           onRowClick={(event) => handleRowClick(event.data as Conversation)}
           rowClassName={(rowData) =>
             (rowData as Conversation).sessionId?.trim()

@@ -328,7 +328,7 @@ const LogsPage: React.FC = () => {
           onChange={(e) => options.filterApplyCallback(e.value)}
           itemTemplate={(option) => <span>{option.label}</span>}
           placeholder={t('select_job_type')}
-          className="p-column-filter filter-dropdown-wide"
+          className="p-column-filter"
           showClear
         />
       )
@@ -353,7 +353,7 @@ const LogsPage: React.FC = () => {
           onChange={(e) => options.filterApplyCallback(e.value)}
           itemTemplate={(option) => <StatusBadge status={option.value} />}
           placeholder={placeholderText}
-          className="p-column-filter filter-dropdown-wide"
+          className="p-column-filter"
           showClear
         />
       )
@@ -422,6 +422,8 @@ const LogsPage: React.FC = () => {
         <DataTable
           value={logs}
           className="logs-datatable logs-requests-datatable responsive-datatable"
+          size="small"
+          stripedRows
           responsiveLayout="scroll"
           emptyMessage={t('no_logs_found_with_filters')}
           onRowClick={(e) => handleLogClick(e.data)}
@@ -544,6 +546,8 @@ const LogsPage: React.FC = () => {
         <DataTable
           value={jobs}
           className="logs-datatable logs-jobs-datatable responsive-datatable"
+          size="small"
+          stripedRows
           responsiveLayout="scroll"
           emptyMessage={t('no_jobs_found_with_filters')}
           onRowClick={(e) => handleJobClick(e.data)}

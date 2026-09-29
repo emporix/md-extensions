@@ -268,14 +268,17 @@ export const TriggersSection = ({
 
           <div className="agent-detail-form-row">
             <div className="form-field">
-              <label className="field-label">{t('trigger_types')}</label>
+              <label className="field-label">
+                {t('trigger_types')}
+                <span className="field-required-mark"> *</span>
+              </label>
               <MultiSelect
                 value={triggerTypes}
                 options={availableTriggerTypes}
                 onChange={(e) =>
                   handleMultiTriggerChange((e.value as string[]) ?? [])
                 }
-                className="w-full"
+                className={`w-full${triggerTypes.length === 0 ? ' p-invalid' : ''}`}
                 display="chip"
                 placeholder={t('select_trigger_types')}
                 appendTo="self"

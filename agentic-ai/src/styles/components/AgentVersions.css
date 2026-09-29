@@ -4,24 +4,20 @@
   text-overflow: ellipsis;
 }
 
-.col-change-note {
-  white-space: normal;
-  word-break: break-word;
-}
-
 .unified-logs-section:has(.agent-versions-datatable) {
   max-width: 100%;
   min-width: 0;
 }
 
+.agent-versions-datatable .col-version,
+.agent-versions-datatable .col-version-date,
 .agent-versions-datatable .col-version-actions {
-  width: 9rem;
+  width: calc(100% * 1 / 7);
 }
 
-.agent-versions-datatable td.col-change-note {
-  overflow: visible;
-  text-overflow: clip;
-  white-space: normal;
+.agent-versions-datatable .col-version-author,
+.agent-versions-datatable .col-version-change-note {
+  width: calc(100% * 2 / 7);
 }
 
 .agent-versions-datatable td.col-version-actions {
@@ -39,7 +35,7 @@
   gap: var(--space-xs);
 }
 
-.agent-version-action.p-button {
+.agent-versions-datatable .agent-version-action.p-button.p-button-icon-only.p-button-rounded {
   width: 2rem;
   height: 2rem;
   padding: 0;

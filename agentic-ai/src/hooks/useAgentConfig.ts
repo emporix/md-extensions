@@ -486,6 +486,8 @@ export const useAgentConfig = ({
       (state.selfHostedUrl.trim() &&
         (!state.selfHostedUseOAuth || !!state.oauthId.trim()))
 
+    const triggerValidation = state.triggerTypes.length > 0
+
     const commerceFilterValidation =
       !state.triggerTypes.includes('commerce_events') ||
       (state.commerceEvents.length > 0 &&
@@ -547,6 +549,7 @@ export const useAgentConfig = ({
       basicValidation &&
       tokenValidation &&
       selfHostedValidation &&
+      triggerValidation &&
       commerceFilterValidation &&
       collaborationValidation &&
       outputFormatValidation &&
