@@ -17,7 +17,7 @@ concurrency:
 jobs:
   extension_preview:
     name: Deploy statistics extension preview
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     strategy:
       matrix:
@@ -56,7 +56,7 @@ jobs:
   md_preview:
     name: Deploy management-dashboard preview
     needs: extension_preview
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
 
     strategy:
       matrix:
