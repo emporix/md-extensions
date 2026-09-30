@@ -25,6 +25,7 @@ import {
   CollapsibleTextToggle,
   useCollapsibleText,
 } from './CollapsibleText'
+import { formatAgentIdWithVersion } from '../../utils/logHelpers'
 import { SEVERITY_OPTIONS } from '../../constants/logConstants'
 import DateFilterTemplate from './DateFilterTemplate'
 import { AnalyzeLogsDialog } from './AnalyzeLogsDialog'
@@ -245,7 +246,11 @@ const UnifiedLogsTable = forwardRef<
     }
 
     const agentIdBodyTemplate = (rowData: LogMessage) => {
-      return <div className="log-meta-cell">{rowData.agentId || ''}</div>
+      const label = formatAgentIdWithVersion(
+        rowData.agentId ?? '',
+        rowData.agentVersion
+      )
+      return <div className="log-meta-cell">{label}</div>
     }
 
     const tableData = messages || []
