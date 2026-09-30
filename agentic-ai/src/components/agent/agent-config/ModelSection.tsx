@@ -11,9 +11,11 @@ import { Token } from '../../../types/Token'
 import { OAuth } from '../../../types/OAuth'
 import { getBaseProviders, getLlmProviders } from '../../../utils/constants'
 import { ModelListItem } from './ModelListItem'
+import { useToast } from '../../../contexts/ToastContext'
 import {
   findCatalogModel,
   getModelsForProvider,
+  isModelSelectionPreserved,
   isSelfHostedProvider,
   rememberModelForProvider,
   resolveCatalogModelId,
@@ -84,6 +86,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   onFieldChange,
 }) => {
   const { t } = useTranslation()
+  const { showWarning } = useToast()
   const llmProviderOptions = useMemo(() => getLlmProviders(t), [t])
   const baseProviderOptions = useMemo(() => getBaseProviders(t), [t])
   const [modelInputMode, setModelInputMode] = useState<ModelInputMode>('list')
@@ -237,14 +240,29 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
     }
 
     const rememberedModel = providerModelMemoryRef.current[nextProvider]
+    const nextCatalogModels = getModelsForProvider(nextProvider, modelsByProvider)
     const nextModel = resolveModelForProviderSwitch(
       nextProvider,
       modelsByProvider,
+      model,
       rememberedModel
     )
 
     if (nextModel !== model) {
       onFieldChange('model', nextModel)
+    }
+
+    if (!isModelSelectionPreserved(model, nextModel, nextCatalogModels)) {
+      const previousModel = model.trim()
+      const replacement = nextModel.trim()
+      showWarning(
+        replacement
+          ? t('model_auto_changed', {
+              from: previousModel,
+              to: replacement,
+            })
+          : t('model_auto_cleared', { from: previousModel })
+      )
     }
   }
 

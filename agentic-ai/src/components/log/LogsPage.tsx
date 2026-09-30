@@ -285,7 +285,7 @@ const LogsPage: React.FC = () => {
 
   const severityFilterElement = useCallback(
     (options: ColumnFilterElementTemplateOptions) => {
-      const placeholderText = t('select_severity', 'Select Severity')
+      const placeholderText = t('select_severity')
       return (
         <Dropdown
           value={options.value}
@@ -300,7 +300,7 @@ const LogsPage: React.FC = () => {
           onChange={(e) => options.filterApplyCallback(e.value)}
           itemTemplate={(option) => <SeverityBadge severity={option.value} />}
           placeholder={placeholderText}
-          className="p-column-filter filter-dropdown-wide"
+          className="p-column-filter"
           showClear
         />
       )
@@ -327,8 +327,8 @@ const LogsPage: React.FC = () => {
           }}
           onChange={(e) => options.filterApplyCallback(e.value)}
           itemTemplate={(option) => <span>{option.label}</span>}
-          placeholder={t('select_job_type', 'Select Job Type')}
-          className="p-column-filter filter-dropdown-wide"
+          placeholder={t('select_job_type')}
+          className="p-column-filter"
           showClear
         />
       )
@@ -338,7 +338,7 @@ const LogsPage: React.FC = () => {
 
   const jobStatusFilterElement = useCallback(
     (options: ColumnFilterElementTemplateOptions) => {
-      const placeholderText = t('select_status', 'Select Status')
+      const placeholderText = t('select_status')
       return (
         <Dropdown
           value={options.value}
@@ -353,7 +353,7 @@ const LogsPage: React.FC = () => {
           onChange={(e) => options.filterApplyCallback(e.value)}
           itemTemplate={(option) => <StatusBadge status={option.value} />}
           placeholder={placeholderText}
-          className="p-column-filter filter-dropdown-wide"
+          className="p-column-filter"
           showClear
         />
       )
@@ -421,11 +421,11 @@ const LogsPage: React.FC = () => {
       <div className="logs-table-container">
         <DataTable
           value={logs}
-          className="logs-datatable"
-          emptyMessage={t(
-            'no_logs_found_with_filters',
-            'No logs found matching the filters'
-          )}
+          className="logs-datatable logs-requests-datatable responsive-datatable"
+          size="small"
+          stripedRows
+          responsiveLayout="scroll"
+          emptyMessage={t('no_logs_found_with_filters')}
           onRowClick={(e) => handleLogClick(e.data)}
           selectionMode="single"
           metaKeySelection={false}
@@ -442,49 +442,39 @@ const LogsPage: React.FC = () => {
         >
           <Column
             field="agentId"
-            header={t('logs_agent_id', 'Agent ID')}
-            headerClassName="col-md"
-            bodyClassName="col-md"
+            header={t('logs_agent_id')}
+            className="col-request-agent"
             sortable
             filter
-            filterPlaceholder={t('filter_by_agent_id', 'Filter by Agent ID')}
+            filterPlaceholder={t('filter_by_agent_id')}
             showFilterMenu={false}
             showClearButton={false}
           />
           <Column
             field="requestId"
-            header={t('request_id', 'Request ID')}
-            headerClassName="col-lg"
-            bodyClassName="col-lg"
+            header={t('request_id')}
+            className="col-request-id"
             sortable
             filter
-            filterPlaceholder={t(
-              'filter_by_request_id',
-              'Filter by Request ID'
-            )}
+            filterPlaceholder={t('filter_by_request_id')}
             showFilterMenu={false}
             showClearButton={false}
           />
           <Column
             field="sessionId"
-            header={t('session_id', 'Session ID')}
-            headerClassName="col-lg"
-            bodyClassName="col-lg"
+            header={t('session_id')}
+            className="col-request-session"
             sortable
             filter
-            filterPlaceholder={t(
-              'filter_by_session_id',
-              'Filter by Session ID'
-            )}
+            filterPlaceholder={t('filter_by_session_id')}
             showFilterMenu={false}
             showClearButton={false}
           />
           <Column
             field="lastActivity"
-            header={t('timestamp', 'Timestamp')}
+            header={t('timestamp')}
             body={timestampBodyTemplate}
-            headerClassName="col-datetime"
-            bodyClassName="col-datetime"
+            className="col-request-time"
             sortable
             filter
             filterElement={dateFilterElement}
@@ -495,8 +485,7 @@ const LogsPage: React.FC = () => {
             field="duration"
             header={t('duration')}
             body={durationBodyTemplate}
-            headerClassName="col-sm"
-            bodyClassName="col-sm"
+            className="col-request-duration"
             sortable
             filter
             filterPlaceholder={t('filter_by_duration')}
@@ -505,10 +494,9 @@ const LogsPage: React.FC = () => {
           />
           <Column
             field="severity"
-            header={t('severity', 'Severity')}
+            header={t('severity')}
             body={resultBodyTemplate}
-            headerClassName="col-result"
-            bodyClassName="col-result"
+            className="col-request-severity"
             sortable
             filter
             filterMatchMode={FilterMatchMode.EQUALS}
@@ -557,11 +545,11 @@ const LogsPage: React.FC = () => {
       <div className="logs-table-container">
         <DataTable
           value={jobs}
-          className="logs-datatable"
-          emptyMessage={t(
-            'no_jobs_found_with_filters',
-            'No jobs found matching the filters'
-          )}
+          className="logs-datatable logs-jobs-datatable responsive-datatable"
+          size="small"
+          stripedRows
+          responsiveLayout="scroll"
+          emptyMessage={t('no_jobs_found_with_filters')}
           onRowClick={(e) => handleJobClick(e.data)}
           selectionMode="single"
           metaKeySelection={false}
@@ -578,32 +566,29 @@ const LogsPage: React.FC = () => {
         >
           <Column
             field="id"
-            header={t('job_id', 'Job ID')}
-            headerClassName="col-lg"
-            bodyClassName="col-lg"
+            header={t('job_id')}
+            className="col-job-id"
             sortable
             filter
-            filterPlaceholder={t('filter_by_job_id', 'Filter by Job ID')}
+            filterPlaceholder={t('filter_by_job_id')}
             showFilterMenu={false}
             showClearButton={false}
           />
           <Column
             field="agentId"
-            header={t('logs_agent_id', 'Agent ID')}
-            headerClassName="col-md"
-            bodyClassName="col-md"
+            header={t('logs_agent_id')}
+            className="col-job-agent"
             sortable
             filter
-            filterPlaceholder={t('filter_by_agent_id', 'Filter by Agent ID')}
+            filterPlaceholder={t('filter_by_agent_id')}
             showFilterMenu={false}
             showClearButton={false}
           />
           <Column
             field="type"
-            header={t('job_type', 'Job Type')}
+            header={t('job_type')}
             body={jobTypeBodyTemplate}
-            headerClassName="col-md"
-            bodyClassName="col-md"
+            className="col-job-type"
             sortable
             filter
             filterElement={jobTypeFilterElement}
@@ -613,10 +598,9 @@ const LogsPage: React.FC = () => {
           />
           <Column
             field="createdAt"
-            header={t('created_at', 'Created At')}
+            header={t('created_at')}
             body={jobTimestampBodyTemplate}
-            headerClassName="col-datetime"
-            bodyClassName="col-datetime"
+            className="col-job-created"
             sortable
             filter
             filterElement={dateFilterElement}
@@ -625,10 +609,9 @@ const LogsPage: React.FC = () => {
           />
           <Column
             field="status"
-            header={t('status', 'Status')}
+            header={t('status')}
             body={jobStatusBodyTemplate}
-            headerClassName="col-status-wide"
-            bodyClassName="col-status-wide"
+            className="col-job-status"
             sortable
             filter
             filterElement={jobStatusFilterElement}
@@ -735,8 +718,8 @@ const LogsPage: React.FC = () => {
 
   // Determine title based on whether agent name is available
   const pageTitle = agentName
-    ? `${agentName} ${t('logs', 'Logs')}`
-    : t('agent_logs', 'Agent Logs')
+    ? `${agentName} ${t('logs')}`
+    : t('agent_logs')
 
   // Check if agentId is in URL to show back button
   const agentIdParam = listQuery.agentId
@@ -751,10 +734,10 @@ const LogsPage: React.FC = () => {
       loading={false}
       error={null}
       title={pageTitle}
-      refreshButtonLabel={t('refresh', 'Refresh')}
+      refreshButtonLabel={t('refresh')}
       onRefresh={handleRefresh}
       backButtonLabel={
-        hasAgentId ? t('back_to_agents', 'Back to Agents') : undefined
+        hasAgentId ? t('back_to_agents') : undefined
       }
       onBack={hasAgentId ? handleBackToAgents : undefined}
       className="logs"
@@ -763,11 +746,11 @@ const LogsPage: React.FC = () => {
       <MetricsPanel refreshTrigger={metricsRefreshTrigger} />
 
       <TabView activeIndex={activeTabIndex} onTabChange={handleTabChange}>
-        <TabPanel header={t('requests', 'Requests')}>
+        <TabPanel header={t('requests')}>
           {requestsTabContent}
         </TabPanel>
-        <TabPanel header={t('jobs', 'Jobs')}>{jobsTabContent}</TabPanel>
-        <TabPanel header={t('sessions', 'Sessions')}>
+        <TabPanel header={t('jobs')}>{jobsTabContent}</TabPanel>
+        <TabPanel header={t('sessions')}>
           <SessionsTab
             onSessionClick={handleSessionClick}
             sessions={sessions}

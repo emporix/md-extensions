@@ -21,7 +21,8 @@ export interface BuildQueryParamsConfig {
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-export const isUuid = (value: string): boolean => UUID_PATTERN.test(value.trim())
+export const isUuid = (value: string): boolean =>
+  UUID_PATTERN.test(value.trim())
 
 export const getApiHeaders = (
   includeTotalCount: boolean = false
@@ -88,10 +89,7 @@ export const buildQueryParams = (
               ? trimmedValue.toUpperCase()
               : trimmedValue
           qParts.push(`${field}:${finalValue}`)
-        } else if (
-          uuidExactFields.includes(field) &&
-          isUuid(trimmedValue)
-        ) {
+        } else if (uuidExactFields.includes(field) && isUuid(trimmedValue)) {
           qParts.push(`${field}:${trimmedValue}`)
         } else {
           qParts.push(`${field}:~(${trimmedValue})`)

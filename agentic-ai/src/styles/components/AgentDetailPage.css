@@ -28,6 +28,8 @@
 }
 
 .agent-detail-header {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -105,6 +107,77 @@
   align-items: center;
   gap: var(--space-sm);
   flex-shrink: 0;
+}
+
+.agent-save-with-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+}
+
+.agent-save-note-slot {
+  position: relative;
+  width: 220px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.agent-save-note-preview.p-inputtext {
+  display: block;
+  width: 220px;
+  height: 32px;
+  margin: 0;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--grey-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-white);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: text;
+  opacity: 1;
+}
+
+.agent-save-note-preview.p-inputtext::placeholder {
+  color: var(--text-muted);
+}
+
+.agent-save-note-preview.p-inputtext:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.agent-save-note-preview.p-inputtext:focus-visible {
+  outline: 2px solid var(--blue-5);
+  outline-offset: 1px;
+}
+
+.agent-save-note-field.p-inputtextarea {
+  width: 220px;
+  height: 32px;
+  min-height: 32px;
+  margin: 0;
+  padding: var(--space-xs) var(--space-sm);
+  resize: none;
+  overflow: hidden;
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+}
+
+.agent-save-note-field-expanded.p-inputtextarea {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  height: 72px;
+  min-height: 72px;
+  overflow: auto;
+  box-shadow: var(--shadow-md);
 }
 
 .agent-detail-discard-btn.p-button-outlined {
@@ -241,7 +314,8 @@
 
 .agent-detail-section .p-inputtext,
 .agent-detail-section .p-inputtextarea,
-.agent-detail-section .p-multiselect {
+.agent-detail-section .p-multiselect,
+.agent-detail-tags-field .p-chips .p-chips-multiple-container {
   border: 1px solid #c7cad1;
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
@@ -256,6 +330,11 @@
 
 .agent-detail-section .p-inputtextarea {
   resize: vertical;
+}
+
+.agent-detail-tags-field .p-chips,
+.agent-detail-tags-field .p-chips .p-chips-multiple-container {
+  width: 100%;
 }
 
 .agent-detail-template-prompt-field .p-inputtextarea {

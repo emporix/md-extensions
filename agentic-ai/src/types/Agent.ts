@@ -113,12 +113,30 @@ export interface Trigger {
   config: Record<string, unknown> | null
 }
 
+export type ModifiedByType = 'CUSTOMER' | 'EMPLOYEE' | 'EXTERNAL' | 'SYSTEM'
+
+export interface ModifiedBy {
+  id?: string
+  type: ModifiedByType
+  firstName?: string
+  lastName?: string
+}
+
+export interface AgentVersionMetadata {
+  version: number
+  modifiedAt?: string
+  modifiedBy?: ModifiedBy
+  changeNote?: string
+}
+
 export interface Metadata {
   version: number
   createdAt: string
   modifiedAt: string
   schema: Record<string, unknown> | null
   mixins: Record<string, unknown>
+  modifiedBy?: ModifiedBy
+  changeNote?: string
 }
 
 export interface CustomAgent {
@@ -141,4 +159,28 @@ export interface CustomAgent {
   tags?: string[]
   type: string
   requiredScopes?: string[]
+}
+
+export interface AgentVersion {
+  name?: LocalizedString
+  description?: LocalizedString
+  requiredScopes?: string[]
+  templatePrompt?: string
+  userPrompt?: string
+  triggers?: Trigger[]
+  llmConfig?: LlmConfig
+  mcpServers?: McpServer[]
+  nativeTools?: NativeTool[]
+  agentCollaborations?: AgentCollaboration[]
+  maxRecursionLimit?: number
+  enableMemory?: boolean
+  enabled?: boolean
+  icon?: string
+  tags?: string[]
+  outputFormat?: string
+  metadata: AgentVersionMetadata
+}
+
+export interface AgentWithVersions extends CustomAgent {
+  versions?: AgentVersion[]
 }
