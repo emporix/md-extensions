@@ -80,7 +80,7 @@ export const SlackToolSection = ({
           onChange={(event) => onConfigChange('teamId', event.target.value)}
           className={`w-full${!config.teamId?.trim() ? ' p-invalid' : ''}`}
           placeholder={t('enter_team_id')}
-          disabled={isEditing}
+          readOnly={isEditing}
         />
         <p className="tool-detail-section-description">
           {t(isEditing ? 'slack_team_id_hint_immutable' : 'slack_team_id_hint')}

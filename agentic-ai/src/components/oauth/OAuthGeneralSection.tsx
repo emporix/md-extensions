@@ -63,7 +63,7 @@ export const OAuthGeneralSection: React.FC<OAuthGeneralSectionProps> = ({
             value={oauthId}
             onChange={(event) => onFieldChange('oauthId', event.target.value)}
             className={`w-full${!isEditing && !oauthId.trim() ? ' p-invalid' : ''}`}
-            disabled={isEditing}
+            readOnly={isEditing}
             placeholder={t('enter_oauth_id')}
             autoFocus={!isEditing}
           />

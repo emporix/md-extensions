@@ -140,7 +140,7 @@ export const FormStep: React.FC<FormStepProps> = ({
               value={templatePrompt}
               readOnly
               rows={4}
-              className="w-full readonly-textarea"
+              className="w-full"
               placeholder={t('template_prompt_placeholder')}
             />
           </div>

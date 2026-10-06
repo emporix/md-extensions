@@ -105,7 +105,7 @@ export const LocalizedInput: React.FC<LocalizedInputProps> = ({
                       borderColor: showInvalidState ? 'var(--red-500)' : '',
                     }}
                     className={showInvalidState ? 'p-invalid' : ''}
-                    disabled={displayOnly}
+                    readOnly={displayOnly}
                     data-test-id={dataTestId}
                     value={fieldValue}
                     onChange={(event) =>
@@ -120,7 +120,7 @@ export const LocalizedInput: React.FC<LocalizedInputProps> = ({
                       borderColor: showInvalidState ? 'var(--red-500)' : '',
                     }}
                     className={showInvalidState ? 'p-invalid' : ''}
-                    disabled={displayOnly}
+                    readOnly={displayOnly}
                     data-test-id={dataTestId}
                     value={fieldValue}
                     onChange={(event) =>

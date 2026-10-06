@@ -34,7 +34,7 @@ export const TokenGeneralSection: React.FC<TokenGeneralSectionProps> = ({
             value={tokenId}
             onChange={(event) => onFieldChange('tokenId', event.target.value)}
             className={`w-full${!isEditing && !tokenId.trim() ? ' p-invalid' : ''}`}
-            disabled={isEditing}
+            readOnly={isEditing}
             placeholder={t('enter_token_id')}
             autoFocus={!isEditing}
           />
