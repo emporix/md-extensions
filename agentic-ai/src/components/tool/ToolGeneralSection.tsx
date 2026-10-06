@@ -39,7 +39,7 @@ export const ToolGeneralSection: React.FC<ToolGeneralSectionProps> = ({
             value={toolId}
             onChange={(event) => onFieldChange('toolId', event.target.value)}
             className={`w-full${!isEditing && !toolId.trim() ? ' p-invalid' : ''}`}
-            disabled={isEditing}
+            readOnly={isEditing}
             placeholder={t('enter_tool_id')}
             autoFocus={!isEditing}
           />

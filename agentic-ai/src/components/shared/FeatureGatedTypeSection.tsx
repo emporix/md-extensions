@@ -62,7 +62,7 @@ export const FeatureGatedTypeSection = <T extends string>({
         <InputText
           value={getSelectedLabel(selectedType as T)}
           className="w-full"
-          disabled
+          readOnly
         />
       ) : (
         <Dropdown

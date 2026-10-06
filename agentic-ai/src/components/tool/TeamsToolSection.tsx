@@ -79,7 +79,7 @@ export const TeamsToolSection: React.FC<TeamsToolSectionProps> = ({
           onChange={(event) => onConfigChange('teamId', event.target.value)}
           className={`w-full${!config.teamId?.trim() ? ' p-invalid' : ''}`}
           placeholder={t('enter_team_id')}
-          disabled={isEditing}
+          readOnly={isEditing}
         />
         <p className="tool-detail-section-description">
           {t(isEditing ? 'teams_team_id_hint_immutable' : 'teams_team_id_hint')}
@@ -97,7 +97,7 @@ export const TeamsToolSection: React.FC<TeamsToolSectionProps> = ({
           onChange={(event) => onConfigChange('tenantId', event.target.value)}
           className={`w-full${!config.tenantId?.trim() ? ' p-invalid' : ''}`}
           placeholder={t('enter_tenant_id')}
-          disabled={isEditing}
+          readOnly={isEditing}
         />
         <p className="tool-detail-section-description">
           {t(

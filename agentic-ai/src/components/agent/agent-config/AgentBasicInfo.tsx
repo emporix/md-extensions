@@ -172,7 +172,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
         value={agentId}
         onChange={(e) => handleAgentIdChange(e.target.value)}
         className={`w-full ${!isEditing && !agentId.trim() ? 'p-invalid' : ''}`}
-        disabled={isEditing}
+        readOnly={isEditing}
         placeholder={!isEditing ? t('enter_agent_id') : undefined}
         autoFocus={!isEditing}
       />
@@ -252,7 +252,7 @@ export const AgentBasicInfo: React.FC<AgentBasicInfoProps> = ({
       <InputTextarea
         value={templatePrompt}
         rows={8}
-        className="w-full readonly-textarea"
+        className="w-full"
         readOnly
         placeholder={t('template_prompt_placeholder')}
       />

@@ -53,7 +53,7 @@ export const McpGeneralSection = ({
           value={mcpServerId}
           onChange={(event) => onIdChange(event.target.value)}
           className={`w-full${!isEditing && !mcpServerId.trim() ? ' p-invalid' : ''}`}
-          disabled={isEditing}
+          readOnly={isEditing}
           placeholder={t('enter_mcp_server_id')}
           autoFocus={!isEditing}
         />

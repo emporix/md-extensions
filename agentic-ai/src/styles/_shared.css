@@ -1194,3 +1194,12 @@ h1 .details-title-with-back {
 .p-1 { padding: var(--space-lg); }
 .p-2 { padding: var(--space-xl); }
 
+/* Read-only text inputs — faded like disabled, value stays selectable */
+.p-inputtext[readonly] {
+  opacity: 0.5;
+}
+
+.p-inputtext[readonly]:enabled:hover {
+  border-color: var(--grey-4);
+}
+
