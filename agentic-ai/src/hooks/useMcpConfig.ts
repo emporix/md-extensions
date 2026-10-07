@@ -5,6 +5,7 @@ import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
 import { upsertMcpServer as upsertMcpServerApi } from '../services/mcpService'
 import { formatApiError } from '../utils/errorHelpers'
+import { isFormDirty, toFormSnapshot } from '../utils/formDirty'
 import { isDynamicMcpServer } from '../utils/mcpHelpers'
 import { sanitizeIdInput } from '../utils/validation'
 import { validateMcpServer } from '../utils/mcpValidationHelpers'
@@ -12,7 +13,7 @@ import { validateMcpServer } from '../utils/mcpValidationHelpers'
 interface UseMcpConfigProps {
   mcpServer: McpServer | null
   isCreating: boolean
-  onSave: () => void
+  onSave: (savedId: string) => void
 }
 
 interface McpConfigState {
@@ -43,10 +44,11 @@ export const useMcpConfig = ({
     authorizationHeaderToken: '',
   })
   const [saving, setSaving] = useState(false)
+  const [baseline, setBaseline] = useState<string | null>(null)
 
   useEffect(() => {
     if (mcpServer && !isDynamicMcpServer(mcpServer)) {
-      setState({
+      const nextState: McpConfigState = {
         mcpServerId: mcpServer.id ?? '',
         mcpServerName: mcpServer.name ?? '',
         url: mcpServer.config?.url ?? '',
@@ -56,7 +58,9 @@ export const useMcpConfig = ({
           mcpServer.config?.authorizationHeaderName ?? '',
         authorizationHeaderToken:
           mcpServer.config?.authorizationHeaderToken?.id ?? '',
-      })
+      }
+      setState(nextState)
+      setBaseline(toFormSnapshot(nextState))
     }
   }, [mcpServer])
 
@@ -117,7 +121,8 @@ export const useMcpConfig = ({
           ? t('mcp_server_created_successfully')
           : t('mcp_server_updated_successfully')
       )
-      onSave()
+      setBaseline(toFormSnapshot(state))
+      onSave(state.mcpServerId)
     } catch (err) {
       const errorMessage = formatApiError(err, t('error_saving_mcp_server'))
       showError(`${t('error_saving_mcp_server')}: ${errorMessage}`)
@@ -132,12 +137,7 @@ export const useMcpConfig = ({
     onSave,
     showError,
     showSuccess,
-    state.authorizationHeaderName,
-    state.authorizationHeaderToken,
-    state.mcpServerId,
-    state.mcpServerName,
-    state.transport,
-    state.url,
+    state,
     t,
   ])
 
@@ -147,5 +147,6 @@ export const useMcpConfig = ({
     updateField,
     handleSave,
     isFormValid: isFormValid(),
+    isDirty: isFormDirty(state, baseline),
   }
 }

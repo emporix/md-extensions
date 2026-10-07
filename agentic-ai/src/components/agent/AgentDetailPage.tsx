@@ -223,9 +223,28 @@ const AgentDetailPage: React.FC = () => {
     navigate('/agents')
   }, [navigate])
 
-  const handleSaveSuccess = useCallback(() => {
-    navigate('/agents')
-  }, [navigate])
+  const handleSaveSuccess = useCallback(
+    async (savedAgent: CustomAgent) => {
+      const id = savedAgent.id?.trim()
+      if (!id) {
+        return
+      }
+
+      if (isCreating) {
+        navigate(`/agents/${encodeURIComponent(id)}/edit`, { replace: true })
+        return
+      }
+
+      try {
+        const fetchedAgent = await getCustomAgent(appState, id)
+        setAgent(cleanAgentForConfig(fetchedAgent))
+        setSaveChangeNote('')
+      } catch (err) {
+        console.error(err)
+      }
+    },
+    [appState, isCreating, navigate]
+  )
 
   const handleVersionRolledBack = useCallback(async () => {
     if (!appState || !agentId?.trim()) {
@@ -256,6 +275,7 @@ const AgentDetailPage: React.FC = () => {
     updateField,
     handleSave,
     isFormValid,
+    isDirty,
     showDisableConfirm,
     disableConfirmMessage,
     handleConfirmDisable,
@@ -264,7 +284,6 @@ const AgentDetailPage: React.FC = () => {
     agent,
     availableTools: catalogTools,
     onSave: handleSaveSuccess,
-    onHide: handleNavigateBack,
   })
 
   const isCommerceTriggerSelected =
@@ -410,6 +429,7 @@ const AgentDetailPage: React.FC = () => {
         <div className="agent-detail-tab-panel">
           <h2 className="agent-detail-section-title">{t('agent_versions')}</h2>
           <AgentVersionsTab
+            key={agent?.metadata?.version ?? 'current'}
             agentId={agentId}
             onRolledBack={() => {
               void handleVersionRolledBack()
@@ -515,13 +535,13 @@ const AgentDetailPage: React.FC = () => {
                 onClick={() => {
                   void handleSave()
                 }}
-                disabled={saving || !isFormValid}
+                disabled={saving || !isFormValid || !isDirty}
                 loading={saving}
               />
             ) : (
               <AgentSaveWithChangeNote
                 saving={saving}
-                disabled={!isFormValid}
+                disabled={!isFormValid || !isDirty}
                 changeNote={saveChangeNote}
                 onChangeNote={setSaveChangeNote}
                 onSave={() => {

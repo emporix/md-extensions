@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   RagEmporixEmbeddingConfig,
@@ -27,6 +27,11 @@ import {
   getCustomSchemaTypes,
 } from '../services/schemaService'
 import { formatApiError } from '../utils/errorHelpers'
+import {
+  isFormDirty,
+  nextBaselineAfterSilentUpdate,
+  toFormSnapshot,
+} from '../utils/formDirty'
 import { sanitizeIdInput } from '../utils/validation'
 import {
   createEmptyFilterField,
@@ -89,6 +94,9 @@ export const useToolConfig = ({
     config: {},
   })
   const [saving, setSaving] = useState(false)
+  const [baseline, setBaseline] = useState<string | null>(null)
+  const stateRef = useRef(state)
+  stateRef.current = state
   const [availableTokens, setAvailableTokens] = useState<
     Array<{ id: string; name: string }>
   >([])
@@ -105,33 +113,38 @@ export const useToolConfig = ({
   const [allToolsLoaded, setAllToolsLoaded] = useState(false)
 
   useEffect(() => {
-    if (tool) {
-      const loadedConfig = mergeRagEmporixConfigOnLoad(tool)
-      setState((prev) => {
-        if (
-          isCreating &&
-          !(tool.id ?? '').trim() &&
-          prev.toolType === 'teams' &&
-          !!prev.config.tenantId?.trim() &&
-          (tool.type === 'slack' || !tool.type) &&
-          !(tool.config?.tenantId ?? '').trim()
-        ) {
-          return prev
-        }
-
-        return {
-          toolId: tool.id ?? '',
-          toolName: tool.name ?? '',
-          toolType: tool.type ?? '',
-          config:
-            tool.type === 'teams'
-              ? applyTeamsToolDefaults(loadedConfig)
-              : tool.type === 'slack'
-                ? applySlackToolDefaults(loadedConfig)
-                : loadedConfig,
-        }
-      })
+    if (!tool) {
+      return
     }
+
+    const loadedConfig = mergeRagEmporixConfigOnLoad(tool)
+    const prev = stateRef.current
+    const keepTeamsInstallDraft =
+      isCreating &&
+      !(tool.id ?? '').trim() &&
+      prev.toolType === 'teams' &&
+      !!prev.config.tenantId?.trim() &&
+      (tool.type === 'slack' || !tool.type) &&
+      !(tool.config?.tenantId ?? '').trim()
+
+    if (keepTeamsInstallDraft) {
+      return
+    }
+
+    const nextState: ToolConfigState = {
+      toolId: tool.id ?? '',
+      toolName: tool.name ?? '',
+      toolType: tool.type ?? '',
+      config:
+        tool.type === 'teams'
+          ? applyTeamsToolDefaults(loadedConfig)
+          : tool.type === 'slack'
+            ? applySlackToolDefaults(loadedConfig)
+            : loadedConfig,
+    }
+
+    setState(nextState)
+    setBaseline(toFormSnapshot(nextState))
   }, [isCreating, tool])
 
   useEffect(() => {
@@ -269,7 +282,11 @@ export const useToolConfig = ({
         if (nextConfig === prev.config) {
           return prev
         }
-        return { ...prev, config: nextConfig }
+        const next = { ...prev, config: nextConfig }
+        setBaseline((current) =>
+          nextBaselineAfterSilentUpdate(current, prev, next)
+        )
+        return next
       })
     }
   }, [state.toolType, state.config.entityType, state.config.embeddingConfig])
@@ -281,7 +298,11 @@ export const useToolConfig = ({
         if (nextConfig === prev.config) {
           return prev
         }
-        return { ...prev, config: nextConfig }
+        const next = { ...prev, config: nextConfig }
+        setBaseline((current) =>
+          nextBaselineAfterSilentUpdate(current, prev, next)
+        )
+        return next
       })
     }
   }, [state.toolType, state.config.databaseConfig])
@@ -647,6 +668,7 @@ export const useToolConfig = ({
           ? t('tool_created_successfully')
           : t('tool_updated_successfully')
       )
+      setBaseline(toFormSnapshot(state))
       onSave(updatedTool.id, updatedTool.type)
     } catch (err) {
       const errorMessage = formatApiError(err, t('error_saving_tool'))
@@ -662,10 +684,7 @@ export const useToolConfig = ({
     onSave,
     showError,
     showSuccess,
-    state.config,
-    state.toolId,
-    state.toolName,
-    state.toolType,
+    state,
     t,
     tool,
   ])
@@ -695,6 +714,7 @@ export const useToolConfig = ({
     selectFilterFieldKey,
     handleSave,
     isFormValid,
+    isDirty: isFormDirty(state, baseline),
     applyTeamsGraphConsent,
     restoreTeamsInstallDraft,
     loadTeamsInstallDraft,

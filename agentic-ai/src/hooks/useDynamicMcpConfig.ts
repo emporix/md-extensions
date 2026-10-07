@@ -5,6 +5,7 @@ import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
 import { upsertMcpServer as upsertMcpServerApi } from '../services/mcpService'
 import { formatApiError } from '../utils/errorHelpers'
+import { isFormDirty, toFormSnapshot } from '../utils/formDirty'
 import { createEmptyMcpTool, MCP_TOOL_NAME_PATTERN } from '../utils/mcpHelpers'
 import { isValidAgentOutputJsonSchema } from '../utils/validateJsonSchema'
 import { sanitizeIdInput } from '../utils/validation'
@@ -13,7 +14,7 @@ import { validateMcpServer } from '../utils/mcpValidationHelpers'
 interface UseDynamicMcpConfigProps {
   mcpServer: McpServer | null
   isCreating: boolean
-  onSave: () => void
+  onSave: (savedId: string) => void
 }
 
 interface DynamicMcpConfigState {
@@ -38,10 +39,11 @@ export const useDynamicMcpConfig = ({
     tools: [createEmptyMcpTool()],
   })
   const [saving, setSaving] = useState(false)
+  const [baseline, setBaseline] = useState<string | null>(null)
 
   useEffect(() => {
     if (mcpServer?.type === 'dynamic') {
-      setState({
+      const nextState: DynamicMcpConfigState = {
         mcpServerId: mcpServer.id ?? '',
         mcpServerName: mcpServer.name ?? '',
         tools:
@@ -61,7 +63,9 @@ export const useDynamicMcpConfig = ({
                 },
               }))
             : [createEmptyMcpTool()],
-      })
+      }
+      setState(nextState)
+      setBaseline(toFormSnapshot(nextState))
     }
   }, [mcpServer])
 
@@ -170,7 +174,8 @@ export const useDynamicMcpConfig = ({
           ? t('mcp_server_created_successfully')
           : t('mcp_server_updated_successfully')
       )
-      onSave()
+      setBaseline(toFormSnapshot(state))
+      onSave(state.mcpServerId)
     } catch (err) {
       const errorMessage = formatApiError(err, t('error_saving_mcp_server'))
       showError(`${t('error_saving_mcp_server')}: ${errorMessage}`)
@@ -185,9 +190,7 @@ export const useDynamicMcpConfig = ({
     onSave,
     showError,
     showSuccess,
-    state.mcpServerId,
-    state.mcpServerName,
-    state.tools,
+    state,
     t,
   ])
 
@@ -200,5 +203,6 @@ export const useDynamicMcpConfig = ({
     removeTool,
     handleSave,
     isFormValid: isFormValid(),
+    isDirty: isFormDirty(state, baseline),
   }
 }

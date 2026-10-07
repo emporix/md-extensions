@@ -80,11 +80,29 @@ const TokenDetailPage: React.FC = () => {
     navigate('/tokens')
   }, [navigate])
 
-  const handleSaveSuccess = useCallback(() => {
-    navigate('/tokens')
-  }, [navigate])
+  const handleSaveSuccess = useCallback(
+    async (savedId: string) => {
+      const id = savedId.trim()
+      if (!id) {
+        return
+      }
 
-  const { state, saving, updateField, handleSave, isFormValid } =
+      if (isCreating) {
+        navigate(`/tokens/${encodeURIComponent(id)}/edit`, { replace: true })
+        return
+      }
+
+      try {
+        const fetchedToken = await getToken(appState, id)
+        setToken(fetchedToken)
+      } catch (err) {
+        console.error(err)
+      }
+    },
+    [appState, isCreating, navigate]
+  )
+
+  const { state, saving, updateField, handleSave, isFormValid, isDirty } =
     useTokenConfig({
       token,
       isCreating,
@@ -171,7 +189,7 @@ const TokenDetailPage: React.FC = () => {
               label={t('save')}
               className="token-detail-save-btn"
               onClick={() => handleSave()}
-              disabled={saving || !isFormValid}
+              disabled={saving || !isFormValid || !isDirty}
               loading={saving}
             />
           </div>

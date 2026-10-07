@@ -116,9 +116,27 @@ const McpDetailPage = () => {
     navigate('/mcp')
   }, [navigate])
 
-  const handleSaveSuccess = useCallback(() => {
-    navigate('/mcp')
-  }, [navigate])
+  const handleSaveSuccess = useCallback(
+    async (savedId: string) => {
+      const id = savedId.trim()
+      if (!id) {
+        return
+      }
+
+      if (isCreating) {
+        navigate(`/mcp/${encodeURIComponent(id)}/edit`, { replace: true })
+        return
+      }
+
+      try {
+        const fetchedServer = await getMcpServer(appState, id)
+        setMcpServer(fetchedServer)
+      } catch (err) {
+        console.error(err)
+      }
+    },
+    [appState, isCreating, navigate]
+  )
 
   const customConfig = useMcpConfig({
     mcpServer: isDynamic ? null : mcpServer,
@@ -202,6 +220,7 @@ const McpDetailPage = () => {
   }, [generalState.mcpServerId, generalState.mcpServerName, isCreating, t])
 
   const saving = isDynamic ? dynamicConfig.saving : customConfig.saving
+  const isDirty = isDynamic ? dynamicConfig.isDirty : customConfig.isDirty
   const isFormValid =
     typeSelected &&
     (isDynamic ? dynamicConfig.isFormValid : customConfig.isFormValid)
@@ -281,7 +300,7 @@ const McpDetailPage = () => {
               label={t('save')}
               className="mcp-detail-save-btn"
               onClick={() => handleSave()}
-              disabled={saving || !isFormValid}
+              disabled={saving || !isFormValid || !isDirty}
               loading={saving}
             />
           </div>

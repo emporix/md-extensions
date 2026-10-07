@@ -28,6 +28,7 @@ import {
   getValidCollaborations,
   areCollaborationsValid,
 } from '../utils/agentCollaborationHelpers'
+import { isFormDirty, toFormSnapshot } from '../utils/formDirty'
 import { isValidAgentOutputJsonSchema } from '../utils/validateJsonSchema'
 import {
   areTeamsAgentToolsValid,
@@ -51,7 +52,6 @@ interface UseAgentConfigProps {
   agent: CustomAgent | null
   availableTools: Tool[]
   onSave: (agent: CustomAgent) => void
-  onHide: () => void
 }
 
 interface AgentCollaboration {
@@ -99,7 +99,6 @@ export const useAgentConfig = ({
   agent,
   availableTools,
   onSave,
-  onHide,
 }: UseAgentConfigProps) => {
   const appState = useAppState()
   const { t } = useTranslation()
@@ -145,6 +144,7 @@ export const useAgentConfig = ({
   })
 
   const [saving, setSaving] = useState(false)
+  const [baseline, setBaseline] = useState<string | null>(null)
 
   useEffect(() => {
     if (agent) {
@@ -153,7 +153,7 @@ export const useAgentConfig = ({
         'endpoint',
       ]
 
-      setState({
+      const nextState: AgentConfigState = {
         agentId: agent.id,
         agentName: agent.name || ({} as LocalizedString),
         description: agent.description || ({} as LocalizedString),
@@ -221,7 +221,9 @@ export const useAgentConfig = ({
             eventScopes: commerceTriggerExtractEventScopes(raw ?? null),
           }
         })(),
-      })
+      }
+      setState(nextState)
+      setBaseline(toFormSnapshot(nextState))
     }
   }, [agent])
 
@@ -380,7 +382,7 @@ export const useAgentConfig = ({
       }
 
       try {
-        const savedAgent = await upsertCustomAgent(appState, updatedAgent)
+        await upsertCustomAgent(appState, updatedAgent)
 
         setSaving(false)
         const isUpdate = !!agent.id
@@ -389,8 +391,8 @@ export const useAgentConfig = ({
             ? t('agent_updated_successfully')
             : t('agent_created_successfully')
         )
-        onSave(savedAgent)
-        onHide()
+        setBaseline(toFormSnapshot(state))
+        onSave(updatedAgent)
 
         setPendingAgent(null)
         setShowDisableConfirm(false)
@@ -418,9 +420,9 @@ export const useAgentConfig = ({
       appState,
       buildAgentFromState,
       onSave,
-      onHide,
       showSuccess,
       showError,
+      state,
       t,
     ]
   )
@@ -437,7 +439,7 @@ export const useAgentConfig = ({
         enabled: false,
       }
 
-      const savedAgent = await upsertCustomAgent(appState, disabledAgent)
+      await upsertCustomAgent(appState, disabledAgent)
 
       setSaving(false)
       const isUpdate = !!pendingAgent.id
@@ -446,8 +448,8 @@ export const useAgentConfig = ({
           ? t('agent_updated_deactivated_successfully')
           : t('agent_created_deactivated_successfully')
       )
-      onSave(savedAgent)
-      onHide()
+      setBaseline(toFormSnapshot(state))
+      onSave(disabledAgent)
 
       setPendingAgent(null)
     } catch (error) {
@@ -456,7 +458,7 @@ export const useAgentConfig = ({
       showError(t('error_saving_agent', { message: errorMessage }))
       setPendingAgent(null)
     }
-  }, [pendingAgent, appState, onSave, onHide, showSuccess, showError, t])
+  }, [pendingAgent, appState, onSave, showSuccess, showError, state, t])
 
   const handleCancelDisable = useCallback(() => {
     setShowDisableConfirm(false)
@@ -566,6 +568,7 @@ export const useAgentConfig = ({
     updateField,
     handleSave,
     isFormValid: isFormValid(),
+    isDirty: isFormDirty(state, baseline),
     showDisableConfirm,
     disableConfirmMessage,
     handleConfirmDisable,

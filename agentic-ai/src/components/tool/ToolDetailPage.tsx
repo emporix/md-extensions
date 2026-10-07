@@ -145,14 +145,25 @@ const ToolDetailPage: React.FC = () => {
   }, [navigate])
 
   const handleSaveSuccess = useCallback(
-    (savedToolId?: string, savedToolType?: string) => {
-      if (isCreating && savedToolType === 'teams' && savedToolId?.trim()) {
-        navigate(`/tools/${savedToolId.trim()}/edit`, { replace: true })
+    async (savedToolId?: string) => {
+      const id = savedToolId?.trim()
+      if (!id) {
         return
       }
-      navigate('/tools')
+
+      if (isCreating) {
+        navigate(`/tools/${encodeURIComponent(id)}/edit`, { replace: true })
+        return
+      }
+
+      try {
+        const fetchedTool = await getTool(appState, id)
+        setTool(fetchedTool)
+      } catch (err) {
+        console.error(err)
+      }
     },
-    [isCreating, navigate]
+    [appState, isCreating, navigate]
   )
 
   const {
@@ -180,6 +191,7 @@ const ToolDetailPage: React.FC = () => {
     selectFilterFieldKey,
     handleSave,
     isFormValid,
+    isDirty,
     applyTeamsGraphConsent,
     restoreTeamsInstallDraft,
     loadTeamsInstallDraft,
@@ -670,7 +682,7 @@ const ToolDetailPage: React.FC = () => {
               label={t('save')}
               className="tool-detail-save-btn"
               onClick={() => handleSave()}
-              disabled={saving || !isFormValid}
+              disabled={saving || !isFormValid || !isDirty}
               loading={saving}
             />
           </div>
