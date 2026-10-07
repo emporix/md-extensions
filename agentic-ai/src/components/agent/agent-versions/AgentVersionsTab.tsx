@@ -8,6 +8,7 @@ import {
   DataTableFilterMeta,
   DataTablePFSEvent,
 } from 'primereact/datatable'
+import { InputTextarea } from 'primereact/inputtextarea'
 import { Message } from 'primereact/message'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { AgentVersionDiffDialog } from './AgentVersionDiffDialog'
@@ -61,6 +62,7 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
   const [error, setError] = useState<string | null>(null)
   const [compareRow, setCompareRow] = useState<AgentVersionRow | null>(null)
   const [rollbackRow, setRollbackRow] = useState<AgentVersionRow | null>(null)
+  const [rollbackNote, setRollbackNote] = useState('')
   const [rollingBack, setRollingBack] = useState(false)
   const [reloadToken, setReloadToken] = useState(0)
   const rollingBackRef = useRef(false)
@@ -157,9 +159,12 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
       return
     }
 
-    const changeNote = t('agent_version_rollback_change_note', {
-      version: rollbackRow.version,
-    })
+    const trimmedNote = rollbackNote.trim()
+    const changeNote =
+      trimmedNote ||
+      t('agent_version_rollback_change_note', {
+        version: rollbackRow.version,
+      })
     const payload = buildRollbackAgent(agent, rollbackRow, changeNote)
     if (!payload) {
       showError(t('agent_version_rollback_missing_config'))
@@ -174,6 +179,7 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
         t('agent_version_rollback_success', { version: rollbackRow.version })
       )
       setRollbackRow(null)
+      setRollbackNote('')
       setReloadToken((token) => token + 1)
       onRolledBack?.()
     } catch (err) {
@@ -190,7 +196,16 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
       rollingBackRef.current = false
       setRollingBack(false)
     }
-  }, [agent, appState, onRolledBack, rollbackRow, showError, showSuccess, t])
+  }, [
+    agent,
+    appState,
+    onRolledBack,
+    rollbackNote,
+    rollbackRow,
+    showError,
+    showSuccess,
+    t,
+  ])
 
   const versionBody = (row: VersionTableRow) => <span>{row.version}</span>
 
@@ -234,7 +249,10 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
           aria-label={t('agent_version_rollback')}
           title={t('agent_version_rollback')}
           disabled={rollingBack}
-          onClick={() => setRollbackRow(row)}
+          onClick={() => {
+            setRollbackNote('')
+            setRollbackRow(row)
+          }}
         />
       </div>
     )
@@ -360,9 +378,23 @@ const AgentVersionsTab = ({ agentId, onRolledBack }: AgentVersionsTabProps) => {
         onHide={() => {
           if (!rollingBack) {
             setRollbackRow(null)
+            setRollbackNote('')
           }
         }}
-      />
+      >
+        <div className="confirm-dialog-change-note">
+          <InputTextarea
+            id="agent-version-rollback-change-note"
+            value={rollbackNote}
+            onChange={(event) => setRollbackNote(event.target.value)}
+            placeholder={t('agent_change_note_placeholder')}
+            aria-label={t('agent_change_note_label')}
+            rows={3}
+            disabled={rollingBack}
+            autoResize
+          />
+        </div>
+      </ConfirmDialog>
     </div>
   )
 }

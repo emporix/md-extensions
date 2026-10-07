@@ -231,7 +231,7 @@ const TRANSLATIONS_DE = {
   agent_version_rollback: 'Zurücksetzen',
   agent_version_rollback_title: 'Auf Version {{version}} zurücksetzen?',
   agent_version_rollback_message:
-    'Die aktuelle gespeicherte Konfiguration wird durch Version {{version}} ersetzt. Es entsteht eine neue Version.',
+    'Die aktuelle gespeicherte Konfiguration wird durch Version {{version}} ersetzt.\nEs wird eine neue Version erstellt.',
   agent_version_rollback_confirm: 'Zurücksetzen',
   agent_version_rollback_success: 'Auf Version {{version}} zurückgesetzt.',
   agent_version_rollback_error:

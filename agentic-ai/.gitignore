@@ -25,3 +25,12 @@ dist-ssr
 *.sw?
 
 .cursor/
+
+# Emporix agent skills artifacts
+.ai/qa/artifacts_*/
+.ai/qa/browser-local.json
+.ai/qa/postman/
+.ai/qa/local-api/
+.ai/demos/**/*.webm
+.ai/demos/**/*.mp4
+.ai/scripts/.venv/

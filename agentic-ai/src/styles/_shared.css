@@ -1001,6 +1001,16 @@ h1 .details-title-with-back {
   white-space: pre-line;
 }
 
+.confirm-dialog-change-note {
+  margin-top: var(--space-lg);
+  width: 100%;
+}
+
+.confirm-dialog-change-note .p-inputtextarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
 /* Icon spacing */
 .icon-with-text {
   margin-left: var(--spacing-sm);

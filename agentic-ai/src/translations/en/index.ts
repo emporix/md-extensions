@@ -230,7 +230,7 @@ const TRANSLATIONS_EN = {
   agent_version_rollback: 'Rollback',
   agent_version_rollback_title: 'Roll back to version {{version}}?',
   agent_version_rollback_message:
-    'This replaces the current saved configuration with version {{version}}. A new version is created.',
+    'This replaces the current saved configuration with version {{version}}.\nA new version will be created.',
   agent_version_rollback_confirm: 'Roll back',
   agent_version_rollback_success: 'Rolled back to version {{version}}.',
   agent_version_rollback_error: 'Failed to roll back to version {{version}}.',

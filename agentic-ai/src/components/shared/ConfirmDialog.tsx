@@ -15,6 +15,7 @@ interface ConfirmDialogProps {
   cancelLabel?: string
   confirmClassName?: string
   severity?: 'danger' | 'warning' | 'info' | 'primary'
+  children?: React.ReactNode
 }
 
 const formatDialogTextBlock = (text: string): React.ReactNode => {
@@ -36,6 +37,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   cancelLabel,
   confirmClassName,
   severity = 'danger',
+  children,
 }) => {
   const { t } = useTranslation()
 
@@ -99,6 +101,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       closable
     >
       {formattedMessage}
+      {children}
     </Dialog>
   )
 }
