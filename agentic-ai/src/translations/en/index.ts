@@ -217,7 +217,7 @@ const TRANSLATIONS_EN = {
     'Selected default inbound agent was not found. Refresh and try again.',
   agent_versions: 'Versions',
   agent_change_note_label: 'Change note',
-  agent_change_note_placeholder: 'Describe what changed (optional)',
+  agent_change_note_placeholder: 'Reasons for change (optional)',
   agent_version_column: 'Version',
   filter_by_version: 'Filter by version',
   filter_by_author: 'Filter by author',

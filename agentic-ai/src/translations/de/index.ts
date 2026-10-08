@@ -218,7 +218,7 @@ const TRANSLATIONS_DE = {
     'Ausgewählter Standard-Eingangsagent wurde nicht gefunden. Aktualisieren und erneut versuchen.',
   agent_versions: 'Versionen',
   agent_change_note_label: 'Änderungsnotiz',
-  agent_change_note_placeholder: 'Beschreiben Sie die Änderung (optional)',
+  agent_change_note_placeholder: 'Gründe für die Änderung (optional)',
   agent_version_column: 'Version',
   filter_by_version: 'Nach Version filtern',
   filter_by_author: 'Nach Autor filtern',
