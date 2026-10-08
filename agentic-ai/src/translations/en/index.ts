@@ -22,6 +22,7 @@ const TRANSLATIONS_EN = {
   session: 'Session',
   load_flow: 'Load Flow',
   sessions: 'Sessions',
+  logs: 'Logs',
   previous_page: 'Previous',
   next_page: 'Next',
   rows_per_page: 'Rows per page',
@@ -92,6 +93,15 @@ const TRANSLATIONS_EN = {
   bundle_helper_template_not_found:
     'Bundle helper template not found: {{templateId}}.',
   agent_created_successfully: 'Agent created successfully!',
+  agent_updated_successfully: 'Agent updated successfully!',
+  agent_id_already_exists:
+    'Agent with this ID already exists. Please choose a different ID.',
+  failed_to_save_agent: 'Failed to save agent',
+  error_saving_agent: 'Error saving agent: {{message}}',
+  agent_updated_deactivated_successfully:
+    'Agent updated and deactivated successfully!',
+  agent_created_deactivated_successfully:
+    'Agent created and deactivated successfully!',
   agent_name: 'Agent Name',
   enter_agent_name: 'Enter agent name',
   description: 'Description',
@@ -205,6 +215,55 @@ const TRANSLATIONS_EN = {
     'Leave empty to disable routing for cold inbound traffic.',
   teams_default_inbound_agent_not_found:
     'Selected default inbound agent was not found. Refresh and try again.',
+  agent_versions: 'Versions',
+  agent_change_note_label: 'Change note',
+  agent_change_note_placeholder: 'Reasons for change (optional)',
+  agent_version_column: 'Version',
+  filter_by_version: 'Filter by version',
+  filter_by_author: 'Filter by author',
+  filter_by_change_note: 'Filter by change note',
+  agent_version_date: 'Date',
+  agent_version_author: 'Author',
+  agent_version_change_note: 'Change note',
+  agent_version_actions: 'Actions',
+  agent_version_compare: 'Compare',
+  agent_version_rollback: 'Rollback',
+  agent_version_rollback_title: 'Roll back to version {{version}}?',
+  agent_version_rollback_message:
+    'This replaces the current saved configuration with version {{version}}.\nA new version will be created.',
+  agent_version_rollback_confirm: 'Roll back',
+  agent_version_rollback_success: 'Rolled back to version {{version}}.',
+  agent_version_rollback_error: 'Failed to roll back to version {{version}}.',
+  agent_version_rollback_missing_config:
+    'This version cannot be restored because its saved configuration is incomplete.',
+  agent_version_rollback_change_note: 'Rolled back to version {{version}}',
+  agent_version_current: 'Current version',
+  agent_version_system: 'System',
+  agent_version_type_external: 'API client',
+  agent_version_diff_title:
+    'Version {{version}} vs current (version {{current}})',
+  agent_version_diff_selected: 'Version {{version}}',
+  agent_version_diff_current: 'Current (version {{version}})',
+  agent_version_diff_none: 'No differences in the saved configuration.',
+  agent_version_field_name: 'Name',
+  agent_version_field_description: 'Description',
+  agent_version_field_icon: 'Icon',
+  agent_version_field_tags: 'Tags',
+  agent_version_field_enabled: 'Enabled',
+  agent_version_field_requiredScopes: 'Required scopes',
+  agent_version_field_templatePrompt: 'Template prompt',
+  agent_version_field_userPrompt: 'User prompt',
+  agent_version_field_llmConfig: 'Model',
+  agent_version_field_triggers: 'Triggers',
+  agent_version_field_mcpServers: 'MCP servers',
+  agent_version_field_nativeTools: 'Native tools',
+  agent_version_field_agentCollaborations: 'Collaborations',
+  agent_version_field_maxRecursionLimit: 'Recursion limit',
+  agent_version_field_enableMemory: 'Memory',
+  agent_version_field_outputFormat: 'Output format',
+  error_loading_agent_versions: 'Failed to load versions',
+  loading_agent_versions: 'Loading versions...',
+  no_agent_versions_found: 'No versions found matching the filters',
   conversations: 'Conversations',
   conversation_name: 'Channel / Chat',
   filter_by_conversation_name: 'Filter by channel / chat',
@@ -693,6 +752,10 @@ const TRANSLATIONS_EN = {
   model_input_mode_custom: 'Custom',
   search_for_models: 'Search for models..',
   no_models_match_search: 'No models match your search',
+  model_auto_changed:
+    'Model "{{from}}" is not available for this provider. Switched to "{{to}}".',
+  model_auto_cleared:
+    'Model "{{from}}" is not available for this provider and was cleared.',
   custom_model_name: 'Custom Model Name',
   custom_model_name_tooltip:
     'Enter a model identifier supported by your provider',
@@ -995,6 +1058,9 @@ const TRANSLATIONS_EN = {
   filter_by_included_agents: 'Filter by Included Agents',
   filter_by_message: 'Filter by Message',
   select_severity: 'Select Severity',
+  select_job_type: 'Select Job Type',
+  select_status: 'Select Status',
+  select_result: 'Select Result',
   clear_filters: 'Clear Filters',
   no_jobs_found_with_filters: 'No jobs found matching the filters',
   no_logs_found_with_filters: 'No logs found matching the filters',
@@ -1036,6 +1102,9 @@ const TRANSLATIONS_EN = {
   // Localized Input
   show_languages: 'Show languages',
   hide_languages: 'Hide languages',
+
+  'global.pagination':
+    'Showing {first} to {last} of {totalRecords} entries',
 }
 
 export default TRANSLATIONS_EN

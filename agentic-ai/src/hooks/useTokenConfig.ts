@@ -5,12 +5,13 @@ import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
 import { upsertToken as upsertTokenApi } from '../services/tokensService'
 import { formatApiError } from '../utils/errorHelpers'
+import { isFormDirty, toFormSnapshot } from '../utils/formDirty'
 import { sanitizeIdInput } from '../utils/validation'
 
 interface UseTokenConfigProps {
   token: Token | null
   isCreating: boolean
-  onSave: () => void
+  onSave: (savedId: string) => void
 }
 
 interface TokenConfigState {
@@ -35,14 +36,17 @@ export const useTokenConfig = ({
     tokenValue: '',
   })
   const [saving, setSaving] = useState(false)
+  const [baseline, setBaseline] = useState<string | null>(null)
 
   useEffect(() => {
     if (token) {
-      setState({
+      const nextState: TokenConfigState = {
         tokenId: token.id ?? '',
         tokenName: token.name ?? '',
         tokenValue: token.value ?? '',
-      })
+      }
+      setState(nextState)
+      setBaseline(toFormSnapshot(nextState))
     }
   }, [token])
 
@@ -85,7 +89,8 @@ export const useTokenConfig = ({
           ? t('token_created_successfully')
           : t('token_updated_successfully')
       )
-      onSave()
+      setBaseline(toFormSnapshot(state))
+      onSave(state.tokenId)
     } catch (err) {
       const errorMessage = formatApiError(err, t('error_saving_token'))
       showError(`${t('error_saving_token')}: ${errorMessage}`)
@@ -99,9 +104,7 @@ export const useTokenConfig = ({
     onSave,
     showError,
     showSuccess,
-    state.tokenId,
-    state.tokenName,
-    state.tokenValue,
+    state,
     t,
     token,
   ])
@@ -112,5 +115,6 @@ export const useTokenConfig = ({
     updateField,
     handleSave,
     isFormValid: isFormValid(),
+    isDirty: isFormDirty(state, baseline),
   }
 }

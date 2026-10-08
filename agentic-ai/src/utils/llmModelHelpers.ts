@@ -135,10 +135,13 @@ export const resolveModelAfterProviderChange = (
   currentModel: string,
   modelsByProvider: Map<LlmModelProvider, LlmModel[]>
 ): string => {
+  const trimmed = currentModel.trim()
+  const candidate = trimmed ? currentModel : undefined
   return resolveModelForProviderSwitch(
     provider,
     modelsByProvider,
-    currentModel.trim() ? currentModel : undefined
+    candidate,
+    candidate
   )
 }
 
@@ -167,6 +170,7 @@ export const rememberModelForProvider = (
 export const resolveModelForProviderSwitch = (
   provider: LlmProvider,
   modelsByProvider: Map<LlmModelProvider, LlmModel[]>,
+  currentModel?: string,
   rememberedModel?: string
 ): string => {
   if (isSelfHostedProvider(provider)) {
@@ -179,7 +183,15 @@ export const resolveModelForProviderSwitch = (
 
   const models = getModelsForProvider(provider, modelsByProvider)
   if (models.length === 0) {
-    return rememberedModel?.trim() ?? ''
+    const fallback = currentModel?.trim() || rememberedModel?.trim()
+    return fallback ?? ''
+  }
+
+  const currentMatch = currentModel?.trim()
+    ? findCatalogModel(models, currentModel)
+    : undefined
+  if (currentMatch) {
+    return currentMatch.id
   }
 
   if (rememberedModel?.trim()) {
@@ -190,4 +202,23 @@ export const resolveModelForProviderSwitch = (
   }
 
   return models[0].id
+}
+
+export const isModelSelectionPreserved = (
+  currentModel: string,
+  nextModel: string,
+  nextCatalogModels: LlmModel[] = []
+): boolean => {
+  const current = currentModel.trim()
+  if (!current) {
+    return true
+  }
+
+  const next = nextModel.trim()
+  if (current.toLowerCase() === next.toLowerCase()) {
+    return true
+  }
+
+  const match = findCatalogModel(nextCatalogModels, current)
+  return match?.id === next
 }

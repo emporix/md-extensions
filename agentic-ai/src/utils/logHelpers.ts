@@ -144,3 +144,13 @@ export const isSameLogMessage = (
   left.timestamp === right.timestamp &&
   left.message === right.message &&
   left.agentId === right.agentId
+
+export const formatAgentIdWithVersion = (
+  agentId: string,
+  agentVersion?: number | null
+): string => {
+  if (agentVersion == null) {
+    return agentId
+  }
+  return `${agentId} (v${agentVersion})`
+}

@@ -19,7 +19,9 @@ import { TriggersSection } from './agent-config/TriggersSection'
 import { ToolsSection } from './agent-config/ToolsSection'
 import { ModelSection } from './agent-config/ModelSection'
 import { CollaborationSection } from './agent-config/CollaborationSection'
+import { AgentSaveWithChangeNote } from './agent-config/AgentSaveWithChangeNote'
 import { ConversationsTab } from '../shared/ConversationsTab'
+import { AgentVersionsTab } from './agent-versions/AgentVersionsTab'
 import { useAgentConfig } from '../../hooks/useAgentConfig'
 import { useFeatureToggles } from '../../hooks/useFeatureToggles'
 import { useAgentToolsCatalog } from '../../hooks/useAgentToolsCatalog'
@@ -46,7 +48,10 @@ const BASE_TABS = [
   { key: 'collaboration', labelKey: 'collaboration' },
 ] as const
 
-type AgentDetailTab = (typeof BASE_TABS)[number]['key'] | 'conversations'
+type AgentDetailTab =
+  | (typeof BASE_TABS)[number]['key']
+  | 'versions'
+  | 'conversations'
 
 const AgentDetailPage: React.FC = () => {
   const appState = useAppState()
@@ -62,6 +67,7 @@ const AgentDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<AgentDetailTab>('general')
   const [showConversationsTab, setShowConversationsTab] = useState(false)
+  const [saveChangeNote, setSaveChangeNote] = useState('')
 
   useEffect(() => {
     if (isCreating) {
@@ -170,17 +176,17 @@ const AgentDetailPage: React.FC = () => {
     const tabs: Array<{ key: AgentDetailTab; labelKey: string }> = [
       ...BASE_TABS,
     ]
+    if (!isCreating) {
+      tabs.push({ key: 'versions', labelKey: 'agent_versions' })
+    }
     if (showConversationsTab) {
       tabs.push({ key: 'conversations', labelKey: 'conversations' })
     }
     return tabs
-  }, [showConversationsTab])
+  }, [isCreating, showConversationsTab])
 
   useEffect(() => {
-    if (
-      activeTab === 'conversations' &&
-      !visibleTabs.some((tab) => tab.key === 'conversations')
-    ) {
+    if (!visibleTabs.some((tab) => tab.key === activeTab)) {
       setActiveTab('general')
     }
   }, [activeTab, visibleTabs])
@@ -217,9 +223,51 @@ const AgentDetailPage: React.FC = () => {
     navigate('/agents')
   }, [navigate])
 
-  const handleSaveSuccess = useCallback(() => {
-    navigate('/agents')
-  }, [navigate])
+  const handleSaveSuccess = useCallback(
+    async (savedAgent: CustomAgent) => {
+      const id = savedAgent.id?.trim()
+      if (!id) {
+        return
+      }
+
+      if (isCreating) {
+        navigate(`/agents/${encodeURIComponent(id)}/edit`, { replace: true })
+        return
+      }
+
+      try {
+        const fetchedAgent = await getCustomAgent(appState, id)
+        setAgent(cleanAgentForConfig(fetchedAgent))
+        setSaveChangeNote('')
+      } catch (err) {
+        console.error(err)
+      }
+    },
+    [appState, isCreating, navigate]
+  )
+
+  const handleVersionRolledBack = useCallback(async () => {
+    if (!appState || !agentId?.trim()) {
+      return
+    }
+
+    try {
+      const fetchedAgent = await getCustomAgent(appState, agentId)
+      setAgent(cleanAgentForConfig(fetchedAgent))
+    } catch (err) {
+      console.error(err)
+      setError(
+        getEntityLoadErrorMessage(
+          err,
+          {
+            notFoundKey: 'agent_not_found',
+            errorKey: 'error_loading_agent',
+          },
+          t
+        )
+      )
+    }
+  }, [appState, agentId, t])
 
   const {
     state,
@@ -227,6 +275,7 @@ const AgentDetailPage: React.FC = () => {
     updateField,
     handleSave,
     isFormValid,
+    isDirty,
     showDisableConfirm,
     disableConfirmMessage,
     handleConfirmDisable,
@@ -235,7 +284,6 @@ const AgentDetailPage: React.FC = () => {
     agent,
     availableTools: catalogTools,
     onSave: handleSaveSuccess,
-    onHide: handleNavigateBack,
   })
 
   const isCommerceTriggerSelected =
@@ -376,6 +424,21 @@ const AgentDetailPage: React.FC = () => {
       )
     }
 
+    if (activeTab === 'versions' && agentId) {
+      return (
+        <div className="agent-detail-tab-panel">
+          <h2 className="agent-detail-section-title">{t('agent_versions')}</h2>
+          <AgentVersionsTab
+            key={agent?.metadata?.version ?? 'current'}
+            agentId={agentId}
+            onRolledBack={() => {
+              void handleVersionRolledBack()
+            }}
+          />
+        </div>
+      )
+    }
+
     if (activeTab === 'conversations') {
       return (
         <div className="agent-detail-tab-panel">
@@ -464,13 +527,28 @@ const AgentDetailPage: React.FC = () => {
             </p>
           </div>
           <div className="agent-detail-header-right">
-            <Button
-              type="button"
-              label={t('save')}
-              className="agent-detail-save-btn"
-              onClick={() => handleSave()}
-              disabled={saving || !isFormValid}
-            />
+            {isCreating ? (
+              <Button
+                type="button"
+                label={t('save')}
+                className="agent-detail-save-btn"
+                onClick={() => {
+                  void handleSave()
+                }}
+                disabled={saving || !isFormValid || !isDirty}
+                loading={saving}
+              />
+            ) : (
+              <AgentSaveWithChangeNote
+                saving={saving}
+                disabled={!isFormValid || !isDirty}
+                changeNote={saveChangeNote}
+                onChangeNote={setSaveChangeNote}
+                onSave={() => {
+                  void handleSave(saveChangeNote)
+                }}
+              />
+            )}
           </div>
         </div>
 

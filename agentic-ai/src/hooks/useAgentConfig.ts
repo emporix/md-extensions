@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   CustomAgent,
   LlmConfig,
@@ -27,6 +28,7 @@ import {
   getValidCollaborations,
   areCollaborationsValid,
 } from '../utils/agentCollaborationHelpers'
+import { isFormDirty, toFormSnapshot } from '../utils/formDirty'
 import { isValidAgentOutputJsonSchema } from '../utils/validateJsonSchema'
 import {
   areTeamsAgentToolsValid,
@@ -50,7 +52,6 @@ interface UseAgentConfigProps {
   agent: CustomAgent | null
   availableTools: Tool[]
   onSave: (agent: CustomAgent) => void
-  onHide: () => void
 }
 
 interface AgentCollaboration {
@@ -98,9 +99,9 @@ export const useAgentConfig = ({
   agent,
   availableTools,
   onSave,
-  onHide,
 }: UseAgentConfigProps) => {
   const appState = useAppState()
+  const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
   const [showDisableConfirm, setShowDisableConfirm] = useState(false)
   const [disableConfirmMessage, setDisableConfirmMessage] = useState('')
@@ -143,6 +144,7 @@ export const useAgentConfig = ({
   })
 
   const [saving, setSaving] = useState(false)
+  const [baseline, setBaseline] = useState<string | null>(null)
 
   useEffect(() => {
     if (agent) {
@@ -151,7 +153,7 @@ export const useAgentConfig = ({
         'endpoint',
       ]
 
-      setState({
+      const nextState: AgentConfigState = {
         agentId: agent.id,
         agentName: agent.name || ({} as LocalizedString),
         description: agent.description || ({} as LocalizedString),
@@ -219,7 +221,9 @@ export const useAgentConfig = ({
             eventScopes: commerceTriggerExtractEventScopes(raw ?? null),
           }
         })(),
-      })
+      }
+      setState(nextState)
+      setBaseline(toFormSnapshot(nextState))
     }
   }, [agent])
 
@@ -227,180 +231,201 @@ export const useAgentConfig = ({
     setState((prev) => ({ ...prev, [field]: value }))
   }, [])
 
-  const buildAgentFromState = useCallback(() => {
-    if (!agent) return null
+  const buildAgentFromState = useCallback(
+    (changeNote?: string) => {
+      if (!agent) return null
 
-    const triggers = state.triggerTypes.map((triggerType) => ({
-      type: triggerType,
-      config:
-        triggerType === 'commerce_events'
-          ? mergeCommerceTriggerPersistedConfig(
-              state.commerceEvents,
-              state.commerceEventFilter,
-              state.eventScopes
-            )
-          : null,
-    }))
-
-    const existingTeamsTrigger = agent.triggers?.find(
-      (trigger) => trigger.type === TEAMS_TRIGGER
-    )
-    const isDefaultInboundAgent = isAgentDefaultInboundOwnerForTeamsTools(
-      state.agentId,
-      state.nativeTools,
-      availableTools
-    )
-    if (
-      existingTeamsTrigger &&
-      isDefaultInboundAgent &&
-      !state.triggerTypes.includes(TEAMS_TRIGGER)
-    ) {
-      triggers.push(existingTeamsTrigger)
-    }
-
-    return {
-      ...agent,
-      id: state.agentId || '',
-      name: state.agentName || ({} as LocalizedString),
-      description: state.description || ({} as LocalizedString),
-      triggers: triggers,
-      userPrompt: state.prompt || '',
-      templatePrompt: state.templatePrompt || undefined,
-      outputFormat: state.outputFormat.trim() || undefined,
-      llmConfig: (() => {
-        const baseConfig: LlmConfig = {
-          model: state.model || '',
-          maxTokens: parseInt(state.maxTokens, 10) || 0,
-          provider: state.provider,
-          additionalParams: agent.llmConfig?.additionalParams || null,
-        }
-
-        if (!state.disableTemperature) {
-          baseConfig.temperature = parseFloat(state.temperature) || 0
-        }
-
-        if (
-          state.provider !== LlmProvider.EMPORIX_OPENAI &&
-          state.provider !== LlmProvider.SELF_HOSTED_OLLAMA &&
-          state.provider !== LlmProvider.SELF_HOSTED_VLLM &&
-          state.tokenId
-        ) {
-          baseConfig.token = { id: state.tokenId }
-        }
-
-        if (
-          state.provider === LlmProvider.SELF_HOSTED_OLLAMA ||
-          state.provider === LlmProvider.SELF_HOSTED_VLLM
-        ) {
-          if (state.baseProvider) {
-            baseConfig.baseProvider = state.baseProvider
-          }
-
-          baseConfig.selfHostedParams = {
-            url: state.selfHostedUrl || '',
-          }
-
-          if (state.selfHostedUseOAuth) {
-            if (state.oauthId) {
-              baseConfig.selfHostedParams.oauth = { id: state.oauthId }
-            }
-          } else {
-            if (state.selfHostedAuthHeaderName) {
-              baseConfig.selfHostedParams.authorizationHeaderName =
-                state.selfHostedAuthHeaderName
-            }
-
-            if (state.selfHostedTokenId) {
-              baseConfig.selfHostedParams.authorizationHeaderToken = {
-                id: state.selfHostedTokenId,
-              }
-            }
-          }
-
-          const extraModelKey = state.fileProcessingExtraModelKey.trim()
-          if (state.fileProcessingUseResponsesApi || extraModelKey) {
-            baseConfig.selfHostedParams.fileProcessingConfig = {
-              useResponsesApi: state.fileProcessingUseResponsesApi,
-              ...(extraModelKey ? { extraModelKey } : {}),
-            }
-          }
-        }
-
-        return baseConfig
-      })(),
-      maxRecursionLimit: parseInt(state.recursionLimit, 10) || 20,
-      enableMemory: state.enableMemory,
-      mcpServers: state.mcpServers || [],
-      nativeTools: state.nativeTools || [],
-      agentCollaborations: getValidCollaborations(state.agentCollaborations),
-      enabled: agent.enabled || false,
-      type: agent.type,
-      metadata: agent.metadata || {
+      const isUpdate = !!agent.id
+      const baseMetadata = agent.metadata ?? {
         version: 0,
         createdAt: new Date().toISOString(),
         modifiedAt: new Date().toISOString(),
         schema: null,
         mixins: {},
-      },
-      icon: state.selectedIcon,
-      tags: state.tags || [],
-      requiredScopes: state.requiredScopes || [],
-    } as CustomAgent
-  }, [agent, state, availableTools])
+      }
+      const trimmedChangeNote = changeNote?.trim()
+      const metadata = isUpdate
+        ? {
+            version: baseMetadata.version,
+            createdAt: baseMetadata.createdAt,
+            modifiedAt: baseMetadata.modifiedAt,
+            schema: baseMetadata.schema,
+            mixins: baseMetadata.mixins ?? {},
+            ...(trimmedChangeNote ? { changeNote: trimmedChangeNote } : {}),
+          }
+        : baseMetadata
 
-  const handleSave = useCallback(async () => {
-    if (!agent) return
+      const triggers = state.triggerTypes.map((triggerType) => ({
+        type: triggerType,
+        config:
+          triggerType === 'commerce_events'
+            ? mergeCommerceTriggerPersistedConfig(
+                state.commerceEvents,
+                state.commerceEventFilter,
+                state.eventScopes
+              )
+            : null,
+      }))
 
-    setSaving(true)
-
-    const updatedAgent = buildAgentFromState()
-    if (!updatedAgent) {
-      setSaving(false)
-      return
-    }
-
-    try {
-      const savedAgent = await upsertCustomAgent(appState, updatedAgent)
-
-      setSaving(false)
-      const isUpdate = !!agent.id
-      showSuccess(
-        isUpdate ? 'Agent updated successfully!' : 'Agent created successfully!'
+      const existingTeamsTrigger = agent.triggers?.find(
+        (trigger) => trigger.type === TEAMS_TRIGGER
       )
-      onSave(savedAgent)
-      onHide()
+      const isDefaultInboundAgent = isAgentDefaultInboundOwnerForTeamsTools(
+        state.agentId,
+        state.nativeTools,
+        availableTools
+      )
+      if (
+        existingTeamsTrigger &&
+        isDefaultInboundAgent &&
+        !state.triggerTypes.includes(TEAMS_TRIGGER)
+      ) {
+        triggers.push(existingTeamsTrigger)
+      }
 
-      setPendingAgent(null)
-      setShowDisableConfirm(false)
-    } catch (error) {
-      setSaving(false)
+      return {
+        ...agent,
+        id: state.agentId || '',
+        name: state.agentName || ({} as LocalizedString),
+        description: state.description || ({} as LocalizedString),
+        triggers: triggers,
+        userPrompt: state.prompt || '',
+        templatePrompt: state.templatePrompt || undefined,
+        outputFormat: state.outputFormat.trim() || undefined,
+        llmConfig: (() => {
+          const baseConfig: LlmConfig = {
+            model: state.model || '',
+            maxTokens: parseInt(state.maxTokens, 10) || 0,
+            provider: state.provider,
+            additionalParams: agent.llmConfig?.additionalParams || null,
+          }
 
-      if (error instanceof ApiClientError && error.disableable) {
-        setPendingAgent(updatedAgent)
-        setDisableConfirmMessage(error.message)
-        setShowDisableConfirm(true)
+          if (!state.disableTemperature) {
+            baseConfig.temperature = parseFloat(state.temperature) || 0
+          }
+
+          if (
+            state.provider !== LlmProvider.EMPORIX_OPENAI &&
+            state.provider !== LlmProvider.SELF_HOSTED_OLLAMA &&
+            state.provider !== LlmProvider.SELF_HOSTED_VLLM &&
+            state.tokenId
+          ) {
+            baseConfig.token = { id: state.tokenId }
+          }
+
+          if (
+            state.provider === LlmProvider.SELF_HOSTED_OLLAMA ||
+            state.provider === LlmProvider.SELF_HOSTED_VLLM
+          ) {
+            if (state.baseProvider) {
+              baseConfig.baseProvider = state.baseProvider
+            }
+
+            baseConfig.selfHostedParams = {
+              url: state.selfHostedUrl || '',
+            }
+
+            if (state.selfHostedUseOAuth) {
+              if (state.oauthId) {
+                baseConfig.selfHostedParams.oauth = { id: state.oauthId }
+              }
+            } else {
+              if (state.selfHostedAuthHeaderName) {
+                baseConfig.selfHostedParams.authorizationHeaderName =
+                  state.selfHostedAuthHeaderName
+              }
+
+              if (state.selfHostedTokenId) {
+                baseConfig.selfHostedParams.authorizationHeaderToken = {
+                  id: state.selfHostedTokenId,
+                }
+              }
+            }
+
+            const extraModelKey = state.fileProcessingExtraModelKey.trim()
+            if (state.fileProcessingUseResponsesApi || extraModelKey) {
+              baseConfig.selfHostedParams.fileProcessingConfig = {
+                useResponsesApi: state.fileProcessingUseResponsesApi,
+                ...(extraModelKey ? { extraModelKey } : {}),
+              }
+            }
+          }
+
+          return baseConfig
+        })(),
+        maxRecursionLimit: parseInt(state.recursionLimit, 10) || 20,
+        enableMemory: state.enableMemory,
+        mcpServers: state.mcpServers || [],
+        nativeTools: state.nativeTools || [],
+        agentCollaborations: getValidCollaborations(state.agentCollaborations),
+        enabled: agent.enabled || false,
+        type: agent.type,
+        metadata,
+        icon: state.selectedIcon,
+        tags: state.tags || [],
+        requiredScopes: state.requiredScopes || [],
+      } as CustomAgent
+    },
+    [agent, state, availableTools]
+  )
+
+  const handleSave = useCallback(
+    async (changeNote?: string) => {
+      if (!agent) return
+
+      setSaving(true)
+
+      const updatedAgent = buildAgentFromState(changeNote)
+      if (!updatedAgent) {
+        setSaving(false)
         return
       }
 
-      if (error instanceof ApiClientError && error.status === 409) {
-        showError(
-          'Agent with this ID already exists. Please choose a different ID.'
+      try {
+        await upsertCustomAgent(appState, updatedAgent)
+
+        setSaving(false)
+        const isUpdate = !!agent.id
+        showSuccess(
+          isUpdate
+            ? t('agent_updated_successfully')
+            : t('agent_created_successfully')
         )
-        return
-      }
+        setBaseline(toFormSnapshot(state))
+        onSave(updatedAgent)
 
-      const errorMessage = formatApiError(error, 'Failed to save agent')
-      showError(`Error saving agent: ${errorMessage}`)
-    }
-  }, [
-    agent,
-    appState,
-    buildAgentFromState,
-    onSave,
-    onHide,
-    showSuccess,
-    showError,
-  ])
+        setPendingAgent(null)
+        setShowDisableConfirm(false)
+      } catch (error) {
+        setSaving(false)
+
+        if (error instanceof ApiClientError && error.disableable) {
+          setPendingAgent(updatedAgent)
+          setDisableConfirmMessage(error.message)
+          setShowDisableConfirm(true)
+          return
+        }
+
+        if (error instanceof ApiClientError && error.status === 409) {
+          showError(t('agent_id_already_exists'))
+          return
+        }
+
+        const errorMessage = formatApiError(error, t('failed_to_save_agent'))
+        showError(t('error_saving_agent', { message: errorMessage }))
+      }
+    },
+    [
+      agent,
+      appState,
+      buildAgentFromState,
+      onSave,
+      showSuccess,
+      showError,
+      state,
+      t,
+    ]
+  )
 
   const handleConfirmDisable = useCallback(async () => {
     if (!pendingAgent) return
@@ -414,25 +439,26 @@ export const useAgentConfig = ({
         enabled: false,
       }
 
-      const savedAgent = await upsertCustomAgent(appState, disabledAgent)
+      await upsertCustomAgent(appState, disabledAgent)
 
       setSaving(false)
       const isUpdate = !!pendingAgent.id
-      const successMessage = isUpdate
-        ? 'Agent updated and deactivated successfully!'
-        : 'Agent created and deactivated successfully!'
-      showSuccess(successMessage)
-      onSave(savedAgent)
-      onHide()
+      showSuccess(
+        isUpdate
+          ? t('agent_updated_deactivated_successfully')
+          : t('agent_created_deactivated_successfully')
+      )
+      setBaseline(toFormSnapshot(state))
+      onSave(disabledAgent)
 
       setPendingAgent(null)
     } catch (error) {
       setSaving(false)
-      const errorMessage = formatApiError(error, 'Failed to save agent')
-      showError(`Error saving agent: ${errorMessage}`)
+      const errorMessage = formatApiError(error, t('failed_to_save_agent'))
+      showError(t('error_saving_agent', { message: errorMessage }))
       setPendingAgent(null)
     }
-  }, [pendingAgent, appState, onSave, onHide, showSuccess, showError])
+  }, [pendingAgent, appState, onSave, showSuccess, showError, state, t])
 
   const handleCancelDisable = useCallback(() => {
     setShowDisableConfirm(false)
@@ -461,6 +487,8 @@ export const useAgentConfig = ({
       !isSelfHosted ||
       (state.selfHostedUrl.trim() &&
         (!state.selfHostedUseOAuth || !!state.oauthId.trim()))
+
+    const triggerValidation = state.triggerTypes.length > 0
 
     const commerceFilterValidation =
       !state.triggerTypes.includes('commerce_events') ||
@@ -523,6 +551,7 @@ export const useAgentConfig = ({
       basicValidation &&
       tokenValidation &&
       selfHostedValidation &&
+      triggerValidation &&
       commerceFilterValidation &&
       collaborationValidation &&
       outputFormatValidation &&
@@ -539,6 +568,7 @@ export const useAgentConfig = ({
     updateField,
     handleSave,
     isFormValid: isFormValid(),
+    isDirty: isFormDirty(state, baseline),
     showDisableConfirm,
     disableConfirmMessage,
     handleConfirmDisable,

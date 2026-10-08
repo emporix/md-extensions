@@ -22,6 +22,7 @@ const TRANSLATIONS_DE = {
   session: 'Sitzung',
   load_flow: 'Ablauf Laden',
   sessions: 'Sitzungen',
+  logs: 'Logs',
   previous_page: 'Zurück',
   next_page: 'Weiter',
   rows_per_page: 'Zeilen pro Seite',
@@ -98,6 +99,15 @@ const TRANSLATIONS_DE = {
   bundle_helper_template_not_found:
     'Hilfsagent-Vorlage nicht gefunden: {{templateId}}.',
   agent_created_successfully: 'Agent erfolgreich erstellt!',
+  agent_updated_successfully: 'Agent erfolgreich aktualisiert!',
+  agent_id_already_exists:
+    'Ein Agent mit dieser ID existiert bereits. Bitte wählen Sie eine andere ID.',
+  failed_to_save_agent: 'Agent konnte nicht gespeichert werden',
+  error_saving_agent: 'Fehler beim Speichern des Agenten: {{message}}',
+  agent_updated_deactivated_successfully:
+    'Agent aktualisiert und deaktiviert!',
+  agent_created_deactivated_successfully:
+    'Agent erstellt und deaktiviert!',
   agent_name: 'Agent Name',
   enter_agent_name: 'Agent Namen eingeben',
   description: 'Beschreibung',
@@ -206,6 +216,57 @@ const TRANSLATIONS_DE = {
     'Leer lassen, um Routing für Cold-Inbound-Traffic zu deaktivieren.',
   teams_default_inbound_agent_not_found:
     'Ausgewählter Standard-Eingangsagent wurde nicht gefunden. Aktualisieren und erneut versuchen.',
+  agent_versions: 'Versionen',
+  agent_change_note_label: 'Änderungsnotiz',
+  agent_change_note_placeholder: 'Gründe für die Änderung (optional)',
+  agent_version_column: 'Version',
+  filter_by_version: 'Nach Version filtern',
+  filter_by_author: 'Nach Autor filtern',
+  filter_by_change_note: 'Nach Änderungsnotiz filtern',
+  agent_version_date: 'Datum',
+  agent_version_author: 'Autor',
+  agent_version_change_note: 'Änderungsnotiz',
+  agent_version_actions: 'Aktionen',
+  agent_version_compare: 'Vergleichen',
+  agent_version_rollback: 'Zurücksetzen',
+  agent_version_rollback_title: 'Auf Version {{version}} zurücksetzen?',
+  agent_version_rollback_message:
+    'Die aktuelle gespeicherte Konfiguration wird durch Version {{version}} ersetzt.\nEs wird eine neue Version erstellt.',
+  agent_version_rollback_confirm: 'Zurücksetzen',
+  agent_version_rollback_success: 'Auf Version {{version}} zurückgesetzt.',
+  agent_version_rollback_error:
+    'Zurücksetzen auf Version {{version}} ist fehlgeschlagen.',
+  agent_version_rollback_missing_config:
+    'Diese Version kann nicht wiederhergestellt werden, weil die gespeicherte Konfiguration unvollständig ist.',
+  agent_version_rollback_change_note: 'Auf Version {{version}} zurückgesetzt',
+  agent_version_current: 'Aktuelle Version',
+  agent_version_system: 'System',
+  agent_version_type_external: 'API-Client',
+  agent_version_diff_title:
+    'Version {{version}} im Vergleich zur aktuellen Version ({{current}})',
+  agent_version_diff_selected: 'Version {{version}}',
+  agent_version_diff_current: 'Aktuell (Version {{version}})',
+  agent_version_diff_none:
+    'Keine Unterschiede in der gespeicherten Konfiguration.',
+  agent_version_field_name: 'Name',
+  agent_version_field_description: 'Beschreibung',
+  agent_version_field_icon: 'Icon',
+  agent_version_field_tags: 'Tags',
+  agent_version_field_enabled: 'Aktiviert',
+  agent_version_field_requiredScopes: 'Erforderliche Scopes',
+  agent_version_field_templatePrompt: 'Vorlagen-Prompt',
+  agent_version_field_userPrompt: 'Benutzer-Prompt',
+  agent_version_field_llmConfig: 'Modell',
+  agent_version_field_triggers: 'Trigger',
+  agent_version_field_mcpServers: 'MCP-Server',
+  agent_version_field_nativeTools: 'Native Tools',
+  agent_version_field_agentCollaborations: 'Kollaborationen',
+  agent_version_field_maxRecursionLimit: 'Rekursionslimit',
+  agent_version_field_enableMemory: 'Speicher',
+  agent_version_field_outputFormat: 'Ausgabeformat',
+  error_loading_agent_versions: 'Versionen konnten nicht geladen werden',
+  loading_agent_versions: 'Versionen werden geladen...',
+  no_agent_versions_found: 'Keine Versionen für die Filter gefunden',
   conversations: 'Konversationen',
   conversation_name: 'Kanal / Chat',
   filter_by_conversation_name: 'Nach Kanal / Chat filtern',
@@ -702,6 +763,10 @@ const TRANSLATIONS_DE = {
   model_input_mode_custom: 'Benutzerdefiniert',
   search_for_models: 'Modelle suchen..',
   no_models_match_search: 'Keine Modelle entsprechen Ihrer Suche',
+  model_auto_changed:
+    'Modell "{{from}}" ist für diesen Anbieter nicht verfügbar. Auf "{{to}}" gewechselt.',
+  model_auto_cleared:
+    'Modell "{{from}}" ist für diesen Anbieter nicht verfügbar und wurde entfernt.',
   custom_model_name: 'Benutzerdefinierter Modellname',
   custom_model_name_tooltip:
     'Geben Sie eine von Ihrem Anbieter unterstützte Modellkennung ein',
@@ -1006,6 +1071,9 @@ const TRANSLATIONS_DE = {
   filter_by_included_agents: 'Nach enthaltenen Agenten filtern',
   filter_by_message: 'Nach Nachricht filtern',
   select_severity: 'Schweregrad auswählen',
+  select_job_type: 'Job-Typ auswählen',
+  select_status: 'Status auswählen',
+  select_result: 'Ergebnis auswählen',
   clear_filters: 'Filter löschen',
   no_jobs_found_with_filters:
     'Keine Jobs gefunden, die den Filtern entsprechen',
@@ -1051,6 +1119,9 @@ const TRANSLATIONS_DE = {
   // Localized Input
   show_languages: 'Sprachen anzeigen',
   hide_languages: 'Sprachen ausblenden',
+
+  'global.pagination':
+    'Zeige {first} bis {last} von {totalRecords} Einträgen',
 }
 
 export default TRANSLATIONS_DE

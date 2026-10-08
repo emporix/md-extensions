@@ -79,11 +79,34 @@ const OAuthDetailPage: React.FC = () => {
     navigate('/oauth')
   }, [navigate])
 
-  const handleSaveSuccess = useCallback(() => {
-    navigate('/oauth')
-  }, [navigate])
+  const handleSaveSuccess = useCallback(
+    async (savedId: string) => {
+      const id = savedId.trim()
+      if (!id) {
+        return
+      }
 
-  const { state, saving, updateField, handleSave, isFormValid } =
+      if (isCreating) {
+        navigate(`/oauth/${encodeURIComponent(id)}/edit`, { replace: true })
+        return
+      }
+
+      try {
+        const oauths = await getOAuths(appState)
+        const foundOAuth = oauths.find((item) => item.id === id)
+        if (!foundOAuth) {
+          console.error(t('oauth_not_found'))
+          return
+        }
+        setOAuth(foundOAuth)
+      } catch (err) {
+        console.error(err)
+      }
+    },
+    [appState, isCreating, navigate, t]
+  )
+
+  const { state, saving, updateField, handleSave, isFormValid, isDirty } =
     useOAuthConfig({
       oauth,
       isCreating,
@@ -170,7 +193,7 @@ const OAuthDetailPage: React.FC = () => {
               label={t('save')}
               className="oauth-detail-save-btn"
               onClick={() => handleSave()}
-              disabled={saving || !isFormValid}
+              disabled={saving || !isFormValid || !isDirty}
               loading={saving}
             />
           </div>

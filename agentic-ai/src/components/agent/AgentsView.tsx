@@ -120,14 +120,14 @@ const AgentsView = memo(() => {
         ) : customAgents.length > 0 ? (
           <div className="agents-grid">
             {customAgents.map((agent) => (
-                <CustomAgentCard
-                  key={agent.id}
-                  agent={agent}
-                  onToggleActive={toggleCustomAgentActive}
-                  onConfigure={handleConfigure}
-                  onRemove={removeCustomAgent}
-                />
-              ))}
+              <CustomAgentCard
+                key={agent.id}
+                agent={agent}
+                onToggleActive={toggleCustomAgentActive}
+                onConfigure={handleConfigure}
+                onRemove={removeCustomAgent}
+              />
+            ))}
           </div>
         ) : (
           <div className="no-agents-message">

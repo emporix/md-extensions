@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   extractInitialMessageFromLog,
   extractResponseFromLog,
+  formatAgentIdWithVersion,
 } from './logHelpers'
 import { LogMessage } from '../types/Log'
 
@@ -385,5 +386,21 @@ describe('extractResponseFromLog', () => {
     ]
 
     expect(extractResponseFromLog(messages)).toBeUndefined()
+  })
+})
+
+describe('formatAgentIdWithVersion', () => {
+  it('returns agent id when version is missing', () => {
+    expect(formatAgentIdWithVersion('calculation-agent', undefined)).toBe(
+      'calculation-agent'
+    )
+    expect(formatAgentIdWithVersion('complaint', null)).toBe('complaint')
+  })
+
+  it('appends version in parentheses when present', () => {
+    expect(formatAgentIdWithVersion('complaint', 1)).toBe('complaint (v1)')
+    expect(formatAgentIdWithVersion('calculation-agent', 5)).toBe(
+      'calculation-agent (v5)'
+    )
   })
 })

@@ -7,6 +7,7 @@ import {
   getModelsApiProvider,
   getModelsForProvider,
   isEmptyModelsCatalog,
+  isModelSelectionPreserved,
   isSelfHostedProvider,
   normalizeLlmModelProvider,
   rememberModelForProvider,
@@ -158,9 +159,36 @@ describe('llmModelHelpers', () => {
       resolveModelForProviderSwitch(
         LlmProvider.ANTHROPIC,
         modelsByProvider,
+        undefined,
         'claude-opus-4-6'
       )
     ).toBe('claude-opus-4-6')
+  })
+
+  it('resolveModelForProviderSwitch keeps current model when it exists on next catalog', () => {
+    expect(
+      resolveModelForProviderSwitch(
+        LlmProvider.EMPORIX_OPENAI,
+        modelsByProvider,
+        'gpt-4.1',
+        'gpt-4.1-mini'
+      )
+    ).toBe('gpt-4.1')
+  })
+
+  it('isModelSelectionPreserved treats a catalog name match as the same selection', () => {
+    const models = modelsByProvider.get('openai') ?? []
+    expect(isModelSelectionPreserved('gpt-4.1', 'gpt-4.1', models)).toBe(true)
+    expect(
+      isModelSelectionPreserved('Friendly', 'model-id', [
+        { id: 'model-id', name: 'Friendly' },
+      ])
+    ).toBe(true)
+    expect(isModelSelectionPreserved('', 'gpt-4.1', models)).toBe(true)
+    expect(isModelSelectionPreserved('gpt-4.1', 'gpt-4.1-mini', models)).toBe(
+      false
+    )
+    expect(isModelSelectionPreserved('llama3', '', [])).toBe(false)
   })
 
   it('resolveModelForProviderSwitch defaults to first catalog model', () => {

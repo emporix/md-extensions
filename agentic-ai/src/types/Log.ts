@@ -4,6 +4,7 @@ export interface LogMessage {
   timestamp: string
   isBusinessLog?: boolean
   agentId: string
+  agentVersion?: number
   requestId?: string
 }
 

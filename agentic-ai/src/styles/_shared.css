@@ -60,6 +60,54 @@
   background: var(--bg-hover);
 }
 
+.responsive-datatable {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.responsive-datatable.p-datatable-responsive-scroll > .p-datatable-wrapper {
+  max-width: 100%;
+  overflow-y: hidden;
+}
+
+.responsive-datatable.p-datatable-responsive-scroll > .p-datatable-wrapper > table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.responsive-datatable th,
+.responsive-datatable td {
+  min-width: 0;
+  max-width: none;
+}
+
+.responsive-datatable td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.responsive-datatable.p-datatable .p-datatable-tbody > tr > td {
+  height: 55px;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+.responsive-datatable.p-datatable-striped .p-datatable-tbody > tr {
+  background: var(--grey-0);
+}
+
+.responsive-datatable.p-datatable-striped .p-datatable-tbody > tr.p-row-odd {
+  background: #fff;
+}
+
+.responsive-datatable.p-datatable-striped .p-datatable-tbody > tr:hover,
+.responsive-datatable.p-datatable-striped .p-datatable-tbody > tr.p-selectable-row:hover {
+  background: var(--bg-hover);
+}
+
 .filter-dropdown-wide {
   min-width: 12rem;
 }
@@ -167,20 +215,6 @@
   min-width: var(--col-width-message-min);
 }
 
-/* Compact column variants for related/narrow tables */
-.col-severity-compact {
-  width: 70px;
-  min-width: 70px;
-  max-width: 70px;
-}
-
-.col-timestamp-compact,
-.col-datetime-compact {
-  width: var(--col-width-timestamp-compact);
-  min-width: var(--col-width-timestamp-compact);
-  max-width: var(--col-width-timestamp-compact);
-}
-
 /* Additional column width utilities */
 .col-sm {
   width: 100px;
@@ -207,12 +241,6 @@
   width: 80px;
   min-width: 80px;
   max-width: 80px;
-}
-
-.col-status-wide {
-  width: 100px;
-  min-width: 100px;
-  max-width: 100px;
 }
 
 /* ========================================
@@ -971,6 +999,16 @@ h1 .details-title-with-back {
   font-weight: 600;
   margin-top: var(--spacing-md);
   white-space: pre-line;
+}
+
+.confirm-dialog-change-note {
+  margin-top: var(--space-lg);
+  width: 100%;
+}
+
+.confirm-dialog-change-note .p-inputtextarea {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Icon spacing */

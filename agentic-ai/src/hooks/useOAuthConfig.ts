@@ -6,12 +6,13 @@ import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
 import { upsertOAuth as upsertOAuthApi } from '../services/oauthService'
 import { formatApiError } from '../utils/errorHelpers'
+import { isFormDirty, toFormSnapshot } from '../utils/formDirty'
 import { sanitizeIdInput } from '../utils/validation'
 
 interface UseOAuthConfigProps {
   oauth: OAuth | null
   isCreating: boolean
-  onSave: () => void
+  onSave: (savedId: string) => void
 }
 
 interface OAuthConfigState {
@@ -44,10 +45,11 @@ export const useOAuthConfig = ({
     enabled: true,
   })
   const [saving, setSaving] = useState(false)
+  const [baseline, setBaseline] = useState<string | null>(null)
 
   useEffect(() => {
     if (oauth) {
-      setState({
+      const nextState: OAuthConfigState = {
         oauthId: oauth.id ?? '',
         url: oauth.url ?? '',
         clientId: oauth.clientId ?? '',
@@ -55,7 +57,9 @@ export const useOAuthConfig = ({
         scope: oauth.scope ?? '',
         clientSecretTokenId: oauth.clientSecretToken?.id ?? '',
         enabled: oauth.enabled !== false,
-      })
+      }
+      setState(nextState)
+      setBaseline(toFormSnapshot(nextState))
     }
   }, [oauth])
 
@@ -109,7 +113,8 @@ export const useOAuthConfig = ({
           ? t('oauth_created_successfully')
           : t('oauth_updated_successfully')
       )
-      onSave()
+      setBaseline(toFormSnapshot(state))
+      onSave(state.oauthId)
     } catch (err) {
       const errorMessage = formatApiError(err, t('error_saving_oauth'))
       showError(`${t('error_saving_oauth')}: ${errorMessage}`)
@@ -124,13 +129,7 @@ export const useOAuthConfig = ({
     onSave,
     showError,
     showSuccess,
-    state.clientId,
-    state.clientSecretTokenId,
-    state.enabled,
-    state.grantType,
-    state.oauthId,
-    state.scope,
-    state.url,
+    state,
     t,
   ])
 
@@ -140,5 +139,6 @@ export const useOAuthConfig = ({
     updateField,
     handleSave,
     isFormValid: isFormValid(),
+    isDirty: isFormDirty(state, baseline),
   }
 }

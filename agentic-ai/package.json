@@ -24,6 +24,7 @@
     "@originjs/vite-plugin-federation": "^1.3.9",
     "ajv": "^8.20.0",
     "chart.js": "^4.4.1",
+    "diff": "^8.0.4",
     "font-awesome": "^4.7.0",
     "i18next": "^25.3.2",
     "jszip": "^3.10.1",

@@ -1,0 +1,172 @@
+.agent-version-author {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.unified-logs-section:has(.agent-versions-datatable) {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.agent-versions-datatable .col-version,
+.agent-versions-datatable .col-version-date,
+.agent-versions-datatable .col-version-actions {
+  width: calc(100% * 1 / 7);
+}
+
+.agent-versions-datatable .col-version-author,
+.agent-versions-datatable .col-version-change-note {
+  width: calc(100% * 2 / 7);
+}
+
+.agent-versions-datatable td.col-version-actions {
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.agent-version-current-badge {
+  white-space: nowrap;
+}
+
+.agent-version-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.agent-versions-datatable .agent-version-action.p-button.p-button-icon-only.p-button-rounded {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+}
+
+/* PrimeReact sets dialog width inline; override it for the side-by-side diff. */
+.agent-version-diff-dialog.p-dialog {
+  width: min(960px, 92vw) !important;
+}
+
+.agent-version-diff-dialog .p-dialog-content {
+  max-height: 70vh;
+  overflow: auto;
+}
+
+.agent-version-diff-empty {
+  margin: 0;
+}
+
+.agent-version-diff-legend {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0 0 var(--space-md);
+  padding-bottom: var(--space-sm);
+  background: var(--color-surface-white);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.agent-version-diff-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.agent-version-diff-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.agent-version-diff-field-title {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.agent-version-diff-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.agent-version-diff-column-label {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.agent-version-diff-mark-remove {
+  background: var(--color-red-100);
+  color: var(--color-red-700);
+  border-radius: 2px;
+  padding: 0 0.1em;
+}
+
+.agent-version-diff-mark-add {
+  background: var(--color-green-100);
+  color: var(--color-green-700);
+  border-radius: 2px;
+  padding: 0 0.1em;
+}
+
+.agent-version-diff-split {
+  display: flex;
+  flex-direction: column;
+  max-height: 50vh;
+  overflow: auto;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-gray-50);
+}
+
+.agent-version-diff-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 1.5em;
+}
+
+.agent-version-diff-row-cell {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-base);
+  padding: 0 var(--space-sm);
+  background: var(--color-gray-50);
+}
+
+.agent-version-diff-row-cell + .agent-version-diff-row-cell {
+  border-left: 1px solid var(--border-default);
+}
+
+.agent-version-diff-row-same {
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-gray-50);
+}
+
+.agent-version-diff-row-remove {
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-red-50);
+}
+
+.agent-version-diff-row-add {
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-green-50);
+}
+
+.agent-version-diff-row-empty {
+  min-height: 1.5em;
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-gray-50);
+}
+
+@media (max-width: 768px) {
+  .agent-version-diff-row {
+    grid-template-columns: 1fr;
+  }
+}
