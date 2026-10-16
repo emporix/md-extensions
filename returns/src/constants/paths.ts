@@ -15,5 +15,7 @@ export const returnDetailPath = (returnId: string) => `/${returnId}`
 export const HOST_CUSTOMER_PATH = (customerId: string) =>
   `/apps/management/customers/${customerId}`
 
+// Orders is itself a federated remote (COP-6917): its detail route lives in
+// the hash, so a plain `/apps/management/orders/:id` would land on the list.
 export const HOST_ORDER_PATH = (orderId: string) =>
-  `/apps/management/orders/${orderId}`
+  `/apps/management/orders#/${orderId}`

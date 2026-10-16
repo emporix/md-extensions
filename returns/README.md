@@ -21,7 +21,7 @@ Management Dashboard "Returns" module, extracted into an `md-extensions` federat
 | `/add` | Create wizard — customer → orders → products → review |
 | `/:id` | Return detail — general tab plus one tab per mixin schema |
 
-Customer and order links leave the remote via `window.location.assign` to the host-owned `/apps/management/customers/:id` and `/apps/management/orders/:id` routes (see `src/constants/paths.ts`); there is no in-remote equivalent.
+Customer and order links leave the remote via `window.location.assign` to the host-owned `/apps/management/customers/:id` route and to the `orders` remote (`/apps/management/orders#/:id`) (see `src/constants/paths.ts`); there is no in-remote equivalent.
 
 ## Component library substitutions
 
