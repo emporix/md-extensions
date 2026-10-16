@@ -1,0 +1,81 @@
+@use '../../../styles/palette' as *;
+
+.section {
+  margin-bottom: 2rem;
+}
+
+.actionsRow {
+  margin-bottom: 1rem;
+}
+
+.fieldsWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.fieldColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.addressLines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.inlineGap {
+  display: flex;
+  column-gap: 0.25rem;
+}
+
+.subtitle {
+  margin: 2rem 0 0.5rem;
+  font-size: 1.25rem;
+  line-height: 1.5rem;
+  font-weight: normal;
+  color: $grey-5;
+}
+
+.invoiceNo {
+  margin-bottom: 1.5rem;
+}
+
+.warning {
+  padding: 15px 0;
+  text-align: center;
+}
+
+.entryTable {
+  border: 1px solid $grey-4;
+}
+
+.imageWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 32px;
+  border: 1px solid $grey-1;
+  border-radius: 2px;
+  background-color: white;
+}
+
+.image {
+  width: 36px;
+  height: 28px;
+}
+
+.expansionTabs {
+  padding: 3rem;
+}

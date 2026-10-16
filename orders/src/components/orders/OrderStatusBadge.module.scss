@@ -1,0 +1,14 @@
+@use '../../styles/palette' as *;
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.extended {
+  width: min-content;
+  font-size: 0.75rem;
+  text-align: center;
+  color: $grey-8;
+}

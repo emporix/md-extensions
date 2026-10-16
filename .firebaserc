@@ -29,6 +29,9 @@
         ],
         "emporix-returns": [
           "emporix-returns"
+        ],
+        "emporix-orders": [
+          "emporix-orders"
         ]
       }
     },
@@ -60,6 +63,9 @@
         ],
         "emporix-returns-stage": [
           "emporix-returns-stage"
+        ],
+        "emporix-orders-stage": [
+          "emporix-orders-stage"
         ]
       }
     },
@@ -91,6 +97,9 @@
         ],
         "emporix-returns-develop": [
           "emporix-returns-develop"
+        ],
+        "emporix-orders-develop": [
+          "emporix-orders-develop"
         ]
       }
     }

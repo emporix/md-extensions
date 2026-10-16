@@ -1,0 +1,154 @@
+@use '../../../styles/palette' as *;
+
+.section {
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  margin-bottom: 1rem;
+}
+
+// --- General (price table) ---
+.general {
+  display: flex;
+  justify-content: space-between;
+  gap: 4rem;
+}
+
+.priceTable {
+  width: 100%;
+  max-width: 550px;
+  margin-bottom: 1rem;
+}
+
+.sideFields {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1.5rem;
+}
+
+.row {
+  display: flex;
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
+  color: black;
+  border-bottom: 1px dashed $grey-4;
+}
+
+.rowHeader {
+  padding: 0 0 0.5rem;
+  font-weight: bold;
+  border-bottom-style: solid;
+}
+
+.rowBold {
+  font-weight: bold;
+}
+
+.rowSummary {
+  margin-bottom: 1rem;
+  font-weight: bold;
+  border: none;
+}
+
+.cell {
+  display: flex;
+  flex: 1 1 33.3333%;
+  align-items: center;
+}
+
+.cellEnd {
+  composes: cell;
+  justify-content: flex-end;
+}
+
+.nameWithIcon {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.infoIcon {
+  margin-left: 0.25rem;
+  color: $grey-8;
+  cursor: pointer;
+}
+
+.taxRate {
+  padding-left: 0.5rem;
+}
+
+.totalValueWrapper {
+  width: 100%;
+  padding-left: 1rem;
+}
+
+.totalValue {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  height: 2rem;
+  padding-right: 0.5rem;
+  background: $grey-1;
+}
+
+// --- Fields ---
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.fieldEnd {
+  flex-shrink: 0;
+  align-items: flex-end;
+  width: auto;
+}
+
+.fieldValue {
+  font-size: var(--font-size-sm);
+  color: $grey-6;
+}
+
+.muted {
+  display: flex;
+  align-items: center;
+  color: $grey-4;
+}
+
+.addressLines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+// --- Two-column sections (customer, delivery) ---
+.columns {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.column {
+  width: 100%;
+}
+
+.columnNarrow {
+  width: 100%;
+  max-width: 550px;
+}
+
+.divider {
+  align-self: stretch;
+  margin: 0 1.5rem;
+  border-left: 1px solid $grey-4;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}

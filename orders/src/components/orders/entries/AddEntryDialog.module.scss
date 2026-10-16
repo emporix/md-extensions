@@ -1,0 +1,41 @@
+@use '../../../styles/palette' as *;
+
+.footer {
+  display: flex;
+  justify-content: center;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  max-height: 100px;
+  margin-bottom: 0.5rem;
+  overflow-y: auto;
+}
+
+.chip {
+  max-width: 250px;
+}
+
+.chipsPlaceholder {
+  padding: 1rem;
+}
+
+.table {
+  flex: 1;
+  min-height: 0;
+}
+
+.thumb {
+  width: 32px;
+  height: 32px;
+}
+
+.thumbPlaceholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: $grey-2;
+}
