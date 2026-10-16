@@ -2,7 +2,7 @@
 
 **Audience:** agents extracting an MD module into `md-extensions`.  
 **SoT:** this file. Do **not** copy the tables into the skill, playbook, or registry — those files **link here**. Stale gap lists (`no InputSwitch`) have already shipped in those docs.  
-**CL version audited:** `2.7.0` (`component-library/src/index.ts`).  
+**CL version audited:** `2.11.0` (`component-library/src/index.ts`).  
 **MD source:** `management-dashboard` `primereact@8.7.0`, unique `src/` files, 2026-08-17.  
 **Related:** [MODULE_MIGRATION_PLAYBOOK.md](./MODULE_MIGRATION_PLAYBOOK.md) · skill `md-module-extraction` · CL skill `migrate-to-component-library`.
 
@@ -59,17 +59,17 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/toast` | `in-cl` | `ToastProvider` / `useToast` | 1.6.2 | 1 | Wrap federated entry once. |
 | `primereact/progressbar` | `in-cl` | `ProgressBar` | **2.4.0** | barrel | |
 | `primereact/api` (`FilterMatchMode`) | `in-cl` | `FilterMatchMode` | 2.0.0 | 33 | Other `api` helpers (`locale`, `addLocale`) are `type` / host i18n — see below. |
+| `primereact/inputnumber` | `in-cl` | `InputNumber` | **2.11.0** | 23 | Pattern B. `showButtons` + `buttonLayout` (MD 24px blue steppers, `pi-plus`/`pi-minus`), `prefix`/`suffix`, `mode="currency"`, fraction digits, `allowEmpty`. Change event `{ originalEvent, value }`. Prefer over `InputText type="number"`. |
+| `primereact/skeleton` | `in-cl` | `Skeleton` | **2.11.0** | ~15 | Pattern A. Prime props (`width`, `height`, `size`, `shape`, `borderRadius`, `animation`). |
+| `primereact/chip` | `in-cl` | `Chip` | **2.11.0** | 3 | Pattern A. `label`, `icon`, `removable` + `onRemove` (`pi-times-circle`), `removeAriaLabel`. Not the `Chips` input. |
 | `primereact/multiselect` | `partial` | `Dropdown` `multiple` | 1.7.0 | 11+ | Not a dedicated MultiSelect. Chip display via `display="chip"`. |
 | `primereact/inputtextarea` | `partial` | `InputText` `textarea` | 1.4.1 | 6+ | No separate textarea export. |
 | `primereact/badge` | `partial` | `StatusBadge` is **not** a drop-in | 2.5.0 | 6+ | CL `StatusBadge` = outlined status pill (`status` + `color`). Prime `Badge` = notification count badge. Promote Badge if you need the Prime widget. |
-| `primereact/inputnumber` | `missing` | — | — | 23 | **Highest-traffic gap.** Documented substitute: `InputText` `type="number"` (value shape unchanged). Promote if the module needs steppers / currency mode / `mode="decimal"`. |
-| `primereact/skeleton` | `missing` | — | — | ~15 | Loading placeholders (`TabsLoader`, detail rows). Promote if the module has skeleton screens. |
 | `primereact/chips` | `missing` | — | — | 10 | Free-text token input. **Not** Dropdown chip display. |
 | `primereact/tree` | `missing` | — | — | 6 | Categories / modules trees. |
 | `primereact/tag` | `missing` | — | — | 6 | List status/label chips. Do not silently swap to `StatusBadge` without checking API. |
 | `primereact/treetable` | `missing` | — | — | 4 | `EmporixTreeTable`, categories. |
 | `primereact/inputmask` | `missing` | — | — | 4 | Documented substitute: `InputText` `type="time"` for `"99:99"` masks. Promote for other masks. |
-| `primereact/chip` | `missing` | — | — | 3 | Single chip (display), not `Chips` input. |
 | `primereact/divider` | `missing` | — | — | 3 | Form section separators. |
 | `primereact/sidebar` | `missing` | — | — | 1 | `TableExtensions.tsx`. Documented substitute: local `SidePanel` (right drawer, 20rem) + CL `InputSwitch`. Copy from `returns` or `brands` `components/shared/SidePanel`. Do not fall back to CL `Dialog` + `Checkbox`. |
 | `primereact/paginator` | `missing` | — | — | 1 | Standalone (`EntityChangelogTab`). Table pagination is already on CL `DataTable`. `customer-groups` used custom control + CL `Dropdown`. |
@@ -89,7 +89,7 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/api` (`locale` / `addLocale`) | `type` | — | — | 3 | Host/i18n bootstrap, not a remote widget. |
 | `primereact/utils` (`classNames`) | `type` | — | — | 1 | Use the `classnames` package already in remotes. |
 
-Barrel-only extras already covered above: `Skeleton`, `Password`, `TriStateCheckbox`, `ProgressBar`, `FileUpload`, `MultiSelect`.
+Barrel-only extras already covered above: `Skeleton` (2.11.0), `Password`, `TriStateCheckbox`, `ProgressBar`, `FileUpload`, `MultiSelect`.
 
 ## CL shells with no Prime import in MD
 
@@ -111,9 +111,8 @@ Import these when the remote needs them; they are not Prime replacements:
 
 Order by MD usage. Ask the user before implementing; Pattern A vs B is mandatory in `migrate-to-component-library`.
 
-1. `InputNumber` (23)
-2. `Skeleton` (~15)
-3. `Chips` (10)
+1. ~~`InputNumber`~~ / ~~`Skeleton`~~ — done in 2.11.0 (COP-6917)
+2. `Chips` (10)
 4. `Tree` / `TreeTable` (6 / 4)
 5. `InputMask` (4) — unless `type="time"` is enough
 6. `Sidebar` (1, but `TableExtensions` is common) — or keep the local `SidePanel` substitute

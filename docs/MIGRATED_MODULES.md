@@ -21,8 +21,9 @@ Living list of Management Dashboard modules extracted into `md-extensions` under
 | `customer-groups` | `customerGroups` | COP-6096 | A | `5174` | `2.4.2` (migrate pinned ≥2.2.0) | Derived from U&G (customer groups only). Company field (`b2b.legalEntityId`); CL ConfirmBox/BackButton/DateValue/ProgressSpinner direct imports; `vite --mode dev`. Expose ships named+default `RemoteComponent` so MD `return module.default` works (2026-08-07). |
 | `brands` | `brands` | COP-6180 | A | `5175` | `2.6.0` | Green-field from template. First remote to import CL `SectionBox` instead of copying it, and first to need CL `Editor` / `FileUpload` / `ProgressBar` (added in 2.4.0 — see below). Ports `TableExtensions` (column visibility, `ext_brands`) with local `SidePanel` + CL `InputSwitch` (matching MD/returns). Columns trigger uses CL `SecondaryButton` `size="small"` `iconOnly` (2.6.0). Media tab (`AssetsViewer`, `MediaAssetUpload`) opens the host's `/media-assets/:id` via `window.location.assign` — no in-remote route exists for it. |
 | `returns` | `returns` | COP-6256 | A | `5176` | `2.9.2` | Green-field from MD `src/modules/returns`. First remote to port the **mixins subsystem** (form tabs + mixin table columns) and the first to need CL `InputSwitch` / `MoneyValue` / `StatusBadge` and `Tabs` `disabled` + `keepMounted` (added in 2.5.0 — see below). Columns toolbar uses CL `SecondaryButton` `size="small"` `iconOnly` (2.6.0). Date table filters and mixin date/datetime fields use CL `Calendar` (2.7.0). Forms prefer CL built-in `label`/`error` (no lean `InputField`). Tier 1 taken from `brands` (+ shared shells from `customer-groups`). |
+| `orders` | `orders` | COP-6917 | A | `5177` | `2.11.0` | Green-field from MD `src/modules/orders` (+ `router/Orders.routes.tsx`). Largest port so far: list (lazy table, row expansion, `ext_orders` column visibility + mixin columns, CSV export, master/sub-order dialog, site restrictions), detail (status, current + **legacy** data/entries views, payment tab, order + entry mixins, audit log). First remote to need CL `InputNumber` / `Skeleton` / `Chip` (promoted in 2.11.0). MD `RestrictionsProvider` ported as `useOrderRestrictions()` over remote `PermissionsProvider.userScopes`. Legacy MD key `order` (`/apps/management/order/*`) redirects host-side. Tier 1 from `returns`, audit log from `customer-groups`. |
 
-**Next free local port:** `5177` (update when claiming).
+**Next free local port:** `5178` (update when claiming).
 
 ### Deltas worth reusing from `brands` (COP-6180)
 
@@ -41,6 +42,15 @@ Living list of Management Dashboard modules extracted into `md-extensions` under
 - **`ConfigurationProvider` gained `getTableMixinColumns`**, and `TableExtensions` gained `tableColumnHeaders` + `schemaType`. Copy from `returns` when a table needs mixin columns.
 - **`@emporix/api-calls` already exports schema and mixin calls** (`getSchemasCall`, `getSchemaCall`, `getReferencesCall`, `getReferenceCall`, `getMixinsSchemaCall`) — no local axios client is needed for mixins, unlike the `products` remote.
 - **Remaining widget gaps** are not listed here (they go stale). Lookup: [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md). `returns` still substitutes native `<input type="number|time">` through CL `InputText` for `InputNumber` / `InputMask`, and an explicit “All” option for Dropdown `showClear`.
+
+### Deltas worth reusing from `orders` (COP-6917)
+
+- **CL 2.11.0 adds `InputNumber` (Pattern B), `Skeleton` and `Chip` (Pattern A).** `InputNumber` carries MD's 24px blue steppers (`showButtons` + `buttonLayout="horizontal"`), `prefix`, fraction digits and `mode="currency"` — use it instead of the `InputText type="number"` substitute wherever MD had steppers or a currency prefix.
+- **`useOrderRestrictions()` / `helpers/restrictions.ts`** port MD `RestrictionsProvider` scope parsing without an eighth provider; reuse the helper for quote/customer/company/cart restrictions.
+- **`components/shared/LabeledValue`** replaces MD `InputField` wrapping read-only text (CL `FieldLabel` + value). **`LinkWithIcon`** takes `to` (in-remote) or `hostHref` (host route via `window.location.assign`). **`NumberFilterTemplate`** (`=`/`>`/`<` + CL `InputNumber`) and **`SitesSelect`** (CL Dropdown + "All sites") are reusable.
+- **`MixinsForm` / `useMixinsForm` gained `onDirtyChange` / `onFormDirtyChange`** so expansion rows can confirm before discarding unsaved mixin edits.
+- **Audit-log SCSS from `customer-groups` used MD CSS variables with fallbacks** (`var(--grey-5, #828a99)`); `orders` strips them to the fallback values. `customer-groups` / `users-and-groups` still carry the leak.
+- **CL gaps that remain:** no accordion variant of the mixins form (entry mixins render one `MixinsForm` per schema), no `InputMask` (time → `InputText type="time"`), Prime-style severity `Badge` (→ `StatusBadge` colour map); CL `DataTable` always renders the selection column before an `expander` column (MD had expander first).
 
 ## Not playbook SoT (legacy / other remotes)
 
