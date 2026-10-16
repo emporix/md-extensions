@@ -77,7 +77,7 @@ const OrderCSVExportDialog = ({
             : t('orders.csv.customerType.company')
         return [
           order.id,
-          formatDate(order.created, i18n.language, ''),
+          formatDate(order.created),
           order.customer?.name ?? '',
           order.customer?.company ?? '',
           customerType,

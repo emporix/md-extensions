@@ -277,8 +277,12 @@ export default function usePagination(
     columns
       .filter((column) => column.filter)
       .forEach((column) => {
-        if (column.columnKey && typeof column.columnKey === 'string') {
-          filters[column.columnKey] = {
+        // Key by the field PrimeReact filters on (MD parity) — a column whose
+        // columnKey differs from its field (e.g. orders `totalPrice`) would
+        // otherwise register its filter under the wrong key.
+        const key = column.filterField || column.field || column.columnKey
+        if (key && typeof key === 'string') {
+          filters[key] = {
             value: null,
             matchMode:
               (column.filterMatchMode as FilterMatchMode) ||

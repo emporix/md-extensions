@@ -104,4 +104,6 @@ export default {
   remove: 'Entfernen',
   allSites: 'Alle Sites',
   selectSite: 'Site auswählen',
+  action: 'Aktion',
+  more: 'Mehr',
 }

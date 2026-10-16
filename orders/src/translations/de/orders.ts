@@ -217,6 +217,7 @@ export default {
     },
   },
   labels: {
+    noCustomer: 'Kein Kunde',
     masterOrder: 'Hauptbestellung',
     orderEntries: 'Bestelleinträge',
     order: 'Bestellung',

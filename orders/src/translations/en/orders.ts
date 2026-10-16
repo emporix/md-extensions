@@ -221,6 +221,7 @@ export default {
     },
   },
   labels: {
+    noCustomer: 'No customer',
     masterOrder: 'Master Order',
     orderEntries: 'Order Entries',
     order: 'Order',

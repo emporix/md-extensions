@@ -103,4 +103,6 @@ export default {
   remove: 'Remove',
   allSites: 'All sites',
   selectSite: 'Select site',
+  action: 'Action',
+  more: 'More',
 }
