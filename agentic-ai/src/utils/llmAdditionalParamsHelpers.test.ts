@@ -28,4 +28,19 @@ describe('llmAdditionalParamsHelpers', () => {
     expect(parseAdditionalParamsJson('[]').ok).toBe(false)
     expect(parseAdditionalParamsJson('{').ok).toBe(false)
   })
+
+  it('keeps a __proto__ key when formatting nested objects', () => {
+    const nested = Object.create(null) as Record<string, unknown>
+    nested.__proto__ = { keep: true }
+    const printed = stringifyAdditionalParams({ reasoning: nested, a: 1 })
+
+    expect(printed).toContain('"__proto__"')
+    expect(printed).toContain('"keep": true')
+    expect(Object.prototype).not.toHaveProperty('keep')
+
+    const parsed = JSON.parse(printed) as Record<string, unknown>
+    expect(Object.prototype.hasOwnProperty.call(parsed.reasoning, '__proto__')).toBe(
+      true
+    )
+  })
 })

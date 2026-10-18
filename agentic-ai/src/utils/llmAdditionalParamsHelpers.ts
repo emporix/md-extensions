@@ -8,12 +8,11 @@ const sortJsonValue = (value: unknown): unknown => {
   if (!isPlainObject(value)) {
     return value
   }
-  return Object.keys(value)
-    .sort()
-    .reduce<Record<string, unknown>>((sorted, key) => {
-      sorted[key] = sortJsonValue(value[key])
-      return sorted
-    }, {})
+  const sorted = Object.create(null) as Record<string, unknown>
+  for (const key of Object.keys(value).sort()) {
+    sorted[key] = sortJsonValue(value[key])
+  }
+  return sorted
 }
 
 export const stringifyAdditionalParams = (

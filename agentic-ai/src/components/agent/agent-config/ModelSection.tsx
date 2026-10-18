@@ -677,9 +677,19 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
               autoResize
               spellCheck={false}
               placeholder={t('llm_additional_params_placeholder')}
+              aria-invalid={!additionalParamsParseResult.ok}
+              aria-describedby={
+                additionalParamsParseResult.ok
+                  ? undefined
+                  : 'llm-additional-params-error'
+              }
             />
             {!additionalParamsParseResult.ok && (
-              <small className="p-error">
+              <small
+                id="llm-additional-params-error"
+                className="p-error"
+                role="alert"
+              >
                 {additionalParamsParseResult.error === 'invalid_json'
                   ? t('llm_additional_params_invalid_json')
                   : t('llm_additional_params_must_be_object')}
