@@ -756,6 +756,14 @@ const TRANSLATIONS_EN = {
     'Model "{{from}}" is not available for this provider. Switched to "{{to}}".',
   model_auto_cleared:
     'Model "{{from}}" is not available for this provider and was cleared.',
+  llm_additional_params_label: 'Provider model parameters (JSON)',
+  llm_additional_params_placeholder: '{\n  "reasoning_effort": "medium"\n}',
+  llm_additional_params_invalid_json: 'Enter valid JSON.',
+  llm_additional_params_must_be_object: 'Root value must be a JSON object.',
+  llm_additional_params_cleared_on_provider_change:
+    'Provider-specific model parameters were cleared because the LLM provider changed.',
+  llm_additional_params_help:
+    'Optional JSON object of extra model parameters. Use it, for example, to configure reasoning or other provider-specific options.',
   custom_model_name: 'Custom Model Name',
   custom_model_name_tooltip:
     'Enter a model identifier supported by your provider',
@@ -1103,8 +1111,7 @@ const TRANSLATIONS_EN = {
   show_languages: 'Show languages',
   hide_languages: 'Hide languages',
 
-  'global.pagination':
-    'Showing {first} to {last} of {totalRecords} entries',
+  'global.pagination': 'Showing {first} to {last} of {totalRecords} entries',
 }
 
 export default TRANSLATIONS_EN

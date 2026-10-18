@@ -397,6 +397,7 @@ const AgentDetailPage: React.FC = () => {
           oauthId={state.oauthId}
           fileProcessingUseResponsesApi={state.fileProcessingUseResponsesApi}
           fileProcessingExtraModelKey={state.fileProcessingExtraModelKey}
+          additionalParamsJson={state.additionalParamsJson}
           modelsByProvider={modelsByProvider}
           modelsLoading={modelsLoading}
           modelsFetched={modelsFetched}

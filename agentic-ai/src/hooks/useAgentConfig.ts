@@ -47,6 +47,11 @@ import {
   isTeamsTriggerToolValidationValid,
 } from '../utils/agentTriggerValidationHelpers'
 import { Tool } from '../types/Tool'
+import {
+  normalizeAdditionalParamsForSave,
+  parseAdditionalParamsJson,
+  stringifyAdditionalParams,
+} from '../utils/llmAdditionalParamsHelpers'
 
 interface UseAgentConfigProps {
   agent: CustomAgent | null
@@ -93,6 +98,7 @@ interface AgentConfigState {
   commerceEvents: string[]
   commerceEventFilter: AgentCommerceFilterDsl | null
   eventScopes: string[]
+  additionalParamsJson: string
 }
 
 export const useAgentConfig = ({
@@ -141,6 +147,7 @@ export const useAgentConfig = ({
     commerceEvents: [],
     commerceEventFilter: null,
     eventScopes: [],
+    additionalParamsJson: '',
   })
 
   const [saving, setSaving] = useState(false)
@@ -167,6 +174,9 @@ export const useAgentConfig = ({
         disableTemperature: agent.llmConfig?.temperature === undefined,
         maxTokens: agent.llmConfig?.maxTokens?.toString() || '0',
         provider: agent.llmConfig?.provider || LlmProvider.EMPORIX_OPENAI,
+        additionalParamsJson: stringifyAdditionalParams(
+          agent.llmConfig?.additionalParams ?? null
+        ),
         tokenId: agent.llmConfig?.token?.id || '',
         recursionLimit: agent.maxRecursionLimit?.toString() || '20',
         enableMemory:
@@ -235,6 +245,13 @@ export const useAgentConfig = ({
     (changeNote?: string) => {
       if (!agent) return null
 
+      const parsedAdditionalParams = parseAdditionalParamsJson(
+        state.additionalParamsJson
+      )
+      if (!parsedAdditionalParams.ok) {
+        return null
+      }
+
       const isUpdate = !!agent.id
       const baseMetadata = agent.metadata ?? {
         version: 0,
@@ -293,11 +310,15 @@ export const useAgentConfig = ({
         templatePrompt: state.templatePrompt || undefined,
         outputFormat: state.outputFormat.trim() || undefined,
         llmConfig: (() => {
+          const additionalParams = parsedAdditionalParams.value
+            ? normalizeAdditionalParamsForSave(parsedAdditionalParams.value)
+            : null
+
           const baseConfig: LlmConfig = {
             model: state.model || '',
             maxTokens: parseInt(state.maxTokens, 10) || 0,
             provider: state.provider,
-            additionalParams: agent.llmConfig?.additionalParams || null,
+            additionalParams,
           }
 
           if (!state.disableTemperature) {
@@ -504,6 +525,10 @@ export const useAgentConfig = ({
       state.outputFormat
     )
 
+    const additionalParamsValidation = parseAdditionalParamsJson(
+      state.additionalParamsJson
+    ).ok
+
     const selectedSlackToolCount = getSelectedSlackToolIds(
       state.nativeTools,
       availableTools
@@ -555,6 +580,7 @@ export const useAgentConfig = ({
       commerceFilterValidation &&
       collaborationValidation &&
       outputFormatValidation &&
+      additionalParamsValidation &&
       slackTriggerToolValidation &&
       teamsTriggerToolValidation &&
       teamsToolValidation &&
