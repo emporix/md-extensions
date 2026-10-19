@@ -162,6 +162,11 @@ const OrdersTable = ({
     defaultSiteActive,
   ])
 
+  // In the all-sites view the current site only matters for the restriction
+  // check, so the site becoming available (SitesProvider loads after mount)
+  // must not refetch an identical, site-agnostic list.
+  const siteFetchKey = `${defaultSiteActive ? currentSite?.code : 'all-sites'}|${isSiteRestricted(currentSite?.code)}`
+
   useEffect(() => {
     void (async () => {
       if (isSiteRestricted(currentSite?.code)) {
@@ -184,11 +189,10 @@ const OrdersTable = ({
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    currentSite?.code,
+    siteFetchKey,
     paginationParams,
     tenant,
     defaultSiteActive,
-    isSiteRestricted,
     isVendorAware,
     vendor,
     refresh,

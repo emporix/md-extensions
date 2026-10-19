@@ -267,32 +267,43 @@ export default function usePagination(
     )
   }, [paginationParams, withQuery, searchParams, pageKey, rowsKey])
 
+  /**
+   * Registers a filter slot for every filterable column.
+   *
+   * Callers invoke this while building their columns, so it runs every time
+   * the column definitions are rebuilt (table config / mixins / permissions
+   * arriving). It therefore must be idempotent: existing filter values are
+   * kept, and when the slots are unchanged the previous params object is
+   * returned so effects keyed on `paginationParams` do not refetch.
+   */
   const setFilters = (columns: DataTableColumnProps[]) => {
-    const filters: {
-      [key: string]: {
-        value: string | null
-        matchMode: FilterMatchMode
-      }
-    } = {}
-    columns
-      .filter((column) => column.filter)
-      .forEach((column) => {
-        // Key by the field PrimeReact filters on (MD parity) — a column whose
-        // columnKey differs from its field (e.g. orders `totalPrice`) would
-        // otherwise register its filter under the wrong key.
-        const key = column.filterField || column.field || column.columnKey
-        if (key && typeof key === 'string') {
-          filters[key] = {
-            value: null,
-            matchMode:
+    setPaginationParams((prev) => {
+      const prevFilters = (prev.filters ?? {}) as TableFilters
+      const filters: TableFilters = {}
+      columns
+        .filter((column) => column.filter)
+        .forEach((column) => {
+          // Key by the field PrimeReact filters on (MD parity) — a column
+          // whose columnKey differs from its field (e.g. orders `totalPrice`)
+          // would otherwise register its filter under the wrong key.
+          const key = column.filterField || column.field || column.columnKey
+          if (key && typeof key === 'string') {
+            const matchMode =
               (column.filterMatchMode as FilterMatchMode) ||
-              FilterMatchMode.CONTAINS,
+              FilterMatchMode.CONTAINS
+            const existing = prevFilters[key]
+            filters[key] =
+              existing && existing.matchMode === matchMode
+                ? existing
+                : { value: existing?.value ?? null, matchMode }
           }
-        }
-      })
-    setPaginationParams({
-      ...paginationParams,
-      filters,
+        })
+
+      const prevKeys = Object.keys(prevFilters)
+      const unchanged =
+        prevKeys.length === Object.keys(filters).length &&
+        prevKeys.every((key) => prevFilters[key] === filters[key])
+      return unchanged ? prev : { ...prev, filters }
     })
   }
 
