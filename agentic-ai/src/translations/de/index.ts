@@ -765,7 +765,7 @@ const TRANSLATIONS_DE = {
     'Modell "{{from}}" ist für diesen Anbieter nicht verfügbar. Auf "{{to}}" gewechselt.',
   model_auto_cleared:
     'Modell "{{from}}" ist für diesen Anbieter nicht verfügbar und wurde entfernt.',
-  llm_additional_params_label: 'Anbieter-Modellparameter (JSON)',
+  llm_additional_params_label: 'Zusätzliche Parameter',
   llm_additional_params_placeholder: '{\n  "reasoning_effort": "medium"\n}',
   llm_additional_params_invalid_json: 'Geben Sie gültiges JSON ein.',
   llm_additional_params_must_be_object:

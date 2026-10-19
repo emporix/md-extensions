@@ -756,7 +756,7 @@ const TRANSLATIONS_EN = {
     'Model "{{from}}" is not available for this provider. Switched to "{{to}}".',
   model_auto_cleared:
     'Model "{{from}}" is not available for this provider and was cleared.',
-  llm_additional_params_label: 'Provider model parameters (JSON)',
+  llm_additional_params_label: 'Additional parameters',
   llm_additional_params_placeholder: '{\n  "reasoning_effort": "medium"\n}',
   llm_additional_params_invalid_json: 'Enter valid JSON.',
   llm_additional_params_must_be_object: 'Root value must be a JSON object.',
