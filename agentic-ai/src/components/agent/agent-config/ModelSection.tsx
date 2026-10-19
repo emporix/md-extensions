@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Dropdown } from 'primereact/dropdown'
 import { InputSwitch } from 'primereact/inputswitch'
 import { InputText } from 'primereact/inputtext'
+import { InputTextarea } from 'primereact/inputtextarea'
 import { Message } from 'primereact/message'
 import { Tooltip } from 'primereact/tooltip'
 import { LlmProvider, BaseProvider } from '../../../types/Agent'
@@ -25,6 +26,10 @@ import {
 } from '../../../utils/llmModelHelpers'
 import { getSliderThumbLeftCss } from '../../../utils/sliderHelpers'
 import { SelfHostedAuthSection } from './SelfHostedAuthSection'
+import {
+  hasNonEmptyAdditionalParamsJson,
+  parseAdditionalParamsJson,
+} from '../../../utils/llmAdditionalParamsHelpers'
 
 type ModelInputMode = 'list' | 'custom'
 
@@ -45,6 +50,7 @@ interface ModelSectionProps {
   oauthId: string
   fileProcessingUseResponsesApi: boolean
   fileProcessingExtraModelKey: string
+  additionalParamsJson: string
   modelsByProvider: Map<LlmModelProvider, LlmModel[]>
   modelsLoading: boolean
   modelsFetched: boolean
@@ -74,6 +80,7 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   oauthId,
   fileProcessingUseResponsesApi,
   fileProcessingExtraModelKey,
+  additionalParamsJson,
   modelsByProvider,
   modelsLoading,
   modelsFetched,
@@ -103,6 +110,11 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
   const showCatalogModel = usesModelCatalog(provider)
   const showTokenField =
     provider !== LlmProvider.EMPORIX_OPENAI && !isSelfHosted
+
+  const additionalParamsParseResult = useMemo(
+    () => parseAdditionalParamsJson(additionalParamsJson),
+    [additionalParamsJson]
+  )
 
   const catalogModels = useMemo(
     () =>
@@ -233,6 +245,14 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
       catalogModels
     )
 
+    if (
+      nextProvider !== provider &&
+      hasNonEmptyAdditionalParamsJson(additionalParamsJson)
+    ) {
+      onFieldChange('additionalParamsJson', '')
+      showWarning(t('llm_additional_params_cleared_on_provider_change'))
+    }
+
     onFieldChange('provider', nextProvider)
 
     if (!isSelfHostedProvider(nextProvider) && baseProvider) {
@@ -240,7 +260,10 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
     }
 
     const rememberedModel = providerModelMemoryRef.current[nextProvider]
-    const nextCatalogModels = getModelsForProvider(nextProvider, modelsByProvider)
+    const nextCatalogModels = getModelsForProvider(
+      nextProvider,
+      modelsByProvider
+    )
     const nextModel = resolveModelForProviderSwitch(
       nextProvider,
       modelsByProvider,
@@ -629,6 +652,49 @@ export const ModelSection: React.FC<ModelSectionProps> = ({
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="form-field agent-detail-model-additional-params">
+            <label className="field-label" htmlFor="llm-additional-params-json">
+              {t('llm_additional_params_label')}
+              <i
+                className="pi pi-info-circle field-label-help-icon agent-detail-additional-params-help"
+                data-pr-tooltip={t('llm_additional_params_help')}
+                data-pr-position="top"
+              />
+            </label>
+            <Tooltip target=".agent-detail-additional-params-help" />
+            <InputTextarea
+              id="llm-additional-params-json"
+              value={additionalParamsJson}
+              onChange={(event) =>
+                onFieldChange('additionalParamsJson', event.target.value)
+              }
+              className={`w-full text-mono agent-detail-model-additional-params-input${
+                !additionalParamsParseResult.ok ? ' p-invalid' : ''
+              }`}
+              rows={8}
+              autoResize
+              spellCheck={false}
+              placeholder={t('llm_additional_params_placeholder')}
+              aria-invalid={!additionalParamsParseResult.ok}
+              aria-describedby={
+                additionalParamsParseResult.ok
+                  ? undefined
+                  : 'llm-additional-params-error'
+              }
+            />
+            {!additionalParamsParseResult.ok && (
+              <small
+                id="llm-additional-params-error"
+                className="p-error"
+                role="alert"
+              >
+                {additionalParamsParseResult.error === 'invalid_json'
+                  ? t('llm_additional_params_invalid_json')
+                  : t('llm_additional_params_must_be_object')}
+              </small>
+            )}
           </div>
 
           {isSelfHosted && (

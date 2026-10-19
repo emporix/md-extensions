@@ -104,10 +104,8 @@ const TRANSLATIONS_DE = {
     'Ein Agent mit dieser ID existiert bereits. Bitte wählen Sie eine andere ID.',
   failed_to_save_agent: 'Agent konnte nicht gespeichert werden',
   error_saving_agent: 'Fehler beim Speichern des Agenten: {{message}}',
-  agent_updated_deactivated_successfully:
-    'Agent aktualisiert und deaktiviert!',
-  agent_created_deactivated_successfully:
-    'Agent erstellt und deaktiviert!',
+  agent_updated_deactivated_successfully: 'Agent aktualisiert und deaktiviert!',
+  agent_created_deactivated_successfully: 'Agent erstellt und deaktiviert!',
   agent_name: 'Agent Name',
   enter_agent_name: 'Agent Namen eingeben',
   description: 'Beschreibung',
@@ -767,6 +765,15 @@ const TRANSLATIONS_DE = {
     'Modell "{{from}}" ist für diesen Anbieter nicht verfügbar. Auf "{{to}}" gewechselt.',
   model_auto_cleared:
     'Modell "{{from}}" ist für diesen Anbieter nicht verfügbar und wurde entfernt.',
+  llm_additional_params_label: 'Zusätzliche Parameter',
+  llm_additional_params_placeholder: '{\n  "reasoning_effort": "medium"\n}',
+  llm_additional_params_invalid_json: 'Geben Sie gültiges JSON ein.',
+  llm_additional_params_must_be_object:
+    'Der Wurzelwert muss ein JSON-Objekt sein.',
+  llm_additional_params_cleared_on_provider_change:
+    'Anbieterspezifische Modellparameter wurden gelöscht, weil der LLM-Anbieter gewechselt wurde.',
+  llm_additional_params_help:
+    'Optionales JSON-Objekt mit zusätzlichen Modellparametern. Verwenden Sie es beispielsweise, um Reasoning oder andere anbieterspezifische Optionen zu konfigurieren.',
   custom_model_name: 'Benutzerdefinierter Modellname',
   custom_model_name_tooltip:
     'Geben Sie eine von Ihrem Anbieter unterstützte Modellkennung ein',
@@ -1120,8 +1127,7 @@ const TRANSLATIONS_DE = {
   show_languages: 'Sprachen anzeigen',
   hide_languages: 'Sprachen ausblenden',
 
-  'global.pagination':
-    'Zeige {first} bis {last} von {totalRecords} Einträgen',
+  'global.pagination': 'Zeige {first} bis {last} von {totalRecords} Einträgen',
 }
 
 export default TRANSLATIONS_DE

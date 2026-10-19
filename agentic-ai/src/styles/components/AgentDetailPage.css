@@ -903,6 +903,15 @@
   box-sizing: border-box;
 }
 
+.agent-detail-model-additional-params-input {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-tight);
+}
+
+.agent-detail-model-additional-params {
+  margin-top: var(--space-md);
+}
+
 .agent-detail-model-divider {
   height: 1px;
   background: #dee1e5;
