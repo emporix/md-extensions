@@ -181,13 +181,6 @@ const OrdersTable = ({
       } catch (e: unknown) {
         showError(t('orders.toasts.errorFetch'), getApiErrorDetails(e))
       }
-      if (currentSite) {
-        try {
-          setPaymentMethods(await getPaymentMethods())
-        } catch (e) {
-          console.error(e)
-        }
-      }
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -201,6 +194,21 @@ const OrdersTable = ({
     refresh,
   ])
 
+  // Payment methods feed the payment filter options. Fetched separately from
+  // the list: a new array per list fetch re-built the columns, which re-ran
+  // setFilters -> new paginationParams -> another list fetch (endless loop).
+  useEffect(() => {
+    if (!currentSite?.code) return
+    void (async () => {
+      try {
+        setPaymentMethods(await getPaymentMethods())
+      } catch (e) {
+        console.error(e)
+      }
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSite?.code, tenant])
+
   useEffect(() => {
     if (showTableOptions) {
       setVisibleColumns(fetchTableConfiguration(TABLE_NAME_CONFIG_KEY))
@@ -209,9 +217,12 @@ const OrdersTable = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableConfigurations])
 
+  const paymentMethodCodes = paymentMethods.map((pm) => pm.code).join('|')
   const paymentMethodOptions = useMemo(
     () => paymentMethods.map((pm) => ({ label: pm.code, value: pm.code })),
-    [paymentMethods]
+    // Keyed by content so an identical refetch does not rebuild the columns.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [paymentMethodCodes]
   )
 
   const handleBulkDelete = async () => {
