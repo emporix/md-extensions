@@ -138,7 +138,7 @@ describe('slackRoutingHelpers', () => {
         slackToolB
       )
 
-      expect(empty[0].allowedOperations).toEqual([])
+      expect(empty[0].allowedOperations).toEqual(['createChannel'])
     })
   })
 

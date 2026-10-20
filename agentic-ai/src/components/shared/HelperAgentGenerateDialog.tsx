@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Dialog } from 'primereact/dialog'
 import { Button } from 'primereact/button'
 import { ProgressSpinner } from 'primereact/progressspinner'
+import { AiGeneratedNotice } from './AiGeneratedNotice'
 import { AssistantStreamPreview } from './AssistantStreamPreview'
 
 export type HelperAgentGenerateDialogState = {
@@ -93,6 +94,7 @@ export const HelperAgentGenerateDialog: React.FC<
       }
     >
       <div className="commerce-filter-assistant-panel commerce-filter-assistant-panel--dialog">
+        <AiGeneratedNotice variant="short" />
         {helperAgentPresent === null && (
           <div
             className="commerce-filter-assistant-loading state-loading"
@@ -133,6 +135,7 @@ export const HelperAgentGenerateDialog: React.FC<
               streamText={assistantStreamText}
               toolName={assistantToolName}
               working={assistantWorking}
+              showNotice={false}
               workingLabelKey={workingLabelKey}
             />
           </>

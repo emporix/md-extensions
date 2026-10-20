@@ -5,6 +5,7 @@ import { Button } from 'primereact/button'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { useJsonSchemaAssistant } from '../../../hooks/useJsonSchemaAssistant'
+import { AiGeneratedNotice } from '../../shared/AiGeneratedNotice'
 import { AssistantStreamPreview } from '../../shared/AssistantStreamPreview'
 
 interface GenerateJsonSchemaDialogProps {
@@ -95,6 +96,7 @@ export const GenerateJsonSchemaDialog: React.FC<
       }
     >
       <div className="commerce-filter-assistant-panel commerce-filter-assistant-panel--dialog">
+        <AiGeneratedNotice variant="short" />
         {helperAgentPresent === null && (
           <div
             className="commerce-filter-assistant-loading state-loading"
@@ -143,6 +145,7 @@ export const GenerateJsonSchemaDialog: React.FC<
               streamText={assistantStreamText}
               toolName={assistantToolName}
               working={assistantWorking}
+              showNotice={false}
               workingLabelKey="generate_json_schema_working"
             />
           </>

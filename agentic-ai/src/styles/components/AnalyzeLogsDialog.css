@@ -1,5 +1,9 @@
-.analyze-logs-dialog .p-dialog-content {
-  padding-top: 0;
+.analyze-logs-dialog.generate-condition-dialog .p-dialog-content {
+  padding-top: var(--space-lg);
+}
+
+.analyze-logs-dialog-content > .ai-generated-notice.p-inline-message {
+  margin-bottom: 0;
 }
 
 .analyze-logs-dialog-header {

@@ -27,6 +27,7 @@ dist-ssr
 .cursor/
 
 # Emporix agent skills artifacts
+/.ai
 .ai/qa/artifacts_*/
 .ai/qa/browser-local.json
 .ai/qa/postman/

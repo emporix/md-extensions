@@ -1127,6 +1127,11 @@ const TRANSLATIONS_DE = {
   show_languages: 'Sprachen anzeigen',
   hide_languages: 'Sprachen ausblenden',
 
+  ai_generated_notice_long:
+    'Ein Agent wird Inhalte mithilfe künstlicher Intelligenz erzeugen. Diese Inhalte können Fehler oder ungenaue Angaben enthalten. Prüfen Sie kritische Informationen, rechtliche Fakten oder fachliche Empfehlungen immer vor der Verwendung.',
+  ai_generated_notice_short:
+    'HINWEIS: Die Ausgabe wird von KI erzeugt. Bitte prüfen Sie sie, da Fehler auftreten können.',
+
   'global.pagination': 'Zeige {first} bis {last} von {totalRecords} Einträgen',
 }
 

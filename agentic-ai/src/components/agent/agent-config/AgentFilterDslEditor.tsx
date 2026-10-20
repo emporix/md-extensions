@@ -30,6 +30,7 @@ import {
 } from '../../../utils/agentFilterDslHelpers'
 import { useCommerceFilterDslAssistant } from '../../../hooks/useCommerceFilterDslAssistant'
 import { AssistantStreamPreview } from '../../shared/AssistantStreamPreview'
+import { AiGeneratedNotice } from '../../shared/AiGeneratedNotice'
 
 export interface AgentFilterDslEditorProps {
   value: AgentCommerceFilterDsl | null
@@ -664,6 +665,7 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
     <div
       className={`commerce-filter-assistant-panel${inDialog ? ' commerce-filter-assistant-panel--dialog' : ''}`}
     >
+      {inDialog ? <AiGeneratedNotice variant="short" /> : null}
       {helperAgentPresent === null && (
         <div
           className="commerce-filter-assistant-loading state-loading"
@@ -746,6 +748,7 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
             streamText={assistantStreamText}
             toolName={assistantToolName}
             working={assistantWorking}
+            showNotice={false}
             workingLabelKey={
               inDialog
                 ? 'generate_condition_working'

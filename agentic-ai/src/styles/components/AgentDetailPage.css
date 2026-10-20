@@ -244,6 +244,11 @@
   flex-direction: column;
 }
 
+.agent-detail-content > .ai-generated-notice.p-inline-message {
+  margin-top: calc(var(--space-lg) - var(--space-2xl));
+  margin-bottom: var(--space-lg);
+}
+
 .agent-detail-tab-panel {
   display: flex;
   flex-direction: column;
@@ -504,6 +509,10 @@
 
 .generate-condition-dialog .p-dialog-content {
   padding: var(--space-xl);
+}
+
+.commerce-filter-assistant-panel--dialog > .ai-generated-notice.p-inline-message {
+  margin-bottom: var(--space-xl);
 }
 
 .generate-condition-dialog-footer {

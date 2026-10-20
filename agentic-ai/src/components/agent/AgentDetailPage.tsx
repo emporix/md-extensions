@@ -13,6 +13,7 @@ import {
   AgentCollaboration,
 } from '../../types/Agent'
 import { useAppState } from '../../contexts/AppStateContext'
+import { AiGeneratedNotice } from '../shared/AiGeneratedNotice'
 import { ConfirmDialog } from '../shared/ConfirmDialog'
 import { AgentBasicInfo } from './agent-config/AgentBasicInfo'
 import { TriggersSection } from './agent-config/TriggersSection'
@@ -569,7 +570,10 @@ const AgentDetailPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="agent-detail-content">{renderTabContent()}</div>
+      <div className="agent-detail-content">
+        {activeTab !== 'conversations' && <AiGeneratedNotice variant="long" />}
+        {renderTabContent()}
+      </div>
 
       <ConfirmDialog
         visible={showDisableConfirm}

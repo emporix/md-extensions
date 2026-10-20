@@ -5,6 +5,7 @@ import { Button } from 'primereact/button'
 import { InputTextarea } from 'primereact/inputtextarea'
 import { ProgressSpinner } from 'primereact/progressspinner'
 import { useLogAnalysisAssistant } from '../../hooks/useLogAnalysisAssistant'
+import { AiGeneratedNotice } from './AiGeneratedNotice'
 import { extractLogAnalysisDisplayText } from '../../utils/logAnalysisAssistantHelpers'
 import type { LogAnalysisEntry } from '../../utils/logAnalysisAssistantHelpers'
 import '../../styles/components/AnalyzeLogsDialog.css'
@@ -79,6 +80,7 @@ export const AnalyzeLogsDialog = ({
       draggable={false}
     >
       <div className="analyze-logs-dialog-content">
+        <AiGeneratedNotice variant="short" />
         {helperAgentPresent === null && (
           <div
             className="commerce-filter-assistant-loading state-loading"
