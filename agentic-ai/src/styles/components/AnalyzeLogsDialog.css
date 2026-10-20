@@ -2,10 +2,6 @@
   padding-top: var(--space-lg);
 }
 
-.analyze-logs-dialog-content > .ai-generated-notice.p-inline-message {
-  margin-bottom: 0;
-}
-
 .analyze-logs-dialog-header {
   display: inline-flex;
   align-items: center;

@@ -1,0 +1,22 @@
+.notice {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  color: #79a3da;
+  --color-message-info-bg: rgba(121, 163, 218, 0.15);
+  --color-message-info-border: rgba(121, 163, 218, 0.3);
+  --color-message-info-icon: #79a3da;
+}
+
+.detail {
+  margin-top: calc(var(--space-lg) - var(--space-2xl));
+  margin-bottom: var(--space-lg);
+}
+
+.dialog {
+  margin-bottom: var(--space-xl);
+}
+
+.logs {
+  margin-bottom: 0;
+}

@@ -80,7 +80,7 @@ export const AnalyzeLogsDialog = ({
       draggable={false}
     >
       <div className="analyze-logs-dialog-content">
-        <AiGeneratedNotice variant="short" />
+        <AiGeneratedNotice variant="short" placement="logs" />
         {helperAgentPresent === null && (
           <div
             className="commerce-filter-assistant-loading state-loading"

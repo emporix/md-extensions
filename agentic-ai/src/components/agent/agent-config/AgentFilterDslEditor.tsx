@@ -665,7 +665,7 @@ export const AgentFilterDslEditor: React.FC<AgentFilterDslEditorProps> = ({
     <div
       className={`commerce-filter-assistant-panel${inDialog ? ' commerce-filter-assistant-panel--dialog' : ''}`}
     >
-      {inDialog ? <AiGeneratedNotice variant="short" /> : null}
+      {inDialog ? <AiGeneratedNotice variant="short" placement="dialog" /> : null}
       {helperAgentPresent === null && (
         <div
           className="commerce-filter-assistant-loading state-loading"

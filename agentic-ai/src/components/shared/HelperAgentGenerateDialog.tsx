@@ -94,7 +94,7 @@ export const HelperAgentGenerateDialog: React.FC<
       }
     >
       <div className="commerce-filter-assistant-panel commerce-filter-assistant-panel--dialog">
-        <AiGeneratedNotice variant="short" />
+        <AiGeneratedNotice variant="short" placement="dialog" />
         {helperAgentPresent === null && (
           <div
             className="commerce-filter-assistant-loading state-loading"

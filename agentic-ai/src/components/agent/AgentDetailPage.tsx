@@ -571,7 +571,9 @@ const AgentDetailPage: React.FC = () => {
       </div>
 
       <div className="agent-detail-content">
-        {activeTab !== 'conversations' && <AiGeneratedNotice variant="long" />}
+        {activeTab !== 'conversations' && (
+          <AiGeneratedNotice variant="long" placement="detail" />
+        )}
         {renderTabContent()}
       </div>
 

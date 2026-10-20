@@ -15,6 +15,7 @@ import TeamsInstallCallbackHandler from './components/tool/TeamsInstallCallbackH
 import { AppState } from './types/common'
 import { ToastProvider } from './contexts/ToastContext'
 import { AppStateProvider } from './contexts/AppStateContext'
+import '@emporix/component-library/styles'
 import './translations/i18n'
 import './styles/agents.css'
 import './styles/components/AddAgentDialog.css'
