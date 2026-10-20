@@ -2,10 +2,14 @@
   box-sizing: border-box;
   width: 100%;
   margin: 0;
-  color: var(--blue-3);
-  --color-message-info-bg: color-mix(in srgb, var(--blue-3) 15%, transparent);
-  --color-message-info-border: color-mix(in srgb, var(--blue-3) 30%, transparent);
-  --color-message-info-icon: var(--blue-3);
+  --color-message-info-bg: color-mix(in srgb, var(--blue-3, #79a3da) 15%, transparent);
+  --color-message-info-border: color-mix(in srgb, var(--blue-3, #79a3da) 30%, transparent);
+  --color-message-info-icon: var(--blue-3, #79a3da);
+}
+
+.notice.notice,
+.notice span {
+  color: var(--blue-3, #79a3da);
 }
 
 .detail {
