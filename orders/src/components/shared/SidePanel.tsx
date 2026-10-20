@@ -1,8 +1,18 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type AnimationEvent,
+  type ReactNode,
+} from 'react'
 import { createPortal } from 'react-dom'
+import classNames from 'classnames'
 import { FiX } from 'react-icons/fi'
 
 import styles from './SidePanel.module.scss'
+
+/** Matches `slideIn` / `slideOut` duration in SidePanel.module.scss. */
+const CLOSE_ANIMATION_MS = 300
 
 type SidePanelProps = {
   readonly visible: boolean
@@ -16,6 +26,9 @@ type SidePanelProps = {
 /**
  * Right-side drawer matching MD PrimeReact `Sidebar` (`position="right"`,
  * default width `20rem`, close-only header). CL has no Sidebar export yet.
+ *
+ * Stays mounted while `slideOut` plays so close is animated (PrimeReact
+ * Sidebar leave transition). Unmounts after animation end or a timeout fallback.
  */
 const SidePanel = ({
   visible,
@@ -27,6 +40,34 @@ const SidePanel = ({
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const onHideRef = useRef(onHide)
   onHideRef.current = onHide
+
+  const [isRendered, setIsRendered] = useState(visible)
+  const [isClosing, setIsClosing] = useState(false)
+
+  useEffect(() => {
+    if (visible) {
+      setIsRendered(true)
+      setIsClosing(false)
+      return
+    }
+
+    if (isRendered) {
+      setIsClosing(true)
+    }
+  }, [visible, isRendered])
+
+  useEffect(() => {
+    if (!isClosing) {
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsRendered(false)
+      setIsClosing(false)
+    }, CLOSE_ANIMATION_MS)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [isClosing])
 
   useEffect(() => {
     if (!visible) {
@@ -57,7 +98,19 @@ const SidePanel = ({
     }
   }, [visible])
 
-  if (!visible || typeof document === 'undefined') {
+  const finishClose = () => {
+    setIsRendered(false)
+    setIsClosing(false)
+  }
+
+  const handlePanelAnimationEnd = (event: AnimationEvent<HTMLElement>) => {
+    if (event.target !== event.currentTarget || !isClosing) {
+      return
+    }
+    finishClose()
+  }
+
+  if (!isRendered || typeof document === 'undefined') {
     return null
   }
 
@@ -65,23 +118,28 @@ const SidePanel = ({
     <div className={styles.root} data-testid={dataTestId}>
       <button
         type="button"
-        className={styles.mask}
+        className={classNames(styles.mask, {
+          [styles.maskClosing]: isClosing,
+        })}
         aria-label="Close"
         tabIndex={-1}
-        onClick={onHide}
+        onClick={isClosing ? undefined : onHide}
       />
       <aside
-        className={styles.panel}
+        className={classNames(styles.panel, {
+          [styles.panelClosing]: isClosing,
+        })}
         role="dialog"
         aria-modal="true"
         aria-label={ariaLabel}
+        onAnimationEnd={handlePanelAnimationEnd}
       >
         <div className={styles.header}>
           <button
             ref={closeButtonRef}
             type="button"
             className={styles.close}
-            onClick={onHide}
+            onClick={isClosing ? undefined : onHide}
             aria-label="Close"
             data-testid="side-panel-close"
           >

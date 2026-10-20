@@ -493,7 +493,7 @@ const OrdersTable = ({
   )
 
   return (
-    <div className={className}>
+    <div className={`${styles.root} ${className}`.trim()}>
       {showTableOptions && (
         <div className={styles.toolbar}>
           <BatchDeleteButton
