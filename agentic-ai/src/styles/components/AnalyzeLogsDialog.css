@@ -1,5 +1,5 @@
-.analyze-logs-dialog .p-dialog-content {
-  padding-top: 0;
+.analyze-logs-dialog.generate-condition-dialog .p-dialog-content {
+  padding-top: var(--space-lg);
 }
 
 .analyze-logs-dialog-header {

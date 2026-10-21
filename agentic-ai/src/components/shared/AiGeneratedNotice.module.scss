@@ -1,0 +1,26 @@
+.notice {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  --color-message-info-bg: color-mix(in srgb, var(--blue-3, #79a3da) 15%, transparent);
+  --color-message-info-border: color-mix(in srgb, var(--blue-3, #79a3da) 30%, transparent);
+  --color-message-info-icon: var(--blue-3, #79a3da);
+}
+
+.notice.notice,
+.notice span {
+  color: var(--blue-3, #79a3da);
+}
+
+.detail {
+  margin-top: calc(var(--space-lg) - var(--space-2xl));
+  margin-bottom: var(--space-lg);
+}
+
+.dialog {
+  margin-bottom: var(--space-xl);
+}
+
+.logs {
+  margin-bottom: 0;
+}

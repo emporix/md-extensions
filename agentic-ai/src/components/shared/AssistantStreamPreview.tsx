@@ -1,12 +1,14 @@
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ProgressSpinner } from 'primereact/progressspinner'
+import { AiGeneratedNotice } from './AiGeneratedNotice'
 
 type AssistantStreamPreviewProps = {
   readonly streamText: string
   readonly toolName: string | null
   readonly working: boolean
   readonly workingLabelKey: string
+  readonly showNotice?: boolean
 }
 
 export const AssistantStreamPreview = ({
@@ -14,6 +16,7 @@ export const AssistantStreamPreview = ({
   toolName,
   working,
   workingLabelKey,
+  showNotice = true,
 }: AssistantStreamPreviewProps) => {
   const { t } = useTranslation()
   const streamRef = useRef<HTMLPreElement>(null)
@@ -32,6 +35,7 @@ export const AssistantStreamPreview = ({
 
   return (
     <div className="assistant-stream-preview">
+      {showNotice ? <AiGeneratedNotice variant="short" /> : null}
       <div
         className="assistant-stream-preview-header"
         role="status"
