@@ -15,7 +15,8 @@ export const returnDetailPath = (returnId: string) => `/${returnId}`
 export const HOST_CUSTOMER_PATH = (customerId: string) =>
   `/apps/management/customers/${customerId}`
 
-// Orders is itself a federated remote (COP-6917): its detail route lives in
-// the hash, so a plain `/apps/management/orders/:id` would land on the list.
+// Keep the host pathname form during rollout: md-extensions merges (and
+// redeploys returns) before the MD host switches Orders to the remote. The
+// host PR redirects `/orders/:id` → `/orders#/:id` once Mode A is live.
 export const HOST_ORDER_PATH = (orderId: string) =>
-  `/apps/management/orders#/${orderId}`
+  `/apps/management/orders/${orderId}`

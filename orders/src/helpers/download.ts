@@ -1,11 +1,17 @@
 const CSV_FILE_TYPE = 'text/csv;charset=utf-8;'
 
-/** Escape a CSV cell so commas, quotes, and newlines do not break columns. */
+const FORMULA_PREFIX = /^[=+\-@\t\r]/
+
+/**
+ * Neutralize spreadsheet formula injection, then quote cells that need it
+ * (commas, quotes, newlines — RFC 4180).
+ */
 export const escapeCsvCell = (value: string): string => {
-  if (/[",\n\r]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`
+  const safe = FORMULA_PREFIX.test(value) ? `'${value}` : value
+  if (/[",\n\r]/.test(safe) || safe !== value) {
+    return `"${safe.replace(/"/g, '""')}"`
   }
-  return value
+  return safe
 }
 
 export const mapToCsv = <T>(

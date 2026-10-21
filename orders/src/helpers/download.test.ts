@@ -17,6 +17,13 @@ describe('escapeCsvCell', () => {
   it('quotes values that contain newlines', () => {
     expect(escapeCsvCell('line1\nline2')).toBe('"line1\nline2"')
   })
+
+  it('neutralizes spreadsheet formula prefixes', () => {
+    expect(escapeCsvCell('=1+1')).toBe('"\'=1+1"')
+    expect(escapeCsvCell('+cmd')).toBe('"\'+cmd"')
+    expect(escapeCsvCell('-1')).toBe('"\'-1"')
+    expect(escapeCsvCell('@sum')).toBe('"\'@sum"')
+  })
 })
 
 describe('mapToCsv', () => {
