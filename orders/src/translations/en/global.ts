@@ -54,6 +54,7 @@ export default {
   default: 'Default',
   noData: 'No data',
   noDataFound: 'No data found',
+  retry: 'Retry',
   noPermissions: 'No permissions',
   tableExtensions: {
     columns: 'Columns',

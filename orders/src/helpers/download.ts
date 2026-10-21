@@ -1,15 +1,23 @@
 const CSV_FILE_TYPE = 'text/csv;charset=utf-8;'
 
+/** Escape a CSV cell so commas, quotes, and newlines do not break columns. */
+export const escapeCsvCell = (value: string): string => {
+  if (/[",\n\r]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`
+  }
+  return value
+}
+
 export const mapToCsv = <T>(
   headers: string[],
   models: T[],
   predicate: (model: T) => string[]
 ): string =>
-  headers.join(',') +
+  headers.map(escapeCsvCell).join(',') +
   '\n' +
   models
     .map(predicate)
-    .map((row) => row.join(','))
+    .map((row) => row.map(escapeCsvCell).join(','))
     .join('\n')
 
 const downloadFile = (blob: Blob, filename: string) => {

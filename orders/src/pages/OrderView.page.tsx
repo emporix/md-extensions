@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Dropdown,
@@ -10,6 +16,7 @@ import {
   type TabItem,
 } from '@emporix/component-library'
 import HeaderSection from '../components/shared/HeaderSection'
+import EmptyContent from '../components/shared/EmptyContent'
 import EntityChangelogTab from '../components/auditLog/EntityChangelogTab'
 import OrderDetails from '../components/orders/details/OrderDetails'
 import OrderEntries from '../components/orders/entries/OrderEntries'
@@ -79,7 +86,8 @@ const OrderViewPage = () => {
     patchOrder,
     syncOrder,
   } = useOrdersApi()
-  const { order, refreshData, updateOrder, refreshFlag } = useOrderData()
+  const { order, isLoading, loadError, refreshData, updateOrder, refreshFlag } =
+    useOrderData()
   const toggles = useFeatureToggles()
   const { hasPermission } = usePermissions()
   const canManage =
@@ -212,6 +220,22 @@ const OrderViewPage = () => {
     </div>
   )
 
+  const loadFailed = (
+    <EmptyContent
+      text={t('orders.toasts.errorFetch')}
+      buttonLabel={t('global.retry')}
+      action={() => {
+        void refreshData()
+      }}
+    />
+  )
+
+  const tabContent = (ready: ReactNode) => {
+    if (isLoading) return loading
+    if (loadError || !order?.id) return loadFailed
+    return ready
+  }
+
   const tabIds = useMemo(
     () => [
       DATA_TAB,
@@ -229,29 +253,25 @@ const OrderViewPage = () => {
       {
         id: DATA_TAB,
         label: t('orders.data.tab.data'),
-        content: !order?.id ? (
-          loading
-        ) : order.calculatedPrice ? (
-          <OrderDetails />
-        ) : (
-          <OrderData />
+        content: tabContent(
+          order?.calculatedPrice ? <OrderDetails /> : <OrderData />
         ),
       },
       {
         id: ENTRIES_TAB,
         label: t('orders.data.tab.entries'),
-        content: !order?.id ? (
-          loading
-        ) : order.calculatedPrice ? (
-          <OrderEntries />
-        ) : (
-          <EntryTable
-            readonly={!canManage}
-            data={order}
-            updateOrder={updateOrder}
-            refreshFlag={refreshFlag}
-            tableName={TABLE_NAME}
-          />
+        content: tabContent(
+          order?.calculatedPrice ? (
+            <OrderEntries />
+          ) : order ? (
+            <EntryTable
+              readonly={!canManage}
+              data={order}
+              updateOrder={updateOrder}
+              refreshFlag={refreshFlag}
+              tableName={TABLE_NAME}
+            />
+          ) : null
         ),
       },
     ]
@@ -259,7 +279,7 @@ const OrderViewPage = () => {
       items.push({
         id: PAYMENT_TAB,
         label: t('orders.data.tab.payment'),
-        content: order?.id ? <OrderPaymentInfo /> : loading,
+        content: tabContent(<OrderPaymentInfo />),
       })
     }
     if (!isMixinsLoading) {
@@ -290,6 +310,8 @@ const OrderViewPage = () => {
   }, [
     t,
     order,
+    isLoading,
+    loadError,
     canManage,
     refreshFlag,
     paymentTabEnabled,
@@ -297,6 +319,7 @@ const OrderViewPage = () => {
     isMixinsLoading,
     canViewAuditLog,
     activeTab,
+    refreshData,
   ])
 
   return (

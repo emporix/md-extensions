@@ -54,6 +54,7 @@ export default {
   default: 'Standard',
   noData: 'Keine Daten',
   noDataFound: 'Keine Daten gefunden',
+  retry: 'Erneut versuchen',
   noPermissions: 'Keine Berechtigung',
   tableExtensions: {
     columns: 'Spalten',
