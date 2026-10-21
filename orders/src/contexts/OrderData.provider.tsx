@@ -75,7 +75,7 @@ export const OrderDataProvider = ({ children }: PropsWithChildren) => {
         const notFound = new Error('Order not found')
         setOrder(undefined)
         setLoadError(notFound)
-        showError(getApiErrorMessage(notFound))
+        showError(getApiErrorMessage(notFound) ?? 'Order not found')
         onError(notFound)
         return
       }
@@ -86,7 +86,7 @@ export const OrderDataProvider = ({ children }: PropsWithChildren) => {
       console.error(e)
       setOrder(undefined)
       setLoadError(e)
-      showError(getApiErrorMessage(e))
+      showError(getApiErrorMessage(e) ?? 'Error while loading order')
       onError(e)
     } finally {
       if (requestId === requestIdRef.current) {
