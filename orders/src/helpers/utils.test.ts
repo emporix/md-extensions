@@ -1,5 +1,34 @@
 import { describe, expect, it } from 'vitest'
-import { removeEmptyValues, removeObjectEmptyValues } from './utils'
+import {
+  removeEmptyValues,
+  removeObjectEmptyValues,
+  textToTitleCase,
+} from './utils'
+
+describe('textToTitleCase', () => {
+  it('inserts spaces between camelCase parts', () => {
+    expect(textToTitleCase('bookedInPOS')).toBe('Booked In Pos')
+    expect(textToTitleCase('customerFeedbackInvitationSentDate')).toBe(
+      'Customer Feedback Invitation Sent Date'
+    )
+    expect(textToTitleCase('extendedOrderStatus')).toBe('Extended Order Status')
+  })
+
+  it('keeps spaces in already-separated labels (including German)', () => {
+    expect(textToTitleCase('Erweiterter Bestellstatus')).toBe(
+      'Erweiterter Bestellstatus'
+    )
+    expect(textToTitleCase('Im POS gebucht')).toBe('Im Pos Gebucht')
+    expect(textToTitleCase('Kundenrückmeldung gesendet')).toBe(
+      'Kundenrückmeldung Gesendet'
+    )
+  })
+
+  it('returns empty string for empty input', () => {
+    expect(textToTitleCase('')).toBe('')
+    expect(textToTitleCase(undefined)).toBe('')
+  })
+})
 
 describe('removeEmptyValues', () => {
   it('drops empty strings, null, and undefined', () => {

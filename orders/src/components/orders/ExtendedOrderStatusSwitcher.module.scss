@@ -7,3 +7,15 @@
 .dropdown {
   min-width: 180px;
 }
+
+// Icon-only save next to the status dropdown — no outline (MD parity).
+// CL `SecondaryButton` small sets a border on default, hover, and disabled.
+.saveButton {
+  border: none;
+
+  &:hover:not(:disabled),
+  &:disabled,
+  &:disabled:hover {
+    border: none;
+  }
+}

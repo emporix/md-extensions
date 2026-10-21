@@ -26,24 +26,31 @@ const MixinsSectionBox = ({
   return (
     <div className={[styles.wrapper, className].filter(Boolean).join(' ')}>
       <div className={styles.header}>
-        <div
-          className={[styles.title, remove ? styles.titleFull : '']
-            .filter(Boolean)
-            .join(' ')}
-        >
-          {textToTitleCase(name)}
+        <div className={styles.title}>{textToTitleCase(name)}</div>
+        <div className={styles.actions}>
           {remove && (
-            <SecondaryButton className={styles.removeButton} onClick={remove}>
+            <SecondaryButton
+              size="small"
+              iconOnly
+              aria-label={t('global.remove')}
+              onClick={remove}
+            >
               <HiMinus size={16} />
             </SecondaryButton>
           )}
+          {append && (
+            <SecondaryButton
+              className={styles.addButton}
+              size="small"
+              onClick={append}
+            >
+              <BsPlusLg size={16} />
+              <span className={styles.addLabel}>
+                {t('global.mixins.addNew')}
+              </span>
+            </SecondaryButton>
+          )}
         </div>
-        {append && (
-          <SecondaryButton onClick={append}>
-            <BsPlusLg size={16} />
-            <span className={styles.addLabel}>{t('global.mixins.addNew')}</span>
-          </SecondaryButton>
-        )}
       </div>
       <div data-testid="section-box" className={styles.body}>
         {children}

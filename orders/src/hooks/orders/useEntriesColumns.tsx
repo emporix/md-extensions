@@ -18,6 +18,7 @@ import { trimCloudinaryImage } from '../../helpers/images'
 import { addNewEntries, removeDuplicatedEntries } from '../../helpers/orders'
 import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
 import { Entry, Order, OrderStatus } from '../../models/Order.model'
+import quantityStyles from '../../components/shared/QuantityStepper.module.scss'
 import styles from './columns.module.scss'
 
 const COLUMNS_PATH = 'orders.tables.entries'
@@ -135,6 +136,7 @@ const useEntriesColumns = (
             // Stop row-toggle / row-click while stepping the quantity.
             <div onClick={(ev) => ev.stopPropagation()}>
               <InputNumber
+                className={quantityStyles.stepper}
                 showButtons
                 buttonLayout="horizontal"
                 min={1}

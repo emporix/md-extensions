@@ -90,6 +90,7 @@ const ExtendedOrderStatusSwitcher = ({ order }: { readonly order: Order }) => {
         onChange={(e) => setExtendedOrderStatus(String(e.value))}
       />
       <SecondaryButton
+        className={styles.saveButton}
         size="small"
         iconOnly
         aria-label={t('orders.tooltips.extendedOrderStatusSave')}

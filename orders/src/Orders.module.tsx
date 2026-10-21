@@ -1,9 +1,9 @@
 import { Outlet } from 'react-router'
 import { RefreshValuesProvider } from './context/RefreshValuesProvider'
-import styles from './Orders.module.scss'
 
+/** Host MD defines global `.module` padding (`1rem 2rem 1.5rem`) — same as U&G/returns. */
 const OrdersModule = () => (
-  <div className={styles.module}>
+  <div className="module">
     <RefreshValuesProvider>
       <Outlet />
     </RefreshValuesProvider>

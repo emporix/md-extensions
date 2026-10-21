@@ -19,6 +19,7 @@ import { getApiErrorDetails, getApiErrorMessage } from '../../../helpers/api'
 import { trimCloudinaryImage } from '../../../helpers/images'
 import { addNewEntriesFromProducts } from '../../../helpers/orders'
 import type { Product } from '../../../models/Product.model'
+import quantityStyles from '../../shared/QuantityStepper.module.scss'
 import styles from './AddEntryDialog.module.scss'
 
 type AddEntryDialogProps = {
@@ -169,6 +170,7 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
         header: t('orders.entry.actions.addProduct.table.action'),
         body: (rowData: Product) => (
           <InputNumber
+            className={quantityStyles.stepper}
             showButtons
             buttonLayout="horizontal"
             min={0}

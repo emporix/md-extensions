@@ -29,6 +29,7 @@ import {
 import MixinsSectionBox from './MixinsSectionBox'
 import MixinsFormInput from './MixinsFormInput'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
+import { textToTitleCase } from '../../helpers/utils'
 import { Mixins } from '../../models/Mixins.model'
 import Localized from '../../models/Localized.model'
 import styles from './MixinsForm.module.scss'
@@ -144,9 +145,12 @@ const ArrayComponent = ({
                     />
                     <SecondaryButton
                       className={styles.removeButton}
+                      size="small"
+                      iconOnly
+                      aria-label={t('global.remove')}
                       onClick={() => remove(index)}
                     >
-                      <HiMinus size={20} />
+                      <HiMinus size={16} />
                     </SecondaryButton>
                   </div>
                 </div>
@@ -273,9 +277,14 @@ const renderItem = (
               item.type !== MixinsFormItemType.unknown && item.isRequired
             }
           >
-            {getUiLangValue(item.name)}
+            {textToTitleCase(getUiLangValue(item.name))}
           </FieldLabel>
           <MixinsFormInput
+            className={
+              item.type === MixinsFormItemType.boolean
+                ? undefined
+                : styles.control
+            }
             disabled={!managerPermissions}
             item={item}
             value={controllerField.value}

@@ -69,9 +69,10 @@ export const textToTitleCase = (input: string | undefined) => {
     const camelCaseWords = word.split(
       /(?=[A-Z][a-z])|(?<=[a-z])(?=[A-Z])|(?<=[0-9])(?=[a-zA-Z])|(?<=[a-zA-Z])(?=[0-9])/
     )
+    // Join camelCase parts with spaces (MD parity) so bookedInPOS → "Booked In Pos".
     return camelCaseWords
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-      .join('')
+      .join(' ')
   })
   return titleCaseWords.join(' ')
 }

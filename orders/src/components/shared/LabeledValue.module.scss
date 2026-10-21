@@ -5,6 +5,11 @@
   min-width: 0;
 }
 
+// CL FieldLabel uses margin-bottom for form controls; drop it for read-only pairs.
+.label {
+  margin-bottom: 0;
+}
+
 .value {
   font-size: var(--font-size-base);
   color: var(--color-text-primary);

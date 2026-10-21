@@ -21,6 +21,7 @@ import {
   removeDuplicatedEntries,
 } from '../../../helpers/orders'
 import { Entry, Order, OrderStatus } from '../../../models/Order.model'
+import quantityStyles from '../../shared/QuantityStepper.module.scss'
 import styles from './Legacy.module.scss'
 
 type EntryTableProps = {
@@ -157,6 +158,7 @@ const EntryTable = ({
               body: (row: Entry) => (
                 <div onClick={(e) => e.stopPropagation()}>
                   <InputNumber
+                    className={quantityStyles.stepper}
                     showButtons
                     buttonLayout="horizontal"
                     min={1}

@@ -23,7 +23,7 @@ const LabeledValue = ({
     className={[styles.field, className].filter(Boolean).join(' ')}
     data-testid={testId}
   >
-    <FieldLabel>{label}</FieldLabel>
+    <FieldLabel className={styles.label}>{label}</FieldLabel>
     <div className={styles.value}>{children}</div>
   </div>
 )
