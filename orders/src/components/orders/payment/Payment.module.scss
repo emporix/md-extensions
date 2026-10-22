@@ -1,0 +1,42 @@
+.section {
+  margin-bottom: 3rem;
+}
+
+.fieldsWrap {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.refund {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.refundInput {
+  max-width: 240px;
+}
+
+.log {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.collapsed {
+  height: 10rem;
+  overflow: hidden;
+}
+
+.toggle {
+  width: fit-content;
+}

@@ -1,0 +1,29 @@
+.root {
+  /* Beat CL `._dataTable…tbody > tr > td { padding: … !important }` */
+  :global(.p-datatable .p-datatable-tbody > tr.p-datatable-row-expansion > td) {
+    padding: 0 !important;
+  }
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: var(--spacing-sm);
+}
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.statusFilter {
+  min-width: 12rem;
+  margin-top: -2px;
+}
+
+.paymentFilter {
+  min-width: 10rem;
+}

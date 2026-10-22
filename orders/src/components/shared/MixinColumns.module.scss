@@ -1,0 +1,27 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1.5rem;
+}
+
+.title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #495057;
+}
+
+.addCustom {
+  margin-top: 1rem;
+}
+
+/* CL Dropdown portals to document.body at z-index 1000; SidePanel is 1100. */
+.dropdownPanel {
+  z-index: 1200;
+
+  li {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

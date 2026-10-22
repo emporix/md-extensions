@@ -1,0 +1,30 @@
+@use '../../styles/palette' as *;
+
+.stackedCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.thumb {
+  width: 32px;
+  height: 32px;
+}
+
+.thumbPlaceholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: $grey-2;
+}
+
+.moneyWithTooltip {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

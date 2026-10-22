@@ -1,0 +1,28 @@
+@use '../../styles/palette' as *;
+
+.icon {
+  color: $grey-8;
+  cursor: pointer;
+}
+
+.table {
+  display: flex;
+  font-size: 14px;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 2rem;
+  padding: 0 0.5rem;
+}
+
+.labelCell {
+  composes: cell;
+  justify-content: flex-start;
+}
+
+.total {
+  border-top: 1px solid #dfe2e5;
+}

@@ -1,0 +1,42 @@
+.stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  .fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .save {
+    width: min-content;
+  }
+}
+
+.inline {
+  display: flex;
+  flex-direction: column;
+
+  .fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .save {
+    align-self: center;
+    margin-left: auto;
+  }
+}
+
+.time {
+  min-width: 140px;
+  max-width: 200px;
+}
+
+.date {
+  max-width: 240px;
+}

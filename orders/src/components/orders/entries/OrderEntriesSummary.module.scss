@@ -1,0 +1,29 @@
+@use '../../../styles/palette' as *;
+
+.summary {
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+}
+
+.half {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.divider {
+  align-self: stretch;
+  border-left: 1px solid $grey-4;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bold {
+  font-weight: bold;
+}
