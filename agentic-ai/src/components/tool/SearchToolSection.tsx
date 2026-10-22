@@ -1,28 +1,36 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Dropdown } from 'primereact/dropdown'
-import { InputNumber } from 'primereact/inputnumber'
+import { Dropdown, InputText } from '@emporix/component-library'
 import {
   CUSTOMER_ENTITY_TYPE,
   LEGAL_ENTITY_ENTITY_TYPE,
   ToolConfig,
 } from '../../types/Tool'
 import { resolveSearchEntityType } from '../../utils/toolConfigHelpers'
-import { ToolRequiredMark } from './ToolRequiredMark'
 
 interface SearchToolSectionProps {
   config: ToolConfig
   onConfigChange: (key: string, value: string) => void
 }
 
+const ENTITY_TYPE_INPUT_ID = 'search-entity-type'
+const MAX_RESULTS_INPUT_ID = 'search-max-results'
+
 export const SearchToolSection: React.FC<SearchToolSectionProps> = ({
   config,
   onConfigChange,
 }) => {
   const { t } = useTranslation()
-  const maxResults = Number(config.maxResults ?? 5)
+  const maxResultsValue =
+    config.maxResults === undefined || config.maxResults === null
+      ? '5'
+      : String(config.maxResults)
+  const parsedMaxResults = Number(maxResultsValue)
   const isMaxResultsInvalid =
-    !Number.isInteger(maxResults) || maxResults < 1 || maxResults > 10
+    maxResultsValue.trim() === '' ||
+    !Number.isInteger(parsedMaxResults) ||
+    parsedMaxResults < 1 ||
+    parsedMaxResults > 10
 
   const entityTypeOptions = [
     { label: t('customer'), value: CUSTOMER_ENTITY_TYPE },
@@ -32,38 +40,38 @@ export const SearchToolSection: React.FC<SearchToolSectionProps> = ({
   return (
     <>
       <div className="form-field">
-        <label className="field-label">
-          {t('entity_type')}
-          <ToolRequiredMark />
-        </label>
         <Dropdown
+          inputId={ENTITY_TYPE_INPUT_ID}
+          label={t('entity_type')}
+          required
           value={resolveSearchEntityType(config.entityType)}
           options={entityTypeOptions}
-          onChange={(event) => onConfigChange('entityType', event.value)}
+          onChange={(event) => {
+            if (typeof event.value === 'string') {
+              onConfigChange('entityType', event.value)
+            }
+          }}
           className="w-full"
           placeholder={t('select_entity_type')}
-          appendTo="self"
         />
       </div>
       <div className="form-field">
-        <label className="field-label">
-          {t('max_results')}
-          <ToolRequiredMark />
-        </label>
-        <InputNumber
-          value={Number.isFinite(maxResults) ? maxResults : null}
-          onValueChange={(event) =>
-            onConfigChange('maxResults', String(event.value ?? 5))
-          }
-          className={`w-full${isMaxResultsInvalid ? ' p-invalid' : ''}`}
-          placeholder={t('enter_search_max_results')}
+        <InputText
+          inputId={MAX_RESULTS_INPUT_ID}
+          label={t('max_results')}
+          required
+          type="number"
+          step={1}
           min={1}
           max={10}
-          useGrouping={false}
+          value={maxResultsValue}
+          onChange={(event) => onConfigChange('maxResults', event.target.value)}
+          className="w-full"
+          placeholder={t('enter_search_max_results')}
+          error={
+            isMaxResultsInvalid ? t('search_max_results_range') : undefined
+          }
         />
-        {isMaxResultsInvalid && (
-          <small className="p-error">{t('search_max_results_range')}</small>
-        )}
       </div>
     </>
   )
