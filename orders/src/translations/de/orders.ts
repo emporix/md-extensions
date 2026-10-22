@@ -295,7 +295,7 @@ export default {
   tooltips: {
     authorizationAmount:
       'Betrag, der nach Abschluss der Bestellung berechnet wird',
-    extendedOrderStatusSave: 'Erweiterten Status speichern',
+    extendedOrderStatusSave: 'Status speichern',
   },
   tables: {
     entries: {

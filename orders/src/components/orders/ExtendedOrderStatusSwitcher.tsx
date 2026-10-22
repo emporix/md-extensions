@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Dropdown, SecondaryButton, useToast } from '@emporix/component-library'
+import {
+  Dropdown,
+  SecondaryButton,
+  Tooltip,
+  useToast,
+} from '@emporix/component-library'
 import { MdSave } from 'react-icons/md'
 import { useConfiguration } from '../../context/ConfigurationProvider'
 import { usePermissions } from '../../context/PermissionsProvider'
@@ -89,16 +94,22 @@ const ExtendedOrderStatusSwitcher = ({ order }: { readonly order: Order }) => {
         value={extendedOrderStatus ?? null}
         onChange={(e) => setExtendedOrderStatus(String(e.value))}
       />
-      <SecondaryButton
-        className={styles.saveButton}
-        size="small"
-        iconOnly
-        aria-label={t('orders.tooltips.extendedOrderStatusSave')}
-        disabled={!canManage || extendedOrderStatus === persisted}
-        onClick={saveStatus}
+      <Tooltip
+        position="top"
+        showDelay={200}
+        content={t('orders.tooltips.extendedOrderStatusSave')}
       >
-        <MdSave />
-      </SecondaryButton>
+        <SecondaryButton
+          className={styles.saveButton}
+          size="small"
+          iconOnly
+          aria-label={t('orders.tooltips.extendedOrderStatusSave')}
+          disabled={!canManage || extendedOrderStatus === persisted}
+          onClick={saveStatus}
+        >
+          <MdSave />
+        </SecondaryButton>
+      </Tooltip>
     </div>
   )
 }
