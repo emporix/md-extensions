@@ -41,6 +41,7 @@ export default {
     expiryDate: 'Retouren Datum',
     createdDate: 'Erstellungsdatum',
     approvalStatus: 'Status',
+    site: 'Site',
     filters: {
       id: 'Filtern nach Retourennummer',
       customer: {
@@ -51,6 +52,7 @@ export default {
       expiryDate: 'Filtern nach Datum',
       createdDate: 'Filtern nach Erstellungsdatum',
       approvalStatus: 'Filtern nach Status',
+      site: 'Site',
     },
     actions: 'Aktionen',
   },
@@ -60,6 +62,7 @@ export default {
     expiryDate: 'Retouren Ablaufdatum',
     returnCode: 'Begründungscode',
     status: 'Status',
+    site: 'Site',
     returnReason: 'Begründungsdetails',
     products: 'Produkte',
     received: 'Erhalten',
