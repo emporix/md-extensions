@@ -152,9 +152,11 @@ const ReturnEditPage = () => {
   })
 
   const onSubmit: SubmitHandler<ReturnDetails> = async (data) => {
+    const returnUpdate = { ...data }
+    delete returnUpdate.siteCode
     try {
       blockPanel(true)
-      await updateReturn(data)
+      await updateReturn(returnUpdate)
       await loadData()
       showSuccess(t('returns.details.updateSuccess'))
     } catch (e: unknown) {

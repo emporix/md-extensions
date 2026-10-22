@@ -4,6 +4,7 @@ import {
   DataTable,
   DateValue,
   Dropdown,
+  FilterMatchMode,
   StatusBadge,
   useToast,
   type DataTableColumnFilterElementOptions,
@@ -51,7 +52,7 @@ const ReturnsTable = ({ className = '' }: { readonly className?: string }) => {
   const { navigate } = useCustomNavigate()
   const { getReturns, deleteReturns } = useReturnsApi()
   const { refresh, setRefreshValue } = useRefresh()
-  const { currentSite } = useSites()
+  const { currentSite, sites } = useSites()
   const { tenant } = useDashboardContext()
   const { blockPanel } = useUIBlocker()
   const { hasPermission } = usePermissions()
@@ -190,6 +191,30 @@ const ReturnsTable = ({ className = '' }: { readonly className?: string }) => {
         ),
       },
       {
+        columnKey: 'siteCode',
+        header: t(`${TABLE_NAME}.site`),
+        field: 'siteCode',
+        filter: true,
+        filterMatchMode: FilterMatchMode.EQUALS,
+        showFilterMenu: false,
+        showClearButton: false,
+        filterElement: (options: DataTableColumnFilterElementOptions) => (
+          <Dropdown
+            value={(options.value as string) ?? ''}
+            options={[
+              { label: t('global.all'), value: '' },
+              ...(sites ?? []).map((site) => ({
+                label: site.name || site.code,
+                value: site.code,
+              })),
+            ]}
+            onChange={(e) => options.filterApplyCallback(e.value || undefined)}
+            placeholder={t(`${TABLE_NAME}.filters.site`)}
+          />
+        ),
+        body: (rowData: Return) => rowData.siteCode,
+      },
+      {
         columnKey: 'approvalStatus',
         header: t(`${TABLE_NAME}.approvalStatus`),
         field: 'approvalStatus',
@@ -261,7 +286,7 @@ const ReturnsTable = ({ className = '' }: { readonly className?: string }) => {
       }
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visibleColumns, visibleMixins, i18n.language, canManage])
+  }, [visibleColumns, visibleMixins, i18n.language, canManage, sites])
 
   const pagination: DataTablePaginationState = {
     ...paginationParams,
