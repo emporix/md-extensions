@@ -2,25 +2,26 @@ import {
   FilterMatchMode,
   type DataTableColumnProps,
   type DataTableFilterMeta,
+  type DataTableFilterMetaData,
 } from '@emporix/component-library'
 import type { ColumnVisibility } from '../models/Configuration.model'
 import { parseColumnProps, type DisplayMixin } from '../models/DisplayMixin'
 import type Localized from '../models/Localized.model'
 
 export type ColumnFilterState = {
-  value: string | null
+  value: DataTableFilterMetaData['value'] | null
   matchMode: FilterMatchMode
 }
 
 const storedFilterValue = (
   current: DataTableFilterMeta | undefined,
   columnKey: string
-): string | null => {
+): DataTableFilterMetaData['value'] | null => {
   const existing = current?.[columnKey]
   if (!existing || typeof existing !== 'object' || !('value' in existing)) {
     return null
   }
-  return typeof existing.value === 'string' ? existing.value : null
+  return existing.value ?? null
 }
 
 /**

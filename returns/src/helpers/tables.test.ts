@@ -27,6 +27,45 @@ describe('columnFiltersKeepingValues', () => {
     expect(current.siteCode.value).toBe('main')
   })
 
+  it('keeps a date range together with an active site filter', () => {
+    const createdAt = [
+      '2026-10-01T00:00:00.000Z',
+      '2026-10-22T00:00:00.000Z',
+    ]
+    const expiryDate = [
+      '2026-11-01T00:00:00.000Z',
+      '2026-11-19T00:00:00.000Z',
+    ]
+    const current = {
+      siteCode: { value: 'TST', matchMode: FilterMatchMode.EQUALS },
+      'metadata.createdAt': {
+        value: createdAt,
+        matchMode: FilterMatchMode.CONTAINS,
+      },
+      expiryDate: { value: expiryDate, matchMode: FilterMatchMode.CONTAINS },
+    }
+
+    expect(
+      columnFiltersKeepingValues(
+        [
+          siteColumn,
+          { columnKey: 'metadata.createdAt', filter: true },
+          { columnKey: 'expiryDate', filter: true },
+        ],
+        current
+      )
+    ).toEqual({
+      siteCode: { value: 'TST', matchMode: FilterMatchMode.EQUALS },
+      'metadata.createdAt': {
+        value: createdAt,
+        matchMode: FilterMatchMode.CONTAINS,
+      },
+      expiryDate: { value: expiryDate, matchMode: FilterMatchMode.CONTAINS },
+    })
+    expect(current['metadata.createdAt'].value).toEqual(createdAt)
+    expect(current.expiryDate.value).toEqual(expiryDate)
+  })
+
   it('starts a new column with an empty value', () => {
     expect(columnFiltersKeepingValues([siteColumn], undefined)).toEqual({
       siteCode: { value: null, matchMode: FilterMatchMode.EQUALS },
