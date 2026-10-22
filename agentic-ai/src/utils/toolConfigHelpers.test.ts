@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { isToolFormValid } from './toolConfigHelpers'
+import {
+  applySearchToolDefaults,
+  isToolFormValid,
+  toSearchToolConfig,
+} from './toolConfigHelpers'
 
 describe('isToolFormValid teams config', () => {
   it('requires teamId and tenantId for teams tools', () => {
@@ -110,6 +114,81 @@ describe('isToolFormValid slack config', () => {
         isCreating: false,
       })
     ).toBe(false)
+  })
+
+  it('accepts search tools for customer and legal-entity', () => {
+    expect(
+      isToolFormValid({
+        toolName: 'Customer Search',
+        toolId: 'customer-search',
+        toolType: 'search',
+        config: {
+          entityType: 'customer',
+          maxResults: 5,
+        },
+        isCreating: false,
+      })
+    ).toBe(true)
+
+    expect(
+      isToolFormValid({
+        toolName: 'Legal Entity Search',
+        toolId: 'legal-entity-search',
+        toolType: 'search',
+        config: {
+          entityType: 'legal-entity',
+          maxResults: '10' as unknown as number,
+        },
+        isCreating: false,
+      })
+    ).toBe(true)
+  })
+
+  it('rejects search tools with an unsupported entity type or max results', () => {
+    expect(
+      isToolFormValid({
+        toolName: 'Product Search',
+        toolId: 'product-search',
+        toolType: 'search',
+        config: {
+          entityType: 'product',
+          maxResults: 5,
+        },
+        isCreating: false,
+      })
+    ).toBe(false)
+
+    expect(
+      isToolFormValid({
+        toolName: 'Customer Search',
+        toolId: 'customer-search',
+        toolType: 'search',
+        config: {
+          entityType: 'customer',
+          maxResults: 11,
+        },
+        isCreating: false,
+      })
+    ).toBe(false)
+  })
+
+  it('serializes search config with a numeric max results and optional prompt', () => {
+    expect(
+      toSearchToolConfig({
+        entityType: 'LEGAL_ENTITY',
+        maxResults: '7' as unknown as number,
+        prompt: '  prefer active entities  ',
+      })
+    ).toEqual({
+      entityType: 'legal-entity',
+      maxResults: 7,
+      prompt: 'prefer active entities',
+    })
+
+    expect(applySearchToolDefaults({})).toEqual({
+      entityType: 'customer',
+      maxResults: 5,
+    })
   })
 
   it('requires botToken when creating slack tools', () => {

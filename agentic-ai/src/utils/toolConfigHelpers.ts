@@ -1,4 +1,6 @@
 import {
+  CUSTOMER_ENTITY_TYPE,
+  LEGAL_ENTITY_ENTITY_TYPE,
   RagCustomDatabase,
   RagEmporixEmbeddingConfig,
   RagEmporixFieldConfig,
@@ -30,6 +32,19 @@ export const normalizeEntityType = (
 
   if (value === RagEntityType.ORDER || value === 'ORDER') {
     return RagEntityType.ORDER
+  }
+
+  if (value === RagEntityType.CUSTOMER || value === 'CUSTOMER') {
+    return RagEntityType.CUSTOMER
+  }
+
+  if (
+    value === RagEntityType.LEGAL_ENTITY ||
+    value === 'LEGAL-ENTITY' ||
+    value === 'LEGAL_ENTITY' ||
+    value === 'legal_entity'
+  ) {
+    return RagEntityType.LEGAL_ENTITY
   }
 
   if (value === RagEntityType.INVALID || value === 'INVALID') {
@@ -187,8 +202,53 @@ export const isToolFormValid = ({
       return false
     }
 
+    case 'search': {
+      const maxResults = Number(config.maxResults ?? 5)
+      return (
+        (config.entityType === CUSTOMER_ENTITY_TYPE ||
+          config.entityType === LEGAL_ENTITY_ENTITY_TYPE) &&
+        Number.isInteger(maxResults) &&
+        maxResults >= 1 &&
+        maxResults <= 10
+      )
+    }
+
     default:
       return true
+  }
+}
+
+export const resolveSearchEntityType = (value?: string): string => {
+  const normalized = value?.trim().toUpperCase().replace(/_/g, '-')
+  if (normalized === 'LEGAL-ENTITY') {
+    return LEGAL_ENTITY_ENTITY_TYPE
+  }
+  return CUSTOMER_ENTITY_TYPE
+}
+
+export const applySearchToolDefaults = (config: ToolConfig): ToolConfig => {
+  const entityType = resolveSearchEntityType(config.entityType)
+  const maxResults = Number(config.maxResults)
+  const normalizedMaxResults =
+    Number.isInteger(maxResults) && maxResults >= 1 && maxResults <= 10
+      ? maxResults
+      : 5
+
+  return {
+    ...config,
+    entityType,
+    maxResults: normalizedMaxResults,
+  }
+}
+
+export const toSearchToolConfig = (config: ToolConfig): ToolConfig => {
+  const withDefaults = applySearchToolDefaults(config)
+  const prompt = config.prompt?.trim()
+
+  return {
+    entityType: withDefaults.entityType,
+    maxResults: withDefaults.maxResults,
+    ...(prompt ? { prompt } : {}),
   }
 }
 

@@ -2,7 +2,12 @@ import { AppState } from '../types/common'
 import { CustomSchemaType } from '../types/Schema'
 import { buildQueryParams, getApiHeaders } from '../utils/apiHelpers'
 import { getLocalizedValue } from '../utils/agentHelpers'
-import { ORDER_ENTITY_TYPE, PRODUCT_ENTITY_TYPE } from '../types/Tool'
+import {
+  CUSTOMER_ENTITY_TYPE,
+  LEGAL_ENTITY_ENTITY_TYPE,
+  ORDER_ENTITY_TYPE,
+  PRODUCT_ENTITY_TYPE,
+} from '../types/Tool'
 import { EntityTypeOption } from '../types/Schema'
 import { ApiClient } from './apiClient'
 
@@ -33,6 +38,8 @@ export const buildRagEmporixEntityTypeOptions = (
   customSchemaTypes: CustomSchemaType[],
   productLabel: string,
   orderLabel: string,
+  customerLabel: string,
+  legalEntityLabel: string,
   language: string
 ): EntityTypeOption[] => {
   const predefinedOptions: EntityTypeOption[] = [
@@ -43,6 +50,14 @@ export const buildRagEmporixEntityTypeOptions = (
     {
       label: orderLabel,
       value: ORDER_ENTITY_TYPE,
+    },
+    {
+      label: customerLabel,
+      value: CUSTOMER_ENTITY_TYPE,
+    },
+    {
+      label: legalEntityLabel,
+      value: LEGAL_ENTITY_ENTITY_TYPE,
     },
   ]
 
