@@ -425,8 +425,6 @@ const TRANSLATIONS_DE = {
   max_results_range: 'Max. Ergebnisse müssen zwischen 1 und 100 liegen',
   enter_search_max_results: 'Max. Ergebnisse eingeben (1-10)',
   search_max_results_range: 'Max. Ergebnisse müssen zwischen 1 und 10 liegen',
-  search_prompt_optional:
-    'Optional. Zusätzliche Anweisungen für die Stichwortsuche.',
   database_configuration: 'Datenbank-Konfiguration',
   database_url: 'Datenbank-URL',
   enter_database_url: 'Datenbank-URL eingeben',

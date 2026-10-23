@@ -422,7 +422,6 @@ const TRANSLATIONS_EN = {
   max_results_range: 'Max results must be between 1 and 100',
   enter_search_max_results: 'Enter max results (1-10)',
   search_max_results_range: 'Max results must be between 1 and 10',
-  search_prompt_optional: 'Optional. Extra instructions for keyword search.',
   database_configuration: 'Database Configuration',
   database_url: 'Database URL',
   enter_database_url: 'Enter database URL',

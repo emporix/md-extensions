@@ -513,11 +513,6 @@ const ToolDetailPage: React.FC = () => {
 
           {showPrompt && (
             <ToolDetailSection titleKey="prompt">
-              {state.toolType === 'search' && (
-                <p className="tool-detail-section-description">
-                  {t('search_prompt_optional')}
-                </p>
-              )}
               <div className="form-field">
                 <label className="field-label">
                   {t('prompt')}
