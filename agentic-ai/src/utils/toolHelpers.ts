@@ -63,6 +63,8 @@ export const getToolTypeLabel = (t: TFunction, toolType: string): string => {
       return t('rag_custom')
     case 'rag_emporix':
       return t('rag_emporix')
+    case 'search':
+      return t('search_tool')
     default:
       return toolType
   }
