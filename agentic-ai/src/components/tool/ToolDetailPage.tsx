@@ -40,6 +40,7 @@ import { RagCustomResultsSection } from './RagCustomResultsSection'
 import { RagCustomDatabaseSection } from './RagCustomDatabaseSection'
 import { RagCustomEmbeddingSection } from './RagCustomEmbeddingSection'
 import { RagEmporixToolSection } from './RagEmporixToolSection'
+import { SearchToolSection } from './SearchToolSection'
 import { RagEmporixIndexedFieldsSection } from './RagEmporixIndexedFieldsSection'
 import { RagFilterFieldsSection } from './RagFilterFieldsSection'
 import { useToast } from '../../contexts/ToastContext'
@@ -382,7 +383,10 @@ const ToolDetailPage: React.FC = () => {
 
   const isEditing = !isCreating && !!tool?.id
   const showPrompt =
-    state.toolType === 'rag_custom' || state.toolType === 'rag_emporix'
+    state.toolType === 'rag_custom' ||
+    state.toolType === 'rag_emporix' ||
+    state.toolType === 'search'
+  const promptRequired = state.toolType !== 'search'
 
   const toolDisplayName = useMemo(() => {
     if (state.toolName.trim()) {
@@ -435,6 +439,13 @@ const ToolDetailPage: React.FC = () => {
               onAllowedOperationsChange={updateAllowedOperations}
             />
           </>
+        )
+      case 'search':
+        return (
+          <SearchToolSection
+            config={state.config}
+            onConfigChange={updateConfig}
+          />
         )
       case 'rag_emporix':
         return (
@@ -505,14 +516,14 @@ const ToolDetailPage: React.FC = () => {
               <div className="form-field">
                 <label className="field-label">
                   {t('prompt')}
-                  <ToolRequiredMark />
+                  {promptRequired && <ToolRequiredMark />}
                 </label>
                 <InputTextarea
                   value={state.config.prompt ?? ''}
                   onChange={(event) =>
                     updateConfig('prompt', event.target.value)
                   }
-                  className={`w-full${!(state.config.prompt ?? '').trim() ? ' p-invalid' : ''}`}
+                  className={`w-full${promptRequired && !(state.config.prompt ?? '').trim() ? ' p-invalid' : ''}`}
                   placeholder={t('enter_prompt')}
                   rows={3}
                 />
