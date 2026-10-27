@@ -1,0 +1,17 @@
+.node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nodeLabel {
+  margin-left: 0.25rem;
+}
+
+// MD ProductsCategoryTree.scss `.no-permission-table` (doubled class beats the
+// CL SectionBox root class).
+.noPermissionTable.noPermissionTable {
+  height: 100%;
+  border-radius: 0;
+  border-width: 1px 0;
+}

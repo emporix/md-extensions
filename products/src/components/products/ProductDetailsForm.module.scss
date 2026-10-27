@@ -1,0 +1,64 @@
+// MD: SectionBox className="mb-4"
+.generalSection {
+  margin-bottom: 1.5rem;
+}
+
+// MD: `flex justify-content-end align-items-center` + `ml-2` between buttons
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// MD: style={{ paddingTop: '2px', paddingBottom: '2px' }}
+.assistantButton {
+  display: inline-flex;
+  align-items: center;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+// MD: `mr-2`
+.assistantIcon {
+  margin-right: 0.5rem;
+}
+
+// MD: PrimeFlex `col-12`
+.col12 {
+  width: 100%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+// MD: PrimeFlex `col-6`
+.col6 {
+  flex: 0 0 auto;
+  width: 50%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+// MD: style={{ maxWidth: '100px', height: 'auto' }}
+.productImage {
+  max-width: 100px;
+  height: auto;
+}
+
+// MD SharedTemplates: `flex align-items-center` + `ml-2`
+.imageOption {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// MD SharedTemplates: style={{ width: '50px', height: '30px' }}
+.optionImage {
+  width: 50px;
+  height: 30px;
+}
+
+.emptyOption {
+  display: inline-block;
+  min-height: 1rem;
+}

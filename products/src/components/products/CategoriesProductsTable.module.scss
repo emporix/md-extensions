@@ -1,0 +1,80 @@
+// MD: `grid grid-nogutter` with a `col-3` tree and a `col-9` table.
+.root {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.treePane {
+  flex: 0 0 auto;
+  width: 25%;
+}
+
+.tablePane {
+  flex: 0 0 auto;
+  width: 75%;
+  min-height: 50vh;
+}
+
+.table {
+  height: 100%;
+}
+
+.extensions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background-color: #dde6ee;
+}
+
+.missingProduct {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #f97316;
+}
+
+.missingProductIcon {
+  font-size: 1.2rem;
+}
+
+// MD ProductsModule.scss `.products .tree .p-tree` overrides, scoped to the
+// CL Tree (3 classes beat CL's 2-class `.tree:global(.p-tree)` rules).
+.root .treePane :global(.p-tree) {
+  height: 100%;
+  padding: 0;
+  border: 1px solid #dee2e6;
+  border-left: 0;
+  border-top: 1px solid #f2f3f5;
+  border-bottom: 1px solid #f2f3f5;
+  border-radius: 0;
+  font-family: 'Lato', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 17px;
+  letter-spacing: 0.5px;
+}
+
+.root .treePane :global(.p-tree .p-treenode) {
+  padding: 0;
+}
+
+.root .treePane :global(.p-tree .p-treenode-content) {
+  padding: 4px;
+  border-bottom: 0.7px solid #dde6ee;
+  border-radius: 0;
+}
+
+.root .treePane :global(.p-tree .p-tree-toggler) {
+  width: 18px;
+  height: 18px;
+  margin: 4px;
+  color: #596168;
+}

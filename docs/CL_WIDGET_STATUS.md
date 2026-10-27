@@ -62,18 +62,18 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/inputnumber` | `in-cl` | `InputNumber` | **2.11.0** | 23 | Pattern B. `showButtons` + `buttonLayout` (MD 24px blue steppers, `pi-plus`/`pi-minus`), `prefix`/`suffix`, `mode="currency"`, fraction digits, `allowEmpty`. Change event `{ originalEvent, value }`. Prefer over `InputText type="number"`. |
 | `primereact/skeleton` | `in-cl` | `Skeleton` | **2.11.0** | ~15 | Pattern A. Prime props (`width`, `height`, `size`, `shape`, `borderRadius`, `animation`). |
 | `primereact/chip` | `in-cl` | `Chip` | **2.11.0** | 3 | Pattern A. `label`, `icon`, `removable` + `onRemove` (`pi-times-circle`), `removeAriaLabel`. Not the `Chips` input. |
+| `primereact/tree` | `in-cl` | `Tree` | **2.12.0** | 6 | Pattern B. single/multiple/checkbox selection, controlled `expandedKeys` + `onToggle`, lazy children (`leaf: false` + `onExpand`), `nodeTemplate` (with `expanded`), `loading`, `emptyMessage`, `borderless`. Encapsulated against host `.p-tree*` chains. |
 | `primereact/multiselect` | `partial` | `Dropdown` `multiple` | 1.7.0 | 11+ | Not a dedicated MultiSelect. Chip display via `display="chip"`. |
 | `primereact/inputtextarea` | `partial` | `InputText` `textarea` | 1.4.1 | 6+ | No separate textarea export. |
 | `primereact/badge` | `partial` | `StatusBadge` is **not** a drop-in | 2.5.0 | 6+ | CL `StatusBadge` = outlined status pill (`status` + `color`). Prime `Badge` = notification count badge. Promote Badge if you need the Prime widget. |
 | `primereact/chips` | `missing` | — | — | 10 | Free-text token input. **Not** Dropdown chip display. |
-| `primereact/tree` | `missing` | — | — | 6 | Categories / modules trees. |
 | `primereact/tag` | `missing` | — | — | 6 | List status/label chips. Do not silently swap to `StatusBadge` without checking API. |
 | `primereact/treetable` | `missing` | — | — | 4 | `EmporixTreeTable`, categories. |
 | `primereact/inputmask` | `missing` | — | — | 4 | Documented substitute: `InputText` `type="time"` for `"99:99"` masks. Promote for other masks. |
 | `primereact/divider` | `missing` | — | — | 3 | Form section separators. |
 | `primereact/sidebar` | `missing` | — | — | 1 | `TableExtensions.tsx`. Documented substitute: local `SidePanel` (right drawer, 20rem) + CL `InputSwitch`. Copy from `returns` or `brands` `components/shared/SidePanel`. Do not fall back to CL `Dialog` + `Checkbox`. |
 | `primereact/paginator` | `missing` | — | — | 1 | Standalone (`EntityChangelogTab`). Table pagination is already on CL `DataTable`. `customer-groups` used custom control + CL `Dropdown`. |
-| `primereact/panel` | `missing` | — | — | 1 | `ProductPricesPanelForm.tsx`. CL `SectionBox` may replace layout panels. |
+| `primereact/panel` | `missing` | — | — | 1 | `ProductPricesPanelForm.tsx`. Documented substitute (products, COP-6993): CL `SectionBox` with a custom collapsible header. |
 | `primereact/splitbutton` | `missing` | — | — | 1 | `AddNewContactButton.tsx`. |
 | `primereact/overlaypanel` | `missing` | — | — | 1 | `JsonPathFilterInput.tsx`. |
 | `primereact/chart` | `missing` | — | — | 1 | `WebhooksStatistics.tsx`. Do not add `chart.js` to remote `shared` (playbook §2). |
@@ -82,7 +82,7 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/image` | `missing` | — | — | 1 | `settings/Card.tsx`. |
 | `primereact/password` | `missing` | — | — | 1 | Barrel. `CustomersAddEdit.module.tsx`. |
 | `primereact/tristatecheckbox` | `missing` | — | — | 1 | Barrel. `TemplateAttributes.tsx`. |
-| `primereact/treenode` | `type` | — | — | 13 | Default `TreeNode` type. Declare locally if you port Tree. |
+| `primereact/treenode` | `type` | `TreeNode` | **2.12.0** | 13 | Exported by CL with `Tree` (plus `TreeExpandedKeys`, `TreeSelectionKeys`, event types). |
 | `primereact/selectitem` | `type` | — | — | 3 | `SelectItemOptionsType`. Map to CL `DropdownOption[]`. |
 | `primereact/tooltip/tooltipoptions` | `type` | `TooltipProps` | 1.8.0 | 3 | |
 | `primereact/menuitem` | `type` | `MenuItem` | 1.10.0 | 1 | |

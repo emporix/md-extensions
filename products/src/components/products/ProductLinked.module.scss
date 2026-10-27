@@ -1,0 +1,49 @@
+@use '../../styles/palette' as *;
+
+.sectionTitle {
+  margin-bottom: 1rem;
+}
+
+.titleActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.emptyTable {
+  width: 100%;
+  flex-grow: 1;
+}
+
+.thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+}
+
+.thumbPlaceholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: $grey-2;
+}
+
+.missingName {
+  font-style: italic;
+  color: $blue-5;
+}
+
+.missingId {
+  color: $blue-5;
+}

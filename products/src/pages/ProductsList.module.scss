@@ -1,0 +1,34 @@
+.page {
+  display: block;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+}
+
+.batchDelete {
+  margin-right: auto;
+}
+
+.extensionsSlot {
+  display: flex;
+  align-items: center;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.importUpload {
+  padding: 0.5rem 0;
+}

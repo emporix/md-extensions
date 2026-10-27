@@ -1,0 +1,9 @@
+// MD `p-selectbutton-small`: 28px high buttons.
+.viewSwitch > button {
+  height: 28px;
+  min-height: 28px;
+}
+
+.rotated {
+  transform: rotate(-90deg);
+}

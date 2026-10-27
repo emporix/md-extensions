@@ -1,21 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import SectionBox from '../shared/SectionBox'
-import { usePriceModelsApi } from '../../api/priceModels'
+import {
+  InputText,
+  PrimaryButton,
+  SectionBox,
+} from '@emporix/component-library'
+import { usePriceModelsApi } from '../../hooks/api/priceModels'
 import usePagination from '../../hooks/usePagination'
-import { PriceModel } from '../../models/PriceModel'
-import { Price, PriceTierValue } from '../../models/Price'
-import { usePricesApi } from '../../api/prices_v2'
-import { Button } from 'primereact/button'
+import { PriceModel } from '../../models/PriceModel.model'
+import { Price, PriceTierValue } from '../../models/Price.model'
+import { usePricesApi } from '../../hooks/api/prices_v2'
+import { useConfiguration } from '../../context/ConfigurationProvider'
 import ProductPricesPanelForm from './ProductPricesPanelForm'
 import { useSites } from '../../context/SitesProvider'
 import TaxConfiguration from './TaxConfiguration'
-import { useCountries } from '../../hooks/useCountries.tsx'
-import { useLocalizedValue } from '../../hooks/useLocalizedValue.tsx'
+import { useCountries } from '../../hooks/useCountries'
+import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import { useCurrencies } from '../../hooks/useCurrencies'
 import { useProductData } from '../../context/ProductDataProvider'
 import { useTranslation } from 'react-i18next'
-import { InputText } from 'primereact/inputtext'
-import { useDashboardContext } from '../../context/Dashboard.context.tsx'
+import { usePermissions } from '../../context/PermissionsProvider'
+import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
+import styles from './ProductPrices.module.scss'
 
 const createEmptyPrice = (
   itemId: string,
@@ -49,16 +54,18 @@ export const ProductPrices = () => {
   const { getPriceModelsPaginated } = usePriceModelsApi()
   const { getAllPricesForProduct } = usePricesApi()
   const { paginationParams } = usePagination({ rows: 10000 })
-  const { currency } = useDashboardContext()
+  const { currentCurrency } = useConfiguration()
   const { currenciesDropdownOptions } = useCurrencies()
   const { sites, currentSite } = useSites()
   const [prices, setPrices] = useState<Price[]>([])
   const [openPanel, setOpenPanel] = useState(false)
   const { getContentLangValue } = useLocalizedValue()
   const { t } = useTranslation()
-  const { permissions } = useDashboardContext()
-  const canBeManaged = permissions?.products?.manager
-  const canViewPriceModels = permissions?.priceModels?.viewer
+  const { hasPermission } = usePermissions()
+  const canManage =
+    hasPermission(EmployeeDomains.PRODUCTS_MANAGER) ||
+    hasPermission(VendorDomains.VENDOR_PRICES_MANAGER)
+  const canViewPriceModels = hasPermission(EmployeeDomains.PRICE_MODELS_VIEWER)
 
   const mapToOptions = useCallback(
     (
@@ -89,22 +96,22 @@ export const ProductPrices = () => {
         setPriceModels(values)
         setPriceModelsDropdownOptions([...values.map(mapToOptions)])
         const defaultPriceModel =
-          values.find((priceModel) => priceModel.default) || values[0]
+          values.find((priceModel) => priceModel.default) ?? values[0]
         setDefaultPriceModel(defaultPriceModel)
       })()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
   }, [product.id])
 
   useEffect(() => {
     ;(async () => {
       if (product.id) {
         const productPrices = await getAllPricesForProduct(product.id)
-        if (productPrices.length > 0) {
-          setPrices(productPrices)
-        }
+        setPrices(productPrices)
       }
     })()
     setOpenPanel(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
   }, [product.id])
 
   const addNewLocalPrice = useCallback(() => {
@@ -117,15 +124,16 @@ export const ProductPrices = () => {
       }
     )
     const newPrice = createEmptyPrice(
-      product.id || '',
-      currency ? currency.id : 'EUR',
+      product.id ?? '',
+      currentCurrency ? currentCurrency.id : 'EUR',
       currentSite ? currentSite.code : 'main',
-      newTierValues || []
+      newTierValues ?? []
     )
     setPrices((prevState) => {
       return [...prevState, { ...newPrice, priceModelId: '' }]
     })
     setOpenPanel(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
   }, [defaultPriceModel])
 
   const handleUpdateLocalPrice = (price: Price) => {
@@ -171,43 +179,42 @@ export const ProductPrices = () => {
   return (
     <>
       <TaxConfiguration productTaxClasses={product.taxClasses} />
-      <SectionBox className="mt-6">
-        <>
-          {canViewPriceModels ? (
-            <>
-              {prices?.map((price, priceIndex) => (
-                <div key={priceIndex} className="relative">
-                  <ProductPricesPanelForm
-                    price={price}
-                    currenciesDropdownOptions={currenciesDropdownOptions}
-                    sites={sitesDropdownItems}
-                    priceIndex={priceIndex}
-                    priceModels={priceModels}
-                    defaultPriceModel={defaultPriceModel}
-                    priceModelsDropdownOptions={priceModelsDropdownOptions}
-                    removeLocalPrice={handleRemoveLocalPrice}
-                    removeExistingPrice={handleRemoveExistingPrice}
-                    updateLocalPrice={handleUpdateLocalPrice}
-                    isPanelOpened={priceIndex === 0 || openPanel}
-                    taxCountriesDropdownOptions={taxCountriesDropdownOptions}
-                    readOnly={!canBeManaged}
-                  />
-                </div>
-              ))}
-              <Button
-                disabled={
-                  isNewPriceAdded() || !product.taxClasses || !canBeManaged
-                }
-                type="button"
-                icon="pi pi-plus"
-                className={prices?.length ? 'mt-4' : ''}
-                onClick={isNewPriceAdded() ? undefined : addNewLocalPrice}
-              />
-            </>
-          ) : (
-            <InputText disabled value={t('global.noPermissions')} />
-          )}
-        </>
+      <SectionBox className={styles.pricesBox}>
+        {canViewPriceModels ? (
+          <>
+            {prices?.map((price, priceIndex) => (
+              <div key={priceIndex}>
+                <ProductPricesPanelForm
+                  price={price}
+                  currenciesDropdownOptions={currenciesDropdownOptions}
+                  sites={sitesDropdownItems}
+                  priceIndex={priceIndex}
+                  priceModels={priceModels}
+                  defaultPriceModel={defaultPriceModel}
+                  priceModelsDropdownOptions={priceModelsDropdownOptions}
+                  removeLocalPrice={handleRemoveLocalPrice}
+                  removeExistingPrice={handleRemoveExistingPrice}
+                  updateLocalPrice={handleUpdateLocalPrice}
+                  isPanelOpened={priceIndex === 0 || openPanel}
+                  taxCountriesDropdownOptions={taxCountriesDropdownOptions}
+                  readOnly={!canManage}
+                />
+              </div>
+            ))}
+            <PrimaryButton
+              disabled={isNewPriceAdded() || !product.taxClasses || !canManage}
+              className={[
+                styles.addButton,
+                prices?.length ? styles.addButtonSpaced : '',
+              ].join(' ')}
+              onClick={isNewPriceAdded() ? undefined : addNewLocalPrice}
+            >
+              <i className="pi pi-plus" />
+            </PrimaryButton>
+          </>
+        ) : (
+          <InputText readOnly value={t('global.noPermissions')} />
+        )}
       </SectionBox>
     </>
   )

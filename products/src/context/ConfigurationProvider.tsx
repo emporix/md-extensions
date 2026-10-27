@@ -1,31 +1,39 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type PropsWithChildren,
+} from 'react'
 import {
   fetchBasicConfiguration,
-  TableConfig,
   updateSingleConfiguration,
-} from '../api/configuration'
-import { Props } from '../helpers/props'
+} from '@emporix/api-calls'
 import {
+  ColumnVisibility,
   Configuration,
   Currency,
   Language,
+  TableConfig,
   TableConfiguration,
-} from '../models/Configuration'
-import { ColumnVisibility } from '../components/shared/TableExtensions'
-import { DisplayMixin } from '../models/DisplayMixin'
-import { useDashboardContext } from './Dashboard.context.tsx'
+} from '../models/Configuration.model'
+import type { DisplayMixin } from '../models/DisplayMixin'
+import { useDashboardContext } from './Dashboard.context'
 
-interface ConfigurationContextType {
+type ConfigurationContextType = {
   configuration: Configuration | undefined
   languages: Language[]
   currencies: Currency[]
+  contentLanguage: string
+  currentCurrency: Currency | undefined
   refreshConfiguration: () => Promise<void>
   tableConfigurations: TableConfiguration[]
-  fetchVisibleColumns: (configurationKey: string) => string[]
   fetchTableConfiguration: (configurationKey: string) => ColumnVisibility[]
+  fetchVisibleColumns: (configurationKey: string) => string[]
   getTableMixinColumns: (configurationKey: string) => DisplayMixin[]
   updateTableConfiguration: (
-    tenant: string,
     configurationKey: string,
     tableConfig: TableConfig
   ) => Promise<void>
@@ -35,91 +43,97 @@ const ConfigurationContext = createContext<ConfigurationContextType>({
   configuration: undefined,
   languages: [],
   currencies: [],
+  contentLanguage: 'en',
+  currentCurrency: undefined,
+  refreshConfiguration: async () => {
+    throw new Error('not implemented')
+  },
   tableConfigurations: [],
-  refreshConfiguration: () => {
-    throw `not implemented`
-  },
-  fetchVisibleColumns: (_configurationKey: string) => {
-    throw `not implemented`
-  },
-  fetchTableConfiguration: (_configurationKey: string) => {
-    throw `not implemented`
-  },
-  getTableMixinColumns: (_configurationKey: string) => {
-    throw `not implemented`
-  },
-  updateTableConfiguration: (
-    _tenant: string,
-    _configurationKey: string,
-    _tableConfig: TableConfig
-  ) => {
-    throw `not implemented`
+  fetchTableConfiguration: () => [],
+  fetchVisibleColumns: () => [],
+  getTableMixinColumns: () => [],
+  updateTableConfiguration: async () => {
+    throw new Error('not implemented')
   },
 })
 
 export const useConfiguration = () => useContext(ConfigurationContext)
 
-export const ConfigurationProvider = ({ children }: Props) => {
-  const { tenant } = useDashboardContext()
+export const ConfigurationProvider = ({ children }: PropsWithChildren) => {
+  const { tenant, contentLanguage, currency } = useDashboardContext()
   const [configuration, setConfig] = useState<Configuration>()
-  const [tableConfigurations, setTableConfigurations] = useState<
-    TableConfiguration[]
-  >([])
+
+  const refreshConfiguration = async () => {
+    if (!tenant) return
+    const c = await fetchBasicConfiguration(tenant)
+    setConfig(c)
+  }
 
   useEffect(() => {
-    ;(async () => {
-      await refreshConfiguration()
-    })()
-  }, [tenant])
+    void refreshConfiguration()
+  }, [tenant, contentLanguage])
 
   const currencies = useMemo(
-    () => configuration?.currencies || [],
+    () => configuration?.currencies ?? [],
     [configuration]
   )
 
   const languages = useMemo(
-    () => configuration?.languages || [],
+    () => configuration?.languages ?? [],
     [configuration]
   )
 
-  const fetchVisibleColumns = (configurationKey: string) => {
-    const columns = tableConfigurations.find(
-      (el) => el.key === configurationKey
-    )?.columns
-    return columns?.filter((col) => col.visible).map((col) => col.key) ?? []
-  }
+  const currentCurrency = useMemo(() => {
+    if (currency) {
+      return currency
+    }
+    return currencies.find((c) => c.default) ?? currencies[0]
+  }, [currency, currencies])
 
-  const fetchTableConfiguration = (configurationKey: string) => {
-    return (
+  const tableConfigurations = useMemo(
+    () => configuration?.tableConfigurations ?? [],
+    [configuration]
+  )
+
+  const fetchTableConfiguration = useCallback(
+    (configurationKey: string) =>
       tableConfigurations.find((el) => el.key === configurationKey)?.columns ??
-      []
-    )
-  }
+      [],
+    [tableConfigurations]
+  )
 
-  const getTableMixinColumns = (configurationKey: string) => {
-    return (
+  /**
+   * Keys of the columns the user has chosen to show. An empty result means
+   * "no saved preference" — callers should then show every column.
+   */
+  const fetchVisibleColumns = useCallback(
+    (configurationKey: string) =>
+      fetchTableConfiguration(configurationKey)
+        .filter((col) => col.visible)
+        .map((col) => col.key),
+    [fetchTableConfiguration]
+  )
+
+  /** Mixins the user has chosen to surface as extra table columns. */
+  const getTableMixinColumns = useCallback(
+    (configurationKey: string) =>
       tableConfigurations.find((el) => el.key === configurationKey)?.mixins ??
-      []
-    )
-  }
+      [],
+    [tableConfigurations]
+  )
 
-  const updateTableConfiguration = async (
-    tenant: string,
-    configurationKey: string,
-    tableConfig: TableConfig
-  ) => {
-    await updateSingleConfiguration(tenant, configurationKey, {
-      key: configurationKey,
-      value: tableConfig,
-    })
-    await refreshConfiguration()
-  }
-
-  const refreshConfiguration = async () => {
-    const c = await fetchBasicConfiguration(tenant)
-    setTableConfigurations(c.tableConfigurations)
-    setConfig(c)
-  }
+  const updateTableConfiguration = useCallback(
+    async (configurationKey: string, tableConfig: TableConfig) => {
+      if (!tenant) return
+      await updateSingleConfiguration(tenant, configurationKey, {
+        key: configurationKey,
+        value: tableConfig,
+      })
+      await refreshConfiguration()
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [tenant]
+  )
 
   return (
     <ConfigurationContext.Provider
@@ -127,12 +141,14 @@ export const ConfigurationProvider = ({ children }: Props) => {
         configuration,
         currencies,
         languages,
+        contentLanguage,
+        currentCurrency,
         refreshConfiguration,
-        fetchVisibleColumns,
+        tableConfigurations,
         fetchTableConfiguration,
+        fetchVisibleColumns,
         getTableMixinColumns,
         updateTableConfiguration,
-        tableConfigurations,
       }}
     >
       {children}

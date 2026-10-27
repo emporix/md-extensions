@@ -1,49 +1,73 @@
-import { createContext, FC, useContext, useEffect, useState } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type PropsWithChildren,
+} from 'react'
 import { useSitesApi } from '../api/sites'
-import { Props } from '../helpers/props'
-import { Site } from '../models/Site'
-import { useDashboardContext } from './Dashboard.context.tsx'
+import { Site } from '../models/Site.model'
+import { useDashboardContext } from './Dashboard.context'
 
-interface SitesContextType {
+type SitesContextType = {
   sites: Site[] | undefined
-  updateCurrentSite: (code?: Site) => void
+  updateCurrentSite: (site?: Site) => void
   currentSite: Site | undefined
 }
 
 const SiteContext = createContext<SitesContextType>({
   sites: [],
   currentSite: undefined,
-  updateCurrentSite: (_code?: Site) => {
+  updateCurrentSite: () => {
     throw new Error('not implemented')
   },
 })
 
 export const useSites = () => useContext(SiteContext)
 
-export const SiteProvider: FC<Props> = ({ children }) => {
-  const { token } = useDashboardContext()
+/**
+ * The host persists the user's selected site in localStorage (`currentSite`,
+ * MD `persistentStore`). The remote runs in the host page, so it starts from
+ * the same site when it is still valid for this tenant.
+ */
+const readHostCurrentSite = (sites: Site[]): Site | undefined => {
+  try {
+    const raw = localStorage.getItem('currentSite')
+    const code = raw ? (JSON.parse(raw) as Partial<Site>)?.code : undefined
+    return code ? sites.find((site) => site.code === code) : undefined
+  } catch {
+    return undefined
+  }
+}
+
+export const SitesProvider = ({ children }: PropsWithChildren) => {
+  const { token, tenant } = useDashboardContext()
   const { getSites } = useSitesApi()
   const [sites, setSites] = useState<Site[]>([])
   const [currentSite, setCurrentSite] = useState<Site>()
 
   useEffect(() => {
+    if (!token || !tenant) return
     ;(async () => {
-      const newSites: Site[] = await getSites()
-      const defaultSite = newSites.find((site) => site.default)
-      if (defaultSite) {
-        updateCurrentSite(defaultSite)
-      } else if (newSites[0]) {
-        updateCurrentSite(newSites[0])
+      try {
+        const newSites: Site[] = await getSites()
+        const defaultSite = newSites.find((site) => site.default)
+        const hostSite = readHostCurrentSite(newSites)
+        if (hostSite) {
+          setCurrentSite(hostSite)
+        } else if (defaultSite) {
+          setCurrentSite(defaultSite)
+        } else if (newSites[0]) {
+          setCurrentSite(newSites[0])
+        }
+        setSites(newSites)
+      } catch (error) {
+        console.error('Error fetching sites:', error)
       }
-      setSites(newSites)
     })()
-  }, [token])
+  }, [token, tenant, getSites])
 
   const updateCurrentSite = (site?: Site) => {
-    if (!site) {
-      setCurrentSite(undefined)
-      return
-    }
     setCurrentSite(site)
   }
 

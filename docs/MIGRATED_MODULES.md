@@ -10,7 +10,7 @@ Living list of Management Dashboard modules extracted into `md-extensions` under
 
 1. **Do not depend on U&G alone.** Before copying shared UI / providers / hooks, check **all** playbook-aligned remotes below (newest first when they diverge).
 2. Prefer **CL exports** when available — look up each MD `primereact` import in [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md). Otherwise take the best copy from a migrated remote and **ask** about promoting to CL (playbook §5).
-3. `products` and other legacy folders may exist in the repo but are **not** Tier 1 SoT unless listed here as playbook-aligned.
+3. Legacy folders may exist in the repo but are **not** Tier 1 SoT unless listed here as playbook-aligned.
 4. After finishing a migration, add a row to the table and note reusable deltas (new shared shells, CL bumps, ports, Mode A/B).
 
 ## Playbook-aligned remotes (Tier 1 sources)
@@ -22,8 +22,9 @@ Living list of Management Dashboard modules extracted into `md-extensions` under
 | `brands` | `brands` | COP-6180 | A | `5175` | `2.6.0` | Green-field from template. First remote to import CL `SectionBox` instead of copying it, and first to need CL `Editor` / `FileUpload` / `ProgressBar` (added in 2.4.0 — see below). Ports `TableExtensions` (column visibility, `ext_brands`) with local `SidePanel` + CL `InputSwitch` (matching MD/returns). Columns trigger uses CL `SecondaryButton` `size="small"` `iconOnly` (2.6.0). Media tab (`AssetsViewer`, `MediaAssetUpload`) opens the host's `/media-assets/:id` via `window.location.assign` — no in-remote route exists for it. |
 | `returns` | `returns` | COP-6256 | A | `5176` | `2.9.2` | Green-field from MD `src/modules/returns`. First remote to port the **mixins subsystem** (form tabs + mixin table columns) and the first to need CL `InputSwitch` / `MoneyValue` / `StatusBadge` and `Tabs` `disabled` + `keepMounted` (added in 2.5.0 — see below). Columns toolbar uses CL `SecondaryButton` `size="small"` `iconOnly` (2.6.0). Date table filters and mixin date/datetime fields use CL `Calendar` (2.7.0). Forms prefer CL built-in `label`/`error` (no lean `InputField`). Tier 1 taken from `brands` (+ shared shells from `customer-groups`). |
 | `orders` | `orders` | COP-6917 | A | `5177` | `2.11.0` | Green-field from MD `src/modules/orders` (+ `router/Orders.routes.tsx`). Largest port so far: list (lazy table, row expansion, `ext_orders` column visibility + mixin columns, CSV export, master/sub-order dialog, site restrictions), detail (status, current + **legacy** data/entries views, payment tab, order + entry mixins, audit log). First remote to need CL `InputNumber` / `Skeleton` / `Chip` (promoted in 2.11.0). MD `RestrictionsProvider` ported as `useOrderRestrictions()` over remote `PermissionsProvider.userScopes`. Legacy MD key `order` (`/apps/management/order/*`) redirects host-side. Tier 1 from `returns`, audit log from `customer-groups`. |
+| `products` | `products` | COP-6993 | A | `5178` | `2.12.0` | Replaces the legacy `emporix-product-module` remote in the same folder (re-scaffolded from the template). Green-field from MD `components/products` + `modules/Products.module.tsx`: list (lazy table, `ext_products` + mixin columns, list ↔ category-tree view, batch delete + dynamic-variant recalculation, create dialog, mocked CSV import), create/edit (general + AI assistant, categories, classifications, prices + tax, availability (+ availability mixins), bundle, media, linked, attributes/variants, dynamic-variant hierarchy, product mixins, audit log). First remote with the **full MD mixins subsystem** (site-aware mixins, classification accordion, arrays/objects, localized, reference fields via `ReferenceSelector` for 10 entity types) and the first to need CL `Tree` (promoted in 2.12.0). Tier 1 from `orders` (+ media from `brands`). Legacy MD keys `productsEdit` / `productsAdd` redirect host-side (`ProductsPathRedirect`). |
 
-**Next free local port:** `5178` (update when claiming).
+**Next free local port:** `5179` (update when claiming).
 
 ### Deltas worth reusing from `brands` (COP-6180)
 
@@ -52,13 +53,21 @@ Living list of Management Dashboard modules extracted into `md-extensions` under
 - **Audit-log SCSS from `customer-groups` used MD CSS variables with fallbacks** (`var(--grey-5, #828a99)`); `orders` strips them to the fallback values. `customer-groups` / `users-and-groups` still carry the leak.
 - **CL gaps that remain:** no accordion variant of the mixins form (entry mixins render one `MixinsForm` per schema), no `InputMask` (time → `InputText type="time"`), Prime-style severity `Badge` (→ `StatusBadge` colour map); CL `DataTable` always renders the selection column before an `expander` column (MD had expander first).
 
+### Deltas worth reusing from `products` (COP-6993)
+
+- **CL 2.12.0 adds `Tree` (Pattern B)** with its own `TreeNode` / `TreeExpandedKeys` / `TreeSelectionKeys` types — no `primereact/treenode` import needed. Use `borderless` for sidebars.
+- **Full MD mixins subsystem** lives in `products/src/components/mixins` (site-aware storage keys + `MixinsSiteContextPanel`, classification accordion forms, `MixinsFormArray` / `MixinsFormBox`, `ReferenceSelector` + `useReferenceSelectorConfig` with lean reference hooks under `hooks/api/`). `useMixinsForm` returns CL `TabItem`s (`mixinsTabs`, `classificationsTab`). Take it from here, not `returns`, when a module needs site-aware or classification mixins or reference fields.
+- **`hooks/useUpdateEffect`** compares previous dependency values, so React StrictMode's dev double-effect no longer counts as an update (MD's first-run flag navigated away from the edit page on mount in dev).
+- **`SitesProvider`** starts from the host's persisted `currentSite` (localStorage, MD `persistentStore`) when it is valid for the tenant — the remote runs in the host page.
+- **`hooks/useTabs`** also resolves numeric `?tab=<index>` (MD wrote indexes) besides tab ids.
+- **Products-aware `components/shared/InputField`** (CL `FieldLabel` + "Inherited from parent" hint from `ProductDataProvider`) — products only; other remotes keep using CL built-in labels.
+
 ## Not playbook SoT (legacy / other remotes)
 
 These live under `md-extensions/` but should **not** be used as the default scaffold or Tier 1 copy source for new COP-5597 extractions:
 
 | Folder | Why exclude as SoT |
 |--------|--------------------|
-| `products` | Older AppState / permissions patterns; may still differ from U&G contract |
 | `statistics`, `dashboard`, `agentic-ai`, `algolia-synonyms` | Often template-era (`extension` name) or domain-specific; verify before copying patterns |
 
 When in doubt, prefer the newest **playbook-aligned** remote in the table above.

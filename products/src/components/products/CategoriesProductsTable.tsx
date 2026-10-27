@@ -1,48 +1,39 @@
-import {
-  ReactNode,
-  RefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
-import {
-  Column,
-  ColumnFilterElementTemplateOptions,
-  ColumnProps,
-} from 'primereact/column'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
+import { BsDownload } from 'react-icons/bs'
+import { ProductRow } from '@emporix/api-calls'
 import {
   DataTable,
-  DataTableFilterParams,
-  DataTablePageParams,
-  DataTableSortParams,
-} from 'primereact/datatable'
-import { ProductRow, useCategoriesApi } from '../../api/categories'
+  SecondaryButton,
+  type DataTableColumnProps,
+  type DataTableFilterEvent,
+  type DataTablePageEvent,
+  type DataTablePaginationState,
+  type DataTableSortEvent,
+} from '@emporix/component-library'
+import { useCategoriesApi } from '../../hooks/api/categories'
 import { DisplayMixin, parseColumnProps } from '../../models/DisplayMixin'
 import { PaginationProps } from '../../hooks/usePagination'
-import ProductsCategoryTree from './ProductsCategoryTree'
-import useCustomNavigate from '../../hooks/useCustomNavigate.tsx'
-import MdDataTable from '../shared/MdDataTable'
-import TreeNode from 'primereact/treenode'
-import { TreeNodeTemplateOptions } from 'primereact/tree'
-import { useTranslation } from 'react-i18next'
+import CategoriesTree from '../shared/CategoriesTree'
+import useCustomNavigate from '../../hooks/useCustomNavigate'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
-import { ProductsAction } from '../../pages/ProductsList.tsx'
-import { trimImage } from '../../helpers/images'
-import { createPortal } from 'react-dom'
-import { TableExtensions } from '../shared/TableExtensions'
+import { ProductsAction } from '../../pages/ProductsList.page'
+import { trimCloudinaryImage } from '../../helpers/images'
+import TableExtensions from '../shared/TableExtensions'
 import { mapToCsv, saveToCsvFile } from '../../helpers/download'
-import { SchemaType } from '../../models/Schema'
+import { SchemaType } from '../../models/Schema.model'
 import { formatDateWithTime } from '../../helpers/date'
-import { useUIBlocker } from '../../context/UIBlcoker'
+import { usePermissions } from '../../context/PermissionsProvider'
+import { useUIBlocker } from '../../context/UIBlocker'
 import { TABLE_NAME, TABLE_NAME_CONFIG_KEY } from './ProductsTable'
-import { useDomObserver } from '../../hooks/useDomObserver'
-import { DropdownFilter } from '../shared/DropdownFilter'
-import { ProductType } from '../../models/Category'
-import { SelectItemOptionsType } from 'primereact/selectitem'
-import { useDashboardContext } from '../../context/Dashboard.context'
+import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
+import { productDetailPath } from '../../constants/paths'
+import styles from './CategoriesProductsTable.module.scss'
 
-const mapToSortField = (paginationParams: PaginationProps): PaginationProps => {
+const mapToSortField = (
+  paginationParams: Partial<PaginationProps>
+): Partial<PaginationProps> => {
   if (paginationParams.sortField === 'ref.localizedName') {
     paginationParams.sortField = 'name'
   }
@@ -52,32 +43,26 @@ const mapToSortField = (paginationParams: PaginationProps): PaginationProps => {
   return paginationParams
 }
 
-interface ProductsTableProps {
-  categoryId: string | null
-  setCategoryId: (newId: string) => unknown
-  paginationParams: Partial<PaginationProps>
-  onPageCallback: (event: DataTablePageParams) => void
-  setPaginationParams: (p: Partial<PaginationProps>) => unknown
-  onSortCallback: (event: DataTableSortParams) => void
-  dataTable: RefObject<DataTable>
-  refreshKey: number
-  products: ProductRow[]
-  setTotalCount: (num: number) => unknown
-  totalCount: number
-  setProducts: (products: ProductRow[]) => unknown
-  selectedProducts: ProductRow[]
-  setSelectedProducts: (products: ProductRow[]) => unknown
-  clickToEdit: boolean
-  treeNodeTemplate?: (
-    node: TreeNode,
-    options: TreeNodeTemplateOptions
-  ) => ReactNode
-  invalidateProducts: () => unknown
-  visibleColumns: string[]
-  visibleMixins: DisplayMixin[]
-  setFilters: (columns: ColumnProps[]) => void
-  columns?: ColumnProps[]
-  showTableExtensions?: boolean
+type CategoriesProductsTableProps = {
+  readonly categoryId: string | null
+  readonly setCategoryId: (newId: string) => unknown
+  readonly paginationParams: Partial<PaginationProps>
+  readonly onPageCallback: (event: DataTablePageEvent) => void
+  readonly setPaginationParams: (p: Partial<PaginationProps>) => unknown
+  readonly refreshKey: number
+  readonly products: ProductRow[]
+  readonly setTotalCount: (num: number) => unknown
+  readonly totalCount: number
+  readonly setProducts: (products: ProductRow[]) => unknown
+  readonly selectedProducts: ProductRow[]
+  readonly setSelectedProducts: (products: ProductRow[]) => unknown
+  readonly clickToEdit: boolean
+  readonly invalidateProducts: () => unknown
+  readonly visibleColumns: string[]
+  readonly visibleMixins: DisplayMixin[]
+  readonly setFilters: (columns: DataTableColumnProps[]) => void
+  /** Toolbar slot the column settings are portalled into (MD `#table-extensions`). */
+  readonly extensionsContainer?: HTMLElement | null
 }
 
 const CSV_COLUMNS = ['id', 'name', 'price']
@@ -96,27 +81,26 @@ const CategoriesProductsTable = ({
   setSelectedProducts,
   setPaginationParams,
   clickToEdit,
-  treeNodeTemplate,
   invalidateProducts,
   visibleColumns,
   visibleMixins,
   setFilters,
-  columns: columnsProps,
-  showTableExtensions = true,
-}: ProductsTableProps) => {
+  extensionsContainer,
+}: CategoriesProductsTableProps) => {
   const [selectedNodeKey, setSelectedNodeKey] = useState<string | null>(null)
-  const { syncCategoryAssignments } = useCategoriesApi()
+  const { syncCategoryAssignments, getAllCategoryProducts } = useCategoriesApi()
   const [productsLoading, setProductsLoading] = useState(false)
   const { navigate } = useCustomNavigate()
   const { t, i18n } = useTranslation()
-  const { permissions } = useDashboardContext()
-  const canBeManaged = permissions?.products?.manager
+  const { hasPermission } = usePermissions()
+  const canManage =
+    hasPermission(EmployeeDomains.PRODUCTS_MANAGER) ||
+    hasPermission(VendorDomains.VENDOR_PRODUCTS_MANAGER)
   const { blockPanel } = useUIBlocker()
-  const { fetchAllCategoryProducts } = useCategoriesApi()
-
   const { getUiLangValue, getContentLangValue } = useLocalizedValue()
+
   useEffect(() => {
-    ;(async () => {
+    void (async () => {
       if (!categoryId) {
         return
       }
@@ -124,9 +108,7 @@ const CategoriesProductsTable = ({
         setProductsLoading(true)
         const { total, productRows } = await syncCategoryAssignments(
           categoryId,
-          mapToSortField(
-            JSON.parse(JSON.stringify(paginationParams as PaginationProps))
-          )
+          mapToSortField(JSON.parse(JSON.stringify(paginationParams)))
         )
         setTotalCount(total)
         setProducts(productRows)
@@ -135,9 +117,10 @@ const CategoriesProductsTable = ({
         setProductsLoading(false)
       }
     })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryId, paginationParams, refreshKey])
 
-  const onFilterCallback = (event: DataTableFilterParams) => {
+  const onFilterCallback = (event: DataTableFilterEvent) => {
     setPaginationParams({
       ...paginationParams,
       first: 0,
@@ -146,129 +129,111 @@ const CategoriesProductsTable = ({
     })
   }
 
-  const onSortCallback = (event: DataTableSortParams) => {
+  const onSortCallback = (event: DataTableSortEvent) => {
     setPaginationParams({
       ...paginationParams,
-      sortOrder: event.sortOrder,
+      sortOrder: event.sortOrder ?? null,
       sortField: event.sortField,
     })
   }
 
-  const selectHandler = async (id: string) => {
+  const selectHandler = (id: string) => {
     setCategoryId(id)
   }
 
-  const productsActions = (rowData: { id: string }) => {
+  const productsActions = (rowData: ProductRow) => {
+    if (rowData.missingProduct) {
+      return (
+        <span className={styles.missingProduct}>
+          <i
+            className={`pi pi-exclamation-triangle ${styles.missingProductIcon}`}
+          />
+          <span>{t('products.table.missingProduct')}</span>
+        </span>
+      )
+    }
     return (
       <ProductsAction
-        productId={rowData.id}
+        product={rowData}
         invalidateProducts={invalidateProducts}
       />
     )
   }
 
-  const productTypesDropdownOptions: SelectItemOptionsType = useMemo(() => {
-    return Object.values(ProductType).map((type) => ({
-      value: type,
-      label: t(`products.types.${type}`),
-    }))
-  }, [i18n.language])
-
-  const typeFilterElement = useCallback(
-    (options: ColumnFilterElementTemplateOptions) => {
-      return (
-        <DropdownFilter
-          dropdownOptions={productTypesDropdownOptions}
-          filterOptions={options}
-          placeholder={t('productTemplates.attributes.table.filter.type')}
-        />
-      )
-    },
-    [i18n.language, productTypesDropdownOptions]
-  )
+  const visibleMixinsKey = JSON.stringify(visibleMixins)
 
   const columns = useMemo(() => {
-    if (columnsProps) {
-      return columnsProps
-    }
-    let rawColumns: ColumnProps[] = [
-      {
-        columnKey: 'imageUrl',
-        header: t(`${TABLE_NAME}.image`),
-        field: 'imageUrl',
-        filter: false,
-        sortable: false,
-        body: (pr: ProductRow) => {
-          return (
-            <img
-              className="thumb"
-              src={trimImage(pr.imageUrl as string, 32, 32)}
-              alt={pr.imageUrl || 'imageUrl'}
-            />
-          )
-        },
-      },
-      {
-        columnKey: 'ref.localizedName',
-        header: t(`${TABLE_NAME}.name`),
-        filterPlaceholder: t(`${TABLE_NAME}.filters.name`),
-        field: `ref.localizedName`,
-        filter: true,
-        sortable: true,
-        showFilterMenu: false,
-        body: (rowData: ProductRow) => {
-          return getContentLangValue(rowData.ref.localizedName)
-        },
-      },
-      {
-        columnKey: 'ref.id',
-        header: t(`${TABLE_NAME}.id`),
-        filterPlaceholder: t(`${TABLE_NAME}.filters.id`),
-        field: 'ref.id',
-        filter: true,
-        sortable: true,
-        showFilterMenu: false,
-      },
-      {
-        columnKey: 'code',
-        header: t(`${TABLE_NAME}.code`),
-        filterPlaceholder: t(`${TABLE_NAME}.filters.code`),
-        field: 'code',
-        filter: true,
-        sortable: true,
-        showFilterMenu: false,
-      },
-      {
-        columnKey: 'productType',
-        header: t(`${TABLE_NAME}.productType`),
-        filterPlaceholder: t(`${TABLE_NAME}.filters.productType`),
-        field: 'productType',
-        filter: true,
-        filterElement: typeFilterElement,
-        sortable: true,
-        showFilterMenu: false,
-      },
-      {
-        columnKey: 'price',
-        header: t(`${TABLE_NAME}.price`),
-        field: 'price',
-        filter: false,
-        sortable: false,
-        showFilterMenu: false,
-        style: { paddingRight: '2rem' },
-      },
-    ].map((col) => {
-      return {
+    const rawColumns: DataTableColumnProps[] = [
+      ...(
+        [
+          {
+            columnKey: 'imageUrl',
+            header: t(`${TABLE_NAME}.image`),
+            field: 'imageUrl',
+            filter: false,
+            sortable: false,
+            body: (pr: ProductRow) => (
+              <img
+                className={styles.thumb}
+                src={trimCloudinaryImage(pr.imageUrl as string, 32, 32)}
+                alt={pr.imageUrl || 'imageUrl'}
+              />
+            ),
+          },
+          {
+            columnKey: 'ref.localizedName',
+            header: t(`${TABLE_NAME}.name`),
+            field: `ref.localizedName`,
+            filter: true,
+            sortable: true,
+            showFilterMenu: false,
+            body: (rowData: ProductRow) =>
+              getContentLangValue(rowData.ref.localizedName),
+          },
+          {
+            columnKey: 'ref.id',
+            header: t(`${TABLE_NAME}.id`),
+            field: 'ref.id',
+            filter: true,
+            sortable: true,
+            showFilterMenu: false,
+          },
+          {
+            columnKey: 'code',
+            header: t(`${TABLE_NAME}.code`),
+            field: 'code',
+            filter: false,
+            sortable: true,
+            showFilterMenu: false,
+          },
+          {
+            columnKey: 'productType',
+            header: t(`${TABLE_NAME}.productType`),
+            field: 'productType',
+            filter: false,
+            sortable: true,
+            showFilterMenu: false,
+          },
+          {
+            columnKey: 'price',
+            header: t(`${TABLE_NAME}.price`),
+            field: 'price',
+            filter: false,
+            sortable: false,
+            showFilterMenu: false,
+            style: { paddingRight: '2rem' },
+          },
+        ] satisfies DataTableColumnProps[]
+      ).map((col) => ({
         ...col,
         hidden:
           visibleColumns.length > 0
             ? !visibleColumns.includes(col.columnKey)
             : false,
-      }
-    })
-    rawColumns = [
-      ...rawColumns,
-      ...visibleMixins.map((mixin) => parseColumnProps(mixin, getUiLangValue)),
+      })),
+      ...visibleMixins.map((mixin) =>
+        parseColumnProps(mixin, getUiLangValue, false)
+      ),
     ]
     setFilters(rawColumns)
     rawColumns.push({
@@ -277,20 +242,20 @@ const CategoriesProductsTable = ({
       body: productsActions,
     })
     return rawColumns
-  }, [
-    i18n.language,
-    TABLE_NAME,
-    visibleColumns,
-    t,
-    JSON.stringify(visibleMixins),
-    columnsProps,
-  ])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [i18n.language, visibleColumns, t, visibleMixinsKey])
+
+  // Base columns carry `hidden`; mixin and actions columns are not toggleable.
+  const configurableColumns = useMemo(
+    () => columns.filter((column) => 'hidden' in column),
+    [columns]
+  )
 
   const exportToCsv = useCallback(async () => {
     try {
       blockPanel(true)
       if (categoryId) {
-        const result = await fetchAllCategoryProducts(categoryId)
+        const result = await getAllCategoryProducts(categoryId)
         const data = mapToCsv(CSV_COLUMNS, result, (pr: ProductRow) => {
           return [pr.id, pr.name, pr.price]
         })
@@ -302,61 +267,72 @@ const CategoriesProductsTable = ({
     } finally {
       blockPanel(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryId])
 
-  const isDomReady = useDomObserver()
+  const pagination: DataTablePaginationState = {
+    ...paginationParams,
+    totalRecords: totalCount,
+  }
+
   return (
-    <div className="grid grid-nogutter products-table">
-      {showTableExtensions &&
-        isDomReady &&
+    <div className={styles.root}>
+      {extensionsContainer &&
         createPortal(
-          <TableExtensions
-            tableConfigurationKey={TABLE_NAME_CONFIG_KEY}
-            tableColumns={columns
-              .filter((column) => Object.hasOwn(column, 'hidden'))
-              .map((column) => column.columnKey ?? '')}
-            csvExportHandler={exportToCsv}
-            tableName={TABLE_NAME}
-            schemaType={SchemaType.PRODUCT}
-            managerPermission={canBeManaged}
-          />,
-          document.getElementById('table-extensions') as HTMLElement
+          <div className={styles.extensions}>
+            {/* MD TableExtensions `csvExportHandler` button; the remote
+                TableExtensions has no such prop, so it is rendered here. */}
+            <SecondaryButton
+              size="small"
+              iconOnly
+              onClick={() => void exportToCsv()}
+              aria-label={t('global.download')}
+            >
+              <BsDownload size={18} />
+            </SecondaryButton>
+            <TableExtensions
+              tableConfigurationKey={TABLE_NAME_CONFIG_KEY}
+              tableColumns={configurableColumns.map((column) =>
+                String(column.columnKey ?? '')
+              )}
+              tableName={TABLE_NAME}
+              schemaType={SchemaType.PRODUCT}
+              managerPermission={canManage}
+            />
+          </div>,
+          extensionsContainer
         )}
-      <div className="col-3 tree">
-        <ProductsCategoryTree
-          table={false}
+      <div className={styles.treePane}>
+        <CategoriesTree
           selectHandler={selectHandler}
           selectedNodeKeys={selectedNodeKey}
-          treeNodeTemplate={treeNodeTemplate}
         />
       </div>
-      <div className="col-9" style={{ minHeight: '50vh' }}>
-        <MdDataTable
-          className={'h-full'}
-          setSelectedItems={setSelectedProducts}
-          selection={selectedProducts}
+      <div className={styles.tablePane}>
+        <DataTable
+          className={styles.table}
+          dataKey="id"
           value={products}
-          paginationOptions={{
-            ...paginationParams,
-            totalRecords: totalCount,
-          }}
+          columns={columns}
+          selectionMode="multiple"
+          selection={selectedProducts}
+          onSelectionChange={(selection) =>
+            setSelectedProducts((selection ?? []) as ProductRow[])
+          }
+          isRowSelectable={(data) => !data.data.missingProduct}
+          pagination={pagination}
           sortField={paginationParams.sortField}
           sortOrder={paginationParams.sortOrder}
           onFilter={onFilterCallback}
           onSort={onSortCallback}
           onPage={onPageCallback}
-          onRowClick={(d) => {
-            if (!clickToEdit) return
-            navigate(`/products/${d.id}`)
+          onRowClick={(row) => {
+            if (!clickToEdit || row.missingProduct) return
+            navigate(productDetailPath(row.id))
           }}
-          isLoading={productsLoading}
-          dataKey={'id'}
-          selectionMode="multiple"
-        >
-          {columns.map((column: ColumnProps) => {
-            return <Column key={column.columnKey} {...column} />
-          })}
-        </MdDataTable>
+          loading={productsLoading}
+          lazy={true}
+        />
       </div>
     </div>
   )

@@ -1,0 +1,14 @@
+// MD: `flex justify-content-end align-items-center` + `ml-2` between buttons
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// MD: PrimeFlex `col-12`
+.fullWidth {
+  width: 100%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}

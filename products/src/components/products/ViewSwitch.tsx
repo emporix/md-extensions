@@ -1,41 +1,61 @@
-import { SelectButton } from 'primereact/selectbutton'
+import { SelectButton } from '@emporix/component-library'
+import { StylableProps } from '../../helpers/props'
+import styles from './ViewSwitch.module.scss'
 
 export type ListType = 'list' | 'tree'
-interface Props {
-  value: ListType
-  onChange: (key: ListType) => unknown
-  disabled?: boolean
+
+type ViewSwitchProps = StylableProps & {
+  readonly value: ListType
+  readonly onChange: (key: ListType) => unknown
+  readonly disabled?: boolean
 }
-const ViewSwitch = ({ onChange, value, disabled }: Props) => {
-  const options = [
-    { icon: <i id="list-view" className="pi pi-list" />, value: 'list' },
-    {
-      icon: <i id="tree-view" className="pi pi-sitemap -rotate-90" />,
-      value: 'tree',
-    },
-  ]
 
-  const template = (options: { icon: JSX.Element }) => {
-    return options.icon
-  }
+type ViewSwitchOption = {
+  label: string
+  value: ListType
+  iconId: string
+  iconClassName: string
+}
 
+const OPTIONS: ViewSwitchOption[] = [
+  {
+    label: 'list',
+    value: 'list',
+    iconId: 'list-view',
+    iconClassName: 'pi pi-list',
+  },
+  {
+    label: 'tree',
+    value: 'tree',
+    iconId: 'tree-view',
+    iconClassName: `pi pi-sitemap ${styles.rotated}`,
+  },
+]
+
+const itemTemplate = (option: ViewSwitchOption) => (
+  <i id={option.iconId} className={option.iconClassName} />
+)
+
+const ViewSwitch = ({
+  className = '',
+  value,
+  onChange,
+  disabled = false,
+}: ViewSwitchProps) => {
   return (
-    <SelectButton
+    <SelectButton<ViewSwitchOption>
       disabled={disabled}
-      id="view-switcher"
+      className={`${styles.viewSwitch} ${className}`.trim()}
+      data-testid="view-switcher"
       value={value}
-      options={options}
+      options={OPTIONS}
+      // MD `unselectable={false}`: clicking the active option keeps it.
       onChange={(e) => {
-        onChange(e.value)
+        if (e.value === 'list' || e.value === 'tree') onChange(e.value)
       }}
-      itemTemplate={template}
-      unselectable={false}
+      itemTemplate={itemTemplate}
     />
   )
-}
-
-ViewSwitch.defaultProps = {
-  disabled: false,
 }
 
 export default ViewSwitch

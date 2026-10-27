@@ -1,72 +1,36 @@
-import { useEffect, useState } from 'react'
+import { DateValue as LibraryDateValue } from '@emporix/component-library'
 import { useTranslation } from 'react-i18next'
-import { formatDate, formatDateWithTime } from '../../helpers/date'
 
-interface DateValueProps {
-  className: string
-  date: Date | string | undefined
-  showTime: boolean
-  nullText: string
+type DateValueProps = {
+  readonly className?: string
+  readonly date: Date | string | undefined
+  readonly showTime?: boolean
+  readonly nullText?: string
+  readonly timeZone?: string
+  readonly hour12?: boolean
 }
 
-const DateValue = (props: DateValueProps) => {
-  const { className, date, showTime, nullText } = props
+const DateValue = ({
+  className = '',
+  date,
+  showTime = false,
+  nullText = '--',
+  timeZone,
+  hour12,
+}: DateValueProps) => {
   const { i18n } = useTranslation()
-  const [showNullText, setShowNullText] = useState<boolean>(false)
-  const [textDate, setTextDate] = useState<string>('')
-  const [textTime, setTextTime] = useState<string>()
-
-  useEffect(() => {
-    if (!date) {
-      setShowNullText(true)
-    } else {
-      if (!showTime) {
-        const formattedDate = formatDate(date, i18n.language)
-        if (formattedDate === '--') {
-          setShowNullText(true)
-        } else {
-          setTextDate(formattedDate)
-          setShowNullText(false)
-        }
-      } else {
-        const formattedDate = formatDateWithTime(date, i18n.language)
-        if (formattedDate === '--') {
-          setShowNullText(true)
-        } else {
-          const timeIndex = formattedDate.indexOf(' ')
-          setTextDate(formattedDate.slice(0, timeIndex - 1))
-          setTextTime(formattedDate.slice(timeIndex + 1))
-          setShowNullText(false)
-        }
-      }
-    }
-  }, [i18n.language, date])
 
   return (
-    <div className={`${className} flex align-items-end gap-2`}>
-      {showNullText ? (
-        nullText
-      ) : (
-        <>
-          <div>{textDate}</div>
-          {textTime && (
-            <div
-              className="text-xs white-space-nowrap"
-              style={{ color: '#596168' }}
-            >
-              {textTime}
-            </div>
-          )}
-        </>
-      )}
-    </div>
+    <LibraryDateValue
+      className={className}
+      date={date}
+      locale={i18n.language}
+      showTime={showTime}
+      nullText={nullText}
+      timeZone={timeZone}
+      hour12={hour12}
+    />
   )
-}
-
-DateValue.defaultProps = {
-  className: '',
-  showTime: false,
-  nullText: '--',
 }
 
 export default DateValue

@@ -1,104 +1,121 @@
-import { ChangeEventHandler, useCallback, useMemo, useState } from 'react'
-import { useConfiguration } from '../../context/ConfigurationProvider'
+import { useCallback, useMemo, useState } from 'react'
+import { InputText } from '@emporix/component-library'
 import { useTranslation } from 'react-i18next'
 import { BsGlobe } from 'react-icons/bs'
-import { InputTextarea } from 'primereact/inputtextarea'
-import Localized from '../../models/Localized'
-import { useDashboardContext } from '../../context/Dashboard.context.tsx'
+import { useConfiguration } from '../../context/ConfigurationProvider'
+import type Localized from '../../models/Localized.model'
+import styles from './LocalizedEditor.module.scss'
 
-export interface LocalizedInputProps {
-  value: Localized
-  onChange: ChangeEventHandler
-  uiLanguages?: boolean
-  disabled?: boolean
-  dataTestId?: string
+export interface LocalizedEditorProps {
+  readonly value: Localized
+  readonly onChange: (value: Localized) => void
+  readonly uiLanguages?: boolean
+  readonly disabled?: boolean
+  readonly dataTestId?: string
 }
 
-export function LocalizedEditor({
+/** Case-insensitive lookup of a language entry (MD `helpers/localized`). */
+const findLocalizedEntry = (
+  input: Localized | undefined,
+  lang: string
+): [string, string] | undefined => {
+  if (input === undefined || input === null || typeof input === 'string') {
+    return undefined
+  }
+  const target = lang.toLowerCase()
+  return Object.entries(input).find(([key]) => key.toLowerCase() === target)
+}
+
+/** Immutable write preserving the existing key casing (MD `helpers/localized`). */
+const setLocalizedEntry = (
+  input: Localized | undefined,
+  lang: string,
+  value: string
+): Localized => {
+  const existing = findLocalizedEntry(input, lang)
+  const key = existing ? existing[0] : lang
+  const target = lang.toLowerCase()
+  const next: Localized = Object.fromEntries(
+    Object.entries(input ?? {}).filter(
+      ([existingKey]) => existingKey.toLowerCase() !== target
+    )
+  )
+  next[key] = value
+  return next
+}
+
+/**
+ * Multi-line localized text input (MD `components/framework/LocalizedEditor`).
+ * MD renders one plain textarea per language (not a rich-text editor), so the
+ * persisted value stays plain text; built on CL `InputText textarea` with the
+ * same language-addon layout as CL `LocalizedInput`.
+ */
+export const LocalizedEditor = ({
   value,
   onChange,
-  uiLanguages,
-  disabled,
+  uiLanguages = false,
+  disabled = false,
   dataTestId,
-}: LocalizedInputProps) {
+}: LocalizedEditorProps) => {
   const { t, i18n } = useTranslation()
-  const { languages } = useConfiguration()
-  const { contentLanguage } = useDashboardContext()
+  const { languages, contentLanguage } = useConfiguration()
   const [showLanguages, setShowLanguages] = useState(false)
 
   const toggleLanguages = useCallback(() => {
-    setShowLanguages(!showLanguages)
-  }, [showLanguages, setShowLanguages])
+    setShowLanguages((prev) => !prev)
+  }, [])
 
   const sortedLanguages = useMemo(() => {
-    const selectedLang = !uiLanguages ? contentLanguage : i18n.language
-    const languagesToFilter = !uiLanguages
-      ? languages
-      : [{ id: 'en' }, { id: 'de' }]
-    const firstLanguage = languagesToFilter?.find((l) => l.id === selectedLang)
-    const restLanguages = languagesToFilter?.filter(
-      (l) => l.id !== selectedLang
-    )
-    if (firstLanguage) {
-      return [firstLanguage, ...(restLanguages || [])]
-    } else {
-      return languagesToFilter
-    }
-  }, [languages, uiLanguages, i18n.language])
+    const selectedLang = uiLanguages ? i18n.language : contentLanguage
+    const languagesToFilter = uiLanguages
+      ? [{ id: 'en' }, { id: 'de' }]
+      : languages
+    const firstLanguage = languagesToFilter.find((l) => l.id === selectedLang)
+    const restLanguages = languagesToFilter.filter((l) => l.id !== selectedLang)
+    return firstLanguage ? [firstLanguage, ...restLanguages] : languagesToFilter
+  }, [languages, uiLanguages, i18n.language, contentLanguage])
 
   const setLocalizedValue = useCallback(
     (key: string, text: string) => {
-      value[key] = text
-      // @ts-ignore
-      onChange(value)
+      onChange(setLocalizedEntry(value, key, text))
     },
     [value, onChange]
   )
 
   return (
-    <div>
-      {sortedLanguages &&
-        sortedLanguages.map((language, index) => {
-          return (
-            (index === 0 || showLanguages) && (
-              <div key={language.id} className="p-inputgroup mt-1">
-                <span className="card p-inputgroup-addon font-bold">
-                  {language.id.toUpperCase()}
-                </span>
-                <InputTextarea
-                  disabled={disabled}
-                  data-test-id={dataTestId}
-                  style={{ height: '60px', borderTopLeftRadius: '0' }}
-                  value={value[language.id]}
-                  onChange={(ev) =>
-                    setLocalizedValue(language.id, ev.target.value || '')
-                  }
-                ></InputTextarea>
-              </div>
-            )
+    <div className={styles.editor}>
+      {sortedLanguages.map(
+        (language, index) =>
+          (index === 0 || showLanguages) && (
+            <div key={language.id} className={styles.inputGroup}>
+              <span className={styles.addon}>{language.id.toUpperCase()}</span>
+              <InputText
+                textarea
+                className={styles.textarea}
+                readOnly={disabled}
+                data-test-id={dataTestId}
+                value={findLocalizedEntry(value, language.id)?.[1] ?? ''}
+                onChange={(ev) =>
+                  setLocalizedValue(language.id, ev.target.value || '')
+                }
+              />
+            </div>
           )
-        })}
-      {languages && languages.length > 1 && (
-        <div
-          className="inline-flex align-items-center cursor-pointer text-sm mt-3"
-          onClick={(event) => {
-            event.preventDefault()
-            toggleLanguages()
-          }}
+      )}
+      {sortedLanguages.length > 1 && (
+        <button
+          type="button"
+          className={styles.toggle}
+          onClick={toggleLanguages}
         >
-          <BsGlobe className="mr-2" />
-          <span className="underline">
+          <BsGlobe className={styles.toggleIcon} aria-hidden />
+          <span className={styles.toggleLabel}>
             {showLanguages
               ? t('global.localizedInput.hideLanguages')
               : t('global.localizedInput.showLanguages')}
           </span>
-        </div>
+        </button>
       )}
     </div>
   )
-}
-
-LocalizedEditor.defaultProps = {
-  disabled: false,
-  uiLanguages: false,
 }

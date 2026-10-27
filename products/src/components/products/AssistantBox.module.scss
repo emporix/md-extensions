@@ -1,0 +1,99 @@
+// MD Dialog style={{ height: '60vh', width: '70vw' }}
+.dialog {
+  width: 70vw;
+  height: 60vh;
+}
+
+.content {
+  position: relative;
+  min-height: 100%;
+}
+
+.languages {
+  margin-bottom: 1rem;
+}
+
+// MD `.grid.assistant-box-row` with three `.col-4` columns.
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -0.5rem;
+  font-size: 0.875rem;
+  line-height: 1rem;
+}
+
+.column {
+  flex: 0 0 auto;
+  width: 33.3333%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+.header {
+  font-weight: bold;
+}
+
+.radio {
+  label {
+    font-weight: bold;
+  }
+}
+
+.inputGroup {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.addon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 2.75rem;
+  padding: 0 0.75rem;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-input-border);
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+.textarea {
+  flex: 1;
+  min-width: 0;
+
+  textarea {
+    height: 60px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1500;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.progress {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1510;
+  transform: translateX(-50%) translateY(-50%);
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  height: 100%;
+}

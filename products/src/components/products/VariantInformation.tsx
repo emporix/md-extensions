@@ -1,25 +1,23 @@
-import { Product } from '../../models/Category'
 import { useTranslation } from 'react-i18next'
-import useCustomNavigate from '../../hooks/useCustomNavigate.tsx'
-import { useLocalizedValue } from '../../hooks/useLocalizedValue.tsx'
-import { Button } from 'primereact/button'
+import { Link } from 'react-router'
+import { Product } from '../../models/Category.model'
+import { productDetailPath } from '../../constants/paths'
+import styles from './VariantInformation.module.scss'
 
-export function VariantInformation(props: { parent: Partial<Product> }) {
-  const { parent } = props
+type VariantInformationProps = {
+  readonly parent: Partial<Product>
+}
+
+export const VariantInformation = ({ parent }: VariantInformationProps) => {
   const { t } = useTranslation()
-  const { navigate } = useCustomNavigate()
-  const { getContentLangValue } = useLocalizedValue()
+
   return (
-    <div className="flex align-items-center text-sm">
-      <div>{`${t('products.variant.variantOf')} `}</div>
-      <Button
-        className={'pl-2 p-button p-button-small p-button-text text-sm'}
-        onClick={(event) => {
-          event.preventDefault()
-          navigate(`/products/${parent.id}`)
-        }}
-        label={getContentLangValue(parent.name)}
-      ></Button>
+    <div className={styles.variantInformation}>
+      [<div>{t('products.variant.variantOf')}</div>
+      <Link className={styles.link} to={productDetailPath(parent.id ?? '')}>
+        <span className={styles.parentId}>{parent.id}</span>
+      </Link>
+      ]
     </div>
   )
 }

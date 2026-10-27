@@ -1,35 +1,52 @@
-import { useCallback, useEffect, useState } from 'react'
-import { RelatedId, RelatedItem, RelatedType } from '../../models/Category'
-import { useConfigurationApi } from '../../api/configuration'
-import { useProductsApi } from '../../api/products'
-import ProductSearchAdd from './ProductSearchAdd'
-import { Dialog } from 'primereact/dialog'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DataTable } from 'primereact/datatable'
-import { Column, ColumnProps } from 'primereact/column'
-import { deepClone } from '../../helpers/utils'
-import EmptyTable from '../shared/EmptyTable'
-import { Dropdown } from 'primereact/dropdown'
-import { Button } from 'primereact/button'
-import Localized from '../../models/Localized'
-import useForm from '../../hooks/useForm.tsx'
-import { useUIBlocker } from '../../context/UIBlcoker'
+import {
+  DataTable,
+  Dropdown,
+  FilterMatchMode,
+  PrimaryButton,
+  SecondaryButton,
+  SectionTitle,
+  useToast,
+  type DataTableColumnProps,
+} from '@emporix/component-library'
+import { BsPlus } from 'react-icons/bs'
+import {
+  Product,
+  ProductType,
+  RelatedId,
+  RelatedItem,
+  RelatedType,
+} from '../../models/Category.model'
+import Localized from '../../models/Localized.model'
+import { useConfigurationApi } from '../../hooks/api/configuration'
+import { useProductsApi } from '../../hooks/api/products'
+import { useLocalizedValue } from '../../hooks/useLocalizedValue'
+import { useUIBlocker } from '../../context/UIBlocker'
 import { useProductData } from '../../context/ProductDataProvider'
-import { useLocalizedValue } from '../../hooks/useLocalizedValue.tsx'
-import logoDark from '../../../assets/images/logoDark.png'
-import { useDashboardContext } from '../../context/Dashboard.context.tsx'
+import { usePermissions } from '../../context/PermissionsProvider'
+import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
+import { getApiErrorDetails, getApiErrorStatus } from '../../helpers/api'
+import {
+  trimCloudinaryImage,
+  getFirstImageMediaUrl,
+} from '../../helpers/images'
+import logoDark from '../../assets/images/logo-dark.png'
+import EmptyTable from '../shared/EmptyTable'
+import AddProductsDialog from './AddProductsDialog'
+import styles from './ProductLinked.module.scss'
 
 interface ProductLinkedProps {
-  relatedItems: RelatedItem[]
-  editedId: string
-  className: string
+  readonly relatedItems: RelatedItem[]
+  readonly editedId: string
 }
 
 interface TableLinkedItem {
   imageUrl: string
   name: Localized
   productId: string
-  type: RelatedType
+  type: RelatedId
+  exists: boolean
 }
 
 interface RelatedTypeDropdown {
@@ -40,20 +57,25 @@ interface RelatedTypeDropdown {
 const ProductLinked = (props: ProductLinkedProps) => {
   const { t, i18n } = useTranslation()
   const { getSingleConfiguration } = useConfigurationApi()
-  const { getProduct, updateProduct } = useProductsApi()
+  const { getAllProducts, updateProduct } = useProductsApi()
   const { product, refreshData } = useProductData()
   const [addDialogOpened, setAddDialogOpened] = useState<boolean>(false)
-  const [isValid, setIsValid] = useState<boolean>(true)
+  const { getContentLangValue } = useLocalizedValue()
+  const { showSuccess, showError } = useToast()
+  const { blockPanel } = useUIBlocker()
+  const { hasPermission } = usePermissions()
+
+  const productCache = useRef<Map<string, Product>>(new Map())
+  const resolvedIds = useRef<Set<string>>(new Set())
   const [types, setTypes] = useState<RelatedTypeDropdown[]>([])
   const [items, setItems] = useState<TableLinkedItem[]>([])
   const [selected, setSelected] = useState<TableLinkedItem[]>([])
-  const { getContentLangValue } = useLocalizedValue()
-  const { setFormField, setFormData, setInitFormData, formData, formDirty } =
-    useForm<{ relatedItems: RelatedItem[] }>()
-
-  const { blockPanel } = useUIBlocker()
-  const { permissions } = useDashboardContext()
-  const canBeManaged = permissions?.products?.manager
+  const [relatedItems, setRelatedItems] = useState<RelatedItem[]>(
+    props.relatedItems || []
+  )
+  const canManage =
+    hasPermission(EmployeeDomains.PRODUCTS_MANAGER) ||
+    hasPermission(VendorDomains.VENDOR_PRODUCTS_MANAGER)
 
   const convertRelatedIdToRelatedType = (id: RelatedId): RelatedType => {
     const fallback = { id: id } as RelatedType
@@ -63,12 +85,8 @@ const ProductLinked = (props: ProductLinkedProps) => {
     return types.filter((type) => type.value.id === id)[0]?.value ?? fallback
   }
 
-  const validateRelatedItems = (relatedItems: RelatedItem[]) => {
-    const state =
-      relatedItems.filter((relatedItem) => relatedItem?.type === undefined)
-        .length === 0
-    setIsValid(state)
-  }
+  const findType = (id: string | undefined): RelatedType =>
+    convertRelatedIdToRelatedType(id as RelatedId)
 
   const displayRelationType = (type: RelatedType): string => {
     if (type === undefined || type === null) {
@@ -90,37 +108,55 @@ const ProductLinked = (props: ProductLinkedProps) => {
     return type.id
   }
 
-  const columns: ColumnProps[] = [
-    {
-      columnKey: 'selection',
-      selectionMode: canBeManaged ? 'multiple' : undefined,
-      style: { width: '4%', minWidth: '3em' },
-    },
+  const typeOptions = types.map((type) => ({
+    label: type.label,
+    value: type.value.id,
+  }))
+
+  const columns: DataTableColumnProps[] = [
     {
       columnKey: 'image',
       header: t('products.edit.tab.linked.columns.image'),
       field: 'image',
       showFilterMenu: false,
-      body: (rowData: TableLinkedItem) => (
-        <img
-          alt="Product image"
-          src={rowData.imageUrl}
-          style={{
-            verticalAlign: 'middle',
-            maxWidth: '6rem',
-            maxHeight: '4rem',
-          }}
-        />
-      ),
+      body: (rowData: TableLinkedItem) => {
+        const imageUrl = rowData.imageUrl
+        if (!imageUrl) {
+          return <div className={styles.thumbPlaceholder} />
+        }
+        return (
+          <img
+            className={styles.thumb}
+            src={trimCloudinaryImage(imageUrl, 32, 32)}
+            alt={imageUrl}
+          />
+        )
+      },
       style: { width: '8rem' },
     },
     {
       columnKey: 'name',
+      field: 'name',
       header: t('products.edit.tab.linked.columns.name'),
       body: (rowData: TableLinkedItem) => (
-        <span>{getContentLangValue(rowData.name)}</span>
+        <span>
+          {rowData.exists ? (
+            getContentLangValue(rowData.name)
+          ) : (
+            <span className={styles.missingName}>
+              {t('products.edit.tab.linked.productDoesNotExist')}
+            </span>
+          )}
+        </span>
       ),
       sortable: true,
+      filter: true,
+      filterMatchMode: FilterMatchMode.CUSTOM,
+      filterFunction: (value: Localized, filter: string) => {
+        if (!filter) return true
+        const localized = getContentLangValue(value)
+        return localized?.toLowerCase().includes(filter.toLowerCase()) ?? false
+      },
       showFilterMenu: false,
       showClearButton: false,
     },
@@ -128,6 +164,12 @@ const ProductLinked = (props: ProductLinkedProps) => {
       columnKey: 'productId',
       field: 'productId',
       header: t('products.edit.tab.linked.columns.id'),
+      body: (rowData: TableLinkedItem) => (
+        <span className={rowData.exists ? undefined : styles.missingId}>
+          {rowData.productId}
+        </span>
+      ),
+      filter: true,
       showFilterMenu: false,
       showClearButton: false,
     },
@@ -135,29 +177,41 @@ const ProductLinked = (props: ProductLinkedProps) => {
       columnKey: 'type',
       header: t('products.edit.tab.linked.columns.type'),
       body: (rowData: TableLinkedItem) => (
-        <Dropdown
-          disabled={!canBeManaged}
-          options={types}
-          value={convertRelatedIdToRelatedType(rowData.type.id)}
-          itemTemplate={(type: RelatedTypeDropdown) => (
-            <div>{displayRelationType(type?.value)}</div>
-          )}
-          valueTemplate={(type: RelatedTypeDropdown) => (
-            <div>{displayRelationType(type?.value)}</div>
-          )}
-          onChange={(ev) => onTypeChange(rowData.productId, ev.value)}
-        />
+        <div onClick={(ev) => ev.stopPropagation()}>
+          {/* Options carry the relation id; the type object is resolved on change. */}
+          <Dropdown
+            disabled={!canManage}
+            options={typeOptions}
+            value={convertRelatedIdToRelatedType(rowData.type).id}
+            itemTemplate={(option) => (
+              <div>{displayRelationType(findType(option.value))}</div>
+            )}
+            valueTemplate={(option) => (
+              <div>
+                {displayRelationType(
+                  option
+                    ? findType(option.value)
+                    : convertRelatedIdToRelatedType(rowData.type)
+                )}
+              </div>
+            )}
+            onChange={(ev) =>
+              onTypeChange(rowData.productId, findType(ev.value as string))
+            }
+          />
+        </div>
       ),
       style: { width: '22%' },
     },
   ]
 
-  const getBlockedIds = () => {
-    const existedIds = props.relatedItems.map((i) => i.refId)
-    return [...existedIds, props.editedId]
-  }
+  const formDirty = useMemo(
+    () =>
+      JSON.stringify(relatedItems) !== JSON.stringify(props.relatedItems || []),
+    [relatedItems, props.relatedItems]
+  )
 
-  const syncTypes = useCallback(async () => {
+  const syncTypes = async () => {
     const data = await getSingleConfiguration('relation_types')
     const parsedData: RelatedType[] = JSON.parse(data.value as string)
     const options: RelatedTypeDropdown[] = parsedData
@@ -167,177 +221,209 @@ const ProductLinked = (props: ProductLinkedProps) => {
       }))
       .sort((a, b) => (a.label > b.label ? 1 : -1))
     setTypes(options)
-  }, [getSingleConfiguration])
-
-  useEffect(() => {
-    setTypes((types) =>
-      types?.sort((a, b) =>
-        displayRelationType(a.value) > displayRelationType(b.value) ? 1 : -1
-      )
-    )
-  }, [i18n.language])
-
-  const addNewHandler = (productsIds: string[]) => {
-    let newRelatedItems = productsIds.map((i) => ({
-      refId: i,
-      type: types[0].value.id,
-    }))
-    newRelatedItems = [...(formData.relatedItems || []), ...newRelatedItems]
-    setFormField('relatedItems', newRelatedItems)
-    validateRelatedItems(newRelatedItems)
-    setAddDialogOpened(false)
   }
+
+  const addNewHandler = useCallback(
+    (productsIds: string[]) => {
+      const newItems = productsIds.map((i) => ({
+        refId: i,
+        type: types[0].value.id,
+      }))
+      setRelatedItems([...relatedItems, ...newItems])
+      setAddDialogOpened(false)
+    },
+    [types, relatedItems]
+  )
 
   const onTypeChange = useCallback(
     (id: string, value: RelatedType) => {
-      const newRelatedItems = deepClone(formData.relatedItems || [])
-      const index = newRelatedItems.findIndex((i) => i.refId === id)
-      newRelatedItems[index].type = value.id
-      setFormField('relatedItems', newRelatedItems)
-      validateRelatedItems(newRelatedItems)
+      setRelatedItems(
+        relatedItems.map((i) => (i.refId === id ? { ...i, type: value.id } : i))
+      )
     },
-    [formData]
+    [relatedItems]
   )
 
   const onRemoveItems = useCallback(() => {
     const selectedIds = selected.map((i) => i.productId)
-    const newRelatedItems = deepClone(props.relatedItems).filter(
-      (i) => !selectedIds.includes(i.refId)
-    )
-    setFormField('relatedItems', newRelatedItems)
-    validateRelatedItems(newRelatedItems)
+    setRelatedItems(relatedItems.filter((i) => !selectedIds.includes(i.refId)))
     setSelected([])
-  }, [selected, props.relatedItems])
+  }, [selected, relatedItems])
 
-  const mapRelatedItemToTableItem = useCallback(
-    async (relatedItem: RelatedItem): Promise<TableLinkedItem> => {
-      const product = await getProduct(relatedItem.refId)
-      return {
-        name: product.name,
-        productId: relatedItem.refId,
-        imageUrl: product.media[0]?.url ?? logoDark,
-        type: convertRelatedIdToRelatedType(relatedItem.type),
+  const loadItems = useCallback(async () => {
+    const missingIds = relatedItems
+      .map((i) => i.refId)
+      .filter((id) => !resolvedIds.current.has(id))
+
+    if (missingIds.length > 0) {
+      try {
+        const fetched = await getAllProducts({
+          filters: { id: { value: missingIds, matchMode: FilterMatchMode.IN } },
+        })
+        fetched.forEach((p) => {
+          if (p.id) productCache.current.set(p.id, p)
+        })
+        missingIds.forEach((id) => resolvedIds.current.add(id))
+      } catch (e) {
+        console.error('Failed to load linked products', e)
       }
-    },
-    [getProduct]
-  )
+    }
 
-  useEffect(() => {
-    syncTypes()
-    setInitFormData({ relatedItems: props.relatedItems || [] })
-  }, [])
-
-  useEffect(() => {
-    ;(async () => {
-      const tableItems = await Promise.all(
-        (formData.relatedItems || []).map(mapRelatedItemToTableItem)
-      )
-      setItems(tableItems)
-    })()
-  }, [formData.relatedItems])
+    const tableItems = relatedItems.map((relatedItem) => {
+      const cached = productCache.current.get(relatedItem.refId)
+      if (cached) {
+        return {
+          name: cached.name,
+          productId: relatedItem.refId,
+          imageUrl: getFirstImageMediaUrl(cached.media) ?? logoDark,
+          type: relatedItem.type,
+          exists: true,
+        }
+      }
+      return {
+        name: { en: '', de: '' } as Localized,
+        productId: relatedItem.refId,
+        imageUrl: logoDark,
+        type: relatedItem.type,
+        exists: false,
+      }
+    })
+    setItems(tableItems)
+  }, [relatedItems, getAllProducts])
 
   const reset = useCallback(() => {
-    setFormData({ relatedItems: props.relatedItems })
+    setRelatedItems(props.relatedItems || [])
   }, [props.relatedItems])
 
   const submit = useCallback(async () => {
     blockPanel(true)
     try {
-      if (formData.relatedItems) {
-        await updateProduct({
-          ...product,
-          relatedItems: [...formData.relatedItems],
-        })
-        refreshData()
-        setInitFormData({ relatedItems: formData.relatedItems })
+      const updatedProduct = {
+        ...product,
+        relatedItems: [...relatedItems],
       }
-    } catch (err) {
-      console.error(err)
+      if (
+        updatedProduct.productType === ProductType.variant &&
+        updatedProduct.metadata
+      ) {
+        const overridden = new Set(updatedProduct.metadata.overridden || [])
+        overridden.add('relatedItems')
+        updatedProduct.metadata.overridden = [...overridden]
+      }
+      await updateProduct(updatedProduct)
+      refreshData()
+      showSuccess(t('products.edit.toast.update.success'))
+    } catch (e: unknown) {
+      console.error(e)
+      if (getApiErrorStatus(e) === 400) {
+        showError(t('products.toast.errorUpdateValidation'))
+        return
+      }
+      showError(
+        t('products.edit.toast.update.error'),
+        getApiErrorDetails(e) ?? String(e)
+      )
     } finally {
       blockPanel(false)
     }
-  }, [formData, props.editedId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [i18n.language, relatedItems, product])
+
+  useEffect(() => {
+    void syncTypes()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    void loadItems()
+  }, [loadItems])
+
+  useEffect(() => {
+    setRelatedItems(props.relatedItems || [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(props.relatedItems)])
+
+  useEffect(() => {
+    setTypes((prev) =>
+      [...prev].sort((a, b) =>
+        displayRelationType(a.value) > displayRelationType(b.value) ? 1 : -1
+      )
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [i18n.language])
 
   return (
     <>
-      <div className={'grid grid-nogutter'}>
-        <div className="col-6 module-subtitle mb-5 mt-3">
-          {t('products.edit.tab.linked.title')}
-        </div>
-        <div className="col-6 flex justify-content-end align-items-center">
-          <Button
-            disabled={!formDirty || !canBeManaged}
-            className="p-button-secondary"
-            label={t('global.discard')}
-            onClick={reset}
-          />
-          <Button
-            className="ml-2"
-            disabled={!formDirty || !canBeManaged || !isValid}
-            label={t('global.save')}
-            onClick={submit}
-          />
-        </div>
-      </div>
-      <div className="linked-products-wrapper">
-        {items.length > 0 ? (
-          <>
-            <div className="flex mb-3">
-              <Button
-                disabled={!canBeManaged}
-                className={canBeManaged ? 'mr-3' : 'p-button-secondary mr-3'}
-                label={t('products.edit.tab.linked.add')}
-                type="button"
-                onClick={() => setAddDialogOpened(true)}
-              />
-              <Button
-                label={t('products.edit.tab.linked.remove')}
-                disabled={selected.length === 0 || !canBeManaged}
-                className={canBeManaged ? '' : 'p-button-secondary'}
-                type="button"
-                onClick={() => onRemoveItems()}
-              />
-            </div>
-            <DataTable
-              value={items}
-              data-test-id="linked-products-table"
-              responsiveLayout="scroll"
-              onSelectionChange={(event) => setSelected(event.value)}
-              selection={selected}
+      <SectionTitle
+        className={styles.sectionTitle}
+        name={t('products.edit.tab.linked.title')}
+        actions={
+          <div className={styles.titleActions}>
+            <SecondaryButton
+              disabled={!formDirty || !canManage}
+              onClick={reset}
             >
-              {columns.map((column: ColumnProps) => {
-                return <Column {...column} key={column.columnKey} />
-              })}
-            </DataTable>
-          </>
-        ) : (
-          <EmptyTable
-            managerPermissions={canBeManaged}
-            className="w-12 flex-grow-1"
-            text={t('products.edit.tab.linked.table.emptyText')}
-            buttonLabel={t('products.edit.tab.linked.table.emptyLink')}
-            action={() => setAddDialogOpened(true)}
+              {t('global.discard')}
+            </SecondaryButton>
+            <PrimaryButton
+              disabled={!formDirty || !canManage}
+              onClick={() => void submit()}
+            >
+              {t('global.save')}
+            </PrimaryButton>
+          </div>
+        }
+      />
+      {relatedItems.length > 0 ? (
+        <>
+          <div className={styles.toolbar}>
+            <SecondaryButton
+              size="small"
+              onClick={onRemoveItems}
+              disabled={selected.length === 0 || !canManage}
+            >
+              {`${t('products.edit.tab.linked.remove')}${
+                selected.length ? ` (${selected.length})` : ''
+              }`}
+            </SecondaryButton>
+            <PrimaryButton
+              className={styles.iconButton}
+              onClick={() => setAddDialogOpened(true)}
+              disabled={!canManage}
+            >
+              <BsPlus size={18} />
+              {t('products.edit.tab.linked.add')}
+            </PrimaryButton>
+          </div>
+          <DataTable
+            value={items}
+            dataKey="productId"
+            columns={columns}
+            showFilter
+            selection={selected}
+            onSelectionChange={(selection) =>
+              setSelected(selection as TableLinkedItem[])
+            }
+            selectionMode={canManage ? 'multiple' : null}
           />
-        )}
-
-        <Dialog
-          header={t('products.edit.tab.linked.dialogTitle')}
-          visible={addDialogOpened}
-          onHide={() => setAddDialogOpened(false)}
-          style={{ width: '90vw', maxWidth: '700px' }}
-        >
-          <ProductSearchAdd
-            onSubmit={addNewHandler}
-            getBlockedIds={getBlockedIds}
-          />
-        </Dialog>
-      </div>
+        </>
+      ) : (
+        <EmptyTable
+          managerPermissions={canManage}
+          className={styles.emptyTable}
+          text={t('products.edit.tab.linked.table.emptyText')}
+          buttonLabel={t('products.edit.tab.linked.table.emptyLink')}
+          action={() => setAddDialogOpened(true)}
+        />
+      )}
+      <AddProductsDialog
+        visible={addDialogOpened}
+        selectedIds={relatedItems.map((i) => i.refId)}
+        onClose={() => setAddDialogOpened(false)}
+        onSubmit={addNewHandler}
+      />
     </>
   )
-}
-
-ProductLinked.defaultProps = {
-  className: '',
 }
 
 export default ProductLinked

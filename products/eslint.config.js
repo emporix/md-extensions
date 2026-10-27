@@ -12,16 +12,8 @@ export default tseslint
       extends: [js.configs.recommended, ...tseslint.configs.recommended],
       files: ['**/*.{ts,tsx}'],
       languageOptions: {
-        ecmaVersion: 2021,
+        ecmaVersion: 2020,
         globals: globals.browser,
-      },
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-        ecmaVersion: 2021,
-        sourceType: 'module',
-        project: './tsconfig.json',
       },
       plugins: {
         'react-hooks': reactHooks,
@@ -29,26 +21,10 @@ export default tseslint
       },
       rules: {
         ...reactHooks.configs.recommended.rules,
-        'react-hooks/exhaustive-deps': 'off',
-        'prettier/prettier': true,
-        'react/prop-types': 'off',
         'react-refresh/only-export-components': [
           'warn',
           { allowConstantExport: true },
         ],
-        'typescript-eslint/no-explicit-any': false,
-        '@typescript-eslint/no-misused-promises': 'off',
-        '@typescript-eslint/ban-ts-comment': 'off',
-        '@typescript-eslint/no-explicit-any': 'off',
-        '@typescript-eslint/no-unused-vars': [
-          'error',
-          {
-            argsIgnorePattern: '^_',
-            varsIgnorePattern: '^_',
-            caughtErrorsIgnorePattern: '^_',
-          },
-        ],
-        'no-console': ['error', { allow: ['error', 'info', 'warn'] }],
       },
     }
   )

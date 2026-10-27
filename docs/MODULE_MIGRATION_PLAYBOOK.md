@@ -21,7 +21,7 @@ Living guide for extracting Management Dashboard modules into `md-extensions` fe
   - Firebase / CI URL placeholders **and** Hosting site IDs (must be created in Firebase before first deploy)
   - Default tenant for dev standalone shell
   - Published CL semver for `package.json` (never commit `file:../../component-library` lock entries)
-  - Scaffold source: clone **[md-module-template](https://github.com/emporix/md-module-template)** branch **`md-module-migration`** into `md-extensions/{kebab-module}/`, then absorb (remove nested `.git`). Align Tier 1 with **playbook-aligned remotes** in [MIGRATED_MODULES.md](./MIGRATED_MODULES.md) (not `products`, not template `master`)
+  - Scaffold source: clone **[md-module-template](https://github.com/emporix/md-module-template)** branch **`md-module-migration`** into `md-extensions/{kebab-module}/`, then absorb (remove nested `.git`). Align Tier 1 with **playbook-aligned remotes** in [MIGRATED_MODULES.md](./MIGRATED_MODULES.md) (not template `master`)
 
 ### Scaffold starter (required)
 
@@ -273,4 +273,7 @@ Do **not** claim "identical to U&G" after a reduce — `diff -rq` will (and shou
 | 2026-10-16 | Port only the order slice of MD `RestrictionsProvider` as a hook (`useOrderRestrictions`) over `PermissionsProvider.userScopes`; no eighth provider | Copy the whole provider into the stack; pass restrictions through AppState | orders |
 | 2026-10-16 | A host route `key` that is an alias of the extracted module (`order` → `/apps/management/order/*`) becomes a host-side `<Navigate>` to the remote root with the id as hash route — not a second `ExternalModule` mount (the triangle requires key ≡ federation name) | Second mount with `moduleName="orders"` under key `order`; deleting the alias (breaks saved links) | orders |
 | 2026-10-16 | Cross-remote deep links count in the Phase 3 sweep: `returns` linked to `/apps/management/orders/:id`, which lands on the list once orders is a remote | Sweep only `management-dashboard/src` | All modules |
-
+| 2026-10-22 | Promote PrimeReact `Tree` to CL as Pattern B (2.12.0) for Products (category view + dynamic-variant hierarchy). Host themes style nodes with 0,4,0 chains, so overrides anchor on a doubled hashed root plus the Prime chain; verified with the leak demo (24/24 properties) | Local Tree copy; adding `primereact` to the remote | products (+ categories, modules trees) |
+| 2026-10-22 | Products ports the **full** MD mixins subsystem (site-aware, classifications, references) instead of the returns/orders subset — product mixins are the only MD screen using `siteAware: true` + `classificationsTab`. `useMixinsForm` returns CL `TabItem`s | Reuse the returns subset (visible regression); reference fields as plain text | products, future modules with site-aware/classification mixins |
+| 2026-10-22 | When an extraction reuses a legacy remote folder (`products` held `emporix-product-module`), delete it and re-scaffold from `md-module-migration`; keep the existing Firebase sites/workflows. A scaffold from template `master` (name `extension`, CL 1.x, nested `.git`) must be redone | Keeping legacy sources; scaffolding from template `master` | Any module whose folder already exists |
+| 2026-10-22 | `useUpdateEffect` must compare previous dependency values, not a first-run ref: under StrictMode the ref-based version fired on mount and navigated the edit page back to the list | Disabling StrictMode in the dev shell | All remotes |

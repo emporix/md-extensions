@@ -1,16 +1,29 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocalizedValue } from '../../hooks/useLocalizedValue.tsx'
-import { VariantsProductsTable } from './VariantsProductsTable.tsx'
-import { Product, ProductType } from '../../models/Category'
-import { DataTableFilterMeta } from 'primereact/datatable'
+import { useLocation } from 'react-router'
+import {
+  DataTable,
+  FilterMatchMode,
+  type DataTableColumnProps,
+  type DataTablePaginationState,
+} from '@emporix/component-library'
+import { useLocalizedValue } from '../../hooks/useLocalizedValue'
+import { Product, ProductType } from '../../models/Category.model'
+import { useConfiguration } from '../../context/ConfigurationProvider'
 import { useProductData } from '../../context/ProductDataProvider'
-import { useProductsApi } from '../../api/products'
-import { useUIBlocker } from '../../context/UIBlcoker'
-import ConfirmBox from '../shared/ConfirmBox'
-import logoDark from '../../../assets/images/logoDark.png'
+import { useProductsApi } from '../../hooks/api/products'
+import { useUIBlocker } from '../../context/UIBlocker'
 import TableActions from '../shared/TableActions'
-import { useDashboardContext } from '../../context/Dashboard.context.tsx'
+import { usePermissions } from '../../context/PermissionsProvider'
+import useCustomNavigate from '../../hooks/useCustomNavigate'
+import usePagination from '../../hooks/usePagination'
+import {
+  trimCloudinaryImage,
+  getFirstImageMediaUrl,
+} from '../../helpers/images'
+import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
+import { productDetailPath, productsListPath } from '../../constants/paths'
+import styles from './Variants.module.scss'
 
 export const Variants = () => {
   const { product } = useProductData()
@@ -18,7 +31,11 @@ export const Variants = () => {
   const parentId = useMemo(() => {
     if (product.productType === ProductType.parentVariant && product.id) {
       return product.id
-    } else if (
+    }
+    if (product.productType === ProductType.dynamicVariant && product.id) {
+      return product.id
+    }
+    if (
       product.productType === ProductType.variant &&
       product.parentVariantId
     ) {
@@ -34,123 +51,160 @@ export const Variants = () => {
 }
 
 interface VariantListProps {
-  variantParentId: string
+  readonly variantParentId: string
 }
 
 export const VariantsList = (props: VariantListProps) => {
   const { variantParentId } = props
   const { i18n, t } = useTranslation()
   const { blockPanel } = useUIBlocker()
-  const { contentLanguage } = useDashboardContext()
+  const { contentLanguage } = useConfiguration()
   const { getContentLangValue } = useLocalizedValue()
+  const { navigate } = useCustomNavigate()
+  const location = useLocation()
+  const { hasPermission } = usePermissions()
+  const canManage =
+    hasPermission(EmployeeDomains.PRODUCTS_MANAGER) ||
+    hasPermission(VendorDomains.VENDOR_PRODUCTS_MANAGER)
+  const [loading, setLoading] = useState(false)
+  const [products, setProducts] = useState<Product[]>([])
+  const { syncPaginatedProducts, deleteProduct } = useProductsApi()
+  const {
+    paginationParams,
+    onFilterCallback,
+    onPageCallback,
+    onSortCallback,
+    totalCount,
+    setTotalCount,
+  } = usePagination({ sortField: 'metadata.createdAt' })
+  const { product } = useProductData()
 
-  const { permissions } = useDashboardContext()
-  const canBeManaged = permissions?.products?.manager
+  useEffect(() => {
+    void loadVariants()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variantParentId, paginationParams])
 
-  const [variantFilters, setVariantFilters] = useState<DataTableFilterMeta>({
-    parentVariantId: {
-      value: variantParentId,
-      matchMode: 'contains',
-    },
-  })
-
-  const { deleteProduct } = useProductsApi()
-
-  const [isDeleteConfirmOpened, setIsDeleteConfirmOpened] = useState(false)
+  const loadVariants = async () => {
+    const params = {
+      ...paginationParams,
+      filters: {
+        ...paginationParams.filters,
+        parentVariantId: {
+          value: variantParentId,
+          matchMode: FilterMatchMode.CONTAINS,
+        },
+      },
+    }
+    setLoading(true)
+    const { totalCount, data } = await syncPaginatedProducts(params)
+    setProducts(data)
+    setTotalCount(totalCount)
+    setLoading(false)
+  }
 
   const deleteVariant = useCallback(
     async (id: string) => {
       blockPanel(true)
       try {
         await deleteProduct(id)
+        blockPanel(false)
+        if (product.id === id) {
+          navigate(productsListPath())
+        } else {
+          void loadVariants()
+        }
       } catch (e) {
         console.error(e)
       } finally {
-        setIsDeleteConfirmOpened(false)
         blockPanel(false)
-        setVariantFilters({
-          parentVariantId: {
-            value: variantParentId,
-            matchMode: 'contains',
-          },
-        })
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [deleteProduct]
   )
 
-  const columns = useMemo(() => {
+  const columns: DataTableColumnProps[] = useMemo(() => {
     return [
       {
-        key: 'imageUrl',
+        columnKey: 'imageUrl',
         header: t(`products.table.image`),
         field: 'media',
         filter: false,
         sortable: false,
         body: (pr: Product) => {
-          return (
+          const imageUrl = getFirstImageMediaUrl(pr.media)
+          return imageUrl ? (
             <img
-              className="thumb"
-              src={pr.media && pr.media.length > 0 ? pr.media[0].url : logoDark}
+              className={styles.thumb}
+              src={trimCloudinaryImage(imageUrl, 32, 32)}
+              alt=""
             />
-          )
+          ) : undefined
         },
       },
       {
-        key: 'name',
+        columnKey: 'name',
         header: t(`products.table.name`),
-        filterPlaceholder: t(`products.table.filters.name`),
         field: `name`,
         filter: true,
+        filterField: 'name',
         sortable: true,
         showFilterMenu: false,
         body: (rowData: Product) => getContentLangValue(rowData.name),
       },
       {
-        key: 'code',
+        columnKey: 'code',
         header: t(`products.table.code`),
-        filterPlaceholder: t(`products.table.filters.code`),
         field: 'code',
         filter: true,
+        filterField: 'code',
         sortable: true,
         showFilterMenu: false,
       },
-      {
-        key: 'actions',
-        showFilterMenu: false,
-        body: (rowData: { id: string }) => {
-          return (
-            <div className="flex">
-              <TableActions
-                managerPermission={canBeManaged}
-                onDelete={() => setIsDeleteConfirmOpened(true)}
-              />
-              <ConfirmBox
-                visible={isDeleteConfirmOpened}
-                onAccept={() => deleteVariant(rowData.id)}
-                onReject={() => {
-                  setIsDeleteConfirmOpened(false)
-                }}
-                title={t('products.actions.delete.title')}
-              />
-            </div>
-          )
-        },
-      },
     ]
-  }, [i18n.language, contentLanguage, isDeleteConfirmOpened])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [i18n.language, contentLanguage])
+
+  const rowActions = (rowData: Product) => (
+    <TableActions
+      managerPermission={canManage}
+      onDelete={() => (rowData.id ? deleteVariant(rowData.id) : undefined)}
+      deleteConfirm={{ pluralsPath: 'products', entity: rowData }}
+    />
+  )
+
+  const pagination: DataTablePaginationState = {
+    ...paginationParams,
+    totalRecords: totalCount,
+  }
 
   return (
     <>
-      <div className="grid grid-nogutter">
-        <div className="col-6 module-subtitle mb-5 mt-3">
-          {t('products.edit.tab.attributes.title')}
-        </div>
+      <div className={styles.subtitle}>
+        {t('products.edit.tab.attributes.title')}
       </div>
-      <VariantsProductsTable
+      <DataTable
+        value={products}
+        dataKey="id"
         columns={columns}
-        preFilters={variantFilters}
-      ></VariantsProductsTable>
+        rowActions={rowActions}
+        lazy={true}
+        loading={loading}
+        pagination={pagination}
+        sortField={paginationParams.sortField}
+        sortOrder={paginationParams.sortOrder}
+        onPage={onPageCallback}
+        onFilter={onFilterCallback}
+        onSort={onSortCallback}
+        onRowClick={(p) => {
+          if (product.id === p.id || !p.id) return
+          const currentPath = `${location.pathname}${location.search}`
+          navigate(productDetailPath(p.id), {
+            replace: true,
+            query: { backTo: currentPath },
+          })
+        }}
+      />
     </>
   )
 }
