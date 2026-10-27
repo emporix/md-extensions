@@ -40,6 +40,10 @@ export default defineConfig({
     // template literals and emits broken dynamicLoadingCss() calls (issue #740).
     minify: false,
     cssCodeSplit: false,
+    // Inline the module's few images (AI icons, product placeholder): a
+    // root-relative `/assets/x.png` URL resolves against the host origin when
+    // the remote is mounted in MD and 404s there.
+    assetsInlineLimit: 20 * 1024,
   },
   server: {
     // Pinned so the remote does not collide with other md-extensions remotes

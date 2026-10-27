@@ -242,7 +242,8 @@ const AssistantBox = ({
 
   return (
     <Dialog
-      className={styles.dialog}
+      // Inline size: MD's global `.p-dialog` width beats a module class.
+      style={{ width: '70vw', height: '60vh' }}
       visible={visible}
       onHide={onHide}
       header={t(title)}

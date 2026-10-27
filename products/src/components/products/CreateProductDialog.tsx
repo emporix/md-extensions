@@ -123,7 +123,9 @@ const CreateProductDialog = ({
       visible={visible}
       onHide={onHide}
       header={t('products.createModal.title')}
-      className={styles.dialog}
+      // Inline width: MD's global `.p-dialog { width: 600px }` (0,2,0) beats a
+      // module class on the dialog root when the remote is mounted in MD.
+      style={{ width: '1200px', maxWidth: '100%' }}
       draggable={false}
       modal
     >

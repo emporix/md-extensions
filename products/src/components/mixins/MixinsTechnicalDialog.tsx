@@ -121,7 +121,8 @@ const MixinsTechnicalDialog = (props: Props) => {
       onHide={onHide}
       visible={show}
       header={t('mixins.titles.technicalView')}
-      className={styles.technicalDialog}
+      // Inline width: MD's global `.p-dialog` width beats a module class.
+      style={{ width: '80vw', maxWidth: '1200px' }}
     >
       {loading ? (
         <ProgressSpinner />

@@ -244,11 +244,10 @@ const CategoriesTree = ({
     }
   }
 
-  const defaultNodeTemplate = (
-    node: TreeNode,
-    options: TreeNodeTemplateOptions
-  ) => (
-    <div className={`${options.className} ${styles.node}`}>
+  // `options.className` is Prime's `p-treenode-label`, which CL Tree resets
+  // (all: revert) — applying it to the wrapper would drop the flex row.
+  const defaultNodeTemplate = (node: TreeNode) => (
+    <div className={styles.node}>
       <DotIndicator value={Boolean(node.data?.published)} />
       <div className={styles.nodeLabel}>{node.label}</div>
     </div>

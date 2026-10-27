@@ -53,7 +53,8 @@ const AddCustomMixinDialog = ({
     <Dialog
       visible={isOpen}
       onHide={onClose}
-      className={styles.dialog}
+      // Inline width: MD's global `.p-dialog` width beats a module class.
+      style={{ width: '28rem' }}
       header={t(`global.tableExtensions.addCustomMixinDialog.title${suffix}`)}
       footer={
         <PrimaryButton
