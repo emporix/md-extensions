@@ -36,7 +36,7 @@ export default {
     },
     forms: {
       user: {
-        firstName: 'Virname',
+        firstName: 'Vorname',
         lastName: 'Nachname',
         contactEmail: 'Email Addresse',
         department: 'Abteilung',
