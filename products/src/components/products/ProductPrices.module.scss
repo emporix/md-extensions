@@ -2,6 +2,10 @@
   margin-top: 3rem;
 }
 
+.priceItem + .priceItem {
+  margin-top: 1rem;
+}
+
 // MD icon-only Prime Button (34px square).
 .addButton {
   display: inline-flex;

@@ -183,7 +183,7 @@ export const ProductPrices = () => {
         {canViewPriceModels ? (
           <>
             {prices?.map((price, priceIndex) => (
-              <div key={priceIndex}>
+              <div key={priceIndex} className={styles.priceItem}>
                 <ProductPricesPanelForm
                   price={price}
                   currenciesDropdownOptions={currenciesDropdownOptions}
