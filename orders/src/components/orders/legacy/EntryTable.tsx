@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   DataTable,
-  InputNumber,
   Message,
   MoneyValue,
   PrimaryButton,
+  QuantityStepper,
   type DataTableColumnProps,
 } from '@emporix/component-library'
 import type { AddEntry } from '@emporix/api-calls'
@@ -21,7 +21,6 @@ import {
   removeDuplicatedEntries,
 } from '../../../helpers/orders'
 import { Entry, Order, OrderStatus } from '../../../models/Order.model'
-import quantityStyles from '../../shared/QuantityStepper.module.scss'
 import styles from './Legacy.module.scss'
 
 type EntryTableProps = {
@@ -157,10 +156,7 @@ const EntryTable = ({
           ? {
               body: (row: Entry) => (
                 <div onClick={(e) => e.stopPropagation()}>
-                  <InputNumber
-                    className={quantityStyles.stepper}
-                    showButtons
-                    buttonLayout="horizontal"
+                  <QuantityStepper
                     min={1}
                     value={row.orderedAmount}
                     onChange={(e) => onQuantityChange(row, e.value ?? 0)}

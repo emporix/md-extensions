@@ -2,7 +2,7 @@
 
 **Audience:** agents extracting an MD module into `md-extensions`.  
 **SoT:** this file. Do **not** copy the tables into the skill, playbook, or registry — those files **link here**. Stale gap lists (`no InputSwitch`) have already shipped in those docs.  
-**CL version audited:** `2.11.0` (`component-library/src/index.ts`).  
+**CL version audited:** `2.13.2` (`component-library/src/index.ts`).  
 **MD source:** `management-dashboard` `primereact@8.7.0`, unique `src/` files, 2026-08-17.  
 **Related:** [MODULE_MIGRATION_PLAYBOOK.md](./MODULE_MIGRATION_PLAYBOOK.md) · skill `md-module-extraction` · CL skill `migrate-to-component-library`.
 
@@ -59,7 +59,7 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/toast` | `in-cl` | `ToastProvider` / `useToast` | 1.6.2 | 1 | Wrap federated entry once. |
 | `primereact/progressbar` | `in-cl` | `ProgressBar` | **2.4.0** | barrel | |
 | `primereact/api` (`FilterMatchMode`) | `in-cl` | `FilterMatchMode` | 2.0.0 | 33 | Other `api` helpers (`locale`, `addLocale`) are `type` / host i18n — see below. |
-| `primereact/inputnumber` | `in-cl` | `InputNumber` | **2.11.0** | 23 | Pattern B. `showButtons` + `buttonLayout` (MD 24px blue steppers, `pi-plus`/`pi-minus`), `prefix`/`suffix`, `mode="currency"`, fraction digits, `allowEmpty`. Change event `{ originalEvent, value }`. Prefer over `InputText type="number"`. |
+| `primereact/inputnumber` | `in-cl` | `InputNumber` | **2.11.0** | 23 | Pattern B. `showButtons` + `buttonLayout` (MD 24px blue steppers, `pi-plus`/`pi-minus`), `prefix`/`suffix`, `mode="currency"`, fraction digits, `allowEmpty`. Change event `{ originalEvent, value }`. Prefer over `InputText type="number"`. For **entry-quantity** steppers (circular ±, no currency/prefix) prefer CL `QuantityStepper` (≥ **2.12.0**) instead — see shells table. |
 | `primereact/skeleton` | `in-cl` | `Skeleton` | **2.11.0** | ~15 | Pattern A. Prime props (`width`, `height`, `size`, `shape`, `borderRadius`, `animation`). |
 | `primereact/chip` | `in-cl` | `Chip` | **2.11.0** | 3 | Pattern A. `label`, `icon`, `removable` + `onRemove` (`pi-times-circle`), `removeAriaLabel`. Not the `Chips` input. |
 | `primereact/multiselect` | `partial` | `Dropdown` `multiple` | 1.7.0 | 11+ | Not a dedicated MultiSelect. Chip display via `display="chip"`. |
@@ -106,6 +106,7 @@ Import these when the remote needs them; they are not Prime replacements:
 | `Accordion` / `AccordionTab` | 1.5.0 | MD does not import `primereact/accordion` |
 | `MoneyValue` | 2.5.0 | Locale-aware currency display |
 | `StatusBadge` | 2.5.0 | Outlined status pill — not Prime `Badge`/`Tag` |
+| `QuantityStepper` | **2.12.0** | Compact circular `[-]` / `[+]` quantity control (`value`, `onChange` → `QuantityStepperChangeEvent`, `min`/`max`/`step`, `disabled`/`readOnly`, optional `label`/`error`). Native buttons (not `.p-button`) so MD host button chrome cannot hide steppers — prefer over `InputNumber` `showButtons` for entry quantities. Orders pins CL **2.13.2**. |
 
 ## Promote-next (if the module needs them)
 

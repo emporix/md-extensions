@@ -1,10 +1,10 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  InputNumber,
   MoneyValue,
+  QuantityStepper,
   type DataTableColumnProps,
-  type InputNumberChangeEvent,
+  type QuantityStepperChangeEvent,
 } from '@emporix/component-library'
 import type { AddEntry } from '@emporix/api-calls'
 import OrderTooltip, {
@@ -18,7 +18,6 @@ import { trimCloudinaryImage } from '../../helpers/images'
 import { addNewEntries, removeDuplicatedEntries } from '../../helpers/orders'
 import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
 import { Entry, Order, OrderStatus } from '../../models/Order.model'
-import quantityStyles from '../../components/shared/QuantityStepper.module.scss'
 import styles from './columns.module.scss'
 
 const COLUMNS_PATH = 'orders.tables.entries'
@@ -71,7 +70,7 @@ const useEntriesColumns = (
   })
 
   const onQuantityChange = useCallback(
-    async (entry: Entry, ev: InputNumberChangeEvent) => {
+    async (entry: Entry, ev: QuantityStepperChangeEvent) => {
       const newProductIds = newEntries.map((e) => e.productId)
       const remainingEntries: AddEntry[] = order.entries
         .filter((e) => !newProductIds.includes(e.id))
@@ -135,10 +134,7 @@ const useEntriesColumns = (
           editable ? (
             // Stop row-toggle / row-click while stepping the quantity.
             <div onClick={(ev) => ev.stopPropagation()}>
-              <InputNumber
-                className={quantityStyles.stepper}
-                showButtons
-                buttonLayout="horizontal"
+              <QuantityStepper
                 min={1}
                 value={e.orderedAmount}
                 onChange={(ev) => void onQuantityChange(e, ev)}

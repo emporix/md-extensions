@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@emporix/api-calls": "1.2.14",
-    "@emporix/component-library": "2.11.0",
+    "@emporix/component-library": "2.13.2",
     "@hookform/resolvers": "^3.10.0",
     "@originjs/vite-plugin-federation": "^1.4.1",
     "axios": "^1.18.1",
