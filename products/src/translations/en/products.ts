@@ -40,6 +40,10 @@ export default {
       'Recalculation queued: {{jobCount}} job(s). Skipped IDs (active job): {{skipped}}.',
     error: 'Could not start variant recalculation.',
   },
+  toasts: {
+    successDeleteProducts: '{{count}} product(s) deleted',
+    successImportProducts: 'Products imported',
+  },
   dynamicVariant: {
     plurals: {
       singular: 'Attribute',

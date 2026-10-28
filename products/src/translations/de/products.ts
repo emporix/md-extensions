@@ -40,6 +40,10 @@ export default {
       'Neuberechnung eingereiht: {{jobCount}} Job(s). Übersprungene IDs (aktiver Job): {{skipped}}.',
     error: 'Neuberechnung der Varianten konnte nicht gestartet werden.',
   },
+  toasts: {
+    successDeleteProducts: '{{count}} Produkt(e) gelöscht',
+    successImportProducts: 'Produkte importiert',
+  },
   dynamicVariant: {
     plurals: {
       singular: 'Attribut',

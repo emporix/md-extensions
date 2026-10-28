@@ -7,7 +7,7 @@ const defaultAppState: AppState = {
   tenant: '',
   language: 'en',
   token: '',
-  currency: undefined,
+  currency: { id: 'EUR', label: 'EUR', default: true, required: false },
   contentLanguage: 'en',
   user: undefined,
   onError: () => {

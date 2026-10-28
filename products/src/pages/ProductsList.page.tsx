@@ -148,7 +148,11 @@ const ProductsListPage = () => {
       )
       invalidateProducts()
       setSelectedProducts([])
-      toast.showToast(`${toDelete} product(s) deleted`, '', 'success')
+      toast.showToast(
+        t('products.toasts.successDeleteProducts', { count: toDelete }),
+        '',
+        'success'
+      )
       setIsDeleteConfirmOpened(false)
     } catch (err) {
       console.error(err)
@@ -230,7 +234,7 @@ const ProductsListPage = () => {
         setTimeout(() => resolve('files are imported now'), 3000)
       })
 
-      toast.showToast('Products IMPORTED', '', 'success')
+      toast.showToast(t('products.toasts.successImportProducts'), '', 'success')
       e.options.clear()
       blockPanel(false)
       setIsImportingProducts(false)

@@ -24,6 +24,12 @@ const App = () => {
       tenant,
       language,
       token,
+      currency: {
+        id: 'EUR',
+        label: 'EUR',
+        default: true,
+        required: false,
+      },
       contentLanguage: language,
       onError: (error) => {
         console.error(error)
@@ -83,6 +89,12 @@ const App = () => {
           tenant,
           language,
           token,
+          currency: {
+            id: 'EUR',
+            label: 'EUR',
+            default: true,
+            required: false,
+          },
           contentLanguage: language,
           onError: (error) => {
             console.error(error)

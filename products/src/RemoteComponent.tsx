@@ -12,6 +12,7 @@ import FeatureTogglesProvider from './context/FeatureTogglesProvider'
 import { ConfigurationProvider } from './context/ConfigurationProvider'
 import { SitesProvider } from './context/SitesProvider'
 import { UIBlockerProvider } from './context/UIBlocker'
+import { NavigationConfirmProvider } from './context/NavigationConfirmProvider'
 import ProductsModule from './Products.module'
 import ProductsListPage from './pages/ProductsList.page'
 import ProductAddEdit from './components/products/ProductAddEdit'
@@ -38,15 +39,17 @@ const RemoteComponent = ({ appState }: RemoteComponentProps) => {
               <SitesProvider>
                 <UIBlockerProvider>
                   <HashRouter>
-                    <Routes>
-                      <Route element={<ProductsModule />}>
-                        <Route index element={<ProductsListPage />} />
-                        <Route path="add" element={<ProductAddEdit />} />
-                        <Route path=":id" element={<ProductAddEdit />} />
+                    <NavigationConfirmProvider>
+                      <Routes>
+                        <Route element={<ProductsModule />}>
+                          <Route index element={<ProductsListPage />} />
+                          <Route path="add" element={<ProductAddEdit />} />
+                          <Route path=":id" element={<ProductAddEdit />} />
+                          <Route path="*" element={<Navigate to="/" replace />} />
+                        </Route>
                         <Route path="*" element={<Navigate to="/" replace />} />
-                      </Route>
-                      <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
+                      </Routes>
+                    </NavigationConfirmProvider>
                   </HashRouter>
                 </UIBlockerProvider>
               </SitesProvider>
