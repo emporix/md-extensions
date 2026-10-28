@@ -25,7 +25,9 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0; // column-flex dialog content was squashing the chips row
   max-height: 100px;
+  padding: 0.25rem 0;
   margin-bottom: 0.5rem;
   overflow-y: auto;
 }
@@ -38,6 +40,7 @@
 }
 
 .chipsPlaceholder {
+  flex-shrink: 0;
   padding: 1rem;
 }
 
