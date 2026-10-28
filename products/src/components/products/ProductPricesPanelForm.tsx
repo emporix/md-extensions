@@ -355,6 +355,7 @@ const ProductPricesPanelForm = ({
                 className={styles.fieldNarrow}
               >
                 <Dropdown
+                  className={styles.fieldControl}
                   disabled={readOnly}
                   placeholder={
                     countryOptions.length
@@ -373,6 +374,7 @@ const ProductPricesPanelForm = ({
                 className={styles.fieldNarrow}
               >
                 <Dropdown
+                  className={styles.fieldControl}
                   disabled={readOnly}
                   filter
                   options={currenciesDropdownOptions}
@@ -387,6 +389,7 @@ const ProductPricesPanelForm = ({
                 className={styles.fieldWide}
               >
                 <Dropdown
+                  className={styles.fieldControl}
                   multiple
                   display="chip"
                   disabled={readOnly}
@@ -402,6 +405,7 @@ const ProductPricesPanelForm = ({
                 className={styles.fieldNarrow}
               >
                 <Calendar
+                  className={styles.fieldControl}
                   disabled={readOnly}
                   selectionMode="single"
                   showTime
@@ -429,6 +433,7 @@ const ProductPricesPanelForm = ({
                 className={styles.fieldNarrow}
               >
                 <Calendar
+                  className={styles.fieldControl}
                   disabled={readOnly}
                   selectionMode="single"
                   showTime
@@ -457,6 +462,7 @@ const ProductPricesPanelForm = ({
                 label={t('products.edit.tab.prices.form.discountType')}
               >
                 <Dropdown
+                  className={styles.fieldControl}
                   disabled={readOnly}
                   value={discountType}
                   options={discountTypes}

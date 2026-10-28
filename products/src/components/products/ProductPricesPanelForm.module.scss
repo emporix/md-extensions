@@ -63,6 +63,7 @@
 
 .panelContent {
   padding: 1.25rem;
+  container-type: inline-size;
 }
 
 .modelField {
@@ -82,22 +83,36 @@
   padding-left: 0.25rem;
 }
 
+// Responsive grid: as many 12rem columns as fit; Site spans two when there
+// is room. Collapses to a single column on narrow panels.
 .fieldsRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 1.5rem;
+  align-items: end;
 }
 
-.fieldNarrow {
-  width: 16.6667%;
-  margin-right: 1.5rem;
-}
-
-.fieldNarrowLast {
-  width: 16.6667%;
+.fieldNarrow,
+.fieldNarrowLast,
+.fieldWide {
+  min-width: 0;
 }
 
 .fieldWide {
-  width: 33.3333%;
-  margin-right: 1.5rem;
+  grid-column: span 2;
+}
+
+// Single column (< 2 × 12rem + gap): don't let Site force an implicit column.
+@container (max-width: 25.5rem) {
+  .fieldWide {
+    grid-column: auto;
+  }
+}
+
+// CL Dropdown has min-width: 200px; let it shrink to the grid cell.
+.fieldsRow .fieldControl {
+  width: 100%;
+  min-width: 0;
 }
 
 .tiers {
