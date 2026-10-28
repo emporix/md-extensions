@@ -4,8 +4,8 @@ import {
   Chip,
   DataTable,
   Dialog,
-  InputNumber,
   PrimaryButton,
+  QuantityStepper,
   useToast,
   type DataTableColumnProps,
   type DataTablePaginationState,
@@ -19,7 +19,6 @@ import { getApiErrorDetails, getApiErrorMessage } from '../../../helpers/api'
 import { trimCloudinaryImage } from '../../../helpers/images'
 import { addNewEntriesFromProducts } from '../../../helpers/orders'
 import type { Product } from '../../../models/Product.model'
-import quantityStyles from '../../shared/QuantityStepper.module.scss'
 import styles from './AddEntryDialog.module.scss'
 
 type AddEntryDialogProps = {
@@ -169,10 +168,7 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
         field: 'action',
         header: t('orders.entry.actions.addProduct.table.action'),
         body: (rowData: Product) => (
-          <InputNumber
-            className={quantityStyles.stepper}
-            showButtons
-            buttonLayout="horizontal"
+          <QuantityStepper
             min={0}
             value={
               productsToAdd.find((p) => p.id === rowData.id)?.quantity ?? 0
