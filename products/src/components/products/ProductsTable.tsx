@@ -29,9 +29,9 @@ import { SchemaType } from '../../models/Schema.model'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { StylableProps } from '../../helpers/props'
 import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
-import { trimCloudinaryImage } from '../../helpers/images'
 import { productDetailPath } from '../../constants/paths'
 import styles from './ProductsTable.module.scss'
+import { ProductThumbnail } from '../shared/ProductThumbnail'
 
 export const TABLE_NAME = 'products.table'
 export const TABLE_NAME_CONFIG_KEY = 'ext_products'
@@ -224,16 +224,7 @@ const ProductsTable = ({
         sortable: false,
         body: (pr: ProductRow) => {
           const imageUrl = pr.imageUrl
-          if (!imageUrl) {
-            return <div className={styles.thumbPlaceholder} />
-          }
-          return (
-            <img
-              className={styles.thumb}
-              src={trimCloudinaryImage(imageUrl, 32, 32)}
-              alt={imageUrl}
-            />
-          )
+          return <ProductThumbnail url={imageUrl} />
         },
       },
       {

@@ -21,14 +21,12 @@ import { useProductData } from '../../context/ProductDataProvider'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
 import { getApiErrorDetails } from '../../helpers/api'
-import {
-  trimCloudinaryImage,
-  getFirstImageMediaUrl,
-} from '../../helpers/images'
+import { getFirstImageMediaUrl } from '../../helpers/images'
 import EmptyTable from '../shared/EmptyTable'
 import NumberFilterTemplate from '../shared/NumberFilterTemplate'
 import AddProductsDialog from './AddProductsDialog'
 import styles from './ProductBundle.module.scss'
+import { ProductThumbnail } from '../shared/ProductThumbnail'
 
 interface ProductBundleProps {
   readonly bundledItems: BundledProduct[]
@@ -70,16 +68,7 @@ const ProductBundle = (props: ProductBundleProps) => {
       showFilterMenu: false,
       body: (rowData: TableBundledItem) => {
         const imageUrl = rowData.imageUrl
-        if (!imageUrl) {
-          return <div className={styles.thumbPlaceholder} />
-        }
-        return (
-          <img
-            className={styles.thumb}
-            src={trimCloudinaryImage(imageUrl, 32, 32)}
-            alt={imageUrl}
-          />
-        )
+        return <ProductThumbnail url={imageUrl} />
       },
       style: { width: '8rem' },
     },

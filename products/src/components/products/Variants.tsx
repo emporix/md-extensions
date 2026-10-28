@@ -17,13 +17,11 @@ import TableActions from '../shared/TableActions'
 import { usePermissions } from '../../context/PermissionsProvider'
 import useCustomNavigate from '../../hooks/useCustomNavigate'
 import usePagination from '../../hooks/usePagination'
-import {
-  trimCloudinaryImage,
-  getFirstImageMediaUrl,
-} from '../../helpers/images'
+import { getFirstImageMediaUrl } from '../../helpers/images'
 import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
 import { productDetailPath, productsListPath } from '../../constants/paths'
 import styles from './Variants.module.scss'
+import { ProductThumbnail } from '../shared/ProductThumbnail'
 
 export const Variants = () => {
   const { product } = useProductData()
@@ -133,13 +131,7 @@ export const VariantsList = (props: VariantListProps) => {
         sortable: false,
         body: (pr: Product) => {
           const imageUrl = getFirstImageMediaUrl(pr.media)
-          return imageUrl ? (
-            <img
-              className={styles.thumb}
-              src={trimCloudinaryImage(imageUrl, 32, 32)}
-              alt=""
-            />
-          ) : undefined
+          return <ProductThumbnail url={imageUrl} />
         },
       },
       {

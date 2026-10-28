@@ -26,19 +26,6 @@
   flex-grow: 1;
 }
 
-.thumb {
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-}
-
-.thumbPlaceholder {
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-  background: $grey-2;
-}
-
 .missingName {
   font-style: italic;
   color: $blue-5;

@@ -27,14 +27,12 @@ import { useProductData } from '../../context/ProductDataProvider'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
 import { getApiErrorDetails, getApiErrorStatus } from '../../helpers/api'
-import {
-  trimCloudinaryImage,
-  getFirstImageMediaUrl,
-} from '../../helpers/images'
+import { getFirstImageMediaUrl } from '../../helpers/images'
 import logoDark from '../../assets/images/logo-dark.png'
 import EmptyTable from '../shared/EmptyTable'
 import AddProductsDialog from './AddProductsDialog'
 import styles from './ProductLinked.module.scss'
+import { ProductThumbnail } from '../shared/ProductThumbnail'
 
 interface ProductLinkedProps {
   readonly relatedItems: RelatedItem[]
@@ -121,16 +119,7 @@ const ProductLinked = (props: ProductLinkedProps) => {
       showFilterMenu: false,
       body: (rowData: TableLinkedItem) => {
         const imageUrl = rowData.imageUrl
-        if (!imageUrl) {
-          return <div className={styles.thumbPlaceholder} />
-        }
-        return (
-          <img
-            className={styles.thumb}
-            src={trimCloudinaryImage(imageUrl, 32, 32)}
-            alt={imageUrl}
-          />
-        )
+        return <ProductThumbnail url={imageUrl} />
       },
       style: { width: '8rem' },
     },

@@ -11,12 +11,10 @@ import {
 import { Product } from '../../models/Category.model'
 import { useProductsApi } from '../../hooks/api/products'
 import usePagination from '../../hooks/usePagination'
-import {
-  trimCloudinaryImage,
-  getFirstImageMediaUrl,
-} from '../../helpers/images'
+import { getFirstImageMediaUrl } from '../../helpers/images'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import styles from './AddProductsDialog.module.scss'
+import { ProductThumbnail } from '../shared/ProductThumbnail'
 
 export interface AddProductsDialogProps {
   readonly visible: boolean
@@ -126,16 +124,7 @@ export function AddProductsDialog(props: AddProductsDialogProps) {
         sortable: false,
         body: (rowData: Product) => {
           const imageUrl = getFirstImageMediaUrl(rowData.media)
-          if (!imageUrl) {
-            return <div className={styles.thumbPlaceholder} />
-          }
-          return (
-            <img
-              className={styles.thumb}
-              src={trimCloudinaryImage(imageUrl, 32, 32)}
-              alt={imageUrl}
-            />
-          )
+          return <ProductThumbnail url={imageUrl} />
         },
       },
       {

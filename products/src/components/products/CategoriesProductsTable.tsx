@@ -19,7 +19,6 @@ import CategoriesTree from '../shared/CategoriesTree'
 import useCustomNavigate from '../../hooks/useCustomNavigate'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import { ProductsAction } from '../../pages/ProductsList.page'
-import { trimCloudinaryImage } from '../../helpers/images'
 import TableExtensions from '../shared/TableExtensions'
 import { mapToCsv, saveToCsvFile } from '../../helpers/download'
 import { SchemaType } from '../../models/Schema.model'
@@ -30,6 +29,7 @@ import { TABLE_NAME, TABLE_NAME_CONFIG_KEY } from './ProductsTable'
 import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
 import { productDetailPath } from '../../constants/paths'
 import styles from './CategoriesProductsTable.module.scss'
+import { ProductThumbnail } from '../shared/ProductThumbnail'
 
 const mapToSortField = (
   paginationParams: Partial<PaginationProps>
@@ -172,13 +172,7 @@ const CategoriesProductsTable = ({
             field: 'imageUrl',
             filter: false,
             sortable: false,
-            body: (pr: ProductRow) => (
-              <img
-                className={styles.thumb}
-                src={trimCloudinaryImage(pr.imageUrl as string, 32, 32)}
-                alt={pr.imageUrl || 'imageUrl'}
-              />
-            ),
+            body: (pr: ProductRow) => <ProductThumbnail url={pr.imageUrl} />,
           },
           {
             columnKey: 'ref.localizedName',

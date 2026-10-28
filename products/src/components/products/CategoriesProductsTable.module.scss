@@ -26,13 +26,6 @@
   gap: 0.5rem;
 }
 
-.thumb {
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-  background-color: #dde6ee;
-}
-
 .missingProduct {
   display: flex;
   align-items: center;
@@ -44,9 +37,15 @@
   font-size: 1.2rem;
 }
 
-// MD ProductsModule.scss `.products .tree .p-tree` overrides, scoped to the
-// CL Tree (3 classes beat CL's 2-class `.tree:global(.p-tree)` rules).
-.root .treePane :global(.p-tree) {
+// MD ProductsModule.scss `.products .tree .p-tree` overrides. CL Tree (2.12.1+)
+// anchors its rules on a doubled hashed root plus the Prime chain (0,3,0 for
+// the root, up to 0,6,0 for node content), so these use a doubled pane anchor
+// plus the same chain to stay one step ahead.
+$tree: '.root.root .treePane.treePane :global(.p-tree.p-tree)';
+$node: '#{$tree} :global(.p-tree-container) :global(.p-treenode)';
+$content: '#{$node} :global(.p-treenode-content)';
+
+#{$tree} {
   height: 100%;
   padding: 0;
   border: 1px solid #dee2e6;
@@ -62,17 +61,26 @@
   letter-spacing: 0.5px;
 }
 
-.root .treePane :global(.p-tree .p-treenode) {
+#{$node} {
   padding: 0;
 }
 
-.root .treePane :global(.p-tree .p-treenode-content) {
+#{$content} {
   padding: 4px;
   border-bottom: 0.7px solid #dde6ee;
   border-radius: 0;
 }
 
-.root .treePane :global(.p-tree .p-tree-toggler) {
+#{$content} :global(.p-treenode-label) {
+  line-height: 17px;
+}
+
+// MD (lara theme) keeps the label colour on the selected row.
+#{$content}:global(.p-highlight) {
+  color: inherit;
+}
+
+#{$content} :global(.p-tree-toggler) {
   width: 18px;
   height: 18px;
   margin: 4px;
