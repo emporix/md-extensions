@@ -4,6 +4,9 @@ export default {
   plural: 'Returns',
   editReturn: 'Edit return',
   createReturn: 'Create return',
+  list: {
+    sitePlaceholder: 'Select a site',
+  },
   tabs: {
     first: 'General',
   },
@@ -41,6 +44,7 @@ export default {
     expiryDate: 'Return date',
     createdDate: 'Created date',
     approvalStatus: 'Status',
+    site: 'Site',
     filters: {
       id: 'Filter by return number',
       customer: {
@@ -51,6 +55,7 @@ export default {
       expiryDate: 'Filter by date',
       createdDate: 'Filter by date',
       approvalStatus: 'Filter by status',
+      site: 'Filter by site',
     },
     actions: 'Actions',
   },
@@ -60,6 +65,7 @@ export default {
     expiryDate: 'Return expiry date',
     returnCode: 'Reason code',
     status: 'Status',
+    site: 'Site',
     returnReason: 'Reason details',
     products: 'Products',
     received: 'Received',
@@ -86,5 +92,7 @@ export default {
     successDelete: '{{count}} return(s) deleted',
     errorDelete: 'Error while deleting returns',
     errorFetch: 'Error while fetching returns',
+    siteRestrictionError:
+      'You do not have permission to access Returns for site {{siteCode}}. Please contact your administrator for further assistance.',
   },
 }

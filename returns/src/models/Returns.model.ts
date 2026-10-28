@@ -48,6 +48,7 @@ export interface Return {
   approvalStatus: ReturnStatus
   expiryDate: string
   requestor: Requestor
+  siteCode?: string
   metadata: Metadata
 }
 
@@ -88,6 +89,7 @@ export interface ReturnDetails {
   id: string
   reason: Reason
   approvalStatus: ReturnStatus
+  siteCode?: string
   requestor: Requestor
   submitter: Submitter
   received: boolean
