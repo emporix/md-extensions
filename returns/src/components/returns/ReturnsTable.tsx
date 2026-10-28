@@ -27,6 +27,7 @@ import usePagination, {
 } from '../../hooks/usePagination'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import { getApiErrorDetails, makeCall } from '../../helpers/api'
+import { isLatestRequest, nextRequestId } from '../../helpers/latestRequest'
 import { parseTableColumns, withSiteEqualsFilter } from '../../helpers/tables'
 import type { ColumnVisibility } from '../../models/Configuration.model'
 import type { DisplayMixin } from '../../models/DisplayMixin'
@@ -107,10 +108,13 @@ const ReturnsTable = ({
   }
 
   const selectedSiteRef = useRef(selectedSiteCode)
+  const latestRequestId = useRef(0)
 
   useEffect(() => {
     const siteChanged = selectedSiteRef.current !== selectedSiteCode
     selectedSiteRef.current = selectedSiteCode
+    latestRequestId.current = nextRequestId(latestRequestId.current)
+    const requestId = latestRequestId.current
     if (siteChanged && paginationParams.currentPage !== 1) {
       setPaginationParams((current) => ({
         ...current,
@@ -131,10 +135,20 @@ const ReturnsTable = ({
                 selectedSiteCode
               ),
             }),
-          setIsSyncing
+          (loading: boolean) => {
+            if (isLatestRequest(latestRequestId.current, requestId)) {
+              setIsSyncing(loading)
+            }
+          }
         )
+        if (!isLatestRequest(latestRequestId.current, requestId)) {
+          return
+        }
         setTableData(newData as PaginatedResponse<Return>)
       } catch (e: unknown) {
+        if (!isLatestRequest(latestRequestId.current, requestId)) {
+          return
+        }
         showError(t('returns.toasts.errorFetch'), getApiErrorDetails(e))
       }
     })()
