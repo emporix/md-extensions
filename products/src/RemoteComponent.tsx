@@ -45,7 +45,10 @@ const RemoteComponent = ({ appState }: RemoteComponentProps) => {
                           <Route index element={<ProductsListPage />} />
                           <Route path="add" element={<ProductAddEdit />} />
                           <Route path=":id" element={<ProductAddEdit />} />
-                          <Route path="*" element={<Navigate to="/" replace />} />
+                          <Route
+                            path="*"
+                            element={<Navigate to="/" replace />}
+                          />
                         </Route>
                         <Route path="*" element={<Navigate to="/" replace />} />
                       </Routes>

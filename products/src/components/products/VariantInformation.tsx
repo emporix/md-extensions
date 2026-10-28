@@ -12,8 +12,7 @@ type VariantInformationProps = {
 export const VariantInformation = ({ parent }: VariantInformationProps) => {
   const { t } = useTranslation()
   const { getContentLangValue } = useLocalizedValue()
-  const parentLabel =
-    getContentLangValue(parent.name) || parent.id || ''
+  const parentLabel = getContentLangValue(parent.name) || parent.id || ''
 
   return (
     <div className={styles.variantInformation}>

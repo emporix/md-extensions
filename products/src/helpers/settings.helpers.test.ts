@@ -36,6 +36,12 @@ describe('getStoredSettings', () => {
       tenant: 'my-tenant',
       language: 'de',
       token: 'jwt-123',
+      currency: {
+        id: 'EUR',
+        label: 'EUR',
+        default: true,
+        required: false,
+      },
       contentLanguage: 'en',
       onError: expect.any(Function),
     })
@@ -104,6 +110,12 @@ describe('saveStoredSettings', () => {
       tenant: 't1',
       language: 'de',
       token: 'tok',
+      currency: {
+        id: 'EUR',
+        label: 'EUR',
+        default: true,
+        required: false,
+      },
       contentLanguage: 'de',
       onError: () => {
         // NOOP
@@ -123,6 +135,12 @@ describe('saveStoredSettings', () => {
       tenant: 'a',
       language: 'b',
       token: 'c',
+      currency: {
+        id: 'EUR',
+        label: 'EUR',
+        default: true,
+        required: false,
+      },
       contentLanguage: 'b',
       onError: () => {
         // NOOP
