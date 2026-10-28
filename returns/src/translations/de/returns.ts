@@ -4,6 +4,9 @@ export default {
   plural: 'Retouren',
   createReturn: 'Retoure erstellen',
   editReturn: 'Retoure bearbeiten',
+  list: {
+    sitePlaceholder: 'Site auswählen',
+  },
   tabs: {
     first: 'Generell',
   },

@@ -51,6 +51,28 @@ export const columnFiltersKeepingValues = (
 }
 
 /**
+ * Adds an exact site match to a copy of the current filters. A missing or
+ * blank site code leaves the site out, so the list stays unfiltered. The
+ * input map is left unchanged: column rebuilds drop a site key whose column
+ * is not filterable, and the header selection is applied again here.
+ */
+export const withSiteEqualsFilter = (
+  filters: DataTableFilterMeta | undefined,
+  siteCode: string | undefined
+): DataTableFilterMeta | undefined => {
+  const rest: DataTableFilterMeta = { ...(filters ?? {}) }
+  delete rest.siteCode
+  const code = siteCode?.trim() ?? ''
+  if (code.length === 0) {
+    return Object.keys(rest).length === 0 ? undefined : rest
+  }
+  return {
+    ...rest,
+    siteCode: { value: code, matchMode: FilterMatchMode.EQUALS },
+  }
+}
+
+/**
  * Applies persisted column visibility, appends configured mixin columns and an
  * optional trailing actions column. Ported from management-dashboard so tables
  * configured there keep rendering the same columns here.

@@ -4,6 +4,9 @@ export default {
   plural: 'Returns',
   editReturn: 'Edit return',
   createReturn: 'Create return',
+  list: {
+    sitePlaceholder: 'Select a site',
+  },
   tabs: {
     first: 'General',
   },
