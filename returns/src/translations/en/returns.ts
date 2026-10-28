@@ -92,5 +92,7 @@ export default {
     successDelete: '{{count}} return(s) deleted',
     errorDelete: 'Error while deleting returns',
     errorFetch: 'Error while fetching returns',
+    siteRestrictionError:
+      'You do not have permission to access Returns for site {{siteCode}}. Please contact your administrator for further assistance.',
   },
 }

@@ -92,5 +92,7 @@ export default {
     successDelete: '{{count}} Retoure(n) gelöscht',
     errorDelete: 'Fehler beim Löschen der Retouren',
     errorFetch: 'Fehler beim Laden der Retouren',
+    siteRestrictionError:
+      'Sie haben keine Berechtigung, auf Retouren für Site {{siteCode}} zuzugreifen. Bitte wenden Sie sich an Ihren Administrator, um weitere Unterstützung zu erhalten.',
   },
 }
