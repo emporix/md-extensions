@@ -86,7 +86,13 @@ const ProductsListPage = () => {
   const { blockPanel } = useUIBlocker()
   const { isToggleValid } = useFeatureToggles()
   const paginationProducts = usePagination()
-  const paginationCategoriesProducts = usePagination()
+  // Own URL keys: both hooks re-sync on every URL change, so on shared
+  // `page` / `rows` they overwrite each other and paging bounces back.
+  const paginationCategoriesProducts = usePagination(
+    undefined,
+    true,
+    'category'
+  )
   const { resetPagination: resetPaginationProducts } = paginationProducts
   const { resetPagination: resetPaginationCategoriesProducts } =
     paginationCategoriesProducts
