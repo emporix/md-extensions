@@ -158,30 +158,17 @@ You will be requested to provide app context on the start if you access the loca
 
 ## Customizing the module
 
-This module template uses [PrimeReact](https://www.primefaces.org/primereact-v8) for UI components and [PrimeFlex](https://primeflex.org) for styling.
-But, the default styling is inherited from the Management Dashboard.
+This remote has no direct PrimeReact, PrimeFlex or PrimeIcons dependency. UI primitives
+(buttons, inputs, DataTable, Tabs, Dropdown, Editor, FileUpload, Toast) come from
+`@emporix/component-library`, whose stylesheet is imported once in `RemoteComponent.tsx`
+(and `App.tsx` for standalone dev):
 
-You are free to use your own UI libraries or styling.
-If so, you can remove PrimeReact and PrimeFlex from the package.json file.
-```bash
-    "chart.js": "^4.4.7",
-    "primeflex": "^3.1.3",
-    "primeicons": "^6.0.0",
-    "primereact": "^8.7.0",
-    "quill": "^2.0.3",
+```ts
+import '@emporix/component-library/styles'
 ```
-Then remove import statements from the `App.tsx` file:
-```bash
-import RemoteComponent from './RemoteComponent'
-import { Button, Card, InputText } from 'primereact'
-import 'primereact/resources/themes/lara-light-indigo/theme.css' //theme
-import 'primereact/resources/primereact.min.css' //core css
-import 'primeicons/primeicons.css'
-```
-and all occurrences in the component.
 
-and also from `RemoteComponent.tsx` file remove:
-```bash
-import '/node_modules/primeflex/primeflex.css'
-import 'primeicons/primeicons.css'
-```
+That stylesheet also bundles the PrimeIcons font, so `pi pi-*` class names keep working
+without adding `primeicons`. Feature styling uses SCSS Modules next to each component.
+Do not add `primereact`, `primeflex` or `primeicons` to `package.json`; see
+`docs/CL_WIDGET_STATUS.md` in md-extensions for the component-library equivalent of each
+PrimeReact widget.

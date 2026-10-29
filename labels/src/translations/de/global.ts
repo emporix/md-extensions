@@ -9,6 +9,7 @@ export default {
   settings: 'Einstellungen',
   logout: 'Abmelden',
   cancel: 'Abbrechen',
+  close: 'Schließen',
   edit: 'Bearbeiten',
   add: 'Hinzufügen',
   delete: 'Löschen',

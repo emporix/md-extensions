@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { deleteLabel, removeLabelImageFromCloudinary } from '@emporix/api-calls'
-import { deleteLabelWithImage } from './labels.helpers'
+import { deleteLabelWithImage, filterVisibleColumns } from './labels.helpers'
 import type { Label } from '../models/Label.model'
 
 vi.mock('@emporix/api-calls', () => ({
@@ -61,5 +61,37 @@ describe('deleteLabelWithImage', () => {
 
     await expect(deleteLabelWithImage(label)).rejects.toThrow('api down')
     expect(deleteLabel).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('filterVisibleColumns', () => {
+  const columns = [{ field: 'image' }, { field: 'name' }]
+
+  it('shows every column when nothing was saved', () => {
+    expect(filterVisibleColumns(columns, [])).toEqual(columns)
+  })
+
+  it('hides the columns saved as not visible', () => {
+    expect(
+      filterVisibleColumns(columns, [
+        { key: 'image', visible: false },
+        { key: 'name', visible: true },
+      ])
+    ).toEqual([{ field: 'name' }])
+  })
+
+  it('keeps an explicitly empty selection empty', () => {
+    expect(
+      filterVisibleColumns(columns, [
+        { key: 'image', visible: false },
+        { key: 'name', visible: false },
+      ])
+    ).toEqual([])
+  })
+
+  it('shows columns that have no saved entry', () => {
+    expect(
+      filterVisibleColumns(columns, [{ key: 'image', visible: false }])
+    ).toEqual([{ field: 'name' }])
   })
 })

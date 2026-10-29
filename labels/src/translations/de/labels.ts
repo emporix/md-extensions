@@ -9,7 +9,7 @@ export default {
       actions: 'Aktionen',
     },
     filters: {
-      searchByName: 'Nach Namen filtern',
+      name: 'Nach Namen filtern',
     },
   },
   addLabel: 'Label hinzufügen',
@@ -59,6 +59,7 @@ export default {
     clear: 'Zurücksetzen',
     dropImageHere: 'Bild hierher ziehen und ablegen',
     dropFileHere: 'Datei hierher ziehen und ablegen',
+    selectAsset: '{{filename}} auswählen',
     toast: {
       uploadSuccess: '{{count}} Datei(en) hochgeladen',
       bulkDeleteSuccess: '{{itemsLength}} Bild(er) wurden gelöscht',

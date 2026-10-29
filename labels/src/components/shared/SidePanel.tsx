@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from 'react-i18next'
 import { FiX } from 'react-icons/fi'
 
 import styles from './SidePanel.module.scss'
@@ -24,6 +25,8 @@ const SidePanel = ({
   children,
   'data-testid': dataTestId,
 }: SidePanelProps) => {
+  const { t } = useTranslation()
+
   useEffect(() => {
     if (!visible) {
       return
@@ -69,7 +72,7 @@ const SidePanel = ({
             type="button"
             className={styles.close}
             onClick={onHide}
-            aria-label="Close"
+            aria-label={t('global.close')}
             data-testid="side-panel-close"
           >
             <FiX size={22} aria-hidden />

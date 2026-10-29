@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router'
 import { fetchLabels } from '@emporix/api-calls'
@@ -10,7 +10,10 @@ import {
 
 import { getApiErrorDetails, makeCall } from '../../helpers/api'
 import { toApiPagination } from '../../helpers/apiPagination'
-import { deleteLabelWithImage } from '../../helpers/labels.helpers'
+import {
+  deleteLabelWithImage,
+  filterVisibleColumns,
+} from '../../helpers/labels.helpers'
 import type { Label } from '../../models/Label.model'
 import { useRefresh } from '../../context/RefreshValuesProvider'
 import { usePermissions } from '../../context/PermissionsProvider'
@@ -31,12 +34,8 @@ import styles from './LabelsTable.module.scss'
 /** Configuration key the column-visibility preference is stored under. */
 const CONFIGURATION_KEY = 'ext_labels'
 
-/** Newest labels first, as in the MD table. */
-const INITIAL_PAGINATION: Partial<PaginationProps> = {
-  ...DEFAULT_PAGINATION_PROPS,
-  sortField: 'metadata.creationDate',
-  sortOrder: -1,
-}
+// No initial sort: MD sends none, so labels keep the API's default order.
+const INITIAL_PAGINATION: Partial<PaginationProps> = DEFAULT_PAGINATION_PROPS
 
 const LabelsTable = () => {
   const { t } = useTranslation()
@@ -47,7 +46,7 @@ const LabelsTable = () => {
   const location = useLocation()
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.LABELS_MANAGER)
-  const { fetchVisibleColumns } = useConfiguration()
+  const { fetchTableConfiguration } = useConfiguration()
 
   const { paginationParams, onPageCallback, onFilterCallback, onSortCallback } =
     usePagination(INITIAL_PAGINATION)
@@ -130,18 +129,9 @@ const LabelsTable = () => {
     totalRecords: totalCount,
   }
 
-  const visibleColumns = fetchVisibleColumns(CONFIGURATION_KEY)
-
-  // An empty preference means "never configured" — show every column.
-  const shownColumns = useMemo(
-    () =>
-      visibleColumns.length === 0
-        ? columns
-        : columns.filter(
-            (column) => column.field && visibleColumns.includes(column.field)
-          ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [columns, visibleColumns.join(',')]
+  const shownColumns = filterVisibleColumns(
+    columns,
+    fetchTableConfiguration(CONFIGURATION_KEY)
   )
 
   return (

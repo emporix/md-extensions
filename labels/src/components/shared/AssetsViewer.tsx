@@ -158,6 +158,9 @@ const AssetsViewer = ({
           disabled={!managerPermissions}
           onChange={() => onCheck(asset.id)}
           checked={isSelected}
+          aria-label={t('labels.media.selectAsset', {
+            filename: asset.details?.filename ?? asset.id,
+          })}
           data-testid={`asset-checkbox-${asset.id}`}
         />
         <div

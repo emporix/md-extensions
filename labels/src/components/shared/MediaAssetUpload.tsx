@@ -11,7 +11,6 @@ import {
 } from '@emporix/component-library'
 import type { AxiosProgressEvent } from 'axios'
 import { BsXCircle } from 'react-icons/bs'
-import { FiPlus, FiUpload, FiX } from 'react-icons/fi'
 
 import { useMediaAssets } from '../../hooks/api/mediaAssets'
 import { useUIBlocker } from '../../context/UIBlcoker'
@@ -107,21 +106,20 @@ const MediaAssetUpload = ({
   const formatSize = (bytes: number) =>
     fileUploadRef.current?.formatSize(bytes) ?? '0 B'
 
-  // Icon-only square buttons, matching the management-dashboard media
-  // uploader. MD used primeicons class strings (`pi pi-fw pi-plus`);
-  // remotes must not depend on primeicons, so these are react-icons nodes.
+  // Icon-only square buttons with the MD uploader's PrimeIcons glyphs. The
+  // font ships with `@emporix/component-library/styles`, so no primeicons dep.
   const chooseOptions = {
-    icon: <FiPlus size={16} aria-hidden />,
+    icon: <i className="pi pi-fw pi-plus" aria-hidden />,
     iconOnly: true,
     className: styles.iconButton,
   }
   const uploadOptions = {
-    icon: <FiUpload size={16} aria-hidden />,
+    icon: <i className="pi pi-fw pi-upload" aria-hidden />,
     iconOnly: true,
     className: styles.iconButton,
   }
   const cancelOptions = {
-    icon: <FiX size={16} aria-hidden />,
+    icon: <i className="pi pi-fw pi-times" aria-hidden />,
     iconOnly: true,
     className: styles.iconButton,
   }

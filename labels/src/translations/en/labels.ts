@@ -55,6 +55,7 @@ export default {
     clear: 'Clear',
     dropImageHere: 'Drag & Drop Image Here',
     dropFileHere: 'Drag & Drop File Here',
+    selectAsset: 'Select {{filename}}',
     toast: {
       uploadSuccess: '{{count}} file(s) uploaded',
       bulkDeleteSuccess: '{{itemsLength}} image(s) were deleted',
