@@ -23,7 +23,10 @@ import { useToast } from '../../contexts/ToastContext'
 import { useAgentChat } from '../../hooks/useAgentChat'
 import { useAgents } from '../../hooks/useAgents'
 import { useChatRecommendations } from '../../hooks/useChatRecommendations'
-import { useHelperAgentProvisioning } from '../../hooks/useHelperAgentProvisioning'
+import {
+  isEnabledAgentPresent,
+  useHelperAgentProvisioning,
+} from '../../hooks/useHelperAgentProvisioning'
 import {
   patchCustomAgent,
   RECOMMENDED_PROMPTS_AGENT_ID,
@@ -36,6 +39,8 @@ import {
   getChatInvokeGates,
   CHAT_AGENT_QUERY_PARAM,
   nextAgentIdFromQuery,
+  shouldShowAssistantActivity,
+  shouldShowRecommendationEmpty,
   type ChatInvokeGate,
 } from '../../utils/agentChatHelpers'
 import { formatApiError } from '../../utils/errorHelpers'
@@ -95,7 +100,9 @@ const AgentChatPage = () => {
   const { t } = useTranslation()
   const appState = useAppState()
   const { showError } = useToast()
-  const { customAgents, customAgentsLoading, refreshCustomAgents } = useAgents()
+  const { customAgents, customAgentsLoading, refreshCustomAgents } = useAgents({
+    loadTemplates: false,
+  })
   const { messages, status, activity, send, reset, stop } = useAgentChat()
   const [agentId, setAgentId] = useState<string | null>(null)
   const [pendingAgentId, setPendingAgentId] = useState<string | null>(null)
@@ -193,16 +200,22 @@ const AgentChatPage = () => {
     [t]
   )
 
+  const recommendationsAgentPresent = customAgentsLoading
+    ? null
+    : isEnabledAgentPresent(customAgents, RECOMMENDED_PROMPTS_AGENT_ID)
+
   const {
-    helperAgentPresent: recommendationsAgentPresent,
     provisioningAgent: provisioningRecommendations,
     handleEnableHelperAgent: enableRecommendations,
   } = useHelperAgentProvisioning({
     agentId: RECOMMENDED_PROMPTS_AGENT_ID,
-    shouldCheck: true,
+    shouldCheck: false,
     createAgent: createRecommendedPromptsAgent,
     i18nKeys: RECOMMENDED_PROMPTS_HELPER_I18N_KEYS,
     resolveErrorMessage: resolveRecommendationError,
+    onEnabled: () => {
+      void refreshCustomAgents()
+    },
   })
 
   const { recommendations, loading: recommendationsLoading } =
@@ -386,11 +399,13 @@ const AgentChatPage = () => {
           )}
           {messages.map((message) => {
             const hasText = message.text.trim().length > 0
-            const showStatus =
-              streaming &&
+            const showStatus = shouldShowAssistantActivity(
+              streaming,
               message.role === 'assistant' &&
-              message.id === messages[messages.length - 1]?.id &&
-              !hasText
+                message.id === messages[messages.length - 1]?.id,
+              hasText,
+              activity !== null
+            )
             return (
               <ChatBubble key={message.id} role={message.role}>
                 {message.role === 'assistant' && hasText ? (
@@ -398,7 +413,7 @@ const AgentChatPage = () => {
                 ) : null}
                 {message.role === 'assistant' ? null : message.text}
                 {showStatus ? (
-                  <p className="agent-chat-activity">
+                  <p className="agent-chat-activity" aria-live="polite">
                     <i className="pi pi-spin pi-spinner" aria-hidden="true" />
                     {activityLabel}
                   </p>
@@ -407,6 +422,9 @@ const AgentChatPage = () => {
             )
           })}
         </div>
+        <label className="agent-chat-prompt-label" htmlFor="agent-chat-prompt">
+          {t('chat_prompt_label')}
+        </label>
         <InputText
           textarea
           inputId="agent-chat-prompt"
@@ -517,9 +535,12 @@ const AgentChatPage = () => {
                 </button>
               ))
             : null}
-          {recommendationsAgentPresent === true &&
-          !recommendationsLoading &&
-          recommendations.length === 0 ? (
+          {shouldShowRecommendationEmpty(
+            recommendationsAgentPresent === true,
+            Boolean(agentId),
+            recommendationsLoading,
+            recommendations.length
+          ) ? (
             <p className="agent-chat-recommended-empty">
               {t('chat_recommended_empty')}
             </p>

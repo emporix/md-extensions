@@ -8,6 +8,9 @@ import {
   nextAgentIdFromQuery,
   nextSessionId,
   nextThinkingText,
+  nextToolActivityText,
+  shouldShowAssistantActivity,
+  shouldShowRecommendationEmpty,
   withApiEndpointTrigger,
   withEmployeeRequiredScope,
 } from './agentChatHelpers'
@@ -33,6 +36,38 @@ describe('nextThinkingText', () => {
 
     expect(second).toBe('I will look up quotes.')
     expect(nextThinkingText(second, null)).toBeNull()
+  })
+})
+
+describe('nextToolActivityText', () => {
+  it('clears the tool line when the stream ends the tool', () => {
+    expect(nextToolActivityText(null)).toBeNull()
+    expect(nextToolActivityText('   ')).toBeNull()
+  })
+
+  it('keeps a named tool', () => {
+    expect(nextToolActivityText('search_orders')).toBe('search_orders')
+  })
+})
+
+describe('shouldShowAssistantActivity', () => {
+  it('keeps the activity line after the assistant already has text', () => {
+    expect(shouldShowAssistantActivity(true, true, true, true)).toBe(true)
+  })
+
+  it('hides the activity line once text is showing and the tool has ended', () => {
+    expect(shouldShowAssistantActivity(true, true, true, false)).toBe(false)
+  })
+
+  it('shows a status while the assistant bubble is still empty', () => {
+    expect(shouldShowAssistantActivity(true, true, false, false)).toBe(true)
+  })
+})
+
+describe('shouldShowRecommendationEmpty', () => {
+  it('waits until an agent is selected', () => {
+    expect(shouldShowRecommendationEmpty(true, false, false, 0)).toBe(false)
+    expect(shouldShowRecommendationEmpty(true, true, false, 0)).toBe(true)
   })
 })
 

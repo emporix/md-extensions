@@ -13,6 +13,28 @@ export const nextSessionId = (
   stored: string | null
 ): string | null => (reset ? null : stored)
 
+export const nextToolActivityText = (
+  toolName: string | null
+): string | null => {
+  const trimmed = toolName?.trim() ?? ''
+  return trimmed.length > 0 ? trimmed : null
+}
+
+export const shouldShowAssistantActivity = (
+  streaming: boolean,
+  isActiveAssistant: boolean,
+  hasText: boolean,
+  hasActivity: boolean
+): boolean => streaming && isActiveAssistant && (!hasText || hasActivity)
+
+export const shouldShowRecommendationEmpty = (
+  helperPresent: boolean,
+  agentSelected: boolean,
+  loading: boolean,
+  recommendationCount: number
+): boolean =>
+  helperPresent && agentSelected && !loading && recommendationCount === 0
+
 export const nextThinkingText = (
   current: string | null,
   content: string | null

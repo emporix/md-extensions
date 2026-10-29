@@ -112,6 +112,7 @@ describe('isAbortError', () => {
     abortError.name = 'AbortError'
 
     expect(isAbortError(abortError)).toBe(true)
+    expect(isAbortError({ name: 'AbortError' })).toBe(true)
     expect(isAbortError(new Error('failed'))).toBe(false)
     expect(isAbortError(null)).toBe(false)
   })

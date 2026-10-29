@@ -1153,6 +1153,7 @@ const TRANSLATIONS_DE = {
   chat_stop: 'Stopp',
   chat_welcome: 'Willkommen! Wobei kann ich Ihnen helfen?',
   chat_error: 'Die Antwort konnte nicht geladen werden.',
+  chat_prompt_label: 'Eingabe',
   chat_placeholder:
     'Geben Sie hier Ihre Frage ein… (Eingabe zum Senden, Umschalt+Eingabe für eine neue Zeile)',
   chat_choose_agent: 'Agent zum Chatten auswählen',

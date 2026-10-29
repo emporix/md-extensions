@@ -3,7 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
 import { chatWithAgent, chatWithAgentOnce } from '../services/agentService'
-import { nextSessionId, nextThinkingText } from '../utils/agentChatHelpers'
+import {
+  nextSessionId,
+  nextThinkingText,
+  nextToolActivityText,
+} from '../utils/agentChatHelpers'
 import {
   formatApiError,
   isAbortError,
@@ -116,10 +120,8 @@ export const useAgentChat = () => {
               })
             },
             onToolActivity: (toolName) => {
-              if (!toolName) {
-                return
-              }
-              setActivity({ kind: 'tool', text: toolName })
+              const text = nextToolActivityText(toolName)
+              setActivity(text ? { kind: 'tool', text } : null)
             },
             onSessionId: setSessionId,
           })
@@ -129,7 +131,9 @@ export const useAgentChat = () => {
           }
           reply = await chatWithAgentOnce(appState, agentId, trimmed, {
             emptyResponseKey: EMPTY_RESPONSE_KEY,
+            sessionId: storedSession ?? undefined,
             signal: controller.signal,
+            onSessionId: setSessionId,
           })
         }
         replaceAssistant({ role: 'assistant', text: reply })

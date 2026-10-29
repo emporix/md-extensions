@@ -51,6 +51,22 @@ describe('featureToggleService', () => {
     expect(await isEmporixHostingFeatureEnabled(appState)).toBe(false)
   })
 
+  it('reads toggles from the paginated values list', async () => {
+    mockGet.mockResolvedValue({
+      values: [
+        { code: 'ms-teams', isEnabled: true },
+        { code: 'ai-agent-chat', isEnabled: true },
+      ],
+      totalRecords: 2,
+    })
+
+    const result = await getAgenticFeatureToggles(appState)
+
+    expect(result.msTeams).toBe(true)
+    expect(result.emporixHosting).toBe(false)
+    expect(result.aiAgentChat).toBe(true)
+  })
+
   it('reads emporixHosting and ai-agent-chat from the same list', async () => {
     mockGet.mockResolvedValue([
       { code: 'emporixHosting', isEnabled: true },

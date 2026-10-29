@@ -158,27 +158,52 @@ export const chatWithAgent = async (
   return trimmed
 }
 
-const readChatMessage = (payload: unknown): string => {
+const readChatEntry = (payload: unknown): Record<string, unknown> | null => {
   const entry = Array.isArray(payload) ? payload[0] : payload
   if (!entry || typeof entry !== 'object') {
-    return ''
+    return null
   }
-  const message = (entry as { message?: unknown }).message
+  return entry as Record<string, unknown>
+}
+
+const readChatMessage = (payload: unknown): string => {
+  const message = readChatEntry(payload)?.message
   return typeof message === 'string' ? message.trim() : ''
+}
+
+const readChatSessionId = (payload: unknown): string | null => {
+  const sessionId = readChatEntry(payload)?.sessionId
+  return typeof sessionId === 'string' && sessionId.trim()
+    ? sessionId.trim()
+    : null
 }
 
 export const chatWithAgentOnce = async (
   appState: AppState,
   agentId: string,
   message: string,
-  options: Pick<ChatWithAgentOptions, 'emptyResponseKey' | 'signal'> = {}
+  options: Pick<
+    ChatWithAgentOptions,
+    'emptyResponseKey' | 'signal' | 'sessionId' | 'onSessionId'
+  > = {}
 ): Promise<string> => {
   const api = getApiClient(appState)
+  const requestInit: RequestInit = {}
+  if (options.sessionId) {
+    requestInit.headers = { 'session-id': options.sessionId }
+  }
+  if (options.signal) {
+    requestInit.signal = options.signal
+  }
   const payload = await api.post<unknown>(
     `/ai-service/${appState.tenant}/agentic/chat`,
     { agentId, message },
-    options.signal ? { signal: options.signal } : undefined
+    options.sessionId || options.signal ? requestInit : undefined
   )
+  const returnedSessionId = readChatSessionId(payload)
+  if (returnedSessionId) {
+    options.onSessionId?.(returnedSessionId)
+  }
   const text = readChatMessage(payload)
   if (!text) {
     throw new Error(

@@ -1137,6 +1137,7 @@ const TRANSLATIONS_EN = {
   chat_stop: 'Stop',
   chat_welcome: 'Welcome! Please tell me what I may help you with.',
   chat_error: 'The reply could not be loaded.',
+  chat_prompt_label: 'Prompt',
   chat_placeholder:
     'Type your prompt here… (Press Enter to send, Shift+Enter for a new line)',
   chat_choose_agent: 'Choose an agent to chat to',

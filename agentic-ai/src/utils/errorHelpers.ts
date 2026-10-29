@@ -139,8 +139,12 @@ export const formatApiError = (
   return fallbackMessage
 }
 
-export const isAbortError = (err: unknown): boolean =>
-  err instanceof Error && err.name === 'AbortError'
+export const isAbortError = (err: unknown): boolean => {
+  if (!err || typeof err !== 'object') {
+    return false
+  }
+  return (err as { name?: unknown }).name === 'AbortError'
+}
 
 const STREAM_ERROR_CODE_400 = /\berror code:\s*400\b/i
 

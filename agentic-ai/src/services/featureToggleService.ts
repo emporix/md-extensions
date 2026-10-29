@@ -36,14 +36,25 @@ export const toAgenticToggles = (
   aiAgentChat: isCodeEnabled(values, AI_AGENT_CHAT_FEATURE),
 })
 
+const readFeatureToggleValues = (response: unknown): FeatureToggleValue[] => {
+  if (Array.isArray(response)) {
+    return response
+  }
+  if (!response || typeof response !== 'object') {
+    return []
+  }
+  const values = (response as { values?: unknown }).values
+  return Array.isArray(values) ? values : []
+}
+
 const fetchFeatureToggleValues = async (
   appState: AppState
 ): Promise<FeatureToggleValue[]> => {
   const api = new ApiClient(appState)
-  const response = await api.get<FeatureToggleValue[]>(
+  const response = await api.get<unknown>(
     featureToggleListPath(appState.tenant)
   )
-  return Array.isArray(response) ? response : []
+  return readFeatureToggleValues(response)
 }
 
 export const getFeatureToggleValues = async (

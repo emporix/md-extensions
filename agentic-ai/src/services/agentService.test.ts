@@ -257,6 +257,28 @@ describe('chatWithAgentOnce', () => {
     ).rejects.toThrow('chat_error')
   })
 
+  it('sends the current session and keeps the returned session', async () => {
+    const onSessionId = vi.fn()
+    mockPost.mockResolvedValue({
+      message: 'continued',
+      sessionId: 'sess-returned',
+    })
+
+    await expect(
+      chatWithAgentOnce(appState, 'agent-1', 'retry', {
+        sessionId: 'sess-existing',
+        onSessionId,
+      })
+    ).resolves.toBe('continued')
+
+    expect(mockPost).toHaveBeenCalledWith(
+      '/ai-service/testtenant/agentic/chat',
+      { agentId: 'agent-1', message: 'retry' },
+      { headers: { 'session-id': 'sess-existing' } }
+    )
+    expect(onSessionId).toHaveBeenCalledWith('sess-returned')
+  })
+
   it('forwards the abort signal', async () => {
     const controller = new AbortController()
     mockPost.mockResolvedValue({ message: 'ok' })
