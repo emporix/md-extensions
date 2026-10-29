@@ -156,6 +156,7 @@
   --font-size-xl: 1.25rem;    /* 20px */
   --font-size-2xl: 1.5rem;    /* 24px */
   --font-size-3xl: 2rem;      /* 32px */
+  --line-height-page-title: 34px;
 
   /* Font Weights */
   --font-weight-normal: 400;
@@ -180,6 +181,17 @@
   --z-modal: 1050;
   --z-toast: 1100;
   --z-tooltip: 1150;
+
+  /* Agent chat surfaces */
+  --color-chat-canvas: #fafbfc;
+  --color-chat-line: #c0d0df;
+  --color-chat-line-hover: #99acbc;
+  --color-chat-hover: #f5f9fc;
+  --chat-transcript-height: 400px;
+  --chat-bubble-max-width: 80%;
+  --chat-composer-min-height: 5rem;
+  --chat-composer-max-height: 7.5rem;
+  --chat-picker-max-width: 25rem;
 
   /* Component sizes */
   --spinner-size-md: 2.25rem;

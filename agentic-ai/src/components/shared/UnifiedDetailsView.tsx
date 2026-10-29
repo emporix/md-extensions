@@ -104,7 +104,9 @@ const UnifiedDetailsView: React.FC<UnifiedDetailsViewProps> = ({
       >
         <i className="pi pi-arrow-left" />
       </button>
-      <span className="details-title-text">{getTitleWithStatus()}</span>
+      <span className="details-title-text page-title">
+        {getTitleWithStatus()}
+      </span>
     </div>
   )
 

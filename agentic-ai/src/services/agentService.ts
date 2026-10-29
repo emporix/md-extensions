@@ -72,12 +72,23 @@ export const MCP_TOOL_FROM_FUNCTION_ASSISTANT_TEMPLATE_ID =
 export const MCP_TOOL_FROM_FUNCTION_ASSISTANT_AGENT_ID =
   'mcp-tool-from-function-assistant'
 
+export const RECOMMENDED_PROMPTS_AGENT_TEMPLATE_ID =
+  'emporix-chat-recommended-prompts-assistant'
+
+export const RECOMMENDED_PROMPTS_AGENT_ID =
+  'emporix-chat-recommended-prompts-assistant'
+
+export const RECOMMENDED_PROMPTS_TEMPLATE_NOT_FOUND_KEY =
+  'chat_recommended_template_not_found'
+
 export type ChatWithAgentOptions = {
   readonly emptyResponseKey?: string
   readonly sessionId?: string
   readonly onToken?: (accumulated: string) => void
+  readonly onThinking?: (content: string | null) => void
   readonly onToolActivity?: (toolName: string | null) => void
   readonly onSessionId?: (sessionId: string) => void
+  readonly signal?: AbortSignal
 }
 
 export const chatWithAgent = async (
@@ -91,18 +102,29 @@ export const chatWithAgent = async (
     COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse
   const api = getApiClient(appState)
   const body = { agentId, message }
+  const requestInit: RequestInit = {}
+  if (options.sessionId) {
+    requestInit.headers = { 'session-id': options.sessionId }
+  }
+  if (options.signal) {
+    requestInit.signal = options.signal
+  }
   const stream = api.postSse(
     `/ai-service/${appState.tenant}/agentic/chat-stream`,
     body,
-    options.sessionId
-      ? { headers: { 'session-id': options.sessionId } }
-      : undefined
+    options.sessionId || options.signal ? requestInit : undefined
   )
 
   let text = ''
   for await (const event of stream) {
+    if (event.type === 'thinking') {
+      options.onThinking?.(event.content)
+      continue
+    }
+
     if (event.type === 'token') {
       text += event.content
+      options.onThinking?.(null)
       options.onToken?.(text)
       continue
     }
@@ -134,6 +156,62 @@ export const chatWithAgent = async (
     throw new Error(emptyResponseKey)
   }
   return trimmed
+}
+
+const readChatEntry = (payload: unknown): Record<string, unknown> | null => {
+  const entry = Array.isArray(payload) ? payload[0] : payload
+  if (!entry || typeof entry !== 'object') {
+    return null
+  }
+  return entry as Record<string, unknown>
+}
+
+const readChatMessage = (payload: unknown): string => {
+  const message = readChatEntry(payload)?.message
+  return typeof message === 'string' ? message.trim() : ''
+}
+
+const readChatSessionId = (payload: unknown): string | null => {
+  const sessionId = readChatEntry(payload)?.sessionId
+  return typeof sessionId === 'string' && sessionId.trim()
+    ? sessionId.trim()
+    : null
+}
+
+export const chatWithAgentOnce = async (
+  appState: AppState,
+  agentId: string,
+  message: string,
+  options: Pick<
+    ChatWithAgentOptions,
+    'emptyResponseKey' | 'signal' | 'sessionId' | 'onSessionId'
+  > = {}
+): Promise<string> => {
+  const api = getApiClient(appState)
+  const requestInit: RequestInit = {}
+  if (options.sessionId) {
+    requestInit.headers = { 'session-id': options.sessionId }
+  }
+  if (options.signal) {
+    requestInit.signal = options.signal
+  }
+  const payload = await api.post<unknown>(
+    `/ai-service/${appState.tenant}/agentic/chat`,
+    { agentId, message },
+    options.sessionId || options.signal ? requestInit : undefined
+  )
+  const returnedSessionId = readChatSessionId(payload)
+  if (returnedSessionId) {
+    options.onSessionId?.(returnedSessionId)
+  }
+  const text = readChatMessage(payload)
+  if (!text) {
+    throw new Error(
+      options.emptyResponseKey ??
+        COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse
+    )
+  }
+  return text
 }
 
 type CreateTemplateAgentParams = {
@@ -200,6 +278,15 @@ export const createMcpToolFromFunctionAssistantAgent = async (
     agentId: MCP_TOOL_FROM_FUNCTION_ASSISTANT_AGENT_ID,
     templateNotFoundKey:
       MCP_TOOL_FROM_FUNCTION_ASSISTANT_I18N_KEYS.templateNotFound,
+  })
+
+export const createRecommendedPromptsAgent = async (
+  appState: AppState
+): Promise<{ success: boolean }> =>
+  createTemplateAgent(appState, {
+    templateId: RECOMMENDED_PROMPTS_AGENT_TEMPLATE_ID,
+    agentId: RECOMMENDED_PROMPTS_AGENT_ID,
+    templateNotFoundKey: RECOMMENDED_PROMPTS_TEMPLATE_NOT_FOUND_KEY,
   })
 
 export const getAgentTemplates = async (
@@ -387,6 +474,27 @@ export const getCommerceEvents = async (
   const api = getApiClient(appState)
   return await api.get<{ events: string[] }>(
     `/ai-service/${appState.tenant}/agentic/commerce-events`
+  )
+}
+
+export type EventSubscription = {
+  readonly event?: {
+    readonly type?: string
+    readonly eventSchema?: unknown
+    readonly group?: {
+      readonly en?: string
+    }
+  }
+}
+
+export const fetchEventSubscriptions = async (
+  appState: AppState,
+  signal?: AbortSignal
+): Promise<EventSubscription[]> => {
+  const api = getApiClient(appState)
+  return await api.get<EventSubscription[]>(
+    `/webhook/${appState.tenant}/event-subscriptions`,
+    { signal }
   )
 }
 

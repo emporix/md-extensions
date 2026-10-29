@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { ApiClientError } from '../services/apiClient'
-import { formatApiError, formatErrorPayloadMessage } from './errorHelpers'
+import {
+  formatApiError,
+  formatErrorPayloadMessage,
+  isAbortError,
+  isChatBadRequest,
+} from './errorHelpers'
 
 describe('formatErrorPayloadMessage', () => {
   it('returns trimmed plain string as-is', () => {
@@ -98,5 +103,35 @@ describe('formatApiError', () => {
     expect(formatApiError(null, 'Something went wrong')).toBe(
       'Something went wrong'
     )
+  })
+})
+
+describe('isAbortError', () => {
+  it('matches an abort error and ignores other failures', () => {
+    const abortError = new Error('aborted')
+    abortError.name = 'AbortError'
+
+    expect(isAbortError(abortError)).toBe(true)
+    expect(isAbortError({ name: 'AbortError' })).toBe(true)
+    expect(isAbortError(new Error('failed'))).toBe(false)
+    expect(isAbortError(null)).toBe(false)
+  })
+})
+
+describe('isChatBadRequest', () => {
+  it('matches an HTTP 400 from the API client and a stream error that reports 400', () => {
+    expect(isChatBadRequest(new ApiClientError('bad', 400))).toBe(true)
+    expect(isChatBadRequest(new ApiClientError('missing', 404))).toBe(false)
+    expect(isChatBadRequest(new Error('bad'))).toBe(false)
+    expect(
+      isChatBadRequest(
+        new Error(
+          "Stream error: Error code: 400 - {'detail': 'Using tools with streaming is not supported by AWS models currently.'}"
+        )
+      )
+    ).toBe(true)
+    expect(
+      isChatBadRequest(new Error('Stream error: Agent execution failed'))
+    ).toBe(false)
   })
 })

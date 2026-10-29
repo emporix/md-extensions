@@ -188,6 +188,7 @@ const TRANSLATIONS_DE = {
   error_loading_agent: 'Fehler beim Laden des Agenten',
   back_to_agents: 'Zurück zu Agenten',
   agent_tabs: 'Agent-Konfigurationsregisterkarten',
+  agent_test: 'Testen',
   agent_config_panel_subtitle:
     'Passen Sie Name und Beschreibung an, um sie besser an Ihre spezifischen Bedürfnisse anzupassen.',
   trigger_types: 'Auslöser-Typen',
@@ -246,6 +247,8 @@ const TRANSLATIONS_DE = {
   agent_version_diff_current: 'Aktuell (Version {{version}})',
   agent_version_diff_none:
     'Keine Unterschiede in der gespeicherten Konfiguration.',
+  agent_version_diff_change: 'Änderung {{index}} von {{total}}',
+  agent_version_diff_show_unchanged: '{{count}} unveränderte Zeilen anzeigen',
   agent_version_field_name: 'Name',
   agent_version_field_description: 'Beschreibung',
   agent_version_field_icon: 'Icon',
@@ -944,6 +947,8 @@ const TRANSLATIONS_DE = {
     'Kein Filter konfiguriert. Klicken Sie auf „Filter hinzufügen“.',
   commerce_filter_add: 'Filter hinzufügen',
   copy: 'Kopieren',
+  copied_to_clipboard: 'In die Zwischenablage kopiert',
+  failed_to_copy: 'Kopieren in die Zwischenablage fehlgeschlagen',
 
   commerce_filter_op_equals: 'Gleich',
   commerce_filter_op_notEquals: 'Ungleich',
@@ -1136,6 +1141,48 @@ const TRANSLATIONS_DE = {
     'Ein Agent wird Inhalte mithilfe künstlicher Intelligenz erzeugen. Diese Inhalte können Fehler oder ungenaue Angaben enthalten. Prüfen Sie kritische Informationen, rechtliche Fakten oder fachliche Empfehlungen immer vor der Verwendung.',
   ai_generated_notice_short:
     'HINWEIS: Die Ausgabe wird von KI erzeugt. Bitte prüfen Sie sie, da Fehler auftreten können.',
+
+  chat_title: 'AI-Assistenten',
+  chat_reset: 'Zurücksetzen',
+  chat_switch_title: 'Agent wechseln?',
+  chat_switch_body: 'Die aktuelle Unterhaltung wird beendet.',
+  chat_switch_confirm: 'Wechseln',
+  chat_thinking: 'Denkt nach…',
+  chat_using_tool: 'Verwendet {{name}}',
+  chat_send: 'Senden',
+  chat_stop: 'Stopp',
+  chat_welcome: 'Willkommen! Wobei kann ich Ihnen helfen?',
+  chat_error: 'Die Antwort konnte nicht geladen werden.',
+  chat_prompt_label: 'Eingabe',
+  chat_placeholder:
+    'Geben Sie hier Ihre Frage ein… (Eingabe zum Senden, Umschalt+Eingabe für eine neue Zeile)',
+  chat_choose_agent: 'Agent zum Chatten auswählen',
+  chat_chatting_to: 'Sie chatten mit',
+  chat_recommended: 'Empfohlen (KI-generiert)',
+  chat_recommended_checking: 'Prüfen, ob der Hilfsagent verfügbar ist…',
+  chat_recommended_intro:
+    'Empfehlungen sind aus, bis Sie den Hilfsagenten aus der Vorlage installieren.',
+  chat_recommended_enable: 'Hilfsagenten aktivieren',
+  chat_recommended_agent_created: 'Hilfsagent wurde erstellt.',
+  chat_recommended_agent_exists:
+    'Der Hilfsagent existiert bereits und ist aktiviert.',
+  chat_recommended_create_failed:
+    'Der Hilfsagent konnte nicht erstellt oder aktiviert werden.',
+  chat_recommended_enable_failed:
+    'Der vorhandene Hilfsagent konnte nicht aktiviert werden.',
+  chat_recommended_template_not_found:
+    'Die Vorlage für den Empfehlungs-Hilfsagenten wurde nicht gefunden.',
+  chat_recommended_empty: 'Keine Empfehlungen für diesen Agenten.',
+  chat_gate_scope_title: 'Mitarbeiter-Scope hinzufügen?',
+  chat_gate_scope_body:
+    'Dieser Agent ist nur für den Kunden-Scope vorgesehen. Fügen Sie den Mitarbeiter-Scope hinzu, um ihn im Management Dashboard zu testen.',
+  chat_gate_scope_confirm: 'Mitarbeiter-Scope hinzufügen',
+  chat_gate_trigger_title: 'API-Trigger hinzufügen?',
+  chat_gate_trigger_body:
+    'Dieser Agent hat keinen API-Trigger. Fügen Sie den API-Trigger hinzu, um ihn in der Chat-Ansicht zu testen.',
+  chat_gate_trigger_confirm: 'API-Trigger hinzufügen',
+  chat_gate_patch_error:
+    'Der Agent konnte für den Test nicht aktualisiert werden.',
 
   'global.pagination': 'Zeige {first} bis {last} von {totalRecords} Einträgen',
 }

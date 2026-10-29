@@ -22,7 +22,7 @@ import { useDynamicMcpConfig } from '../../hooks/useDynamicMcpConfig'
 import { useAgentTokensCatalog } from '../../hooks/useAgentTokensCatalog'
 import { useProjectFunctions } from '../../hooks/useProjectFunctions'
 import { useIamScopes } from '../../hooks/useIamScopes'
-import { useFeatureToggles } from '../../hooks/useFeatureToggles'
+import { useFeatureToggles } from '../../contexts/FeatureTogglesContext'
 import { McpGeneralSection } from './McpGeneralSection'
 import { McpConnectionSection } from './McpConnectionSection'
 import { McpDetailSection } from './McpDetailSection'
@@ -253,7 +253,9 @@ const McpDetailPage = () => {
               >
                 <i className="pi pi-arrow-left" />
               </button>
-              <span className="mcp-detail-title-label">{t('mcp_server')}</span>
+              <span className="mcp-detail-title-label page-title">
+                {t('mcp_server')}
+              </span>
             </div>
           </div>
         </div>
@@ -280,7 +282,7 @@ const McpDetailPage = () => {
               >
                 <i className="pi pi-arrow-left" />
               </button>
-              <h1 className="mcp-detail-title">
+              <h1 className="mcp-detail-title page-title">
                 <span className="mcp-detail-title-text">
                   <span className="mcp-detail-title-prefix">
                     {t('mcp_server')}{' '}

@@ -18,6 +18,7 @@
 @import './components/LogCard.css';
 @import './components/CursorPaginator.css';
 @import './components/AnalyzeLogsDialog.css';
+@import './components/AgentChatPage.css';
 @import './components/ToolCard.css';
 @import './components/ImportAgentDialog.css';
 @import './components/McpPage.css';
@@ -37,6 +38,7 @@ body,
 }
 
 .agents-view,
+.agent-chat-page,
 .agent-detail-page,
 .token-detail-page,
 .oauth-detail-page,
@@ -68,10 +70,29 @@ body,
 }
 
 .agents-title {
-  font-size: var(--font-size-3xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
   margin: 0;
+}
+
+.page-title,
+.base-page-header > h1,
+.details-title-text,
+.agents-title,
+.agent-chat-title,
+.agent-detail-title,
+.agent-detail-title-label,
+.tool-detail-title,
+.tool-detail-title-label,
+.mcp-detail-title,
+.mcp-detail-title-label,
+.token-detail-title,
+.token-detail-title-label,
+.oauth-detail-title,
+.oauth-detail-title-label {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-page-title);
+  color: var(--text-heading);
 }
 
 .import-action-button {
