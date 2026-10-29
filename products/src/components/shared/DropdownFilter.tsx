@@ -1,24 +1,52 @@
-import { Dropdown } from 'primereact/dropdown'
-import { SelectItemOptionsType } from 'primereact/selectitem'
-import { ColumnFilterElementTemplateOptions } from 'primereact/column'
+import {
+  Dropdown,
+  type DataTableColumnFilterElementOptions,
+} from '@emporix/component-library'
+import styles from './DropdownFilter.module.scss'
 
-interface DropdownFilterProps {
-  dropdownOptions: SelectItemOptionsType
-  filterOptions: ColumnFilterElementTemplateOptions
-  placeholder?: string
+type DropdownFilterOption = {
+  readonly label: string
+  readonly value: string
 }
 
-export const DropdownFilter = (props: DropdownFilterProps) => {
-  const { placeholder, dropdownOptions, filterOptions } = props
+type DropdownFilterProps = {
+  readonly dropdownOptions: DropdownFilterOption[]
+  readonly filterOptions: DataTableColumnFilterElementOptions
+  readonly placeholder?: string
+}
+
+export const DropdownFilter = ({
+  placeholder,
+  dropdownOptions,
+  filterOptions,
+}: DropdownFilterProps) => {
   return (
     <Dropdown
-      data-test-id="dropdown-filter"
+      data-testid="dropdown-filter"
       placeholder={placeholder}
       options={dropdownOptions}
       value={filterOptions.value}
       onChange={(e) =>
         filterOptions.filterApplyCallback(e.value, filterOptions.index)
       }
-    ></Dropdown>
+    />
   )
 }
+
+const DropdownFilterTemplate = (
+  options: DataTableColumnFilterElementOptions,
+  menu: DropdownFilterOption[]
+) => {
+  return (
+    <Dropdown
+      value={options.value}
+      options={menu}
+      onChange={(e) => {
+        options.filterApplyCallback(e.value, options.index)
+      }}
+      className={`${styles.filterDropdown} p-column-filter`}
+    />
+  )
+}
+
+export default DropdownFilterTemplate

@@ -1,0 +1,91 @@
+.panel {
+  width: 12rem;
+  flex-shrink: 0;
+  align-self: stretch;
+  border: none;
+  border-right: 1px solid #c7cad1;
+  border-radius: 0;
+  background: #fcfcfc;
+  overflow-y: auto;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  color: #2c3442;
+  font-size: 0.875rem;
+
+  &:hover {
+    background: #f2f3f5;
+  }
+}
+
+.itemDefault {
+  font-weight: 700;
+  color: #1b2029;
+  background: #fcfcfc;
+}
+
+.itemSelected {
+  background: #e8e9eb;
+  box-shadow: inset 2px 0 0 #3b73bb;
+}
+
+.labelGroup {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 0;
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dirtyMark {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 0.875rem;
+  color: #c9891a;
+  font-size: 0.875rem;
+  font-weight: 900;
+  line-height: 1;
+  transform: scale(1.35);
+  transform-origin: right center;
+}
+
+.overlayDot {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #3b73bb;
+}
+
+.separator {
+  list-style: none;
+  height: 1px;
+  margin: 0.25rem 0.75rem;
+  padding: 0;
+  background: #dee1e5;
+}

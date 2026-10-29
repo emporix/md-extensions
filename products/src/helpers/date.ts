@@ -1,5 +1,26 @@
 import i18n from '../translations/i18n'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
+
+export type HourFormat = '12' | '24'
+
+export const getLocaleHourFormat = (locale: string): HourFormat =>
+  Intl.DateTimeFormat(locale, { hour: 'numeric' }).resolvedOptions().hour12
+    ? '12'
+    : '24'
+
+export const toCalendarDate = (value: unknown): Date | undefined => {
+  if (!value) {
+    return undefined
+  }
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? undefined : value
+  }
+  if (typeof value === 'string' || typeof value === 'number') {
+    const parsed = new Date(value)
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed
+  }
+  return undefined
+}
 
 const getLocalizedDate = (
   date: Date,
@@ -115,8 +136,7 @@ export const getDateFilter = (date: Date = new Date()) => {
 export const getDateString = (date: string | Date) => {
   const dateObj = new Date(date)
   const timeZoneOffset = dateObj.getTimezoneOffset() * 60000
-  // @ts-ignore
-  return new Date(dateObj - timeZoneOffset).toISOString().slice(0, 7)
+  return new Date(dateObj.getTime() - timeZoneOffset).toISOString().slice(0, 7)
 }
 
 export const formatChartDate = (
@@ -185,7 +205,7 @@ const chartDateLabel = (
         return new Date(time).toLocaleString()
       }
     }
-  } catch (err) {
+  } catch {
     return new Date(time).toLocaleString()
   }
 }

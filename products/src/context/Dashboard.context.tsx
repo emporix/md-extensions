@@ -1,28 +1,31 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, type PropsWithChildren } from 'react'
 import { AppState } from '../models/AppState.model'
 
 type DashboardContextType = AppState
 
-const Context = createContext<DashboardContextType>({
+const defaultAppState: AppState = {
   tenant: '',
-  language: '',
+  language: 'en',
   token: '',
-  currency: undefined,
-  contentLanguage: '',
-  permissions: {},
+  currency: { id: 'EUR', label: 'EUR', default: true, required: false },
+  contentLanguage: 'en',
+  user: undefined,
   onError: () => {
     // NOOP
   },
-})
+}
+
+const Context = createContext<DashboardContextType>(defaultAppState)
 
 export const useDashboardContext = () => useContext(Context)
+
+export type DashboardProviderProps = PropsWithChildren<{
+  appState: AppState
+}>
 
 export const DashboardProvider = ({
   children,
   appState,
-}: {
-  children: React.ReactNode
-  appState: AppState
-}) => {
+}: DashboardProviderProps) => {
   return <Context.Provider value={appState}>{children}</Context.Provider>
 }

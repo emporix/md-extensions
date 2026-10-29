@@ -1,27 +1,36 @@
 import {
+  DataTableFilterMeta,
   DataTableFilterMetaData,
-  DataTableFilterParams,
-  DataTablePageParams,
-  DataTableProps,
-  DataTableSortParams,
-} from 'primereact/datatable'
-import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { Metadata } from '../models/Metadata'
+  DataTableFilterEvent,
+  DataTablePageEvent,
+  DataTableSortEvent,
+  FilterMatchMode,
+  type DataTableColumnProps,
+} from '@emporix/component-library'
+import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router'
+import { Metadata } from '../models/Metadata.model'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedValue } from './useLocalizedValue'
-import { ColumnProps } from 'primereact/column'
-import { FilterMatchMode } from 'primereact/api'
+import { clearFilterValues } from '../helpers/paginationUtils'
 
-export interface PaginationProps extends DataTableProps {
+export type PaginationProps = {
   currentPage: number
+  rows: number
+  first: number
+  sortOrder: 1 | 0 | -1 | null
+  sortField?: string
+  rowsPerPageOptions: number[]
+  filters?: DataTableFilterMeta
+  globalFilterFields?: string[]
+  totalRecords?: number
 }
 
-export interface TableFilters {
+export type TableFilters = {
   [key: string]: DataTableFilterMetaData
 }
 
-export interface PaginatedResponse<Type> {
+export type PaginatedResponse<Type> = {
   values: Type[]
   totalRecords: number
   metaData?: Metadata
@@ -38,27 +47,47 @@ export const DEFAULT_PAGINATION_PROPS: Partial<PaginationProps> = {
 
 export default function usePagination(
   initialPaginationParams: Partial<PaginationProps> = DEFAULT_PAGINATION_PROPS,
-  withQuery: boolean | undefined = true
+  withQuery: boolean | undefined = true,
+  queryKeyPrefix?: string
 ) {
+  const pageKey = queryKeyPrefix ? `${queryKeyPrefix}Page` : 'page'
+  const rowsKey = queryKeyPrefix ? `${queryKeyPrefix}Rows` : 'rows'
+  const initialPaginationParamsRef = useRef(initialPaginationParams)
+  initialPaginationParamsRef.current = initialPaginationParams
+
   const [paginationParams, setPaginationParams] = useState<
     Partial<PaginationProps>
-  >(initialPaginationParams)
+  >(() => ({
+    ...DEFAULT_PAGINATION_PROPS,
+    ...initialPaginationParamsRef.current,
+  }))
   const [totalCount, setTotalCount] = useState<number>(0)
   const [searchParams, setSearchParams] = useSearchParams()
+  const setSearchParamsRef = useRef(setSearchParams)
+  setSearchParamsRef.current = setSearchParams
+  const isInitialMount = useRef(true)
+  const isSyncingFromUrl = useRef(false)
+  const isLanguageResetInitialMount = useRef(true)
 
   const { i18n } = useTranslation()
   const { contentLanguage } = useLocalizedValue()
 
   useEffect(() => {
-    setPaginationParams(initialPaginationParams)
+    if (isLanguageResetInitialMount.current) {
+      isLanguageResetInitialMount.current = false
+      return
+    }
+    setPaginationParams({
+      ...DEFAULT_PAGINATION_PROPS,
+      ...initialPaginationParamsRef.current,
+    })
   }, [i18n.language, contentLanguage])
 
-  const onPageCallback = (event: DataTablePageParams) => {
+  const onPageCallback = (event: DataTablePageEvent) => {
     const { first, page, rows } = event
-    initialPaginationParams.rows = rows
     setPaginationParams((pg) => ({
       ...pg,
-      currentPage: (page as number) + 1,
+      currentPage: (page ?? 0) + 1,
       first,
       rows,
     }))
@@ -76,7 +105,7 @@ export default function usePagination(
     )
   }
 
-  const onFilterCallback = (event: DataTableFilterParams) => {
+  const onFilterCallback = (event: DataTableFilterEvent) => {
     const clearedFilters = clearEmptyFilters(event.filters as TableFilters)
     const newPaginationParams = {
       ...paginationParams,
@@ -89,8 +118,7 @@ export default function usePagination(
     setPaginationParams(newPaginationParams)
   }
 
-  const onSortCallback = (event: DataTableSortParams) => {
-    // if no sort field is selected, reset the sort order and field
+  const onSortCallback = (event: DataTableSortEvent) => {
     if (!event.sortField) {
       setPaginationParams({
         ...paginationParams,
@@ -100,25 +128,21 @@ export default function usePagination(
       return
     }
 
-    // If clicking the same field, cycle through sort orders
     if (event.sortField === paginationParams.sortField) {
       if (
         paginationParams.sortOrder === null ||
         paginationParams.sortOrder === 0
       ) {
-        // First click: ascending
         setPaginationParams({
           ...paginationParams,
           sortOrder: 1,
         })
       } else if (paginationParams.sortOrder === 1) {
-        // Second click: descending
         setPaginationParams({
           ...paginationParams,
           sortOrder: -1,
         })
       } else {
-        // Third click: no sort
         setPaginationParams({
           ...paginationParams,
           sortOrder: null,
@@ -126,7 +150,6 @@ export default function usePagination(
         })
       }
     } else {
-      // New field: start with ascending
       setPaginationParams({
         ...paginationParams,
         sortField: event.sortField,
@@ -136,7 +159,20 @@ export default function usePagination(
   }
 
   const resetPagination = () => {
-    setPaginationParams(initialPaginationParams)
+    setPaginationParams({
+      ...DEFAULT_PAGINATION_PROPS,
+      ...initialPaginationParamsRef.current,
+    })
+  }
+
+  // Unlike resetPagination, keeps the filter fields registered by setFilters
+  // (values cleared), so the table's filter row keeps working after the reset
+  const resetListState = () => {
+    setPaginationParams((pg) => ({
+      ...DEFAULT_PAGINATION_PROPS,
+      ...initialPaginationParamsRef.current,
+      filters: pg.filters && clearFilterValues(pg.filters as TableFilters),
+    }))
   }
 
   const isFiltersActive = (filters: TableFilters) => {
@@ -146,60 +182,146 @@ export default function usePagination(
   }
 
   useEffect(() => {
-    const currentPage = searchParams.get('page')
-    const rows = searchParams.get('rows')
-    if (currentPage && rows) {
-      const rowsNum = parseInt(rows)
-      const rowsCurrentPage = parseInt(currentPage)
-      setPaginationParams({
-        ...paginationParams,
+    if (!withQuery) {
+      return
+    }
+
+    // Read the live URL rather than trusting `searchParams` directly — on a
+    // fresh mount (e.g. right after a tab switch), react-router's own
+    // location state can momentarily lag behind a `history.replaceState`
+    // that already landed synchronously, which would otherwise sync this
+    // component's pagination to stale page/rows left over from elsewhere.
+    const liveSearchParams = new URLSearchParams(
+      window.location.hash.split('?')[1] ?? ''
+    )
+    const pageStr = liveSearchParams.get(pageKey)
+    const rowsStr = liveSearchParams.get(rowsKey)
+    if (!pageStr || !rowsStr) {
+      return
+    }
+
+    const rowsNum = parseInt(rowsStr, 10)
+    const rowsCurrentPage = parseInt(pageStr, 10)
+    if (Number.isNaN(rowsNum) || Number.isNaN(rowsCurrentPage)) {
+      return
+    }
+
+    setPaginationParams((pagination) => {
+      if (
+        pagination.currentPage === rowsCurrentPage &&
+        pagination.rows === rowsNum
+      ) {
+        return pagination
+      }
+
+      isSyncingFromUrl.current = true
+      return {
+        ...pagination,
         currentPage: rowsCurrentPage,
         rows: rowsNum,
         first: (rowsCurrentPage - 1) * rowsNum,
-      })
-    }
-  }, [])
+      }
+    })
+  }, [searchParams, withQuery, pageKey, rowsKey])
 
   useEffect(() => {
-    const urlSearchParams = new URLSearchParams()
-    const { currentPage, rows } = paginationParams
-    if (currentPage && rows) {
-      urlSearchParams.append('page', currentPage.toString())
-      urlSearchParams.append('rows', rows.toString())
-      if (withQuery) {
-        setSearchParams(urlSearchParams)
-      }
+    if (!withQuery) {
+      return
     }
-  }, [paginationParams])
 
-  const setFilters = (columns: ColumnProps[]) => {
-    const filters: {
-      [key: string]: {
-        value: string | null
-        matchMode: FilterMatchMode
-      }
-    } = {}
-    columns
-      .filter((column) => column.filter)
-      .forEach((column) => {
-        if (column.columnKey && typeof column.columnKey === 'string') {
-          filters[column.columnKey] = {
-            value: null,
-            matchMode:
-              (column.filterMatchMode as FilterMatchMode) ||
-              FilterMatchMode.CONTAINS,
-          }
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+
+    if (isSyncingFromUrl.current) {
+      isSyncingFromUrl.current = false
+      return
+    }
+
+    const { currentPage, rows } = paginationParams
+    if (!currentPage || !rows) {
+      return
+    }
+
+    const liveSearchParams = new URLSearchParams(
+      window.location.hash.split('?')[1] ?? ''
+    )
+    if (
+      liveSearchParams.get(pageKey) === currentPage.toString() &&
+      liveSearchParams.get(rowsKey) === rows.toString()
+    ) {
+      return
+    }
+
+    setSearchParamsRef.current(
+      () => {
+        // Merge onto the live URL (not the `currentSearchParams` argument) —
+        // that argument can be a stale per-hook snapshot when another
+        // setSearchParams call (e.g. a tab change) lands in the same tick,
+        // which would otherwise get silently reverted by this write.
+        const currentSearchParams = new URLSearchParams(
+          window.location.hash.split('?')[1] ?? ''
+        )
+        if (
+          currentSearchParams.get(pageKey) === currentPage.toString() &&
+          currentSearchParams.get(rowsKey) === rows.toString()
+        ) {
+          return currentSearchParams
         }
-      })
-    setPaginationParams({
-      ...paginationParams,
-      filters,
+        const nextSearchParams = new URLSearchParams(currentSearchParams)
+        nextSearchParams.set(pageKey, currentPage.toString())
+        nextSearchParams.set(rowsKey, rows.toString())
+        return nextSearchParams
+      },
+      { replace: true }
+    )
+  }, [paginationParams, withQuery, searchParams, pageKey, rowsKey])
+
+  /**
+   * Registers a filter slot for every filterable column.
+   *
+   * Callers invoke this while building their columns, so it runs every time
+   * the column definitions are rebuilt (table config / mixins / permissions
+   * arriving). It therefore must be idempotent: existing filter values are
+   * kept, and when the slots are unchanged the previous params object is
+   * returned so effects keyed on `paginationParams` do not refetch.
+   */
+  const setFilters = (columns: DataTableColumnProps[]) => {
+    setPaginationParams((prev) => {
+      const prevFilters = (prev.filters ?? {}) as TableFilters
+      const filters: TableFilters = {}
+      columns
+        .filter((column) => column.filter)
+        .forEach((column) => {
+          // Key by the field PrimeReact filters on (MD parity) — a column
+          // whose columnKey differs from its field (e.g. orders `totalPrice`)
+          // would otherwise register its filter under the wrong key.
+          const key = column.filterField || column.field || column.columnKey
+          if (key && typeof key === 'string') {
+            const matchMode =
+              (column.filterMatchMode as FilterMatchMode) ||
+              FilterMatchMode.CONTAINS
+            const existing = prevFilters[key]
+            filters[key] =
+              existing && existing.matchMode === matchMode
+                ? existing
+                : { value: existing?.value ?? null, matchMode }
+          }
+        })
+
+      const prevKeys = Object.keys(prevFilters)
+      const unchanged =
+        prevKeys.length === Object.keys(filters).length &&
+        prevKeys.every((key) => prevFilters[key] === filters[key])
+      return unchanged ? prev : { ...prev, filters }
     })
   }
 
   return {
     onSortCallback,
     resetPagination,
+    resetListState,
     paginationParams,
     setPaginationParams,
     totalCount,

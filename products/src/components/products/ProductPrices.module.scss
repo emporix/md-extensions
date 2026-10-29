@@ -1,0 +1,19 @@
+.pricesBox {
+  margin-top: 3rem;
+}
+
+.priceItem + .priceItem {
+  margin-top: 1rem;
+}
+
+// MD icon-only Prime Button (34px square).
+.addButton {
+  display: inline-flex;
+  justify-content: center;
+  width: 34px;
+  padding: 0;
+}
+
+.addButtonSpaced {
+  margin-top: 1.5rem;
+}

@@ -1,66 +1,62 @@
-import { useCallback, useEffect, useMemo } from 'react'
-import { Dropdown, DropdownChangeParams } from 'primereact/dropdown'
-
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Dropdown, type DropdownChangeEvent } from '@emporix/component-library'
 import { useSites } from '../../context/SitesProvider'
-import { Site } from '../../models/Site'
-import { Item } from '../../models/Item'
-import Badge from './Badge'
+import styles from './SitesSelect.module.scss'
 
-const parseItem = (site: Site): Item => {
-  return {
-    label: `${site.name} - ${site.code}`,
-    value: site.code,
-    badge: Badge({ value: site.name.substr(0, 2).toUpperCase() }),
-  }
+const ALL_SITES = ''
+
+type SitesSelectProps = {
+  /** When false, the selector shows "all sites" even if a site is current. */
+  readonly activeSite: boolean
+  readonly setActiveSite: (active: boolean) => void
+  readonly disabled?: boolean
 }
 
-export interface SitesSelectProps {
-  empty?: boolean
-  defaultEmpty?: boolean
-  setActiveSite?: (active: boolean) => unknown
-  disabled?: boolean
-}
-
-export default function SitesSelect({
-  empty = false,
+/**
+ * Header site selector (MD `SitesSelect`). CL `Dropdown` has no `showClear`,
+ * so an explicit "All sites" option switches the list back to every site.
+ */
+const SitesSelect = ({
+  activeSite,
+  setActiveSite,
   disabled = false,
-  defaultEmpty = false,
-  setActiveSite = undefined,
-}: SitesSelectProps) {
-  const { sites, updateCurrentSite, currentSite } = useSites()
+}: SitesSelectProps) => {
   const { t } = useTranslation()
-  const items = useMemo(() => {
-    return sites?.map((site) => parseItem(site)) || []
-  }, [sites])
+  const { sites, currentSite, updateCurrentSite } = useSites()
 
-  const handleItemSelect = useCallback(
-    (item: DropdownChangeParams) => {
-      setActiveSite?.(true)
-      const newCurrentSite = sites?.find((site) => item.value === site.code)
-      if (!newCurrentSite) return
-      updateCurrentSite(newCurrentSite)
-    },
-    [sites]
+  const options = useMemo(
+    () => [
+      { label: t('global.allSites'), value: ALL_SITES },
+      ...(sites ?? []).map((site) => ({
+        label: `${site.name} - ${site.code}`,
+        value: site.code,
+      })),
+    ],
+    [sites, t]
   )
 
-  useEffect(() => {
-    if (empty) {
-      updateCurrentSite(undefined)
+  const handleChange = (e: DropdownChangeEvent) => {
+    const code = String(e.value ?? ALL_SITES)
+    if (code === ALL_SITES) {
+      setActiveSite(false)
+      return
     }
-  }, [empty])
+    setActiveSite(true)
+    updateCurrentSite(sites?.find((site) => site.code === code))
+  }
 
   return (
     <Dropdown
-      placeholder={t('sites.select')}
+      className={styles.sitesSelect}
+      placeholder={t('global.selectSite')}
       filter
-      showClear
-      showFilterClear
-      filterBy="label"
-      onChange={handleItemSelect}
-      options={items}
-      value={defaultEmpty ? null : currentSite?.code}
+      options={options}
+      value={activeSite ? (currentSite?.code ?? ALL_SITES) : ALL_SITES}
+      onChange={handleChange}
       disabled={disabled}
     />
   )
 }
+
+export default SitesSelect

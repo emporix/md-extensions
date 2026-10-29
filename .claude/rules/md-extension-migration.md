@@ -26,7 +26,7 @@ rm -rf {kebab}/.git
 
 Do **not** `cp -R` / rsync `users-and-groups`, `brands`, `returns`, or template `master`.
 
-**Tier 1 copy:** playbook-aligned remotes in `MIGRATED_MODULES.md` — not U&G alone, not `products`, not template `master`. U&G is a reference implementation, not the scaffold source.
+**Tier 1 copy:** playbook-aligned remotes in `MIGRATED_MODULES.md` — not U&G alone, not template `master`. U&G is a reference implementation, not the scaffold source.
 
 ## Federation
 

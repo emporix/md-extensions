@@ -1,0 +1,41 @@
+// MD ProductAddEdit used PrimeFlex utilities; converted to a module.
+
+.subtitle {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.deleteButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// Dynamic variants: hierarchy sidebar beside the tabs.
+.dynamicLayout {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.sidebar {
+  width: 460px;
+  flex-shrink: 0;
+}
+
+.tabsColumn {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+.assets {
+  margin-bottom: 1rem;
+}
+
+.variantCodes {
+  margin: 0.25rem 0 0;
+  padding-left: 1.5rem;
+  font-size: 0.875rem;
+}

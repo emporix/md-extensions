@@ -1,0 +1,50 @@
+@use '../../styles/palette' as *;
+
+// MD CategoriesProductsTable.scss `.categories-products-wrapper`.
+.wrapper {
+  display: flex;
+  border: 1px solid $grey-4;
+  max-height: calc(100vh - 12rem);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sidebar {
+  flex: 0 0 360px;
+  padding: 0.75rem;
+  border-right: 1px solid $grey-4;
+  border-radius: 4px 0 0 4px;
+  background: white;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.table {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  border: none;
+}
+
+// CL DataTable draws its border on `.p-datatable` with `!important`.
+.table.table :global(.p-datatable.p-datatable) {
+  border: none !important;
+}
+
+.extensions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.missingProduct {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #f97316;
+}
+
+.missingProductIcon {
+  font-size: 1.2rem;
+}

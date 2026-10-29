@@ -1,149 +1,152 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useCategoriesApi } from '../../api/categories'
+import { useCallback, useEffect, useState } from 'react'
+import { useCategoriesApi } from '../../hooks/api/categories'
 import { useTranslation } from 'react-i18next'
-import { useLocalizedValue } from '../../hooks/useLocalizedValue.tsx'
-import { Category } from '../../models/Category'
 import { useProductData } from '../../context/ProductDataProvider'
-import { Button } from 'primereact/button'
-import SectionBox from '../shared/SectionBox'
+import {
+  PrimaryButton,
+  SecondaryButton,
+  SectionBox,
+  useToast,
+} from '@emporix/component-library'
 import InputField from '../shared/InputField'
-import { MultiSelect } from 'primereact/multiselect'
-import { useUIBlocker } from '../../context/UIBlcoker'
-import { InputText } from 'primereact/inputtext'
-import { useDashboardContext } from '../../context/Dashboard.context.tsx'
+import { useUIBlocker } from '../../context/UIBlocker'
+import { usePermissions } from '../../context/PermissionsProvider'
+import CategoriesSelector from '../shared/CategoriesSelector'
+import FormGrid from '../shared/FormGrid'
+import FormGridRow from '../shared/FormGridRow'
+import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
+import styles from './CategoriesAssignmentForm.module.scss'
 
-export const CategoriesAssignmentForm = () => {
+const CategoriesAssignmentForm = () => {
   const { t } = useTranslation()
-  const { product } = useProductData()
+  const { product, refreshData } = useProductData()
   const {
-    getCategoriesPaginated,
     fetchCategoriesForAssignment,
     assignProductToCategory,
     deleteAssignmentToCategory,
   } = useCategoriesApi()
-
   const { blockPanel } = useUIBlocker()
+  const { hasPermission } = usePermissions()
+  const { showSuccess } = useToast()
 
   const [dirty, setDirty] = useState(false)
-
-  const { getContentLangValue } = useLocalizedValue()
-
   const [categoryAssignmentIds, setCategoryAssignmentIds] = useState<string[]>(
     []
   )
   const [originalCategoryAssignmentIds, setOriginalCategoryAssignmentIds] =
     useState<string[]>([])
-
-  const categoriesToBeRemoved = useMemo(() => {
-    return originalCategoryAssignmentIds.filter(
-      (originalAssignedCategoryId) =>
-        !categoryAssignmentIds.includes(originalAssignedCategoryId)
-    )
-  }, [categoryAssignmentIds, originalCategoryAssignmentIds])
-
-  const [categories, setCategories] = useState<Category[]>([])
-
-  const { permissions } = useDashboardContext()
-  const canBeManaged = permissions?.products?.manager
-  const canViewCategories = permissions?.categories?.viewer
-  const canManageCategories = permissions?.categories?.manager
+  const canViewCategories = hasPermission(EmployeeDomains.CATEGORIES_VIEWER)
+  const canManageCategories = hasPermission(EmployeeDomains.CATEGORIES_MANAGER)
+  const canManage =
+    hasPermission(EmployeeDomains.PRODUCTS_MANAGER) ||
+    hasPermission(VendorDomains.VENDOR_PRODUCTS_MANAGER)
 
   useEffect(() => {
-    if (canViewCategories) {
+    if (canViewCategories && product?.id) {
       ;(async () => {
-        const { values } = await getCategoriesPaginated({ rows: 1000 })
-        setCategories(
-          values.map((cat) => ({
-            ...cat,
-            name: getContentLangValue(cat.localizedName),
-          }))
-        )
-
         const categoryAssignments = await fetchCategoriesForAssignment(
-          product?.id as string
+          product.id as string
         )
         const assignedCategoryIds = categoryAssignments.map((cat) => cat.id)
         setCategoryAssignmentIds(assignedCategoryIds)
         setOriginalCategoryAssignmentIds([...assignedCategoryIds])
       })()
     }
-  }, [])
+  }, [product?.id, canViewCategories, fetchCategoriesForAssignment])
 
   const submit = useCallback(async () => {
+    if (!product?.id) return
     try {
       blockPanel(true)
-
-      await Promise.all(
-        categoryAssignmentIds.map((categoryId) => {
-          if (product.id) {
-            return assignProductToCategory(categoryId, product.id)
-          }
-        })
+      setDirty(false)
+      // Add new assignments
+      const categoriesToBeAdded = categoryAssignmentIds.filter(
+        (assignedCategoryId) =>
+          !originalCategoryAssignmentIds.includes(assignedCategoryId)
       )
       await Promise.all(
-        categoriesToBeRemoved.map((categoryId) => {
-          if (product.id) {
-            return deleteAssignmentToCategory(categoryId, product.id)
-          }
-        })
+        categoriesToBeAdded.map((categoryId) =>
+          assignProductToCategory(categoryId, product.id as string)
+        )
       )
-    } catch (e) {
-      console.error(e)
+      // Remove old assignments
+      const categoriesToBeRemoved = originalCategoryAssignmentIds.filter(
+        (originalAssignedCategoryId) =>
+          !categoryAssignmentIds.includes(originalAssignedCategoryId)
+      )
+      await Promise.all(
+        categoriesToBeRemoved.map((categoryId) =>
+          deleteAssignmentToCategory(categoryId, product.id as string)
+        )
+      )
+      showSuccess(t('products.edit.toast.update.success'))
+      setOriginalCategoryAssignmentIds([...categoryAssignmentIds])
+      // waiting for refresh because BE needs time to update the assignments
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await refreshData()
+    } catch (error) {
+      console.error('Error updating category assignments:', error)
     } finally {
       blockPanel(false)
-      setDirty(false)
     }
-  }, [categoriesToBeRemoved, categoryAssignmentIds])
+  }, [
+    product?.id,
+    categoryAssignmentIds,
+    originalCategoryAssignmentIds,
+    assignProductToCategory,
+    deleteAssignmentToCategory,
+    blockPanel,
+    refreshData,
+    showSuccess,
+    t,
+  ])
 
   const reset = useCallback(() => {
-    setCategoryAssignmentIds(originalCategoryAssignmentIds)
+    setCategoryAssignmentIds([...originalCategoryAssignmentIds])
     setDirty(false)
-  }, [originalCategoryAssignmentIds, categoryAssignmentIds])
+  }, [originalCategoryAssignmentIds])
+
+  const handleCategoryChange = useCallback((newCategoryIds: string[]) => {
+    setCategoryAssignmentIds(newCategoryIds)
+    setDirty(true)
+  }, [])
 
   return (
     <>
-      <div className="flex justify-content-end align-items-center">
-        <Button
-          disabled={!dirty || !canBeManaged || !canManageCategories}
-          className="p-button-secondary"
-          label={t('global.discard')}
-          onClick={reset}
-        />
-        <Button
-          className="ml-2"
-          disabled={!dirty || !canBeManaged}
-          label={t('global.save')}
-          onClick={submit}
-        />
-      </div>
-      <SectionBox name={t('products.edit.tab.general.category')}>
-        <div className="grid">
-          <InputField
-            label={t('products.edit.tab.general.category')}
-            name="published"
-            className="col-6"
-            noInheritance
-          >
-            {canViewCategories ? (
-              <MultiSelect
-                disabled={!canBeManaged || !canManageCategories}
-                options={categories}
-                optionLabel="name"
-                optionValue="id"
-                value={categoryAssignmentIds || []}
-                filter
-                filterBy="name"
-                onChange={(event) => {
-                  setDirty(true)
-                  setCategoryAssignmentIds(event.target.value)
-                }}
+      <SectionBox
+        name={t('products.edit.tab.general.category')}
+        actions={
+          <div className={styles.actions}>
+            <SecondaryButton
+              disabled={!dirty || !canManage || !canManageCategories}
+              onClick={reset}
+            >
+              {t('global.discard')}
+            </SecondaryButton>
+            <PrimaryButton disabled={!dirty || !canManage} onClick={submit}>
+              {t('global.save')}
+            </PrimaryButton>
+          </div>
+        }
+      >
+        <FormGrid>
+          <FormGridRow>
+            <InputField
+              label={t('products.edit.tab.general.category')}
+              name="published"
+              className={styles.fullWidth}
+              noInheritance
+            >
+              <CategoriesSelector
+                value={categoryAssignmentIds}
+                onChange={handleCategoryChange}
               />
-            ) : (
-              <InputText disabled value={t('global.noPermissions')} />
-            )}
-          </InputField>
-        </div>
+            </InputField>
+          </FormGridRow>
+        </FormGrid>
       </SectionBox>
     </>
   )
 }
+
+export default CategoriesAssignmentForm

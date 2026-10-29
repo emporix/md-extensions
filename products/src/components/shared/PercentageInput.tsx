@@ -1,33 +1,31 @@
-import React from 'react'
+import type { KeyboardEvent } from 'react'
 import {
   InputNumber,
-  InputNumberChangeParams,
-  InputNumberValueChangeParams,
-} from 'primereact/inputnumber'
+  type InputNumberChangeEvent,
+} from '@emporix/component-library'
 
-interface PercentageInputProps {
-  value?: number
-  onChange?(e: InputNumberChangeParams): void
-  onKeyDown?(event: React.KeyboardEvent<HTMLInputElement>): void
-  onValueChange?(e: InputNumberValueChangeParams): void
-  autoFocus?: boolean
-  disabled?: boolean
+type PercentageInputProps = {
+  readonly value?: number
+  readonly onChange?: (e: InputNumberChangeEvent) => void
+  readonly onKeyDown?: (event: KeyboardEvent<HTMLInputElement>) => void
+  readonly disabled?: boolean
 }
 
-export const PercentageInput = (props: PercentageInputProps) => {
-  const { value, onChange, onKeyDown, onValueChange, autoFocus, disabled } =
-    props
+export const PercentageInput = ({
+  value,
+  onChange,
+  onKeyDown,
+  disabled,
+}: PercentageInputProps) => {
   return (
     <InputNumber
-      disabled={disabled}
+      readOnly={disabled}
       value={value}
       min={0}
       max={100}
       minFractionDigits={0}
       onChange={onChange}
       onKeyDown={onKeyDown}
-      onValueChange={onValueChange}
-      autoFocus={autoFocus}
       prefix={'%'}
     />
   )

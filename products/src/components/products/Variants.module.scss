@@ -1,0 +1,12 @@
+@use '../../styles/palette' as *;
+
+/* MD `.module-subtitle` in a half-width grid column (`col-6 mb-5 mt-3`). */
+.subtitle {
+  width: 50%;
+  margin: 1rem 0 2rem;
+  padding: 0.5rem;
+  color: $grey-5;
+  font-weight: normal;
+  font-size: 1.25rem;
+  line-height: 1.5rem;
+}

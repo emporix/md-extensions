@@ -1,0 +1,36 @@
+@use '../../styles/palette' as *;
+
+.sectionTitle {
+  margin-bottom: 1rem;
+}
+
+.titleActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.emptyTable {
+  width: 100%;
+  flex-grow: 1;
+}
+
+.missingName {
+  font-style: italic;
+  color: $blue-5;
+}
+
+.missingId {
+  color: $blue-5;
+}
