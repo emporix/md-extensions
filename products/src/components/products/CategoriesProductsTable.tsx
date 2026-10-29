@@ -193,8 +193,10 @@ const CategoriesProductsTable = ({
             sortable: false,
             body: (pr: ProductRow) => <ProductThumbnail url={pr.imageUrl} />,
           },
+          // Same column keys as the list view, which shares the column settings;
+          // `field` keeps the category assignment paths for data and filters.
           {
-            columnKey: 'ref.localizedName',
+            columnKey: 'name',
             header: t(`${TABLE_NAME}.name`),
             field: `ref.localizedName`,
             filter: true,
@@ -205,7 +207,7 @@ const CategoriesProductsTable = ({
               getContentLangValue(rowData.ref.localizedName),
           },
           {
-            columnKey: 'ref.id',
+            columnKey: 'id',
             header: t(`${TABLE_NAME}.id`),
             field: 'ref.id',
             filter: true,
@@ -217,7 +219,8 @@ const CategoriesProductsTable = ({
             columnKey: 'code',
             header: t(`${TABLE_NAME}.code`),
             field: 'code',
-            filter: true,
+            // Category assignments can be filtered by name and id only.
+            filter: false,
             sortable: true,
             showFilterMenu: false,
             showClearButton: false,
