@@ -64,9 +64,19 @@ const CategoryTreeBase = ({
   const [treeNodes, setTreeNodes] = useState<TreeNode[]>([])
   // Controlled, so the branch of the selected category can be opened on load.
   const [expandedKeys, setExpandedKeys] = useState<Record<string, boolean>>({})
+  // Bumped when a branch is opened for the selected category, so the category
+  // is scrolled into view once the branch has rendered it.
+  const [scrollRequest, setScrollRequest] = useState(0)
   const treeWrapperRef = useRef<HTMLDivElement>(null)
   // Bumped by every load, so results for an earlier tenant or type are dropped.
   const loadIdRef = useRef(0)
+  // The current label resolver, for responses that land after a content
+  // language switch (the relabel below only covers the nodes already shown).
+  const resolveLabelRef = useRef(getContentLangValue)
+
+  useEffect(() => {
+    resolveLabelRef.current = getContentLangValue
+  }, [getContentLangValue])
 
   useEffect(() => {
     const loadId = ++loadIdRef.current
@@ -84,7 +94,7 @@ const CategoryTreeBase = ({
         if (loadId !== loadIdRef.current) return
         const nodes = mapCategoryTreesToNodes(
           trees,
-          getContentLangValue,
+          resolveLabelRef.current,
           isSelectable
         )
         setTreeNodes(nodes)
@@ -116,13 +126,28 @@ const CategoryTreeBase = ({
     setTreeNodes((current) => relabelNodes(current, getContentLangValue))
   }, [getContentLangValue])
 
+  // Reveal a category selected only after the tree has loaded, e.g. once its
+  // products come back after the list view (the load covers earlier ones).
+  useEffect(() => {
+    if (!selectedKey || isLoading) return
+    const ancestorKeys = findAncestorKeys(treeNodes, selectedKey)
+    if (!ancestorKeys?.length || ancestorKeys.every((key) => expandedKeys[key]))
+      return
+    setExpandedKeys((current) => ({
+      ...current,
+      ...Object.fromEntries(ancestorKeys.map((key) => [key, true])),
+    }))
+    setScrollRequest((request) => request + 1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedKey, isLoading])
+
   // Bring the selected category into view, e.g. one just added at the end.
   useEffect(() => {
     if (!selectedKey) return
     treeWrapperRef.current
       ?.querySelector('.p-treenode-content.p-highlight')
       ?.scrollIntoView({ block: 'nearest' })
-  }, [selectedKey, isLoading])
+  }, [selectedKey, isLoading, scrollRequest])
 
   const defaultNodeTemplate = (node: TreeNode) => (
     <div className={styles.node}>
