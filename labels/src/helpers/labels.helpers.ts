@@ -1,4 +1,5 @@
 import { deleteLabel, removeLabelImageFromCloudinary } from '@emporix/api-calls'
+import type { PaginationProps } from '../hooks/usePagination'
 import type { ColumnVisibility } from '../models/Configuration.model'
 import type { Label } from '../models/Label.model'
 
@@ -37,4 +38,46 @@ export const filterVisibleColumns = <TColumn extends { field?: string }>(
     (column) =>
       savedColumns.find((saved) => saved.key === column.field)?.visible ?? true
   )
+}
+
+export type LabelsQueryParams = {
+  pageNumber: number
+  pageSize: number
+  sort?: string
+  q?: string
+}
+
+const escapeRegexSpecialChars = (value: string): string =>
+  value.replace(/[\\.^$|?*+()[\]{}-]/g, '\\$&')
+
+const getNameSearch = (
+  filters: PaginationProps['filters']
+): string | undefined => {
+  const filter = filters?.name
+  const value = filter && 'value' in filter ? filter.value : undefined
+  return typeof value === 'string' && value.trim() !== ''
+    ? value.trim()
+    : undefined
+}
+
+/**
+ * Label service query params for the table state. The service searches only
+ * through `q`, so the name filter becomes a regex match on `name`.
+ */
+export const toLabelsQueryParams = ({
+  currentPage,
+  rows,
+  sortField,
+  sortOrder,
+  filters,
+}: Partial<PaginationProps>): LabelsQueryParams => {
+  const search = getNameSearch(filters)
+  return {
+    pageNumber: currentPage ?? 1,
+    pageSize: rows ?? 10,
+    ...(sortField
+      ? { sort: `${sortField}:${sortOrder === 1 ? 'ASC' : 'DESC'}` }
+      : {}),
+    ...(search ? { q: `name:~(${escapeRegexSpecialChars(search)})` } : {}),
+  }
 }

@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { deleteLabel, removeLabelImageFromCloudinary } from '@emporix/api-calls'
-import { deleteLabelWithImage, filterVisibleColumns } from './labels.helpers'
+import {
+  deleteLabelWithImage,
+  filterVisibleColumns,
+  toLabelsQueryParams,
+} from './labels.helpers'
 import type { Label } from '../models/Label.model'
 
 vi.mock('@emporix/api-calls', () => ({
@@ -93,5 +97,56 @@ describe('filterVisibleColumns', () => {
     expect(
       filterVisibleColumns(columns, [{ key: 'image', visible: false }])
     ).toEqual([{ field: 'name' }])
+  })
+})
+
+describe('toLabelsQueryParams', () => {
+  it('sends paging only when there is no sort or search', () => {
+    expect(toLabelsQueryParams({ currentPage: 2, rows: 25 })).toEqual({
+      pageNumber: 2,
+      pageSize: 25,
+    })
+  })
+
+  it('defaults paging to the first page of 10', () => {
+    expect(toLabelsQueryParams({})).toEqual({ pageNumber: 1, pageSize: 10 })
+  })
+
+  it('maps the sort order to ASC and DESC', () => {
+    expect(toLabelsQueryParams({ sortField: 'name', sortOrder: 1 }).sort).toBe(
+      'name:ASC'
+    )
+    expect(toLabelsQueryParams({ sortField: 'name', sortOrder: -1 }).sort).toBe(
+      'name:DESC'
+    )
+  })
+
+  it('searches the name through q', () => {
+    expect(
+      toLabelsQueryParams({
+        filters: { name: { value: ' Sale ', matchMode: 'contains' } },
+      }).q
+    ).toBe('name:~(Sale)')
+  })
+
+  it('escapes regex characters in the search', () => {
+    expect(
+      toLabelsQueryParams({
+        filters: { name: { value: 'a.b(c)', matchMode: 'contains' } },
+      }).q
+    ).toBe('name:~(a\\.b\\(c\\))')
+  })
+
+  it('skips q for an empty or cleared search', () => {
+    expect(
+      toLabelsQueryParams({
+        filters: { name: { value: '  ', matchMode: 'contains' } },
+      })
+    ).not.toHaveProperty('q')
+    expect(
+      toLabelsQueryParams({
+        filters: { name: { value: null, matchMode: 'contains' } },
+      })
+    ).not.toHaveProperty('q')
   })
 })

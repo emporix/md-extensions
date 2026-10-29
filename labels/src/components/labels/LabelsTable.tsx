@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router'
-import { fetchLabels } from '@emporix/api-calls'
 import {
   DataTable,
   useToast,
   type DataTablePaginationState,
 } from '@emporix/component-library'
 
+import { fetchLabelsPage } from '../../api/labels'
 import { getApiErrorDetails, makeCall } from '../../helpers/api'
-import { toApiPagination } from '../../helpers/apiPagination'
 import {
   deleteLabelWithImage,
   filterVisibleColumns,
@@ -63,7 +62,7 @@ const LabelsTable = () => {
     async (params: Partial<PaginationProps>) => {
       try {
         const { values, totalRecords } = await makeCall(
-          () => fetchLabels(toApiPagination(params)),
+          () => fetchLabelsPage(params),
           setIsLoading
         )
         setLabels(values)
