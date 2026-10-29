@@ -12,6 +12,7 @@ const TOOL_TYPE_OPTIONS = [
   { labelKey: 'microsoft_teams', value: 'teams' },
   { labelKey: 'rag_custom', value: 'rag_custom' },
   { labelKey: 'rag_emporix', value: 'rag_emporix' },
+  { labelKey: 'search_tool', value: 'search' },
 ] as const satisfies readonly FeatureGatedTypeOption<string>[]
 
 interface ToolTypeSectionProps {

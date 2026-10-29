@@ -7,10 +7,14 @@ export enum RagCustomDatabase {
 
 export const PRODUCT_ENTITY_TYPE = 'product'
 export const ORDER_ENTITY_TYPE = 'order'
+export const CUSTOMER_ENTITY_TYPE = 'customer'
+export const LEGAL_ENTITY_ENTITY_TYPE = 'legal-entity'
 
 export enum RagEntityType {
   PRODUCT = 'product',
   ORDER = 'order',
+  CUSTOMER = 'customer',
+  LEGAL_ENTITY = 'legal-entity',
   INVALID = 'invalid',
 }
 

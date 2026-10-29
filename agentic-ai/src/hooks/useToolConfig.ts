@@ -42,8 +42,10 @@ import {
   MIXINS_PREFIX,
   applyRagCustomDefaults,
   applyRagEmporixDefaults,
+  applySearchToolDefaults,
   isToolFormValid as isToolFormValidBase,
   mergeRagEmporixConfigOnLoad,
+  toSearchToolConfig,
 } from '../utils/toolConfigHelpers'
 import {
   applyTeamsToolDefaults,
@@ -140,7 +142,9 @@ export const useToolConfig = ({
           ? applyTeamsToolDefaults(loadedConfig)
           : tool.type === 'slack'
             ? applySlackToolDefaults(loadedConfig)
-            : loadedConfig,
+            : tool.type === 'search'
+              ? applySearchToolDefaults(loadedConfig)
+              : loadedConfig,
     }
 
     setState(nextState)
@@ -241,6 +245,8 @@ export const useToolConfig = ({
       customSchemaTypes,
       t('product'),
       t('order'),
+      t('customer'),
+      t('legal_entity'),
       appState.contentLanguage
     )
     const currentValue = resolveRagEntityType(state.config.entityType)
@@ -315,7 +321,9 @@ export const useToolConfig = ({
             ? applyTeamsToolDefaults({})
             : value === 'slack'
               ? applySlackToolDefaults({})
-              : ({} as ToolConfig)
+              : value === 'search'
+                ? applySearchToolDefaults({})
+                : ({} as ToolConfig)
         return {
           ...prev,
           toolType: value,
@@ -635,11 +643,13 @@ export const useToolConfig = ({
       config:
         state.toolType === 'rag_emporix'
           ? toRagEmporixToolConfig(state.config)
-          : state.toolType === 'teams'
-            ? toTeamsToolConfigForSave(state.config)
-            : state.toolType === 'slack'
-              ? toSlackToolConfigForSave(state.config)
-              : state.config,
+          : state.toolType === 'search'
+            ? toSearchToolConfig(state.config)
+            : state.toolType === 'teams'
+              ? toTeamsToolConfigForSave(state.config)
+              : state.toolType === 'slack'
+                ? toSlackToolConfigForSave(state.config)
+                : state.config,
       enabled: tool.enabled ?? true,
     }
 

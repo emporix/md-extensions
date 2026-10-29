@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { ORDER_ENTITY_TYPE, PRODUCT_ENTITY_TYPE, Tool } from '../types/Tool'
+import {
+  CUSTOMER_ENTITY_TYPE,
+  LEGAL_ENTITY_ENTITY_TYPE,
+  ORDER_ENTITY_TYPE,
+  PRODUCT_ENTITY_TYPE,
+  Tool,
+} from '../types/Tool'
 import {
   areRagEmporixFilterFieldsValid,
   getRagFilterFieldDisplayLabel,
@@ -23,6 +29,14 @@ describe('resolveRagEntityType', () => {
     expect(resolveRagEntityType('product')).toBe(PRODUCT_ENTITY_TYPE)
     expect(resolveRagEntityType('ORDER')).toBe(ORDER_ENTITY_TYPE)
     expect(resolveRagEntityType('order')).toBe(ORDER_ENTITY_TYPE)
+  })
+
+  it('normalizes predefined customer and legal-entity types', () => {
+    expect(resolveRagEntityType('CUSTOMER')).toBe(CUSTOMER_ENTITY_TYPE)
+    expect(resolveRagEntityType('customer')).toBe(CUSTOMER_ENTITY_TYPE)
+    expect(resolveRagEntityType('LEGAL-ENTITY')).toBe(LEGAL_ENTITY_ENTITY_TYPE)
+    expect(resolveRagEntityType('LEGAL_ENTITY')).toBe(LEGAL_ENTITY_ENTITY_TYPE)
+    expect(resolveRagEntityType('legal-entity')).toBe(LEGAL_ENTITY_ENTITY_TYPE)
   })
 
   it('returns trimmed custom entity type', () => {

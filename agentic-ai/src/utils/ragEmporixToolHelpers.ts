@@ -1,4 +1,6 @@
 import {
+  CUSTOMER_ENTITY_TYPE,
+  LEGAL_ENTITY_ENTITY_TYPE,
   ORDER_ENTITY_TYPE,
   PRODUCT_ENTITY_TYPE,
   RAG_FIELD_KEY_PATTERN,
@@ -21,6 +23,12 @@ export const resolveRagEntityType = (entityType?: string): string => {
   }
   if (upper === 'ORDER') {
     return ORDER_ENTITY_TYPE
+  }
+  if (upper === 'CUSTOMER') {
+    return CUSTOMER_ENTITY_TYPE
+  }
+  if (upper === 'LEGAL-ENTITY' || upper === 'LEGAL_ENTITY') {
+    return LEGAL_ENTITY_ENTITY_TYPE
   }
 
   return trimmed

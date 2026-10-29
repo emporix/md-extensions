@@ -60,7 +60,7 @@ const ToolCard: React.FC<ToolCardProps> = ({
       },
     ]
 
-    if (tool.type === 'rag_emporix' && onReindex) {
+    if ((tool.type === 'rag_emporix' || tool.type === 'search') && onReindex) {
       actions.push({
         icon: 'pi pi-refresh',
         label: t('reindex'),
