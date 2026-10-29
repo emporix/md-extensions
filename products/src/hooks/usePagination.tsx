@@ -12,6 +12,7 @@ import { useSearchParams } from 'react-router'
 import { Metadata } from '../models/Metadata.model'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedValue } from './useLocalizedValue'
+import { clearFilterValues } from '../helpers/paginationUtils'
 
 export type PaginationProps = {
   currentPage: number
@@ -164,6 +165,16 @@ export default function usePagination(
     })
   }
 
+  // Unlike resetPagination, keeps the filter fields registered by setFilters
+  // (values cleared), so the table's filter row keeps working after the reset
+  const resetListState = () => {
+    setPaginationParams((pg) => ({
+      ...DEFAULT_PAGINATION_PROPS,
+      ...initialPaginationParamsRef.current,
+      filters: pg.filters && clearFilterValues(pg.filters as TableFilters),
+    }))
+  }
+
   const isFiltersActive = (filters: TableFilters) => {
     return Object.keys(filters).some(
       (key) => filters[key].value !== undefined && filters[key].value !== null
@@ -310,6 +321,7 @@ export default function usePagination(
   return {
     onSortCallback,
     resetPagination,
+    resetListState,
     paginationParams,
     setPaginationParams,
     totalCount,

@@ -1,5 +1,14 @@
-import { PaginationProps } from '../hooks/usePagination'
+import type { PaginationProps, TableFilters } from '../hooks/usePagination'
 import { type PaginatedResponse } from '@emporix/api-calls'
+
+export const clearFilterValues = (filters: TableFilters): TableFilters => {
+  return Object.fromEntries(
+    Object.entries(filters).map(([key, value]) => [
+      key,
+      { ...value, value: null },
+    ])
+  )
+}
 
 export const fetchAllRecords = async <T>(
   fetchFunction: (

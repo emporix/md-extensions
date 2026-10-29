@@ -1,23 +1,35 @@
-// MD: `grid grid-nogutter` with a `col-3` tree and a `col-9` table.
-.root {
+@use '../../styles/palette' as *;
+
+// MD CategoriesProductsTable.scss `.categories-products-wrapper`.
+.wrapper {
   display: flex;
-  flex-wrap: wrap;
-  width: 100%;
+  border: 1px solid $grey-4;
+  max-height: calc(100vh - 12rem);
+  min-height: 0;
+  overflow: hidden;
 }
 
-.treePane {
-  flex: 0 0 auto;
-  width: 25%;
-}
-
-.tablePane {
-  flex: 0 0 auto;
-  width: 75%;
-  min-height: 50vh;
+.sidebar {
+  flex: 0 0 360px;
+  padding: 0.75rem;
+  border-right: 1px solid $grey-4;
+  border-radius: 4px 0 0 4px;
+  background: white;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .table {
-  height: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  border: none;
+}
+
+// CL DataTable draws its border on `.p-datatable` with `!important`.
+.table.table :global(.p-datatable.p-datatable) {
+  border: none !important;
 }
 
 .extensions {
@@ -35,54 +47,4 @@
 
 .missingProductIcon {
   font-size: 1.2rem;
-}
-
-// MD ProductsModule.scss `.products .tree .p-tree` overrides. CL Tree (2.12.1+)
-// anchors its rules on a doubled hashed root plus the Prime chain (0,3,0 for
-// the root, up to 0,6,0 for node content), so these use a doubled pane anchor
-// plus the same chain to stay one step ahead.
-$tree: '.root.root .treePane.treePane :global(.p-tree.p-tree)';
-$node: '#{$tree} :global(.p-tree-container) :global(.p-treenode)';
-$content: '#{$node} :global(.p-treenode-content)';
-
-#{$tree} {
-  height: 100%;
-  padding: 0;
-  border: 1px solid #dee2e6;
-  border-left: 0;
-  border-top: 1px solid #f2f3f5;
-  border-bottom: 1px solid #f2f3f5;
-  border-radius: 0;
-  font-family: 'Lato', sans-serif;
-  font-style: normal;
-  font-weight: 700;
-  font-size: 14px;
-  line-height: 17px;
-  letter-spacing: 0.5px;
-}
-
-#{$node} {
-  padding: 0;
-}
-
-#{$content} {
-  padding: 4px;
-  border-bottom: 0.7px solid #dde6ee;
-  border-radius: 0;
-}
-
-#{$content} :global(.p-treenode-label) {
-  line-height: 17px;
-}
-
-// MD (lara theme) keeps the label colour on the selected row.
-#{$content}:global(.p-highlight) {
-  color: inherit;
-}
-
-#{$content} :global(.p-tree-toggler) {
-  width: 18px;
-  height: 18px;
-  margin: 4px;
-  color: #596168;
 }
