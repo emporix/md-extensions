@@ -118,6 +118,10 @@ export default {
     },
   },
   table: {
+    ref: {
+      id: 'ID',
+      localizedName: 'Name',
+    },
     id: 'ID',
     name: 'Name',
     code: 'Code',

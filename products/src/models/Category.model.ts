@@ -169,6 +169,23 @@ export interface CategoryProduct {
   modifiedAt: Date
 }
 
+export interface CategoryTree {
+  id: string
+  parentId?: string
+  code?: string
+  localizedName: Localized
+  localizedDescription?: Localized
+  localizedSlug?: Localized
+  validity?: {
+    from?: string
+    to?: string
+  }
+  position: number
+  published: boolean
+  ecn?: string[]
+  subcategories?: CategoryTree[]
+}
+
 export enum ProductTemplateType {
   TEXT = 'TEXT',
   NUMBER = 'NUMBER',

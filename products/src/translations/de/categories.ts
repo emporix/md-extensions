@@ -1,4 +1,5 @@
 export default {
+  title: 'Kategorien',
   actions: {
     move: {
       error: 'Fehler beim Ändern der Reihenfolge der Kategorie',

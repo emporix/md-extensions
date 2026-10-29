@@ -1,4 +1,5 @@
 export default {
+  title: 'Categories',
   actions: {
     move: {
       error: "Error while changing category's order",

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { BsDownload } from 'react-icons/bs'
@@ -15,7 +15,7 @@ import {
 import { useCategoriesApi } from '../../hooks/api/categories'
 import { DisplayMixin, parseColumnProps } from '../../models/DisplayMixin'
 import { PaginationProps } from '../../hooks/usePagination'
-import CategoriesTree from '../shared/CategoriesTree'
+import LeafCategoriesTree from '../categoriesTree/LeafCategoriesTree'
 import useCustomNavigate from '../../hooks/useCustomNavigate'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import { ProductsAction } from '../../pages/ProductsList.page'
@@ -24,7 +24,9 @@ import { mapToCsv, saveToCsvFile } from '../../helpers/download'
 import { SchemaType } from '../../models/Schema.model'
 import { formatDateWithTime } from '../../helpers/date'
 import { usePermissions } from '../../context/PermissionsProvider'
+import { useDashboardContext } from '../../context/Dashboard.context'
 import { useUIBlocker } from '../../context/UIBlocker'
+import useUpdateEffect from '../../hooks/useUpdateEffect'
 import { TABLE_NAME, TABLE_NAME_CONFIG_KEY } from './ProductsTable'
 import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
 import { productDetailPath } from '../../constants/paths'
@@ -97,11 +99,25 @@ const CategoriesProductsTable = ({
     hasPermission(EmployeeDomains.PRODUCTS_MANAGER) ||
     hasPermission(VendorDomains.VENDOR_PRODUCTS_MANAGER)
   const { blockPanel } = useUIBlocker()
+  const { tenant } = useDashboardContext()
+  // Bumped by every product load, so results for an earlier category, page
+  // or tenant are dropped.
+  const loadIdRef = useRef(0)
   const { getUiLangValue, getContentLangValue } = useLocalizedValue()
 
+  // Products of another tenant must not stay usable while its tree loads.
+  useUpdateEffect(() => {
+    setProducts([])
+    setTotalCount(0)
+    setSelectedProducts([])
+    setSelectedNodeKey(null)
+  }, [tenant])
+
   useEffect(() => {
+    const loadId = ++loadIdRef.current
     void (async () => {
       if (!categoryId) {
+        setProductsLoading(false)
         return
       }
       try {
@@ -110,15 +126,18 @@ const CategoriesProductsTable = ({
           categoryId,
           mapToSortField(JSON.parse(JSON.stringify(paginationParams)))
         )
+        if (loadId !== loadIdRef.current) return
         setTotalCount(total)
         setProducts(productRows)
         setSelectedNodeKey(categoryId)
       } finally {
-        setProductsLoading(false)
+        if (loadId === loadIdRef.current) {
+          setProductsLoading(false)
+        }
       }
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryId, paginationParams, refreshKey])
+  }, [categoryId, paginationParams, refreshKey, tenant])
 
   const onFilterCallback = (event: DataTableFilterEvent) => {
     setPaginationParams({
@@ -181,6 +200,7 @@ const CategoriesProductsTable = ({
             filter: true,
             sortable: true,
             showFilterMenu: false,
+            showClearButton: false,
             body: (rowData: ProductRow) =>
               getContentLangValue(rowData.ref.localizedName),
           },
@@ -191,14 +211,16 @@ const CategoriesProductsTable = ({
             filter: true,
             sortable: true,
             showFilterMenu: false,
+            showClearButton: false,
           },
           {
             columnKey: 'code',
             header: t(`${TABLE_NAME}.code`),
             field: 'code',
-            filter: false,
+            filter: true,
             sortable: true,
             showFilterMenu: false,
+            showClearButton: false,
           },
           {
             columnKey: 'productType',
@@ -207,6 +229,7 @@ const CategoriesProductsTable = ({
             filter: false,
             sortable: true,
             showFilterMenu: false,
+            showClearButton: false,
           },
           {
             columnKey: 'price',
@@ -215,6 +238,7 @@ const CategoriesProductsTable = ({
             filter: false,
             sortable: false,
             showFilterMenu: false,
+            showClearButton: false,
             style: { paddingRight: '2rem' },
           },
         ] satisfies DataTableColumnProps[]
@@ -270,7 +294,7 @@ const CategoriesProductsTable = ({
   }
 
   return (
-    <div className={styles.root}>
+    <div className={styles.wrapper}>
       {extensionsContainer &&
         createPortal(
           <div className={styles.extensions}>
@@ -296,38 +320,36 @@ const CategoriesProductsTable = ({
           </div>,
           extensionsContainer
         )}
-      <div className={styles.treePane}>
-        <CategoriesTree
-          selectHandler={selectHandler}
-          selectedNodeKeys={selectedNodeKey}
+      <div className={styles.sidebar}>
+        <LeafCategoriesTree
+          selectedNodeKey={selectedNodeKey}
+          onSelectCategory={selectHandler}
         />
       </div>
-      <div className={styles.tablePane}>
-        <DataTable
-          className={styles.table}
-          dataKey="id"
-          value={products}
-          columns={columns}
-          selectionMode="multiple"
-          selection={selectedProducts}
-          onSelectionChange={(selection) =>
-            setSelectedProducts((selection ?? []) as ProductRow[])
-          }
-          isRowSelectable={(data) => !data.data.missingProduct}
-          pagination={pagination}
-          sortField={paginationParams.sortField}
-          sortOrder={paginationParams.sortOrder}
-          onFilter={onFilterCallback}
-          onSort={onSortCallback}
-          onPage={onPageCallback}
-          onRowClick={(row) => {
-            if (!clickToEdit || row.missingProduct) return
-            navigate(productDetailPath(row.id))
-          }}
-          loading={productsLoading}
-          lazy={true}
-        />
-      </div>
+      <DataTable
+        className={styles.table}
+        dataKey="id"
+        value={products}
+        columns={columns}
+        selectionMode="multiple"
+        selection={selectedProducts}
+        onSelectionChange={(selection) =>
+          setSelectedProducts((selection ?? []) as ProductRow[])
+        }
+        isRowSelectable={(data) => !data.data.missingProduct}
+        pagination={pagination}
+        sortField={paginationParams.sortField}
+        sortOrder={paginationParams.sortOrder}
+        onFilter={onFilterCallback}
+        onSort={onSortCallback}
+        onPage={onPageCallback}
+        onRowClick={(row) => {
+          if (!clickToEdit || row.missingProduct) return
+          navigate(productDetailPath(row.id))
+        }}
+        loading={productsLoading}
+        lazy={true}
+      />
     </div>
   )
 }
