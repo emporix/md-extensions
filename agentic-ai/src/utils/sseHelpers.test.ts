@@ -108,4 +108,20 @@ describe('sseHelpers', () => {
       code: 'INVALID_FRAME',
     })
   })
+
+  it('maps thinking content and ignores unknown events', () => {
+    expect(
+      mapAgentChatStreamEvent({
+        event: 'thinking',
+        data: '{"content":"Checking stock"}',
+      })
+    ).toEqual({ type: 'thinking', content: 'Checking stock' })
+
+    expect(
+      mapAgentChatStreamEvent({
+        event: 'tool_result',
+        data: '{"content":"hidden"}',
+      })
+    ).toBeNull()
+  })
 })

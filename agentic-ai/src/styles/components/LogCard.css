@@ -282,12 +282,38 @@
   padding: 0 var(--space-sm);
 }
 
+.communication-panel-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
 .communication-panel-column-title {
   margin: 0;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-bold);
   line-height: var(--font-size-base);
   color: var(--grey-8);
+}
+
+.communication-panel-copy {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.communication-panel-copy:hover {
+  color: var(--text-primary);
 }
 
 .communication-panel-body {

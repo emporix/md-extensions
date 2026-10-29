@@ -17,7 +17,7 @@
     "test:run": "vitest run"
   },
   "dependencies": {
-    "@emporix/component-library": "2.6.0",
+    "@emporix/component-library": "2.10.4",
     "@fortawesome/fontawesome-svg-core": "^7.0.0",
     "@fortawesome/free-brands-svg-icons": "^7.0.0",
     "@fortawesome/free-solid-svg-icons": "^7.0.0",
@@ -36,7 +36,10 @@
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.3.1",
     "react-i18next": "^15.4.0",
-    "react-router": "^7.1.5"
+    "react-markdown": "^9.1.0",
+    "react-router": "^7.1.5",
+    "rehype-sanitize": "^6.0.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

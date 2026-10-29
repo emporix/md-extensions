@@ -145,7 +145,9 @@ const OAuthDetailPage: React.FC = () => {
               >
                 <i className="pi pi-arrow-left" />
               </button>
-              <span className="oauth-detail-title-label">{t('oauth')}</span>
+              <span className="oauth-detail-title-label page-title">
+                {t('oauth')}
+              </span>
             </div>
           </div>
         </div>
@@ -172,7 +174,7 @@ const OAuthDetailPage: React.FC = () => {
               >
                 <i className="pi pi-arrow-left" />
               </button>
-              <h1 className="oauth-detail-title">
+              <h1 className="oauth-detail-title page-title">
                 <span className="oauth-detail-title-text">
                   <span className="oauth-detail-title-prefix">
                     {t('oauth')}{' '}

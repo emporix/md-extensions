@@ -84,7 +84,7 @@ export const BasePage: React.FC<BasePageProps> = ({
       >
         <i className="pi pi-arrow-left" />
       </button>
-      <span className="details-title-text">{title}</span>
+      <span className="details-title-text page-title">{title}</span>
     </div>
   ) : (
     title
@@ -93,7 +93,7 @@ export const BasePage: React.FC<BasePageProps> = ({
   return (
     <div className={`${className}-page base-page-container`}>
       <div className="base-page-header">
-        <h1>{titleWithBackButton}</h1>
+        <h1 className="page-title">{titleWithBackButton}</h1>
         <div className="base-page-actions">
           {onImport && importButtonIcon && (
             <button
