@@ -120,6 +120,15 @@ const ProductsListPage = () => {
   const [currentCategoryId, setCurrentCategoryId] = useState<string | null>(
     null
   )
+  const [prevCategoryId, setPrevCategoryId] = useState(currentCategoryId)
+
+  // Reset in the render that switches the category, not in an effect after it,
+  // so the tree table fetches the new category's products only once
+  if (currentCategoryId !== prevCategoryId) {
+    setPrevCategoryId(currentCategoryId)
+    paginationCategoriesProducts.resetListState()
+    setSelectedProducts([])
+  }
 
   const isImportEnabled =
     Boolean(import.meta.env.VITE_MRWORKER_DEMO) &&
@@ -169,7 +178,7 @@ const ProductsListPage = () => {
     setSelectedProducts([])
     setVisibleColumnCell(fetchVisibleColumns(TABLE_NAME_CONFIG_KEY))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentCategoryId, listType, tableConfigurations])
+  }, [listType, tableConfigurations])
 
   const handleSelectCreateProductType = useCallback(
     (type: ProductType, subscription?: boolean) => {

@@ -1,5 +1,27 @@
 import { describe, expect, it, vi } from 'vitest'
-import { fetchAllRecords } from './paginationUtils'
+import { clearFilterValues, fetchAllRecords } from './paginationUtils'
+
+describe('clearFilterValues', () => {
+  it('keeps every filter field and clears its value', () => {
+    expect(
+      clearFilterValues({
+        name: { value: 'boiler', matchMode: 'contains' },
+        id: { value: null, matchMode: 'contains' },
+      })
+    ).toEqual({
+      name: { value: null, matchMode: 'contains' },
+      id: { value: null, matchMode: 'contains' },
+    })
+  })
+
+  it('does not change the given filters', () => {
+    const filters = {
+      name: { value: 'boiler', matchMode: 'contains' as const },
+    }
+    clearFilterValues(filters)
+    expect(filters.name.value).toBe('boiler')
+  })
+})
 
 describe('fetchAllRecords', () => {
   it('aggregates records across pages', async () => {
