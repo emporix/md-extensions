@@ -1,20 +1,25 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { JobSummary } from '../types/Job'
 import { useAppState } from '../contexts/AppStateContext'
 import { JobService } from '../services/jobService'
 import { useCursorPagination } from './useCursorPagination'
+import { abandonListLoad } from '../utils/listLoad.helpers'
 import {
   getLogListAgentId,
   getNamespacedListKey,
+  listCursorKey,
   parseLogListQuery,
+  readListCursor,
+  writeListCursor,
 } from '../utils/logListQuery.helpers'
 
 export const useJobs = () => {
   const { t } = useTranslation()
   const appState = useAppState()
   const location = useLocation()
+  const navigate = useNavigate()
   const [jobs, setJobs] = useState<JobSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -32,25 +37,34 @@ export const useJobs = () => {
   )
   const loadRequestIdRef = useRef(0)
 
-  const {
-    cursor,
-    nextCursor,
-    prevCursor,
-    setCursors,
-    resetCursor,
-    goNext,
-    goPrevious,
-    cursorKey,
-  } = useCursorPagination()
+  const { nextCursor, prevCursor, setCursors, resetCursor } =
+    useCursorPagination()
 
   const jobService = useMemo(() => new JobService(appState), [appState])
   const agentId = getLogListAgentId(location.search)
   const listKey = `${agentId ?? ''}|${getNamespacedListKey(location.search, 'j')}`
+  const cursor = readListCursor(location.search, 'j')
+  const cursorKey = listCursorKey(cursor)
   const prevListKeyRef = useRef(listKey)
   const searchRef = useRef(location.search)
   searchRef.current = location.search
-  const cursorRef = useRef(cursor)
-  cursorRef.current = cursor
+  const pathnameRef = useRef(location.pathname)
+  pathnameRef.current = location.pathname
+
+  const replaceCursor = useCallback(
+    (next: typeof cursor): boolean => {
+      const nextSearch = writeListCursor(searchRef.current, 'j', next)
+      if (nextSearch === (searchRef.current || '')) {
+        return false
+      }
+      navigate(
+        { pathname: pathnameRef.current, search: nextSearch },
+        { replace: true }
+      )
+      return true
+    },
+    [navigate]
+  )
 
   const fetchJobs = useCallback(
     async (
@@ -59,7 +73,7 @@ export const useJobs = () => {
       newPageSize?: number,
       currentAgentId?: string,
       newFilters?: Record<string, string>,
-      requestCursor = cursorRef.current
+      requestCursor = readListCursor(searchRef.current, 'j')
     ) => {
       const requestId = ++loadRequestIdRef.current
       try {
@@ -77,7 +91,16 @@ export const useJobs = () => {
         )
         if (requestId !== loadRequestIdRef.current) return
         if (requestCursor && response.data.length === 0) {
-          resetCursor()
+          abandonListLoad({
+            loadRequestIdRef,
+            clearRows: () => setJobs([]),
+            setLoading,
+            setError,
+            resetCursor,
+          })
+          if (!replaceCursor(null)) {
+            setLoading(false)
+          }
           return
         }
         setJobs(response.data)
@@ -91,7 +114,7 @@ export const useJobs = () => {
         }
       }
     },
-    [pageSize, filters, jobService, resetCursor, setCursors, t]
+    [pageSize, filters, jobService, resetCursor, replaceCursor, setCursors, t]
   )
 
   const refreshJobs = useCallback(
@@ -106,6 +129,7 @@ export const useJobs = () => {
 
   useEffect(() => {
     const query = parseLogListQuery(searchRef.current)
+    const requestCursor = readListCursor(searchRef.current, 'j')
     const listChanged = prevListKeyRef.current !== listKey
     prevListKeyRef.current = listKey
 
@@ -114,8 +138,24 @@ export const useJobs = () => {
     setSortOrder(query.jobs.apiSortOrder)
     setFilters(query.jobs.apiFilters)
 
-    if (listChanged && cursorKey) {
-      resetCursor()
+    if (listChanged && requestCursor) {
+      abandonListLoad({
+        loadRequestIdRef,
+        clearRows: () => setJobs([]),
+        setLoading,
+        setError,
+        resetCursor,
+      })
+      if (!replaceCursor(null)) {
+        void fetchJobsRef.current(
+          query.jobs.apiSortBy,
+          query.jobs.apiSortOrder,
+          query.jobs.rows,
+          query.agentId,
+          query.jobs.apiFilters,
+          null
+        )
+      }
       return
     }
 
@@ -125,9 +165,30 @@ export const useJobs = () => {
       query.jobs.rows,
       query.agentId,
       query.jobs.apiFilters,
-      listChanged ? null : cursorRef.current
+      requestCursor
     )
-  }, [listKey, cursorKey, appState.tenant, appState.token, resetCursor])
+  }, [
+    listKey,
+    cursorKey,
+    appState.tenant,
+    appState.token,
+    replaceCursor,
+    resetCursor,
+  ])
+
+  const goNext = useCallback(() => {
+    if (!nextCursor) {
+      return
+    }
+    replaceCursor({ next: nextCursor })
+  }, [nextCursor, replaceCursor])
+
+  const goPrevious = useCallback(() => {
+    if (!prevCursor) {
+      return
+    }
+    replaceCursor({ prev: prevCursor })
+  }, [prevCursor, replaceCursor])
 
   return {
     jobs,

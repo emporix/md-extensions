@@ -1,5 +1,6 @@
 import { FilterMatchMode } from 'primereact/api'
 import { DataTableFilterMeta } from 'primereact/datatable'
+import type { CursorParams } from '../types/CursorPagination'
 import {
   convertJobTypeToApi,
   convertSeverityFiltersToApi,
@@ -457,13 +458,69 @@ export const getLogListAgentId = (search: string): string | undefined => {
   return parseLogListQuery(search).agentId
 }
 
+const cursorParamName = (
+  namespace: LogListNamespace,
+  direction: 'next' | 'prev'
+): string => `${namespace}.${direction}`
+
+const isListCursorParam = (namespace: LogListNamespace, key: string): boolean =>
+  key === cursorParamName(namespace, 'next') ||
+  key === cursorParamName(namespace, 'prev')
+
+export const readListCursor = (
+  search: string,
+  namespace: LogListNamespace
+): CursorParams | null => {
+  const params = parseSearchParams(search)
+  const next = params.get(cursorParamName(namespace, 'next'))?.trim() ?? ''
+  const prev = params.get(cursorParamName(namespace, 'prev'))?.trim() ?? ''
+  if (next) {
+    return { next }
+  }
+  if (prev) {
+    return { prev }
+  }
+  return null
+}
+
+export const writeListCursor = (
+  search: string,
+  namespace: LogListNamespace,
+  cursor: CursorParams | null
+): string => {
+  const params = parseSearchParams(search)
+  params.delete(cursorParamName(namespace, 'next'))
+  params.delete(cursorParamName(namespace, 'prev'))
+  const next = cursor?.next?.trim() ?? ''
+  const prev = cursor?.prev?.trim() ?? ''
+  if (next) {
+    params.set(cursorParamName(namespace, 'next'), next)
+  } else if (prev) {
+    params.set(cursorParamName(namespace, 'prev'), prev)
+  }
+  return toSearchString(params)
+}
+
+export const listCursorKey = (cursor: CursorParams | null): string => {
+  if (cursor?.next) {
+    return `next:${cursor.next}`
+  }
+  if (cursor?.prev) {
+    return `prev:${cursor.prev}`
+  }
+  return ''
+}
+
 export const getNamespacedListKey = (
   search: string,
   namespace: LogListNamespace
 ): string => {
   const params = parseSearchParams(search)
   const keys = Array.from(params.keys())
-    .filter((key) => key.startsWith(`${namespace}.`))
+    .filter(
+      (key) =>
+        key.startsWith(`${namespace}.`) && !isListCursorParam(namespace, key)
+    )
     .sort()
   return keys.map((key) => `${key}=${params.get(key) ?? ''}`).join('&')
 }

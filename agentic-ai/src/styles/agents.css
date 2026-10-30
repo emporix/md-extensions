@@ -19,6 +19,8 @@
 @import './components/CursorPaginator.css';
 @import './components/AnalyzeLogsDialog.css';
 @import './components/AgentChatPage.css';
+@import './components/VegaLiteView.css';
+@import './components/RichBlocks.css';
 @import './components/ToolCard.css';
 @import './components/ImportAgentDialog.css';
 @import './components/McpPage.css';

@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type WheelEvent,
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
@@ -17,7 +18,7 @@ import {
   SecondaryButton,
 } from '@emporix/component-library'
 import { AiGeneratedNotice } from '../shared/AiGeneratedNotice'
-import { RichMarkdown } from './RichMarkdown'
+import { AssistantMessageContent } from './AssistantMessageContent'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../contexts/ToastContext'
 import { useAgentChat } from '../../hooks/useAgentChat'
@@ -38,13 +39,13 @@ import {
   buildChatInvokePatchOperations,
   getChatInvokeGates,
   CHAT_AGENT_QUERY_PARAM,
+  isTranscriptNearBottom,
   nextAgentIdFromQuery,
   shouldShowAssistantActivity,
   shouldShowRecommendationEmpty,
   type ChatInvokeGate,
 } from '../../utils/agentChatHelpers'
 import { formatApiError } from '../../utils/errorHelpers'
-import { formatChatResponseText } from '../../utils/formatHelpers'
 import { getLocalizedValue } from '../../utils/agentHelpers'
 
 type AgentOption = {
@@ -111,6 +112,7 @@ const AgentChatPage = () => {
   const [invokePatching, setInvokePatching] = useState(false)
   const [draft, setDraft] = useState('')
   const transcriptRef = useRef<HTMLDivElement>(null)
+  const followTranscriptRef = useRef(true)
   const [searchParams, setSearchParams] = useSearchParams()
   const requestedAgentId = searchParams.get(CHAT_AGENT_QUERY_PARAM)
 
@@ -154,9 +156,27 @@ const AgentChatPage = () => {
     setSearchParams(nextParams, { replace: true })
   }, [agentId, requestedAgentId, searchParams, setSearchParams])
 
-  useEffect(() => {
+  const handleTranscriptWheel = (event: WheelEvent<HTMLDivElement>) => {
+    if (event.deltaY < 0) {
+      followTranscriptRef.current = false
+    }
+  }
+
+  const handleTranscriptScroll = () => {
     const transcript = transcriptRef.current
     if (!transcript) {
+      return
+    }
+    followTranscriptRef.current = isTranscriptNearBottom(
+      transcript.scrollTop,
+      transcript.scrollHeight,
+      transcript.clientHeight
+    )
+  }
+
+  useEffect(() => {
+    const transcript = transcriptRef.current
+    if (!transcript || !followTranscriptRef.current) {
       return
     }
     transcript.scrollTop = transcript.scrollHeight
@@ -257,6 +277,7 @@ const AgentChatPage = () => {
     if (!agentId) {
       return
     }
+    followTranscriptRef.current = true
     if (source === 'composer') {
       setDraft('')
     }
@@ -391,7 +412,12 @@ const AgentChatPage = () => {
       </header>
       <AiGeneratedNotice variant="short" />
       <div className="agent-chat-card">
-        <div className="agent-chat-transcript" ref={transcriptRef}>
+        <div
+          className="agent-chat-transcript"
+          ref={transcriptRef}
+          onScroll={handleTranscriptScroll}
+          onWheel={handleTranscriptWheel}
+        >
           {customAgentsLoading && messages.length === 0 ? (
             <p className="agent-chat-empty">{t('loading')}</p>
           ) : (
@@ -409,7 +435,7 @@ const AgentChatPage = () => {
             return (
               <ChatBubble key={message.id} role={message.role}>
                 {message.role === 'assistant' && hasText ? (
-                  <RichMarkdown text={formatChatResponseText(message.text)} />
+                  <AssistantMessageContent text={message.text} />
                 ) : null}
                 {message.role === 'assistant' ? null : message.text}
                 {showStatus ? (

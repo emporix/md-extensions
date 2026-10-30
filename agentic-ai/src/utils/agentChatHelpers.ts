@@ -20,6 +20,15 @@ export const nextToolActivityText = (
   return trimmed.length > 0 ? trimmed : null
 }
 
+export const TRANSCRIPT_FOLLOW_THRESHOLD_PX = 80
+
+export const isTranscriptNearBottom = (
+  scrollTop: number,
+  scrollHeight: number,
+  clientHeight: number
+): boolean =>
+  scrollHeight - scrollTop - clientHeight <= TRANSCRIPT_FOLLOW_THRESHOLD_PX
+
 export const shouldShowAssistantActivity = (
   streaming: boolean,
   isActiveAssistant: boolean,

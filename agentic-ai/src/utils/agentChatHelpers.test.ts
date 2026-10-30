@@ -6,6 +6,7 @@ import {
   isMissingApiTrigger,
   nextAgentId,
   nextAgentIdFromQuery,
+  isTranscriptNearBottom,
   nextSessionId,
   nextThinkingText,
   nextToolActivityText,
@@ -26,6 +27,16 @@ describe('nextSessionId', () => {
 
   it('clears the session when the conversation resets', () => {
     expect(nextSessionId(true, 'sess-1')).toBeNull()
+  })
+})
+
+describe('isTranscriptNearBottom', () => {
+  it('follows while the reader is at the bottom', () => {
+    expect(isTranscriptNearBottom(520, 1000, 400)).toBe(true)
+  })
+
+  it('stops following once the reader scrolls up', () => {
+    expect(isTranscriptNearBottom(100, 1000, 400)).toBe(false)
   })
 })
 

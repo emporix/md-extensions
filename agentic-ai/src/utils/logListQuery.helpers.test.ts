@@ -6,8 +6,11 @@ import {
   getFilterValue,
   getLogListAgentId,
   getNamespacedListKey,
+  listCursorKey,
   parseLogListQuery,
+  readListCursor,
   toDateParam,
+  writeListCursor,
   writeNamespacedParams,
 } from './logListQuery.helpers'
 
@@ -150,6 +153,44 @@ describe('logListQuery.helpers', () => {
     expect(date).not.toBeNull()
     expect(toDateParam(date as Date)).toBe('2026-09-17')
     expect(fromDateParam('2026-13-40')).toBeNull()
+  })
+
+  it('stores the page cursor without treating it as a filter', () => {
+    const nextSearch = writeListCursor('?agentId=a1&r.severity=ERROR', 'r', {
+      next: 'cursor+a/b=',
+    })
+    expect(nextSearch).toContain('agentId=a1')
+    expect(nextSearch).toContain('r.severity=ERROR')
+    expect(readListCursor(nextSearch, 'r')).toEqual({ next: 'cursor+a/b=' })
+    expect(readListCursor(nextSearch, 'j')).toBeNull()
+    expect(getNamespacedListKey(nextSearch, 'r')).toBe(
+      getNamespacedListKey('?r.severity=ERROR', 'r')
+    )
+    expect(listCursorKey(readListCursor(nextSearch, 'r'))).toBe(
+      'next:cursor+a/b='
+    )
+
+    const prevSearch = writeListCursor(nextSearch, 'r', { prev: 'back' })
+    expect(prevSearch).not.toContain('r.next=')
+    expect(readListCursor(prevSearch, 'r')).toEqual({ prev: 'back' })
+
+    const cleared = writeListCursor(prevSearch, 'r', null)
+    expect(readListCursor(cleared, 'r')).toBeNull()
+    expect(cleared).toContain('r.severity=ERROR')
+  })
+
+  it('drops the page cursor when filters are rewritten', () => {
+    const withCursor = writeListCursor('?agentId=a1', 'r', { next: 'page-2' })
+    const rewritten = writeNamespacedParams(withCursor, 'r', {
+      filters: {
+        requestId: { value: 'req-1', matchMode: FilterMatchMode.CONTAINS },
+      },
+    })
+
+    expect(readListCursor(rewritten, 'r')).toBeNull()
+    expect(
+      getFilterValue(parseLogListQuery(rewritten).requests.filters, 'requestId')
+    ).toBe('req-1')
   })
 
   it('clears namespaced list params but keeps agentId', () => {
