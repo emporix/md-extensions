@@ -159,6 +159,54 @@ describe('externalUrlPaths', () => {
     ).toEqual(['href'])
   })
 
+  it('rejects any uri scheme, not only the http and javascript prefixes', () => {
+    expect(
+      externalUrlPaths({
+        mark: 'bar',
+        encoding: {},
+        data: {
+          values: [
+            { image: 'blob:abc' },
+            { image: 'file:///etc/passwd' },
+            { image: 'ftp://files.example/a.csv' },
+            { image: 'ws://sockets.example/live' },
+            { image: 'mailto:ops@example.com' },
+          ],
+        },
+      })
+    ).toEqual([
+      'data.values[0].image',
+      'data.values[1].image',
+      'data.values[2].image',
+      'data.values[3].image',
+      'data.values[4].image',
+    ])
+  })
+
+  it('rejects a nested $schema url and still ignores the root one', () => {
+    expect(
+      externalUrlPaths({
+        $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+        mark: 'bar',
+        encoding: {},
+        data: { values: [{ $schema: 'https://evil.example/x.png' }] },
+      })
+    ).toEqual(['data.values[0].$schema'])
+  })
+
+  it('rejects url and href values that are computed objects', () => {
+    expect(
+      externalUrlPaths({
+        mark: {
+          type: 'image',
+          url: { signal: "'https://evil.example/x.png'" },
+        },
+        encoding: {},
+        href: { expr: "'https://evil.example'" },
+      })
+    ).toEqual(['mark.url', 'href'])
+  })
+
   it('rejects a label only when the whole value is a url', () => {
     expect(
       externalUrlPaths({
@@ -174,6 +222,13 @@ describe('externalUrlPaths', () => {
         data: { values: [{ label: 'https://example.com' }] },
       })
     ).toEqual(['data.values[0].label'])
+    expect(
+      externalUrlPaths({
+        mark: 'bar',
+        encoding: {},
+        data: { values: [{ label: 'Revenue: Q1' }, { label: 'Q1: 2024' }] },
+      })
+    ).toEqual([])
   })
 })
 

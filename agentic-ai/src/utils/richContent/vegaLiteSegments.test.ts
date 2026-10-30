@@ -153,6 +153,37 @@ describe('splitVegaLiteSegments', () => {
     ])
   })
 
+  it('does not treat a fenced line with trailing text as a close', () => {
+    const segments = splitVegaLiteSegments(
+      '```mermaid Diagram\nflowchart LR\n```not-a-close\n  A-->B\n```\nAfter'
+    )
+    const pending = splitVegaLiteSegments(
+      '```vega-lite Sales\n{"mark":"bar"}\n```still-open'
+    )
+
+    expect(segments).toEqual([
+      {
+        kind: 'mermaid',
+        title: 'Diagram',
+        text: 'flowchart LR\n```not-a-close\n  A-->B\n',
+      },
+      { kind: 'text', text: '\nAfter' },
+    ])
+    expect(pending[0]?.kind).toBe('vega-lite-pending')
+    expect(pending[0]?.text).toContain('```still-open')
+  })
+
+  it('accepts a closing fence that has only trailing spaces', () => {
+    const segments = splitVegaLiteSegments('```java\nclass A {}\n```   \n')
+
+    expect(segments[0]).toEqual({
+      kind: 'code',
+      language: 'java',
+      text: 'class A {}\n',
+    })
+    expect(segments[1]?.text?.trim()).toBe('')
+  })
+
   it('keeps a rich fence when the tag is not lowercase', () => {
     const diagram = splitVegaLiteSegments(
       '```Mermaid\nflowchart LR\n  A-->B\n```'

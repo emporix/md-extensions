@@ -4,21 +4,33 @@ import { expressionInterpreter } from 'vega-interpreter'
 
 const URL_KEYS = new Set(['url', 'href'])
 const URL_VALUE_PREFIXES = ['http:', 'https:', '//', 'data:', 'javascript:']
+const URI_SCHEME = /^[a-z][a-z0-9+.-]*:/
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-const withoutAsciiControls = (value: string): string =>
+const charsWhere = (value: string, keep: (code: number) => boolean): string =>
   Array.from(value)
-    .filter((char) => {
-      const code = char.charCodeAt(0)
-      return code > 32 && code !== 127
-    })
+    .filter((char) => keep(char.charCodeAt(0)))
     .join('')
 
 const isExternalUrlValue = (value: string): boolean => {
-  const normalized = withoutAsciiControls(value).toLowerCase()
-  return URL_VALUE_PREFIXES.some((prefix) => normalized.startsWith(prefix))
+  const stripped = charsWhere(
+    value,
+    (code) => code > 32 && code !== 127
+  ).toLowerCase()
+  if (URL_VALUE_PREFIXES.some((prefix) => stripped.startsWith(prefix))) {
+    return true
+  }
+  // Other schemes count only when the value is already one token.
+  // Stripping spaces here would turn "Revenue: Q1" into a URI.
+  const token = charsWhere(value, (code) => code >= 32 && code !== 127)
+    .trim()
+    .toLowerCase()
+  if (/\s/.test(token)) {
+    return false
+  }
+  return URI_SCHEME.test(token)
 }
 
 const externalLoadDisabled = (): Promise<never> =>
@@ -71,8 +83,17 @@ export const externalUrlPaths = (value: unknown): string[] => {
   const paths: string[] = []
 
   const walk = (node: unknown, path: string, key: string | undefined): void => {
+    if (
+      key !== undefined &&
+      URL_KEYS.has(key) &&
+      typeof node === 'object' &&
+      node !== null
+    ) {
+      paths.push(path)
+      return
+    }
     if (typeof node === 'string') {
-      if (key === '$schema') {
+      if (path === '$schema') {
         return
       }
       const underUrlKey = key !== undefined && URL_KEYS.has(key)

@@ -47,6 +47,33 @@ const findLineFence = (text: string, from: number): number => {
   return -1
 }
 
+const lineRemainder = (text: string, index: number): string => {
+  const after = index + FENCE.length
+  const lineBreak = text.indexOf('\n', after)
+  if (lineBreak === -1) {
+    return text.slice(after)
+  }
+  return text.slice(after, lineBreak)
+}
+
+const isClosingFence = (text: string, index: number): boolean =>
+  isLineFence(text, index) && /^ *$/.test(lineRemainder(text, index))
+
+const findClosingFence = (text: string, from: number): number => {
+  let cursor = from
+  while (cursor < text.length) {
+    const index = text.indexOf(FENCE, cursor)
+    if (index === -1) {
+      return -1
+    }
+    if (isClosingFence(text, index)) {
+      return index
+    }
+    cursor = index + FENCE.length
+  }
+  return -1
+}
+
 export const GENERIC_CODE_LANGUAGE = 'code'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -194,7 +221,7 @@ export const splitVegaLiteSegments = (text: string): VegaLiteSegment[] => {
     }
     const info = fenceInfo(text.slice(infoStart, lineBreak))
     const bodyStart = lineBreak + 1
-    const close = findLineFence(text, bodyStart)
+    const close = findClosingFence(text, bodyStart)
     if (close === -1) {
       if (info) {
         segments.push(pendingSegment(info, text.slice(bodyStart)))
