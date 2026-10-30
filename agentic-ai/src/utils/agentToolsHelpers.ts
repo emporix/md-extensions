@@ -292,8 +292,7 @@ export const normalizeManagedMcpAttachments = (
       return { ...server, type: 'dynamic' as const }
     }
     if (mcpType === 'custom' && server.type === 'dynamic') {
-      const { tools: _tools, ...rest } = server
-      return { type: 'custom' as const, mcpServer: rest.mcpServer }
+      return { type: 'custom' as const, mcpServer: server.mcpServer }
     }
     return server
   })

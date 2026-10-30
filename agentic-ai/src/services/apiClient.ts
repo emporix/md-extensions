@@ -223,7 +223,8 @@ export class ApiClient {
     body?: unknown,
     init?: RequestInit
   ): AsyncGenerator<AgentChatStreamEvent> {
-    const { headers: extraHeaders, body: _, ...restInit } = init || {}
+    const { headers: extraHeaders, ...restInit } = init ?? {}
+    delete restInit.body
     const response = await fetch(this.buildUrl(path), {
       method: 'POST',
       headers: this.buildHeaders({
