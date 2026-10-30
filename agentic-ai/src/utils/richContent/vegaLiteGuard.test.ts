@@ -142,6 +142,23 @@ describe('externalUrlPaths', () => {
     ).toEqual(['href'])
   })
 
+  it('rejects javascript urls that hide ascii controls inside the scheme', () => {
+    expect(
+      externalUrlPaths({
+        mark: 'bar',
+        encoding: {},
+        href: 'java\nscript:alert(1)',
+      })
+    ).toEqual(['href'])
+    expect(
+      externalUrlPaths({
+        mark: 'bar',
+        encoding: {},
+        href: 'java\tscript:alert(1)',
+      })
+    ).toEqual(['href'])
+  })
+
   it('rejects a label only when the whole value is a url', () => {
     expect(
       externalUrlPaths({

@@ -64,8 +64,22 @@ export const isUnsafeSvgAttribute = (name: string, value: string): boolean => {
   if (normalized === 'style' && isUnsafeSvgStyle(value)) {
     return true
   }
+  if (isSvgPaintAttribute(normalized) && isUnsafeSvgStyle(value)) {
+    return true
+  }
   return false
 }
+
+const SVG_PAINT_ATTRIBUTES = new Set([
+  'fill',
+  'stroke',
+  'filter',
+  'clip-path',
+  'mask',
+])
+
+const isSvgPaintAttribute = (name: string): boolean =>
+  SVG_PAINT_ATTRIBUTES.has(name) || name.startsWith('marker')
 
 const CSS_COMMENT = /\/\*[\s\S]*?(?:\*\/|$)/g
 const CSS_ESCAPE =

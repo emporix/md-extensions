@@ -68,6 +68,26 @@ describe('isUnsafeSvgAttribute', () => {
     expect(
       isUnsafeSvgAttribute('style', 'fill:url(https://example.com/a.png)')
     ).toBe(true)
+    expect(isUnsafeSvgAttribute('fill', '#3b73bb')).toBe(false)
+    expect(isUnsafeSvgAttribute('fill', 'url(#diagram-1)')).toBe(false)
+    expect(isUnsafeSvgAttribute('fill', 'url(https://example.com/a.png)')).toBe(
+      true
+    )
+    expect(
+      isUnsafeSvgAttribute('stroke', 'url(https://example.com/a.png)')
+    ).toBe(true)
+    expect(
+      isUnsafeSvgAttribute('filter', 'url(https://example.com/a.svg)')
+    ).toBe(true)
+    expect(
+      isUnsafeSvgAttribute('clip-path', 'url(https://example.com/a.svg)')
+    ).toBe(true)
+    expect(isUnsafeSvgAttribute('mask', 'url(https://example.com/a.svg)')).toBe(
+      true
+    )
+    expect(
+      isUnsafeSvgAttribute('marker-end', 'url(https://example.com/a.svg)')
+    ).toBe(true)
   })
 })
 

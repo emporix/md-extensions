@@ -8,8 +8,16 @@ const URL_VALUE_PREFIXES = ['http:', 'https:', '//', 'data:', 'javascript:']
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
+const withoutAsciiControls = (value: string): string =>
+  Array.from(value)
+    .filter((char) => {
+      const code = char.charCodeAt(0)
+      return code > 32 && code !== 127
+    })
+    .join('')
+
 const isExternalUrlValue = (value: string): boolean => {
-  const normalized = value.trim().toLowerCase()
+  const normalized = withoutAsciiControls(value).toLowerCase()
   return URL_VALUE_PREFIXES.some((prefix) => normalized.startsWith(prefix))
 }
 
