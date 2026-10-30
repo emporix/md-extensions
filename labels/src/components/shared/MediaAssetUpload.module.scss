@@ -149,12 +149,12 @@ $media-button-icon-disabled: #c3d1e8;
   padding: 1rem; // p-3
   font-size: 1.25rem;
   border-radius: 50%;
-  background-color: var(--grey-1, #f2f3f5);
-  color: var(--grey-4, #c7cad1);
+  background-color: #f2f3f5;
+  color: #c7cad1;
 }
 
 .emptyText {
   margin: 0.5rem 0; // my-2
   font-size: 1rem;
-  color: var(--grey-5, #828a99);
+  color: #828a99;
 }

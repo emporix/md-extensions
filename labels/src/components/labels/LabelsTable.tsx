@@ -110,17 +110,13 @@ const LabelsTable = () => {
     })
   }
 
-  const tableActionsTemplate = useCallback(
-    (label: Label) => (
-      <TableActions
-        managerPermission={canManage}
-        onEdit={() => openLabel(label)}
-        onDelete={() => deleteLabels([label])}
-        deleteConfirm={{ pluralsPath: 'labels', entity: label }}
-      />
-    ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [canManage]
+  const tableActionsTemplate = (label: Label) => (
+    <TableActions
+      managerPermission={canManage}
+      onEdit={() => openLabel(label)}
+      onDelete={() => deleteLabels([label])}
+      deleteConfirm={{ pluralsPath: 'labels', entity: label }}
+    />
   )
 
   const pagination: DataTablePaginationState = {
