@@ -19,7 +19,29 @@ describe('VegaLiteView', () => {
 
     expect(markup).toContain('Drawing the chart')
     expect(markup).toContain('chat-block-pending')
+    expect(markup).toContain('{&quot;mark&quot;:&quot;bar&quot;')
+    expect(markup).toContain('chat-block-source')
     expect(markup).not.toContain('<svg')
+  })
+
+  it('renders a schema-bearing spec as a chart', () => {
+    const markup = renderToStaticMarkup(
+      <VegaLiteView
+        segment={{
+          kind: 'vega-lite',
+          text: '{"$schema":"https://vega.github.io/schema/vega-lite/v5.json","mark":"bar"}',
+          spec: {
+            $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+            mark: 'bar',
+            encoding: { x: { field: 'a', type: 'ordinal' } },
+            data: { values: [{ a: 'A' }] },
+          },
+        }}
+      />
+    )
+
+    expect(markup).toContain('vega-lite-frame')
+    expect(markup).not.toContain('This chart cannot be shown.')
   })
 
   it('renders invalid fence text with the error string', () => {

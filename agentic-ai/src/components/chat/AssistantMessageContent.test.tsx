@@ -75,6 +75,8 @@ describe('AssistantMessageContent', () => {
     const markup = render('```vega-lite\n{"mark":"bar"')
 
     expect(markup).toContain('Drawing the chart')
+    expect(markup).toContain('chat-block-source')
+    expect(markup).toContain('{&quot;mark&quot;:&quot;bar&quot;')
     expect(markup).not.toContain('vega-lite-view')
   })
 })

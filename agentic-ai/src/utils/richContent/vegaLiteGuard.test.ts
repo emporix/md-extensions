@@ -92,6 +92,25 @@ describe('isVegaLiteSpec', () => {
 })
 
 describe('externalUrlPaths', () => {
+  it('ignores a vega-lite $schema url', () => {
+    expect(
+      externalUrlPaths({
+        $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+        ...barSpec,
+      })
+    ).toEqual([])
+  })
+
+  it('still rejects data.url next to $schema', () => {
+    expect(
+      externalUrlPaths({
+        $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+        ...barSpec,
+        data: { url: 'https://example.com/rows.json' },
+      })
+    ).toEqual(['data.url'])
+  })
+
   it('rejects data.url', () => {
     expect(
       externalUrlPaths({

@@ -64,6 +64,9 @@ export const externalUrlPaths = (value: unknown): string[] => {
 
   const walk = (node: unknown, path: string, key: string | undefined): void => {
     if (typeof node === 'string') {
+      if (key === '$schema') {
+        return
+      }
       const underUrlKey = key !== undefined && URL_KEYS.has(key)
       if (underUrlKey || isExternalUrlValue(node)) {
         paths.push(path)
