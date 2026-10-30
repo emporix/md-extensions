@@ -247,7 +247,7 @@ const LabelPage = () => {
       <HeaderSection
         title={t('labels.singular')}
         subtitle={id ? label?.name : undefined}
-        backTo={() => navigate(listPath())}
+        backTo={listPath()}
         moduleActions={
           <div className={styles.actions}>
             <SecondaryButton

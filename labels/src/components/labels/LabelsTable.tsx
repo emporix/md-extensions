@@ -37,7 +37,7 @@ const CONFIGURATION_KEY = 'ext_labels'
 const INITIAL_PAGINATION: Partial<PaginationProps> = DEFAULT_PAGINATION_PROPS
 
 const LabelsTable = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { showError } = useToast()
   const { refresh, setRefreshValue } = useRefresh()
   const { columns } = useLabelsTableColumns()
@@ -62,7 +62,7 @@ const LabelsTable = () => {
     async (params: Partial<PaginationProps>) => {
       try {
         const { values, totalRecords } = await makeCall(
-          () => fetchLabelsPage(params),
+          () => fetchLabelsPage(params, i18n.language),
           setIsLoading
         )
         setLabels(values)
@@ -71,7 +71,7 @@ const LabelsTable = () => {
         showError(t('labels.toasts.errorFetch'), getApiErrorDetails(e))
       }
     },
-    [showError, t]
+    [showError, t, i18n.language]
   )
 
   useEffect(() => {
