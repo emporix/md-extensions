@@ -57,7 +57,7 @@ const lineRemainder = (text: string, index: number): string => {
 }
 
 const isClosingFence = (text: string, index: number): boolean =>
-  isLineFence(text, index) && /^ *$/.test(lineRemainder(text, index))
+  isLineFence(text, index) && /^ *\r?$/.test(lineRemainder(text, index))
 
 const findClosingFence = (text: string, from: number): number => {
   let cursor = from
