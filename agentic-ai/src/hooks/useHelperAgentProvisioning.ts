@@ -14,6 +14,12 @@ export type HelperAgentProvisioningI18nKeys = {
   readonly enableFailed: string
 }
 
+export const isEnabledAgentPresent = (
+  agents: readonly { readonly id: string; readonly enabled?: boolean }[],
+  agentId: string
+): boolean =>
+  agents.some((agent) => agent.id === agentId && agent.enabled === true)
+
 export type UseHelperAgentProvisioningParams = {
   readonly agentId: string
   readonly shouldCheck: boolean
@@ -21,6 +27,7 @@ export type UseHelperAgentProvisioningParams = {
   readonly i18nKeys: HelperAgentProvisioningI18nKeys
   readonly resolveErrorMessage: (err: unknown, fallbackKey: string) => string
   readonly onBeforeEnable?: () => void
+  readonly onEnabled?: () => void
 }
 
 export const useHelperAgentProvisioning = ({
@@ -30,6 +37,7 @@ export const useHelperAgentProvisioning = ({
   i18nKeys,
   resolveErrorMessage,
   onBeforeEnable,
+  onEnabled,
 }: UseHelperAgentProvisioningParams) => {
   const appState = useAppState()
   const { t } = useTranslation()
@@ -54,9 +62,7 @@ export const useHelperAgentProvisioning = ({
       try {
         const agents = await getCustomAgents(appState)
         if (!cancelled) {
-          setHelperAgentPresent(
-            agents.some((agent) => agent.id === agentId && agent.enabled)
-          )
+          setHelperAgentPresent(isEnabledAgentPresent(agents, agentId))
         }
       } catch (err) {
         if (!cancelled) {
@@ -79,6 +85,7 @@ export const useHelperAgentProvisioning = ({
     try {
       await createAgent(appState)
       setHelperAgentPresent(true)
+      onEnabled?.()
       showSuccess(t(i18nKeys.agentCreated))
     } catch (err) {
       if (err instanceof ApiClientError && err.status === 409) {
@@ -87,6 +94,7 @@ export const useHelperAgentProvisioning = ({
             { op: 'REPLACE', path: '/enabled', value: true },
           ])
           setHelperAgentPresent(true)
+          onEnabled?.()
           showInfo(t(i18nKeys.agentExists))
         } catch (patchErr) {
           showError(resolveErrorMessage(patchErr, i18nKeys.enableFailed))
@@ -103,6 +111,7 @@ export const useHelperAgentProvisioning = ({
     createAgent,
     i18nKeys,
     onBeforeEnable,
+    onEnabled,
     resolveErrorMessage,
     showError,
     showInfo,

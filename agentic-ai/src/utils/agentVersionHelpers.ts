@@ -471,6 +471,76 @@ export const buildSplitDiffRows = (
   return rows
 }
 
+export type DiffBlock =
+  | { readonly kind: 'same'; readonly lines: readonly string[] }
+  | {
+      readonly kind: 'change'
+      readonly rows: readonly DiffRow[]
+      readonly number: number
+    }
+
+const isSameRow = (row: DiffRow): boolean =>
+  row.left?.tone === 'same' && row.right?.tone === 'same'
+
+const cellText = (cell: DiffCell): string =>
+  cell?.parts.map((part) => part.text).join('') ?? ''
+
+export const groupDiffRows = (rows: readonly DiffRow[]): DiffBlock[] =>
+  rows.reduce<DiffBlock[]>((blocks, row) => {
+    const last = blocks[blocks.length - 1]
+
+    if (isSameRow(row)) {
+      const line = cellText(row.left)
+      if (last?.kind === 'same') {
+        return [
+          ...blocks.slice(0, -1),
+          { ...last, lines: [...last.lines, line] },
+        ]
+      }
+      return [...blocks, { kind: 'same', lines: [line] }]
+    }
+
+    if (last?.kind === 'change') {
+      return [...blocks.slice(0, -1), { ...last, rows: [...last.rows, row] }]
+    }
+    const number = blocks.filter((block) => block.kind === 'change').length + 1
+    return [...blocks, { kind: 'change', rows: [row], number }]
+  }, [])
+
+export const DIFF_CONTEXT_LINES = 3
+
+export type CollapsedLines = {
+  readonly head: readonly string[]
+  readonly hiddenCount: number
+  readonly tail: readonly string[]
+}
+
+/**
+ * Keeps `contextLines` unchanged lines next to each change and hides the rest.
+ * The first block has no change above it and the last block none below it.
+ * Fewer than two hidden lines are shown instead of a one-line expander.
+ */
+export const collapseUnchangedLines = (
+  lines: readonly string[],
+  isFirst: boolean,
+  isLast: boolean,
+  contextLines: number = DIFF_CONTEXT_LINES
+): CollapsedLines => {
+  const headCount = isFirst ? 0 : contextLines
+  const tailCount = isLast ? 0 : contextLines
+  const hiddenCount = lines.length - headCount - tailCount
+
+  if (hiddenCount < 2) {
+    return { head: lines, hiddenCount: 0, tail: [] }
+  }
+
+  return {
+    head: lines.slice(0, headCount),
+    hiddenCount,
+    tail: lines.slice(lines.length - tailCount),
+  }
+}
+
 export const diffAgentVersionConfigs = (
   selected: VersionedAgentConfig,
   current: VersionedAgentConfig

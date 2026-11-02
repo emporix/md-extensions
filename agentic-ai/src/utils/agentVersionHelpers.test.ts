@@ -4,7 +4,9 @@ import {
   buildAgentVersionRows,
   buildRollbackAgent,
   buildSplitDiffRows,
+  collapseUnchangedLines,
   diffAgentVersionConfigs,
+  groupDiffRows,
   formatVersionAuthor,
   pickVersionedFields,
   type VersionedAgentConfig,
@@ -390,5 +392,75 @@ describe('diffAgentVersionConfigs', () => {
 
     expect(selected).toEqual(originalSelected)
     expect(current).toEqual(originalCurrent)
+  })
+})
+
+describe('groupDiffRows', () => {
+  it('groups unchanged lines and numbers each run of changed lines', () => {
+    const rows = buildSplitDiffRows(
+      'a\nb\nold one\nc\nold two\nd',
+      'a\nb\nnew one\nc\nnew two\nadded\nd'
+    )
+
+    const blocks = groupDiffRows(rows)
+
+    expect(blocks.map((block) => block.kind)).toEqual([
+      'same',
+      'change',
+      'same',
+      'change',
+      'same',
+    ])
+    expect(blocks[0]).toEqual({ kind: 'same', lines: ['a', 'b'] })
+    expect(blocks[1]).toMatchObject({ kind: 'change', number: 1 })
+    expect(blocks[3]).toMatchObject({ kind: 'change', number: 2 })
+    expect(blocks[3]?.kind === 'change' && blocks[3].rows).toHaveLength(2)
+  })
+
+  it('does not mutate the input rows', () => {
+    const rows = buildSplitDiffRows('x\ny', 'x\nz')
+    const original = structuredClone(rows)
+
+    groupDiffRows(rows)
+
+    expect(rows).toEqual(original)
+  })
+})
+
+describe('collapseUnchangedLines', () => {
+  const lines = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+
+  it('keeps context on both sides of a block between changes', () => {
+    expect(collapseUnchangedLines(lines, false, false, 3)).toEqual({
+      head: ['1', '2', '3'],
+      hiddenCount: 4,
+      tail: ['8', '9', '10'],
+    })
+  })
+
+  it('keeps only the lines before the first change', () => {
+    expect(collapseUnchangedLines(lines, true, false, 3)).toEqual({
+      head: [],
+      hiddenCount: 7,
+      tail: ['8', '9', '10'],
+    })
+  })
+
+  it('keeps only the lines after the last change', () => {
+    expect(collapseUnchangedLines(lines, false, true, 3)).toEqual({
+      head: ['1', '2', '3'],
+      hiddenCount: 7,
+      tail: [],
+    })
+  })
+
+  it('shows everything when fewer than two lines would be hidden', () => {
+    const short = ['1', '2', '3', '4', '5', '6', '7']
+
+    expect(collapseUnchangedLines(short, false, false, 3)).toEqual({
+      head: short,
+      hiddenCount: 0,
+      tail: [],
+    })
   })
 })

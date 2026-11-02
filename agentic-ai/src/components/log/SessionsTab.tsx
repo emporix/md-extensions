@@ -193,6 +193,7 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
           onFilter={handleSessionFilterChange}
           filterDisplay="row"
           lazy={true}
+          loading={loading}
           paginator={false}
           rows={pageSize}
         >
@@ -299,9 +300,7 @@ const SessionsTab: React.FC<SessionsTabProps> = ({
     return (
       <div className="loading-state">
         <i className="pi pi-spin pi-spinner loading-spinner" />
-        <p className="loading-text">
-          {t('loading_sessions')}
-        </p>
+        <p className="loading-text">{t('loading_sessions')}</p>
       </div>
     )
   }

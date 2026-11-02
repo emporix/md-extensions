@@ -40,11 +40,15 @@ interface UseAgentsResult {
   confirmForceDelete: () => Promise<void>
 }
 
-export const useAgents = (): UseAgentsResult => {
+export const useAgents = ({
+  loadTemplates = true,
+}: {
+  readonly loadTemplates?: boolean
+} = {}): UseAgentsResult => {
   const appState = useAppState()
   const { showSuccess, showError } = useToast()
   const [agents, setAgents] = useState<AgentTemplate[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(loadTemplates)
   const [error, setError] = useState<string | null>(null)
 
   const [customAgents, setCustomAgents] = useState<CustomAgent[]>([])
@@ -191,9 +195,11 @@ export const useAgents = (): UseAgentsResult => {
   )
 
   useEffect(() => {
-    loadAgentTemplates()
-    loadCustomAgents()
-  }, [loadAgentTemplates, loadCustomAgents])
+    if (loadTemplates) {
+      void loadAgentTemplates()
+    }
+    void loadCustomAgents()
+  }, [loadTemplates, loadAgentTemplates, loadCustomAgents])
 
   return {
     agents,

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { formatReadableCommunicationContent } from '../../utils/formatHelpers'
+import { useToast } from '../../contexts/ToastContext'
 
 type CommunicationSectionProps = {
   readonly message?: string
@@ -17,13 +18,44 @@ const CommunicationColumn = ({
   content,
   emptyLabel,
 }: CommunicationColumnProps) => {
+  const { t } = useTranslation()
+  const { showSuccess, showError } = useToast()
   const formattedContent = content.trim()
     ? formatReadableCommunicationContent(content)
     : null
 
+  const handleCopy = async () => {
+    if (!formattedContent) {
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(formattedContent)
+      showSuccess(t('copied_to_clipboard'))
+    } catch (error) {
+      console.error('Failed to copy communication content', error)
+      showError(t('failed_to_copy'))
+    }
+  }
+
   return (
     <div className="communication-panel-column">
-      <h4 className="communication-panel-column-title">{title}</h4>
+      <div className="communication-panel-column-header">
+        <h4 className="communication-panel-column-title">{title}</h4>
+        {formattedContent ? (
+          <button
+            type="button"
+            className="communication-panel-copy"
+            aria-label={t('copy')}
+            title={t('copy')}
+            onClick={() => {
+              void handleCopy()
+            }}
+          >
+            <i className="pi pi-copy" aria-hidden="true" />
+          </button>
+        ) : null}
+      </div>
       <div className="communication-panel-body">
         {formattedContent ? (
           <pre className="communication-panel-text">{formattedContent}</pre>

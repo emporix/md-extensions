@@ -10,8 +10,8 @@ import {
   type LogAnalysisEntry,
 } from '../utils/logAnalysisAssistantHelpers'
 import { useAppState } from '../contexts/AppStateContext'
+import { LOG_ANALYSIS_ASSISTANT_AGENT_ID } from '../constants/agentConstants'
 import {
-  LOG_ANALYSIS_ASSISTANT_AGENT_ID,
   chatWithAgent,
   createLogAnalysisAssistantAgent,
 } from '../services/agentService'

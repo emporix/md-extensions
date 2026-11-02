@@ -437,6 +437,7 @@ const LogsPage: React.FC = () => {
           onFilter={handleLogFilterChange}
           filterDisplay="row"
           lazy={true}
+          loading={loading}
           paginator={false}
           rows={logsPageSize}
         >
@@ -561,6 +562,7 @@ const LogsPage: React.FC = () => {
           onFilter={handleJobFilterChange}
           filterDisplay="row"
           lazy={true}
+          loading={jobsLoading}
           paginator={false}
           rows={jobsPageSize}
         >
@@ -717,9 +719,7 @@ const LogsPage: React.FC = () => {
   }, [hasLoadedOnce.jobs, jobsError, jobsLoading, renderJobsTable, t])
 
   // Determine title based on whether agent name is available
-  const pageTitle = agentName
-    ? `${agentName} ${t('logs')}`
-    : t('agent_logs')
+  const pageTitle = agentName ? `${agentName} ${t('logs')}` : t('agent_logs')
 
   // Check if agentId is in URL to show back button
   const agentIdParam = listQuery.agentId
@@ -736,9 +736,7 @@ const LogsPage: React.FC = () => {
       title={pageTitle}
       refreshButtonLabel={t('refresh')}
       onRefresh={handleRefresh}
-      backButtonLabel={
-        hasAgentId ? t('back_to_agents') : undefined
-      }
+      backButtonLabel={hasAgentId ? t('back_to_agents') : undefined}
       onBack={hasAgentId ? handleBackToAgents : undefined}
       className="logs"
     >
@@ -746,9 +744,7 @@ const LogsPage: React.FC = () => {
       <MetricsPanel refreshTrigger={metricsRefreshTrigger} />
 
       <TabView activeIndex={activeTabIndex} onTabChange={handleTabChange}>
-        <TabPanel header={t('requests')}>
-          {requestsTabContent}
-        </TabPanel>
+        <TabPanel header={t('requests')}>{requestsTabContent}</TabPanel>
         <TabPanel header={t('jobs')}>{jobsTabContent}</TabPanel>
         <TabPanel header={t('sessions')}>
           <SessionsTab
