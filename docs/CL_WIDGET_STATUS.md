@@ -2,7 +2,7 @@
 
 **Audience:** agents extracting an MD module into `md-extensions`.  
 **SoT:** this file. Do **not** copy the tables into the skill, playbook, or registry — those files **link here**. Stale gap lists (`no InputSwitch`) have already shipped in those docs.  
-**CL version audited:** `2.14.0` (`component-library/src/index.ts`).  
+**CL version audited:** `2.15.0` (`component-library/src/index.ts`).  
 **MD source:** `management-dashboard` `primereact@8.7.0`, unique `src/` files, 2026-08-17.  
 **Related:** [MODULE_MIGRATION_PLAYBOOK.md](./MODULE_MIGRATION_PLAYBOOK.md) · skill `md-module-extraction` · CL skill `migrate-to-component-library`.
 
@@ -106,8 +106,9 @@ Import these when the remote needs them; they are not Prime replacements:
 | `Accordion` / `AccordionTab` | 1.5.0 | MD does not import `primereact/accordion` |
 | `MoneyValue` | 2.5.0 | Locale-aware currency display |
 | `StatusBadge` | 2.5.0 | Outlined status pill — not Prime `Badge`/`Tag` |
-| `QuantityStepper` | **2.12.0** | Compact circular `[-]` / `[+]` quantity control (`value`, `onChange` → `QuantityStepperChangeEvent`, `min`/`max`/`step`, `disabled`/`readOnly`, optional `label`/`error`). Native buttons (not `.p-button`) so MD host button chrome cannot hide steppers — prefer over `InputNumber` `showButtons` for entry quantities. Orders pins CL **2.14.0**. |
-| `ProductsBrowser` | **2.14.0** | MD's `ProductsBrowser` (MD component, not Prime): products in a list view or a category tree view, with paging, filters and checkbox picks. The remote injects `loadProducts` / `loadCategoryTree` (tree query gets the branch as `categoryIds`), `labels` (incl. `pageReport`) and `onLoadError(error, 'products' \| 'categories')`; `categoryNodeTemplate` adds MD's published dot. Skip `loadCategoryTree` without `CATEGORIES_VIEWER`, as MD does. Orders add-entry dialog (COP-4287). |
+| `QuantityStepper` | **2.12.0** | Compact circular `[-]` / `[+]` quantity control (`value`, `onChange` → `QuantityStepperChangeEvent`, `min`/`max`/`step`, `disabled`/`readOnly`, optional `label`/`error`). Native buttons (not `.p-button`) so MD host button chrome cannot hide steppers — prefer over `InputNumber` `showButtons` for entry quantities. Orders pins CL **2.15.0**. |
+| `ProductsBrowser` | **2.14.0** | MD's `ProductsBrowser` (MD component, not Prime): products in a list view or a category tree view, with paging, filters and checkbox picks. The remote injects `loadProducts` / `loadCategoryTree` (tree query gets the branch as `categoryIds`), `labels` (incl. `pageReport`, `published`, `unpublished`) and `onLoadError(error, 'products' \| 'categories')`. Since 2.15.0 a node that sets `published` (`ProductsBrowserCategoryNode`) shows MD's status dot; `categoryNodeTemplate` replaces name and dot (e.g. checkboxes). Skip `loadCategoryTree` without `CATEGORIES_VIEWER`, as MD does. Orders add-entry dialog (COP-4287). |
+| `DotIndicator` | **2.15.0** | MD's status dot: 8px circle, green (`value`) or grey, `label` for the accessible name and tooltip. No `color` prop — keep a local copy only for MD's custom-colour uses (orders payment log). |
 
 ## Promote-next (if the module needs them)
 
