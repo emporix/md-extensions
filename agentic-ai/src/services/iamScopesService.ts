@@ -1,5 +1,6 @@
 import { AppState } from '../types/common'
 import { buildQueryParams } from '../utils/apiHelpers'
+import { scopeIdentityKey } from '../utils/scopeLoad'
 import { ApiClient } from './apiClient'
 
 export interface IamScope {
@@ -18,7 +19,7 @@ export interface UserScopesResponse {
 const getApiClient = (appState: AppState): ApiClient => new ApiClient(appState)
 
 const myScopesCacheKey = (appState: AppState): string =>
-  `${appState.tenant}\0${appState.token}`
+  scopeIdentityKey(appState.tenant, appState.token)
 
 const resolvedMyScopes = new Map<string, IamScope[]>()
 const inFlightMyScopes = new Map<string, Promise<IamScope[]>>()
@@ -59,11 +60,14 @@ const fetchMyIamScopes = async (appState: AppState): Promise<IamScope[]> => {
   return parseMyIamScopes(response?.scopes)
 }
 
+export const readMyIamScopes = (appState: AppState): IamScope[] | undefined =>
+  resolvedMyScopes.get(myScopesCacheKey(appState))
+
 export const getMyIamScopes = async (
   appState: AppState
 ): Promise<IamScope[]> => {
   const key = myScopesCacheKey(appState)
-  const hit = resolvedMyScopes.get(key)
+  const hit = readMyIamScopes(appState)
   if (hit) {
     return hit
   }

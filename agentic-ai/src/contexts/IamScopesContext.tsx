@@ -9,7 +9,20 @@ import {
   type ReactNode,
 } from 'react'
 import { useAppState } from './AppStateContext'
-import { getMyIamScopes, type IamScope } from '../services/iamScopesService'
+import {
+  getMyIamScopes,
+  readMyIamScopes,
+  type IamScope,
+} from '../services/iamScopesService'
+import {
+  applyScopeLoadResult,
+  beginScopeLoad,
+  finishScopeLoad,
+  initialScopeLoadState,
+  scopeIdentityKey,
+  visibleScopeLoad,
+  type ScopeLoadState,
+} from '../utils/scopeLoad'
 
 type IamScopesContextValue = {
   readonly scopes: IamScope[]
@@ -32,34 +45,61 @@ const IamScopesProvider = ({ children }: IamScopesProviderProps) => {
   const appStateRef = useRef(appState)
   appStateRef.current = appState
 
-  const [scopes, setScopes] = useState<IamScope[]>([])
-  const [loading, setLoading] = useState(true)
-  const [failed, setFailed] = useState(false)
+  const [loadState, setLoadState] = useState<ScopeLoadState<IamScope>>(() =>
+    initialScopeLoadState(
+      tenant,
+      token,
+      tenant ? readMyIamScopes(appState) : undefined
+    )
+  )
 
   const reload = useCallback(async () => {
     if (!tenant) {
-      setScopes([])
-      setFailed(false)
-      setLoading(false)
+      setLoadState(initialScopeLoadState('', '', undefined))
       return
     }
 
-    setLoading(true)
-    setFailed(false)
+    const requestKey = scopeIdentityKey(tenant, token)
+    const currentKey = () =>
+      scopeIdentityKey(appStateRef.current.tenant, appStateRef.current.token)
+    const cached = readMyIamScopes({
+      ...appStateRef.current,
+      tenant,
+      token,
+    })
+    if (cached) {
+      setLoadState((state) =>
+        applyScopeLoadResult(state, requestKey, currentKey(), {
+          ok: true,
+          scopes: cached,
+        })
+      )
+      return
+    }
+
+    setLoadState(beginScopeLoad(requestKey))
     try {
       const next = await getMyIamScopes({
         ...appStateRef.current,
         tenant,
         token,
       })
-      setScopes(next)
+      setLoadState((state) =>
+        applyScopeLoadResult(state, requestKey, currentKey(), {
+          ok: true,
+          scopes: next,
+        })
+      )
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'unknown error'
-      console.error('Failed to load IAM scopes:', message)
-      setScopes([])
-      setFailed(true)
+      if (requestKey === currentKey()) {
+        const message = error instanceof Error ? error.message : 'unknown error'
+        console.error('Failed to load IAM scopes:', message)
+      }
+      setLoadState((state) =>
+        applyScopeLoadResult(state, requestKey, currentKey(), { ok: false })
+      )
     } finally {
-      setLoading(false)
+      setLoadState((state) => finishScopeLoad(state, requestKey, currentKey()))
     }
   }, [tenant, token])
 
@@ -67,14 +107,15 @@ const IamScopesProvider = ({ children }: IamScopesProviderProps) => {
     void reload()
   }, [reload])
 
+  const visible = visibleScopeLoad(loadState, tenant, token)
   const contextValue = useMemo(
     () => ({
-      scopes,
-      loading,
-      failed,
+      scopes: visible.scopes,
+      loading: visible.loading,
+      failed: visible.failed,
       reload,
     }),
-    [scopes, loading, failed, reload]
+    [visible.scopes, visible.loading, visible.failed, reload]
   )
 
   return (

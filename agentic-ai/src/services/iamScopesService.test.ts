@@ -14,6 +14,7 @@ vi.mock('./apiClient', () => ({
 import {
   getMyIamScopes,
   parseMyIamScopes,
+  readMyIamScopes,
   resetMyIamScopesCacheForTests,
 } from './iamScopesService'
 
@@ -82,6 +83,11 @@ describe('getMyIamScopes', () => {
     expect(mockGet).toHaveBeenCalledWith('/iam/testtenant/users/me/scopes')
     expect(second).toEqual(first)
     expect(first).toEqual([{ id: 'ai.agent_manage' }, { id: 'ai.agent_read' }])
+    expect(readMyIamScopes(appState)).toEqual(first)
+  })
+
+  it('has no resolved scopes before the first load', () => {
+    expect(readMyIamScopes(appState)).toBeUndefined()
   })
 
   it('shares one request when two callers ask at the same time', async () => {

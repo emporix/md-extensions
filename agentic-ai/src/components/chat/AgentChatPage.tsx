@@ -40,10 +40,12 @@ import {
 import { commerceTriggerExtractEvents } from '../../utils/agentFilterDslHelpers'
 import {
   buildChatInvokePatchOperations,
+  canEditAgentInChat,
   canSeeAgentInChat,
   getChatInvokeGates,
   hasAgentManageScope,
   CHAT_AGENT_QUERY_PARAM,
+  initialAgentIdFromQuery,
   isTranscriptNearBottom,
   nextAgentIdFromQuery,
   shouldShowAssistantActivity,
@@ -112,7 +114,11 @@ const AgentChatPage = () => {
   const { scopes, loading: scopesLoading } = useMyIamScopes()
   const canManageAgents = hasAgentManageScope(scopes.map((scope) => scope.id))
   const { messages, status, activity, send, reset, stop } = useAgentChat()
-  const [agentId, setAgentId] = useState<string | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const requestedAgentId = searchParams.get(CHAT_AGENT_QUERY_PARAM)
+  const [agentId, setAgentId] = useState<string | null>(() =>
+    initialAgentIdFromQuery(requestedAgentId)
+  )
   const [pendingAgentId, setPendingAgentId] = useState<string | null>(null)
   const [invokeGateState, setInvokeGateState] =
     useState<InvokeGateState | null>(null)
@@ -120,8 +126,6 @@ const AgentChatPage = () => {
   const [draft, setDraft] = useState('')
   const transcriptRef = useRef<HTMLDivElement>(null)
   const followTranscriptRef = useRef(true)
-  const [searchParams, setSearchParams] = useSearchParams()
-  const requestedAgentId = searchParams.get(CHAT_AGENT_QUERY_PARAM)
 
   const enabledAgents = useMemo(
     () =>
@@ -381,7 +385,7 @@ const AgentChatPage = () => {
   }
 
   const handleEditAgent = () => {
-    if (!agentId) {
+    if (!agentId || !canEditAgentInChat(agentId, canManageAgents)) {
       return
     }
     window.location.href = `${window.location.pathname}#/agents/${encodeURIComponent(agentId)}/edit`
@@ -428,7 +432,7 @@ const AgentChatPage = () => {
           <SecondaryButton
             className="agent-chat-edit-btn"
             onClick={handleEditAgent}
-            disabled={!agentId}
+            disabled={!canEditAgentInChat(agentId, canManageAgents)}
           >
             <i className="pi pi-pencil" aria-hidden="true" />
             {t('chat_edit_agent')}

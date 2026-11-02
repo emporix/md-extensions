@@ -19,6 +19,11 @@ export const canSeeAgentInChat = (
   return (tags ?? []).some((tag) => tag.trim().toLowerCase() === CHAT_AGENT_TAG)
 }
 
+export const canEditAgentInChat = (
+  agentId: string | null,
+  canManageAgents: boolean
+): boolean => (agentId?.length ?? 0) > 0 && canManageAgents
+
 export type ChatInvokeGate = 'employee_scope' | 'api_trigger'
 
 const normalizeToken = (value: string): string => value.trim().toLowerCase()
@@ -79,6 +84,10 @@ export const nextAgentId = (
 }
 
 export const CHAT_AGENT_QUERY_PARAM = 'agent'
+
+export const initialAgentIdFromQuery = (
+  requested: string | null
+): string | null => requested?.trim() || null
 
 export const nextAgentIdFromQuery = (
   current: string | null,
