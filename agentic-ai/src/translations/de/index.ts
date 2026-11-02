@@ -70,6 +70,8 @@ const TRANSLATIONS_DE = {
   import_details_MISSING_FUNCTION:
     'Funktion "{{objectId}}" für Tool "{{objectName}}" wurde nicht gefunden. Importiertes Tool wurde deaktiviert.',
   import_details_MISSING_TOKEN: 'Token "{{objectId}}" wurde nicht gefunden.',
+  import_details_MISSING_OAUTH:
+    'OAuth-Konfiguration "{{objectId}}" wurde nicht gefunden. Die Referenz wurde entfernt.',
   import_details_NOT_IMPORTABLE:
     '"{{objectName}}" kann nicht importiert werden. Erstellen Sie manuell Slack/Teams-Tools auf diesem Mandanten.',
   import_details_ALREADY_EXISTS:

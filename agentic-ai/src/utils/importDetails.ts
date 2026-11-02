@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next'
 import { ImportSummaryState } from '../types/common'
-import { ImportDetails, ImportedItem } from '../types/Job'
+import { ImportDetails, ImportedItem, ImportResultSummary } from '../types/Job'
 
 const IMPORT_DETAILS_KEY_PREFIX = 'import_details_'
 const ENABLEMENT_STATES: ImportSummaryState[] = ['ENABLED', 'DISABLED']
@@ -23,6 +23,15 @@ export const shouldShowLegacyTokenNote = (
 
 export const hasImportFailures = (items: ImportedItem[]): boolean =>
   items.some((item) => item.state === 'FAILED')
+
+export const getAllImportedItems = (
+  summary: ImportResultSummary['summary'] | undefined
+): ImportedItem[] => [
+  ...(summary?.agents ?? []),
+  ...(summary?.tools ?? []),
+  ...(summary?.mcpServers ?? []),
+  ...(summary?.oauths ?? []),
+]
 
 export const formatImportDetails = (
   t: TFunction,

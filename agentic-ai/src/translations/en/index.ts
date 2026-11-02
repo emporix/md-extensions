@@ -69,6 +69,8 @@ const TRANSLATIONS_EN = {
   import_details_MISSING_FUNCTION:
     'Function "{{objectId}}" for tool "{{objectName}}" was not found. Imported tool has been disabled.',
   import_details_MISSING_TOKEN: 'Token "{{objectId}}" was not found.',
+  import_details_MISSING_OAUTH:
+    'OAuth config "{{objectId}}" was not found. The reference was removed.',
   import_details_NOT_IMPORTABLE:
     '"{{objectName}}" cannot be imported. Create Slack/Teams tools manually on this tenant.',
   import_details_ALREADY_EXISTS:
