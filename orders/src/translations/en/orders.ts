@@ -102,6 +102,20 @@ export default {
         dialog: {
           title: 'Add product to order',
         },
+        browser: {
+          listView: 'List view',
+          treeView: 'Category tree view',
+          selectCategory: 'Select a category to see its products',
+          noProducts: 'No products found',
+          noCategories: 'No categories found',
+        },
+        productTypes: {
+          BASIC: 'Basic',
+          BUNDLE: 'Bundle',
+          VARIANT: 'Variant',
+          PARENT_VARIANT: 'Parent Variant',
+          DYNAMIC_VARIANT: 'Variant Hierarchy',
+        },
       },
       replaceProduct: 'Replace product',
     },
@@ -232,6 +246,7 @@ export default {
   toasts: {
     errorFetch: 'Error while loading orders',
     errorFetchProducts: 'Error while loading products',
+    errorFetchCategories: 'Error while loading categories',
     successBatchDelete: '{{count}} order(s) deleted',
     errorUpdate: 'Error while updating order',
     errorEntriesUpdate:

@@ -98,6 +98,21 @@ export default {
         dialog: {
           title: 'Produkt zur Order hinzufügen',
         },
+        browser: {
+          listView: 'Listenansicht',
+          treeView: 'Kategoriebaum',
+          selectCategory:
+            'Wählen Sie eine Kategorie, um ihre Produkte zu sehen',
+          noProducts: 'Keine Produkte gefunden',
+          noCategories: 'Keine Kategorien gefunden',
+        },
+        productTypes: {
+          BASIC: 'Basis',
+          BUNDLE: 'Bündel',
+          VARIANT: 'Variante',
+          PARENT_VARIANT: 'Parent Variante',
+          DYNAMIC_VARIANT: 'Variantenhierarchie',
+        },
       },
       replaceProduct: 'Produkt ersetzen',
     },
@@ -228,6 +243,7 @@ export default {
   toasts: {
     errorFetch: 'Fehler beim Laden der Bestellungen',
     errorFetchProducts: 'Fehler beim Laden der Produkte',
+    errorFetchCategories: 'Fehler beim Laden der Kategorien',
     successBatchDelete: '{{count}} Bestellung(en) gelöscht',
     errorUpdate: 'Fehler beim Aktualisieren der Bestellung.',
     errorEntriesUpdate:
