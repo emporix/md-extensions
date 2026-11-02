@@ -2,7 +2,7 @@
 
 **Audience:** agents extracting an MD module into `md-extensions`.  
 **SoT:** this file. Do **not** copy the tables into the skill, playbook, or registry — those files **link here**. Stale gap lists (`no InputSwitch`) have already shipped in those docs.  
-**CL version audited:** `2.13.2` (`component-library/src/index.ts`).  
+**CL version audited:** `2.14.0` (`component-library/src/index.ts`).  
 **MD source:** `management-dashboard` `primereact@8.7.0`, unique `src/` files, 2026-08-17.  
 **Related:** [MODULE_MIGRATION_PLAYBOOK.md](./MODULE_MIGRATION_PLAYBOOK.md) · skill `md-module-extraction` · CL skill `migrate-to-component-library`.
 
@@ -45,7 +45,7 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/tabview` | `in-cl` | `Tabs` / `TabItem` | 2.0.0 | 29 | `disabled` on `TabItem` + `keepMounted` (≡ `renderActiveOnly={false}`) since **2.5.0**. |
 | `primereact/calendar` | `in-cl` | `Calendar` | **2.7.0** | 23 | Pattern B. Overlay via `panelClassName` (table filters). Do **not** fall back to `<input type="date">` when Calendar is available. |
 | `primereact/inputswitch` | `in-cl` | `InputSwitch` | **2.5.0** | 21 | Use in `TableExtensions` (`brands`, `returns`). |
-| `primereact/datatable` | `in-cl` | `DataTable` | 1.10.0 | 19 | `rowActions` prop, not an actions column. Filter APIs + `FilterMatchMode` since 2.0.0. |
+| `primereact/datatable` | `in-cl` | `DataTable` | 1.10.0 | 19 | `rowActions` prop, not an actions column. Filter APIs + `FilterMatchMode` since 2.0.0. `checkboxSelectionOnly` (only the row checkbox selects) + `selectionPageOnly` (header checkbox covers the current page) since 2.14.0. |
 | `primereact/checkbox` | `in-cl` | `Checkbox` | 1.10.0 | 14 | **No** `label` prop — render `<label htmlFor>`. |
 | `primereact/progressspinner` | `in-cl` | `ProgressSpinner` | 2.0.0 | 11+ | Also imported from barrel. |
 | `primereact/tooltip` | `in-cl` | `Tooltip` | 1.8.0 | 11 | Children mode or selector mode. |
@@ -62,11 +62,11 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/inputnumber` | `in-cl` | `InputNumber` | **2.11.0** | 23 | Pattern B. `showButtons` + `buttonLayout` (MD 24px blue steppers, `pi-plus`/`pi-minus`), `prefix`/`suffix`, `mode="currency"`, fraction digits, `allowEmpty`. Change event `{ originalEvent, value }`. Prefer over `InputText type="number"`. For **entry-quantity** steppers (circular ±, no currency/prefix) prefer CL `QuantityStepper` (≥ **2.12.0**) instead — see shells table. |
 | `primereact/skeleton` | `in-cl` | `Skeleton` | **2.11.0** | ~15 | Pattern A. Prime props (`width`, `height`, `size`, `shape`, `borderRadius`, `animation`). |
 | `primereact/chip` | `in-cl` | `Chip` | **2.11.0** | 3 | Pattern A. `label`, `icon`, `removable` + `onRemove` (`pi-times-circle`), `removeAriaLabel`. Not the `Chips` input. |
+| `primereact/tree` | `in-cl` | `Tree` | **2.12.0** | 6 | Pattern B; host theme cannot leak in (2.12.1). `compact` (2.14.0) matches MD's category trees (28px nodes). A `nodeTemplate` replaces Prime's label, so put `options.className` on its text or compact nodes shrink to 20px. Product pickers by category: use `ProductsBrowser` (below). |
 | `primereact/multiselect` | `partial` | `Dropdown` `multiple` | 1.7.0 | 11+ | Not a dedicated MultiSelect. Chip display via `display="chip"`. |
 | `primereact/inputtextarea` | `partial` | `InputText` `textarea` | 1.4.1 | 6+ | No separate textarea export. |
 | `primereact/badge` | `partial` | `StatusBadge` is **not** a drop-in | 2.5.0 | 6+ | CL `StatusBadge` = outlined status pill (`status` + `color`). Prime `Badge` = notification count badge. Promote Badge if you need the Prime widget. |
 | `primereact/chips` | `missing` | — | — | 10 | Free-text token input. **Not** Dropdown chip display. |
-| `primereact/tree` | `missing` | — | — | 6 | Categories / modules trees. |
 | `primereact/tag` | `missing` | — | — | 6 | List status/label chips. Do not silently swap to `StatusBadge` without checking API. |
 | `primereact/treetable` | `missing` | — | — | 4 | `EmporixTreeTable`, categories. |
 | `primereact/inputmask` | `missing` | — | — | 4 | Documented substitute: `InputText` `type="time"` for `"99:99"` masks. Promote for other masks. |
@@ -106,7 +106,8 @@ Import these when the remote needs them; they are not Prime replacements:
 | `Accordion` / `AccordionTab` | 1.5.0 | MD does not import `primereact/accordion` |
 | `MoneyValue` | 2.5.0 | Locale-aware currency display |
 | `StatusBadge` | 2.5.0 | Outlined status pill — not Prime `Badge`/`Tag` |
-| `QuantityStepper` | **2.12.0** | Compact circular `[-]` / `[+]` quantity control (`value`, `onChange` → `QuantityStepperChangeEvent`, `min`/`max`/`step`, `disabled`/`readOnly`, optional `label`/`error`). Native buttons (not `.p-button`) so MD host button chrome cannot hide steppers — prefer over `InputNumber` `showButtons` for entry quantities. Orders pins CL **2.13.2**. |
+| `QuantityStepper` | **2.12.0** | Compact circular `[-]` / `[+]` quantity control (`value`, `onChange` → `QuantityStepperChangeEvent`, `min`/`max`/`step`, `disabled`/`readOnly`, optional `label`/`error`). Native buttons (not `.p-button`) so MD host button chrome cannot hide steppers — prefer over `InputNumber` `showButtons` for entry quantities. Orders pins CL **2.14.0**. |
+| `ProductsBrowser` | **2.14.0** | MD's `ProductsBrowser` (MD component, not Prime): products in a list view or a category tree view, with paging, filters and checkbox picks. The remote injects `loadProducts` / `loadCategoryTree` (tree query gets the branch as `categoryIds`), `labels` (incl. `pageReport`) and `onLoadError(error, 'products' \| 'categories')`; `categoryNodeTemplate` adds MD's published dot. Skip `loadCategoryTree` without `CATEGORIES_VIEWER`, as MD does. Orders add-entry dialog (COP-4287). |
 
 ## Promote-next (if the module needs them)
 
@@ -114,7 +115,7 @@ Order by MD usage. Ask the user before implementing; Pattern A vs B is mandatory
 
 1. ~~`InputNumber`~~ / ~~`Skeleton`~~ — done in 2.11.0 (COP-6917)
 2. `Chips` (10)
-4. `Tree` / `TreeTable` (6 / 4)
+4. ~~`Tree`~~ — done in 2.12.0; `TreeTable` (4)
 5. `InputMask` (4) — unless `type="time"` is enough
 6. `Sidebar` (1, but `TableExtensions` is common) — or keep the local `SidePanel` substitute
 7. `Tag` / Prime `Badge` if `StatusBadge` is the wrong shape

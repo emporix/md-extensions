@@ -10,7 +10,7 @@ Management Dashboard "Orders" module, extracted into an `md-extensions` federate
 | Exposes | `./RemoteComponent` → `src/RemoteComponent.tsx` (named **and** default export) |
 | Local dev port | `5177` (`strictPort`) |
 | Host env var | `VITE_ORDERS_URL` → `.../assets/remoteEntry.js` |
-| Component library | `@emporix/component-library` `2.13.2` |
+| Component library | `@emporix/component-library` `2.14.0` |
 | MD wiring mode | A — permanent remote (`url:` on the route) |
 
 ## Screens
@@ -26,7 +26,7 @@ Cart, quote and customer links leave the remote via `window.location.assign` / a
 
 ## Component library substitutions
 
-The remote is PrimeReact-free. `InputNumber`, `Skeleton` and `Chip` were promoted into the component library in 2.11.0 for this module. Entry-quantity steppers use `QuantityStepper` (CL ≥ 2.12.0). Remaining substitutions:
+The remote is PrimeReact-free. `InputNumber`, `Skeleton` and `Chip` were promoted into the component library in 2.11.0 for this module. Entry-quantity steppers use `QuantityStepper` (CL ≥ 2.12.0), and the add-entry dialog picks products with `ProductsBrowser` (CL ≥ 2.14.0). Remaining substitutions:
 
 | MD used | Here |
 |---|---|
@@ -36,6 +36,7 @@ The remote is PrimeReact-free. `InputNumber`, `Skeleton` and `Chip` were promote
 | `Sidebar` (table extensions) | local `SidePanel` + CL `InputSwitch` |
 | MD `RestrictionsProvider` | `useOrderRestrictions()` over the remote `PermissionsProvider` scopes |
 | Entry mixins accordion (one shared Save) | one `MixinsForm` section per schema with its own Save (dirty rows still confirm before collapsing) |
+| MD `ProductsBrowser` / `CategoryTreeBase` (add-entry dialog) | CL `ProductsBrowser` with loaders from `hooks/api/{products,categories}`; the published dot comes from `categoryNodeTemplate` |
 
 ## AppState
 
