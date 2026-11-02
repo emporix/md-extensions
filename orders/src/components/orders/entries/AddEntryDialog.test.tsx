@@ -155,6 +155,17 @@ describe('AddEntryDialog', () => {
     expect(mocks.updateOrder).toHaveBeenCalledWith(savedOrder)
   })
 
+  it('keeps the chip row when the first product is picked', async () => {
+    await renderDialog()
+    const row = screen.getByTestId('add-entry-picks')
+    expect(row.textContent).toBe(' ')
+
+    fireEvent.click(increaseButton())
+
+    expect(screen.getByTestId('add-entry-picks')).toBe(row)
+    expect(row.textContent).toBe('1x Running shoe')
+  })
+
   it('pins the quantity column to the right edge of the table', async () => {
     await renderDialog()
 

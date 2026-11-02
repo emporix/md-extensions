@@ -221,9 +221,9 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
         </div>
       }
     >
-      {productsToAdd.length > 0 ? (
-        <div className={styles.chips}>
-          {productsToAdd.map((p) => {
+      <div className={styles.chips} data-testid="add-entry-picks">
+        {productsToAdd.length > 0 ? (
+          productsToAdd.map((p) => {
             const label = `${p.quantity}x ${getContentLangValue(p.name)}`
             return (
               <Chip
@@ -240,11 +240,11 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
                 }
               />
             )
-          })}
-        </div>
-      ) : (
-        <div className={styles.chipsPlaceholder} />
-      )}
+          })
+        ) : (
+          <Chip className={styles.chipSpacer} label={' '} />
+        )}
+      </div>
       <ProductsBrowser<AddEntryProductRow>
         className={styles.browser}
         loadProducts={loadProducts}
