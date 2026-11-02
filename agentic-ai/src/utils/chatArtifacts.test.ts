@@ -71,5 +71,6 @@ describe('chatArtifacts', () => {
   it('maps a failed image or file to a local message key', () => {
     expect(artifactFailureKey('image')).toBe('chat_artifact_image_failed')
     expect(artifactFailureKey('file')).toBe('chat_artifact_failed')
+    expect(artifactFailureKey('image')).not.toBe(artifactFailureKey('file'))
   })
 })

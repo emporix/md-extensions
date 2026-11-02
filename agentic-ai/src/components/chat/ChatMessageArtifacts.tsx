@@ -155,7 +155,7 @@ const ChatMessageArtifacts = ({
         if (artifact.status === 'failed') {
           return (
             <p key={key} className="agent-chat-artifact-error">
-              {t('chat_artifact_failed')}
+              {t(artifactFailureKey(artifact.kind))}
             </p>
           )
         }
