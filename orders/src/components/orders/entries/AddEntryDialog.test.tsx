@@ -155,6 +155,14 @@ describe('AddEntryDialog', () => {
     expect(mocks.updateOrder).toHaveBeenCalledWith(savedOrder)
   })
 
+  it('pins the quantity column to the right edge of the table', async () => {
+    await renderDialog()
+
+    const cell = increaseButton().closest('td')
+    expect(cell?.classList.contains('p-frozen-column')).toBe(true)
+    expect(cell?.style.right).toBe('0px')
+  })
+
   it('closes on a click outside the dialog', async () => {
     const onClose = await renderDialog()
 

@@ -184,6 +184,9 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
         columnKey: 'action',
         field: 'action',
         header: t('orders.entry.actions.addProduct.table.action'),
+        // The stepper stays in view when the table is wider than the dialog.
+        frozen: true,
+        alignFrozen: 'right',
         body: (row: AddEntryProductRow) => (
           <QuantityStepper
             min={0}
