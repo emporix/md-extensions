@@ -185,6 +185,20 @@ describe('AddEntryDialog', () => {
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
   })
 
+  it('does not save twice when the button is clicked again during the save', async () => {
+    mocks.addNewEntriesFromProducts.mockReturnValue(new Promise(() => {}))
+    await renderDialog()
+
+    pickShoeAndSave()
+    const submit = screen.getByRole('button', {
+      name: SUBMIT,
+    }) as HTMLButtonElement
+    fireEvent.click(submit)
+
+    expect(submit.disabled).toBe(true)
+    expect(mocks.addNewEntriesFromProducts).toHaveBeenCalledTimes(1)
+  })
+
   it('keeps the picks for another try when saving fails', async () => {
     mocks.addNewEntriesFromProducts.mockRejectedValue(new Error('Conflict'))
     const onClose = await renderDialog()
