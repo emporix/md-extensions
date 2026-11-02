@@ -21,11 +21,11 @@ When the module is embedded in the Management Dashboard, the host passes an `app
 
 The `emporixApiUrl` field was added in [management-dashboard#1592](https://github.com/emporix/management-dashboard/pull/1592) (COP-5905). It lets extensions use the same API endpoint as the dashboard instead of baking the URL into the remote build.
 
-### Using AppState in this template
+### Using AppState in this remote
 
-- **Type** — `src/models/AppState.model.ts` defines the subset used by this template (`tenant`, `language`, `token`). Extend it when you need additional host fields such as `emporixApiUrl`, `user`, or `currency`.
-- **Context** — `RemoteComponent` wraps routes with `ExtensionProvider`; read values via `useExtensionContext()` in pages and components.
-- **API URL** — standalone dev uses `VITE_API_URL` from `.env` (see `src/api/bootstrap.ts`). When embedded, prefer `appState.emporixApiUrl` when present and fall back to `VITE_API_URL` for local preview.
+- **Type** — `src/models/AppState.model.ts` defines the fields this remote reads: `tenant`, `language`, `token`, `contentLanguage`, `onError`, and optional `currency` and `user`.
+- **Context** — `RemoteComponent` wraps routes with `DashboardProvider`; read values via `useDashboardContext()` in pages and components. Permissions come from `PermissionsProvider` (`usePermissions()`), not from `appState`.
+- **API URL** — the shared `@emporix/api-calls` client is created in `src/api/bootstrap.ts` from `VITE_API_URL`, both standalone and embedded. `appState.emporixApiUrl` is not used.
 - **Standalone dev** — `App.tsx` prompts for `tenant`, `token`, and `language` and passes them as `appState`; host-only fields are not available outside the dashboard.
 
 ## AI and code-assistant rules
@@ -48,7 +48,7 @@ Run `npm install` (or `npm run sync:ai-rules`) after cloning to generate index f
 
 Copy `.env.example` to `.env` and set the required variables:
 
-- **VITE_API_URL** – Base URL for the Emporix API (e.g. `https://api-develop.emporix.io`). Used for product list and detail requests.
+- **VITE_API_URL** – Base URL for the Emporix API (e.g. `https://api-develop.emporix.io`). Used for the Labels API (`label/labels`) and the configuration, IAM, sites, feature-toggle and media calls the remote makes.
 
 ### Prerequisites
 To get started, install the dependencies:

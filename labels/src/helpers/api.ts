@@ -188,6 +188,19 @@ export const makeCall = async <T>(
   }
 }
 
+/**
+ * Returns a function that starts a new request and hands back an
+ * `isLatest()` check, so callers can drop responses from requests that a
+ * newer one has superseded.
+ */
+export const createRequestTracker = () => {
+  let latest = 0
+  return () => {
+    const id = ++latest
+    return () => id === latest
+  }
+}
+
 export const mapParamsToQ = (params: Record<string, unknown>): string => {
   return Object.entries(params)
     .map(([key, value]) => `${key}:${value}`)

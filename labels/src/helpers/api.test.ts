@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  createRequestTracker,
   getApiErrorDetails,
   getApiErrorDetailsField,
   getApiErrorDetailsList,
@@ -212,5 +213,30 @@ describe('getConflictErrorToast', () => {
     expect(
       getConflictErrorToast(axiosLikeError(409, {}), 'Local conflict')
     ).toEqual({ title: 'Local conflict' })
+  })
+})
+
+describe('createRequestTracker', () => {
+  it('reports the newest request as latest', () => {
+    const trackRequest = createRequestTracker()
+    const isLatest = trackRequest()
+
+    expect(isLatest()).toBe(true)
+  })
+
+  it('marks an older request as superseded once a newer one starts', () => {
+    const trackRequest = createRequestTracker()
+    const isFirstLatest = trackRequest()
+    const isSecondLatest = trackRequest()
+
+    expect(isFirstLatest()).toBe(false)
+    expect(isSecondLatest()).toBe(true)
+  })
+
+  it('keeps separate trackers independent', () => {
+    const isLatestA = createRequestTracker()()
+    createRequestTracker()()
+
+    expect(isLatestA()).toBe(true)
   })
 })

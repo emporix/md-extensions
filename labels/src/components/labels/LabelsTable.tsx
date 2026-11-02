@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router'
 import {
@@ -8,7 +8,11 @@ import {
 } from '@emporix/component-library'
 
 import { fetchLabelsPage } from '../../api/labels'
-import { getApiErrorDetails, makeCall } from '../../helpers/api'
+import {
+  createRequestTracker,
+  getApiErrorDetails,
+  makeCall,
+} from '../../helpers/api'
 import {
   deleteLabelWithImage,
   filterVisibleColumns,
@@ -58,20 +62,30 @@ const LabelsTable = () => {
   const { currentPage, rows, sortField, sortOrder, filters } = paginationParams
   const filtersKey = JSON.stringify(filters ?? null)
 
+  const trackRequest = useRef(createRequestTracker()).current
+
   const loadLabels = useCallback(
     async (params: Partial<PaginationProps>) => {
+      // A language change refetches before usePagination resets to page 1,
+      // so an older page can resolve last; only the latest request may
+      // update the table.
+      const isLatest = trackRequest()
       try {
         const { values, totalRecords } = await makeCall(
           () => fetchLabelsPage(params, i18n.language),
-          setIsLoading
+          (loading: boolean) => {
+            if (isLatest()) setIsLoading(loading)
+          }
         )
+        if (!isLatest()) return
         setLabels(values)
         setTotalCount(totalRecords)
       } catch (e: unknown) {
+        if (!isLatest()) return
         showError(t('labels.toasts.errorFetch'), getApiErrorDetails(e))
       }
     },
-    [showError, t, i18n.language]
+    [showError, t, i18n.language, trackRequest]
   )
 
   useEffect(() => {
