@@ -1,20 +1,25 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLocation } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { useAppState } from '../contexts/AppStateContext'
 import { LogService } from '../services/logService'
 import { SessionLogs } from '../types/Log'
 import { useCursorPagination } from './useCursorPagination'
+import { abandonListLoad } from '../utils/listLoad.helpers'
 import {
   getLogListAgentId,
   getNamespacedListKey,
+  listCursorKey,
   parseLogListQuery,
+  readListCursor,
+  writeListCursor,
 } from '../utils/logListQuery.helpers'
 
 export const useSessions = () => {
   const { t } = useTranslation()
   const appState = useAppState()
   const location = useLocation()
+  const navigate = useNavigate()
   const [sessions, setSessions] = useState<SessionLogs[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -32,25 +37,34 @@ export const useSessions = () => {
   )
   const loadRequestIdRef = useRef(0)
 
-  const {
-    cursor,
-    nextCursor,
-    prevCursor,
-    setCursors,
-    resetCursor,
-    goNext,
-    goPrevious,
-    cursorKey,
-  } = useCursorPagination()
+  const { nextCursor, prevCursor, setCursors, resetCursor } =
+    useCursorPagination()
 
   const logService = useMemo(() => new LogService(appState), [appState])
   const agentId = getLogListAgentId(location.search)
   const listKey = `${agentId ?? ''}|${getNamespacedListKey(location.search, 's')}`
+  const cursor = readListCursor(location.search, 's')
+  const cursorKey = listCursorKey(cursor)
   const prevListKeyRef = useRef(listKey)
   const searchRef = useRef(location.search)
   searchRef.current = location.search
-  const cursorRef = useRef(cursor)
-  cursorRef.current = cursor
+  const pathnameRef = useRef(location.pathname)
+  pathnameRef.current = location.pathname
+
+  const replaceCursor = useCallback(
+    (next: typeof cursor): boolean => {
+      const nextSearch = writeListCursor(searchRef.current, 's', next)
+      if (nextSearch === (searchRef.current || '')) {
+        return false
+      }
+      navigate(
+        { pathname: pathnameRef.current, search: nextSearch },
+        { replace: true }
+      )
+      return true
+    },
+    [navigate]
+  )
 
   const fetchSessions = useCallback(
     async (
@@ -59,7 +73,7 @@ export const useSessions = () => {
       currentSortOrder: 'ASC' | 'DESC',
       newPageSize?: number,
       newFilters?: Record<string, string>,
-      requestCursor = cursorRef.current
+      requestCursor = readListCursor(searchRef.current, 's')
     ) => {
       const requestId = ++loadRequestIdRef.current
       try {
@@ -79,7 +93,16 @@ export const useSessions = () => {
 
         if (requestId !== loadRequestIdRef.current) return
         if (requestCursor && response.data.length === 0) {
-          resetCursor()
+          abandonListLoad({
+            loadRequestIdRef,
+            clearRows: () => setSessions([]),
+            setLoading,
+            setError,
+            resetCursor,
+          })
+          if (!replaceCursor(null)) {
+            setLoading(false)
+          }
           return
         }
         setSessions(response.data)
@@ -95,7 +118,7 @@ export const useSessions = () => {
         }
       }
     },
-    [pageSize, filters, logService, resetCursor, setCursors, t]
+    [pageSize, filters, logService, resetCursor, replaceCursor, setCursors, t]
   )
 
   const refreshSessions = useCallback(
@@ -116,6 +139,7 @@ export const useSessions = () => {
 
   useEffect(() => {
     const query = parseLogListQuery(searchRef.current)
+    const requestCursor = readListCursor(searchRef.current, 's')
     const listChanged = prevListKeyRef.current !== listKey
     prevListKeyRef.current = listKey
 
@@ -124,8 +148,24 @@ export const useSessions = () => {
     setSortOrder(query.sessions.apiSortOrder)
     setFilters(query.sessions.apiFilters)
 
-    if (listChanged && cursorKey) {
-      resetCursor()
+    if (listChanged && requestCursor) {
+      abandonListLoad({
+        loadRequestIdRef,
+        clearRows: () => setSessions([]),
+        setLoading,
+        setError,
+        resetCursor,
+      })
+      if (!replaceCursor(null)) {
+        void fetchSessionsRef.current(
+          query.agentId || '',
+          query.sessions.apiSortBy,
+          query.sessions.apiSortOrder,
+          query.sessions.rows,
+          query.sessions.apiFilters,
+          null
+        )
+      }
       return
     }
 
@@ -135,9 +175,30 @@ export const useSessions = () => {
       query.sessions.apiSortOrder,
       query.sessions.rows,
       query.sessions.apiFilters,
-      listChanged ? null : cursorRef.current
+      requestCursor
     )
-  }, [listKey, cursorKey, appState.tenant, appState.token, resetCursor])
+  }, [
+    listKey,
+    cursorKey,
+    appState.tenant,
+    appState.token,
+    replaceCursor,
+    resetCursor,
+  ])
+
+  const goNext = useCallback(() => {
+    if (!nextCursor) {
+      return
+    }
+    replaceCursor({ next: nextCursor })
+  }, [nextCursor, replaceCursor])
+
+  const goPrevious = useCallback(() => {
+    if (!prevCursor) {
+      return
+    }
+    replaceCursor({ prev: prevCursor })
+  }, [prevCursor, replaceCursor])
 
   return {
     sessions,

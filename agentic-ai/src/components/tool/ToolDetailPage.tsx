@@ -27,7 +27,7 @@ import { countTeamsToolsForTeam } from '../../utils/teamsRoutingHelpers'
 import { countSlackToolsForTeam } from '../../utils/slackRoutingHelpers'
 import { isCommunicationNativeToolType } from '../../utils/communicationRoutingHelpers'
 import { useToolConfig } from '../../hooks/useToolConfig'
-import { useFeatureToggles } from '../../hooks/useFeatureToggles'
+import { useFeatureToggles } from '../../contexts/FeatureTogglesContext'
 import { ToolGeneralSection } from './ToolGeneralSection'
 import { ToolRequiredMark } from './ToolRequiredMark'
 import { ToolDetailSection } from './ToolDetailSection'
@@ -646,7 +646,9 @@ const ToolDetailPage: React.FC = () => {
               >
                 <i className="pi pi-arrow-left" />
               </button>
-              <span className="tool-detail-title-label">{t('tools')}</span>
+              <span className="tool-detail-title-label page-title">
+                {t('tools')}
+              </span>
             </div>
           </div>
         </div>
@@ -673,7 +675,7 @@ const ToolDetailPage: React.FC = () => {
               >
                 <i className="pi pi-arrow-left" />
               </button>
-              <h1 className="tool-detail-title">
+              <h1 className="tool-detail-title page-title">
                 <span className="tool-detail-title-text">
                   <span className="tool-detail-title-prefix">
                     {t('tools')}{' '}

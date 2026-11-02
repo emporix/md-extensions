@@ -1,0 +1,27 @@
+{
+  "baseBranch": "auto",
+  "tracker": "jira",
+  "codeHost": "github",
+  "jira": {
+    "project": "COP",
+    "site": "emporix.atlassian.net",
+    "buddyUrl": "http://ai-buddy.vpn.emporix.io"
+  },
+  "buddy": {
+    "service": "Management Dashboard Extensions",
+    "sync": true
+  },
+  "validation": {
+    "commands": []
+  },
+  "app": {
+    "kind": "ui",
+    "readyPath": "/"
+  },
+  "browser": {
+    "provider": "agent-browser"
+  },
+  "labels": {
+    "enabled": false
+  }
+}

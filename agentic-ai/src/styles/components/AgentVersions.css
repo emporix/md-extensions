@@ -44,11 +44,18 @@
 /* PrimeReact sets dialog width inline; override it for the side-by-side diff. */
 .agent-version-diff-dialog.p-dialog {
   width: min(960px, 92vw) !important;
+  max-width: min(960px, 92vw) !important;
+  min-width: 0 !important;
 }
 
 .agent-version-diff-dialog .p-dialog-content {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   max-height: 70vh;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .agent-version-diff-empty {
@@ -69,12 +76,18 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .agent-version-diff-field {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .agent-version-diff-field-title {
@@ -86,8 +99,11 @@
 
 .agent-version-diff-columns {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--space-md);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .agent-version-diff-column-label {
@@ -99,74 +115,112 @@
   letter-spacing: 0.02em;
 }
 
-.agent-version-diff-mark-remove {
-  background: var(--color-red-100);
-  color: var(--color-red-700);
-  border-radius: 2px;
-  padding: 0 0.1em;
-}
-
-.agent-version-diff-mark-add {
-  background: var(--color-green-100);
-  color: var(--color-green-700);
-  border-radius: 2px;
-  padding: 0 0.1em;
-}
-
 .agent-version-diff-split {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   max-height: 50vh;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-sm);
   background: var(--color-gray-50);
 }
 
-.agent-version-diff-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  min-height: 1.5em;
-}
-
-.agent-version-diff-row-cell {
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
+/* The host sets `* { font-family; padding; margin }`, so every descendant is styled explicitly. */
+.agent-version-diff-pane,
+.agent-version-diff-pane * {
   font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   line-height: var(--line-height-base);
-  padding: 0 var(--space-sm);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.agent-version-diff-pane {
+  min-width: 0;
+  padding: var(--space-xs) var(--space-sm);
+  color: var(--text-primary);
   background: var(--color-gray-50);
 }
 
-.agent-version-diff-row-cell + .agent-version-diff-row-cell {
-  border-left: 1px solid var(--border-default);
+.agent-version-diff-pane-left {
+  border-right: 1px solid var(--border-default);
 }
 
-.agent-version-diff-row-same {
-  padding: var(--space-xs) var(--space-sm);
-  background: var(--color-gray-50);
-}
-
-.agent-version-diff-row-remove {
-  padding: var(--space-xs) var(--space-sm);
+.agent-version-diff-pane-remove {
   background: var(--color-red-50);
+  box-shadow: inset 3px 0 0 var(--color-red-500);
 }
 
-.agent-version-diff-row-add {
-  padding: var(--space-xs) var(--space-sm);
+.agent-version-diff-pane-add {
   background: var(--color-green-50);
+  box-shadow: inset 3px 0 0 var(--color-green-500);
 }
 
-.agent-version-diff-row-empty {
-  min-height: 1.5em;
+.agent-version-diff-pane-empty {
+  background: var(--color-gray-100);
+}
+
+.agent-version-diff-pane .agent-version-diff-mark-remove,
+.agent-version-diff-pane .agent-version-diff-mark-add {
+  padding: 0 0.1em;
+  border-radius: 2px;
+}
+
+.agent-version-diff-pane .agent-version-diff-mark-remove {
+  background: var(--color-red-100);
+  color: var(--color-red-700);
+}
+
+.agent-version-diff-pane .agent-version-diff-mark-add {
+  background: var(--color-green-100);
+  color: var(--color-green-700);
+}
+
+.agent-version-diff-change-label,
+.agent-version-diff-expand {
+  grid-column: 1 / -1;
+  margin: 0;
   padding: var(--space-xs) var(--space-sm);
-  background: var(--color-gray-50);
+  font-size: var(--font-size-xs);
+  border-top: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.agent-version-diff-change-label {
+  font-weight: var(--font-weight-bold);
+  color: var(--text-secondary);
+  background: var(--color-surface-white);
+}
+
+.agent-version-diff-change-label:first-child {
+  border-top: 0;
+}
+
+.agent-version-diff-expand {
+  width: 100%;
+  text-align: center;
+  color: var(--color-primary);
+  background: var(--color-gray-100);
+  cursor: pointer;
+}
+
+.agent-version-diff-expand:hover {
+  background: var(--color-gray-200);
+}
+
+.agent-version-diff-expand:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
 }
 
 @media (max-width: 768px) {
-  .agent-version-diff-row {
-    grid-template-columns: 1fr;
+  .agent-version-diff-columns,
+  .agent-version-diff-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .agent-version-diff-pane-left {
+    border-right: 0;
   }
 }

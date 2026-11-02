@@ -30,14 +30,14 @@ describe('ApiClient.postSse', () => {
     const client = new ApiClient(appState)
 
     await expect(async () => {
-      for await (const _event of client.postSse(
+      for await (const event of client.postSse(
         '/ai-service/testtenant/agentic/chat-stream',
         {
           agentId: 'agent-1',
           message: 'hello',
         }
       )) {
-        // no-op
+        void event
       }
     }).rejects.toMatchObject({
       message: 'Forbidden',

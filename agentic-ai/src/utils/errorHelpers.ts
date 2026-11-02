@@ -139,6 +139,22 @@ export const formatApiError = (
   return fallbackMessage
 }
 
+export const isAbortError = (err: unknown): boolean => {
+  if (!err || typeof err !== 'object') {
+    return false
+  }
+  return (err as { name?: unknown }).name === 'AbortError'
+}
+
+const STREAM_ERROR_CODE_400 = /\berror code:\s*400\b/i
+
+export const isChatBadRequest = (err: unknown): boolean => {
+  if (err instanceof ApiClientError && err.status === 400) {
+    return true
+  }
+  return err instanceof Error && STREAM_ERROR_CODE_400.test(err.message)
+}
+
 type EntityLoadErrorKeys = {
   readonly notFoundKey: string
   readonly errorKey: string

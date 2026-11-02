@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { useToast } from '../contexts/ToastContext'
 import { McpTool } from '../types/Mcp'
 import { useAppState } from '../contexts/AppStateContext'
+import { MCP_TOOL_FROM_FUNCTION_ASSISTANT_AGENT_ID } from '../constants/agentConstants'
 import {
-  MCP_TOOL_FROM_FUNCTION_ASSISTANT_AGENT_ID,
   chatWithAgent,
   createMcpToolFromFunctionAssistantAgent,
 } from '../services/agentService'

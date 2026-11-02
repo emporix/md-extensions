@@ -5,6 +5,7 @@ export type SseFrame = {
 
 export type AgentChatStreamEvent =
   | { readonly type: 'token'; readonly content: string }
+  | { readonly type: 'thinking'; readonly content: string }
   | {
       readonly type: 'tool_start'
       readonly toolName: string
@@ -141,6 +142,11 @@ export const mapAgentChatStreamEvent = (
     case 'token':
       return {
         type: 'token',
+        content: typeof payload.content === 'string' ? payload.content : '',
+      }
+    case 'thinking':
+      return {
+        type: 'thinking',
         content: typeof payload.content === 'string' ? payload.content : '',
       }
     case 'tool_start':

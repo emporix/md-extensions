@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, useParams } from 'react-router'
+import { SecondaryButton } from '@emporix/component-library'
 import { Button } from 'primereact/button'
 import { Message } from 'primereact/message'
 import { ProgressSpinner } from 'primereact/progressspinner'
@@ -24,7 +25,7 @@ import { AgentSaveWithChangeNote } from './agent-config/AgentSaveWithChangeNote'
 import { ConversationsTab } from '../shared/ConversationsTab'
 import { AgentVersionsTab } from './agent-versions/AgentVersionsTab'
 import { useAgentConfig } from '../../hooks/useAgentConfig'
-import { useFeatureToggles } from '../../hooks/useFeatureToggles'
+import { useFeatureToggles } from '../../contexts/FeatureTogglesContext'
 import { useAgentToolsCatalog } from '../../hooks/useAgentToolsCatalog'
 import { useAgentTokensCatalog } from '../../hooks/useAgentTokensCatalog'
 import { useAgentOAuthCatalog } from '../../hooks/useAgentOAuthCatalog'
@@ -37,6 +38,7 @@ import {
   getLocalizedValue,
 } from '../../utils/agentHelpers'
 import { getCustomAgent, getCustomAgents } from '../../services/agentService'
+import { CHAT_AGENT_QUERY_PARAM } from '../../utils/agentChatHelpers'
 import { getEntityLoadErrorMessage } from '../../utils/errorHelpers'
 import { hasConversations } from '../../services/conversationsService'
 import type { AgentCommerceFilterDsl } from '../../utils/agentFilterDslHelpers'
@@ -485,7 +487,9 @@ const AgentDetailPage: React.FC = () => {
               >
                 <i className="pi pi-arrow-left" />
               </button>
-              <span className="agent-detail-title-label">{t('agent')}</span>
+              <span className="agent-detail-title-label page-title">
+                {t('agent')}
+              </span>
             </div>
           </div>
         </div>
@@ -512,7 +516,7 @@ const AgentDetailPage: React.FC = () => {
               >
                 <i className="pi pi-arrow-left" />
               </button>
-              <h1 className="agent-detail-title">
+              <h1 className="agent-detail-title page-title">
                 <span className="agent-detail-title-text">
                   <span className="agent-detail-title-prefix">
                     {t('agent')}{' '}
@@ -567,6 +571,24 @@ const AgentDetailPage: React.FC = () => {
               </button>
             ))}
           </nav>
+          {toggles.aiAgentChat ? (
+            <SecondaryButton
+              className="agent-detail-test-btn"
+              disabled={
+                isCreating || !agent.id?.trim() || agent.enabled === false
+              }
+              onClick={() => {
+                const id = agent.id?.trim()
+                if (!id || agent.enabled === false) {
+                  return
+                }
+                window.location.href = `${window.location.pathname}#/assistants?${CHAT_AGENT_QUERY_PARAM}=${encodeURIComponent(id)}`
+              }}
+            >
+              <i className="pi pi-play" aria-hidden="true" />
+              {t('agent_test')}
+            </SecondaryButton>
+          ) : null}
         </div>
       </div>
 

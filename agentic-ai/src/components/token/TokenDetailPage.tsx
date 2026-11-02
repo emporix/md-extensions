@@ -141,7 +141,9 @@ const TokenDetailPage: React.FC = () => {
               >
                 <i className="pi pi-arrow-left" />
               </button>
-              <span className="token-detail-title-label">{t('token')}</span>
+              <span className="token-detail-title-label page-title">
+                {t('token')}
+              </span>
             </div>
           </div>
         </div>
@@ -168,7 +170,7 @@ const TokenDetailPage: React.FC = () => {
               >
                 <i className="pi pi-arrow-left" />
               </button>
-              <h1 className="token-detail-title">
+              <h1 className="token-detail-title page-title">
                 <span className="token-detail-title-text">
                   <span className="token-detail-title-prefix">
                     {t('token')}{' '}

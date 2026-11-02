@@ -1,42 +1,65 @@
 import { AppState } from '../types/common'
 import { ApiClient } from './apiClient'
 
-export interface FeatureToggleDto {
+export interface FeatureToggleValue {
+  code: string
   isEnabled: boolean
 }
 
 export interface AgenticFeatureToggles {
   msTeams: boolean
   emporixHosting: boolean
+  aiAgentChat: boolean
 }
 
 const MS_TEAMS_FEATURE = 'ms-teams'
 const EMPORIX_HOSTING_FEATURE = 'emporixHosting'
+const AI_AGENT_CHAT_FEATURE = 'ai-agent-chat'
+const FEATURE_TOGGLE_PAGE_SIZE = 1000
 
 const toggleCacheKey = (appState: AppState): string => appState.tenant
 
-const resolvedCache = new Map<string, AgenticFeatureToggles>()
-const inFlight = new Map<string, Promise<AgenticFeatureToggles>>()
+const resolvedCache = new Map<string, FeatureToggleValue[]>()
+const inFlight = new Map<string, Promise<FeatureToggleValue[]>>()
 
-const fetchFeatureEnabled = async (
-  appState: AppState,
-  feature: string
-): Promise<boolean> => {
-  try {
-    const api = new ApiClient(appState)
-    const response = await api.get<FeatureToggleDto>(
-      `/feature-toggle/${appState.tenant}/features/${feature}`
-    )
-    return response.isEnabled
-  } catch (error) {
-    console.error(`Failed to fetch ${feature} feature toggle:`, error)
-    return false
+const featureToggleListPath = (tenant: string): string =>
+  `/feature-toggle/${tenant}/features?pageNumber=1&pageSize=${FEATURE_TOGGLE_PAGE_SIZE}`
+
+const isCodeEnabled = (values: FeatureToggleValue[], code: string): boolean =>
+  values.some((entry) => entry.code === code && entry.isEnabled === true)
+
+export const toAgenticToggles = (
+  values: FeatureToggleValue[]
+): AgenticFeatureToggles => ({
+  msTeams: isCodeEnabled(values, MS_TEAMS_FEATURE),
+  emporixHosting: isCodeEnabled(values, EMPORIX_HOSTING_FEATURE),
+  aiAgentChat: isCodeEnabled(values, AI_AGENT_CHAT_FEATURE),
+})
+
+const readFeatureToggleValues = (response: unknown): FeatureToggleValue[] => {
+  if (Array.isArray(response)) {
+    return response
   }
+  if (!response || typeof response !== 'object') {
+    return []
+  }
+  const values = (response as { values?: unknown }).values
+  return Array.isArray(values) ? values : []
 }
 
-export const getAgenticFeatureToggles = async (
+const fetchFeatureToggleValues = async (
   appState: AppState
-): Promise<AgenticFeatureToggles> => {
+): Promise<FeatureToggleValue[]> => {
+  const api = new ApiClient(appState)
+  const response = await api.get<unknown>(
+    featureToggleListPath(appState.tenant)
+  )
+  return readFeatureToggleValues(response)
+}
+
+export const getFeatureToggleValues = async (
+  appState: AppState
+): Promise<FeatureToggleValue[]> => {
   const key = toggleCacheKey(appState)
   const hit = resolvedCache.get(key)
   if (hit) {
@@ -45,20 +68,28 @@ export const getAgenticFeatureToggles = async (
 
   let pending = inFlight.get(key)
   if (!pending) {
-    pending = Promise.all([
-      fetchFeatureEnabled(appState, MS_TEAMS_FEATURE),
-      fetchFeatureEnabled(appState, EMPORIX_HOSTING_FEATURE),
-    ]).then(([msTeams, emporixHosting]) => {
-      const value: AgenticFeatureToggles = { msTeams, emporixHosting }
-      resolvedCache.set(key, value)
-      inFlight.delete(key)
-      return value
-    })
+    pending = fetchFeatureToggleValues(appState).then(
+      (value) => {
+        resolvedCache.set(key, value)
+        inFlight.delete(key)
+        return value
+      },
+      (error: unknown) => {
+        console.error('Failed to fetch feature toggles:', error)
+        inFlight.delete(key)
+        return []
+      }
+    )
     inFlight.set(key, pending)
   }
 
   return pending
 }
+
+export const getAgenticFeatureToggles = async (
+  appState: AppState
+): Promise<AgenticFeatureToggles> =>
+  toAgenticToggles(await getFeatureToggleValues(appState))
 
 export const isMsTeamsFeatureEnabled = async (
   appState: AppState

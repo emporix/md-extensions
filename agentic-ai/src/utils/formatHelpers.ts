@@ -57,6 +57,124 @@ export const formatReadableCommunicationContent = (content: string): string => {
   return normalizeEscapedNewlines(content)
 }
 
+const fencedJson = (value: unknown): string =>
+  `\`\`\`json\n${JSON.stringify(value, null, 2)}\n\`\`\``
+
+const matchingJsonEnd = (text: string, start: number): number => {
+  const stack: string[] = []
+  let inString = false
+  let escaped = false
+
+  for (let index = start; index < text.length; index += 1) {
+    const char = text[index]
+    if (inString) {
+      if (escaped) {
+        escaped = false
+        continue
+      }
+      if (char === '\\') {
+        escaped = true
+        continue
+      }
+      if (char === '"') {
+        inString = false
+      }
+      continue
+    }
+    if (char === '"') {
+      inString = true
+      continue
+    }
+    if (char === '{' || char === '[') {
+      stack.push(char === '{' ? '}' : ']')
+      continue
+    }
+    if (char === '}' || char === ']') {
+      if (stack.pop() !== char) {
+        return -1
+      }
+      if (stack.length === 0) {
+        return index
+      }
+    }
+  }
+
+  return -1
+}
+
+const prettyFenceBlock = (block: string): string => {
+  const match = /^```(?:json)?\s*\n?([\s\S]*?)\n?```$/i.exec(block)
+  const body = match?.[1]?.trim()
+  if (!body) {
+    return block
+  }
+  const parsed = tryParseJsonStructure(body)
+  if (parsed === null) {
+    return block
+  }
+  return fencedJson(parsed)
+}
+
+const replaceTopLevelJson = (text: string): string => {
+  let result = ''
+  let index = 0
+
+  while (index < text.length) {
+    if (text.startsWith('```', index)) {
+      const close = text.indexOf('```', index + 3)
+      if (close === -1) {
+        result += text.slice(index)
+        break
+      }
+      const block = text.slice(index, close + 3)
+      result += prettyFenceBlock(block)
+      index = close + 3
+      continue
+    }
+
+    const char = text[index]
+    if (char === '{' || char === '[') {
+      const end = matchingJsonEnd(text, index)
+      if (end === -1) {
+        result += text.slice(index)
+        break
+      }
+      const parsed = tryParseJsonStructure(text.slice(index, end + 1))
+      if (parsed !== null) {
+        const needsBreak = result.length > 0 && !result.endsWith('\n')
+        result += `${needsBreak ? '\n\n' : ''}${fencedJson(parsed)}\n`
+        index = end + 1
+        continue
+      }
+    }
+
+    result += char
+    index += 1
+  }
+
+  return result
+}
+
+/** Pretty-print JSON in a chat reply. Incomplete JSON stays as typed. */
+export const formatChatResponseText = (text: string): string => {
+  const trimmed = text.trim()
+  if (!trimmed) {
+    return text
+  }
+
+  const whole = tryParseJsonStructure(trimmed)
+  if (whole !== null) {
+    return fencedJson(whole)
+  }
+
+  const fencedOnly = /^```(?:json)?\s*\n?([\s\S]*?)\n?```$/i.exec(trimmed)
+  if (fencedOnly?.[1]) {
+    return prettyFenceBlock(trimmed)
+  }
+
+  return replaceTopLevelJson(text)
+}
+
 export const normalizeTimestampInput = (
   value: TimestampValue
 ): string | null => {

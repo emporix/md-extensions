@@ -11,8 +11,8 @@ import {
   validateAgentOutputJsonSchema,
 } from '../utils/validateJsonSchema'
 import { useAppState } from '../contexts/AppStateContext'
+import { JSON_SCHEMA_ASSISTANT_AGENT_ID } from '../constants/agentConstants'
 import {
-  JSON_SCHEMA_ASSISTANT_AGENT_ID,
   chatWithAgent,
   createJsonSchemaAssistantAgent,
 } from '../services/agentService'
