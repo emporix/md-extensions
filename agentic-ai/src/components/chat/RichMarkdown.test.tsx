@@ -11,6 +11,7 @@ describe('RichMarkdown', () => {
       '## Title\n\n- item\n\n[docs](https://example.com/docs)'
     )
 
+    expect(markup).toContain('chat-markdown')
     expect(markup).toContain('<h2>Title</h2>')
     expect(markup).toContain('<li>item</li>')
     expect(markup).toContain(
@@ -37,5 +38,25 @@ describe('RichMarkdown', () => {
     expect(markup).toContain(
       '<a href="https://example.com/a.png" target="_blank" rel="noopener noreferrer">pic</a>'
     )
+  })
+
+  it('renders tables, quotes, and inline code', () => {
+    const markup = render(
+      [
+        '> note',
+        '',
+        'Use `orderId`.',
+        '',
+        '| Name | Qty |',
+        '| --- | --- |',
+        '| Bolt | 2 |',
+      ].join('\n')
+    )
+
+    expect(markup).toContain('<blockquote>')
+    expect(markup).toContain('<code>orderId</code>')
+    expect(markup).toContain('chat-markdown-table')
+    expect(markup).toContain('<th>Name</th>')
+    expect(markup).toContain('<td>Bolt</td>')
   })
 })

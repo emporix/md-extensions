@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAppState } from '../contexts/AppStateContext'
+import { RECOMMENDED_PROMPTS_AGENT_ID } from '../constants/agentConstants'
 import {
-  RECOMMENDED_PROMPTS_AGENT_ID,
   chatWithAgentOnce,
   fetchEventSubscriptions,
 } from '../services/agentService'

@@ -192,6 +192,16 @@
   --chat-composer-min-height: 5rem;
   --chat-composer-max-height: 7.5rem;
   --chat-picker-max-width: 25rem;
+  --chat-frame-height: 22rem;
+  --chat-frame-min-width: 17.5rem;
+  --chat-frame-min-height: 12.5rem;
+  --color-chat-code-bg: #2c333d;
+  --color-chat-code-label: #e7ebf0;
+  --color-chat-code-text: #8fb89a;
+  --color-chat-code-key: #d7ead8;
+  --color-chat-code-string: #7dcea0;
+  --color-chat-code-number: #e5c07b;
+  --color-chat-code-literal: #c9b3e8;
 
   /* Component sizes */
   --spinner-size-md: 2.25rem;

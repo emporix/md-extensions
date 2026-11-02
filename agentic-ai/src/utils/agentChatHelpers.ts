@@ -3,6 +3,26 @@ import type { Trigger } from '../types/Agent'
 
 export const CHAT_EMPLOYEE_SCOPE = 'employee'
 export const CHAT_API_TRIGGER_TYPE = 'endpoint'
+export const AGENT_MANAGE_SCOPE = 'ai.agent_manage'
+export const CHAT_AGENT_TAG = 'chat'
+
+export const hasAgentManageScope = (scopeIds: readonly string[]): boolean =>
+  scopeIds.includes(AGENT_MANAGE_SCOPE)
+
+export const canSeeAgentInChat = (
+  tags: readonly string[] | undefined,
+  canManageAgents: boolean
+): boolean => {
+  if (canManageAgents) {
+    return true
+  }
+  return (tags ?? []).some((tag) => tag.trim().toLowerCase() === CHAT_AGENT_TAG)
+}
+
+export const canEditAgentInChat = (
+  agentId: string | null,
+  canManageAgents: boolean
+): boolean => (agentId?.length ?? 0) > 0 && canManageAgents
 
 export type ChatInvokeGate = 'employee_scope' | 'api_trigger'
 
@@ -19,6 +39,15 @@ export const nextToolActivityText = (
   const trimmed = toolName?.trim() ?? ''
   return trimmed.length > 0 ? trimmed : null
 }
+
+export const TRANSCRIPT_FOLLOW_THRESHOLD_PX = 80
+
+export const isTranscriptNearBottom = (
+  scrollTop: number,
+  scrollHeight: number,
+  clientHeight: number
+): boolean =>
+  scrollHeight - scrollTop - clientHeight <= TRANSCRIPT_FOLLOW_THRESHOLD_PX
 
 export const shouldShowAssistantActivity = (
   streaming: boolean,
@@ -55,6 +84,10 @@ export const nextAgentId = (
 }
 
 export const CHAT_AGENT_QUERY_PARAM = 'agent'
+
+export const initialAgentIdFromQuery = (
+  requested: string | null
+): string | null => requested?.trim() || null
 
 export const nextAgentIdFromQuery = (
   current: string | null,

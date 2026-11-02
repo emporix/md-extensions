@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type WheelEvent,
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
@@ -17,34 +18,41 @@ import {
   SecondaryButton,
 } from '@emporix/component-library'
 import { AiGeneratedNotice } from '../shared/AiGeneratedNotice'
-import { RichMarkdown } from './RichMarkdown'
+import { AssistantMessageContent } from './AssistantMessageContent'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../contexts/ToastContext'
 import { useAgentChat } from '../../hooks/useAgentChat'
 import { useAgents } from '../../hooks/useAgents'
+import { useMyIamScopes } from '../../hooks/useMyIamScopes'
 import { useChatRecommendations } from '../../hooks/useChatRecommendations'
 import {
   isEnabledAgentPresent,
   useHelperAgentProvisioning,
 } from '../../hooks/useHelperAgentProvisioning'
 import {
-  patchCustomAgent,
   RECOMMENDED_PROMPTS_AGENT_ID,
   RECOMMENDED_PROMPTS_TEMPLATE_NOT_FOUND_KEY,
+} from '../../constants/agentConstants'
+import {
+  patchCustomAgent,
   createRecommendedPromptsAgent,
 } from '../../services/agentService'
 import { commerceTriggerExtractEvents } from '../../utils/agentFilterDslHelpers'
 import {
   buildChatInvokePatchOperations,
+  canEditAgentInChat,
+  canSeeAgentInChat,
   getChatInvokeGates,
+  hasAgentManageScope,
   CHAT_AGENT_QUERY_PARAM,
+  initialAgentIdFromQuery,
+  isTranscriptNearBottom,
   nextAgentIdFromQuery,
   shouldShowAssistantActivity,
   shouldShowRecommendationEmpty,
   type ChatInvokeGate,
 } from '../../utils/agentChatHelpers'
 import { formatApiError } from '../../utils/errorHelpers'
-import { formatChatResponseText } from '../../utils/formatHelpers'
 import { getLocalizedValue } from '../../utils/agentHelpers'
 
 type AgentOption = {
@@ -103,23 +111,33 @@ const AgentChatPage = () => {
   const { customAgents, customAgentsLoading, refreshCustomAgents } = useAgents({
     loadTemplates: false,
   })
+  const { scopes, loading: scopesLoading } = useMyIamScopes()
+  const canManageAgents = hasAgentManageScope(scopes.map((scope) => scope.id))
   const { messages, status, activity, send, reset, stop } = useAgentChat()
-  const [agentId, setAgentId] = useState<string | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const requestedAgentId = searchParams.get(CHAT_AGENT_QUERY_PARAM)
+  const [agentId, setAgentId] = useState<string | null>(() =>
+    initialAgentIdFromQuery(requestedAgentId)
+  )
   const [pendingAgentId, setPendingAgentId] = useState<string | null>(null)
   const [invokeGateState, setInvokeGateState] =
     useState<InvokeGateState | null>(null)
   const [invokePatching, setInvokePatching] = useState(false)
   const [draft, setDraft] = useState('')
   const transcriptRef = useRef<HTMLDivElement>(null)
-  const [searchParams, setSearchParams] = useSearchParams()
-  const requestedAgentId = searchParams.get(CHAT_AGENT_QUERY_PARAM)
+  const followTranscriptRef = useRef(true)
 
   const enabledAgents = useMemo(
     () =>
-      customAgents.filter(
-        (agent) => agent.enabled && agent.id !== RECOMMENDED_PROMPTS_AGENT_ID
-      ),
-    [customAgents]
+      scopesLoading
+        ? []
+        : customAgents.filter(
+            (agent) =>
+              agent.enabled &&
+              agent.id !== RECOMMENDED_PROMPTS_AGENT_ID &&
+              canSeeAgentInChat(agent.tags, canManageAgents)
+          ),
+    [canManageAgents, customAgents, scopesLoading]
   )
   const agentOptions = useMemo<AgentOption[]>(
     () =>
@@ -154,9 +172,27 @@ const AgentChatPage = () => {
     setSearchParams(nextParams, { replace: true })
   }, [agentId, requestedAgentId, searchParams, setSearchParams])
 
-  useEffect(() => {
+  const handleTranscriptWheel = (event: WheelEvent<HTMLDivElement>) => {
+    if (event.deltaY < 0) {
+      followTranscriptRef.current = false
+    }
+  }
+
+  const handleTranscriptScroll = () => {
     const transcript = transcriptRef.current
     if (!transcript) {
+      return
+    }
+    followTranscriptRef.current = isTranscriptNearBottom(
+      transcript.scrollTop,
+      transcript.scrollHeight,
+      transcript.clientHeight
+    )
+  }
+
+  useEffect(() => {
+    const transcript = transcriptRef.current
+    if (!transcript || !followTranscriptRef.current) {
       return
     }
     transcript.scrollTop = transcript.scrollHeight
@@ -257,6 +293,7 @@ const AgentChatPage = () => {
     if (!agentId) {
       return
     }
+    followTranscriptRef.current = true
     if (source === 'composer') {
       setDraft('')
     }
@@ -347,6 +384,13 @@ const AgentChatPage = () => {
     )
   }
 
+  const handleEditAgent = () => {
+    if (!agentId || !canEditAgentInChat(agentId, canManageAgents)) {
+      return
+    }
+    window.location.href = `${window.location.pathname}#/agents/${encodeURIComponent(agentId)}/edit`
+  }
+
   const handleSend = () => {
     attemptSend(draft.trim(), 'composer')
   }
@@ -384,15 +428,30 @@ const AgentChatPage = () => {
     <section className="agent-chat-page">
       <header className="agent-chat-header">
         <h1 className="agent-chat-title page-title">{t('chat_title')}</h1>
-        <SecondaryButton className="agent-chat-reset-btn" onClick={reset}>
-          <i className="pi pi-refresh" aria-hidden="true" />
-          {t('chat_reset')}
-        </SecondaryButton>
+        <div className="agent-chat-header-actions">
+          <SecondaryButton
+            className="agent-chat-edit-btn"
+            onClick={handleEditAgent}
+            disabled={!canEditAgentInChat(agentId, canManageAgents)}
+          >
+            <i className="pi pi-pencil" aria-hidden="true" />
+            {t('chat_edit_agent')}
+          </SecondaryButton>
+          <SecondaryButton className="agent-chat-reset-btn" onClick={reset}>
+            <i className="pi pi-refresh" aria-hidden="true" />
+            {t('chat_reset')}
+          </SecondaryButton>
+        </div>
       </header>
       <AiGeneratedNotice variant="short" />
       <div className="agent-chat-card">
-        <div className="agent-chat-transcript" ref={transcriptRef}>
-          {customAgentsLoading && messages.length === 0 ? (
+        <div
+          className="agent-chat-transcript"
+          ref={transcriptRef}
+          onScroll={handleTranscriptScroll}
+          onWheel={handleTranscriptWheel}
+        >
+          {(customAgentsLoading || scopesLoading) && messages.length === 0 ? (
             <p className="agent-chat-empty">{t('loading')}</p>
           ) : (
             <ChatBubble role="assistant">{t('chat_welcome')}</ChatBubble>
@@ -409,7 +468,7 @@ const AgentChatPage = () => {
             return (
               <ChatBubble key={message.id} role={message.role}>
                 {message.role === 'assistant' && hasText ? (
-                  <RichMarkdown text={formatChatResponseText(message.text)} />
+                  <AssistantMessageContent text={message.text} />
                 ) : null}
                 {message.role === 'assistant' ? null : message.text}
                 {showStatus ? (

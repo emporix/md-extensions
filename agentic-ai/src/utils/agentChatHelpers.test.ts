@@ -4,8 +4,13 @@ import {
   getChatInvokeGates,
   isCustomerOnlyRequiredScopes,
   isMissingApiTrigger,
+  canEditAgentInChat,
+  canSeeAgentInChat,
+  initialAgentIdFromQuery,
+  hasAgentManageScope,
   nextAgentId,
   nextAgentIdFromQuery,
+  isTranscriptNearBottom,
   nextSessionId,
   nextThinkingText,
   nextToolActivityText,
@@ -26,6 +31,16 @@ describe('nextSessionId', () => {
 
   it('clears the session when the conversation resets', () => {
     expect(nextSessionId(true, 'sess-1')).toBeNull()
+  })
+})
+
+describe('isTranscriptNearBottom', () => {
+  it('follows while the reader is at the bottom', () => {
+    expect(isTranscriptNearBottom(520, 1000, 400)).toBe(true)
+  })
+
+  it('stops following once the reader scrolls up', () => {
+    expect(isTranscriptNearBottom(100, 1000, 400)).toBe(false)
   })
 })
 
@@ -71,6 +86,34 @@ describe('shouldShowRecommendationEmpty', () => {
   })
 })
 
+describe('canSeeAgentInChat', () => {
+  it('shows every agent to a caller who can manage agents', () => {
+    expect(hasAgentManageScope(['ai.agent_read', 'ai.agent_manage'])).toBe(true)
+    expect(canSeeAgentInChat(['internal'], true)).toBe(true)
+    expect(canSeeAgentInChat(undefined, true)).toBe(true)
+  })
+
+  it('shows only chat-tagged agents without agent manage', () => {
+    expect(hasAgentManageScope(['ai.agent_read'])).toBe(false)
+    expect(canSeeAgentInChat(['chat'], false)).toBe(true)
+    expect(canSeeAgentInChat([' Chat '], false)).toBe(true)
+    expect(canSeeAgentInChat(['internal'], false)).toBe(false)
+    expect(canSeeAgentInChat(undefined, false)).toBe(false)
+  })
+})
+
+describe('canEditAgentInChat', () => {
+  it('allows edit only when an agent is selected and the caller can manage agents', () => {
+    expect(canEditAgentInChat('quote-agent', true)).toBe(true)
+  })
+
+  it('blocks edit without agent manage or without a selection', () => {
+    expect(canEditAgentInChat('quote-agent', false)).toBe(false)
+    expect(canEditAgentInChat(null, true)).toBe(false)
+    expect(canEditAgentInChat('', true)).toBe(false)
+  })
+})
+
 describe('nextAgentId', () => {
   it('keeps the current agent while it stays enabled', () => {
     expect(nextAgentId('a', ['a', 'b'], true)).toBe('a')
@@ -87,6 +130,12 @@ describe('nextAgentId', () => {
 })
 
 describe('nextAgentIdFromQuery', () => {
+  it('provides the requested agent for initial state without waiting for effects', () => {
+    expect(initialAgentIdFromQuery(' quote-agent ')).toBe('quote-agent')
+    expect(initialAgentIdFromQuery(null)).toBeNull()
+    expect(initialAgentIdFromQuery('   ')).toBeNull()
+  })
+
   it('selects the requested agent before the first enabled agent', () => {
     expect(
       nextAgentIdFromQuery(null, 'quote-agent', ['a', 'quote-agent'], false)

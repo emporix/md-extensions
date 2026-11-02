@@ -16,6 +16,7 @@ import { AppState } from './types/common'
 import { ToastProvider } from './contexts/ToastContext'
 import { AppStateProvider } from './contexts/AppStateContext'
 import { FeatureTogglesProvider } from './contexts/FeatureTogglesContext'
+import { IamScopesProvider } from './contexts/IamScopesContext'
 import '@emporix/component-library/styles'
 import './translations/i18n'
 import './styles/agents.css'
@@ -53,65 +54,70 @@ const RemoteComponent = ({
   return (
     <AppStateProvider appState={appState}>
       <FeatureTogglesProvider>
-        <ToastProvider>
-          <HashRouter>
-            <TeamsInstallCallbackHandler />
-            <Routes>
-              <Route path="/agents" element={<AgentsView />} />
-              <Route
-                path="/assistants"
-                element={
-                  <Suspense fallback={<p>{t('loading')}</p>}>
-                    <AgentChatPage />
-                  </Suspense>
-                }
-              />
-              <Route path="/agents/add" element={<AgentDetailPage />} />
-              <Route
-                path="/agents/:agentId/edit"
-                element={<AgentDetailPage />}
-              />
-              <Route path="/tools" element={<ToolsPage />} />
-              <Route path="/tools/add" element={<ToolDetailPage />} />
-              <Route path="/tools/:toolId/edit" element={<ToolDetailPage />} />
-              <Route path="/tokens" element={<TokensPage />} />
-              <Route path="/tokens/add" element={<TokenDetailPage />} />
-              <Route
-                path="/tokens/:tokenId/edit"
-                element={<TokenDetailPage />}
-              />
-              <Route path="/oauth" element={<OAuthsPage />} />
-              <Route path="/oauth/add" element={<OAuthDetailPage />} />
-              <Route
-                path="/oauth/:oauthId/edit"
-                element={<OAuthDetailPage />}
-              />
-              <Route path="/mcp" element={<McpPage />} />
-              <Route path="/mcp/add" element={<McpDetailPage />} />
-              <Route
-                path="/mcp/:mcpServerId/edit"
-                element={<McpDetailPage />}
-              />
-              <Route
-                path="/logs"
-                element={<Navigate to="/logs/requests" replace />}
-              />
-              <Route path="/logs/requests" element={<LogsPage />} />
-              <Route path="/logs/jobs" element={<LogsPage />} />
-              <Route path="/logs/sessions" element={<LogsPage />} />
-              <Route
-                path="/logs/requests/:logId"
-                element={<LogDetailsPage />}
-              />
-              <Route path="/logs/jobs/:jobId" element={<JobDetailsPage />} />
-              <Route
-                path="/logs/sessions/:sessionId"
-                element={<SessionFlowPage />}
-              />
-              <Route path="/" element={<Navigate to="/agents" replace />} />
-            </Routes>
-          </HashRouter>
-        </ToastProvider>
+        <IamScopesProvider>
+          <ToastProvider>
+            <HashRouter>
+              <TeamsInstallCallbackHandler />
+              <Routes>
+                <Route path="/agents" element={<AgentsView />} />
+                <Route
+                  path="/assistants"
+                  element={
+                    <Suspense fallback={<p>{t('loading')}</p>}>
+                      <AgentChatPage />
+                    </Suspense>
+                  }
+                />
+                <Route path="/agents/add" element={<AgentDetailPage />} />
+                <Route
+                  path="/agents/:agentId/edit"
+                  element={<AgentDetailPage />}
+                />
+                <Route path="/tools" element={<ToolsPage />} />
+                <Route path="/tools/add" element={<ToolDetailPage />} />
+                <Route
+                  path="/tools/:toolId/edit"
+                  element={<ToolDetailPage />}
+                />
+                <Route path="/tokens" element={<TokensPage />} />
+                <Route path="/tokens/add" element={<TokenDetailPage />} />
+                <Route
+                  path="/tokens/:tokenId/edit"
+                  element={<TokenDetailPage />}
+                />
+                <Route path="/oauth" element={<OAuthsPage />} />
+                <Route path="/oauth/add" element={<OAuthDetailPage />} />
+                <Route
+                  path="/oauth/:oauthId/edit"
+                  element={<OAuthDetailPage />}
+                />
+                <Route path="/mcp" element={<McpPage />} />
+                <Route path="/mcp/add" element={<McpDetailPage />} />
+                <Route
+                  path="/mcp/:mcpServerId/edit"
+                  element={<McpDetailPage />}
+                />
+                <Route
+                  path="/logs"
+                  element={<Navigate to="/logs/requests" replace />}
+                />
+                <Route path="/logs/requests" element={<LogsPage />} />
+                <Route path="/logs/jobs" element={<LogsPage />} />
+                <Route path="/logs/sessions" element={<LogsPage />} />
+                <Route
+                  path="/logs/requests/:logId"
+                  element={<LogDetailsPage />}
+                />
+                <Route path="/logs/jobs/:jobId" element={<JobDetailsPage />} />
+                <Route
+                  path="/logs/sessions/:sessionId"
+                  element={<SessionFlowPage />}
+                />
+                <Route path="/" element={<Navigate to="/agents" replace />} />
+              </Routes>
+            </HashRouter>
+          </ToastProvider>
+        </IamScopesProvider>
       </FeatureTogglesProvider>
     </AppStateProvider>
   )

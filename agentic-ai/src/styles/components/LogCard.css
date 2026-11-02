@@ -312,8 +312,9 @@
   cursor: pointer;
 }
 
-.communication-panel-copy:hover {
-  color: var(--text-primary);
+.communication-panel-copy:hover,
+.communication-panel-copy:focus-visible {
+  color: var(--blue-5);
 }
 
 .communication-panel-body {

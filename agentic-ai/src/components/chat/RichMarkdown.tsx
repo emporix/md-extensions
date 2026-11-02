@@ -36,6 +36,12 @@ const MarkdownAnchor: Components['a'] = ({ href, children }) => {
   )
 }
 
+const MarkdownTable: Components['table'] = ({ children }) => (
+  <div className="chat-markdown-table">
+    <table>{children}</table>
+  </div>
+)
+
 const MarkdownImage: Components['img'] = ({ src, alt }) => {
   const source = typeof src === 'string' ? src : undefined
   if (!isSafeLinkUrl(source)) {
@@ -50,11 +56,17 @@ const MarkdownImage: Components['img'] = ({ src, alt }) => {
 }
 
 export const RichMarkdown = ({ text }: RichMarkdownProps) => (
-  <ReactMarkdown
-    remarkPlugins={[remarkGfm]}
-    rehypePlugins={[rehypeSanitize]}
-    components={{ a: MarkdownAnchor, img: MarkdownImage }}
-  >
-    {text}
-  </ReactMarkdown>
+  <div className="chat-markdown">
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      rehypePlugins={[rehypeSanitize]}
+      components={{
+        a: MarkdownAnchor,
+        img: MarkdownImage,
+        table: MarkdownTable,
+      }}
+    >
+      {text}
+    </ReactMarkdown>
+  </div>
 )

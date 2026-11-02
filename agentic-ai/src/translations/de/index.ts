@@ -1143,6 +1143,7 @@ const TRANSLATIONS_DE = {
     'HINWEIS: Die Ausgabe wird von KI erzeugt. Bitte prüfen Sie sie, da Fehler auftreten können.',
 
   chat_title: 'AI-Assistenten',
+  chat_edit_agent: 'Agent bearbeiten',
   chat_reset: 'Zurücksetzen',
   chat_switch_title: 'Agent wechseln?',
   chat_switch_body: 'Die aktuelle Unterhaltung wird beendet.',
@@ -1183,6 +1184,21 @@ const TRANSLATIONS_DE = {
   chat_gate_trigger_confirm: 'API-Trigger hinzufügen',
   chat_gate_patch_error:
     'Der Agent konnte für den Test nicht aktualisiert werden.',
+  chat_chart_drawing: 'Diagramm wird gezeichnet',
+  chat_chart_invalid: 'Dieses Diagramm kann nicht angezeigt werden.',
+  chat_chart_resize: 'Diagrammgröße ändern',
+  chat_diagram_drawing: 'Diagramm wird gezeichnet',
+  chat_diagram_invalid: 'Dieses Diagramm kann nicht angezeigt werden.',
+  chat_diagram_resize: 'Diagrammgröße ändern',
+  chat_download_png: 'PNG herunterladen',
+  chat_download_failed: 'Das Bild konnte nicht heruntergeladen werden.',
+  chat_chart_file: 'Diagramm',
+  chat_diagram_file: 'Ablaufdiagramm',
+  chat_csv_drawing: 'Tabelle wird vorbereitet',
+  chat_csv_invalid: 'Diese Tabelle kann nicht angezeigt werden.',
+  chat_json_drawing: 'Daten werden vorbereitet',
+  chat_json_invalid: 'Diese Daten können nicht angezeigt werden.',
+  chat_note_drawing: 'Notiz wird vorbereitet',
 
   'global.pagination': 'Zeige {first} bis {last} von {totalRecords} Einträgen',
 }

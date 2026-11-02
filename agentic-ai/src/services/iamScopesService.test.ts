@@ -1,5 +1,29 @@
-import { describe, expect, it } from 'vitest'
-import { parseMyIamScopes } from './iamScopesService'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { AppState } from '../types/common'
+
+const { mockGet } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+}))
+
+vi.mock('./apiClient', () => ({
+  ApiClient: class MockApiClient {
+    get = mockGet
+  },
+}))
+
+import {
+  getMyIamScopes,
+  parseMyIamScopes,
+  readMyIamScopes,
+  resetMyIamScopesCacheForTests,
+} from './iamScopesService'
+
+const appState: AppState = {
+  tenant: 'testtenant',
+  token: 'token',
+  language: 'en',
+  contentLanguage: 'en',
+}
 
 describe('parseMyIamScopes', () => {
   it('returns empty for missing or blank scopes', () => {
@@ -38,5 +62,64 @@ describe('parseMyIamScopes', () => {
         'product.product_read order.order_read product.product_read'
       )
     ).toEqual([{ id: 'order.order_read' }, { id: 'product.product_read' }])
+  })
+})
+
+describe('getMyIamScopes', () => {
+  beforeEach(() => {
+    mockGet.mockReset()
+    resetMyIamScopesCacheForTests()
+  })
+
+  it('fetches users/me/scopes once and reuses the result for the same token', async () => {
+    mockGet.mockResolvedValue({
+      scopes: 'ai.agent_read ai.agent_manage',
+    })
+
+    const first = await getMyIamScopes(appState)
+    const second = await getMyIamScopes(appState)
+
+    expect(mockGet).toHaveBeenCalledTimes(1)
+    expect(mockGet).toHaveBeenCalledWith('/iam/testtenant/users/me/scopes')
+    expect(second).toEqual(first)
+    expect(first).toEqual([{ id: 'ai.agent_manage' }, { id: 'ai.agent_read' }])
+    expect(readMyIamScopes(appState)).toEqual(first)
+  })
+
+  it('has no resolved scopes before the first load', () => {
+    expect(readMyIamScopes(appState)).toBeUndefined()
+  })
+
+  it('shares one request when two callers ask at the same time', async () => {
+    mockGet.mockResolvedValue({ scopes: 'ai.agent_read' })
+
+    const [first, second] = await Promise.all([
+      getMyIamScopes(appState),
+      getMyIamScopes(appState),
+    ])
+
+    expect(mockGet).toHaveBeenCalledTimes(1)
+    expect(first).toEqual(second)
+  })
+
+  it('does not cache a failed load', async () => {
+    mockGet.mockRejectedValueOnce(new Error('not found'))
+    mockGet.mockResolvedValueOnce({ scopes: 'ai.agent_read' })
+
+    await expect(getMyIamScopes(appState)).rejects.toThrow('not found')
+
+    const retried = await getMyIamScopes(appState)
+
+    expect(mockGet).toHaveBeenCalledTimes(2)
+    expect(retried).toEqual([{ id: 'ai.agent_read' }])
+  })
+
+  it('loads again when the token changes', async () => {
+    mockGet.mockResolvedValue({ scopes: 'ai.agent_read' })
+
+    await getMyIamScopes(appState)
+    await getMyIamScopes({ ...appState, token: 'other-user' })
+
+    expect(mockGet).toHaveBeenCalledTimes(2)
   })
 })
