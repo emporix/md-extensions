@@ -1,0 +1,81 @@
+# UI
+
+Last scanned: da99643 (2026-11-02)
+Sources: `README.md`, `docs/MODULE_MIGRATION_PLAYBOOK.md`, `docs/MIGRATED_MODULES.md`, `.firebaserc`, `firebase.json`, `agentic-ai/vite.config.ts`, `agentic-ai/package.json`, `agentic-ai/index.html`, `agentic-ai/src/App.tsx`, `agentic-ai/src/RemoteComponent.tsx`, `agentic-ai/src/types/common.ts`, `agentic-ai/src/services/apiClient.ts`, `agentic-ai/README.md`, `algolia-synonyms/vite.config.js`, `algolia-synonyms/package.json`, `algolia-synonyms/index.html`, `algolia-synonyms/src/main.jsx`, `algolia-synonyms/src/App.jsx`, `algolia-synonyms/README.md`, `brands/vite.config.ts`, `brands/package.json`, `brands/index.html`, `brands/src/App.tsx`, `brands/src/RemoteComponent.tsx`, `brands/src/models/AppState.model.ts`, `brands/src/api/bootstrap.ts`, `brands/README.md`, `customer-groups/vite.config.ts`, `customer-groups/package.json`, `customer-groups/index.html`, `customer-groups/src/App.tsx`, `customer-groups/src/RemoteComponent.tsx`, `customer-groups/src/models/AppState.model.ts`, `customer-groups/src/api/bootstrap.ts`, `customer-groups/README.md`, `dashboard/vite.config.ts`, `dashboard/package.json`, `dashboard/index.html`, `dashboard/src/main.tsx`, `dashboard/src/App.tsx`, `dashboard/src/RemoteComponent.tsx`, `dashboard/src/shared/models/AppState.model.ts`, `dashboard/src/vite-env.d.ts`, `dashboard/src/dashboard/api/base.api.ts`, `dashboard/src/dashboard/pages/DashboardPage.tsx`, `dashboard/README.md`, `orders/vite.config.ts`, `orders/package.json`, `orders/index.html`, `orders/src/main.tsx`, `orders/src/App.tsx`, `orders/src/RemoteComponent.tsx`, `orders/src/models/AppState.model.ts`, `orders/src/api/bootstrap.ts`, `orders/src/helpers/settings.helpers.ts`, `orders/README.md`, `products/vite.config.ts`, `products/package.json`, `products/index.html`, `products/src/App.tsx`, `products/src/RemoteComponent.tsx`, `products/src/models/AppState.model.ts`, `products/src/api/index.ts`, `products/README.md`, `returns/vite.config.ts`, `returns/package.json`, `returns/index.html`, `returns/src/App.tsx`, `returns/src/RemoteComponent.tsx`, `returns/src/models/AppState.model.ts`, `returns/src/api/bootstrap.ts`, `returns/README.md`, `statistics/vite.config.ts`, `statistics/package.json`, `statistics/index.html`, `statistics/src/main.tsx`, `statistics/src/App.tsx`, `statistics/src/RemoteComponent.tsx`, `statistics/src/models/AppState.model.ts`, `statistics/src/api.ts`, `statistics/src/Statistics.tsx`, `statistics/src/tabs/statisticsTabConfig.ts`, `statistics/README.md`, `users-and-groups/vite.config.ts`, `users-and-groups/package.json`, `users-and-groups/index.html`, `users-and-groups/src/App.tsx`, `users-and-groups/src/RemoteComponent.tsx`, `users-and-groups/src/models/AppState.model.ts`, `users-and-groups/src/api/bootstrap.ts`, `users-and-groups/README.md`
+
+Ten separate Vite apps, one folder each. A repository-root `package.json` was not found. `README.md` still says `npm install`, `npm run dev`, and http://localhost:5173/. Each app is started from its own folder.
+
+Nine apps register `@originjs/vite-plugin-federation`. `algolia-synonyms/vite.config.js` registers only `@vitejs/plugin-react`. Screen behaviour for each app is in the module file named in [Routes](#routes).
+
+## Embedded remote
+
+The host application is not in this repo. The in-repo contract is `docs/MODULE_MIGRATION_PLAYBOOK.md`: federation `name` equals the Management Dashboard route `key` and `ExternalModule.moduleName`; the expose is `./RemoteComponent`; the remote uses `HashRouter` and the host uses `BrowserRouter`; the host env var is `VITE_{MODULE}_URL` pointing at `remoteEntry.js`. `orders/vite.config.ts` and `orders/README.md` repeat that the federation `name` must equal that route key. Those host env files were not read.
+
+Every federated `vite.config` sets `filename: 'remoteEntry.js'` and `exposes: { './RemoteComponent': './src/RemoteComponent' }`. No config exposes anything else. `orders`, `returns`, `brands`, `customer-groups`, and `users-and-groups` export `RemoteComponent` both as a named export and as default (`orders/src/RemoteComponent.tsx` comments that the host reads `module.default`). `dashboard`, `statistics`, `products`, and `agentic-ai` export default only.
+
+The host is expected to render that expose with an `appState` prop. Standalone `index.html` never does: it mounts `#root` and loads `src/main.tsx` (`algolia-synonyms` loads `src/main.jsx`), and `main` renders `App`.
+
+`orders` and `returns` type `appState` as required. `brands`, `customer-groups`, and `users-and-groups` default a missing `appState` to tenant and token `default`, language and contentLanguage `en`, and a no-op `onError` (`brands/src/RemoteComponent.tsx`). `products` defaults tenant, language, token, and contentLanguage to `default`, `permissions` to `{}`, and `onError` to a no-op. `statistics` defaults tenant, language, and token to `default`. `agentic-ai` defaults those three to `default` and `contentLanguage` to `en`. `dashboard` treats missing `tenant` or `token` as a failed boot and renders the text `Missing required configuration (tenant or token).`; otherwise it fills language and contentLanguage `en`, currency id `EUR`, and a user with empty `userId` and `termsAndConditions: true`.
+
+Aligned `AppState` (`orders`, `returns`, `brands`, `customer-groups`, `users-and-groups` `src/models/AppState.model.ts`): `tenant`, `language`, `token`, optional `currency`, `contentLanguage`, optional `user`, `onError`. No `emporixApiUrl` field. `brands/README.md` describes `emporixApiUrl`, `ExtensionProvider`, and `useExtensionContext`; `brands/src/RemoteComponent.tsx` wraps routes in `DashboardProvider`, and `brands/src/api/bootstrap.ts` reads `import.meta.env.VITE_API_URL` only.
+
+Those five remotes call `useApiCredentials(tenant, token)` and `i18n.changeLanguage(appState.language)`, then `ToastProvider` → `DashboardProvider` → `PermissionsProvider` → `FeatureTogglesProvider` → `ConfigurationProvider` → `SitesProvider` → `UIBlockerProvider` → `HashRouter`. The blocker import is `./context/UIBlocker` in `orders` and `returns`, and `./context/UIBlcoker` in `brands`, `customer-groups`, and `users-and-groups`. What those providers load was not read.
+
+`agentic-ai` keeps `en` and `de` and maps any other `appState.language` to `en`, then `AppStateProvider` → `FeatureTogglesProvider` → `IamScopesProvider` → `ToastProvider` → `HashRouter`. `products` and `statistics` call `i18n.changeLanguage(appState.language)` with the value unchanged. `products` wraps `DashboardProvider` → `HashRouter` → `ApiProvider` → `SiteProvider` → `ConfigurationProvider` → `DateTimeProvider`. `statistics` wraps `DashboardProvider` only. `dashboard` does not call `i18n.changeLanguage` in `RemoteComponent`; `DashboardPage` passes `appState.language` into `useTranslation`.
+
+## Standalone shell
+
+`orders/src/main.tsx` and `statistics/src/main.tsx` render `<App />` in `StrictMode`. `dashboard/src/main.tsx` also wraps `ErrorBoundary`. Other `main` files were not read. `App` is the dev shell; the federated entry is `RemoteComponent`.
+
+`orders`, `returns`, `brands`, `customer-groups`, and `users-and-groups` `src/App.tsx` open a tenant / token / language form when `import.meta.env.DEV` is true and `shouldOpenDevSettingsDialog()` is true, then render `RemoteComponent`. `orders/src/helpers/settings.helpers.ts` stores `tenant`, `language`, `token`, and `contentLanguage` in `localStorage` and opens the form when tenant or token is blank. The other four import that helper from `./helpers/settings.helpers`; those helper files were not compared.
+
+`dashboard/src/App.tsx` opens the form when `import.meta.env.DEV` is true (initial state), stores `tenant`, `language`, and `token` in `sessionStorage`, and passes a fixed currency `EUR` and user id `dev`. `statistics/src/App.tsx` and `agentic-ai/src/App.tsx` start with the form open (`useState(true)`), including when `DEV` is false, and use `localStorage`. Agentic also stores `contentLanguage`. `products/src/App.tsx` renders `<RemoteComponent />` with no props, so the defaults above apply. `algolia-synonyms/src/App.jsx` has no credential form.
+
+## Dev server
+
+`server.port` and `preview.port` with `strictPort: true`:
+
+| Folder | `package.json` `name` | Federation `name` | Dev script | Port |
+|---|---|---|---|---|
+| `customer-groups` | `customer-groups` | `customerGroups` | `vite --mode dev` | `5174` |
+| `brands` | `brands` | `brands` | `vite --mode dev` | `5175` |
+| `returns` | `returns` | `returns` | `vite --mode dev` | `5176` |
+| `orders` | `orders` | `orders` | `vite --mode dev` | `5177` |
+
+`docs/MIGRATED_MODULES.md` lists the same four ports. `orders/README.md` and `returns/README.md` document `5177` and `5176` and a dashboard `.env.local-dev` value `http://localhost:<port>/assets/remoteEntry.js` (`VITE_ORDERS_URL`, `VITE_RETURNS_URL`). `brands/README.md` still tells the reader to register `http://localhost:4173/assets/remoteEntry.js`; `brands/vite.config.ts` pins preview to `5175`. `customer-groups/README.md` says `npm run dev` and a tenant/token/language prompt, and does not state a port. Comments in the four pinned configs say the port matches `VITE_BRANDS_URL`, `VITE_ORDERS_URL`, `VITE_RETURNS_URL`, or `VITE_CUSTOMER_GROUPS_URL` in Management Dashboard `.env.local-*` files. Those files are not in this repo.
+
+These configs set `server` CORS and do not set `server.port`: `users-and-groups`, `statistics`, `dashboard`, `agentic-ai`. `products/vite.config.ts` and `algolia-synonyms/vite.config.js` have no `server` block. `docs/MIGRATED_MODULES.md` and `docs/MODULE_MIGRATION_PLAYBOOK.md` call the users-and-groups local port `5173`; `users-and-groups/vite.config.ts` does not pin it. `products/README.md`, `statistics/README.md`, and `dashboard/README.md` cite `http://localhost:4173/remoteEntry.js`. `users-and-groups/README.md` and `customer-groups/README.md` cite `http://localhost:4173/assets/remoteEntry.js`. No build was run, so the emitted path of `remoteEntry.js` is unknown. `agentic-ai/README.md` says `npm run dev` and states no port.
+
+CORS `origin` on the configs that set it: `https://admin.emporix.io`, `https://dev-admin.emporix.io`, `https://stage-admin.emporix.io`. `statistics` stops there. The others in that list also allow `http://localhost:4200`, with `credentials: true`. Shared federation modules: `react` and `react-dom` everywhere; `dashboard` shares only those two; `agentic-ai`, `brands`, `customer-groups`, `orders`, `returns`, and `users-and-groups` also share `react-router` and `react-i18next`; `products` and `statistics` add `chart.js` and `quill`. Three configs use federation `name` `extension`: `agentic-ai`, `dashboard`, `statistics`. `docs/MODULE_MIGRATION_PLAYBOOK.md` says not to use that name.
+
+`.firebaserc` lists a hosting target per folder, plus `-stage` and `-develop` variants, under `frontend-extensions`, `frontend-extensions-stage`, and `frontend-extensions-develop`. The `firebase.json` hosting objects read (`emporix-algolia-synonyms` and its stage and develop targets, and `emporix-products` through `emporix-products-develop`) publish `<folder>/dist`, rewrite `**` to `/index.html`, and set `Access-Control-Allow-Origin` to `*`. Later hosting objects were not read.
+
+## API base URL
+
+Env names only. `orders`, `returns`, `brands`, `customer-groups`, and `users-and-groups` `src/api/bootstrap.ts` throw `VITE_API_URL is not configured` when `import.meta.env.VITE_API_URL` is missing, then `createApiClient` from `@emporix/api-calls` with that base URL and getters for the tenant and token passed into `useApiCredentials`. `products/src/api/index.ts` sets axios `baseURL` from `VITE_API_URL`. `statistics/src/api.ts` prefixes fetch paths with `VITE_API_URL`. `dashboard/src/dashboard/api/base.api.ts` `getBaseUrl()` returns `VITE_API_URL` with a trailing slash removed, or `''` when it is missing; `getTimeoutMs()` reads `VITE_API_TIMEOUT` and otherwise uses `30000`; `ensureApiContext` throws `Missing API base URL, tenant, or token`. `dashboard/src/vite-env.d.ts` also declares `VITE_APP_NAME`, `VITE_APP_VERSION`, `VITE_FEATURE_AI`, `VITE_FEATURE_ANALYTICS`, `VITE_FEATURE_ADVANCED_SEARCH`, `VITE_FEATURE_QUICK_ORDER`, `VITE_FEATURE_QUOTES`, `VITE_FEATURE_RETURNS`, `VITE_CART_POLL_INTERVAL`, `VITE_DEFAULT_PAGE_SIZE`, `VITE_MAX_PAGE_SIZE`, `VITE_DEFAULT_LANGUAGE`, `VITE_DEFAULT_CURRENCY`, `VITE_SUPPORTED_LANGUAGES`, `VITE_REMOTE_ENTRY_URL`, `VITE_SENTRY_DSN`, `VITE_DATADOG_APP_ID`, `VITE_DATADOG_CLIENT_TOKEN`, `VITE_DEBUG_MODE`, and `VITE_TOKEN_EXPIRATION`. No `import.meta.env` read of those names was found under `dashboard/src`. `agentic-ai/src/services/apiClient.ts` uses `VITE_API_URL` or the literal `https://api.emporix.io`. `returns/README.md` also names `VITE_DASHBOARD_ORIGIN`. `.env` files were not read.
+
+`algolia-synonyms/src/App.jsx` calls `registerClient()` and `registerCallback` from `md-ext/lib`. The callback reads `ctx.value.emporixApiUrl`, `ctx.value.tenant`, and `ctx.value.accessToken`, GETs `{emporixApiUrl}/indexing/{tenant}/configurations/ALGOLIA`, and on success renders `SynonymView`. Failure or a 404 sets the missing-config heading. There is no route table.
+
+## Routes
+
+Hash paths below are the `path` props inside that remote's `HashRouter`. No `basename` argument was present on the routers read. Unknown paths in the aligned remotes render `<Navigate to="/" replace />`.
+
+- **orders** — index `OrdersListPage`; `:id` `OrderViewPage` inside `OrderDataProvider`. Rules: `ai-project-knowledge/modules/orders.md`.
+- **returns** — index `ReturnsListPage`; `add` `ReturnCreatePage` inside `ReturnFormProvider`; `:id` `ReturnEditPage`. Rules: `ai-project-knowledge/modules/returns.md`.
+- **brands** — index `BrandsPage`; `add` and `:id` `BrandPage`. Rules: `ai-project-knowledge/modules/brands.md`.
+- **customer-groups** — index `CustomerGroupsPage`; `groups/add` and `groups/:groupId` `GroupPage` inside `GroupDataProvider` with `GroupUserTypes.CUSTOMER`. Rules: `ai-project-knowledge/modules/customer-groups.md`.
+- **users-and-groups** — index `UsersAndGroupsPage`; `users/add` and `users/:userId` `UserPage`; `groups/add` and `groups/:groupId` `GroupPage` inside `GroupDataProvider`. Rules: `ai-project-knowledge/modules/users-and-groups.md`.
+- **products** — `/` navigates to `/products`; `products` index `ProductsList`; `products/:id` and `products/add` `ProductAddEdit`; other `products/*` render `Not Found`. Rules: `ai-project-knowledge/modules/products.md`.
+- **agentic-ai** — `/` navigates to `/agents`. List/add/edit for `/agents`, `/tools`, `/tokens`, `/oauth`, and `/mcp`; `/assistants` lazy-loads `AgentChatPage`; `/logs` navigates to `/logs/requests`, with `LogsPage` on requests, jobs, and sessions, plus `LogDetailsPage`, `JobDetailsPage`, and `SessionFlowPage`. `TeamsInstallCallbackHandler` sits beside the routes. Rules: `ai-project-knowledge/modules/agentic-ai.md`.
+- **statistics** — no router. `Statistics.tsx` is a PrimeReact `TabView` whose `tabConfigs` keys are `apiCalls`, `make`, `database`, `cloudinary`, `ai`, `webhooks` (`statistics/src/tabs/statisticsTabConfig.ts`). Rules: `ai-project-knowledge/modules/statistics.md`.
+- **dashboard** — no router. `RemoteComponent` renders `DashboardPage`: a toolbar plus a widget grid (`dashboard/src/dashboard/pages/DashboardPage.tsx`). Widget behaviour was not read. Rules: `ai-project-knowledge/modules/dashboard.md`.
+- **algolia-synonyms** — no router and no federation expose. One view, `SynonymView`, after the Algolia configuration request succeeds. Rules: `ai-project-knowledge/modules/algolia-synonyms.md`.
+
+## Not yet scanned
+
+- Page, hook, provider, permission, feature-toggle, and form-validation bodies. `DashboardPage` was read only far enough to see the grid shell.
+- `firebase.json` hosting objects after `emporix-products-develop`.
+- Built `dist` layout, so README `remoteEntry.js` URLs were not checked against an artifact.
+- `main.tsx` other than `orders`, `statistics`, and `dashboard`. Helper files other than `orders/src/helpers/settings.helpers.ts`.
+- i18n message bodies, styling, `node_modules`, and `.env` values.
+- How `products` attaches the token to axios, and the synonym edit dialogs under `algolia-synonyms/src/components`.
