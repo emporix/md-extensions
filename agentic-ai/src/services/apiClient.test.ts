@@ -11,6 +11,35 @@ const appState: AppState = {
 
 const encode = (value: string) => new TextEncoder().encode(value)
 
+describe('ApiClient.getBoundedArrayBuffer', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('stops reading once the response exceeds the byte limit', async () => {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new Uint8Array(100))
+        controller.enqueue(new Uint8Array(100))
+        controller.close()
+      },
+    })
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(stream, { status: 200 }))
+    )
+
+    const client = new ApiClient(appState)
+
+    await expect(
+      client.getBoundedArrayBuffer('/media/asset', 150)
+    ).rejects.toMatchObject({
+      name: 'ApiClientError',
+      status: 200,
+    })
+  })
+})
+
 describe('ApiClient.postSse', () => {
   beforeEach(() => {
     vi.restoreAllMocks()

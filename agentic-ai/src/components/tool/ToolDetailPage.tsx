@@ -440,6 +440,12 @@ const ToolDetailPage: React.FC = () => {
             />
           </>
         )
+      case 'file':
+        return (
+          <p className="tool-detail-section-description">
+            {t('file_tool_settings')}
+          </p>
+        )
       case 'search':
         return (
           <SearchToolSection

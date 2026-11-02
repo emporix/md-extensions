@@ -2,8 +2,27 @@ import { describe, it, expect } from 'vitest'
 import {
   applySearchToolDefaults,
   isToolFormValid,
+  toFileToolConfig,
   toSearchToolConfig,
 } from './toolConfigHelpers'
+
+describe('isToolFormValid file', () => {
+  it('accepts file with an empty config', () => {
+    expect(
+      isToolFormValid({
+        toolName: 'Files',
+        toolId: 'files',
+        toolType: 'file',
+        config: {},
+        isCreating: true,
+      })
+    ).toBe(true)
+  })
+
+  it('saves file tools with an empty config', () => {
+    expect(toFileToolConfig()).toEqual({})
+  })
+})
 
 describe('isToolFormValid teams config', () => {
   it('requires teamId and tenantId for teams tools', () => {

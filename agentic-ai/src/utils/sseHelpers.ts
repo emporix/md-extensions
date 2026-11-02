@@ -18,6 +18,16 @@ export type AgentChatStreamEvent =
     }
   | { readonly type: 'error'; readonly message: string; readonly code: string }
   | {
+      readonly type: 'artifact'
+      readonly artifactId?: string
+      readonly kind: 'image' | 'file'
+      readonly filename: string
+      readonly mimeType: string
+      readonly size: number
+      readonly status: 'ready' | 'failed'
+      readonly errorCode?: string
+    }
+  | {
       readonly type: 'done'
       readonly agentId: string
       readonly agentType: string
@@ -167,6 +177,42 @@ export const mapAgentChatStreamEvent = (
         message: String(payload.message ?? 'Stream error'),
         code: String(payload.code ?? 'INTERNAL_ERROR'),
       }
+    case 'artifact': {
+      const kind = payload.kind
+      const status = payload.status
+      const filename =
+        typeof payload.filename === 'string' ? payload.filename : ''
+      const mimeType =
+        typeof payload.mime_type === 'string' ? payload.mime_type : ''
+      const size = typeof payload.size === 'number' ? payload.size : -1
+      const artifactId =
+        typeof payload.artifact_id === 'string' && payload.artifact_id.trim()
+          ? payload.artifact_id
+          : undefined
+      if (
+        (kind !== 'image' && kind !== 'file') ||
+        (status !== 'ready' && status !== 'failed') ||
+        !filename ||
+        !mimeType ||
+        size < 0 ||
+        (status === 'ready' && !artifactId)
+      ) {
+        return null
+      }
+      return {
+        type: 'artifact',
+        artifactId,
+        kind,
+        filename,
+        mimeType,
+        size,
+        status,
+        errorCode:
+          typeof payload.error_code === 'string'
+            ? payload.error_code
+            : undefined,
+      }
+    }
     case 'done':
       return {
         type: 'done',

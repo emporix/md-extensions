@@ -130,6 +130,31 @@
   color: var(--color-danger);
 }
 
+.agent-chat-artifacts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.agent-chat-artifact-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+}
+
+.agent-chat-artifact-file {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.agent-chat-artifact-error {
+  margin: 0;
+  color: var(--color-danger);
+}
+
 .agent-chat-activity {
   display: flex;
   align-items: center;

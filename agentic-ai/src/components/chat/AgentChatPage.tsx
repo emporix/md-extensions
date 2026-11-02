@@ -19,6 +19,7 @@ import {
 } from '@emporix/component-library'
 import { AiGeneratedNotice } from '../shared/AiGeneratedNotice'
 import { AssistantMessageContent } from './AssistantMessageContent'
+import ChatMessageArtifacts from './ChatMessageArtifacts'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../contexts/ToastContext'
 import { useAgentChat } from '../../hooks/useAgentChat'
@@ -469,6 +470,12 @@ const AgentChatPage = () => {
               <ChatBubble key={message.id} role={message.role}>
                 {message.role === 'assistant' && hasText ? (
                   <AssistantMessageContent text={message.text} />
+                ) : null}
+                {message.role === 'assistant' && message.artifacts?.length ? (
+                  <ChatMessageArtifacts
+                    appState={appState}
+                    artifacts={message.artifacts}
+                  />
                 ) : null}
                 {message.role === 'assistant' ? null : message.text}
                 {showStatus ? (

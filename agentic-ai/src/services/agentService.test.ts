@@ -111,6 +111,79 @@ describe('chatWithAgent', () => {
     expect(onToolActivity).toHaveBeenLastCalledWith(null)
   })
 
+  it('reports an artifact without replacing the accumulated text', async () => {
+    const onToken = vi.fn()
+    const onArtifact = vi.fn()
+    mockPostSse.mockReturnValue(
+      createStream(
+        { type: 'token', content: 'Here is the forest.' },
+        {
+          type: 'artifact',
+          artifactId: 'asset-1',
+          kind: 'image',
+          filename: 'forest.png',
+          mimeType: 'image/png',
+          size: 12,
+          status: 'ready',
+        },
+        {
+          type: 'done',
+          agentId: 'agent-1',
+          agentType: 'generic',
+          sessionId: 'sess-1',
+          toolsUsed: [],
+        }
+      )
+    )
+
+    await expect(
+      chatWithAgent(appState, 'agent-1', 'draw a forest', {
+        onToken,
+        onArtifact,
+      })
+    ).resolves.toBe('Here is the forest.')
+
+    expect(onToken).toHaveBeenCalledWith('Here is the forest.')
+    expect(onArtifact).toHaveBeenCalledWith({
+      artifactId: 'asset-1',
+      kind: 'image',
+      filename: 'forest.png',
+      mimeType: 'image/png',
+      size: 12,
+      status: 'ready',
+      errorCode: undefined,
+    })
+  })
+
+  it('accepts an image-only reply', async () => {
+    mockPostSse.mockReturnValue(
+      createStream(
+        {
+          type: 'artifact',
+          artifactId: 'asset-1',
+          kind: 'image',
+          filename: 'forest.png',
+          mimeType: 'image/png',
+          size: 12,
+          status: 'ready',
+        },
+        {
+          type: 'done',
+          agentId: 'agent-1',
+          agentType: 'generic',
+          sessionId: 'sess-1',
+          toolsUsed: [],
+        }
+      )
+    )
+
+    await expect(
+      chatWithAgent(appState, 'agent-1', 'draw a forest', {
+        emptyResponseKey: COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse,
+      })
+    ).resolves.toBe('')
+  })
+
   it('passes session-id header and onSessionId callback when provided', async () => {
     const onSessionId = vi.fn()
     mockPostSse.mockReturnValue(

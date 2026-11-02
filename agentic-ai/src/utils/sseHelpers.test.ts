@@ -124,4 +124,29 @@ describe('sseHelpers', () => {
       })
     ).toBeNull()
   })
+
+  it('maps a ready artifact and drops a malformed one', () => {
+    expect(
+      mapAgentChatStreamEvent({
+        event: 'artifact',
+        data: '{"artifact_id":"asset-1","kind":"image","filename":"forest.png","mime_type":"image/png","size":12,"status":"ready","base64":"nope"}',
+      })
+    ).toEqual({
+      type: 'artifact',
+      artifactId: 'asset-1',
+      kind: 'image',
+      filename: 'forest.png',
+      mimeType: 'image/png',
+      size: 12,
+      status: 'ready',
+      errorCode: undefined,
+    })
+
+    expect(
+      mapAgentChatStreamEvent({
+        event: 'artifact',
+        data: '{"kind":"html","filename":"x.html","mime_type":"text/html","size":1,"status":"ready"}',
+      })
+    ).toBeNull()
+  })
 })

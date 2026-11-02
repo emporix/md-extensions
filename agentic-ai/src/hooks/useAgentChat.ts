@@ -8,6 +8,7 @@ import {
   nextThinkingText,
   nextToolActivityText,
 } from '../utils/agentChatHelpers'
+import { appendChatArtifact, type ChatArtifact } from '../utils/chatArtifacts'
 import {
   formatApiError,
   isAbortError,
@@ -20,6 +21,7 @@ export type AgentChatMessage = {
   readonly id: string
   readonly role: AgentChatRole
   readonly text: string
+  readonly artifacts?: readonly ChatArtifact[]
 }
 
 export type AgentChatActivity =
@@ -122,6 +124,21 @@ export const useAgentChat = () => {
             onToolActivity: (toolName) => {
               const text = nextToolActivityText(toolName)
               setActivity(text ? { kind: 'tool', text } : null)
+            },
+            onArtifact: (artifact) => {
+              setMessages((current) =>
+                current.map((entry) =>
+                  entry.id === assistantId
+                    ? {
+                        ...entry,
+                        artifacts: appendChatArtifact(
+                          entry.artifacts,
+                          artifact
+                        ),
+                      }
+                    : entry
+                )
+              )
             },
             onSessionId: setSessionId,
           })

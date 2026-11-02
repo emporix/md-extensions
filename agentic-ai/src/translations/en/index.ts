@@ -394,6 +394,12 @@ const TRANSLATIONS_EN = {
   rag_custom: 'RAG Custom',
   rag_emporix: 'RAG Emporix',
   search_tool: 'Search',
+  file_tool: 'Built-in file generator',
+  file_tool_settings:
+    'This tool has no settings. An agent that uses it can create a downloadable text, source, or PDF file.',
+  chat_artifact_download: 'Download',
+  chat_artifact_failed: 'This file could not be loaded.',
+  chat_artifact_image_failed: 'This image could not be loaded.',
   tool_id: 'Tool ID',
   enter_tool_id: 'Enter tool ID',
   tool_name: 'Tool Name',

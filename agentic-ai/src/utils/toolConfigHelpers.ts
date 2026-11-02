@@ -202,6 +202,9 @@ export const isToolFormValid = ({
       return false
     }
 
+    case 'file':
+      return true
+
     case 'search': {
       const maxResults = Number(config.maxResults ?? 5)
       return (
@@ -240,6 +243,8 @@ export const applySearchToolDefaults = (config: ToolConfig): ToolConfig => {
     maxResults: normalizedMaxResults,
   }
 }
+
+export const toFileToolConfig = (): ToolConfig => ({})
 
 export const toSearchToolConfig = (config: ToolConfig): ToolConfig => {
   const withDefaults = applySearchToolDefaults(config)

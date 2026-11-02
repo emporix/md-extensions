@@ -71,6 +71,15 @@ export type ChatWithAgentOptions = {
   readonly onToken?: (accumulated: string) => void
   readonly onThinking?: (content: string | null) => void
   readonly onToolActivity?: (toolName: string | null) => void
+  readonly onArtifact?: (artifact: {
+    readonly artifactId?: string
+    readonly kind: 'image' | 'file'
+    readonly filename: string
+    readonly mimeType: string
+    readonly size: number
+    readonly status: 'ready' | 'failed'
+    readonly errorCode?: string
+  }) => void
   readonly onSessionId?: (sessionId: string) => void
   readonly signal?: AbortSignal
 }
@@ -100,6 +109,7 @@ export const chatWithAgent = async (
   )
 
   let text = ''
+  let sawArtifact = false
   for await (const event of stream) {
     if (event.type === 'thinking') {
       options.onThinking?.(event.content)
@@ -123,6 +133,20 @@ export const chatWithAgent = async (
       continue
     }
 
+    if (event.type === 'artifact') {
+      sawArtifact = true
+      options.onArtifact?.({
+        artifactId: event.artifactId,
+        kind: event.kind,
+        filename: event.filename,
+        mimeType: event.mimeType,
+        size: event.size,
+        status: event.status,
+        errorCode: event.errorCode,
+      })
+      continue
+    }
+
     if (event.type === 'error') {
       throw new Error(event.message)
     }
@@ -136,7 +160,7 @@ export const chatWithAgent = async (
   }
 
   const trimmed = text.trim()
-  if (!trimmed) {
+  if (!trimmed && !sawArtifact) {
     throw new Error(emptyResponseKey)
   }
   return trimmed

@@ -397,6 +397,12 @@ const TRANSLATIONS_DE = {
   rag_custom: 'RAG Custom',
   rag_emporix: 'RAG Emporix',
   search_tool: 'Suche',
+  file_tool: 'Eingebauter Dateigenerator',
+  file_tool_settings:
+    'Dieses Tool hat keine Einstellungen. Ein Agent, der es verwendet, kann eine herunterladbare Text-, Quellcode- oder PDF-Datei erstellen.',
+  chat_artifact_download: 'Herunterladen',
+  chat_artifact_failed: 'Diese Datei konnte nicht geladen werden.',
+  chat_artifact_image_failed: 'Dieses Bild konnte nicht geladen werden.',
   tool_id: 'Tool-ID',
   enter_tool_id: 'Tool-ID eingeben',
   tool_name: 'Tool-Name',

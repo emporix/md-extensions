@@ -45,6 +45,7 @@ import {
   applySearchToolDefaults,
   isToolFormValid as isToolFormValidBase,
   mergeRagEmporixConfigOnLoad,
+  toFileToolConfig,
   toSearchToolConfig,
 } from '../utils/toolConfigHelpers'
 import {
@@ -641,15 +642,17 @@ export const useToolConfig = ({
       name: state.toolName,
       type: state.toolType,
       config:
-        state.toolType === 'rag_emporix'
-          ? toRagEmporixToolConfig(state.config)
-          : state.toolType === 'search'
-            ? toSearchToolConfig(state.config)
-            : state.toolType === 'teams'
-              ? toTeamsToolConfigForSave(state.config)
-              : state.toolType === 'slack'
-                ? toSlackToolConfigForSave(state.config)
-                : state.config,
+        state.toolType === 'file'
+          ? toFileToolConfig()
+          : state.toolType === 'rag_emporix'
+            ? toRagEmporixToolConfig(state.config)
+            : state.toolType === 'search'
+              ? toSearchToolConfig(state.config)
+              : state.toolType === 'teams'
+                ? toTeamsToolConfigForSave(state.config)
+                : state.toolType === 'slack'
+                  ? toSlackToolConfigForSave(state.config)
+                  : state.config,
       enabled: tool.enabled ?? true,
     }
 

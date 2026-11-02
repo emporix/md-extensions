@@ -1,5 +1,26 @@
 import { McpServer, NativeTool } from '../types/Agent'
 import { Tool } from '../types/Tool'
+
+export const FILE_GENERATOR_TOOL_ID = 'file_generator'
+
+export const withBuiltinFileTool = (
+  tools: Tool[],
+  fileLabel: string
+): Tool[] => {
+  const withoutFileTools = tools.filter(
+    (tool) => tool.type !== 'file' && tool.id !== FILE_GENERATOR_TOOL_ID
+  )
+  return [
+    ...withoutFileTools,
+    {
+      id: FILE_GENERATOR_TOOL_ID,
+      name: fileLabel,
+      type: 'file',
+      config: {},
+      enabled: true,
+    },
+  ]
+}
 import { MCP_SERVERS, MCP_DOMAIN_TAGS, McpKey } from './constants'
 
 const formatTagLabel = (segment: string): string =>
@@ -26,6 +47,9 @@ export const getNativeToolTags = (tool: Pick<Tool, 'type'>): string[] => {
   }
   if (tool.type === 'rag_emporix' || tool.type === 'rag_custom') {
     return ['RAG Tools']
+  }
+  if (tool.type === 'file') {
+    return ['Built-in file generator']
   }
   if (tool.type) {
     return [formatTagLabel(tool.type.replace(/_/g, '-'))]
