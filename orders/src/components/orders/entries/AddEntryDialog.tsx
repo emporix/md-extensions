@@ -12,10 +12,7 @@ import {
   type ProductsBrowserLabels,
   type ProductsBrowserQuery,
   type ProductsBrowserView,
-  type TreeNode,
-  type TreeNodeTemplateOptions,
 } from '@emporix/component-library'
-import DotIndicator from '../../shared/DotIndicator'
 import { useProductsApi } from '../../../hooks/api/products'
 import { useCategoriesApi } from '../../../hooks/api/categories'
 import { useOrdersApi } from '../../../hooks/api/orders'
@@ -44,19 +41,6 @@ const COLUMNS: ProductsBrowserColumnKey[] = [
   'productType',
 ]
 const VIEWS: ProductsBrowserView[] = ['list', 'tree']
-
-// As in MD's category trees, a dot shows whether the category is published.
-// A template replaces Prime's label, so the text takes its class to keep the
-// tree's label styles.
-const renderCategoryNode = (
-  node: TreeNode,
-  { className }: TreeNodeTemplateOptions
-) => (
-  <span className={styles.categoryNode}>
-    <DotIndicator value={Boolean(node.data?.published)} />
-    <span className={className}>{node.label}</span>
-  </span>
-)
 
 type AddEntryDialogProps = {
   readonly onClose: () => void
@@ -130,6 +114,8 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
       noCategories: canViewCategories
         ? t('orders.entry.actions.addProduct.browser.noCategories')
         : t('global.noPermissions'),
+      published: t('orders.entry.actions.addProduct.browser.published'),
+      unpublished: t('orders.entry.actions.addProduct.browser.unpublished'),
       pageReport: t('global.pagination'),
       anyProductType: t('global.all'),
       productTypes: {
@@ -260,7 +246,6 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
         className={styles.browser}
         loadProducts={loadProducts}
         loadCategoryTree={canViewCategories ? loadCategoryTree : undefined}
-        categoryNodeTemplate={renderCategoryNode}
         columns={COLUMNS}
         extraColumns={extraColumns}
         views={VIEWS}

@@ -2,8 +2,8 @@ import type { CategoryTree } from '@emporix/api-calls'
 import {
   FilterMatchMode,
   type DataTableFilterMeta,
+  type ProductsBrowserCategoryNode,
   type ProductsBrowserRow,
-  type TreeNode,
 } from '@emporix/component-library'
 import type Localized from '../models/Localized.model'
 import type { Product } from '../models/Product.model'
@@ -50,16 +50,20 @@ export const categoryLabel = (
   return fallback ? `${fallback[1]}(${fallback[0]})` : tree.id
 }
 
-/** Category trees as tree nodes, ordered by position on every level. */
+/**
+ * Category trees as tree nodes, ordered by position on every level. The
+ * browser shows the published status as a dot, as MD does.
+ */
 export const toCategoryNodes = (
   trees: CategoryTree[],
   contentLanguage: string | undefined
-): TreeNode[] =>
+): ProductsBrowserCategoryNode[] =>
   [...trees]
     .sort((a, b) => a.position - b.position)
     .map((tree) => ({
       key: tree.id,
       label: categoryLabel(tree, contentLanguage),
+      published: tree.published,
       data: tree,
       children: tree.subcategories?.length
         ? toCategoryNodes(tree.subcategories, contentLanguage)

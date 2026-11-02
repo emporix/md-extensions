@@ -105,6 +105,8 @@ export default {
             'Wählen Sie eine Kategorie, um ihre Produkte zu sehen',
           noProducts: 'Keine Produkte gefunden',
           noCategories: 'Keine Kategorien gefunden',
+          published: 'Veröffentlicht',
+          unpublished: 'Nicht veröffentlicht',
         },
         productTypes: {
           BASIC: 'Basis',

@@ -108,6 +108,8 @@ export default {
           selectCategory: 'Select a category to see its products',
           noProducts: 'No products found',
           noCategories: 'No categories found',
+          published: 'Published',
+          unpublished: 'Unpublished',
         },
         productTypes: {
           BASIC: 'Basic',

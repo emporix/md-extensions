@@ -98,7 +98,8 @@ describe('toCategoryNodes', () => {
 
     expect(nodes.map((node) => node.key)).toEqual(['footwear', 'clothes'])
     expect(nodes[0].label).toBe('footwear')
-    expect(nodes[0].data).toEqual(expect.objectContaining({ published: true }))
+    expect(nodes[0].published).toBe(true)
+    expect(nodes[0].data).toEqual(expect.objectContaining({ id: 'footwear' }))
     expect(nodes[0].children?.map((node) => node.key)).toEqual([
       'running',
       'hiking',
@@ -119,6 +120,20 @@ describe('toCategoryNodes', () => {
 
     expect(nodes[0].label).toBe('Schuhe')
     expect(nodes[0].children?.[0].label).toBe('Run(en)')
+  })
+
+  it('passes the published status of every level for the status dot', () => {
+    const nodes = toCategoryNodes(
+      [
+        category('footwear', 1, [
+          { ...category('archive', 1), published: false },
+        ]),
+      ],
+      'en'
+    )
+
+    expect(nodes[0].published).toBe(true)
+    expect(nodes[0].children?.[0].published).toBe(false)
   })
 
   it('does not change the given trees', () => {

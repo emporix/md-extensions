@@ -225,7 +225,16 @@ describe('AddEntryDialog', () => {
 
     expect(await screen.findByText('Shoes')).not.toBeNull()
     expect(screen.getByText('Archive')).not.toBeNull()
-    expect(screen.getAllByTestId('dot-indicator')).toHaveLength(2)
+    expect(
+      screen.getByRole('img', {
+        name: 'orders.entry.actions.addProduct.browser.published',
+      })
+    ).not.toBeNull()
+    expect(
+      screen.getByRole('img', {
+        name: 'orders.entry.actions.addProduct.browser.unpublished',
+      })
+    ).not.toBeNull()
   })
 
   it('does not request the tree without access to categories', async () => {
