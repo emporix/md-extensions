@@ -10,7 +10,7 @@ Management Dashboard "Orders" module, extracted into an `md-extensions` federate
 | Exposes | `./RemoteComponent` → `src/RemoteComponent.tsx` (named **and** default export) |
 | Local dev port | `5177` (`strictPort`) |
 | Host env var | `VITE_ORDERS_URL` → `.../assets/remoteEntry.js` |
-| Component library | `@emporix/component-library` `2.15.0` |
+| Component library | `@emporix/component-library` `2.17.0` |
 | MD wiring mode | A — permanent remote (`url:` on the route) |
 
 ## Screens
@@ -36,7 +36,7 @@ The remote is PrimeReact-free. `InputNumber`, `Skeleton` and `Chip` were promote
 | `Sidebar` (table extensions) | local `SidePanel` + CL `InputSwitch` |
 | MD `RestrictionsProvider` | `useOrderRestrictions()` over the remote `PermissionsProvider` scopes |
 | Entry mixins accordion (one shared Save) | one `MixinsForm` section per schema with its own Save (dirty rows still confirm before collapsing) |
-| MD `ProductsBrowser` / `CategoryTreeBase` (add-entry dialog) | CL `ProductsBrowser` with loaders from `hooks/api/{products,categories}`; the published dot comes from `published` on the category nodes (CL ≥ 2.15.0) |
+| MD `ProductsBrowser` / `CategoryTreeBase` (add-entry dialog) | CL `ProductsBrowser` with loaders from `hooks/api/{products,categories}`; the published dot comes from `published` on the category nodes (CL ≥ 2.15.0); the quantity column is frozen to the right edge, so it stays in view on narrow screens (CL ≥ 2.16.0) |
 
 ## AppState
 
