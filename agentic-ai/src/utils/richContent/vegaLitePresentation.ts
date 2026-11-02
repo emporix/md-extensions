@@ -135,11 +135,14 @@ const VIEW_KEYS = [
   'selection',
 ] as const
 
+const specHasView = (spec: Record<string, unknown>): boolean =>
+  VIEW_KEYS.some((key) => spec[key] !== undefined)
+
 const nestFacetView = (
   spec: Record<string, unknown>
 ): Record<string, unknown> => {
   const faceted = isRecord(spec.facet) || spec.repeat !== undefined
-  if (!faceted || isRecord(spec.spec)) {
+  if (!faceted || (isRecord(spec.spec) && specHasView(spec.spec))) {
     return spec
   }
   const inner: Record<string, unknown> = {}

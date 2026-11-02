@@ -4,6 +4,8 @@ import {
   getChatInvokeGates,
   isCustomerOnlyRequiredScopes,
   isMissingApiTrigger,
+  canSeeAgentInChat,
+  hasAgentManageScope,
   nextAgentId,
   nextAgentIdFromQuery,
   isTranscriptNearBottom,
@@ -79,6 +81,22 @@ describe('shouldShowRecommendationEmpty', () => {
   it('waits until an agent is selected', () => {
     expect(shouldShowRecommendationEmpty(true, false, false, 0)).toBe(false)
     expect(shouldShowRecommendationEmpty(true, true, false, 0)).toBe(true)
+  })
+})
+
+describe('canSeeAgentInChat', () => {
+  it('shows every agent to a caller who can manage agents', () => {
+    expect(hasAgentManageScope(['ai.agent_read', 'ai.agent_manage'])).toBe(true)
+    expect(canSeeAgentInChat(['internal'], true)).toBe(true)
+    expect(canSeeAgentInChat(undefined, true)).toBe(true)
+  })
+
+  it('shows only chat-tagged agents without agent manage', () => {
+    expect(hasAgentManageScope(['ai.agent_read'])).toBe(false)
+    expect(canSeeAgentInChat(['chat'], false)).toBe(true)
+    expect(canSeeAgentInChat([' Chat '], false)).toBe(true)
+    expect(canSeeAgentInChat(['internal'], false)).toBe(false)
+    expect(canSeeAgentInChat(undefined, false)).toBe(false)
   })
 })
 

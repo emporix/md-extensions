@@ -89,6 +89,25 @@ describe('prepareChartSpec facet nesting', () => {
     expect(spec).toHaveProperty('layer')
   })
 
+  it('moves a sibling layer into an empty spec object', () => {
+    const spec = {
+      data: { values: [{ kanal: 'sklep' }] },
+      layer: [{ mark: 'bar' }, { mark: 'line' }],
+      facet: { field: 'kanal', columns: 3, title: 'Kanały' },
+      spec: {},
+    }
+
+    const fitted = prepareChartSpec(spec)
+
+    expect(fitted).toMatchObject({
+      data: spec.data,
+      facet: spec.facet,
+      spec: { layer: spec.layer },
+    })
+    expect(fitted).not.toHaveProperty('layer')
+    expect(spec.spec).toEqual({})
+  })
+
   it('leaves a facet spec that already has spec', () => {
     const spec = {
       facet: { row: { field: 'region' } },

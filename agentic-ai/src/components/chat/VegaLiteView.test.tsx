@@ -19,8 +19,8 @@ describe('VegaLiteView', () => {
 
     expect(markup).toContain('Drawing the chart')
     expect(markup).toContain('chat-block-pending')
-    expect(markup).toContain('{&quot;mark&quot;:&quot;bar&quot;')
-    expect(markup).toContain('chat-block-source')
+    expect(markup).not.toContain('{&quot;mark&quot;:&quot;bar&quot;')
+    expect(markup).not.toContain('chat-block-source')
     expect(markup).not.toContain('<svg')
   })
 

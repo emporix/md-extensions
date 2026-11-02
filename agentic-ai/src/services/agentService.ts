@@ -12,6 +12,19 @@ import { getBundleHelperTemplateIds } from '../utils/agentTemplateBundles'
 import { JSON_SCHEMA_ASSISTANT_I18N_KEYS } from '../utils/jsonSchemaAssistantHelpers'
 import { MCP_TOOL_FROM_FUNCTION_ASSISTANT_I18N_KEYS } from '../utils/mcpToolFromFunctionAssistantHelpers'
 import { LOG_ANALYSIS_ASSISTANT_I18N_KEYS } from '../utils/logAnalysisAssistantHelpers'
+import {
+  COMMERCE_FILTER_DSL_AGENT_ID,
+  COMMERCE_FILTER_DSL_AGENT_TEMPLATE_ID,
+  JSON_SCHEMA_ASSISTANT_AGENT_ID,
+  JSON_SCHEMA_ASSISTANT_TEMPLATE_ID,
+  LOG_ANALYSIS_ASSISTANT_AGENT_ID,
+  LOG_ANALYSIS_ASSISTANT_TEMPLATE_ID,
+  MCP_TOOL_FROM_FUNCTION_ASSISTANT_AGENT_ID,
+  MCP_TOOL_FROM_FUNCTION_ASSISTANT_TEMPLATE_ID,
+  RECOMMENDED_PROMPTS_AGENT_ID,
+  RECOMMENDED_PROMPTS_AGENT_TEMPLATE_ID,
+  RECOMMENDED_PROMPTS_TEMPLATE_NOT_FOUND_KEY,
+} from '../constants/agentConstants'
 import { ApiClient } from './apiClient'
 
 export class BundleHelperTemplateNotFoundError extends Error {
@@ -51,35 +64,6 @@ export interface PatchOperation {
 const getApiClient = (appState: AppState): ApiClient => {
   return new ApiClient(appState)
 }
-
-export const COMMERCE_FILTER_DSL_AGENT_TEMPLATE_ID =
-  'commerce-filter-dsl-assistant'
-
-export const COMMERCE_FILTER_DSL_AGENT_ID =
-  'agentic-commerce-events-filters-creator-assistant'
-
-export const JSON_SCHEMA_ASSISTANT_TEMPLATE_ID = 'json-schema-assistant'
-
-export const JSON_SCHEMA_ASSISTANT_AGENT_ID = 'json-schema-assistant'
-
-export const LOG_ANALYSIS_ASSISTANT_TEMPLATE_ID = 'log-analysis-assistant'
-
-export const LOG_ANALYSIS_ASSISTANT_AGENT_ID = 'log-analysis-assistant'
-
-export const MCP_TOOL_FROM_FUNCTION_ASSISTANT_TEMPLATE_ID =
-  'mcp-tool-from-function-assistant'
-
-export const MCP_TOOL_FROM_FUNCTION_ASSISTANT_AGENT_ID =
-  'mcp-tool-from-function-assistant'
-
-export const RECOMMENDED_PROMPTS_AGENT_TEMPLATE_ID =
-  'emporix-chat-recommended-prompts-assistant'
-
-export const RECOMMENDED_PROMPTS_AGENT_ID =
-  'emporix-chat-recommended-prompts-assistant'
-
-export const RECOMMENDED_PROMPTS_TEMPLATE_NOT_FOUND_KEY =
-  'chat_recommended_template_not_found'
 
 export type ChatWithAgentOptions = {
   readonly emptyResponseKey?: string

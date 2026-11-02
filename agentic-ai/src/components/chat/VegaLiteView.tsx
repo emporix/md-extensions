@@ -106,12 +106,7 @@ export const VegaLiteView = ({ segment }: VegaLiteViewProps) => {
   }, [canvasRef, kind, showInvalid, source])
 
   if (segment.kind === 'vega-lite-pending') {
-    return (
-      <RichBlockPending
-        message={t('chat_chart_drawing')}
-        source={segment.text}
-      />
-    )
+    return <RichBlockPending message={t('chat_chart_drawing')} />
   }
 
   if (showInvalid) {

@@ -7,8 +7,8 @@ import {
   extractFilterDslJsonFromAgentMessage,
 } from '../utils/agentFilterDslHelpers'
 import { useAppState } from '../contexts/AppStateContext'
+import { COMMERCE_FILTER_DSL_AGENT_ID } from '../constants/agentConstants'
 import {
-  COMMERCE_FILTER_DSL_AGENT_ID,
   chatWithAgent,
   createCommerceFilterDslAgent,
 } from '../services/agentService'

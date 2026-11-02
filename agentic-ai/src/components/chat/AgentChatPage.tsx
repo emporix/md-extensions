@@ -23,21 +23,26 @@ import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../contexts/ToastContext'
 import { useAgentChat } from '../../hooks/useAgentChat'
 import { useAgents } from '../../hooks/useAgents'
+import { useMyIamScopes } from '../../hooks/useMyIamScopes'
 import { useChatRecommendations } from '../../hooks/useChatRecommendations'
 import {
   isEnabledAgentPresent,
   useHelperAgentProvisioning,
 } from '../../hooks/useHelperAgentProvisioning'
 import {
-  patchCustomAgent,
   RECOMMENDED_PROMPTS_AGENT_ID,
   RECOMMENDED_PROMPTS_TEMPLATE_NOT_FOUND_KEY,
+} from '../../constants/agentConstants'
+import {
+  patchCustomAgent,
   createRecommendedPromptsAgent,
 } from '../../services/agentService'
 import { commerceTriggerExtractEvents } from '../../utils/agentFilterDslHelpers'
 import {
   buildChatInvokePatchOperations,
+  canSeeAgentInChat,
   getChatInvokeGates,
+  hasAgentManageScope,
   CHAT_AGENT_QUERY_PARAM,
   isTranscriptNearBottom,
   nextAgentIdFromQuery,
@@ -104,6 +109,8 @@ const AgentChatPage = () => {
   const { customAgents, customAgentsLoading, refreshCustomAgents } = useAgents({
     loadTemplates: false,
   })
+  const { scopes, loading: scopesLoading } = useMyIamScopes()
+  const canManageAgents = hasAgentManageScope(scopes.map((scope) => scope.id))
   const { messages, status, activity, send, reset, stop } = useAgentChat()
   const [agentId, setAgentId] = useState<string | null>(null)
   const [pendingAgentId, setPendingAgentId] = useState<string | null>(null)
@@ -118,10 +125,15 @@ const AgentChatPage = () => {
 
   const enabledAgents = useMemo(
     () =>
-      customAgents.filter(
-        (agent) => agent.enabled && agent.id !== RECOMMENDED_PROMPTS_AGENT_ID
-      ),
-    [customAgents]
+      scopesLoading
+        ? []
+        : customAgents.filter(
+            (agent) =>
+              agent.enabled &&
+              agent.id !== RECOMMENDED_PROMPTS_AGENT_ID &&
+              canSeeAgentInChat(agent.tags, canManageAgents)
+          ),
+    [canManageAgents, customAgents, scopesLoading]
   )
   const agentOptions = useMemo<AgentOption[]>(
     () =>
@@ -368,6 +380,13 @@ const AgentChatPage = () => {
     )
   }
 
+  const handleEditAgent = () => {
+    if (!agentId) {
+      return
+    }
+    window.location.href = `${window.location.pathname}#/agents/${encodeURIComponent(agentId)}/edit`
+  }
+
   const handleSend = () => {
     attemptSend(draft.trim(), 'composer')
   }
@@ -405,10 +424,20 @@ const AgentChatPage = () => {
     <section className="agent-chat-page">
       <header className="agent-chat-header">
         <h1 className="agent-chat-title page-title">{t('chat_title')}</h1>
-        <SecondaryButton className="agent-chat-reset-btn" onClick={reset}>
-          <i className="pi pi-refresh" aria-hidden="true" />
-          {t('chat_reset')}
-        </SecondaryButton>
+        <div className="agent-chat-header-actions">
+          <SecondaryButton
+            className="agent-chat-edit-btn"
+            onClick={handleEditAgent}
+            disabled={!agentId}
+          >
+            <i className="pi pi-pencil" aria-hidden="true" />
+            {t('chat_edit_agent')}
+          </SecondaryButton>
+          <SecondaryButton className="agent-chat-reset-btn" onClick={reset}>
+            <i className="pi pi-refresh" aria-hidden="true" />
+            {t('chat_reset')}
+          </SecondaryButton>
+        </div>
       </header>
       <AiGeneratedNotice variant="short" />
       <div className="agent-chat-card">
@@ -418,7 +447,7 @@ const AgentChatPage = () => {
           onScroll={handleTranscriptScroll}
           onWheel={handleTranscriptWheel}
         >
-          {customAgentsLoading && messages.length === 0 ? (
+          {(customAgentsLoading || scopesLoading) && messages.length === 0 ? (
             <p className="agent-chat-empty">{t('loading')}</p>
           ) : (
             <ChatBubble role="assistant">{t('chat_welcome')}</ChatBubble>

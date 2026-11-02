@@ -17,6 +17,12 @@ export interface UserScopesResponse {
 
 const getApiClient = (appState: AppState): ApiClient => new ApiClient(appState)
 
+const myScopesCacheKey = (appState: AppState): string =>
+  `${appState.tenant}\0${appState.token}`
+
+const resolvedMyScopes = new Map<string, IamScope[]>()
+const inFlightMyScopes = new Map<string, Promise<IamScope[]>>()
+
 export const parseMyIamScopes = (
   scopes: string | undefined | null
 ): IamScope[] => {
@@ -45,12 +51,43 @@ export const getIamScopes = async (appState: AppState): Promise<IamScope[]> => {
   return (scopes ?? []).filter((scope) => !!scope.id?.trim())
 }
 
-export const getMyIamScopes = async (
-  appState: AppState
-): Promise<IamScope[]> => {
+const fetchMyIamScopes = async (appState: AppState): Promise<IamScope[]> => {
   const api = getApiClient(appState)
   const response = await api.get<UserScopesResponse>(
     `/iam/${appState.tenant}/users/me/scopes`
   )
   return parseMyIamScopes(response?.scopes)
+}
+
+export const getMyIamScopes = async (
+  appState: AppState
+): Promise<IamScope[]> => {
+  const key = myScopesCacheKey(appState)
+  const hit = resolvedMyScopes.get(key)
+  if (hit) {
+    return hit
+  }
+
+  let pending = inFlightMyScopes.get(key)
+  if (!pending) {
+    pending = fetchMyIamScopes(appState).then(
+      (value) => {
+        resolvedMyScopes.set(key, value)
+        inFlightMyScopes.delete(key)
+        return value
+      },
+      (error: unknown) => {
+        inFlightMyScopes.delete(key)
+        throw error
+      }
+    )
+    inFlightMyScopes.set(key, pending)
+  }
+
+  return pending
+}
+
+export const resetMyIamScopesCacheForTests = (): void => {
+  resolvedMyScopes.clear()
+  inFlightMyScopes.clear()
 }

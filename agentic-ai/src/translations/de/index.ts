@@ -1143,6 +1143,7 @@ const TRANSLATIONS_DE = {
     'HINWEIS: Die Ausgabe wird von KI erzeugt. Bitte prüfen Sie sie, da Fehler auftreten können.',
 
   chat_title: 'AI-Assistenten',
+  chat_edit_agent: 'Agent bearbeiten',
   chat_reset: 'Zurücksetzen',
   chat_switch_title: 'Agent wechseln?',
   chat_switch_body: 'Die aktuelle Unterhaltung wird beendet.',

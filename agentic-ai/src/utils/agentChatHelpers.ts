@@ -3,6 +3,21 @@ import type { Trigger } from '../types/Agent'
 
 export const CHAT_EMPLOYEE_SCOPE = 'employee'
 export const CHAT_API_TRIGGER_TYPE = 'endpoint'
+export const AGENT_MANAGE_SCOPE = 'ai.agent_manage'
+export const CHAT_AGENT_TAG = 'chat'
+
+export const hasAgentManageScope = (scopeIds: readonly string[]): boolean =>
+  scopeIds.includes(AGENT_MANAGE_SCOPE)
+
+export const canSeeAgentInChat = (
+  tags: readonly string[] | undefined,
+  canManageAgents: boolean
+): boolean => {
+  if (canManageAgents) {
+    return true
+  }
+  return (tags ?? []).some((tag) => tag.trim().toLowerCase() === CHAT_AGENT_TAG)
+}
 
 export type ChatInvokeGate = 'employee_scope' | 'api_trigger'
 
