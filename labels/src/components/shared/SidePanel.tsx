@@ -57,7 +57,7 @@ const SidePanel = ({
       <button
         type="button"
         className={styles.mask}
-        aria-label="Close"
+        aria-label={t('global.close')}
         tabIndex={-1}
         onClick={onHide}
       />

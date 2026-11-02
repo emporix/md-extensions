@@ -79,7 +79,15 @@ const LabelsTable = () => {
     // Depend on pagination field values (not the paginationParams object) so
     // updates that don't change these fields don't trigger a refetch
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refresh, currentPage, rows, sortField, sortOrder, filtersKey])
+  }, [
+    refresh,
+    currentPage,
+    rows,
+    sortField,
+    sortOrder,
+    filtersKey,
+    i18n.language,
+  ])
 
   const deleteLabels = async (toDelete: Label[]) => {
     setIsLoading(true)

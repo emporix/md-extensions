@@ -248,6 +248,11 @@ export const PermissionsProvider = ({ children }: PropsWithChildren) => {
 
   useEffect(() => {
     if (!token || !tenant) {
+      setUserAccessControls([])
+      setTenantAccessControls([])
+      setUserScopes([])
+      setTemplates([])
+      setVendor(undefined)
       setIsPermissionsLoading(false)
       return
     }
