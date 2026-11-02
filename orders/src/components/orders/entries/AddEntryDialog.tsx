@@ -152,6 +152,14 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
     onClose()
   }
 
+  // A finished save closes the dialog, so closing it during the save would let
+  // that close a dialog opened again in the meantime.
+  const handleHide = () => {
+    if (!isSaving) {
+      handleClose()
+    }
+  }
+
   const onSubmit = async () => {
     if (!order) return
     try {
@@ -209,7 +217,8 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
       className={styles.dialog}
       visible={visible}
       style={{ width: '90vw', maxHeight: '90vh' }}
-      onHide={handleClose}
+      onHide={handleHide}
+      closable={!isSaving}
       header={t('orders.entry.actions.addProduct.dialog.title')}
       footer={
         <div className={styles.footer}>
