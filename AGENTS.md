@@ -71,7 +71,7 @@ Rules observed in those files (not inferred from framework habit):
 
 ## App
 
-- Kind: ui; auth: none
+- Kind: ui; auth: host-supplied bearer token (via each remote's `appState`)
 - Start: unknown — no root `package.json`; each extension starts with `npm run dev`. Dev server ports that are set: `customer-groups` 5174, `brands` 5175, `returns` 5176, `orders` 5177 (`*/vite.config.ts`). Other extensions do not set `server.port`. QA skills ask. Ready path: `/`
 - API contract: none in this repo. Local docs: `README.md` and `<extension>/README.md`. Published docs: none (`docs.targets` omitted)
 
