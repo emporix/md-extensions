@@ -189,8 +189,9 @@
   --color-chat-hover: #f5f9fc;
   --chat-transcript-height: 400px;
   --chat-bubble-max-width: 80%;
-  --chat-composer-min-height: 5rem;
-  --chat-composer-max-height: 7.5rem;
+  --chat-composer-min-height: 8.5rem;
+  --chat-composer-max-height: 12rem;
+  --chat-attach-size: 2rem;
   --chat-picker-max-width: 25rem;
   --chat-frame-height: 22rem;
   --chat-frame-min-width: 17.5rem;

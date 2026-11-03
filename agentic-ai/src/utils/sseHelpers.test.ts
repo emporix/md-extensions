@@ -140,12 +140,34 @@ describe('sseHelpers', () => {
       size: 12,
       status: 'ready',
       errorCode: undefined,
+      generationId: undefined,
     })
 
     expect(
       mapAgentChatStreamEvent({
         event: 'artifact',
         data: '{"kind":"html","filename":"x.html","mime_type":"text/html","size":1,"status":"ready"}',
+      })
+    ).toBeNull()
+  })
+
+  it('maps a pending image and drops a pending file', () => {
+    expect(
+      mapAgentChatStreamEvent({
+        event: 'artifact',
+        data: '{"kind":"image","filename":"image.png","mime_type":"image/png","size":0,"status":"pending","generation_id":"ig_forest","base64":"nope"}',
+      })
+    ).toMatchObject({
+      type: 'artifact',
+      status: 'pending',
+      generationId: 'ig_forest',
+      artifactId: undefined,
+    })
+
+    expect(
+      mapAgentChatStreamEvent({
+        event: 'artifact',
+        data: '{"kind":"file","filename":"notes.pdf","mime_type":"application/pdf","size":0,"status":"pending","generation_id":"ig_forest"}',
       })
     ).toBeNull()
   })

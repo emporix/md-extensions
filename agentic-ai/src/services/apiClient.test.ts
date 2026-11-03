@@ -109,4 +109,35 @@ describe('ApiClient.postSse', () => {
       },
     ])
   })
+
+  it('posts form data without forcing a JSON content type', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ id: 'asset-1', sessionId: 'session-1' }), {
+        status: 201,
+        headers: { 'content-type': 'application/json' },
+      })
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    const body = new FormData()
+    body.append('attachment', new Blob(['png'], { type: 'image/png' }), 'a.png')
+
+    const client = new ApiClient(appState)
+    await expect(
+      client.postForm(
+        '/ai-service/testtenant/agentic/agent-1/attachments',
+        body,
+        {
+          headers: { 'session-id': 'session-1' },
+        }
+      )
+    ).resolves.toEqual({ id: 'asset-1', sessionId: 'session-1' })
+
+    const init = fetchMock.mock.calls[0][1] as RequestInit
+    const headers = init.headers as Record<string, string>
+    expect(init.body).toBe(body)
+    expect(headers['Content-Type']).toBeUndefined()
+    expect(headers.Authorization).toBe('Bearer token')
+    expect(headers['Emporix-tenant']).toBe('testtenant')
+    expect(headers['session-id']).toBe('session-1')
+  })
 })

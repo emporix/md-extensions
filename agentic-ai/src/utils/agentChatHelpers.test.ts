@@ -11,6 +11,7 @@ import {
   nextAgentId,
   nextAgentIdFromQuery,
   isTranscriptNearBottom,
+  nextChatCardHeight,
   nextSessionId,
   nextThinkingText,
   nextToolActivityText,
@@ -31,6 +32,14 @@ describe('nextSessionId', () => {
 
   it('clears the session when the conversation resets', () => {
     expect(nextSessionId(true, 'sess-1')).toBeNull()
+  })
+})
+
+describe('nextChatCardHeight', () => {
+  it('grows the card with the drag and stays inside the limits', () => {
+    expect(nextChatCardHeight(640, 120, 480, 900)).toBe(760)
+    expect(nextChatCardHeight(640, -400, 480, 900)).toBe(480)
+    expect(nextChatCardHeight(640, 800, 480, 900)).toBe(900)
   })
 })
 

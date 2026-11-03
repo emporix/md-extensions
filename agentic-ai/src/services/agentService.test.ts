@@ -2,19 +2,25 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { AppState } from '../types/common'
 import { COMMERCE_FILTER_ASSISTANT_I18N_KEYS } from '../utils/agentFilterDslHelpers'
 
-const { mockPostSse, mockPost } = vi.hoisted(() => ({
+const { mockPostSse, mockPost, mockPostForm } = vi.hoisted(() => ({
   mockPostSse: vi.fn(),
   mockPost: vi.fn(),
+  mockPostForm: vi.fn(),
 }))
 
 vi.mock('./apiClient', () => ({
   ApiClient: class MockApiClient {
     postSse = mockPostSse
     post = mockPost
+    postForm = mockPostForm
   },
 }))
 
-import { chatWithAgent, chatWithAgentOnce } from './agentService'
+import {
+  chatWithAgent,
+  chatWithAgentOnce,
+  uploadChatImage,
+} from './agentService'
 
 const appState: AppState = {
   tenant: 'testtenant',
@@ -152,6 +158,7 @@ describe('chatWithAgent', () => {
       size: 12,
       status: 'ready',
       errorCode: undefined,
+      generationId: undefined,
     })
   })
 
@@ -364,6 +371,64 @@ describe('chatWithAgentOnce', () => {
       '/ai-service/testtenant/agentic/chat',
       { agentId: 'agent-1', message: 'suggest' },
       { signal: controller.signal }
+    )
+  })
+})
+
+describe('chat image attachments', () => {
+  beforeEach(() => {
+    mockPostSse.mockReset()
+    mockPost.mockReset()
+    mockPostForm.mockReset()
+  })
+
+  it('uploads one image with the session header and without JSON content', async () => {
+    mockPostForm.mockResolvedValue({ id: 'asset-1', sessionId: 'session-1' })
+    const image = new File(['png'], 'forest.png', { type: 'image/png' })
+
+    await expect(
+      uploadChatImage(appState, 'agent-1', image, { sessionId: 'session-1' })
+    ).resolves.toEqual({ id: 'asset-1', sessionId: 'session-1' })
+
+    const [path, body, init] = mockPostForm.mock.calls[0]
+    expect(path).toBe('/ai-service/testtenant/agentic/agent-1/attachments')
+    expect(body).toBeInstanceOf(FormData)
+    expect(init.headers['session-id']).toBe('session-1')
+  })
+
+  it('sends attachment ids with the chat stream', async () => {
+    mockPostSse.mockReturnValue(
+      createStream({
+        type: 'token',
+        content: 'done',
+      })
+    )
+
+    await chatWithAgent(appState, 'agent-1', 'describe this', {
+      sessionId: 'session-1',
+      attachments: [
+        {
+          attachmentId: 'asset-1',
+          purpose: 'chat image',
+          caption: 'forest.png',
+        },
+      ],
+    })
+
+    expect(mockPostSse).toHaveBeenCalledWith(
+      '/ai-service/testtenant/agentic/chat-stream',
+      {
+        agentId: 'agent-1',
+        message: 'describe this',
+        attachments: [
+          {
+            attachmentId: 'asset-1',
+            purpose: 'chat image',
+            caption: 'forest.png',
+          },
+        ],
+      },
+      { headers: { 'session-id': 'session-1' } }
     )
   })
 })

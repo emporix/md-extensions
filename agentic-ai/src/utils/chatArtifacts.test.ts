@@ -4,7 +4,10 @@ import {
   artifactDownloadPath,
   artifactFailureKey,
   formatArtifactSize,
+  isPreviewableFile,
   isPreviewableImage,
+  MAX_ARTIFACT_PREVIEW_CHARS,
+  previewArtifactText,
   revokeObjectUrl,
   safeArtifactFilename,
   type ChatArtifact,
@@ -66,6 +69,54 @@ describe('chatArtifacts', () => {
     revokeObjectUrl(null)
     expect(revoke).toHaveBeenCalledTimes(1)
     vi.unstubAllGlobals()
+  })
+
+  it('replaces a pending image when the same generation finishes', () => {
+    const pending: ChatArtifact = {
+      generationId: 'ig_forest',
+      kind: 'image',
+      filename: 'image.png',
+      mimeType: 'image/png',
+      size: 0,
+      status: 'pending',
+    }
+    const ready: ChatArtifact = {
+      ...image,
+      generationId: 'ig_forest',
+    }
+
+    const next = appendChatArtifact([pending], ready)
+
+    expect(next).toHaveLength(1)
+    expect(next[0]?.status).toBe('ready')
+    expect(next[0]?.artifactId).toBe('asset-1')
+    expect(next[0]?.generationId).toBe('ig_forest')
+  })
+
+  it('previews safe files and truncates long text', () => {
+    const pdf: ChatArtifact = {
+      artifactId: 'asset-pdf',
+      kind: 'file',
+      filename: 'notes.pdf',
+      mimeType: 'application/pdf',
+      size: 12,
+      status: 'ready',
+    }
+    expect(isPreviewableFile(pdf)).toBe(true)
+    expect(
+      isPreviewableFile({
+        ...pdf,
+        mimeType: 'text/html',
+        filename: 'page.html',
+      })
+    ).toBe(false)
+    expect(isPreviewableFile({ ...pdf, mimeType: 'image/svg+xml' })).toBe(false)
+
+    const body = new Uint8Array(MAX_ARTIFACT_PREVIEW_CHARS + 5).fill(65)
+    const preview = previewArtifactText(body)
+    expect(preview.truncated).toBe(true)
+    expect(preview.text).toHaveLength(MAX_ARTIFACT_PREVIEW_CHARS)
+    expect(previewArtifactText(new Uint8Array([65, 66])).truncated).toBe(false)
   })
 
   it('maps a failed image or file to a local message key', () => {

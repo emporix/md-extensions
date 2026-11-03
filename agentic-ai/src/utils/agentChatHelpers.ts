@@ -41,6 +41,15 @@ export const nextToolActivityText = (
 }
 
 export const TRANSCRIPT_FOLLOW_THRESHOLD_PX = 80
+export const CHAT_TRANSCRIPT_MIN_HEIGHT = 200
+
+export const nextChatCardHeight = (
+  startHeight: number,
+  deltaY: number,
+  minHeight: number,
+  maxHeight: number
+): number =>
+  Math.round(Math.min(maxHeight, Math.max(minHeight, startHeight + deltaY)))
 
 export const isTranscriptNearBottom = (
   scrollTop: number,

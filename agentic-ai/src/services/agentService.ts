@@ -77,12 +77,30 @@ export type ChatWithAgentOptions = {
     readonly filename: string
     readonly mimeType: string
     readonly size: number
-    readonly status: 'ready' | 'failed'
+    readonly status: 'ready' | 'failed' | 'pending'
     readonly errorCode?: string
+    readonly generationId?: string
   }) => void
   readonly onSessionId?: (sessionId: string) => void
   readonly signal?: AbortSignal
+  readonly attachments?: readonly ChatAttachmentRef[]
 }
+
+export type ChatAttachmentRef = {
+  readonly attachmentId: string
+  readonly purpose?: string
+  readonly caption?: string
+}
+
+const chatRequestBody = (
+  agentId: string,
+  message: string,
+  attachments?: readonly ChatAttachmentRef[]
+) => ({
+  agentId,
+  message,
+  ...(attachments && attachments.length > 0 ? { attachments } : {}),
+})
 
 export const chatWithAgent = async (
   appState: AppState,
@@ -94,7 +112,7 @@ export const chatWithAgent = async (
     options.emptyResponseKey ??
     COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse
   const api = getApiClient(appState)
-  const body = { agentId, message }
+  const body = chatRequestBody(agentId, message, options.attachments)
   const requestInit: RequestInit = {}
   if (options.sessionId) {
     requestInit.headers = { 'session-id': options.sessionId }
@@ -143,6 +161,7 @@ export const chatWithAgent = async (
         size: event.size,
         status: event.status,
         errorCode: event.errorCode,
+        generationId: event.generationId,
       })
       continue
     }
@@ -192,7 +211,7 @@ export const chatWithAgentOnce = async (
   message: string,
   options: Pick<
     ChatWithAgentOptions,
-    'emptyResponseKey' | 'signal' | 'sessionId' | 'onSessionId'
+    'emptyResponseKey' | 'signal' | 'sessionId' | 'onSessionId' | 'attachments'
   > = {}
 ): Promise<string> => {
   const api = getApiClient(appState)
@@ -205,7 +224,7 @@ export const chatWithAgentOnce = async (
   }
   const payload = await api.post<unknown>(
     `/ai-service/${appState.tenant}/agentic/chat`,
-    { agentId, message },
+    chatRequestBody(agentId, message, options.attachments),
     options.sessionId || options.signal ? requestInit : undefined
   )
   const returnedSessionId = readChatSessionId(payload)
@@ -220,6 +239,48 @@ export const chatWithAgentOnce = async (
     )
   }
   return text
+}
+
+const readUploadedAttachment = (
+  payload: unknown
+): { id: string; sessionId?: string } | null => {
+  if (!payload || typeof payload !== 'object') {
+    return null
+  }
+  const record = payload as { id?: unknown; sessionId?: unknown }
+  if (typeof record.id !== 'string' || record.id.trim().length === 0) {
+    return null
+  }
+  const sessionId =
+    typeof record.sessionId === 'string' && record.sessionId.trim().length > 0
+      ? record.sessionId.trim()
+      : undefined
+  return { id: record.id.trim(), sessionId }
+}
+
+export const uploadChatImage = async (
+  appState: AppState,
+  agentId: string,
+  file: File,
+  options: { readonly sessionId?: string; readonly signal?: AbortSignal } = {}
+): Promise<{ readonly id: string; readonly sessionId?: string }> => {
+  const api = getApiClient(appState)
+  const body = new FormData()
+  body.append('attachment', file, file.name)
+  const headers: Record<string, string> = {}
+  if (options.sessionId) {
+    headers['session-id'] = options.sessionId
+  }
+  const payload = await api.postForm<unknown>(
+    `/ai-service/${appState.tenant}/agentic/${agentId}/attachments`,
+    body,
+    { headers, signal: options.signal }
+  )
+  const uploaded = readUploadedAttachment(payload)
+  if (!uploaded) {
+    throw new Error('chat_image_upload_failed')
+  }
+  return uploaded
 }
 
 type CreateTemplateAgentParams = {

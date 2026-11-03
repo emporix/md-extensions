@@ -24,8 +24,9 @@ export type AgentChatStreamEvent =
       readonly filename: string
       readonly mimeType: string
       readonly size: number
-      readonly status: 'ready' | 'failed'
+      readonly status: 'ready' | 'failed' | 'pending'
       readonly errorCode?: string
+      readonly generationId?: string
     }
   | {
       readonly type: 'done'
@@ -189,13 +190,20 @@ export const mapAgentChatStreamEvent = (
         typeof payload.artifact_id === 'string' && payload.artifact_id.trim()
           ? payload.artifact_id
           : undefined
+      const generationId =
+        typeof payload.generation_id === 'string' &&
+        /^[A-Za-z0-9._:-]{1,128}$/.test(payload.generation_id)
+          ? payload.generation_id
+          : undefined
       if (
         (kind !== 'image' && kind !== 'file') ||
-        (status !== 'ready' && status !== 'failed') ||
+        (status !== 'ready' && status !== 'failed' && status !== 'pending') ||
         !filename ||
         !mimeType ||
         size < 0 ||
-        (status === 'ready' && !artifactId)
+        (status === 'ready' && !artifactId) ||
+        (status === 'pending' &&
+          (kind !== 'image' || !generationId || Boolean(artifactId)))
       ) {
         return null
       }
@@ -211,6 +219,7 @@ export const mapAgentChatStreamEvent = (
           typeof payload.error_code === 'string'
             ? payload.error_code
             : undefined,
+        generationId,
       }
     }
     case 'done':

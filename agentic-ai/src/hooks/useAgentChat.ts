@@ -2,7 +2,15 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
-import { chatWithAgent, chatWithAgentOnce } from '../services/agentService'
+import {
+  chatWithAgent,
+  chatWithAgentOnce,
+  uploadChatImage,
+} from '../services/agentService'
+import {
+  ChatImageUploadError,
+  uploadChatImagesInOrder,
+} from '../utils/chatImageUpload'
 import {
   nextSessionId,
   nextThinkingText,
@@ -17,11 +25,24 @@ import {
 
 export type AgentChatRole = 'user' | 'assistant' | 'error'
 
+export type AgentChatImage = {
+  readonly id: string
+  readonly name: string
+  readonly previewUrl?: string
+  readonly kind: 'image' | 'file'
+}
+
+export type PendingChatImage = AgentChatImage & {
+  readonly file: File
+  readonly attachmentId?: string
+}
+
 export type AgentChatMessage = {
   readonly id: string
   readonly role: AgentChatRole
   readonly text: string
   readonly artifacts?: readonly ChatArtifact[]
+  readonly images?: readonly AgentChatImage[]
 }
 
 export type AgentChatActivity =
@@ -37,7 +58,9 @@ export const useAgentChat = () => {
   const appState = useAppState()
   const { showError } = useToast()
   const [messages, setMessages] = useState<AgentChatMessage[]>([])
-  const [status, setStatus] = useState<'idle' | 'streaming'>('idle')
+  const [status, setStatus] = useState<'idle' | 'uploading' | 'streaming'>(
+    'idle'
+  )
   const [activity, setActivity] = useState<AgentChatActivity | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
@@ -66,7 +89,13 @@ export const useAgentChat = () => {
   )
 
   const send = useCallback(
-    async (agentId: string, message: string) => {
+    async (
+      agentId: string,
+      message: string,
+      images: readonly PendingChatImage[] = [],
+      onCommitted?: () => void,
+      onPartialUpload?: (attachmentIds: readonly string[]) => void
+    ) => {
       const trimmed = message.trim()
       if (!trimmed || streamingRef.current) {
         return 'ignored'
@@ -75,17 +104,75 @@ export const useAgentChat = () => {
       const controller = new AbortController()
       abortRef.current = controller
       streamingRef.current = true
+      const storedSession = nextSessionId(false, sessionId)
+      let activeSession = storedSession ?? undefined
+      let attachments:
+        | Awaited<ReturnType<typeof uploadChatImagesInOrder>>['attachments']
+        | undefined
+      if (images.length > 0) {
+        setStatus('uploading')
+        try {
+          const uploaded = await uploadChatImagesInOrder(
+            images,
+            (file, imageSessionId) =>
+              uploadChatImage(appState, agentId, file, {
+                sessionId: imageSessionId,
+                signal: controller.signal,
+              }),
+            activeSession
+          )
+          attachments = uploaded.attachments
+          activeSession = uploaded.sessionId
+          if (uploaded.sessionId) {
+            setSessionId(uploaded.sessionId)
+          }
+        } catch (err) {
+          if (err instanceof ChatImageUploadError) {
+            if (err.sessionId) {
+              setSessionId(err.sessionId)
+            }
+            if (err.uploaded.length > 0) {
+              onPartialUpload?.(err.uploaded.map((item) => item.attachmentId))
+            }
+          }
+          if (abortRef.current === controller) {
+            abortRef.current = null
+            streamingRef.current = false
+            setStatus('idle')
+          }
+          if (isAbortError(err)) {
+            return 'aborted'
+          }
+          showError(formatApiError(err, t('chat_image_upload_failed')))
+          return 'error'
+        }
+      }
+
       idRef.current += 1
       const userId = `chat-${idRef.current}`
       idRef.current += 1
       const assistantId = `chat-${idRef.current}`
-      const storedSession = nextSessionId(false, sessionId)
 
       setMessages((current) => [
         ...current,
-        { id: userId, role: 'user', text: trimmed },
+        {
+          id: userId,
+          role: 'user',
+          text: trimmed,
+          ...(images.length > 0
+            ? {
+                images: images.map((image) => ({
+                  id: image.id,
+                  name: image.name,
+                  ...(image.previewUrl ? { previewUrl: image.previewUrl } : {}),
+                  kind: image.kind,
+                })),
+              }
+            : {}),
+        },
         { id: assistantId, role: 'assistant', text: '' },
       ])
+      onCommitted?.()
       setStatus('streaming')
       setActivity(null)
 
@@ -105,7 +192,8 @@ export const useAgentChat = () => {
         try {
           reply = await chatWithAgent(appState, agentId, trimmed, {
             emptyResponseKey: EMPTY_RESPONSE_KEY,
-            sessionId: storedSession ?? undefined,
+            sessionId: activeSession,
+            attachments,
             signal: controller.signal,
             onToken: (accumulated) => {
               replaceAssistant({ role: 'assistant', text: accumulated })
@@ -148,7 +236,8 @@ export const useAgentChat = () => {
           }
           reply = await chatWithAgentOnce(appState, agentId, trimmed, {
             emptyResponseKey: EMPTY_RESPONSE_KEY,
-            sessionId: storedSession ?? undefined,
+            sessionId: activeSession,
+            attachments,
             signal: controller.signal,
             onSessionId: setSessionId,
           })

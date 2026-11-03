@@ -275,6 +275,24 @@ export class ApiClient {
     return this.handleResponse<T>(response)
   }
 
+  async postForm<T>(
+    path: string,
+    body: FormData,
+    init?: RequestInit
+  ): Promise<T> {
+    const headers = this.buildHeaders(
+      init?.headers as Record<string, string> | undefined
+    ) as Record<string, string>
+    delete headers['Content-Type']
+    const response = await fetch(this.buildUrl(path), {
+      method: 'POST',
+      headers,
+      body,
+      signal: init?.signal,
+    })
+    return this.handleResponse<T>(response)
+  }
+
   async *postSse(
     path: string,
     body?: unknown,
