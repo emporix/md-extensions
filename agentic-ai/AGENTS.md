@@ -14,7 +14,7 @@ Every claim below names its source file; `unknown` means no evidence was found.
 
 | Concern | Technology / version | Evidence |
 |---|---|---|
-| Language / runtime | TypeScript `~5.6.2`; Node pin unknown | `package.json` (no `engines`); no `.nvmrc` / `.node-version` |
+| Language / runtime | TypeScript `~5.6.2`; CI Node `20.x` | `package.json` (no `engines`); `../.github/workflows/agentic-ai-firebase-preview.yaml` (`matrix.node: [20.x]`) |
 | Package / build tool | npm; Vite `^6.0.5` | `package-lock.json`, `package.json`, `vite.config.ts` |
 | Primary framework | React `^18.3.1`, PrimeReact `^8.7.0`, Vite module federation | `package.json`, `vite.config.ts` |
 | Persistence | none in this package | no database manifest |
@@ -80,7 +80,7 @@ Rules observed in those files (not inferred from framework habit):
 
 ## App
 
-- Kind: ui; auth: none (`src/App.tsx` standalone shell collects tenant, token, and language into `localStorage`; that is not the `md-token` or `cockpit-token` gate)
+- Kind: ui; auth: host bearer token (`RemoteComponent` `appState.token`, sent as `Authorization: Bearer` by `src/services/apiClient.ts`). Standalone `src/App.tsx` stores tenant, token, and language in `localStorage`. `ai-setup.json` leaves `app.auth` unset: this is not the `md-token` or `cockpit-token` gate.
 - Start: `npm run dev` ; base URL: unknown (no `server.port` in `vite.config.ts`, no README `localhost:` port) ; ready path: `/`
 - API contract: none in this package (`src/services/apiClient.ts` calls `VITE_API_URL`); local docs: `README.md`; published docs: `ai-setup.json` → `docs.targets`
 
