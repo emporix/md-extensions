@@ -1,3 +1,8 @@
+export const CHAT_UPLOAD_FAILED_KEY = 'chat_image_upload_failed'
+
+export const showsTranslatedUploadFailure = (err: unknown): boolean =>
+  err instanceof Error && err.message === CHAT_UPLOAD_FAILED_KEY
+
 export type UploadedChatImage = {
   readonly attachmentId: string
   readonly purpose: string

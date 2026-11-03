@@ -114,6 +114,11 @@ export const revokeObjectUrl = (url: string | null): void => {
   }
 }
 
+export const imagePreviewAfterLoadError = (url: string | null): 'failed' => {
+  revokeObjectUrl(url)
+  return 'failed'
+}
+
 export const safeArtifactFilename = (filename: string): string => {
   const base = filename.split(/[/\\]/).pop() ?? ''
   const cleaned = base.replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 120)

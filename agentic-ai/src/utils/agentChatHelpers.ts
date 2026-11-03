@@ -28,6 +28,10 @@ export type ChatInvokeGate = 'employee_scope' | 'api_trigger'
 
 const normalizeToken = (value: string): string => value.trim().toLowerCase()
 
+export const shouldRestoreComposerDraft = (
+  result: 'ok' | 'error' | 'aborted' | 'ignored'
+): boolean => result === 'error' || result === 'aborted'
+
 export const nextSessionId = (
   reset: boolean,
   stored: string | null

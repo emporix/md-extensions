@@ -7,6 +7,7 @@ import {
   isPreviewableFile,
   isPreviewableImage,
   MAX_ARTIFACT_PREVIEW_CHARS,
+  imagePreviewAfterLoadError,
   previewArtifactText,
   revokeObjectUrl,
   safeArtifactFilename,
@@ -68,6 +69,15 @@ describe('chatArtifacts', () => {
     revokeObjectUrl('blob:forest')
     revokeObjectUrl(null)
     expect(revoke).toHaveBeenCalledTimes(1)
+    vi.unstubAllGlobals()
+  })
+
+  it('drops a preview URL when the browser cannot draw the image', () => {
+    const revoke = vi.fn()
+    vi.stubGlobal('URL', { revokeObjectURL: revoke })
+
+    expect(imagePreviewAfterLoadError('blob:forest')).toBe('failed')
+    expect(revoke).toHaveBeenCalledWith('blob:forest')
     vi.unstubAllGlobals()
   })
 

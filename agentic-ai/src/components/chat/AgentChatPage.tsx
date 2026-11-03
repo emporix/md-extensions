@@ -54,6 +54,7 @@ import {
   isTranscriptNearBottom,
   nextChatCardHeight,
   nextAgentIdFromQuery,
+  shouldRestoreComposerDraft,
   shouldShowAssistantActivity,
   shouldShowRecommendationEmpty,
   type ChatInvokeGate,
@@ -503,14 +504,11 @@ const AgentChatPage = () => {
         )
       }
     ).then((result) => {
-      if (result === 'error') {
-        if (source === 'composer') {
-          setDraft(text)
-          return
-        }
-        if (draft.trim().length === 0) {
-          setDraft(text)
-        }
+      if (!shouldRestoreComposerDraft(result)) {
+        return
+      }
+      if (source === 'composer' || draft.trim().length === 0) {
+        setDraft(text)
       }
     })
   }
@@ -787,7 +785,11 @@ const AgentChatPage = () => {
                 <span>{image.name}</span>
                 <button
                   type="button"
-                  aria-label={t('chat_remove_file')}
+                  aria-label={t(
+                    image.kind === 'image'
+                      ? 'chat_remove_image'
+                      : 'chat_remove_file'
+                  )}
                   disabled={busy}
                   onClick={() => {
                     revokePreview(image.previewUrl)

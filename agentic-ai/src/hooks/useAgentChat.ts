@@ -9,6 +9,7 @@ import {
 } from '../services/agentService'
 import {
   ChatImageUploadError,
+  showsTranslatedUploadFailure,
   uploadChatImagesInOrder,
 } from '../utils/chatImageUpload'
 import {
@@ -143,7 +144,12 @@ export const useAgentChat = () => {
           if (isAbortError(err)) {
             return 'aborted'
           }
-          showError(formatApiError(err, t('chat_image_upload_failed')))
+          const uploadFallback = t('chat_image_upload_failed')
+          showError(
+            showsTranslatedUploadFailure(err)
+              ? uploadFallback
+              : formatApiError(err, uploadFallback)
+          )
           return 'error'
         }
       }

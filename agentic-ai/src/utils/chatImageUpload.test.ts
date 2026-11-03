@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
+  CHAT_UPLOAD_FAILED_KEY,
   ChatImageUploadError,
+  showsTranslatedUploadFailure,
   uploadChatImagesInOrder,
 } from './chatImageUpload'
 
@@ -98,5 +100,21 @@ describe('uploadChatImagesInOrder', () => {
       'asset-1',
       'asset-2',
     ])
+  })
+})
+
+describe('showsTranslatedUploadFailure', () => {
+  it('uses the translation when the upload response has no id', () => {
+    const wrapped = new ChatImageUploadError(
+      new Error(CHAT_UPLOAD_FAILED_KEY),
+      [],
+      undefined
+    )
+
+    expect(showsTranslatedUploadFailure(wrapped)).toBe(true)
+  })
+
+  it('keeps a service error message', () => {
+    expect(showsTranslatedUploadFailure(new Error('Bad gateway'))).toBe(false)
   })
 })

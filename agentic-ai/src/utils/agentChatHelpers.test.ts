@@ -13,6 +13,7 @@ import {
   isTranscriptNearBottom,
   nextChatCardHeight,
   nextSessionId,
+  shouldRestoreComposerDraft,
   nextThinkingText,
   nextToolActivityText,
   shouldShowAssistantActivity,
@@ -20,6 +21,18 @@ import {
   withApiEndpointTrigger,
   withEmployeeRequiredScope,
 } from './agentChatHelpers'
+
+describe('shouldRestoreComposerDraft', () => {
+  it('puts the prompt back when upload fails or the user stops', () => {
+    expect(shouldRestoreComposerDraft('error')).toBe(true)
+    expect(shouldRestoreComposerDraft('aborted')).toBe(true)
+  })
+
+  it('leaves the composer empty after a finished send', () => {
+    expect(shouldRestoreComposerDraft('ok')).toBe(false)
+    expect(shouldRestoreComposerDraft('ignored')).toBe(false)
+  })
+})
 
 describe('nextSessionId', () => {
   it('keeps the stored session across sends', () => {

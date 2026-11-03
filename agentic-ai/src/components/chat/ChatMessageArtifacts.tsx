@@ -7,6 +7,7 @@ import {
   artifactDownloadPath,
   artifactFailureKey,
   formatArtifactSize,
+  imagePreviewAfterLoadError,
   isPreviewableFile,
   isPreviewableImage,
   isTextPreview,
@@ -113,7 +114,16 @@ const ChatImagePreview = ({
       : t('chat_download_png')
   return (
     <div className="agent-chat-artifact-image-block">
-      <img className="agent-chat-artifact-image" src={url} alt={filename} />
+      <img
+        className="agent-chat-artifact-image"
+        src={url}
+        alt={filename}
+        onError={() => {
+          imagePreviewAfterLoadError(url)
+          setUrl(null)
+          setFailed(true)
+        }}
+      />
       <RichFrameDownload
         label={downloadLabel}
         disabled={false}

@@ -396,6 +396,15 @@ describe('chat image attachments', () => {
     expect(init.headers['session-id']).toBe('session-1')
   })
 
+  it('rejects an upload response that has no id', async () => {
+    mockPostForm.mockResolvedValue({ sessionId: 'session-1' })
+    const image = new File(['png'], 'forest.png', { type: 'image/png' })
+
+    await expect(uploadChatImage(appState, 'agent-1', image)).rejects.toThrow(
+      'chat_image_upload_failed'
+    )
+  })
+
   it('sends attachment ids with the chat stream', async () => {
     mockPostSse.mockReturnValue(
       createStream({

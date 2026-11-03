@@ -12,6 +12,7 @@ import { getBundleHelperTemplateIds } from '../utils/agentTemplateBundles'
 import { JSON_SCHEMA_ASSISTANT_I18N_KEYS } from '../utils/jsonSchemaAssistantHelpers'
 import { MCP_TOOL_FROM_FUNCTION_ASSISTANT_I18N_KEYS } from '../utils/mcpToolFromFunctionAssistantHelpers'
 import { LOG_ANALYSIS_ASSISTANT_I18N_KEYS } from '../utils/logAnalysisAssistantHelpers'
+import { CHAT_UPLOAD_FAILED_KEY } from '../utils/chatImageUpload'
 import {
   COMMERCE_FILTER_DSL_AGENT_ID,
   COMMERCE_FILTER_DSL_AGENT_TEMPLATE_ID,
@@ -278,7 +279,7 @@ export const uploadChatImage = async (
   )
   const uploaded = readUploadedAttachment(payload)
   if (!uploaded) {
-    throw new Error('chat_image_upload_failed')
+    throw new Error(CHAT_UPLOAD_FAILED_KEY)
   }
   return uploaded
 }
