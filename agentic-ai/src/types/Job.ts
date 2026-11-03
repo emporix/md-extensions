@@ -25,6 +25,7 @@ export interface ImportResultSummary {
     agents: ImportedItem[]
     tools: ImportedItem[]
     mcpServers: ImportedItem[]
+    oauths?: ImportedItem[]
   }
   message: string
 }
