@@ -10,6 +10,7 @@ import {
 const mocks = vi.hoisted(() => ({
   fetchBasicConfiguration: vi.fn(),
   tenant: 'tenant-a',
+  contentLanguage: 'en',
 }))
 
 vi.mock('@emporix/api-calls', () => ({
@@ -17,7 +18,10 @@ vi.mock('@emporix/api-calls', () => ({
   updateSingleConfiguration: vi.fn(),
 }))
 vi.mock('./Dashboard.context', () => ({
-  useDashboardContext: () => ({ tenant: mocks.tenant, contentLanguage: 'en' }),
+  useDashboardContext: () => ({
+    tenant: mocks.tenant,
+    contentLanguage: mocks.contentLanguage,
+  }),
 }))
 
 const configWithTables = (count: number) =>
@@ -58,7 +62,13 @@ afterEach(() => {
   cleanup()
   vi.clearAllMocks()
   mocks.tenant = 'tenant-a'
+  mocks.contentLanguage = 'en'
 })
+
+const settle = () =>
+  act(async () => {
+    await Promise.resolve()
+  })
 
 describe('ConfigurationProvider', () => {
   it('is loaded once the configuration of the tenant arrives', async () => {
@@ -96,10 +106,38 @@ describe('ConfigurationProvider', () => {
     mocks.fetchBasicConfiguration.mockRejectedValue(new Error('offline'))
     render(tree())
 
-    await act(async () => {
-      await Promise.resolve()
-    })
+    await settle()
 
     expect(state()).toBe('true:0')
+  })
+
+  it('gives a new tenant no settings when its request fails', async () => {
+    mocks.fetchBasicConfiguration
+      .mockResolvedValueOnce(configWithTables(1))
+      .mockRejectedValueOnce(new Error('offline'))
+    const { rerender } = render(tree())
+    await settle()
+    expect(state()).toBe('true:1')
+
+    mocks.tenant = 'tenant-b'
+    rerender(tree())
+    await settle()
+
+    expect(state()).toBe('true:0')
+  })
+
+  it('keeps the settings of the same tenant when a refresh fails', async () => {
+    mocks.fetchBasicConfiguration
+      .mockResolvedValueOnce(configWithTables(1))
+      .mockRejectedValueOnce(new Error('offline'))
+    const { rerender } = render(tree())
+    await settle()
+
+    mocks.contentLanguage = 'de'
+    rerender(tree())
+    await settle()
+
+    expect(mocks.fetchBasicConfiguration).toHaveBeenCalledTimes(2)
+    expect(state()).toBe('true:1')
   })
 })

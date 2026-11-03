@@ -65,22 +65,36 @@ export const useConfiguration = () => useContext(ConfigurationContext)
 
 export const ConfigurationProvider = ({ children }: PropsWithChildren) => {
   const { tenant, contentLanguage, currency } = useDashboardContext()
-  const [configuration, setConfig] = useState<Configuration>()
-  // The tenant whose latest request finished, also when it failed. A new
-  // tenant is not loaded until its own request finishes.
-  const [loadedTenant, setLoadedTenant] = useState<string>()
+  // The configuration and the tenant it belongs to, set when that tenant's
+  // latest request finished, also when it failed. Another tenant sees no
+  // configuration until its own request finishes.
+  const [loaded, setLoaded] = useState<{
+    tenant: string
+    configuration?: Configuration
+  }>()
   const requestIdRef = useRef(0)
-  const isConfigurationLoaded = Boolean(tenant) && loadedTenant === tenant
+  const isConfigurationLoaded = Boolean(tenant) && loaded?.tenant === tenant
+  const configuration = isConfigurationLoaded
+    ? loaded?.configuration
+    : undefined
 
   const refreshConfiguration = async () => {
     if (!tenant) return
     const requestId = ++requestIdRef.current
+    // An answer for an earlier tenant or language must not win.
+    const isLatest = () => requestId === requestIdRef.current
     try {
       const c = await fetchBasicConfiguration(tenant)
-      // An answer for an earlier tenant or language must not win.
-      if (requestId === requestIdRef.current) setConfig(c)
-    } finally {
-      if (requestId === requestIdRef.current) setLoadedTenant(tenant)
+      if (isLatest()) setLoaded({ tenant, configuration: c })
+    } catch (error) {
+      // A failed refresh keeps the tenant's last configuration, but a new
+      // tenant must not inherit the previous tenant's.
+      if (isLatest()) {
+        setLoaded((previous) =>
+          previous?.tenant === tenant ? previous : { tenant }
+        )
+      }
+      throw error
     }
   }
 
