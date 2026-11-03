@@ -256,6 +256,29 @@ describe('AddEntryDialog', () => {
     ).not.toBeNull()
   })
 
+  it('loads the products of the whole branch of a selected category', async () => {
+    mocks.getCategoryTrees.mockResolvedValue([
+      {
+        ...category('footwear', 'Footwear', true),
+        subcategories: [category('boots', 'Boots', true)],
+      },
+    ])
+    await renderDialog()
+
+    fireEvent.click(screen.getByRole('button', { name: TREE_VIEW }))
+    fireEvent.click(await screen.findByText('Footwear'))
+
+    await waitFor(() =>
+      expect(mocks.syncPaginatedProducts).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            categoryIds: { value: ['footwear', 'boots'], matchMode: 'in' },
+          }),
+        })
+      )
+    )
+  })
+
   it('does not request the tree without access to categories', async () => {
     mocks.permissions.clear()
     await renderDialog()
