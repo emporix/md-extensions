@@ -1,6 +1,5 @@
 import React, {
   createContext,
-  FC,
   useCallback,
   useContext,
   useEffect,
@@ -56,7 +55,7 @@ const ActiveNodeContext = createContext<ActiveNodeContextValue>({
 // eslint-disable-next-line react-refresh/only-export-components
 export const useActiveNode = () => useContext(ActiveNodeContext)
 
-export const ActiveNodeProvider: FC<Props> = ({ children }) => {
+export const ActiveNodeProvider = ({ children }: Props) => {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
   const parentVariantIdParam = searchParams.get('parentVariantId')

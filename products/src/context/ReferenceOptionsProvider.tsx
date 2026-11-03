@@ -1,6 +1,5 @@
 import {
   createContext,
-  FC,
   useCallback,
   useContext,
   useEffect,
@@ -50,7 +49,7 @@ const ReferenceOptionsContext = createContext<ReferenceOptionsContextType>({
 // eslint-disable-next-line react-refresh/only-export-components -- hook co-located with its provider
 export const useReferenceOptions = () => useContext(ReferenceOptionsContext)
 
-export const ReferenceOptionsProvider: FC<Props> = ({ children }) => {
+export const ReferenceOptionsProvider = ({ children }: Props) => {
   const { tenant } = useDashboardContext()
   const { getAllCustomEntities } = useCustomEntitiesApi()
 

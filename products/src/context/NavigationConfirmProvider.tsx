@@ -1,4 +1,4 @@
-import { createContext, FC, useContext, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 import { Props } from '../helpers/props'
 import { ConfirmBox } from '@emporix/component-library'
 import { useNavigate } from 'react-router'
@@ -29,7 +29,7 @@ const NavigationConfirmContext = createContext<NavigationConfirmContextType>({
 // eslint-disable-next-line react-refresh/only-export-components -- hook co-located with its provider
 export const useNavigationConfirm = () => useContext(NavigationConfirmContext)
 
-export const NavigationConfirmProvider: FC<Props> = (props) => {
+export const NavigationConfirmProvider = ({ children }: Props) => {
   const { t } = useTranslation()
   const [navigationBlocked, setNavigationBlocked] = useState<boolean>(false)
   const [navigationData, setNavigationData] = useState<NavigationData>(() =>
@@ -62,7 +62,7 @@ export const NavigationConfirmProvider: FC<Props> = (props) => {
         navigateWithConfirm,
       }}
     >
-      {props.children}
+      {children}
       <ConfirmBox
         onAccept={onAcceptHandler}
         visible={isConfirmVisible}

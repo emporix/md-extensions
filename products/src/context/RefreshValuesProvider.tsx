@@ -1,4 +1,4 @@
-import { createContext, FC, useContext, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 import { Props } from '../helpers/props'
 
 interface RefreshValuesContextType {
@@ -15,7 +15,7 @@ const RefreshValuesContext = createContext<RefreshValuesContextType>({
 
 export const useRefresh = () => useContext(RefreshValuesContext)
 
-export const RefreshValuesProvider: FC<Props> = ({ children }) => {
+export const RefreshValuesProvider = ({ children }: Props) => {
   const [refresh, setRefresh] = useState(0)
   const setRefreshValue = () => {
     setRefresh(Date.now())

@@ -1,6 +1,5 @@
 import {
   createContext,
-  FC,
   useCallback,
   useContext,
   useEffect,
@@ -44,7 +43,7 @@ const ProductDataContext = createContext<ProductData>({
 // eslint-disable-next-line react-refresh/only-export-components -- MD API: hook beside its provider
 export const useProductData = () => useContext(ProductDataContext)
 
-export const ProductDataProvider: FC<Props> = ({ children }) => {
+export const ProductDataProvider = ({ children }: Props) => {
   const [searchParams] = useSearchParams()
   const productTypeParam = searchParams.get(PRODUCT_TYPE_PARAM_NAME)
   const subscriptionParam = searchParams.get(PRODUCT_SUBSCRIPTION_PARAM_NAME)
