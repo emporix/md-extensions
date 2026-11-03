@@ -24,6 +24,8 @@ import { useDashboardContext } from './Dashboard.context'
 
 type ConfigurationContextType = {
   configuration: Configuration | undefined
+  /** The first configuration request finished, also when it failed. */
+  isConfigurationLoaded: boolean
   languages: Language[]
   currencies: Currency[]
   contentLanguage: string
@@ -41,6 +43,7 @@ type ConfigurationContextType = {
 
 const ConfigurationContext = createContext<ConfigurationContextType>({
   configuration: undefined,
+  isConfigurationLoaded: false,
   languages: [],
   currencies: [],
   contentLanguage: 'en',
@@ -62,11 +65,16 @@ export const useConfiguration = () => useContext(ConfigurationContext)
 export const ConfigurationProvider = ({ children }: PropsWithChildren) => {
   const { tenant, contentLanguage, currency } = useDashboardContext()
   const [configuration, setConfig] = useState<Configuration>()
+  const [isConfigurationLoaded, setIsConfigurationLoaded] = useState(false)
 
   const refreshConfiguration = async () => {
     if (!tenant) return
-    const c = await fetchBasicConfiguration(tenant)
-    setConfig(c)
+    try {
+      const c = await fetchBasicConfiguration(tenant)
+      setConfig(c)
+    } finally {
+      setIsConfigurationLoaded(true)
+    }
   }
 
   useEffect(() => {
@@ -139,6 +147,7 @@ export const ConfigurationProvider = ({ children }: PropsWithChildren) => {
     <ConfigurationContext.Provider
       value={{
         configuration,
+        isConfigurationLoaded,
         currencies,
         languages,
         contentLanguage,

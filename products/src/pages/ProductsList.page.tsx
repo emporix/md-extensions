@@ -10,6 +10,7 @@ import {
   FileUpload,
   PrimaryButton,
   ProductsBrowser,
+  ProgressSpinner,
   SecondaryButton,
   toProductsBrowserCategoryNodes,
   useToast,
@@ -112,7 +113,8 @@ const ProductsListPage = () => {
   const { tenant, contentLanguage } = useDashboardContext()
   const { blockPanel } = useUIBlocker()
   const { isToggleValid } = useFeatureToggles()
-  const { tableConfigurations, getTableMixinColumns } = useConfiguration()
+  const { tableConfigurations, getTableMixinColumns, isConfigurationLoaded } =
+    useConfiguration()
   const [searchParams, setSearchParams] = useSearchParams()
   const [initialPage] = useState(() => pageFromSearchParams(searchParams))
 
@@ -447,72 +449,80 @@ const ProductsListPage = () => {
           </div>
         }
       />
-      <ProductsBrowser<ProductsListRow>
-        className={styles.browser}
-        loadProducts={loadProducts}
-        loadCategoryTree={canViewCategories ? loadCategoryTree : undefined}
-        columns={columns}
-        extraColumns={extraColumns}
-        views={canViewCategories ? LIST_AND_TREE_VIEWS : LIST_VIEW}
-        labels={labels}
-        selection={selectedProducts}
-        onSelectionChange={setSelectedProducts}
-        onRowClick={openProduct}
-        rowActions={renderRowActions}
-        // Names come localized from the loader, so a new content language
-        // reloads the page.
-        refreshKey={`${refreshKey}:${contentLanguage}`}
-        scopeKey={tenant}
-        initialPage={initialPage}
-        onQueryChange={handleQueryChange}
-        onScopeChange={handleScopeChange}
-        onLoadError={handleLoadError}
-        toolbarStart={
-          <>
-            <BatchDeleteButton
-              className={styles.batchDelete}
-              selected={selectedProducts.map((p) => p.ref)}
-              onDelete={confirmBatchDelete}
-              isDeleting={isDeletingProducts}
-              pluralsPath="products"
-              disabled={!canManage}
-            />
-            {selectedDynamicVariantIds.length > 0 && (
-              <SecondaryButton
-                disabled={!canManage || isRecalculatingVariants}
-                onClick={handleRecalculateDynamicVariants}
-              >
-                {t('products.recalculateVariants.action')}
-              </SecondaryButton>
-            )}
-          </>
-        }
-        toolbarEnd={
-          <div className={styles.extensions}>
-            {exportQuery && (
-              <SecondaryButton
-                size="small"
-                iconOnly
-                onClick={() => void exportToCsv()}
-                aria-label={t('global.download')}
-              >
-                <BsDownload size={18} />
-              </SecondaryButton>
-            )}
-            <TableExtensions
-              tableConfigurationKey={PRODUCTS_COLUMN_SETTINGS_KEY}
-              tableColumns={ALL_PRODUCTS_BROWSER_COLUMNS}
-              tableColumnHeaders={ALL_PRODUCTS_BROWSER_COLUMNS.map(
-                (key) => columnHeaders[key]
+      {/* The saved column settings decide the first query, and the
+          configuration arrives only after the remote mounts. */}
+      {!isConfigurationLoaded ? (
+        <div className={styles.loading}>
+          <ProgressSpinner />
+        </div>
+      ) : (
+        <ProductsBrowser<ProductsListRow>
+          className={styles.browser}
+          loadProducts={loadProducts}
+          loadCategoryTree={canViewCategories ? loadCategoryTree : undefined}
+          columns={columns}
+          extraColumns={extraColumns}
+          views={canViewCategories ? LIST_AND_TREE_VIEWS : LIST_VIEW}
+          labels={labels}
+          selection={selectedProducts}
+          onSelectionChange={setSelectedProducts}
+          onRowClick={openProduct}
+          rowActions={renderRowActions}
+          // Names come localized from the loader, so a new content language
+          // reloads the page.
+          refreshKey={`${refreshKey}:${contentLanguage}`}
+          scopeKey={tenant}
+          initialPage={initialPage}
+          onQueryChange={handleQueryChange}
+          onScopeChange={handleScopeChange}
+          onLoadError={handleLoadError}
+          toolbarStart={
+            <>
+              <BatchDeleteButton
+                className={styles.batchDelete}
+                selected={selectedProducts.map((p) => p.ref)}
+                onDelete={confirmBatchDelete}
+                isDeleting={isDeletingProducts}
+                pluralsPath="products"
+                disabled={!canManage}
+              />
+              {selectedDynamicVariantIds.length > 0 && (
+                <SecondaryButton
+                  disabled={!canManage || isRecalculatingVariants}
+                  onClick={handleRecalculateDynamicVariants}
+                >
+                  {t('products.recalculateVariants.action')}
+                </SecondaryButton>
               )}
-              tableName={PRODUCTS_TABLE_NAME}
-              schemaType={SchemaType.PRODUCT}
-              managerPermission={canManage}
-            />
-          </div>
-        }
-        data-testid="products-browser"
-      />
+            </>
+          }
+          toolbarEnd={
+            <div className={styles.extensions}>
+              {exportQuery && (
+                <SecondaryButton
+                  size="small"
+                  iconOnly
+                  onClick={() => void exportToCsv()}
+                  aria-label={t('global.download')}
+                >
+                  <BsDownload size={18} />
+                </SecondaryButton>
+              )}
+              <TableExtensions
+                tableConfigurationKey={PRODUCTS_COLUMN_SETTINGS_KEY}
+                tableColumns={ALL_PRODUCTS_BROWSER_COLUMNS}
+                tableColumnHeaders={ALL_PRODUCTS_BROWSER_COLUMNS.map(
+                  (key) => columnHeaders[key]
+                )}
+                tableName={PRODUCTS_TABLE_NAME}
+                schemaType={SchemaType.PRODUCT}
+                managerPermission={canManage}
+              />
+            </div>
+          }
+          data-testid="products-browser"
+        />
+      )}
       <ConfirmBox
         visible={isDeleteConfirmOpened}
         onAccept={confirmBatchDelete}

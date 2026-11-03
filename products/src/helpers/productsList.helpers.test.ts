@@ -88,4 +88,13 @@ describe('pageFromSearchParams', () => {
       pageFromSearchParams(new URLSearchParams('page=2&rows=x'))
     ).toBeUndefined()
   })
+
+  it('ignores a fractional or endless page', () => {
+    expect(
+      pageFromSearchParams(new URLSearchParams('page=1.5&rows=25'))
+    ).toBeUndefined()
+    expect(
+      pageFromSearchParams(new URLSearchParams('page=Infinity&rows=25'))
+    ).toBeUndefined()
+  })
 })

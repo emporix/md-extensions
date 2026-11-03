@@ -16,11 +16,14 @@ import ProductsListPage from './ProductsList.page'
 
 const mocks = vi.hoisted(() => ({
   syncPaginatedProductsRows: vi.fn(),
+  fetchAllProducts: vi.fn(),
+  saveToCsvFile: vi.fn(),
   getCategoryTrees: vi.fn(),
   navigate: vi.fn(),
   getTableMixinColumns: () => [],
   permissions: new Set<string>(),
   tableConfigurations: [] as unknown[],
+  isConfigurationLoaded: true,
 }))
 
 vi.mock('@emporix/component-library', async (importOriginal) => ({
@@ -36,7 +39,7 @@ vi.mock('react-i18next', async (importOriginal) => ({
 vi.mock('../hooks/api/products', () => ({
   useProductsApi: () => ({
     syncPaginatedProductsRows: mocks.syncPaginatedProductsRows,
-    fetchAllProducts: vi.fn(),
+    fetchAllProducts: mocks.fetchAllProducts,
     deleteProduct: vi.fn(),
     triggerDynamicVariantRecalculation: vi.fn(),
   }),
@@ -70,7 +73,12 @@ vi.mock('../context/ConfigurationProvider', () => ({
   useConfiguration: () => ({
     tableConfigurations: mocks.tableConfigurations,
     getTableMixinColumns: mocks.getTableMixinColumns,
+    isConfigurationLoaded: mocks.isConfigurationLoaded,
   }),
+}))
+vi.mock('../helpers/download', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../helpers/download')>()),
+  saveToCsvFile: mocks.saveToCsvFile,
 }))
 vi.mock('../context/Dashboard.context', () => ({
   useDashboardContext: () => ({ tenant: 'tenant-1', contentLanguage: 'en' }),
@@ -126,9 +134,16 @@ const renderPage = async (url = '/') => {
 
 const lastLoad = () => mocks.syncPaginatedProductsRows.mock.lastCall ?? []
 
+const hiddenPrice = {
+  key: 'ext_products',
+  columns: [{ key: 'price', label: 'Price', visible: false }],
+  mixins: [],
+}
+
 beforeEach(() => {
   mocks.permissions.clear()
   mocks.tableConfigurations = []
+  mocks.isConfigurationLoaded = true
   mocks.syncPaginatedProductsRows.mockResolvedValue({
     data: [shoe],
     totalCount: 1,
@@ -142,6 +157,41 @@ afterEach(() => {
 })
 
 describe('ProductsListPage', () => {
+  it('waits for the saved settings before the first load', async () => {
+    mocks.isConfigurationLoaded = false
+    const page = () => (
+      <MemoryRouter>
+        <ProductsListPage />
+      </MemoryRouter>
+    )
+    const { rerender } = render(page())
+    expect(mocks.syncPaginatedProductsRows).not.toHaveBeenCalled()
+
+    mocks.isConfigurationLoaded = true
+    mocks.tableConfigurations = [hiddenPrice]
+    rerender(page())
+
+    await screen.findByText('Running shoe')
+    expect(mocks.syncPaginatedProductsRows).toHaveBeenCalledTimes(1)
+    expect(lastLoad()[2]).toBe(false)
+  })
+
+  it('exports the products of the current scope to CSV', async () => {
+    mocks.fetchAllProducts.mockResolvedValue([shoe])
+    await renderPage()
+
+    fireEvent.click(screen.getByRole('button', { name: 'global.download' }))
+
+    await waitFor(() => expect(mocks.saveToCsvFile).toHaveBeenCalledTimes(1))
+    expect(mocks.fetchAllProducts).toHaveBeenCalledWith(
+      expect.objectContaining({ currentPage: 1, rows: 100 })
+    )
+    const [filename, data] = mocks.saveToCsvFile.mock.calls[0]
+    expect(filename).toMatch(/^products-.+\.csv$/)
+    expect(data).toContain('shoe-1')
+    expect(data).toContain('Running shoe')
+  })
+
   it('lists the products with their prices', async () => {
     await renderPage()
 
@@ -153,13 +203,7 @@ describe('ProductsListPage', () => {
   })
 
   it('loads no prices when the saved settings hide the price column', async () => {
-    mocks.tableConfigurations = [
-      {
-        key: 'ext_products',
-        columns: [{ key: 'price', label: 'Price', visible: false }],
-        mixins: [],
-      },
-    ]
+    mocks.tableConfigurations = [hiddenPrice]
     await renderPage()
 
     expect(lastLoad()[2]).toBe(false)

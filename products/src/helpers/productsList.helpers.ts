@@ -40,7 +40,8 @@ export const pageFromSearchParams = (
 ): Pick<DataTablePaginationState, 'currentPage' | 'rows'> | undefined => {
   const currentPage = Number(searchParams.get('page'))
   const rows = Number(searchParams.get('rows'))
-  if (!(currentPage > 0 && rows > 0)) {
+  const isCount = (value: number) => Number.isInteger(value) && value > 0
+  if (!(isCount(currentPage) && isCount(rows))) {
     return undefined
   }
   return { currentPage, rows }

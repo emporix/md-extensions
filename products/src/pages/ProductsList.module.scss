@@ -12,6 +12,12 @@
   width: 100%;
 }
 
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
 .batchDelete {
   margin-right: auto;
 }
