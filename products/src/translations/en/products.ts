@@ -139,6 +139,18 @@ export default {
     missingProduct: 'Assigned product not found',
     vendor: 'Vendor',
     vendorName: 'Vendor',
+    loadError: 'Error while loading products',
+    exportError: 'Error while exporting products',
+  },
+  browser: {
+    listView: 'List view',
+    treeView: 'Category tree view',
+    selectCategory: 'Select a category to see its products',
+    noProducts: 'No products found',
+    noCategories: 'No categories found',
+    published: 'Published',
+    unpublished: 'Unpublished',
+    categoriesLoadError: 'Error while loading categories',
   },
   variant: {
     variantOf: 'variant of',

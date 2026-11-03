@@ -1,36 +1,53 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ProductRow } from '@emporix/api-calls'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { BsDownload } from 'react-icons/bs'
+import { CategoryType, ProductRow, withCategoryScope } from '@emporix/api-calls'
 import {
+  ALL_PRODUCTS_BROWSER_COLUMNS,
   ConfirmBox,
   Dialog,
   FileUpload,
   PrimaryButton,
+  ProductsBrowser,
+  ProgressSpinner,
   SecondaryButton,
+  toProductsBrowserCategoryNodes,
   useToast,
   type FileUploadHandlerEvent,
+  type ProductsBrowserLabels,
+  type ProductsBrowserQuery,
+  type ProductsBrowserView,
 } from '@emporix/component-library'
 import { useProductsApi } from '../hooks/api/products'
-import usePagination from '../hooks/usePagination'
+import { useCategoryTreeApi } from '../hooks/api/categoryTree'
+import { useLocalizedValue } from '../hooks/useLocalizedValue'
 import { useUIBlocker } from '../context/UIBlocker'
-import ViewSwitch, { ListType } from '../components/products/ViewSwitch'
-import CategoriesProductsTable from '../components/products/CategoriesProductsTable'
-import ProductsTable, {
-  TABLE_NAME_CONFIG_KEY,
-} from '../components/products/ProductsTable'
 import HeaderSection from '../components/shared/HeaderSection'
 import { ProductType } from '../models/Category.model'
 import useCustomNavigate from '../hooks/useCustomNavigate'
+import useUpdateEffect from '../hooks/useUpdateEffect'
 import { useFeatureToggles } from '../context/FeatureTogglesProvider'
 import TableActions from '../components/shared/TableActions'
+import TableExtensions from '../components/shared/TableExtensions'
 import { usePermissions } from '../context/PermissionsProvider'
 import { useConfiguration } from '../context/ConfigurationProvider'
 import { useDashboardContext } from '../context/Dashboard.context'
 import BatchDeleteButton from '../components/shared/BatchDeleteButton'
-import { DisplayMixin } from '../models/DisplayMixin'
+import { parseColumnProps } from '../models/DisplayMixin'
+import { SchemaType } from '../models/Schema.model'
 import { EmployeeDomains, VendorDomains } from '../configs/accessControls'
 import CreateProductDialog from '../components/products/CreateProductDialog'
 import { productCreatePath, productDetailPath } from '../constants/paths'
+import { apiPagination } from '../helpers/apiPagination'
+import { formatDateWithTime } from '../helpers/date'
+import { mapToCsv, saveToCsvFile } from '../helpers/download'
+import {
+  pageFromSearchParams,
+  toProductsListRow,
+  visibleProductColumns,
+  type ProductsListRow,
+} from '../helpers/productsList.helpers'
 import styles from './ProductsList.module.scss'
 
 type ProductsActionProps = {
@@ -39,6 +56,11 @@ type ProductsActionProps = {
 }
 
 const SUBSCRIPTION_FEATURE_TOGGLE_NAME = 'DCP_PRODUCT_SUBSCRIPTION'
+const PRODUCTS_TABLE_NAME = 'products.table'
+const PRODUCTS_COLUMN_SETTINGS_KEY = 'ext_products'
+const LIST_VIEW: ProductsBrowserView[] = ['list']
+const LIST_AND_TREE_VIEWS: ProductsBrowserView[] = ['list', 'tree']
+const CSV_HEADERS = ['id', 'name', 'price']
 
 const isDynamicVariant = (product: ProductRow) =>
   String(product.productType).toUpperCase() === ProductType.dynamicVariant
@@ -81,60 +103,61 @@ const ProductsListPage = () => {
   const { t } = useTranslation()
   const { navigate } = useCustomNavigate()
   const toast = useToast()
-  const { deleteProduct, triggerDynamicVariantRecalculation } = useProductsApi()
-  const { tenant } = useDashboardContext()
+  const {
+    deleteProduct,
+    fetchAllProducts,
+    syncPaginatedProductsRows,
+    triggerDynamicVariantRecalculation,
+  } = useProductsApi()
+  const { getCategoryTrees } = useCategoryTreeApi()
+  const { getContentLangValue, getUiLangValue } = useLocalizedValue()
+  const { tenant, contentLanguage } = useDashboardContext()
   const { blockPanel } = useUIBlocker()
   const { isToggleValid } = useFeatureToggles()
-  const paginationProducts = usePagination()
-  // Own URL keys: both hooks re-sync on every URL change, so on shared
-  // `page` / `rows` they overwrite each other and paging bounces back.
-  const paginationCategoriesProducts = usePagination(
-    undefined,
-    true,
-    'category'
-  )
-  const { resetPagination: resetPaginationProducts } = paginationProducts
-  const { resetPagination: resetPaginationCategoriesProducts } =
-    paginationCategoriesProducts
-  const { tableConfigurations, fetchVisibleColumns, getTableMixinColumns } =
+  const { tableConfigurations, getTableMixinColumns, isConfigurationLoaded } =
     useConfiguration()
-  const [visibleMixins, setVisibleMixins] = useState<DisplayMixin[]>(() =>
-    getTableMixinColumns(TABLE_NAME_CONFIG_KEY)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [initialPage, setInitialPage] = useState(() =>
+    pageFromSearchParams(searchParams)
   )
 
-  // MD portals the column settings into `#table-extensions`; a ref-backed
-  // slot does the same without a document-global id.
-  const [extensionsSlot, setExtensionsSlot] = useState<HTMLDivElement | null>(
-    null
-  )
   const [refreshKey, setRefreshKey] = useState(Date.now())
   const [isDeletingProducts, setIsDeletingProducts] = useState(false)
   const [, setIsImportingProducts] = useState(false)
-  const [visibleColumns, setVisibleColumnCell] = useState<string[]>([])
-  const [products, setProducts] = useState<ProductRow[]>([])
-  const [selectedProducts, setSelectedProducts] = useState<ProductRow[]>([])
-  const [listType, setListType] = useState<ListType>('list')
+  const [selectedProducts, setSelectedProducts] = useState<ProductsListRow[]>(
+    []
+  )
   const [isDeleteConfirmOpened, setIsDeleteConfirmOpened] = useState(false)
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
   const [isRecalculatingVariants, setIsRecalculatingVariants] = useState(false)
   const [createProductModalOpen, setCreateProductModalOpen] = useState(false)
+  // The scope of the last load, for the CSV export. There is none while the
+  // tree view waits for a category.
+  const [exportQuery, setExportQuery] = useState<ProductsBrowserQuery | null>(
+    null
+  )
+  const loadIdRef = useRef(0)
+  const [listTenant, setListTenant] = useState(tenant)
+
+  // The browser waits for each tenant's settings, so it mounts again for a
+  // new tenant: start that list on the first page with nothing selected.
+  if (tenant !== listTenant) {
+    setListTenant(tenant)
+    setInitialPage(undefined)
+    setSelectedProducts([])
+    setExportQuery(null)
+  }
+
+  // A load of the previous tenant that ends late must not set the export.
+  useUpdateEffect(() => {
+    loadIdRef.current++
+  }, [tenant])
+
   const { hasPermission } = usePermissions()
   const canViewCategories = hasPermission(EmployeeDomains.CATEGORIES_VIEWER)
   const canManage =
     hasPermission(EmployeeDomains.PRODUCTS_MANAGER) ||
     hasPermission(VendorDomains.VENDOR_PRODUCTS_MANAGER)
-  const [currentCategoryId, setCurrentCategoryId] = useState<string | null>(
-    null
-  )
-  const [prevCategoryId, setPrevCategoryId] = useState(currentCategoryId)
-
-  // Reset in the render that switches the category, not in an effect after it,
-  // so the tree table fetches the new category's products only once
-  if (currentCategoryId !== prevCategoryId) {
-    setPrevCategoryId(currentCategoryId)
-    paginationCategoriesProducts.resetListState()
-    setSelectedProducts([])
-  }
 
   const isImportEnabled =
     Boolean(import.meta.env.VITE_MRWORKER_DEMO) &&
@@ -145,11 +168,179 @@ const ProductsListPage = () => {
     setRefreshKey(Date.now())
   }, [])
 
-  useEffect(() => {
-    setVisibleMixins(getTableMixinColumns(TABLE_NAME_CONFIG_KEY))
-    setVisibleColumnCell(fetchVisibleColumns(TABLE_NAME_CONFIG_KEY))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tableConfigurations])
+  const columnSettings = useMemo(
+    () =>
+      tableConfigurations.find(
+        (config) => config.key === PRODUCTS_COLUMN_SETTINGS_KEY
+      )?.columns ?? [],
+    [tableConfigurations]
+  )
+  const columns = useMemo(
+    () => visibleProductColumns(columnSettings),
+    [columnSettings]
+  )
+  const extraColumns = useMemo(
+    () =>
+      getTableMixinColumns(PRODUCTS_COLUMN_SETTINGS_KEY).map((mixin) =>
+        parseColumnProps(mixin, getUiLangValue)
+      ),
+    [getTableMixinColumns, getUiLangValue]
+  )
+  const withPrices = columns.includes('price')
+
+  const columnHeaders: Record<string, string> = useMemo(
+    () => ({
+      imageUrl: t('products.table.image'),
+      name: t('products.table.name'),
+      id: t('products.table.id'),
+      code: t('products.table.code'),
+      productType: t('products.table.productType'),
+      vendorName: t('products.table.vendor'),
+      price: t('products.table.price'),
+    }),
+    [t]
+  )
+
+  const labels = useMemo<Partial<ProductsBrowserLabels>>(
+    () => ({
+      image: columnHeaders.imageUrl,
+      name: columnHeaders.name,
+      id: columnHeaders.id,
+      code: columnHeaders.code,
+      productType: columnHeaders.productType,
+      vendor: columnHeaders.vendorName,
+      price: columnHeaders.price,
+      listView: t('products.browser.listView'),
+      treeView: t('products.browser.treeView'),
+      selectCategory: t('products.browser.selectCategory'),
+      noProducts: t('products.browser.noProducts'),
+      noCategories: t('products.browser.noCategories'),
+      published: t('products.browser.published'),
+      unpublished: t('products.browser.unpublished'),
+      pageReport: t('global.pagination'),
+      anyProductType: t('global.all'),
+      productTypes: Object.fromEntries(
+        Object.values(ProductType).map((type) => [
+          type,
+          t(`products.types.${type}`),
+        ])
+      ),
+    }),
+    [t, columnHeaders]
+  )
+
+  const loadProducts = useCallback(
+    async (query: ProductsBrowserQuery) => {
+      const loadId = ++loadIdRef.current
+      const { data, totalCount } = await syncPaginatedProductsRows(
+        apiPagination({
+          ...query,
+          filters: withCategoryScope(query.filters, query.categoryIds),
+        }),
+        true,
+        withPrices
+      )
+      if (loadId === loadIdRef.current) {
+        setExportQuery(query)
+      }
+      return {
+        values: data.map((row) => toProductsListRow(row, getContentLangValue)),
+        totalRecords: totalCount,
+      }
+    },
+    [syncPaginatedProductsRows, withPrices, getContentLangValue]
+  )
+
+  const loadCategoryTree = useCallback(
+    async () =>
+      toProductsBrowserCategoryNodes(
+        await getCategoryTrees({ type: CategoryType.STANDARD }),
+        contentLanguage
+      ),
+    [getCategoryTrees, contentLanguage]
+  )
+
+  const handleLoadError = useCallback(
+    (error: unknown, source: 'products' | 'categories') => {
+      console.error(error)
+      toast.showError(
+        t(
+          source === 'categories'
+            ? 'products.browser.categoriesLoadError'
+            : 'products.table.loadError'
+        ),
+        ''
+      )
+    },
+    [toast, t]
+  )
+
+  const handleScopeChange = useCallback(() => {
+    loadIdRef.current++
+    setExportQuery(null)
+    setSelectedProducts([])
+  }, [])
+
+  // Page and rows live in the URL, so going back restores them.
+  const handleQueryChange = useCallback(
+    (query: ProductsBrowserQuery) => {
+      setSearchParams(
+        (params) => {
+          params.set('page', String(query.currentPage ?? 1))
+          params.set('rows', String(query.rows ?? 10))
+          return params
+        },
+        { replace: true }
+      )
+    },
+    [setSearchParams]
+  )
+
+  const openProduct = useCallback(
+    (product: ProductsListRow) => navigate(productDetailPath(product.id)),
+    [navigate]
+  )
+
+  const renderRowActions = useCallback(
+    (product: ProductsListRow) => (
+      <ProductsAction
+        product={product}
+        invalidateProducts={invalidateProducts}
+      />
+    ),
+    [invalidateProducts]
+  )
+
+  const exportToCsv = async () => {
+    if (!exportQuery) return
+    try {
+      blockPanel(true)
+      const productsToExport = await fetchAllProducts(
+        apiPagination({
+          currentPage: 1,
+          rows: 100,
+          sortField: exportQuery.sortField,
+          sortOrder: exportQuery.sortOrder,
+          filters: withCategoryScope(
+            exportQuery.filters,
+            exportQuery.categoryIds
+          ),
+        })
+      )
+      const data = mapToCsv(CSV_HEADERS, productsToExport, (product) => [
+        product.id,
+        getContentLangValue(product.ref.localizedName),
+        product.price,
+      ])
+      const scope = exportQuery.categoryIds[0] ?? 'products'
+      saveToCsvFile(`${scope}-${formatDateWithTime(new Date())}.csv`, data)
+    } catch (error) {
+      console.error(error)
+      toast.showError(t('products.table.exportError'), '')
+    } finally {
+      blockPanel(false)
+    }
+  }
 
   const confirmBatchDelete = useCallback(async () => {
     try {
@@ -177,14 +368,6 @@ const ProductsListPage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProducts])
-
-  useEffect(() => {
-    resetPaginationProducts()
-    resetPaginationCategoriesProducts()
-    setSelectedProducts([])
-    setVisibleColumnCell(fetchVisibleColumns(TABLE_NAME_CONFIG_KEY))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listType, tableConfigurations])
 
   const handleSelectCreateProductType = useCallback(
     (type: ProductType, subscription?: boolean) => {
@@ -285,71 +468,78 @@ const ProductsListPage = () => {
           </div>
         }
       />
-      <div className={styles.toolbar}>
-        <BatchDeleteButton
-          className={styles.batchDelete}
-          selected={selectedProducts.map((p) => p.ref)}
-          onDelete={confirmBatchDelete}
-          isDeleting={isDeletingProducts}
-          pluralsPath="products"
-          disabled={!canManage}
-        />
-        {selectedDynamicVariantIds.length > 0 && (
-          <SecondaryButton
-            disabled={!canManage || isRecalculatingVariants}
-            onClick={handleRecalculateDynamicVariants}
-          >
-            {t('products.recalculateVariants.action')}
-          </SecondaryButton>
-        )}
-        <ViewSwitch
-          disabled={!canViewCategories}
-          value={listType}
-          onChange={setListType}
-        />
-        <div ref={setExtensionsSlot} className={styles.extensionsSlot} />
-      </div>
-      {listType === 'tree' ? (
-        <CategoriesProductsTable
-          categoryId={currentCategoryId}
-          setCategoryId={setCurrentCategoryId}
-          totalCount={paginationCategoriesProducts.totalCount}
-          paginationParams={paginationCategoriesProducts.paginationParams}
-          onPageCallback={paginationCategoriesProducts.onPageCallback}
-          setTotalCount={paginationCategoriesProducts.setTotalCount}
-          setPaginationParams={paginationCategoriesProducts.setPaginationParams}
-          setFilters={paginationCategoriesProducts.setFilters}
-          refreshKey={refreshKey}
-          products={products}
-          setProducts={setProducts}
-          selectedProducts={selectedProducts}
-          setSelectedProducts={setSelectedProducts}
-          clickToEdit={true}
-          visibleColumns={visibleColumns}
-          visibleMixins={visibleMixins}
-          invalidateProducts={invalidateProducts}
-          extensionsContainer={extensionsSlot}
-        />
+      {/* The saved column settings decide the first query, and the
+          configuration arrives only after the remote mounts. */}
+      {!isConfigurationLoaded ? (
+        <div className={styles.loading}>
+          <ProgressSpinner />
+        </div>
       ) : (
-        <ProductsTable
-          className={styles.fullWidth}
-          invalidateProducts={invalidateProducts}
-          paginationParams={paginationProducts.paginationParams}
-          onPageCallback={paginationProducts.onPageCallback}
-          setTotalCount={paginationProducts.setTotalCount}
-          totalCount={paginationProducts.totalCount}
-          onFilterCallback={paginationProducts.onFilterCallback}
-          onSortCallback={paginationProducts.onSortCallback}
-          setFilters={paginationProducts.setFilters}
-          refreshKey={refreshKey}
-          products={products}
-          setProducts={setProducts}
-          selectedProducts={selectedProducts}
-          setSelectedProducts={setSelectedProducts}
-          visibleColumns={visibleColumns}
-          visibleMixins={visibleMixins}
-          clickToEdit={true}
-          extensionsContainer={extensionsSlot}
+        <ProductsBrowser<ProductsListRow>
+          className={styles.browser}
+          loadProducts={loadProducts}
+          loadCategoryTree={canViewCategories ? loadCategoryTree : undefined}
+          columns={columns}
+          extraColumns={extraColumns}
+          views={canViewCategories ? LIST_AND_TREE_VIEWS : LIST_VIEW}
+          labels={labels}
+          selection={selectedProducts}
+          onSelectionChange={setSelectedProducts}
+          onRowClick={openProduct}
+          rowActions={renderRowActions}
+          // Names come localized from the loader, so a new content language
+          // reloads the page.
+          refreshKey={`${refreshKey}:${contentLanguage}`}
+          scopeKey={tenant}
+          initialPage={initialPage}
+          onQueryChange={handleQueryChange}
+          onScopeChange={handleScopeChange}
+          onLoadError={handleLoadError}
+          toolbarStart={
+            <>
+              <BatchDeleteButton
+                className={styles.batchDelete}
+                selected={selectedProducts.map((p) => p.ref)}
+                onDelete={confirmBatchDelete}
+                isDeleting={isDeletingProducts}
+                pluralsPath="products"
+                disabled={!canManage}
+              />
+              {selectedDynamicVariantIds.length > 0 && (
+                <SecondaryButton
+                  disabled={!canManage || isRecalculatingVariants}
+                  onClick={handleRecalculateDynamicVariants}
+                >
+                  {t('products.recalculateVariants.action')}
+                </SecondaryButton>
+              )}
+            </>
+          }
+          toolbarEnd={
+            <div className={styles.extensions}>
+              {exportQuery && (
+                <SecondaryButton
+                  size="small"
+                  iconOnly
+                  onClick={() => void exportToCsv()}
+                  aria-label={t('global.download')}
+                >
+                  <BsDownload size={18} />
+                </SecondaryButton>
+              )}
+              <TableExtensions
+                tableConfigurationKey={PRODUCTS_COLUMN_SETTINGS_KEY}
+                tableColumns={ALL_PRODUCTS_BROWSER_COLUMNS}
+                tableColumnHeaders={ALL_PRODUCTS_BROWSER_COLUMNS.map(
+                  (key) => columnHeaders[key]
+                )}
+                tableName={PRODUCTS_TABLE_NAME}
+                schemaType={SchemaType.PRODUCT}
+                managerPermission={canManage}
+              />
+            </div>
+          }
+          data-testid="products-browser"
         />
       )}
       <ConfirmBox

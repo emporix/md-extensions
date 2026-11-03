@@ -10,14 +10,14 @@ Management Dashboard "Products" module (list, create, edit), extracted into an `
 | Exposes | `./RemoteComponent` → `src/RemoteComponent.tsx` (named **and** default export) |
 | Local dev port | `5178` (`strictPort`) |
 | Host env var | `VITE_PRODUCTS_URL` → `.../assets/remoteEntry.js` |
-| Component library | `@emporix/component-library` `2.12.0` (adds `Tree`) |
+| Component library | `@emporix/component-library` `2.18.0` |
 | MD wiring mode | A — permanent remote (`url:` on the route) |
 
 ## Screens
 
 | Route (hash-relative) | Screen |
 |---|---|
-| `/` | Products list — lazy table (filters, sort, multi-select, batch delete incl. dynamic-variant recalculation), column visibility + mixin columns (`ext_products`), list ↔ category-tree view, create dialog (basic / bundle / parent variant / variant hierarchy / subscription), mocked CSV import (MD parity) |
+| `/` | Products list — CL `ProductsBrowser` in list and category-tree views (filters, sort, multi-select, batch delete incl. dynamic-variant recalculation), column visibility + mixin columns (`ext_products`), CSV export of the current scope, page and rows in the URL, create dialog (basic / bundle / parent variant / variant hierarchy / subscription), mocked CSV import (MD parity) |
 | `/add?type=…` | Create product (`type`, `subscription`, `parentVariantId`, `siblingId` query params as in MD) |
 | `/:id?tab=…` | Edit product — General (+ AI assistant), Categories, Classifications, Prices (+ tax), Availability (+ availability mixins), Bundle, Media, Linked, Attributes & Variants, product mixins (site-aware), Audit log; variant-hierarchy sidebar for dynamic variants |
 
@@ -37,6 +37,7 @@ The remote is PrimeReact-free. `Tree` was promoted into the component library in
 | `InputMask` `"99:99"` (time mixins) | CL `InputText type="time"` |
 | `TabView` / `TabPanel` (incl. mixin tabs with badges) | CL `Tabs`; a newer schema version shows as `(vN)` in the label |
 | `TreeTable` mode of `CategoriesTree` | dropped (not used by products) |
+| MD `ProductsBrowser` (products list) | CL `ProductsBrowser` (≥ 2.18.0) with `withCategoryScope` from api-calls (≥ 1.5.1) and `toProductsBrowserCategoryNodes`; column settings (`TableExtensions`), mixin columns, the CSV export and the URL page stay in `ProductsList.page.tsx` |
 | MD `InputField` | local products-aware `components/shared/InputField` (CL `FieldLabel` + "Inherited from parent") |
 | Calendar `showSeconds` (price validity) | not available in CL `Calendar` (minutes precision) |
 

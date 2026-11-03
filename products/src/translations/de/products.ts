@@ -139,6 +139,18 @@ export default {
     missingProduct: 'Zugewiesenes Produkt nicht gefunden',
     vendor: 'Lieferant',
     vendorName: 'Lieferant',
+    loadError: 'Fehler beim Laden der Produkte',
+    exportError: 'Fehler beim Exportieren der Produkte',
+  },
+  browser: {
+    listView: 'Listenansicht',
+    treeView: 'Kategoriebaum',
+    selectCategory: 'Wählen Sie eine Kategorie, um ihre Produkte zu sehen',
+    noProducts: 'Keine Produkte gefunden',
+    noCategories: 'Keine Kategorien gefunden',
+    published: 'Veröffentlicht',
+    unpublished: 'Nicht veröffentlicht',
+    categoriesLoadError: 'Fehler beim Laden der Kategorien',
   },
   variant: {
     variantOf: 'Variante von',

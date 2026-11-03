@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type PropsWithChildren,
 } from 'react'
@@ -24,6 +25,8 @@ import { useDashboardContext } from './Dashboard.context'
 
 type ConfigurationContextType = {
   configuration: Configuration | undefined
+  /** The first configuration request finished, also when it failed. */
+  isConfigurationLoaded: boolean
   languages: Language[]
   currencies: Currency[]
   contentLanguage: string
@@ -41,6 +44,7 @@ type ConfigurationContextType = {
 
 const ConfigurationContext = createContext<ConfigurationContextType>({
   configuration: undefined,
+  isConfigurationLoaded: false,
   languages: [],
   currencies: [],
   contentLanguage: 'en',
@@ -61,16 +65,41 @@ export const useConfiguration = () => useContext(ConfigurationContext)
 
 export const ConfigurationProvider = ({ children }: PropsWithChildren) => {
   const { tenant, contentLanguage, currency } = useDashboardContext()
-  const [configuration, setConfig] = useState<Configuration>()
+  // The configuration and the tenant it belongs to, set when that tenant's
+  // latest request finished, also when it failed. Another tenant sees no
+  // configuration until its own request finishes.
+  const [loaded, setLoaded] = useState<{
+    tenant: string
+    configuration?: Configuration
+  }>()
+  const requestIdRef = useRef(0)
+  const isConfigurationLoaded = Boolean(tenant) && loaded?.tenant === tenant
+  const configuration = isConfigurationLoaded
+    ? loaded?.configuration
+    : undefined
 
   const refreshConfiguration = async () => {
     if (!tenant) return
-    const c = await fetchBasicConfiguration(tenant)
-    setConfig(c)
+    const requestId = ++requestIdRef.current
+    // An answer for an earlier tenant or language must not win.
+    const isLatest = () => requestId === requestIdRef.current
+    try {
+      const c = await fetchBasicConfiguration(tenant)
+      if (isLatest()) setLoaded({ tenant, configuration: c })
+    } catch (error) {
+      // A failed refresh keeps the tenant's last configuration, but a new
+      // tenant must not inherit the previous tenant's.
+      if (isLatest()) {
+        setLoaded((previous) =>
+          previous?.tenant === tenant ? previous : { tenant }
+        )
+      }
+      throw error
+    }
   }
 
   useEffect(() => {
-    void refreshConfiguration()
+    refreshConfiguration().catch((error: unknown) => console.error(error))
   }, [tenant, contentLanguage])
 
   const currencies = useMemo(
@@ -139,6 +168,7 @@ export const ConfigurationProvider = ({ children }: PropsWithChildren) => {
     <ConfigurationContext.Provider
       value={{
         configuration,
+        isConfigurationLoaded,
         currencies,
         languages,
         contentLanguage,

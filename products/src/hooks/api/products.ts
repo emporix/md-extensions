@@ -84,7 +84,8 @@ export const useProductsApi = () => {
   const syncPaginatedProductsRows = useCallback(
     async (
       paginationParams: Partial<PaginationProps>,
-      withTotalCount = true
+      withTotalCount = true,
+      withPrices = true
     ) => {
       const { data, totalCount } = await syncPaginatedProducts(
         paginationParams,
@@ -93,11 +94,13 @@ export const useProductsApi = () => {
       if (data.length === 0) {
         return { data: [], totalCount: 0 }
       }
-      let id2price: Map<string, Price>
-      try {
-        id2price = await fetchPricesToMap(data)
-      } catch {
-        console.error('error while fetchnig prices, no prices fetched')
+      let id2price: Map<string, Price> | undefined
+      if (withPrices) {
+        try {
+          id2price = await fetchPricesToMap(data)
+        } catch {
+          console.error('error while fetchnig prices, no prices fetched')
+        }
       }
       const productRows = data.map((product) => {
         if (!product.id) {

@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import federation from '@originjs/vite-plugin-federation'
@@ -61,6 +62,15 @@ export default defineConfig({
     cors: {
       origin: corsOrigins,
       credentials: true,
+    },
+  },
+  test: {
+    server: {
+      deps: {
+        // api-calls ships ESM with extensionless imports, which Node cannot
+        // resolve; let Vite transform it in tests, as it does in the build.
+        inline: ['@emporix/api-calls'],
+      },
     },
   },
 })
