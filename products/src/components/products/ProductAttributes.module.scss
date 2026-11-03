@@ -1,0 +1,57 @@
+// MD: PrimeFlex `.grid` (flex wrap, -0.5rem gutters)
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -0.5rem;
+}
+
+// MD: PrimeFlex `col-6`
+.col6 {
+  flex: 0 0 auto;
+  width: 50%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+// MD: `col-3 ml-2`
+.versionField {
+  flex: 0 0 auto;
+  width: 25%;
+  margin-left: 0.5rem;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+// MD: `col-2 ml-2 align-self-end`
+.clearTemplate {
+  flex: 0 0 auto;
+  width: 16.6667%;
+  margin-left: 0.5rem;
+  padding: 0.5rem;
+  align-self: flex-end;
+  box-sizing: border-box;
+}
+
+// MD: `col-12 mt-2`
+.variantsSection {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+// MD: `my-2`
+.variantsTitle {
+  margin: 0.5rem 0;
+}
+
+// MD: MultiSelect style={{ width: '300px' }} className="mb-2"
+.variantValues {
+  width: 300px;
+  margin-bottom: 0.5rem;
+}
+
+// MD: `mt-2`
+.mandatoryValues {
+  margin-top: 0.5rem;
+}

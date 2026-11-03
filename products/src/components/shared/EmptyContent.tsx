@@ -1,48 +1,50 @@
-import customize from '../../../assets/images/customize.svg'
-import { Button } from 'primereact/button'
-import { Link } from 'react-router-dom'
+import { DataTableEmptyState, PrimaryButton } from '@emporix/component-library'
+import { useNavigate } from 'react-router'
+import styles from './EmptyContent.module.scss'
 
-interface EmptyTableProps {
-  text: string
-  buttonLabel?: string
-  className?: string
-  link?: string
-  action?: () => void
-  managerPermissions?: boolean
+type EmptyContentProps = {
+  readonly text: string
+  readonly buttonLabel?: string
+  readonly className?: string
+  readonly link?: string
+  readonly action?: () => void
+  readonly managerPermissions?: boolean
+  readonly showEmptyIcon?: boolean
 }
 
-const EmptyContent = (props: EmptyTableProps) => {
-  const { className, text, buttonLabel, link, action, managerPermissions } =
-    props
+const EmptyContent = ({
+  className = '',
+  text,
+  buttonLabel,
+  link,
+  action,
+  managerPermissions = true,
+  showEmptyIcon = true,
+}: EmptyContentProps) => {
+  const navigate = useNavigate()
+
+  const handleClick = () => {
+    if (link) {
+      void navigate(link)
+      return
+    }
+    action?.()
+  }
 
   return (
-    <div
-      className={`${className} flex flex-column justify-content-center align-items-center p-2`}
-    >
-      <img
-        style={{ height: '90px' }}
-        className="mb-2"
-        alt="Background image"
-        src={customize}
-      />
-      <p className="text-lg">{text}</p>
-      {buttonLabel && (
-        <Link to={link || ''} className="mt-3">
-          <Button
-            disabled={!managerPermissions}
-            className={managerPermissions ? '' : 'p-button p-button-secondary'}
-            label={buttonLabel}
-            onClick={action}
-          />
-        </Link>
-      )}
+    <div className={[styles.emptyState, className].filter(Boolean).join(' ')}>
+      <DataTableEmptyState message={text} showIcon={showEmptyIcon} />
+      {buttonLabel ? (
+        <PrimaryButton
+          className={styles.actionLink}
+          disabled={!managerPermissions}
+          onClick={handleClick}
+        >
+          {buttonLabel}
+        </PrimaryButton>
+      ) : null}
     </div>
   )
-}
-
-EmptyContent.defaultProps = {
-  className: '',
-  managerPermissions: true,
 }
 
 export default EmptyContent

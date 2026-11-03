@@ -1,242 +1,146 @@
-import { useReducer, useRef, useState } from 'react'
-import './ImageInputField.scss'
-import { Button } from 'primereact/button'
-import { FileUpload } from 'primereact/fileupload'
-import { ProgressBar } from 'primereact/progressbar'
-import { Tooltip } from 'primereact/tooltip'
+import { useReducer, useRef, useState, type SyntheticEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useMediaAssets } from '../../api/mediaAssets'
-import { Asset, MediaRefIdType, RefId } from '../../models/Assets'
-import { useUIBlocker } from '../../context/UIBlcoker'
-import { useToast } from '../../context/ToastProvider'
-import { AxiosProgressEvent } from 'axios'
+import {
+  FileUpload,
+  ProgressBar,
+  useToast,
+  type FileUploadHandlerEvent,
+  type FileUploadItemTemplateOptions,
+  type FileUploadRef,
+  type FileUploadSelectEvent,
+} from '@emporix/component-library'
+import type { AxiosProgressEvent } from 'axios'
+import { BsXCircle } from 'react-icons/bs'
+import { FiPlus, FiUpload, FiX } from 'react-icons/fi'
 
-const MediaAssetUpload = (props: {
-  type: MediaRefIdType
-  id: string
-  refresh?: () => void
-  managerPermissions?: boolean
-  multiple?: boolean
-  currentAsset?: Asset
-}) => {
-  const { t } = useTranslation()
-  const { type, id, refresh, managerPermissions, multiple, currentAsset } =
-    props
-  const [totalSize, setTotalSize] = useState(0)
-  const toast = useToast()
-  const { blockPanel } = useUIBlocker()
-  const fileUploadRef = useRef<FileUpload>(null)
+import { useMediaAssets } from '../../hooks/api/mediaAssets'
+import { useUIBlocker } from '../../context/UIBlocker'
+import { getApiErrorDetails } from '../../helpers/api'
+import type { Asset, MediaRefIdType } from '../../models/Assets.model'
+import styles from './MediaAssetUpload.module.scss'
 
-  const { uploadFileAsset, deleteAsset } = useMediaAssets()
-  const [currentRefId] = useState<RefId>({
-    type,
-    id,
-  })
+type MediaAssetUploadProps = {
+  readonly type: MediaRefIdType
+  readonly id: string
+  readonly refresh?: () => void
+  readonly managerPermissions?: boolean
+  readonly multiple?: boolean
+  readonly currentAsset?: Asset
+  readonly acceptAllMedia?: boolean
+  readonly className?: string
+}
 
-  enum ActionsTypes {
-    ADD_FILE = 'add-file',
-    UPDATE_FILES = 'update-file-progress',
-    CLEAR_ALL = 'delete-files',
-  }
+/** PrimeReact augments selected files with a preview object URL. */
+type PreviewFile = File & { objectURL?: string }
 
-  interface Actions {
-    type: ActionsTypes
-    payload?: {
-      fileName: string
-      uploadedSize?: number
-      uploadedPercentage?: number
-    }
-  }
+type UploadingData = {
+  uploadedSize?: number
+  uploadedPercentage?: number
+}
 
-  interface UploadingData {
+type FilesProgress = Record<string, UploadingData>
+
+enum ActionsTypes {
+  ADD_FILE = 'add-file',
+  UPDATE_FILES = 'update-file-progress',
+  CLEAR_ALL = 'delete-files',
+}
+
+type Actions = {
+  type: ActionsTypes
+  payload?: {
+    fileName: string
     uploadedSize?: number
     uploadedPercentage?: number
   }
+}
 
-  interface ReducerReturn {
-    [key: string]: UploadingData
+const reducer = (
+  filesProgress: FilesProgress,
+  action: Actions
+): FilesProgress => {
+  switch (action.type) {
+    case ActionsTypes.ADD_FILE:
+      if (!action.payload) return filesProgress
+      return {
+        ...filesProgress,
+        [action.payload.fileName]: {
+          uploadedSize: 0,
+          uploadedPercentage: 0,
+        },
+      }
+    case ActionsTypes.UPDATE_FILES:
+      if (!action.payload) return filesProgress
+      return {
+        ...filesProgress,
+        [action.payload.fileName]: {
+          uploadedSize: action.payload.uploadedSize,
+          uploadedPercentage: action.payload.uploadedPercentage,
+        },
+      }
+    case ActionsTypes.CLEAR_ALL:
+      return {}
+    default:
+      return filesProgress
   }
+}
 
-  const reducer = (
-    filesProgress: ReducerReturn,
-    action: Actions
-  ): ReducerReturn => {
-    switch (action.type) {
-      case ActionsTypes.ADD_FILE:
-        if (action.payload) {
-          return {
-            ...filesProgress,
-            [action.payload.fileName]: {
-              uploadedSize: 0,
-              uploadedPercentage: 0,
-            },
-          }
-        }
-        return filesProgress
-      case ActionsTypes.CLEAR_ALL:
-        filesProgress = {}
-        return filesProgress
-
-      case ActionsTypes.UPDATE_FILES:
-        if (action.payload) {
-          return {
-            ...filesProgress,
-            [action.payload.fileName]: {
-              uploadedSize: action.payload.uploadedSize,
-              uploadedPercentage: action.payload.uploadedPercentage,
-            },
-          }
-        }
-        return filesProgress
-      default:
-        return filesProgress
-    }
-  }
-
+const MediaAssetUpload = ({
+  type,
+  id,
+  refresh,
+  managerPermissions = true,
+  multiple = true,
+  currentAsset,
+  acceptAllMedia = false,
+  className = '',
+}: MediaAssetUploadProps) => {
+  const { t } = useTranslation()
+  const { showError } = useToast()
+  const { blockPanel } = useUIBlocker()
+  const { uploadFileAsset, deleteAsset } = useMediaAssets()
+  const fileUploadRef = useRef<FileUploadRef>(null)
+  const [totalSize, setTotalSize] = useState(0)
   const [filesUploadingState, dispatch] = useReducer(reducer, {})
 
-  const onTemplateSelect = (e: { files: File[] }) => {
-    let newTotalSize = totalSize
-    if (e.files.length > 1) {
-      ;[...e.files].forEach((file: File) => {
-        newTotalSize += file.size
-      })
-    } else newTotalSize += e.files[0].size
+  const formatSize = (bytes: number) =>
+    fileUploadRef.current?.formatSize(bytes) ?? '0 B'
 
-    setTotalSize(newTotalSize)
+  // Icon-only square buttons, matching the management-dashboard media
+  // uploader. MD used primeicons class strings (`pi pi-fw pi-plus`);
+  // remotes must not depend on primeicons, so these are react-icons nodes.
+  const chooseOptions = {
+    icon: <FiPlus size={16} aria-hidden />,
+    iconOnly: true,
+    className: styles.iconButton,
+  }
+  const uploadOptions = {
+    icon: <FiUpload size={16} aria-hidden />,
+    iconOnly: true,
+    className: styles.iconButton,
+  }
+  const cancelOptions = {
+    icon: <FiX size={16} aria-hidden />,
+    iconOnly: true,
+    className: styles.iconButton,
   }
 
-  const onTemplateUpload = (e: { files: File[] }) => {
-    let newTotalSize = totalSize
-    for (const file of e.files) {
-      newTotalSize += file.size || 0
-      dispatch({
-        type: ActionsTypes.ADD_FILE,
-        payload: { fileName: file.name },
-      })
-    }
-
-    setTotalSize(newTotalSize)
-    toast.showToast(t('File Uploaded'), '', 'success')
-  }
-
-  const onTemplateRemove = (file: File, callback: () => void) => {
-    setTotalSize(totalSize - file.size)
-    callback()
+  const onTemplateSelect = (event: FileUploadSelectEvent) => {
+    const addedSize = event.files.reduce((sum, file) => sum + file.size, 0)
+    setTotalSize((prev) => prev + addedSize)
   }
 
   const onTemplateClear = () => {
     setTotalSize(0)
   }
 
-  const headerTemplate = (options: any) => {
-    const { className, chooseButton, uploadButton, cancelButton } = options
-    const formattedValue =
-      fileUploadRef && fileUploadRef.current
-        ? fileUploadRef.current.formatSize(totalSize)
-        : '0 B'
-
-    return (
-      <div
-        className={className}
-        style={{
-          backgroundColor: 'transparent',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
-        {chooseButton}
-        {uploadButton}
-        {cancelButton}
-        <ProgressBar
-          value={totalSize === 0 ? 0 : 100}
-          displayValueTemplate={() => `${formattedValue}`}
-          style={{ width: '300px', height: '20px', marginLeft: 'auto' }}
-        ></ProgressBar>
-      </div>
-    )
-  }
-
-  const itemTemplate = (file: any, props: any) => {
-    return (
-      <div className="flex align-items-center flex-wrap">
-        <div className="flex align-items-center" style={{ width: '40%' }}>
-          <img
-            alt={file.name}
-            role="presentation"
-            src={file.objectURL}
-            width={100}
-          />
-          <span className="flex flex-column text-left ml-3">
-            {file.name}
-            <small>{new Date().toLocaleDateString()}</small>
-          </span>
-        </div>
-        <ProgressBar
-          value={
-            filesUploadingState[file.name]
-              ? filesUploadingState[file.name].uploadedPercentage
-              : 0
-          }
-          displayValueTemplate={() =>
-            `${
-              filesUploadingState[file.name] && fileUploadRef.current
-                ? fileUploadRef.current.formatSize(
-                    filesUploadingState[file.name].uploadedSize as number
-                  )
-                : 0
-            } / ${props.formatSize}`
-          }
-          style={{ width: '300px', height: '20px', marginLeft: 'auto' }}
-        ></ProgressBar>
-        <Button
-          type="button"
-          icon="pi pi-times"
-          className="p-button-outlined p-button-rounded p-button-danger ml-auto"
-          onClick={() => onTemplateRemove(file, props.onRemove)}
-        />
-      </div>
-    )
-  }
-
-  const emptyTemplate = () => {
-    return (
-      <div className="flex align-items-center flex-column">
-        <i
-          className="pi pi-image mt-3 p-5"
-          style={{
-            fontSize: '5em',
-            borderRadius: '50%',
-            backgroundColor: 'var(--brand-grey-100)',
-            color: 'var(--brand-grey-500)',
-          }}
-        ></i>
-        <span
-          style={{ fontSize: '1.2em', color: 'var(--brand-grey-500)' }}
-          className="my-5"
-        >
-          Drag and Drop Image Here
-        </span>
-      </div>
-    )
-  }
-
-  const chooseOptions = {
-    icon: 'pi pi-fw pi-images',
-    iconOnly: true,
-    className: 'custom-choose-btn p-button-rounded p-button-outlined',
-  }
-  const uploadOptions = {
-    icon: 'pi pi-fw pi-cloud-upload',
-    iconOnly: true,
-    className:
-      'custom-upload-btn p-button-success p-button-rounded p-button-outlined',
-  }
-  const cancelOptions = {
-    icon: 'pi pi-fw pi-times',
-    iconOnly: true,
-    className:
-      'custom-cancel-btn p-button-danger p-button-rounded p-button-outlined',
+  const onTemplateRemove = (
+    file: File,
+    onRemove: (event: SyntheticEvent) => void,
+    event: SyntheticEvent
+  ) => {
+    setTotalSize((prev) => prev - file.size)
+    onRemove(event)
   }
 
   const onUploadProgress = (
@@ -255,79 +159,162 @@ const MediaAssetUpload = (props: {
     })
   }
 
-  const uploadAssets = async (e: { files: File[] }) => {
-    if (!multiple && currentAsset !== undefined) {
+  const uploadAssets = async (event: FileUploadHandlerEvent) => {
+    // Single-asset fields replace rather than append, so drop the old one first.
+    if (!multiple && currentAsset) {
       try {
         await deleteAsset(currentAsset.id)
-      } catch (e) {
-        console.error(e)
+      } catch (e: unknown) {
+        showError(
+          t('categories.media.toast.deleteFailure'),
+          getApiErrorDetails(e)
+        )
       }
+    }
+
+    for (const file of event.files) {
+      dispatch({
+        type: ActionsTypes.ADD_FILE,
+        payload: { fileName: file.name },
+      })
     }
 
     try {
       blockPanel(true)
       await Promise.all(
-        e.files.map(async (file: File) => {
-          return await uploadFileAsset(
-            file,
-            (e) => onUploadProgress(e, file.name),
-            [currentRefId]
-          )
-        })
+        event.files.map((file) =>
+          uploadFileAsset(file, (e) => onUploadProgress(e, file.name), [
+            { id, type },
+          ])
+        )
       )
-    } catch (e) {
-      console.error(e)
+    } catch (e: unknown) {
+      showError(t('global.toasts.errorUploadAssets'), getApiErrorDetails(e))
     } finally {
       blockPanel(false)
       dispatch({ type: ActionsTypes.CLEAR_ALL })
-      // cant be faster than api
-      // @ts-ignore
-      setTimeout(() => fileUploadRef.current.clear(), 500)
-      if (refresh) {
-        refresh()
-      }
+      setTotalSize(0)
+      event.options.clear()
+      refresh?.()
     }
   }
 
-  return (
-    <>
-      <Tooltip target=".custom-choose-btn" content="Choose" position="bottom" />
-      <Tooltip target=".custom-upload-btn" content="Upload" position="bottom" />
-      <Tooltip target=".custom-cancel-btn" content="Clear" position="bottom" />
+  const headerTemplate = (options: unknown) => {
+    const {
+      className: headerClassName,
+      chooseButton,
+      uploadButton,
+      cancelButton,
+    } = options as {
+      className: string
+      chooseButton: React.ReactNode
+      uploadButton: React.ReactNode
+      cancelButton: React.ReactNode
+    }
 
-      <div className="card">
-        <div className="grid grid-nogutter">
-          <div className="col-6 module-subtitle mb-3 mt-5">
-            {t('products.media.fileUploaderTitle')}
-          </div>
-        </div>
-
-        <FileUpload
-          disabled={!managerPermissions}
-          ref={fileUploadRef}
-          customUpload
-          uploadHandler={uploadAssets}
-          multiple={multiple}
-          accept="image/*"
-          onUpload={onTemplateUpload}
-          onSelect={onTemplateSelect}
-          onError={onTemplateClear}
-          onClear={onTemplateClear}
-          headerTemplate={headerTemplate}
-          itemTemplate={itemTemplate}
-          emptyTemplate={emptyTemplate}
-          chooseOptions={chooseOptions}
-          uploadOptions={uploadOptions}
-          cancelOptions={cancelOptions}
+    return (
+      <div className={[headerClassName, styles.header].join(' ')}>
+        {chooseButton}
+        {uploadButton}
+        {cancelButton}
+        <ProgressBar
+          className={styles.headerProgress}
+          value={totalSize === 0 ? 0 : 100}
+          displayValueTemplate={() => formatSize(totalSize)}
         />
       </div>
-    </>
-  )
-}
+    )
+  }
 
-MediaAssetUpload.defaultProps = {
-  managerPermissions: true,
-  multiple: true,
+  const itemTemplate = (
+    file: object,
+    options: FileUploadItemTemplateOptions
+  ) => {
+    const previewFile = file as PreviewFile
+    const progress = filesUploadingState[previewFile.name]
+
+    return (
+      <div className={styles.item}>
+        <div className={styles.itemInfo}>
+          {!acceptAllMedia && previewFile.objectURL && (
+            <img
+              className={styles.itemThumb}
+              alt={previewFile.name}
+              role="presentation"
+              src={previewFile.objectURL}
+            />
+          )}
+          <span className={styles.itemName}>
+            {previewFile.name}
+            <small>{new Date().toLocaleDateString()}</small>
+          </span>
+        </div>
+        <ProgressBar
+          className={styles.itemProgress}
+          value={progress?.uploadedPercentage ?? 0}
+          displayValueTemplate={() =>
+            `${progress ? formatSize(progress.uploadedSize ?? 0) : 0} / ${
+              options.formatSize
+            }`
+          }
+        />
+        <button
+          type="button"
+          className={styles.itemRemove}
+          aria-label={t('global.delete')}
+          onClick={(event) =>
+            onTemplateRemove(previewFile, options.onRemove, event)
+          }
+        >
+          <BsXCircle size={22} aria-hidden />
+        </button>
+      </div>
+    )
+  }
+
+  // Match MD `MediaAssetUpload` empty state exactly: `pi pi-image` /
+  // `pi pi-file` (primeicons font ships in @emporix/component-library/styles).
+  const emptyTemplate = () => (
+    <div className={styles.empty}>
+      <i
+        className={`pi ${acceptAllMedia ? 'pi-file' : 'pi-image'} ${styles.emptyIcon}`}
+        aria-hidden
+      />
+      <span className={styles.emptyText}>
+        {t(
+          acceptAllMedia
+            ? 'categories.media.dropFileHere'
+            : 'categories.media.dropImageHere'
+        )}
+      </span>
+    </div>
+  )
+
+  return (
+    <div className={className}>
+      <FileUpload
+        ref={fileUploadRef}
+        disabled={!managerPermissions}
+        customUpload
+        uploadHandler={uploadAssets}
+        multiple={multiple}
+        accept={acceptAllMedia ? '*' : 'image/*'}
+        onSelect={onTemplateSelect}
+        onError={onTemplateClear}
+        onClear={onTemplateClear}
+        headerTemplate={headerTemplate}
+        itemTemplate={itemTemplate}
+        emptyTemplate={emptyTemplate}
+        chooseOptions={chooseOptions}
+        uploadOptions={uploadOptions}
+        cancelOptions={cancelOptions}
+        chooseLabel={t('categories.media.choose')}
+        uploadLabel={t('categories.media.upload')}
+        cancelLabel={t('categories.media.clear')}
+        data-testid="media-asset-upload"
+      />
+    </div>
+  )
 }
 
 export default MediaAssetUpload

@@ -27,7 +27,7 @@ Step-by-step workflow for porting an MD module to `md-extensions`.
 | `docs/CL_WIDGET_STATUS.md` | PrimeReact → CL lookup (`in-cl` / `partial` / `missing`). Do not copy gap lists into this skill. |
 | [reference.md](reference.md) | FAQ, validation greps, anti-patterns, local dev loop |
 
-**Canonical scaffold:** clone [md-module-template @ `md-module-migration`](https://github.com/emporix/md-module-template/tree/md-module-migration) (`git clone -b md-module-migration --single-branch …`), absorb into `md-extensions/{kebab}/` (`rm -rf .git`). Do **not** copy another remote folder. Align Tier 1 with **all playbook-aligned remotes** in `MIGRATED_MODULES.md` (not U&G alone; not `products`; not template `master`).
+**Canonical scaffold:** clone [md-module-template @ `md-module-migration`](https://github.com/emporix/md-module-template/tree/md-module-migration) (`git clone -b md-module-migration --single-branch …`), absorb into `md-extensions/{kebab}/` (`rm -rf .git`). Do **not** copy another remote folder. Align Tier 1 with **all playbook-aligned remotes** in `MIGRATED_MODULES.md` (not U&G alone; not template `master`).
 
 **Pilots so far:** see `MIGRATED_MODULES.md`.
 

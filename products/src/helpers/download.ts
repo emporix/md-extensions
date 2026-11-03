@@ -1,44 +1,43 @@
 const CSV_FILE_TYPE = 'text/csv;charset=utf-8;'
-const PDF_FILE_TYPE = 'application/pdf'
-const HREF_ATTRIBUTE = 'href'
-const DOWNLOAD_ATTRIBUTE = 'download'
-const VISIBILITY_HIDDEN_STYLE = 'hidden'
-const ANCHOR_TAG_NAME = 'a'
+
+const FORMULA_PREFIX = /^[=+\-@\t\r]/
+
+/**
+ * Neutralize spreadsheet formula injection, then quote cells that need it
+ * (commas, quotes, newlines — RFC 4180).
+ */
+export const escapeCsvCell = (value: string): string => {
+  const safe = FORMULA_PREFIX.test(value) ? `'${value}` : value
+  if (/[",\n\r]/.test(safe) || safe !== value) {
+    return `"${safe.replace(/"/g, '""')}"`
+  }
+  return safe
+}
 
 export const mapToCsv = <T>(
   headers: string[],
   models: T[],
-  predicate: (t: T) => string[]
-) => {
-  return (
-    headers.join(',') +
-    '\n' +
-    models
-      .map(predicate)
-      .map((e) => e.join(','))
-      .join('\n')
-  )
-}
+  predicate: (model: T) => string[]
+): string =>
+  headers.map(escapeCsvCell).join(',') +
+  '\n' +
+  models
+    .map(predicate)
+    .map((row) => row.map(escapeCsvCell).join(','))
+    .join('\n')
 
-function downloadFile(blob: Blob, filename: string) {
-  const link = document.createElement(ANCHOR_TAG_NAME)
-  if (link.download !== undefined) {
-    const url = URL.createObjectURL(blob)
-    link.setAttribute(HREF_ATTRIBUTE, url)
-    link.setAttribute(DOWNLOAD_ATTRIBUTE, filename)
-    link.style.visibility = VISIBILITY_HIDDEN_STYLE
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+const downloadFile = (blob: Blob, filename: string) => {
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(blob)
+  link.setAttribute('href', url)
+  link.setAttribute('download', filename)
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
 }
 
 export const saveToCsvFile = (filename: string, data: string) => {
-  const blob = new Blob([data], { type: CSV_FILE_TYPE })
-  downloadFile(blob, filename)
-}
-
-export const saveToPDFFile = (filename: string, data: string) => {
-  const blob = new Blob([data], { type: PDF_FILE_TYPE })
-  downloadFile(blob, filename)
+  downloadFile(new Blob([data], { type: CSV_FILE_TYPE }), filename)
 }

@@ -1,0 +1,42 @@
+// MD CategoryTree.scss `.category-tree-wrapper` (the tree's padding and border
+// come from the CL Tree `borderless` prop). CL Tree anchors its rules on a
+// doubled hashed root plus the Prime chain (0,6,0 for node content), so these
+// use a doubled wrapper anchor plus the same chain to stay one step ahead.
+$tree: '.wrapper.wrapper :global(.p-tree.p-tree)';
+$content: '#{$tree} :global(.p-tree-container) :global(.p-treenode) :global(.p-treenode-content)';
+
+.wrapper {
+  display: block;
+}
+
+#{$content} {
+  padding: 0.125rem;
+}
+
+// A clicked node shows only its highlight; keyboard focus keeps the ring.
+#{$content}:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+
+#{$content} :global(.p-tree-toggler) {
+  width: 1rem;
+  height: 1rem;
+}
+
+#{$content} :global(.p-tree-toggler) :global(.p-tree-toggler-icon) {
+  font-size: 0.875rem;
+}
+
+.node {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+// MD ProductsCategoryTree.scss `.no-permission-table` (doubled class beats the
+// CL SectionBox root class).
+.noPermissionTable.noPermissionTable {
+  height: 100%;
+  border-radius: 0;
+  border-width: 1px 0;
+}

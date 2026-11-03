@@ -73,7 +73,7 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/divider` | `missing` | — | — | 3 | Form section separators. |
 | `primereact/sidebar` | `missing` | — | — | 1 | `TableExtensions.tsx`. Documented substitute: local `SidePanel` (right drawer, 20rem) + CL `InputSwitch`. Copy from `returns` or `brands` `components/shared/SidePanel`. Do not fall back to CL `Dialog` + `Checkbox`. |
 | `primereact/paginator` | `missing` | — | — | 1 | Standalone (`EntityChangelogTab`). Table pagination is already on CL `DataTable`. `customer-groups` used custom control + CL `Dropdown`. |
-| `primereact/panel` | `missing` | — | — | 1 | `ProductPricesPanelForm.tsx`. CL `SectionBox` may replace layout panels. |
+| `primereact/panel` | `missing` | — | — | 1 | `ProductPricesPanelForm.tsx`. Documented substitute (products, COP-6993): CL `SectionBox` with a custom collapsible header. |
 | `primereact/splitbutton` | `missing` | — | — | 1 | `AddNewContactButton.tsx`. |
 | `primereact/overlaypanel` | `missing` | — | — | 1 | `JsonPathFilterInput.tsx`. |
 | `primereact/chart` | `missing` | — | — | 1 | `WebhooksStatistics.tsx`. Do not add `chart.js` to remote `shared` (playbook §2). |
@@ -82,7 +82,7 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/image` | `missing` | — | — | 1 | `settings/Card.tsx`. |
 | `primereact/password` | `missing` | — | — | 1 | Barrel. `CustomersAddEdit.module.tsx`. |
 | `primereact/tristatecheckbox` | `missing` | — | — | 1 | Barrel. `TemplateAttributes.tsx`. |
-| `primereact/treenode` | `type` | — | — | 13 | Default `TreeNode` type. Declare locally if you port Tree. |
+| `primereact/treenode` | `type` | `TreeNode` | **2.12.0** | 13 | Exported by CL with `Tree` (plus `TreeExpandedKeys`, `TreeSelectionKeys`, event types). |
 | `primereact/selectitem` | `type` | — | — | 3 | `SelectItemOptionsType`. Map to CL `DropdownOption[]`. |
 | `primereact/tooltip/tooltipoptions` | `type` | `TooltipProps` | 1.8.0 | 3 | |
 | `primereact/menuitem` | `type` | `MenuItem` | 1.10.0 | 1 | |

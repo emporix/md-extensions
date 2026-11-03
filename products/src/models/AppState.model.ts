@@ -1,16 +1,12 @@
-import { Entry } from './Configuration.ts'
-import { ResourcesDCP, ResourcesOE, RoleCode } from '../helpers/accessConfig.ts'
-
-export type Permissions = {
-  [key in ResourcesDCP | ResourcesOE]?: { [key in RoleCode]?: boolean }
-}
+import type { Currency } from './Configuration.model'
+import type { SessionUser } from './SessionUser.model'
 
 export type AppState = {
   tenant: string
   language: string
   token: string
-  currency: Entry | undefined
+  currency: Currency
   contentLanguage: string
-  permissions: Permissions
+  user?: SessionUser
   onError: (error: unknown) => void
 }

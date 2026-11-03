@@ -1,105 +1,347 @@
 import { useCallback, useEffect, useState } from 'react'
-import SectionBox from '../shared/SectionBox'
+import {
+  AutoComplete,
+  Dropdown,
+  InputSwitch,
+  InputText,
+  PrimaryButton,
+  SecondaryButton,
+  SectionBox,
+  useToast,
+} from '@emporix/component-library'
 import InputField from '../shared/InputField'
-import { InputSwitch } from 'primereact/inputswitch'
-import { LocalizedInput } from '../shared/LocalizedInput'
-import { Option } from './LabelChip'
+import LocalizedInput from '../shared/LocalizedInput'
 import { useTranslation } from 'react-i18next'
-import { fetchBrands } from '../../api/brands'
-import { fetchLabels } from '../../api/labels'
-import { mapBrandToDropdown, mapLabelToDropdown } from '../../helpers/utils'
+import { fetchBrands, fetchLabels } from '@emporix/api-calls'
+import { deepClone, removeEmptyValues } from '../../helpers/utils'
+import { trimCloudinaryImage } from '../../helpers/images'
 import { useProductData } from '../../context/ProductDataProvider'
+import { useActiveNode } from '../../context/ActiveNodeProvider'
+import {
+  INHERITABLE_FIELDS,
+  snapshotInheritedValues,
+  stripInheritedFields,
+} from '../../helpers/dynamicVariants/inheritableFields.helpers'
 import { Controller, FormProvider, useForm } from 'react-hook-form'
-import { InputText } from 'primereact/inputtext'
 import { LocalizedEditor } from '../shared/LocalizedEditor'
-import { Button } from 'primereact/button'
-import { Dropdown } from 'primereact/dropdown'
-import { optionTemplate, selectedTemplate } from '../shared/SharedTemplates'
-import { MultiSelect } from 'primereact/multiselect'
 import { ProductAttributes } from './ProductAttributes'
-import Localized from '../../models/Localized'
-import { useParams } from 'react-router-dom'
-import { useProductsApi } from '../../api/products'
-import { Product, ProductType } from '../../models/Category'
-import { useUIBlocker } from '../../context/UIBlcoker'
-import useCustomNavigate from '../../hooks/useCustomNavigate.tsx'
+import Localized from '../../models/Localized.model'
+import { useParams, useSearchParams } from 'react-router'
+import { useProductsApi } from '../../hooks/api/products'
+import { Product, ProductType } from '../../models/Category.model'
+import { useUIBlocker } from '../../context/UIBlocker'
+import useCustomNavigate from '../../hooks/useCustomNavigate'
 import AssistantBox from './AssistantBox'
-import aiIcon from '../../../assets/icons/ai.svg'
-import aiDisabledIcon from '../../../assets/icons/aiDisabled.svg'
-import { useConfigurationApi } from '../../api/configuration'
-import { useToast } from '../../context/ToastProvider'
-import { useDashboardContext } from '../../context/Dashboard.context.tsx'
+import aiIcon from '../../assets/icons/ai.svg'
+import aiDisabledIcon from '../../assets/icons/aiDisabled.svg'
+import { useConfigurationApi } from '../../hooks/api/configuration'
+import { useFeatureToggles } from '../../context/FeatureTogglesProvider'
+import { usePermissions } from '../../context/PermissionsProvider'
+import { InheritedFieldAddon } from './dynamicVariants/InheritedFieldAddon'
+import FormGrid from '../shared/FormGrid'
+import FormGridRow from '../shared/FormGridRow'
+import { useVendorsApi } from '../../hooks/api/vendors'
+import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
+import { productDetailPath } from '../../constants/paths'
+import styles from './ProductDetailsForm.module.scss'
+
+const AI_ASSISTANT_FEATURE_TOGGLE_NAME = 'DCP_PRODUCT_AI_ASSISTANT'
+
+/** Stand-in for Prime `showClear`: selecting it clears the field (null). */
+const CLEAR_OPTION_VALUE = ''
+
+/** Brand / label dropdown option (MD `Option` from LabelChip). */
+type ImageOption = {
+  id: string
+  image: string
+  name: string
+}
+
+type VendorSuggestion = {
+  id: string
+  name: string
+}
+
+type ImageEntity = {
+  id?: string
+  name?: string
+  image?: string
+}
+
+/** MD `helpers/utils` mapBrandToDropdown. */
+const mapBrandToDropdown = (brand: ImageEntity): ImageOption => ({
+  image: brand.image ? (trimCloudinaryImage(brand.image, 50, 30) ?? '') : '',
+  id: brand.id || '',
+  name: brand.name || '',
+})
+
+/** MD `helpers/utils` mapLabelToDropdown. */
+const mapLabelToDropdown = (label: ImageEntity): ImageOption => ({
+  image: label.image ? (trimCloudinaryImage(label.image, 30, 30) ?? '') : '',
+  id: label.id || '',
+  name: label.name || '',
+})
+
+/** MD `SharedTemplates` optionTemplate / selectedTemplate. */
+const imageOptionTemplate = (option: ImageOption | null) => {
+  if (!option?.id) {
+    return <span className={styles.emptyOption}>{'\u00A0'}</span>
+  }
+  return (
+    <div className={styles.imageOption}>
+      <img
+        className={styles.optionImage}
+        src={option.image}
+        alt={option.name}
+      />
+      <span>{option.name}</span>
+    </div>
+  )
+}
+
+const getResponseStatus = (error: unknown): number | undefined =>
+  (error as { response?: { status?: number } })?.response?.status
 
 export const ProductDetailsForm = () => {
   const { t } = useTranslation()
-  const { product, refreshData } = useProductData()
+  const { product, parentProduct, refreshData } = useProductData()
+  const {
+    setActiveNodeState,
+    overriddenFields,
+    markOverridden,
+    clearOverridden,
+    setInheritedValues,
+    isAddFlow,
+  } = useActiveNode()
   const { createProduct, updateProduct } = useProductsApi()
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
+  const siblingIdParam = searchParams.get('siblingId')
   const toast = useToast()
   const methods = useForm<Product>()
+  const {
+    reset,
+    control,
+    formState,
+    handleSubmit,
+    watch,
+    setValue,
+    resetField: formResetField,
+  } = methods
   const { blockPanel } = useUIBlocker()
   const { navigate } = useCustomNavigate()
-  const [isAssistantBoxOpened, setIsAssistantBoxOpened] = useState(false)
   const { getSingleConfiguration } = useConfigurationApi()
+  const toggles = useFeatureToggles()
+  const { getVendors } = useVendorsApi()
+  const { hasPermission } = usePermissions()
+
+  const [isAssistantBoxOpened, setIsAssistantBoxOpened] = useState(false)
   const [isAssistantEnabled, setIsAssistantEnabled] = useState(false)
-  const { permissions } = useDashboardContext()
-  const canBeManaged = permissions?.products?.manager
+  const [vendors, setVendors] = useState<VendorSuggestion[]>([])
+  const [vendorQuery, setVendorQuery] = useState('')
+  const [brands, setBrands] = useState<ImageOption[]>([])
+  const [labels, setLabels] = useState<ImageOption[]>([])
+  const canManage =
+    hasPermission(EmployeeDomains.PRODUCTS_MANAGER) ||
+    hasPermission(VendorDomains.VENDOR_PRODUCTS_MANAGER)
+  const canViewVendors = hasPermission(EmployeeDomains.VENDORS_VIEWER)
+  const canManagePublishedFlag =
+    hasPermission(EmployeeDomains.PRODUCTS_MANAGER) ||
+    (hasPermission(VendorDomains.VENDOR_PRODUCT_PUBLISH_MANAGER) &&
+      !product?.published) ||
+    (hasPermission(VendorDomains.VENDOR_PRODUCT_UNPUBLISH_MANAGER) &&
+      product?.published)
+  const canManageAssignedVendor = hasPermission(
+    EmployeeDomains.PRODUCTS_MANAGER
+  )
+  const vendor = watch('vendor')
+  const name = watch('name')
+  const code = watch('code')
+  const published = watch('published')
+  const dynamicVariantType = watch('dynamicVariantType')
+  const sellable = watch('sellable')
+  const brandId = watch('brandId')
+  const labelIds = watch('labelIds')
+  const description = watch('description')
+
+  const initializeForm = useCallback(() => {
+    reset(product)
+    clearOverridden()
+    if (product?.productType !== ProductType.dynamicVariant) {
+      return
+    } else if (isAddFlow) {
+      if (parentProduct) {
+        setInheritedValues(snapshotInheritedValues(parentProduct))
+      }
+      if (siblingIdParam) {
+        // Add sibling: mark overridden fields from the sibling's metadata
+        const siblingOverridden = product.metadata?.overridden ?? []
+        for (const field of INHERITABLE_FIELDS) {
+          if (siblingOverridden.includes(field)) {
+            markOverridden(field)
+          }
+        }
+      }
+      // Add child: no markOverridden — all inheritable fields will be
+      // stripped on save unless the user modifies them
+    } else {
+      if (parentProduct) {
+        setInheritedValues(snapshotInheritedValues(parentProduct))
+      }
+      const metadataOverridden = product.metadata?.overridden ?? []
+      for (const field of INHERITABLE_FIELDS) {
+        if (metadataOverridden.includes(field)) {
+          markOverridden(field)
+        }
+      }
+    }
+  }, [
+    product,
+    parentProduct,
+    isAddFlow,
+    siblingIdParam,
+    reset,
+    clearOverridden,
+    setInheritedValues,
+    markOverridden,
+  ])
 
   useEffect(() => {
-    reset(product)
-  }, [product])
+    initializeForm()
+  }, [initializeForm])
+
+  // Track changes to inheritable fields → mark as overridden
+  useEffect(() => {
+    if (product?.productType !== ProductType.dynamicVariant) return
+    const dirtyFields = formState.dirtyFields
+    for (const field of INHERITABLE_FIELDS) {
+      if (dirtyFields[field]) {
+        markOverridden(field)
+      }
+    }
+  }, [
+    name,
+    published,
+    sellable,
+    brandId,
+    labelIds,
+    description,
+    formState.dirtyFields,
+    product?.productType,
+    markOverridden,
+  ])
+
+  // Sync form fields → activeNodeState for live tree preview
+  useEffect(() => {
+    setActiveNodeState((prev) => ({
+      ...prev,
+      name: name,
+      code: typeof code === 'string' ? code : undefined,
+      published: !!published,
+      sellable: !!sellable,
+      dynamicVariantType:
+        typeof dynamicVariantType === 'string'
+          ? dynamicVariantType.trim() || undefined
+          : undefined,
+    }))
+  }, [name, code, published, sellable, dynamicVariantType, setActiveNodeState])
+
+  useEffect(() => () => setActiveNodeState({}), [setActiveNodeState])
+
+  useEffect(() => {
+    if (!vendor) {
+      setVendorQuery('')
+    } else {
+      setVendorQuery(vendor.name ?? '')
+    }
+  }, [vendor])
 
   useEffect(() => {
     ;(async () => {
       try {
         const openAiToken = await getSingleConfiguration('openAiApiToken')
-        setIsAssistantEnabled(openAiToken && openAiToken.value)
-      } catch (ex) {
+        setIsAssistantEnabled(Boolean(openAiToken?.value))
+      } catch {
         return null
       }
     })()
-  }, [])
-
-  const { reset, control, formState, handleSubmit, watch, setValue } = methods
-  const [brands, setBrands] = useState<Option[]>([])
-  const [labels, setLabels] = useState<Option[]>([])
+  }, [getSingleConfiguration])
 
   useEffect(() => {
     ;(async () => {
-      const brands = await fetchBrands()
+      loadVendors()
+      const { values: brands } = await fetchBrands()
       setBrands(brands.map((brand) => mapBrandToDropdown(brand)))
-      const labels = await fetchLabels()
+      const { values: labels } = await fetchLabels()
       setLabels(labels.map((label) => mapLabelToDropdown(label)))
     })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity: load vendors, brands and labels once on mount
   }, [])
 
-  const createProductCall = useCallback(async (data: Partial<Product>) => {
-    blockPanel(true)
+  const loadVendors = async (searchQuery?: string) => {
     try {
-      const { id } = await createProduct(data)
-      navigate(` products/${id}`)
-    } catch (error: any) {
-      console.error(error)
-      if (error.response.status === 400) {
-        toast.showError(t('products.toast.errorCreateValidation'), '')
-        return
-      }
-      if (error.response.status == 409) {
-        toast.showError(t('products.toast.errorCreateConflict'), '')
-        return
-      }
-      toast.showError(t('products.toast.errorCreateInternal'), '')
-    } finally {
-      blockPanel(false)
+      const pagination = { currentPage: 1, rows: 100 }
+      const params = searchQuery ? { name: `(~${searchQuery})` } : undefined
+      const data = await getVendors(pagination, params)
+      setVendors(
+        data.values.map((vendor) => ({ id: vendor.id, name: vendor.name }))
+      )
+    } catch (e: unknown) {
+      console.error(e)
     }
-  }, [])
+  }
+
+  const createProductCall = useCallback(
+    async (data: Partial<Product>) => {
+      blockPanel(true)
+      try {
+        let payload = deepClone(data)
+        if (data.productType === ProductType.dynamicVariant) {
+          delete payload.variants
+          delete payload.template
+          delete payload.inheritedVariantAttributes
+          delete payload.metadata?.overridden
+          if (data.parentVariantId) {
+            const isChildFlow = !siblingIdParam
+            payload = stripInheritedFields(data, overriddenFields, isChildFlow)
+          }
+        }
+        const { id } = await createProduct(payload)
+        navigate(productDetailPath(id))
+      } catch (error: unknown) {
+        console.error(error)
+        const status = getResponseStatus(error)
+        if (status === 400) {
+          toast.showError(t('products.toast.errorCreateValidation'), '')
+          return
+        }
+        if (status === 409) {
+          toast.showError(t('products.toast.errorCreateConflict'), '')
+          return
+        }
+        toast.showError(t('products.toast.errorCreateInternal'), '')
+      } finally {
+        blockPanel(false)
+      }
+    },
+    [
+      overriddenFields,
+      siblingIdParam,
+      blockPanel,
+      createProduct,
+      navigate,
+      t,
+      toast,
+    ]
+  )
 
   const productType = watch('productType')
   const productName = watch('name')
   const productDescription = watch('description')
 
   const updateProductCall = useCallback(
-    async (data: Partial<Product>) => {
+    async (originalData: Partial<Product>) => {
+      let data = deepClone(originalData)
       blockPanel(true)
       try {
         if (data.productType === ProductType.variant && data.metadata) {
@@ -109,18 +351,31 @@ export const ProductDetailsForm = () => {
             newOverridden.push(...data.metadata.overridden)
           }
           data.metadata.overridden = [...newOverridden]
-          await updateProduct(data)
-        } else {
-          await updateProduct(data)
+          delete data.template
         }
+        if (product.productType === ProductType.dynamicVariant) {
+          delete data.template
+          delete data.inheritedVariantAttributes
+          delete data.variants
+          delete data.metadata?.overridden
+          if (data.parentVariantId) {
+            data = stripInheritedFields(data, overriddenFields)
+          }
+        }
+        delete data?.metadata?.createdAt
+        delete data?.metadata?.modifiedAt
+        const payload = removeEmptyValues(data)
+        await updateProduct(payload)
+        toast.showToast(t('products.edit.toast.update.success'), '', 'success')
         refreshData()
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(error)
-        if (error.response.status === 400) {
+        const status = getResponseStatus(error)
+        if (status === 400) {
           toast.showError(t('products.toast.errorUpdateValidation'), '')
           return
         }
-        if (error.response.status == 409) {
+        if (status === 409) {
           toast.showError(t('products.toast.errorUpdateConflict'), '')
           return
         }
@@ -129,259 +384,345 @@ export const ProductDetailsForm = () => {
         blockPanel(false)
       }
     },
-    [formState]
+    [
+      formState,
+      overriddenFields,
+      product?.productType,
+      refreshData,
+      blockPanel,
+      t,
+      toast,
+      updateProduct,
+    ]
   )
+
+  const brandOptions: ImageOption[] = [
+    { id: CLEAR_OPTION_VALUE, image: '', name: '' },
+    ...brands,
+  ]
 
   return (
     <FormProvider {...methods}>
-      <div className="flex justify-content-end align-items-center">
-        <Button
-          disabled={!canBeManaged}
-          className="p-button-secondary"
-          label={t('global.discard')}
-          onClick={() => reset()}
-        />
-        {isAssistantEnabled && (
-          <Button
-            disabled={!canBeManaged}
-            onClick={() => setIsAssistantBoxOpened(true)}
-            loading={false}
-            className={
-              canBeManaged
-                ? 'p-button-primary ml-2'
-                : 'p-button p-button-secondary ml-2'
-            }
-            style={{ paddingTop: '2px', paddingBottom: '2px' }}
-          >
-            <img
-              src={canBeManaged ? aiIcon : aiDisabledIcon}
-              alt="Assistant"
-              height={27}
-              className="mr-2"
-            />
-            <span>{t('products.actions.assistant.title')}</span>
-          </Button>
-        )}
-        {id ? (
-          <Button
-            disabled={!formState.isValid || !formState.isDirty || !canBeManaged}
-            className={
-              canBeManaged ? 'ml-2' : 'p-button p-button-secondary ml-2'
-            }
-            label={t('global.save')}
-            onClick={handleSubmit(updateProductCall)}
-          />
-        ) : (
-          <Button
-            className={
-              canBeManaged ? 'ml-2' : 'p-button p-button-secondary mr-2'
-            }
-            disabled={!formState.isValid || !formState.isDirty || !canBeManaged}
-            label={t('global.create')}
-            onClick={handleSubmit(createProductCall)}
-          />
-        )}
-      </div>
-
       <SectionBox
-        className="mb-6"
+        className={styles.generalSection}
         name={t('products.edit.tab.general.information')}
+        actions={
+          <div className={styles.actions}>
+            <SecondaryButton disabled={!canManage} onClick={initializeForm}>
+              {t('global.discard')}
+            </SecondaryButton>
+            {isAssistantEnabled &&
+              toggles.isToggleValid(AI_ASSISTANT_FEATURE_TOGGLE_NAME) && (
+                <PrimaryButton
+                  disabled={!canManage}
+                  onClick={() => setIsAssistantBoxOpened(true)}
+                  loading={false}
+                  className={styles.assistantButton}
+                >
+                  <img
+                    src={canManage ? aiIcon : aiDisabledIcon}
+                    alt="Assistant"
+                    height={27}
+                    className={styles.assistantIcon}
+                  />
+                  <span>{t('products.actions.assistant.title')}</span>
+                </PrimaryButton>
+              )}
+            {id ? (
+              <PrimaryButton
+                disabled={
+                  !formState.isValid || !formState.isDirty || !canManage
+                }
+                onClick={handleSubmit(updateProductCall)}
+              >
+                {t('global.save')}
+              </PrimaryButton>
+            ) : (
+              <PrimaryButton
+                disabled={
+                  !formState.isValid || !formState.isDirty || !canManage
+                }
+                onClick={handleSubmit(createProductCall)}
+              >
+                {t('global.create')}
+              </PrimaryButton>
+            )}
+          </div>
+        }
       >
-        <div className={'grid'}>
-          {product.media && product.media[0] && (
+        <FormGrid>
+          <FormGridRow>
+            {product.media?.[0] && (
+              <InputField
+                label={t('products.edit.tab.general.image')}
+                className={styles.col12}
+              >
+                <img
+                  className={styles.productImage}
+                  src={product.media[0].url ?? ''}
+                  alt={product.media[0].url ?? ''}
+                />
+              </InputField>
+            )}
+          </FormGridRow>
+
+          <FormGridRow>
             <InputField
-              label={t('products.edit.tab.general.image')}
-              className={'mb-3 col-12'}
+              label={t('products.edit.tab.general.published')}
+              name="published"
+              className={styles.col12}
+              addon={
+                <InheritedFieldAddon
+                  fieldName="published"
+                  resetField={formResetField}
+                />
+              }
             >
-              <img
-                style={{ maxWidth: '100px', height: 'auto' }}
-                src={
-                  product.media && product.media[0] ? product.media[0].url : ''
-                }
-                alt={
-                  product.media && product.media[0] ? product.media[0].url : ''
-                }
+              <Controller
+                name="published"
+                control={control}
+                render={({ field }) => (
+                  <InputSwitch
+                    disabled={!canManagePublishedFlag}
+                    checked={field.value || false}
+                    onChange={(e) => field.onChange(e.value)}
+                  />
+                )}
               />
             </InputField>
-          )}
+          </FormGridRow>
 
-          <InputField
-            label={t('products.edit.tab.general.published')}
-            name="published"
-            className={'mb-3 col-6'}
-          >
-            <Controller
-              name="published"
-              control={control}
-              render={({ field }) => (
-                <InputSwitch
-                  disabled={!canBeManaged}
-                  checked={field.value || false}
-                  onChange={(e) => field.onChange(e.value)}
-                />
-              )}
-            />
-          </InputField>
-          <InputField
-            label={t('products.edit.tab.general.id')}
-            tooltip={t('products.edit.tab.general.tooltip.id')}
-            name="id"
-            className={'mb-3 col-6'}
-          >
-            <Controller
+          <FormGridRow>
+            <InputField
+              label={t('products.edit.tab.general.id')}
+              tooltip={t('products.edit.tab.general.tooltip.id')}
               name="id"
-              control={control}
-              render={({ field }) => (
-                <InputText
-                  disabled={!canBeManaged || id !== undefined}
-                  data-test-id="product-id"
-                  onChange={(val) => field.onChange(val)}
-                  value={field.value || undefined}
-                />
-              )}
-            />
-          </InputField>
-          <InputField
-            label={t('products.edit.tab.general.name')}
-            name="name"
-            required={true}
-            className={'mb-3 col-6'}
-          >
-            <Controller
-              name="name"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <LocalizedInput
-                  dataTestId="product-name"
-                  displayOnly={!canBeManaged}
-                  onChange={(val) => field.onChange(val)}
-                  value={(field.value as Localized) || {}}
-                />
-              )}
-            />
-          </InputField>
-
-          <InputField
-            label={t('products.edit.tab.general.code')}
-            name="code"
-            className={'mb-3 col-6'}
-            noInheritance={true}
-            required={true}
-          >
-            <Controller
+              className={styles.col6}
+            >
+              <Controller
+                name="id"
+                control={control}
+                render={({ field }) => (
+                  <InputText
+                    inputId="id"
+                    readOnly={!canManage || id !== undefined}
+                    data-test-id="product-id"
+                    onChange={(val) => field.onChange(val)}
+                    value={field.value || ''}
+                  />
+                )}
+              />
+            </InputField>
+            <InputField
+              label={t('products.edit.tab.general.code')}
               name="code"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <InputText
-                  disabled={
-                    productType === ProductType.variant || !canBeManaged
-                  }
-                  data-test-id="product-code"
-                  onChange={(val) => field.onChange(val)}
-                  value={field.value || ''}
+              className={styles.col6}
+              noInheritance={true}
+              required={true}
+            >
+              <Controller
+                name="code"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <InputText
+                    inputId="code"
+                    readOnly={productType === ProductType.variant || !canManage}
+                    data-test-id="product-code"
+                    onChange={(val) => field.onChange(val)}
+                    value={field.value || ''}
+                  />
+                )}
+              />
+            </InputField>
+          </FormGridRow>
+
+          <FormGridRow>
+            <InputField
+              label={t('products.edit.tab.general.name')}
+              name="name"
+              required={true}
+              className={styles.col6}
+              addon={
+                <InheritedFieldAddon
+                  fieldName="name"
+                  resetField={formResetField}
                 />
-              )}
-            />
-          </InputField>
-          <InputField
-            label={t('products.edit.tab.general.description')}
-            name="description"
-            className={'mb-3 col-6'}
-          >
-            <Controller
-              name="description"
-              control={control}
-              render={({ field }) => (
-                <LocalizedEditor
-                  disabled={!canBeManaged}
-                  dataTestId="product-description"
-                  data-test-id="product-description"
-                  onChange={(val) => field.onChange(val)}
-                  value={(field.value as Localized) || {}}
-                />
-              )}
-            />
-          </InputField>
-          <InputField
-            label={t('products.edit.tab.general.brand')}
-            name="brandId"
-            className={'mb-3 col-6'}
-          >
-            <Controller
-              name="brandId"
-              control={control}
-              render={({ field }) => (
-                <Dropdown
-                  disabled={!canBeManaged}
-                  value={field.value || ''}
-                  options={brands}
-                  onChange={(e) => {
-                    field.onChange(e.value)
-                  }}
-                  optionValue="id"
-                  optionLabel="name"
-                  filter
-                  showClear
-                  appendTo="self"
-                  filterBy="name"
-                  placeholder={t('products.edit.tab.general.brandPlaceholder')}
-                  valueTemplate={selectedTemplate}
-                  itemTemplate={optionTemplate}
-                />
-              )}
-            />
-          </InputField>
-          <InputField
-            label={t('products.edit.tab.general.label')}
-            name="labelIds"
-            className={'mb-3 col-6'}
-          >
-            <Controller
-              name="labelIds"
-              control={control}
-              render={({ field }) => (
-                <MultiSelect
-                  disabled={!canBeManaged}
-                  value={field.value || ''}
-                  options={labels}
-                  onChange={(e) => {
-                    field.onChange(e.value)
-                  }}
-                  optionLabel="name"
-                  optionValue="id"
-                  filter
-                  showClear
-                  appendTo="self"
-                  filterBy="name"
-                  placeholder={t('products.edit.tab.general.labelPlaceholder')}
-                  itemTemplate={optionTemplate}
-                />
-              )}
-            />
-          </InputField>
-          <InputField
-            label={t('products.edit.tab.general.weightDependent')}
-            name="weightDependent"
-            className={'mb-3 col-6'}
-            tooltip={t('products.edit.tab.general.tooltip.weightDependent')}
-          >
-            <Controller
+              }
+            >
+              <Controller
+                name="name"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <LocalizedInput
+                    inputId="name"
+                    displayOnly={!canManage}
+                    onChange={(val) => field.onChange(val)}
+                    value={(field.value as Localized) || {}}
+                  />
+                )}
+              />
+            </InputField>
+            <InputField
+              label={t('products.edit.tab.general.weightDependent')}
               name="weightDependent"
-              control={control}
-              render={({ field }) => (
-                <InputSwitch
-                  disabled={
-                    productType === ProductType.variant || !canBeManaged
-                  }
-                  checked={field.value || false}
-                  onChange={(e) => field.onChange(e.value)}
+              className={styles.col6}
+              tooltip={t('products.edit.tab.general.tooltip.weightDependent')}
+            >
+              <Controller
+                name="weightDependent"
+                control={control}
+                render={({ field }) => (
+                  <InputSwitch
+                    disabled={productType === ProductType.variant || !canManage}
+                    checked={field.value || false}
+                    onChange={(e) => field.onChange(e.value)}
+                  />
+                )}
+              />
+            </InputField>
+          </FormGridRow>
+
+          <FormGridRow>
+            <InputField
+              label={t('products.edit.tab.general.description')}
+              name="description"
+              className={styles.col12}
+              addon={
+                <InheritedFieldAddon
+                  fieldName="description"
+                  resetField={formResetField}
                 />
-              )}
-            />
-          </InputField>
-        </div>
+              }
+            >
+              <Controller
+                name="description"
+                control={control}
+                render={({ field }) => (
+                  <LocalizedEditor
+                    disabled={!canManage}
+                    dataTestId="product-description"
+                    onChange={(val) => field.onChange(val)}
+                    value={(field.value as Localized) || {}}
+                  />
+                )}
+              />
+            </InputField>
+          </FormGridRow>
+
+          <FormGridRow>
+            <InputField
+              label={t('products.edit.tab.general.brand')}
+              name="brandId"
+              className={styles.col6}
+              addon={
+                <InheritedFieldAddon
+                  fieldName="brandId"
+                  resetField={formResetField}
+                />
+              }
+            >
+              <Controller
+                name="brandId"
+                control={control}
+                render={({ field }) => (
+                  <Dropdown
+                    inputId="brandId"
+                    disabled={!canManage}
+                    value={field.value || undefined}
+                    options={brandOptions}
+                    onChange={(e) => {
+                      field.onChange(
+                        e.value === CLEAR_OPTION_VALUE ? null : e.value
+                      )
+                    }}
+                    optionValue="id"
+                    optionLabel="name"
+                    placeholder=""
+                    filter
+                    valueTemplate={imageOptionTemplate}
+                    itemTemplate={imageOptionTemplate}
+                  />
+                )}
+              />
+            </InputField>
+            <InputField
+              label={t('products.edit.tab.general.label')}
+              name="labelIds"
+              className={styles.col6}
+              addon={
+                <InheritedFieldAddon
+                  fieldName="labelIds"
+                  resetField={formResetField}
+                />
+              }
+            >
+              <Controller
+                name="labelIds"
+                control={control}
+                render={({ field }) => (
+                  <Dropdown
+                    inputId="labelIds"
+                    multiple
+                    display="chip"
+                    disabled={!canManage}
+                    value={field.value ?? []}
+                    options={labels}
+                    onChange={(e) => {
+                      field.onChange(e.value)
+                    }}
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder=""
+                    filter
+                    itemTemplate={imageOptionTemplate}
+                  />
+                )}
+              />
+            </InputField>
+          </FormGridRow>
+
+          <FormGridRow>
+            <InputField
+              label={t('products.edit.tab.general.vendor')}
+              name="vendor"
+              className={styles.col12}
+            >
+              <Controller
+                name="vendor"
+                control={control}
+                render={({ field }) => (
+                  <AutoComplete
+                    inputId="vendor"
+                    value={vendorQuery}
+                    suggestions={vendors}
+                    completeMethod={(e) => loadVendors(e.query)}
+                    field="name"
+                    dropdown
+                    onChange={(e) => {
+                      setVendorQuery(e.value)
+                      // MD Prime `onClear` fired when the input was emptied
+                      if (e.value === '') {
+                        field.onChange('')
+                      }
+                    }}
+                    onSelect={(e) => {
+                      setVendorQuery(e.value.name)
+                      const payload = { id: e.value.id, name: e.value.name }
+                      field.onChange(payload)
+                    }}
+                    disabled={!canManageAssignedVendor}
+                    placeholder={
+                      !canViewVendors ? t('global.noPermissions') : ''
+                    }
+                  />
+                )}
+              />
+            </InputField>
+          </FormGridRow>
+        </FormGrid>
+
         <AssistantBox
           productName={productName}
           productDescription={productDescription}

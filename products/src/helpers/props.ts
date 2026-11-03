@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import React, { ReactNode } from 'react'
 
 export interface Props {
   children: ReactNode
@@ -6,4 +6,5 @@ export interface Props {
 
 export interface StylableProps {
   className?: string
+  style?: React.CSSProperties
 }

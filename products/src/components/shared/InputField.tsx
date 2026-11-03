@@ -1,91 +1,75 @@
-import { ReactNode } from 'react'
-import './InputField.scss'
-import { Tooltip } from 'primereact/tooltip'
-import { t } from 'i18next'
+import type { CSSProperties, ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
+import { FieldLabel } from '@emporix/component-library'
 import { useProductData } from '../../context/ProductDataProvider'
-import { ProductType } from '../../models/Category'
-import { BsInfoCircleFill } from 'react-icons/bs'
+import { ProductType } from '../../models/Category.model'
 import { textToTitleCase } from '../../helpers/utils'
+import styles from './InputField.module.scss'
 
-type Props = {
-  checkbox?: boolean
-  name?: string
-  className: string
-  label: string
-  children: ReactNode
-  required?: boolean
-  error?: string
-  noInheritance?: boolean
-  tooltip?: string
+type InputFieldProps = {
+  readonly label: string | ReactNode
+  readonly name?: string
+  readonly children?: ReactNode
+  readonly required?: boolean
+  readonly error?: string
+  /** Hide the "Inherited from parent" hint for variant products. */
+  readonly noInheritance?: boolean
+  readonly tooltip?: string
+  readonly checkbox?: boolean
+  readonly addon?: ReactNode
+  readonly className?: string
+  readonly style?: CSSProperties
 }
 
+/**
+ * Products-aware form field wrapper (MD `components/InputField`): CL
+ * `FieldLabel` + the variant "Inherited from parent" hint driven by
+ * `ProductDataProvider`. Use CL built-in `label` props instead when the
+ * control has one and no inheritance hint is needed.
+ */
 const InputField = ({
-  className,
-  name,
-  error,
   label,
+  name,
   children,
-  checkbox = false,
   required = false,
+  error,
   noInheritance = false,
   tooltip,
-}: Props) => {
+  checkbox = false,
+  addon,
+  className = '',
+  style,
+}: InputFieldProps) => {
+  const { t } = useTranslation()
   const { product } = useProductData()
+  const showInherited =
+    !noInheritance &&
+    name !== undefined &&
+    product?.productType === ProductType.variant &&
+    !product.metadata?.overridden?.includes(name)
 
   return (
     <div
-      className={`${className} input-field-wrapper ${
-        checkbox ? 'input-field-wrapper--checkbox-field' : ''
-      }`}
+      style={style}
+      className={[styles.field, checkbox ? styles.checkbox : '', className]
+        .filter(Boolean)
+        .join(' ')}
     >
-      <Tooltip target=".tooltip-required" position="top" showDelay={200} />
-      <Tooltip
-        target=".tooltip-info"
-        position="top"
-        style={{ textAlign: 'center' }}
-        showDelay={200}
-      />
-      <label
-        className={`tooltip-target-label font-bold flex align-items-center ${
-          checkbox ? '' : 'mb-2'
-        }`}
-        htmlFor={name}
-      >
-        {textToTitleCase(label)}
-        {required && (
-          <span
-            className="tooltip-required cursor-pointer"
-            data-pr-tooltip={t('global.tooltip.required')}
-          >
-            *
+      <div className={styles.labelRow}>
+        <FieldLabel htmlFor={name} required={required} tooltip={tooltip}>
+          {typeof label === 'string' ? textToTitleCase(label) : label}
+        </FieldLabel>
+        {showInherited && (
+          <span className={styles.inherited}>
+            {t('products.edit.inheritedFromParent')}
           </span>
         )}
-        {tooltip && (
-          <BsInfoCircleFill
-            size={16}
-            style={{ color: '#596168' }}
-            className="tooltip-info ml-1 cursor-pointer"
-            data-pr-tooltip={tooltip}
-          ></BsInfoCircleFill>
-        )}
-        {product &&
-          !noInheritance &&
-          name &&
-          product.productType === ProductType.variant &&
-          !product.metadata?.overridden?.includes(name) && (
-            <span className="ml-1 text-sm font-italic font-normal">
-              Inherited from parent
-            </span>
-          )}
-      </label>
-      {children}
-      {error && <small className="p-error">{error}</small>}
+        {addon && <div className={styles.addon}>{addon}</div>}
+      </div>
+      <div className={error ? styles.invalid : undefined}>{children}</div>
+      {error && <small className={styles.error}>{error}</small>}
     </div>
   )
-}
-
-InputField.defaultProps = {
-  className: '',
 }
 
 export default InputField
