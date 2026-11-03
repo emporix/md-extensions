@@ -362,7 +362,7 @@ const ProductsListPage = () => {
         title={`${t('products.actions.batchDelete.message')} (${
           selectedProducts.length
         })`}
-        message={null}
+        message={t('global.deleteConfirm.plural.description')}
       />
       <Dialog
         visible={isImportModalOpen}

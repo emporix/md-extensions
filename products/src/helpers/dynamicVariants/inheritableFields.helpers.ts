@@ -43,7 +43,9 @@ export function stripInheritedFields(
   if (stripMixins && !overriddenFields.has('mixins')) {
     delete cleaned.mixins
     if (cleaned.metadata) {
-      delete cleaned.metadata.mixins
+      const metadata = { ...cleaned.metadata }
+      delete metadata.mixins
+      cleaned.metadata = metadata
     }
   }
   return cleaned

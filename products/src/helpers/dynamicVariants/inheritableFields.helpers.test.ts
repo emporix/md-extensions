@@ -201,6 +201,19 @@ describe('stripInheritedFields', () => {
     expect(result.metadata).not.toHaveProperty('mixins')
   })
 
+  it('does not mutate the original metadata when stripping mixins', () => {
+    const payload: Partial<Product> = {
+      id: 'p-1',
+      mixins: { color: { value: 'red' } },
+      metadata: { mixins: { color: 'http://schema.url' } },
+    }
+    const original = structuredClone(payload)
+
+    stripInheritedFields(payload, new Set(), true)
+
+    expect(payload).toEqual(original)
+  })
+
   it('keeps mixins when stripMixins is true but mixins is overridden', () => {
     const payload: Partial<Product> = {
       id: 'p-1',

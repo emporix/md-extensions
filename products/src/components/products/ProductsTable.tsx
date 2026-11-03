@@ -104,6 +104,9 @@ const ProductsTable = ({
   const prevRefreshKeyRef = useRef(refreshKey)
   const prevTenantRef = useRef(tenant)
   const prevFiltersKeyRef = useRef<DataTableFilterMeta>()
+  // Bumped by every product load, so results for an earlier page, filter or
+  // tenant are dropped.
+  const loadIdRef = useRef(0)
 
   const optimizeRequest = useCallback(
     (runner: (shouldUpdateCount: boolean) => Promise<void>) => {
@@ -155,16 +158,20 @@ const ProductsTable = ({
 
   useEffect(() => {
     optimizeRequest(async (shouldUpdateCount: boolean) => {
+      const loadId = ++loadIdRef.current
       try {
         setProductsLoading(true)
         const { totalCount: newCount, data } = await syncPaginatedProductsRows(
           paginationParams,
           shouldUpdateCount
         )
+        if (loadId !== loadIdRef.current) return
         if (shouldUpdateCount) setTotalCount(newCount)
         setProducts(data)
       } finally {
-        setProductsLoading(false)
+        if (loadId === loadIdRef.current) {
+          setProductsLoading(false)
+        }
       }
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps

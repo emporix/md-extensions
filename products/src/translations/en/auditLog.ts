@@ -3,6 +3,7 @@ export default {
     employee: 'User',
     group: 'Group',
     'group-assignment': 'Group assignment',
+    product: 'Product',
   },
   changeTypes: {
     created: 'Created',
