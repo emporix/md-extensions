@@ -518,6 +518,7 @@ const MixinsFormBox = (props: Props) => {
               managerPermissions={managerPermissions}
               readOnly={isSaving}
               inheritedValues={selectedSite ? inheritedValues : undefined}
+              siteLabel={selectedSite ? siteLabel(selectedSite) : undefined}
               headerActions={batchActions}
               onPayloadChange={handlePayloadChange}
               sidePanel={

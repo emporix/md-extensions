@@ -29,6 +29,7 @@ import {
 } from './helpers'
 import {
   getLocalizedArrayItemVersion,
+  getLocalizedObjectValueSchema,
   getLocalizedSchemaVersion,
   isLocalizedLanguageValueRef,
   isLocalizedNullableRef,
@@ -413,6 +414,10 @@ const useMixinsForm = (props: MixinsProps) => {
       // path-keyed names map so nested attributes get their own name.
       const path = namePath ? `${namePath}.${key}` : `${key}`
 
+      const localizedObjectSchema =
+        getLocalizedObjectValueSchema(property) ??
+        getLocalizedObjectValueSchema(property.items)
+
       const pushItem = (children: MixinsFormItem[] | undefined) => {
         const itemType = mapMixinsPropertyToItemType(property)
         const arrayType = mapMixinsPropertyToItemArrayType(property)
@@ -478,11 +483,23 @@ const useMixinsForm = (props: MixinsProps) => {
           localizedVersion:
             getLocalizedSchemaVersion(property) ??
             getLocalizedArrayItemVersion(property),
+          localizedObject: localizedObjectSchema ? true : undefined,
         })
       }
 
       if (isLocalizedLanguageValueRef(property.$ref)) {
         pushItem(undefined)
+      } else if (localizedObjectSchema) {
+        // Children are keyed relative to the per-language object, not the field.
+        pushItem(
+          await getMixinsItems(
+            localizedObjectSchema.properties ?? {},
+            localizedObjectSchema.required ?? [],
+            names,
+            '',
+            path
+          )
+        )
       } else if (property.$ref) {
         const refMixins = await getMixinsSchema(property.$ref)
         if (refMixins.properties) {

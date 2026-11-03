@@ -14,6 +14,12 @@ import {
   MixinsPropertyType,
   MixinsSchemaProperty,
 } from '../../models/Mixins.model'
+import {
+  getLocalizedArrayItemVersion,
+  getLocalizedSchemaVersion,
+  isLocalizedObjectProperty,
+  serializeLocalizedFields,
+} from './localizedMixin.helpers'
 
 const LANGUAGE_VALUE_V1 =
   'https://res.cloudinary.com/saas-ag/raw/upload/v1691386216/schemata2/languageValue_v1.json'
@@ -149,5 +155,43 @@ describe('convertToIdValuePair / convertFromIdValuePair v1 localized', () => {
       { language: 'de', value: 'Hallo' },
     ])
     expect(Array.isArray(result.pieces)).toBe(true)
+  })
+})
+
+describe('v1 localized stays array-based with localized OBJECT support', () => {
+  const v1Property = property({
+    type: MixinsPropertyType.array,
+    items: property({ $ref: LANGUAGE_VALUE_V1 }),
+  })
+
+  it('still detects v1 TEXT and never a localized OBJECT', () => {
+    expect(getLocalizedSchemaVersion(v1Property)).toBe('v1')
+    expect(isLocalizedObjectProperty(v1Property)).toBe(false)
+    expect(getLocalizedArrayItemVersion(v1Property)).toBeUndefined()
+  })
+
+  it('keeps v1 arrays when serializing a v1 localized TEXT field', () => {
+    const item: MixinsFormItem = {
+      name: 'pieces',
+      key: 'pieces',
+      type: MixinsFormItemType.localized,
+      isRequired: false,
+      localizedVersion: 'v1',
+    }
+    const data = { pieces: [{ language: 'en', value: 'Hello' }] }
+    expect(serializeLocalizedFields(data, [item])).toEqual(data)
+  })
+
+  it('drops null per-language entries when emitting a v1 array', () => {
+    const item: MixinsFormItem = {
+      name: 'pieces',
+      key: 'pieces',
+      type: MixinsFormItemType.localized,
+      isRequired: false,
+      localizedVersion: 'v1',
+    }
+    expect(
+      serializeLocalizedFields({ pieces: { en: 'Hello', de: null } }, [item])
+    ).toEqual({ pieces: [{ language: 'en', value: 'Hello' }] })
   })
 })

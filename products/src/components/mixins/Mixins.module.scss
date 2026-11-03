@@ -19,6 +19,10 @@
   align-items: center;
 }
 
+.rowTop {
+  align-items: flex-start;
+}
+
 .fieldsWrap {
   display: flex;
   flex-wrap: wrap;
@@ -121,6 +125,12 @@
   &:hover {
     text-decoration: underline;
   }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+    text-decoration: none;
+  }
 }
 
 // MD `todayButtonClassName="mixins-calendar-hide-today"`: keep only Clear.
@@ -175,6 +185,10 @@
 .arrayRemove {
   margin-left: 0.5rem;
   flex-shrink: 0;
+}
+
+.arrayRemoveTop {
+  margin-top: 0.25rem;
 }
 
 .unsupportedNote {
@@ -321,4 +335,124 @@
   overflow: auto;
   border-radius: 4px;
   font-size: 14px;
+}
+
+// Localized OBJECT (language tabs, ported from MD Mixins.scss)
+.localizedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid #d6e3f5;
+  border-radius: 1rem;
+  background-color: #f3f7fb;
+  color: #2665b7;
+  font-size: 0.75rem;
+  vertical-align: middle;
+}
+
+.languageTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #dee1e5;
+}
+
+.languageTab {
+  margin-bottom: -1px;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #3e4759;
+  font-size: 0.875rem;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+
+  &:hover {
+    border-bottom-color: #c7cad1;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #3b73bb;
+    outline-offset: 2px;
+  }
+}
+
+.languageTabActive,
+.languageTabActive:hover {
+  border-bottom-color: #3b73bb;
+  color: #3b73bb;
+}
+
+.localizedStatus {
+  margin: 0 0 1rem;
+  color: #3e4759;
+  font-size: 0.875rem;
+}
+
+.clearLanguage {
+  margin-left: 0.5rem;
+  text-transform: uppercase;
+}
+
+.buttonLabel {
+  margin-left: 0.5rem;
+}
+
+.localizedArrayRows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.localizedArrayRow {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #dee1e5;
+  border-radius: 0.25rem;
+}
+
+.localizedArrayRowHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.localizedArrayRowNumber {
+  min-width: 1rem;
+  color: #3e4759;
+  font-size: 0.875rem;
+  font-weight: bold;
+}
+
+.localizedArrayRowSummary {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: bold;
+}
+
+.localizedArrayRowBody {
+  padding: 0.5rem 0 0.5rem 1.75rem;
+}
+
+.iconToggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem;
+  border: none;
+  background: transparent;
+  color: #3e4759;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid #3b73bb;
+    outline-offset: 2px;
+  }
 }

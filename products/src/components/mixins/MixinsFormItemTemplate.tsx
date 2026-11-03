@@ -11,6 +11,7 @@ import {
 } from './helpers'
 import InputField from '../shared/InputField'
 import MixinsFormInput from './MixinsFormInput'
+import MixinsLocalizedObjectField from './MixinsLocalizedObjectField'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import MixinsSectionBox from './MixinsSectionBox'
 import { useTranslation } from 'react-i18next'
@@ -27,6 +28,10 @@ interface Props {
   readonly isSingleReferenceArray: boolean
   readonly inheritedValue?: unknown
   readonly clearableOverride?: boolean
+  /** Bumped by MixinsForm on reset so nested arrays re-sync override state. */
+  readonly formResetGeneration?: number
+  /** Name of the edited site, shown in the localized OBJECT overlay status. */
+  readonly siteLabel?: string
 }
 
 const MixinsFormItemTemplate = (props: Props) => {
@@ -40,6 +45,8 @@ const MixinsFormItemTemplate = (props: Props) => {
     isSingleReferenceArray,
     inheritedValue,
     clearableOverride = false,
+    formResetGeneration = 0,
+    siteLabel,
   } = props
   const { getUiLangValue } = useLocalizedValue()
 
@@ -49,7 +56,11 @@ const MixinsFormItemTemplate = (props: Props) => {
 
     const rules = buildMixinFieldRules(
       item,
-      t('global.fieldRequired') as string
+      t('global.fieldRequired') as string,
+      {
+        siteOverlay: clearableOverride,
+        sparseInherit: clearableOverride && index === undefined,
+      }
     )
 
     return (
@@ -64,7 +75,9 @@ const MixinsFormItemTemplate = (props: Props) => {
             <InputField
               className={styles.field}
               required={
-                item.type !== MixinsFormItemType.unknown && item.isRequired
+                item.type !== MixinsFormItemType.unknown &&
+                item.isRequired &&
+                !(clearableOverride && index === undefined)
               }
               label={
                 <span
@@ -102,6 +115,56 @@ const MixinsFormItemTemplate = (props: Props) => {
     clearableOverride,
   ])
 
+  const renderLocalizedObject = useCallback(() => {
+    const uniqueKey =
+      index !== undefined ? `${arrayKey}.${index}.value.${item.key}` : item.key
+    // Rows of a site array replace the default as a whole: nothing inside them
+    // inherits, so they get no default hints or "use default" controls and are
+    // validated as strictly as the save does.
+    const siteOverlay = clearableOverride && index === undefined
+    const rules = buildMixinFieldRules(
+      item,
+      t('global.fieldRequired') as string,
+      {
+        siteOverlay,
+        sparseInherit: siteOverlay,
+      }
+    )
+
+    return (
+      <Controller
+        key={uniqueKey}
+        name={uniqueKey}
+        control={control}
+        rules={rules}
+        render={({ field, fieldState }) => (
+          <MixinsLocalizedObjectField
+            item={item}
+            value={field.value}
+            onChange={field.onChange}
+            disabled={
+              !managerPermissions || !!item.toDelete || !!item.isReadonly
+            }
+            inheritedValue={siteOverlay ? inheritedValue : undefined}
+            siteOverlay={siteOverlay}
+            siteLabel={siteLabel}
+            error={fieldState.error?.message}
+          />
+        )}
+      />
+    )
+  }, [
+    item,
+    control,
+    managerPermissions,
+    arrayKey,
+    index,
+    t,
+    inheritedValue,
+    clearableOverride,
+    siteLabel,
+  ])
+
   const renderItems = useCallback(() => {
     const nestedInherited =
       inheritedValue &&
@@ -122,12 +185,17 @@ const MixinsFormItemTemplate = (props: Props) => {
                 key={i.key}
                 item={i}
                 control={control}
-                managerPermissions={managerPermissions}
+                // Fields of a read-only object, or one marked for deletion, cannot change.
+                managerPermissions={
+                  managerPermissions && !item.isReadonly && !item.toDelete
+                }
                 arrayKey={arrayKey}
                 index={index}
                 isSingleReferenceArray={isSingleReferenceArray}
                 inheritedValue={nestedInherited?.[childKey]}
                 clearableOverride={clearableOverride}
+                formResetGeneration={formResetGeneration}
+                siteLabel={siteLabel}
               />
             )
           })}
@@ -144,6 +212,8 @@ const MixinsFormItemTemplate = (props: Props) => {
     isSingleReferenceArray,
     inheritedValue,
     clearableOverride,
+    formResetGeneration,
+    siteLabel,
   ])
 
   const renderArray = useCallback(() => {
@@ -160,6 +230,7 @@ const MixinsFormItemTemplate = (props: Props) => {
         parentKey={arrayParentKey}
         inheritedValue={inheritedValue}
         clearableOverride={clearableOverride}
+        formResetGeneration={formResetGeneration}
       />
     )
   }, [
@@ -170,6 +241,7 @@ const MixinsFormItemTemplate = (props: Props) => {
     index,
     inheritedValue,
     clearableOverride,
+    formResetGeneration,
   ])
 
   const renderReference = useCallback(() => {
@@ -185,7 +257,9 @@ const MixinsFormItemTemplate = (props: Props) => {
     )
   }, [item, renderFormInput, t])
 
-  if (item.type === MixinsFormItemType.localized) {
+  if (item.type === MixinsFormItemType.localized && item.localizedObject) {
+    return renderLocalizedObject()
+  } else if (item.type === MixinsFormItemType.localized) {
     return renderFormInput()
   } else if (item.type === MixinsFormItemType.reference) {
     return renderReference()

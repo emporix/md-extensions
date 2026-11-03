@@ -11,7 +11,6 @@ import {
   useWatch,
 } from 'react-hook-form'
 import {
-  convertToIdValuePair,
   defaultValueForMixinItem,
   isAttributeOfArraySingleReference,
   MixinsFormItem,
@@ -27,8 +26,9 @@ import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import { v4 as uuidv4 } from 'uuid'
 import { HiMinus } from 'react-icons/hi'
 import MixinsFormItemTemplate from './MixinsFormItemTemplate'
+import MixinsLocalizedObjectArray from './MixinsLocalizedObjectArray'
 import { ReferenceItem, ReferenceSelector } from './ReferenceSelector'
-import { deepClone, textToTitleCase } from '../../helpers/utils'
+import { textToTitleCase } from '../../helpers/utils'
 import { getReferenceTranslationKey } from './useReferenceSelectorConfig'
 import styles from './Mixins.module.scss'
 
@@ -39,6 +39,8 @@ interface Props {
   readonly parentKey?: string
   readonly inheritedValue?: unknown
   readonly clearableOverride?: boolean
+  /** Bumped by MixinsForm on reset — clears in-session "use default" latch. */
+  readonly formResetGeneration?: number
 }
 
 type ArrayEntry = { id?: string; value?: { id?: string } | unknown }
@@ -51,6 +53,7 @@ const MixinsFormArray = (props: Props) => {
     parentKey,
     inheritedValue,
     clearableOverride = false,
+    formResetGeneration = 0,
   } = props
   const { getUiLangValue } = useLocalizedValue()
   const { t } = useTranslation()
@@ -79,8 +82,16 @@ const MixinsFormArray = (props: Props) => {
     control,
   })
 
+  // Parent form reset (new mixins / site / key) — drop the in-session "use default"
+  // latch so a loaded non-empty site array can become an override again. Do not
+  // infer override from `[]` here: useFieldArray materializes missing keys as []
+  // (inherit), which is indistinguishable from an explicit empty override.
+  useEffect(() => {
+    clearedToInheritRef.current = false
+  }, [formResetGeneration])
+
   // Parent reset() can load a non-empty saved site array after mount; re-sync.
-  // Ignore materialized `[]` so "Use default" is not flipped back to override.
+  // Ignore materialized `[]` so "Use default" / inherit is not flipped to override.
   useEffect(() => {
     if (!clearableOverride || isArrayOverride || clearedToInheritRef.current) {
       return
@@ -96,6 +107,7 @@ const MixinsFormArray = (props: Props) => {
     isArrayOverride,
     newParentKey,
     fields.length,
+    formResetGeneration,
   ])
 
   useEffect(() => {
@@ -116,32 +128,20 @@ const MixinsFormArray = (props: Props) => {
     )
   }, [clearableOverride, getValues, isArrayOverride, newParentKey, setValue])
 
-  /** First site edit forks from default array so add/remove keep inherited entries. */
-  const markArrayOverride = useCallback(
-    (options?: { seedFromInherited?: boolean }) => {
-      if (!clearableOverride) {
-        return
-      }
-      if (isArrayOverride) {
-        return
-      }
-      clearedToInheritRef.current = false
-      setIsArrayOverride(true)
-      if (options?.seedFromInherited === false) {
-        return
-      }
-      if (!Array.isArray(inheritedValue) || inheritedValue.length === 0) {
-        return
-      }
-      const seeded = convertToIdValuePair({
-        items: deepClone(inheritedValue),
-      }).items
-      if (Array.isArray(seeded)) {
-        replace(seeded)
-      }
-    },
-    [clearableOverride, inheritedValue, isArrayOverride, replace]
-  )
+  /**
+   * First site edit marks a full array override. Do not seed/copy tenant defaults
+   * then append — site arrays replace the default, they do not merge with it.
+   */
+  const markArrayOverride = useCallback(() => {
+    if (!clearableOverride) {
+      return
+    }
+    if (isArrayOverride) {
+      return
+    }
+    clearedToInheritRef.current = false
+    setIsArrayOverride(true)
+  }, [clearableOverride, isArrayOverride])
 
   const appendOverride = useCallback(
     (...args: Parameters<typeof append>) => {
@@ -161,8 +161,7 @@ const MixinsFormArray = (props: Props) => {
 
   const replaceOverride = useCallback(
     (...args: Parameters<typeof replace>) => {
-      // Full replace (e.g. multi-ref selector) defines the site array from scratch.
-      markArrayOverride({ seedFromInherited: false })
+      markArrayOverride()
       return replace(...args)
     },
     [markArrayOverride, replace]
@@ -206,11 +205,17 @@ const MixinsFormArray = (props: Props) => {
     setIsArrayOverride(false)
     replace([])
   }
+  // A read-only array or one marked for deletion cannot change at all: no
+  // adding, removing or editing items, and no dropping the site override.
+  const editable = managerPermissions && !item.isReadonly && !item.toDelete
+  // It also shows that the site overrides the array, so it stays visible,
+  // disabled, when the array cannot change.
   const useDefaultButton =
-    clearableOverride && hasArrayOverride && managerPermissions ? (
+    clearableOverride && hasArrayOverride ? (
       <button
         type="button"
         className={styles.clearOverride}
+        disabled={!editable}
         onClick={clearArrayOverride}
       >
         {t('mixins.labels.useDefaultValue')}
@@ -244,6 +249,8 @@ const MixinsFormArray = (props: Props) => {
     })
   }, [])
 
+  // Rows of a site array replace the default array as a whole, so nothing in
+  // them inherits: rows get no default hints or "use default" controls.
   const renderItemArray = (items: MixinsFormItem[], index: number) => {
     const list = (
       <div className={styles.fieldsWrap}>
@@ -252,10 +259,11 @@ const MixinsFormArray = (props: Props) => {
             key={i.key}
             item={i}
             control={control}
-            managerPermissions={managerPermissions}
+            managerPermissions={editable}
             arrayKey={newParentKey}
             index={index}
             isSingleReferenceArray={isReferenceArray}
+            formResetGeneration={formResetGeneration}
           />
         ))}
       </div>
@@ -267,7 +275,11 @@ const MixinsFormArray = (props: Props) => {
             key={index}
             className={styles.fullWidth}
             name={index + 1 + ' '}
-            remove={isReferenceArray ? undefined : () => removeOverride(index)}
+            remove={
+              isReferenceArray || !editable
+                ? undefined
+                : () => removeOverride(index)
+            }
           >
             {list}
           </MixinsSectionBox>
@@ -281,6 +293,9 @@ const MixinsFormArray = (props: Props) => {
   const renderColumns = () => {
     const columns = []
     let column: ReactNode[] = []
+    // A localized value has its "Show languages" link below the input, so the
+    // remove button lines up with the input instead of the whole block.
+    const isLocalizedList = item.arrayType === MixinsFormItemType.localized
 
     if (fields.length === 0) {
       columns.push(
@@ -328,7 +343,7 @@ const MixinsFormArray = (props: Props) => {
                         item.isRequired,
                     }
               }
-              render={({ field: controllerField }) =>
+              render={({ field: controllerField, fieldState }) =>
                 item.arrayType === MixinsFormItemType.reference ? (
                   <>
                     <label className={styles.referenceArrayLabel}>
@@ -341,7 +356,7 @@ const MixinsFormArray = (props: Props) => {
                     </label>
                     <div className={styles.rowTight}>
                       <MixinsFormInput
-                        disabled={!managerPermissions}
+                        disabled={!editable}
                         hideFieldName={true}
                         disableReferenceSelector={isReferenceArray}
                         externalItems={resolvedRefs}
@@ -357,11 +372,16 @@ const MixinsFormArray = (props: Props) => {
                         iconOnly
                         aria-label={t('global.remove')}
                         onClick={() => removeOverride(index)}
-                        disabled={!managerPermissions}
+                        disabled={!editable}
                       >
                         <HiMinus size={16} />
                       </SecondaryButton>
                     </div>
+                    {fieldState.error?.message ? (
+                      <small className="p-error block mt-1">
+                        {fieldState.error.message as string}
+                      </small>
+                    ) : null}
                   </>
                 ) : (
                   <InputField
@@ -371,10 +391,17 @@ const MixinsFormArray = (props: Props) => {
                       item.isRequired
                     }
                     label={index + 1 + ' '}
+                    error={fieldState.error?.message as string | undefined}
                   >
-                    <div className={styles.rowTight}>
+                    <div
+                      className={
+                        isLocalizedList
+                          ? `${styles.rowTight} ${styles.rowTop}`
+                          : styles.rowTight
+                      }
+                    >
                       <MixinsFormInput
-                        disabled={!managerPermissions}
+                        disabled={!editable}
                         hideFieldName={true}
                         item={item}
                         value={controllerField.value}
@@ -383,12 +410,16 @@ const MixinsFormArray = (props: Props) => {
                         }
                       />
                       <SecondaryButton
-                        className={styles.arrayRemove}
+                        className={
+                          isLocalizedList
+                            ? `${styles.arrayRemove} ${styles.arrayRemoveTop}`
+                            : styles.arrayRemove
+                        }
                         size="small"
                         iconOnly
                         aria-label={t('global.remove')}
                         onClick={() => removeOverride(index)}
-                        disabled={!managerPermissions}
+                        disabled={!editable}
                       >
                         <HiMinus size={20} />
                       </SecondaryButton>
@@ -426,7 +457,7 @@ const MixinsFormArray = (props: Props) => {
               value={getCurrentSelectedIds()}
               onChange={handleMultiSelectorChange}
               referenceType={referenceType}
-              disabled={!managerPermissions}
+              disabled={!editable}
               onResolved={handleResolved}
               className={styles.fullWidth}
             />
@@ -443,7 +474,7 @@ const MixinsFormArray = (props: Props) => {
                     value: defaultValueForMixinItem(item, true, referenceType),
                   })
                 }}
-                disabled={!managerPermissions}
+                disabled={!editable}
               >
                 {t('mixins.buttons.addNew')}
               </SecondaryButton>
@@ -456,19 +487,48 @@ const MixinsFormArray = (props: Props) => {
     )
   }
 
+  if (item.localizedObject) {
+    return (
+      <MixinsLocalizedObjectArray
+        key={item.key}
+        item={item}
+        fieldIds={fields.map((field) => field.id)}
+        name={newParentKey}
+        control={control}
+        disabled={!editable}
+        clearableOverride={clearableOverride}
+        onAdd={
+          editable
+            ? () =>
+                appendOverride({
+                  id: uuidv4(),
+                  value: defaultValueForMixinItem(item, true),
+                })
+            : undefined
+        }
+        onRemove={removeOverride}
+        notice={useDefaultButton}
+        emptyContent={fields.length === 0 ? renderColumns() : undefined}
+      />
+    )
+  }
+
   return (
     <MixinsSectionBox
       key={item.key}
       item={item}
-      append={() =>
-        appendOverride({
-          id: uuidv4(),
-          value: defaultValueForMixinItem(
-            item,
-            true,
-            isReferenceArray ? referenceType : undefined
-          ),
-        })
+      append={
+        editable
+          ? () =>
+              appendOverride({
+                id: uuidv4(),
+                value: defaultValueForMixinItem(
+                  item,
+                  true,
+                  isReferenceArray ? referenceType : undefined
+                ),
+              })
+          : undefined
       }
       className={styles.fullWidth}
       name={getUiLangValue(item.name)}
