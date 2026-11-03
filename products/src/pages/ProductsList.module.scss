@@ -8,25 +8,18 @@
   gap: 0.5rem;
 }
 
-.toolbar {
-  display: flex;
-  align-items: center;
+.browser {
   width: 100%;
-  margin-bottom: 0.5rem;
-  gap: 0.5rem;
 }
 
 .batchDelete {
   margin-right: auto;
 }
 
-.extensionsSlot {
+.extensions {
   display: flex;
   align-items: center;
-}
-
-.fullWidth {
-  width: 100%;
+  gap: 0.5rem;
 }
 
 .importUpload {
