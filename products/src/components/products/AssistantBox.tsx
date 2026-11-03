@@ -1,33 +1,37 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Dialog } from 'primereact/dialog'
-import { Button } from 'primereact/button'
+import { Controller, useForm } from 'react-hook-form'
+import {
+  Dialog,
+  Dropdown,
+  InputText,
+  PrimaryButton,
+  ProgressSpinner,
+  RadioButton,
+  SecondaryButton,
+  useToast,
+} from '@emporix/component-library'
 import { useConfiguration } from '../../context/ConfigurationProvider'
 import InputField from '../shared/InputField'
-import { useAiApi } from '../../api/ai'
-import { Controller, useForm } from 'react-hook-form'
-import { useToast } from '../../context/ToastProvider'
-import './AssistantBox.scss'
-import Localized from '../../models/Localized.ts'
-import { InputTextarea } from 'primereact/inputtextarea'
-import { RadioButton } from 'primereact/radiobutton'
-import { ProgressSpinner } from 'primereact/progressspinner'
-import { MultiSelect } from 'primereact/multiselect'
+import { useAiApi } from '../../hooks/api/ai'
+import type { AiTextResponse } from '../../models/Ai.model'
+import type Localized from '../../models/Localized.model'
+import styles from './AssistantBox.module.scss'
 
 interface AssistantBoxProps {
-  productName: Localized
-  productDescription: Localized
-  visible: boolean
-  onAccept: (description: Localized | undefined) => void
-  onReject: () => void
-  loading: boolean
-  buttonClassName?: string
-  title: string
+  readonly productName: Localized
+  readonly productDescription?: Localized
+  readonly visible: boolean
+  readonly onAccept: (description: Localized | undefined) => void
+  readonly onReject: () => void
+  readonly loading?: boolean
+  readonly buttonClassName?: string
+  readonly title?: string
 }
 
 interface AiAssistantBoxRowProps {
-  language: string
-  row?: DescriptionRow
+  readonly language: string
+  readonly row?: DescriptionRow
 }
 
 interface DescriptionRow {
@@ -37,124 +41,107 @@ interface DescriptionRow {
   aiSuggestionSelected: boolean
 }
 
-const AiAssistantBoxRow = (props: AiAssistantBoxRowProps) => {
+const AiAssistantBoxRow = ({ language, row }: AiAssistantBoxRowProps) => {
   const methods = useForm<DescriptionRow>()
   const { control, reset } = methods
   const { t } = useTranslation()
 
   useEffect(() => {
-    reset(props.row)
-  }, [props.row])
+    reset(row)
+  }, [row, reset])
 
-  const setValue = (
-    field: DescriptionRow | undefined,
-    propertyName: string,
-    value: string | boolean
+  // MD writes edits straight into the shared prompts map entry.
+  const setRowValue = <K extends keyof DescriptionRow>(
+    propertyName: K,
+    value: DescriptionRow[K]
   ) => {
-    if (field) {
-      //@ts-ignore
-      field[propertyName] = value
+    if (row) {
+      row[propertyName] = value
     }
   }
 
+  const languageAddon = (
+    <span className={styles.addon}>{language.toUpperCase()}</span>
+  )
+
   return (
-    <div className={'grid assistant-box-row'}>
-      <div className={'col-4'}>
-        <div className={'font-bold'}>{t('assistantBox.headers.prompt')}</div>
-        <div key={props.language} className="p-inputgroup mt-2">
-          <span className="card p-inputgroup-addon font-bold">
-            {props.language?.toUpperCase()}
-          </span>
+    <div className={styles.row}>
+      <div className={styles.column}>
+        <div className={styles.header}>{t('assistantBox.headers.prompt')}</div>
+        <div className={styles.inputGroup}>
+          {languageAddon}
           <Controller
             name="prompt"
             control={control}
             render={({ field }) => (
-              <InputTextarea
-                style={{ height: '60px', borderTopLeftRadius: '0' }}
-                onChange={(val) => {
-                  field.onChange(val)
-                  setValue(props.row, 'prompt', val.target.value)
+              <InputText
+                textarea
+                className={styles.textarea}
+                onChange={(event) => {
+                  field.onChange(event)
+                  setRowValue('prompt', event.target.value)
                 }}
-                value={field.value}
-              ></InputTextarea>
+                value={field.value ?? ''}
+              />
             )}
           />
         </div>
       </div>
-      <div className={'col-4'}>
+      <div className={styles.column}>
         <Controller
           name="aiSuggestionSelected"
           control={control}
           render={({ field }) => (
             <RadioButton
-              inputId={'originalDescription' + props.language}
+              inputId={`originalDescription${language}`}
+              name={`aiSuggestionSelected-${language}`}
+              value={false}
+              className={styles.radio}
               checked={!field.value}
-              onChange={(e) => {
-                field.onChange(!e.checked)
-                setValue(props.row, 'aiSuggestionSelected', !e.checked)
+              label={t('assistantBox.headers.originalDescription')}
+              onChange={() => {
+                field.onChange(false)
+                setRowValue('aiSuggestionSelected', false)
               }}
             />
           )}
         />
-        <label
-          htmlFor={'originalDescription' + props.language}
-          className={'ml-1 font-bold'}
-        >
-          {t('assistantBox.headers.originalDescription')}
-        </label>
-        <div key={props.language} className="p-inputgroup mt-1">
-          <span className="card p-inputgroup-addon font-bold">
-            {props.language?.toUpperCase()}
-          </span>
-          <InputTextarea
-            style={{ height: '60px', borderTopLeftRadius: '0' }}
-            value={props.row?.originalDescription}
-            readOnly={true}
-          ></InputTextarea>
+        <div className={styles.inputGroup}>
+          {languageAddon}
+          <InputText
+            textarea
+            className={styles.textarea}
+            value={row?.originalDescription ?? ''}
+            readOnly
+          />
         </div>
       </div>
-      <div className={'col-4'}>
+      <div className={styles.column}>
         <Controller
           name="aiSuggestionSelected"
           control={control}
           render={({ field }) => (
             <RadioButton
-              inputId={'aiSuggestion' + props.language}
-              checked={field.value}
-              onChange={(e) => {
-                field.onChange(e.checked)
-                setValue(props.row, 'aiSuggestionSelected', e.checked)
+              inputId={`aiSuggestion${language}`}
+              name={`aiSuggestionSelected-${language}`}
+              value={true}
+              className={styles.radio}
+              checked={!!field.value}
+              label={t('assistantBox.headers.aiSuggestion')}
+              onChange={() => {
+                field.onChange(true)
+                setRowValue('aiSuggestionSelected', true)
               }}
             />
           )}
         />
-        <label
-          htmlFor={'aiSuggestion' + props.language}
-          className={'ml-1 font-bold'}
-        >
-          {t('assistantBox.headers.aiSuggestion')}
-        </label>
-        <div key={props.language} className="p-inputgroup mt-1">
-          <span className="card p-inputgroup-addon font-bold">
-            {props.language?.toUpperCase()}
-          </span>
-
-          <Controller
-            name="aiSuggestion"
-            control={control}
-            render={({ field }) => (
-              <>
-                <InputTextarea
-                  style={{ height: '60px', borderTopLeftRadius: '0' }}
-                  onChange={(val) => {
-                    field.onChange(val)
-                    setValue(props.row, 'aiSuggestion', field.value)
-                  }}
-                  value={props.row?.aiSuggestion}
-                  readOnly={true}
-                ></InputTextarea>
-              </>
-            )}
+        <div className={styles.inputGroup}>
+          {languageAddon}
+          <InputText
+            textarea
+            className={styles.textarea}
+            value={row?.aiSuggestion ?? ''}
+            readOnly
           />
         </div>
       </div>
@@ -162,55 +149,37 @@ const AiAssistantBoxRow = (props: AiAssistantBoxRowProps) => {
   )
 }
 
-const AssistantBox = (props: AssistantBoxProps) => {
+const AssistantBox = ({
+  productName,
+  productDescription = {},
+  visible,
+  onAccept,
+  onReject,
+  loading = false,
+  buttonClassName,
+  title = 'assistantBox.title',
+}: AssistantBoxProps) => {
   const { t } = useTranslation()
   const { configuration } = useConfiguration()
   const { generateText } = useAiApi()
-  const [languages, setLanguages] = useState([] as string[])
-  const [prompts, setPrompts] = useState({} as Map<string, DescriptionRow>)
+  const [languages, setLanguages] = useState<string[]>([])
+  const [prompts, setPrompts] = useState(new Map<string, DescriptionRow>())
   const [aiExecuted, setAiExecuted] = useState(false)
   const [aiExecutionInProgress, setAiExecutionInProgress] = useState(false)
   const toast = useToast()
 
-  const initialize = () => {
-    setLanguages([])
-    preparePrompts([])
-  }
+  const languageOptions = useMemo(
+    () =>
+      (configuration?.languages ?? []).map((language) => ({
+        id: language.id,
+        label: language.label,
+      })),
+    [configuration?.languages]
+  )
 
-  const generateDesciptions = async () => {
-    const promptsRequests = Array.from(prompts.entries())
-      .map((entry) => ({
-        id: entry[0],
-        prompt: entry[1].prompt,
-      }))
-      .map((prompt) => generateText(prompt))
-    try {
-      setAiExecutionInProgress(true)
-      await Promise.all(promptsRequests).then((generateDesciptions) => {
-        generateDesciptions.forEach((generateDescription: any) => {
-          const prompt = prompts.get(generateDescription.id)
-          if (prompt) prompt.aiSuggestion = generateDescription.result
-        })
-      })
-      setAiExecuted(true)
-    } catch (error: any) {
-      toast.showError(
-        t('assistantBox.error.generateText'),
-        t(error.response.data.message)
-      )
-    } finally {
-      setAiExecutionInProgress(false)
-    }
-  }
-
-  const applyAiSuggestions = () => {
-    Array.from(prompts.entries()).forEach((prompt) => {
-      props.productDescription[prompt[0]] = prompt[1].aiSuggestionSelected
-        ? prompt[1].aiSuggestion
-        : prompt[1].originalDescription
-    })
-    props.onAccept(props.productDescription)
-    initialize()
+  const getProductName = (lang: string) => {
+    if (productName?.[lang]) return productName[lang]
+    return productName ? productName['en'] : ''
   }
 
   const preparePrompts = (langs: string[]) => {
@@ -221,111 +190,129 @@ const AssistantBox = (props: AssistantBoxProps) => {
           lang
         )}' in language: ${lang}`,
         aiSuggestion: '',
-        originalDescription:
-          props.productDescription && props.productDescription[lang]
-            ? props.productDescription[lang]
-            : '',
+        originalDescription: productDescription?.[lang] ?? '',
         aiSuggestionSelected: false,
       })
     }
     setPrompts(promptTemplates)
   }
 
-  const getProductName = (lang: string) => {
-    return props.productName && props.productName[lang]
-      ? props.productName[lang]
-      : props.productName
-        ? props.productName['en']
-        : ''
+  const initialize = () => {
+    setLanguages([])
+    preparePrompts([])
+  }
+
+  const generateDescriptions = async () => {
+    const promptsRequests = Array.from(prompts.entries())
+      .map(([id, row]) => ({ id, prompt: row.prompt }))
+      .map((prompt) => generateText(prompt))
+    try {
+      setAiExecutionInProgress(true)
+      const generatedDescriptions: AiTextResponse[] =
+        await Promise.all(promptsRequests)
+      generatedDescriptions.forEach((generatedDescription) => {
+        const prompt = prompts.get(generatedDescription.id)
+        if (prompt) prompt.aiSuggestion = generatedDescription.result
+      })
+      setAiExecuted(true)
+    } catch (error: unknown) {
+      const message = (error as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message
+      toast.showError(t('assistantBox.error.generateText'), t(message ?? ''))
+    } finally {
+      setAiExecutionInProgress(false)
+    }
+  }
+
+  const applyAiSuggestions = () => {
+    const description: Localized = { ...productDescription }
+    Array.from(prompts.entries()).forEach(([lang, row]) => {
+      description[lang] = row.aiSuggestionSelected
+        ? row.aiSuggestion
+        : row.originalDescription
+    })
+    onAccept(description)
+    initialize()
   }
 
   const onHide = () => {
-    props.onReject()
+    onReject()
     initialize()
   }
 
   return (
     <Dialog
-      style={{ height: '60vh', width: '70vw' }}
-      visible={props.visible}
+      // Inline size: MD's global `.p-dialog` width beats a module class.
+      style={{ width: '70vw', height: '60vh' }}
+      visible={visible}
       onHide={onHide}
-      header={t(props.title)}
+      header={t(title)}
       footer={
-        <>
-          <div className="footer">
-            <Button
-              className="mr-2 p-button-secondary"
-              onClick={onHide}
-              label={t('assistantBox.buttons.cancel')}
-              disabled={props.loading}
-            />
-            <Button
-              className={props.buttonClassName}
-              loading={props.loading}
-              disabled={props.loading || !aiExecuted}
-              onClick={applyAiSuggestions}
-              label={t('assistantBox.buttons.done')}
-            />
-          </div>
-        </>
+        <div className={styles.footer}>
+          <SecondaryButton onClick={onHide} disabled={loading}>
+            {t('assistantBox.buttons.cancel')}
+          </SecondaryButton>
+          <PrimaryButton
+            className={buttonClassName}
+            loading={loading}
+            disabled={loading || !aiExecuted}
+            onClick={applyAiSuggestions}
+          >
+            {t('assistantBox.buttons.done')}
+          </PrimaryButton>
+        </div>
       }
     >
-      {aiExecutionInProgress && (
-        <div className="overlay">
-          <div className="progress">
-            <ProgressSpinner />
+      <div className={styles.content}>
+        {aiExecutionInProgress && (
+          <div className={styles.overlay}>
+            <div className={styles.progress}>
+              <ProgressSpinner />
+            </div>
           </div>
-        </div>
-      )}
-      <div className="grid">
-        <div className={'mb-3 col-12'}>
-          <InputField
-            label={t('assistantBox.languages')}
-            name="mixins.productCustomAttributes.brand"
-            className={'mb-3 col-12'}
-          >
-            <MultiSelect
-              options={configuration?.languages}
-              value={languages}
-              optionLabel="label"
-              optionValue="id"
-              showClear
-              appendTo="self"
-              onChange={(event) => {
-                setLanguages(event.value ? event.value : [])
-                preparePrompts(event.value ? event.value : [])
-              }}
+        )}
+        <InputField
+          label={t('assistantBox.languages')}
+          name="mixins.productCustomAttributes.brand"
+          className={styles.languages}
+          noInheritance
+        >
+          <Dropdown
+            multiple
+            display="chip"
+            options={languageOptions}
+            value={languages}
+            optionLabel="label"
+            optionValue="id"
+            onChange={(event) => {
+              const langs = Array.isArray(event.value)
+                ? event.value.filter((v): v is string => typeof v === 'string')
+                : []
+              setLanguages(langs)
+              preparePrompts(langs)
+            }}
+          />
+        </InputField>
+        <div>
+          {languages.map((language) => (
+            <AiAssistantBoxRow
+              key={`ai-assistantbox-row-${language}`}
+              language={language}
+              row={prompts.get(language)}
             />
-          </InputField>
+          ))}
         </div>
+        <PrimaryButton
+          className={buttonClassName}
+          loading={loading}
+          disabled={loading || languages.length < 1}
+          onClick={generateDescriptions}
+        >
+          {t('assistantBox.buttons.generateDescriptions')}
+        </PrimaryButton>
       </div>
-      <div>
-        {languages &&
-          languages.map((language) => {
-            return (
-              <AiAssistantBoxRow
-                key={`ai-assistantbox-row-${language}`}
-                language={language}
-                row={prompts.get(language)}
-              />
-            )
-          })}
-      </div>
-      <Button
-        className={props.buttonClassName}
-        loading={props.loading}
-        disabled={props.loading || (languages && languages.length < 1)}
-        onClick={generateDesciptions}
-        label={t('assistantBox.buttons.generateDescriptions')}
-      />
     </Dialog>
   )
-}
-
-AssistantBox.defaultProps = {
-  title: 'assistantBox.title',
-  loading: false,
-  productDescription: {} as Localized,
 }
 
 export default AssistantBox

@@ -1,33 +1,35 @@
-import SectionBox from './SectionBox'
+import { SectionBox } from '@emporix/component-library'
 import EmptyContent from './EmptyContent'
 
-interface EmptyTableProps {
-  text: string
-  buttonLabel?: string
-  className?: string
-  action?: () => void
-  link?: string
-  managerPermissions?: boolean
+type EmptyTableProps = {
+  readonly text: string
+  readonly buttonLabel?: string
+  readonly className?: string
+  readonly action?: () => void
+  readonly link?: string
+  readonly managerPermissions?: boolean
 }
 
-const EmptyTable = (props: EmptyTableProps) => {
+const EmptyTable = ({
+  text,
+  buttonLabel,
+  className = '',
+  action,
+  link,
+  managerPermissions = true,
+}: EmptyTableProps) => {
   return (
-    <SectionBox className={`${props.className}`}>
+    <SectionBox className={className}>
       <EmptyContent
-        managerPermissions={props.managerPermissions}
-        text={props.text}
-        buttonLabel={props.buttonLabel}
-        link={props.link}
+        managerPermissions={managerPermissions}
+        text={text}
+        buttonLabel={buttonLabel}
+        link={link}
         className="my-8"
-        action={props.action}
+        action={action}
       />
     </SectionBox>
   )
-}
-
-EmptyTable.defaultProps = {
-  className: '',
-  managerPermissions: true,
 }
 
 export default EmptyTable

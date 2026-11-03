@@ -1,0 +1,19 @@
+.thumb {
+  display: block;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  // MD ProductsModule.scss `.thumb`: tinted tile behind transparent / narrow images.
+  background-color: #dde6ee;
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background-color: #dde6ee;
+  color: #a0a4ab;
+}

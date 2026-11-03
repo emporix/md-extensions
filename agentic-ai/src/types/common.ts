@@ -21,6 +21,7 @@ export type ImportSummaryState =
 export type ImportDetailsCode =
   | 'MISSING_FUNCTION'
   | 'MISSING_TOKEN'
+  | 'MISSING_OAUTH'
   | 'NOT_IMPORTABLE'
   | 'ALREADY_EXISTS'
   | 'AGENT_IMPORTED_DISABLED'

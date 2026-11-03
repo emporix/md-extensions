@@ -1,0 +1,40 @@
+// MD: `col-3 flex shadow-1 w-16rem h-3rem mb-4 align-items-center m-2`
+.chip {
+  display: flex;
+  align-items: center;
+  width: 16rem;
+  height: 3rem;
+  margin: 0.5rem;
+  box-shadow:
+    0 2px 1px -1px rgb(0 0 0 / 20%),
+    0 1px 1px 0 rgb(0 0 0 / 14%),
+    0 1px 3px 0 rgb(0 0 0 / 12%);
+}
+
+.image {
+  margin: 0 0.5rem;
+}
+
+.name {
+  flex-grow: 1;
+}
+
+// MD Prime `p-button-text` icon button
+.removeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-right: 0.5rem;
+  padding: 0;
+  color: var(--color-primary);
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background: rgb(0 0 0 / 4%);
+  }
+}

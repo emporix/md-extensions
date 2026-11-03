@@ -1,4 +1,9 @@
-@use '../../../styles/palette' as *;
+// The body is a column, so the browser gets the height the chips leave and
+// the tree view scrolls inside it rather than in a second body scrollbar.
+.dialog :global(.p-dialog-content) {
+  display: flex;
+  flex-direction: column;
+}
 
 .footer {
   display: flex;
@@ -7,6 +12,7 @@
 
 .chips {
   display: flex;
+  flex: none;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
@@ -19,23 +25,18 @@
   max-width: 250px;
 }
 
-.chipsPlaceholder {
-  padding: 1rem;
+// An invisible chip holds the row while nothing is picked, so the first pick
+// does not move the browser.
+.chipSpacer {
+  visibility: hidden;
 }
 
-.table {
-  flex: 1;
+// A narrower category panel keeps the table and its quantity column visible
+// inside the dialog.
+.browser {
+  --products-browser-max-height: none;
+  --products-browser-sidebar-width: 260px;
+
+  flex: 1 1 auto;
   min-height: 0;
-}
-
-.thumb {
-  width: 32px;
-  height: 32px;
-}
-
-.thumbPlaceholder {
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-  background: $grey-2;
 }

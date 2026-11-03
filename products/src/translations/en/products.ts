@@ -7,8 +7,121 @@ export default {
     BUNDLE: 'Bundle',
     VARIANT: 'Variant',
     PARENT_VARIANT: 'Parent Variant',
+    DYNAMIC_VARIANT: 'Variant Hierarchy',
+  },
+  createModal: {
+    title: 'Create new product',
+    submit: 'Create {{name}}',
+    choose: 'Select',
+    basic: {
+      title: 'Basic',
+      desc1: 'Standard single product creation',
+    },
+    bundle: {
+      title: 'Bundle',
+      desc1: 'Sets of different products and options',
+    },
+    parentVariant: {
+      title: 'Variant',
+      desc1: 'Same product with different options (template-based)',
+    },
+    dynamicVariant: {
+      title: 'Variant Hierarchy',
+      desc1: 'Flexible multi-level variants without a fixed template',
+    },
+    subscription: {
+      title: 'Subscription',
+      desc1: 'Subscription product with recurring terms',
+    },
+  },
+  recalculateVariants: {
+    action: 'Recalculate variant trees',
+    success:
+      'Recalculation queued: {{jobCount}} job(s). Skipped IDs (active job): {{skipped}}.',
+    error: 'Could not start variant recalculation.',
+  },
+  toasts: {
+    successDeleteProducts: '{{count}} product(s) deleted',
+    successImportProducts: 'Products imported',
+  },
+  dynamicVariant: {
+    plurals: {
+      singular: 'Attribute',
+      plural: 'Attributes',
+    },
+    titles: {
+      hierarchy: 'Product Hierarchy',
+      addAttribute: 'Add attribute',
+      editAttribute: 'Edit attribute',
+    },
+    buttons: {
+      add: 'Add',
+    },
+    labels: {
+      sellable: 'Sellable',
+      published: 'Published',
+      product: 'Product',
+      variant: 'Variant',
+      local: 'Local',
+      inherited: 'Inherited',
+      draftNewChild: 'New variant (unsaved)',
+      addChild: 'Add child',
+      addSibling: 'Add sibling',
+    },
+    dialogs: {
+      deleteTreeNode: {
+        title: 'Delete this product?',
+        text1: 'Are you sure you want to delete this product variant?',
+        text2: 'The following ({{count}}) variant(s) will also be deleted:',
+      },
+      discardDraft: {
+        title: 'Discard unsaved variant?',
+        text: 'You have an unsaved variant draft. Navigating away will discard it.',
+      },
+      deleteAttribute: {
+        title: 'Remove this attribute?',
+        text: 'The attribute will be removed from local attributes when you save the product.',
+      },
+    },
+    tables: {
+      attributes: {
+        emptyText: 'No local attribute added yet',
+        localAttribute: 'Local attribute',
+        inheritedAttribute: 'Inherited attribute',
+        value: 'Value',
+      },
+    },
+    forms: {
+      attribute: {
+        dynamicType: 'Variant level type',
+        key: 'Key',
+        name: 'Name',
+        type: 'Type',
+        valueLabel: 'Display value',
+        value: 'Value',
+        unit: 'Unit',
+      },
+    },
+    toasts: {
+      successDeleteProduct: 'Product deleted successfully',
+      errorDeleteProduct: 'Error while deleting product',
+    },
+    warnings: {
+      warningCycle:
+        'A circular reference was detected in this variant hierarchy.',
+      warningMissingAncestor:
+        'Missing ancestor product in hierarchy (id: {{id}}). Run recalculation after fixing data.',
+    },
+    tooltips: {
+      resetToInherited: 'Reset to inherited value',
+      inherited: 'Inherited from parent',
+    },
   },
   table: {
+    ref: {
+      id: 'Id',
+      localizedName: 'Name',
+    },
     id: 'Id',
     name: 'Name',
     code: 'Code',
@@ -23,9 +136,12 @@ export default {
       productType: 'Filter by product type',
     },
     actions: 'Actions',
+    missingProduct: 'Assigned product not found',
+    vendor: 'Vendor',
+    vendorName: 'Vendor',
   },
   variant: {
-    variantOf: 'This product is a variant of',
+    variantOf: 'variant of',
     openConfiguration: 'Open configuration',
   },
   createNew: 'Add new product',
@@ -41,6 +157,7 @@ export default {
     toast: {
       update: {
         success: 'Successfully updated product!',
+        error: 'Error while updating product',
       },
       create: {
         success: 'Successfully created product!',
@@ -65,12 +182,17 @@ export default {
         weightDependent: 'Weight Dependent',
         category: 'Categories',
         categoryAssignment: 'Category assignment',
+        addCategory: 'Add Category',
+        selectCategories: 'Select Categories',
+        selectedCategories: '{{count}} categories selected',
+        categoriesColumnName: 'Name',
         information: 'Details',
         attributes: 'Attributes',
         brandAndLabel: 'Brand & Labels',
         productTemplate: 'Product template',
         productTemplateVersion: 'Product template version',
-        id: 'id',
+        id: 'Id',
+        vendor: 'Vendor',
         tooltip: {
           id: 'Unique Id of the product. It will be generated if not provided.',
           weightDependent:
@@ -79,11 +201,6 @@ export default {
       },
       categories: {
         title: 'Categories',
-      },
-      suppliers: {
-        tabTitle: 'Suppliers',
-        title: 'Suppliers',
-        suppliers: 'Suppliers',
       },
       custom: {
         title: 'EF custom data',
@@ -136,6 +253,20 @@ export default {
           stockLevel: 'Stock level',
           distributionChannel: 'Distribution channel',
         },
+        record: {
+          general: 'General',
+        },
+        toast: {
+          saved: 'Availability saved',
+          error: 'Could not save availability',
+        },
+        confirm: {
+          collapseUnsaved: {
+            title: 'Discard unsaved changes?',
+            message:
+              'This availability has unsaved changes. Discard them and close?',
+          },
+        },
         dialog: {
           titleAdd: 'Add availability',
           titleEdit: 'Edit availability',
@@ -152,10 +283,6 @@ export default {
         useAsMain: 'Use as main image',
         deleteImage: 'Delete image',
         addImage: 'Add image',
-        toast: {
-          bulkDeleteSuccess: '{{itemsLength}} images were deleted',
-        },
-        fileUploaderTitle: 'Upload images',
       },
       demo: {
         tabTitle: 'Demo feature',
@@ -194,7 +321,7 @@ export default {
         add: 'Add Linked Product',
         remove: 'Remove From Linked',
         table: {
-          emptyText: 'You don’t have any linked product yet',
+          emptyText: "You don't have any linked product yet",
           emptyLink: '+ Add new linked product',
         },
         columns: {
@@ -211,19 +338,21 @@ export default {
           'similar-items': 'Similar items',
         },
         dialogTitle: 'Add Linked Products',
+        productDoesNotExist: 'Product does not exist',
       },
       bundle: {
         title: 'Bundle',
         add: 'Add Bundle Products',
         remove: 'Remove From Bundle',
         table: {
-          emptyText: 'You don’t have any bundle product yet',
+          emptyText: "You don't have any bundle product yet",
           emptyLink: '+ Add new bundle product',
         },
         columns: {
           name: 'Product Name',
           amount: 'Quantity In Bundle',
           image: 'Image',
+          id: 'Product ID',
         },
         dialogTitle: 'Add Bundle Products',
       },
@@ -234,21 +363,13 @@ export default {
       selected: 'Selected Products:',
       submitAdd: 'Add Products',
     },
+    inheritedFromParent: 'Inherited from parent',
   },
   attributes: {
     willProduceVariants: 'Will produce variants with attributes: ',
     withValues: ' with values:',
   },
-  mixins: {
-    addNew: 'Add New',
-    emptyArray: 'Array of {{type}} type is empty. No elements to display.',
-  },
   actions: {
-    delete: {
-      title: 'Delete',
-      message: 'Delete product?',
-    },
-    batchDelete: 'Deleting products',
     assistant: {
       title: 'Assistant',
     },
@@ -266,5 +387,13 @@ export default {
       'Cannot update product, because product with such code or id already exists in the system',
     errorUpdateInternal:
       'Cannot update product. Check console logs for more information.',
+  },
+  dialogs: {
+    addProducts: {
+      title: 'Add Products',
+      submit: 'Add Products',
+      selectedProducts: 'Selected Products:',
+      noProductSelected: 'There is no selected product yet...',
+    },
   },
 }

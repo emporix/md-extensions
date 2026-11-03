@@ -36,3 +36,21 @@ export const parseTableColumns = (
 
   return columns
 }
+
+/**
+ * Expanded rows as Prime reports them: an `{ [id]: true }` map when the table
+ * has a `dataKey`, otherwise the rows themselves.
+ */
+export type ExpandedRows<T> = T[] | Record<string, boolean>
+
+/**
+ * Ids of the expanded rows, in either shape. Ported from management-dashboard
+ * (cart items, order entries).
+ */
+export const getExpandedIds = <T extends { id: string }>(
+  expanded: ExpandedRows<T> | null | undefined
+): Set<string> => {
+  if (!expanded) return new Set()
+  if (Array.isArray(expanded)) return new Set(expanded.map((row) => row.id))
+  return new Set(Object.keys(expanded))
+}

@@ -4,6 +4,7 @@ import { ProductType } from './Order.model'
 export interface ProductMedia {
   id?: string
   url: string
+  contentType?: string
 }
 
 /**

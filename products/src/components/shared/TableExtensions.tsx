@@ -1,180 +1,170 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Button } from 'primereact/button'
-import { Sidebar } from 'primereact/sidebar'
 import { useTranslation } from 'react-i18next'
-import { InputSwitch } from 'primereact/inputswitch'
-import { BsDownload } from 'react-icons/bs'
+import {
+  InputSwitch,
+  PrimaryButton,
+  SecondaryButton,
+  useToast,
+} from '@emporix/component-library'
 import { BiSlider } from 'react-icons/bi'
-import { useRefresh } from '../../context/RefreshValuesProvider'
-import { makeCall } from '../../helpers/api'
+
 import { useConfiguration } from '../../context/ConfigurationProvider'
-import { MixinColumns } from './table-extensions/MixinColumns'
-import { SchemaType } from '../../models/Schema'
-import { DisplayMixin } from '../../models/DisplayMixin'
-import { useDashboardContext } from '../../context/Dashboard.context.tsx'
+import { useRefresh } from '../../context/RefreshValuesProvider'
+import { getApiErrorDetails, makeCall } from '../../helpers/api'
+import type { ColumnVisibility } from '../../models/Configuration.model'
+import type { DisplayMixin } from '../../models/DisplayMixin'
+import type { SchemaType } from '../../models/Schema.model'
+import MixinColumns from './MixinColumns'
+import SidePanel from './SidePanel'
+import styles from './TableExtensions.module.scss'
 
-interface TableExtensionProps {
-  csvExportHandler?: () => Promise<void>
-  tableColumns: string[]
-  tableConfigurationKey: string
-  tableName: string
-  managerPermission?: boolean | undefined
-  onSave?: () => void
-  schemaType?: SchemaType | string
+type TableExtensionsProps = {
+  /** Column field keys, in display order. */
+  readonly tableColumns: string[]
+  /** Configuration key the preference is persisted under (e.g. `ext_brands`). */
+  readonly tableConfigurationKey: string
+  /** Explicit column labels, positionally matching `tableColumns`. */
+  readonly tableColumnHeaders?: string[]
+  /** Translation prefix for column labels, e.g. `brands.table.columns`. */
+  readonly tableName: string
+  /** When set, mixin values for this schema type can be added as columns. */
+  readonly schemaType?: SchemaType | string
+  readonly managerPermission?: boolean
+  readonly onSave?: () => void
+  readonly className?: string
 }
 
-export interface ColumnVisibility {
-  key: string
-  label: string
-  visible: boolean
-}
-
-export function TableExtensions({
-  csvExportHandler,
+/**
+ * Column-visibility control for a DataTable, persisting the user's choice under
+ * a tenant configuration key.
+ *
+ * Ported from management-dashboard. MD uses PrimeReact `Sidebar` (right);
+ * component-library has no Sidebar, so this uses a local `SidePanel` with the
+ * same layout (toggles + mixins + Save). Toggles are CL `InputSwitch`. The
+ * persisted shape is unchanged, so preferences saved from the dashboard still
+ * apply.
+ */
+const TableExtensions = ({
   tableColumns,
+  tableColumnHeaders,
   tableConfigurationKey,
   tableName,
-  onSave,
-  managerPermission = true,
   schemaType,
-}: TableExtensionProps) {
-  const { tenant } = useDashboardContext()
-  const [visible, setVisible] = useState(false)
-  const [columns, setColumns] = useState<ColumnVisibility[]>([])
+  managerPermission = true,
+  onSave,
+  className = '',
+}: TableExtensionsProps) => {
   const { t, i18n } = useTranslation()
-
+  const { showError } = useToast()
+  const { setRefreshValue } = useRefresh()
   const {
     fetchTableConfiguration,
     updateTableConfiguration,
     tableConfigurations,
   } = useConfiguration()
 
-  const { setRefreshValue } = useRefresh()
-  const [isSavingColumns, setIsSavingColumns] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [columns, setColumns] = useState<ColumnVisibility[]>([])
   const [selectedMixins, setSelectedMixins] = useState<DisplayMixin[]>([])
 
   useEffect(() => {
-    ;(async function () {
-      const newColumns: ColumnVisibility[] = []
-      try {
-        const availableColumns: ColumnVisibility[] = fetchTableConfiguration(
-          tableConfigurationKey
-        )
+    const saved = fetchTableConfiguration(tableConfigurationKey)
 
-        tableColumns.forEach((tableColumn) => {
-          const foundColumn = availableColumns.find(
-            (avCol) => avCol.key === tableColumn
-          )
-          newColumns.push({
-            key: tableColumn,
-            label: t(`${tableName}.${tableColumn}`),
-            visible: foundColumn ? foundColumn.visible : true,
-          })
-        })
-      } catch (error) {
-        tableColumns.forEach((tableColumn) => {
-          newColumns.push({
-            key: tableColumn,
-            label: t(`${tableName}.${tableColumn}`),
-            visible: true,
-          })
-        })
-      }
-      setColumns(newColumns)
-    })()
-  }, [tenant, tableConfigurationKey, tableConfigurations, i18n.language])
+    setColumns(
+      tableColumns.map((tableColumn, idx) => ({
+        key: tableColumn,
+        label: tableColumnHeaders?.[idx] ?? t(`${tableName}.${tableColumn}`),
+        // No saved entry means the column has never been hidden.
+        visible:
+          saved.find((savedCol) => savedCol.key === tableColumn)?.visible ??
+          true,
+      }))
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    tableConfigurationKey,
+    tableConfigurations,
+    i18n.language,
+    tableColumnHeaders,
+  ])
 
   const saveTableConfig = useCallback(async () => {
     try {
       await makeCall(
         () =>
-          updateTableConfiguration(tenant, tableConfigurationKey, {
-            table: {
-              columns: [...columns],
-              mixins: selectedMixins,
-            },
+          updateTableConfiguration(tableConfigurationKey, {
+            table: { columns: [...columns], mixins: selectedMixins },
           }),
-        setIsSavingColumns
+        setIsSaving
       )
-    } finally {
-      setVisible(false)
+      setIsOpen(false)
       setRefreshValue()
-      if (onSave) {
-        onSave()
-      }
+      onSave?.()
+    } catch (e: unknown) {
+      showError(t('global.tableExtensions.saveError'), getApiErrorDetails(e))
     }
-  }, [columns, tenant, setRefreshValue, selectedMixins])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columns, selectedMixins, tableConfigurationKey])
+
+  const toggleColumn = (index: number, visible: boolean) => {
+    setColumns((prev) =>
+      prev.map((column, i) => (i === index ? { ...column, visible } : column))
+    )
+  }
 
   return (
-    <>
-      <Sidebar
-        visible={visible}
-        onHide={() => setVisible(false)}
-        position="right"
-        appendTo="self"
-        data-cy="table_extensions_sidebar"
+    <div className={className}>
+      <SecondaryButton
+        size="small"
+        iconOnly
+        onClick={() => setIsOpen(true)}
+        aria-label={t('global.tableExtensions.columns')}
+        data-testid="table-extensions-open"
       >
-        <div className="flex flex-column">
-          <div className="flex flex-column">
-            {columns?.map((column, index) => {
-              return (
-                <div key={column.key} className="flex align-items-center mt-4">
-                  <InputSwitch
-                    id={column.key}
-                    checked={column.visible}
-                    data-cy={column.key}
-                    disabled={!managerPermission}
-                    onChange={(e) => {
-                      const newColumns = [...columns]
-                      newColumns[index].visible = e.value
-                      setColumns(newColumns)
-                    }}
-                  />
-                  <label htmlFor={column.key} className="ml-2 flex-grow-1">
-                    {column.label}
-                  </label>
-                </div>
-              )
-            })}
-          </div>
-          {schemaType && (
-            <MixinColumns
-              tableConfigurationKey={tableConfigurationKey}
-              managerPermission={managerPermission}
-              selectedMixins={selectedMixins}
-              setSelectedMixins={setSelectedMixins}
-              schemaType={schemaType}
-            />
-          )}
-          <div className="flex justify-content-end">
-            <Button
-              disabled={!managerPermission}
-              className="mt-4"
-              data-cy="table_extensions_sidebar_save_button"
-              label={t('global.save')}
-              onClick={saveTableConfig}
-              loading={isSavingColumns}
-            />
-          </div>
+        <BiSlider size={18} aria-hidden />
+      </SecondaryButton>
+      <SidePanel
+        visible={isOpen}
+        onHide={() => setIsOpen(false)}
+        ariaLabel={t('global.tableExtensions.columns')}
+        data-testid="table-extensions-sidebar"
+      >
+        <div className={styles.columns}>
+          {columns.map((column, index) => (
+            <div key={column.key} className={styles.column}>
+              <InputSwitch
+                inputId={`column-${column.key}`}
+                checked={column.visible}
+                disabled={!managerPermission}
+                onChange={(event) => toggleColumn(index, event.value)}
+                data-testid={`column-toggle-${column.key}`}
+              />
+              <label htmlFor={`column-${column.key}`}>{column.label}</label>
+            </div>
+          ))}
         </div>
-      </Sidebar>
-      <div className="flex align-items-center">
-        {csvExportHandler && (
-          <Button
-            className="mr-1 p-button-secondary p-button-icon-only"
-            onClick={csvExportHandler}
-          >
-            <BsDownload size={18} />
-          </Button>
+        {schemaType && (
+          <MixinColumns
+            tableConfigurationKey={tableConfigurationKey}
+            managerPermission={managerPermission}
+            selectedMixins={selectedMixins}
+            setSelectedMixins={setSelectedMixins}
+            schemaType={schemaType}
+          />
         )}
-        <Button
-          data-cy="table_extensions_sidebar_open_button"
-          className="p-button-text p-button-plain p-button-icon-only"
-          onClick={() => setVisible(true)}
-        >
-          <BiSlider size={18} />
-        </Button>
-      </div>
-    </>
+        <div className={styles.footer}>
+          <PrimaryButton
+            disabled={!managerPermission || isSaving}
+            onClick={saveTableConfig}
+            data-testid="table-extensions-save"
+          >
+            {t('global.save')}
+          </PrimaryButton>
+        </div>
+      </SidePanel>
+    </div>
   )
 }
+
+export default TableExtensions

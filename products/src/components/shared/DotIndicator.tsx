@@ -1,23 +1,24 @@
-export interface DotIndicatorProps {
-  value: boolean
-  className?: string
-  color?: string
+import styles from './DotIndicator.module.scss'
+
+type DotIndicatorProps = {
+  readonly value: boolean
+  /** Colour when `value` is true (MD default: green). */
+  readonly color?: string
+  readonly className?: string
 }
 
-const dotStyles = (value: boolean, color?: string) => {
-  return {
-    width: '12px',
-    height: '12px',
-    backgroundColor: value ? (color ? color : '#10C929FF') : '#7B8B99FF',
-  }
-}
+export const DotIndicator = ({
+  value,
+  color,
+  className = '',
+}: DotIndicatorProps) => (
+  <div
+    data-testid="dot-indicator"
+    className={[styles.dot, value ? styles.on : '', className]
+      .filter(Boolean)
+      .join(' ')}
+    style={value && color ? { backgroundColor: color } : undefined}
+  />
+)
 
-export const DotIndicator = (props: DotIndicatorProps) => {
-  return (
-    <div
-      data-test-id="dot-indicator"
-      className={`${props.className} border-round`}
-      style={dotStyles(props.value, props.color)}
-    ></div>
-  )
-}
+export default DotIndicator

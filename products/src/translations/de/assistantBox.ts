@@ -1,7 +1,6 @@
 export default {
   title: 'AI Assistant',
   languages: 'Sprachen selektieren',
-
   buttons: {
     generateDescriptions: 'Beschreibung generieren',
     done: 'Erledigt',

@@ -1,0 +1,120 @@
+// MD ProductPricesPanelForm.scss (Prime Panel header) + PrimeFlex utilities.
+// MD $grey-1 = #f2f3f5, $blue-5 = #3b73bb, $blue-6 = #2665b7.
+
+.panelBox {
+  padding: 0;
+}
+
+.pricePanel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+  padding: 0 0.5rem;
+  border-bottom: 1px solid #f2f3f5;
+  cursor: pointer;
+}
+
+.pricePanelCollapsed {
+  border-bottom: none;
+}
+
+.pricePanelHeading {
+  display: flex;
+  align-items: center;
+}
+
+.pricePanelTitle {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.pricePanelActions {
+  display: flex;
+  align-items: center;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+}
+
+.togglerButton {
+  justify-content: flex-start;
+}
+
+.confirmIcon {
+  color: #3b73bb;
+}
+
+.panelContent {
+  padding: 1.25rem;
+  container-type: inline-size;
+}
+
+.modelField {
+  margin-bottom: 3rem;
+}
+
+.modelLink {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #2665b7;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.modelLinkIcon {
+  padding-left: 0.25rem;
+}
+
+// Responsive grid: as many 12rem columns as fit; Site spans two when there
+// is room. Collapses to a single column on narrow panels.
+.fieldsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.fieldNarrow,
+.fieldNarrowLast,
+.fieldWide {
+  min-width: 0;
+}
+
+.fieldWide {
+  grid-column: span 2;
+}
+
+// Single column (< 2 × 12rem + gap): don't let Site force an implicit column.
+@container (max-width: 25.5rem) {
+  .fieldWide {
+    grid-column: auto;
+  }
+}
+
+// CL Dropdown has min-width: 200px; let it shrink to the grid cell.
+.fieldsRow .fieldControl {
+  width: 100%;
+  min-width: 0;
+}
+
+.tiers {
+  margin-top: 2rem;
+}

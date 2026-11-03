@@ -1,33 +1,27 @@
 import { Option } from '../products/LabelChip'
-import { DropdownProps } from 'primereact/dropdown'
+import styles from './SharedTemplates.module.scss'
 
 export const optionTemplate = (options: Option) => {
   return (
-    <div className="flex align-items-center">
-      <img
-        style={{ width: '50px', height: '30px' }}
-        src={options.image}
-        alt={options.name}
-      />
-      <span className="ml-2">{options.name}</span>
+    <div className={styles.option}>
+      <img className={styles.image} src={options.image} alt={options.name} />
+      <span className={styles.name}>{options.name}</span>
     </div>
   )
 }
 
-export const selectedTemplate = (options: Option, props: DropdownProps) => {
+/** Dropdown `valueTemplate`; `props` mirrors MD's Prime `DropdownProps` use. */
+export const selectedTemplate = (
+  options: Option | null,
+  props?: { readonly placeholder?: string }
+) => {
   if (!options) {
-    return <span>{props.placeholder}</span>
+    return <span>{props?.placeholder}</span>
   }
   return (
-    <div className="grid">
-      <div className="flex align-items-center">
-        <img
-          style={{ width: '50px', height: '30px' }}
-          src={options.image}
-          alt={options.name}
-        />
-        <span className="ml-2">{options.name}</span>
-      </div>
+    <div className={styles.option}>
+      <img className={styles.image} src={options.image} alt={options.name} />
+      <span className={styles.name}>{options.name}</span>
     </div>
   )
 }

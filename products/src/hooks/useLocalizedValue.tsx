@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
-import Localized from '../models/Localized'
+import type Localized from '../models/Localized.model'
 import { useConfiguration } from '../context/ConfigurationProvider'
 import { useTranslation } from 'react-i18next'
-import { useDashboardContext } from '../context/Dashboard.context.tsx'
+import { useDashboardContext } from '../context/Dashboard.context'
 
 export type LocalizedInput = Localized | string | undefined
 
