@@ -26,6 +26,7 @@ import { useUIBlocker } from '../context/UIBlocker'
 import HeaderSection from '../components/shared/HeaderSection'
 import { ProductType } from '../models/Category.model'
 import useCustomNavigate from '../hooks/useCustomNavigate'
+import useUpdateEffect from '../hooks/useUpdateEffect'
 import { useFeatureToggles } from '../context/FeatureTogglesProvider'
 import TableActions from '../components/shared/TableActions'
 import TableExtensions from '../components/shared/TableExtensions'
@@ -116,7 +117,9 @@ const ProductsListPage = () => {
   const { tableConfigurations, getTableMixinColumns, isConfigurationLoaded } =
     useConfiguration()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [initialPage] = useState(() => pageFromSearchParams(searchParams))
+  const [initialPage, setInitialPage] = useState(() =>
+    pageFromSearchParams(searchParams)
+  )
 
   const [refreshKey, setRefreshKey] = useState(Date.now())
   const [isDeletingProducts, setIsDeletingProducts] = useState(false)
@@ -134,6 +137,22 @@ const ProductsListPage = () => {
     null
   )
   const loadIdRef = useRef(0)
+  const [listTenant, setListTenant] = useState(tenant)
+
+  // The browser waits for each tenant's settings, so it mounts again for a
+  // new tenant: start that list on the first page with nothing selected.
+  if (tenant !== listTenant) {
+    setListTenant(tenant)
+    setInitialPage(undefined)
+    setSelectedProducts([])
+    setExportQuery(null)
+  }
+
+  // A load of the previous tenant that ends late must not set the export.
+  useUpdateEffect(() => {
+    loadIdRef.current++
+  }, [tenant])
+
   const { hasPermission } = usePermissions()
   const canViewCategories = hasPermission(EmployeeDomains.CATEGORIES_VIEWER)
   const canManage =

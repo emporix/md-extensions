@@ -24,6 +24,7 @@ const mocks = vi.hoisted(() => ({
   permissions: new Set<string>(),
   tableConfigurations: [] as unknown[],
   isConfigurationLoaded: true,
+  tenant: 'tenant-1',
 }))
 
 vi.mock('@emporix/component-library', async (importOriginal) => ({
@@ -81,7 +82,7 @@ vi.mock('../helpers/download', async (importOriginal) => ({
   saveToCsvFile: mocks.saveToCsvFile,
 }))
 vi.mock('../context/Dashboard.context', () => ({
-  useDashboardContext: () => ({ tenant: 'tenant-1', contentLanguage: 'en' }),
+  useDashboardContext: () => ({ tenant: mocks.tenant, contentLanguage: 'en' }),
 }))
 vi.mock('../components/shared/HeaderSection', () => ({
   default: () => null,
@@ -123,13 +124,16 @@ const category = (id: string, name: string): CategoryTree => ({
   localizedName: { en: name },
 })
 
+const pageAt = (url = '/') => (
+  <MemoryRouter initialEntries={[url]}>
+    <ProductsListPage />
+  </MemoryRouter>
+)
+
 const renderPage = async (url = '/') => {
-  render(
-    <MemoryRouter initialEntries={[url]}>
-      <ProductsListPage />
-    </MemoryRouter>
-  )
+  const result = render(pageAt(url))
   await screen.findByText('Running shoe')
+  return result
 }
 
 const lastLoad = () => mocks.syncPaginatedProductsRows.mock.lastCall ?? []
@@ -144,6 +148,7 @@ beforeEach(() => {
   mocks.permissions.clear()
   mocks.tableConfigurations = []
   mocks.isConfigurationLoaded = true
+  mocks.tenant = 'tenant-1'
   mocks.syncPaginatedProductsRows.mockResolvedValue({
     data: [shoe],
     totalCount: 1,
@@ -159,21 +164,34 @@ afterEach(() => {
 describe('ProductsListPage', () => {
   it('waits for the saved settings before the first load', async () => {
     mocks.isConfigurationLoaded = false
-    const page = () => (
-      <MemoryRouter>
-        <ProductsListPage />
-      </MemoryRouter>
-    )
-    const { rerender } = render(page())
+    const { rerender } = render(pageAt())
     expect(mocks.syncPaginatedProductsRows).not.toHaveBeenCalled()
 
     mocks.isConfigurationLoaded = true
     mocks.tableConfigurations = [hiddenPrice]
-    rerender(page())
+    rerender(pageAt())
 
     await screen.findByText('Running shoe')
     expect(mocks.syncPaginatedProductsRows).toHaveBeenCalledTimes(1)
     expect(lastLoad()[2]).toBe(false)
+  })
+
+  it('starts a new tenant on the first page once its settings arrive', async () => {
+    const { rerender } = await renderPage('/?page=2&rows=25')
+    expect(lastLoad()[0]).toEqual(expect.objectContaining({ currentPage: 2 }))
+
+    mocks.tenant = 'tenant-2'
+    mocks.isConfigurationLoaded = false
+    rerender(pageAt())
+    expect(screen.queryByText('Running shoe')).toBeNull()
+
+    mocks.syncPaginatedProductsRows.mockClear()
+    mocks.isConfigurationLoaded = true
+    rerender(pageAt())
+
+    await screen.findByText('Running shoe')
+    expect(mocks.syncPaginatedProductsRows).toHaveBeenCalledTimes(1)
+    expect(lastLoad()[0]).toEqual(expect.objectContaining({ currentPage: 1 }))
   })
 
   it('exports the products of the current scope to CSV', async () => {

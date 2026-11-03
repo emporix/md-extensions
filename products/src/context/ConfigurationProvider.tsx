@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type PropsWithChildren,
 } from 'react'
@@ -65,20 +66,26 @@ export const useConfiguration = () => useContext(ConfigurationContext)
 export const ConfigurationProvider = ({ children }: PropsWithChildren) => {
   const { tenant, contentLanguage, currency } = useDashboardContext()
   const [configuration, setConfig] = useState<Configuration>()
-  const [isConfigurationLoaded, setIsConfigurationLoaded] = useState(false)
+  // The tenant whose latest request finished, also when it failed. A new
+  // tenant is not loaded until its own request finishes.
+  const [loadedTenant, setLoadedTenant] = useState<string>()
+  const requestIdRef = useRef(0)
+  const isConfigurationLoaded = Boolean(tenant) && loadedTenant === tenant
 
   const refreshConfiguration = async () => {
     if (!tenant) return
+    const requestId = ++requestIdRef.current
     try {
       const c = await fetchBasicConfiguration(tenant)
-      setConfig(c)
+      // An answer for an earlier tenant or language must not win.
+      if (requestId === requestIdRef.current) setConfig(c)
     } finally {
-      setIsConfigurationLoaded(true)
+      if (requestId === requestIdRef.current) setLoadedTenant(tenant)
     }
   }
 
   useEffect(() => {
-    void refreshConfiguration()
+    refreshConfiguration().catch((error: unknown) => console.error(error))
   }, [tenant, contentLanguage])
 
   const currencies = useMemo(
