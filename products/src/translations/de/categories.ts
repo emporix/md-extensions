@@ -29,7 +29,7 @@ export default {
     dropFileHere: 'Datei hierher ziehen und ablegen',
     toast: {
       singleDeleteSuccess: 'Bild wurde gelöscht!',
-      bulkDeleteSuccess: '{{itemsLength}} Bild wurde gelöscht',
+      bulkDeleteSuccess: '{{itemsLength}} Bilder wurden gelöscht',
       deleteFailure: 'Bild konnte nicht gelöscht werden',
       downloadFailure: 'Fehler beim Herunterladen von {{filename}}',
     },

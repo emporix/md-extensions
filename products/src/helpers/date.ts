@@ -9,7 +9,7 @@ export const getLocaleHourFormat = (locale: string): HourFormat =>
     : '24'
 
 export const toCalendarDate = (value: unknown): Date | undefined => {
-  if (!value) {
+  if (value === null || value === undefined || value === '') {
     return undefined
   }
   if (value instanceof Date) {
