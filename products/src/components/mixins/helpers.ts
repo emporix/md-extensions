@@ -17,6 +17,7 @@ import {
   getLocalizedSchemaVersion,
   LocalizedMixinVersion,
   toLocalizedMap,
+  toLocalizedValueMap,
 } from './localizedMixin.helpers'
 
 export interface MixinsFormTemplate {
@@ -87,6 +88,8 @@ export interface MixinsFormItem {
   isNullable?: boolean
   multipleOf?: number
   localizedVersion?: LocalizedMixinVersion
+  /** v2 localized OBJECT (language → object); `items` describe the per-language object. */
+  localizedObject?: boolean
 }
 
 const DEFAULT_DECIMAL_MAX_FRACTION_DIGITS = 10
@@ -110,9 +113,45 @@ export type MixinFieldRules = {
 
 export const buildMixinFieldRules = (
   item: MixinsFormItem,
-  requiredMessage: string
+  requiredMessage: string,
+  options?: {
+    readonly siteOverlay?: boolean
+    /** When true, omitted keys inherit from default (not replacement-array rows). */
+    readonly sparseInherit?: boolean
+  }
 ): MixinFieldRules => {
   if (item.toDelete) {
+    return {}
+  }
+  // Site overlays: omitted scalars inherit — skip RHF required; save still uses
+  // hasMissingRequiredSiteOverlayValues. Replacement-array rows keep sparseInherit false.
+  if (options?.sparseInherit) {
+    if (item.localizedObject || item.type === MixinsFormItemType.localized) {
+      const leaf = item.key.split('.').pop() ?? item.key
+      const mapItem: MixinsFormItem = {
+        ...item,
+        key: leaf,
+        type: MixinsFormItemType.localized,
+      }
+      return {
+        validate: (value: unknown) => {
+          // Absent Controller value = inherit from default (do not wrap as explicit key).
+          if (value === undefined || value === null) {
+            return true
+          }
+          // Emptied `{}` / null-only map after clearing the last language — resume inherit.
+          // Do not treat `{ en: { city: '' } }` as emptied (still validate children).
+          if (item.localizedObject && isEmptiedLocalizedObjectOverride(value)) {
+            return true
+          }
+          return hasMissingRequiredSiteOverlayValues({ [leaf]: value }, [
+            mapItem,
+          ])
+            ? requiredMessage
+            : true
+        },
+      }
+    }
     return {}
   }
   if (item.type === MixinsFormItemType.reference) {
@@ -123,6 +162,29 @@ export const buildMixinFieldRules = (
         }
         const id = (value as { id?: unknown } | undefined)?.id
         return (typeof id === 'string' && id.trim() !== '') || requiredMessage
+      },
+    }
+  }
+  if (item.localizedObject) {
+    // Treat as a single lang→object map even when the schema item is an
+    // array-of-localized (Controller validates one row `.value` at a time).
+    const leaf = item.key.split('.').pop() ?? item.key
+    const mapItem: MixinsFormItem = {
+      ...item,
+      key: leaf,
+      type: MixinsFormItemType.localized,
+    }
+    // Array-of-localized-OBJECT overlays stay strict (full row replace).
+    // Sparse overlay inherit applies only to a single localized OBJECT map.
+    const useSparseOverlay =
+      !!options?.siteOverlay && item.type !== MixinsFormItemType.array
+    return {
+      validate: (value: unknown) => {
+        const data = { [leaf]: value }
+        const missing = useSparseOverlay
+          ? hasMissingRequiredSiteOverlayValues(data, [mapItem])
+          : hasMissingRequiredMixinValues(data, [mapItem])
+        return missing ? requiredMessage : true
       },
     }
   }
@@ -422,12 +484,43 @@ export const hasValue = (val: any) => {
   return val !== undefined && val !== null && val !== ''
 }
 
+export const hasNonBlankValue = (value: unknown): boolean => {
+  if (typeof value === 'string') return value.trim() !== ''
+  if (Array.isArray(value)) return value.some(hasNonBlankValue)
+  if (value !== null && typeof value === 'object') {
+    return Object.values(value).some(hasNonBlankValue)
+  }
+  return value !== null && value !== undefined
+}
+
 /** True when a localized field has at least one non-empty language value. */
 export const hasLocalizedContent = (value: unknown): boolean => {
   const map = toLocalizedMap(value)
-  return Object.values(map).some(
-    (entry) => typeof entry === 'string' && entry.trim() !== ''
+  if (
+    Object.values(map).some(
+      (entry) => typeof entry === 'string' && entry.trim() !== ''
+    )
+  ) {
+    return true
+  }
+  return Object.values(toLocalizedValueMap(value, 'object')).some(
+    hasNonBlankValue
   )
+}
+
+/** Site overlay: `{}` or null/undefined-only language map after clearing the last override. */
+export const isEmptiedLocalizedObjectOverride = (value: unknown): boolean => {
+  if (value === undefined || value === null) {
+    return true
+  }
+  if (typeof value !== 'object' || Array.isArray(value)) {
+    return false
+  }
+  const entries = Object.entries(value as Record<string, unknown>)
+  if (entries.length === 0) {
+    return true
+  }
+  return entries.every(([, entry]) => entry == null)
 }
 
 const collectMarkedPaths = (
@@ -457,15 +550,27 @@ export const getToDeletePaths = (items: MixinsFormItem[]): Set<string> =>
 // attributes that merely share a leaf name with a removed top-level attribute
 // untouched. Array indices do not advance the path, and array-of-object
 // id/value-pair wrappers are unwrapped so nested values are matched by path.
+const findFormItemByLeaf = (
+  items: MixinsFormItem[] | undefined,
+  leaf: string
+): MixinsFormItem | undefined =>
+  items?.find((item) => (item.key.split('.').pop() ?? item.key) === leaf)
+
+/**
+ * Removes marked schema paths from stored mixin values. When the schema item is
+ * a localized OBJECT (or array thereof), language keys are not appended to the
+ * schema path — stored `addr.en.city` matches schema path `addr.city`.
+ */
 const removeFieldsByPath = (
   value: any,
   pathsToRemove: ReadonlySet<string>,
   removeEmpty: boolean,
+  items: MixinsFormItem[] | undefined,
   schemaPath = ''
 ): any => {
   if (Array.isArray(value)) {
     const arr = value.map((v) =>
-      removeFieldsByPath(v, pathsToRemove, removeEmpty, schemaPath)
+      removeFieldsByPath(v, pathsToRemove, removeEmpty, items, schemaPath)
     )
     return removeEmpty ? arr.filter((v) => v !== undefined) : arr
   }
@@ -475,6 +580,7 @@ const removeFieldsByPath = (
         value.value,
         pathsToRemove,
         removeEmpty,
+        items,
         schemaPath
       )
       // Drop the whole wrapper element when its content emptied out under
@@ -487,7 +593,87 @@ const removeFieldsByPath = (
     for (const [k, v] of Object.entries(value as Record<string, any>)) {
       const childPath = schemaPath ? `${schemaPath}.${k}` : k
       if (pathsToRemove.has(childPath)) continue
-      const next = removeFieldsByPath(v, pathsToRemove, removeEmpty, childPath)
+      const item = findFormItemByLeaf(items, k)
+      if (
+        item?.localizedObject &&
+        v &&
+        typeof v === 'object' &&
+        !Array.isArray(v) &&
+        item.type === MixinsFormItemType.localized
+      ) {
+        const langOut: Record<string, any> = {}
+        for (const [lang, langVal] of Object.entries(
+          v as Record<string, any>
+        )) {
+          if (langVal === null) {
+            langOut[lang] = null
+            continue
+          }
+          const next = removeFieldsByPath(
+            langVal,
+            pathsToRemove,
+            removeEmpty,
+            item.items,
+            childPath
+          )
+          if (!(removeEmpty && next === undefined)) langOut[lang] = next
+        }
+        if (removeEmpty && Object.keys(langOut).length === 0) continue
+        out[k] = langOut
+        continue
+      }
+      if (
+        item?.localizedObject &&
+        item.type === MixinsFormItemType.array &&
+        item.arrayType === MixinsFormItemType.localized &&
+        Array.isArray(v)
+      ) {
+        const nextArr = v.map((entry) => {
+          const map = isArrayMixinField(entry) ? entry.value : entry
+          if (map === null) {
+            return isArrayMixinField(entry) ? { ...entry, value: null } : null
+          }
+          if (!map || typeof map !== 'object' || Array.isArray(map)) {
+            return entry
+          }
+          const langOut: Record<string, any> = {}
+          for (const [lang, langVal] of Object.entries(
+            map as Record<string, any>
+          )) {
+            if (langVal === null) {
+              langOut[lang] = null
+              continue
+            }
+            const next = removeFieldsByPath(
+              langVal,
+              pathsToRemove,
+              removeEmpty,
+              item.items,
+              childPath
+            )
+            if (!(removeEmpty && next === undefined)) langOut[lang] = next
+          }
+          if (removeEmpty && Object.keys(langOut).length === 0) {
+            return undefined
+          }
+          return isArrayMixinField(entry)
+            ? { ...entry, value: langOut }
+            : langOut
+        })
+        const filtered = removeEmpty
+          ? nextArr.filter((entry) => entry !== undefined)
+          : nextArr
+        if (removeEmpty && filtered.length === 0) continue
+        out[k] = filtered
+        continue
+      }
+      const next = removeFieldsByPath(
+        v,
+        pathsToRemove,
+        removeEmpty,
+        item?.items ?? items,
+        childPath
+      )
       if (!(removeEmpty && next === undefined)) out[k] = next
     }
     if (removeEmpty && Object.keys(out).length === 0) return undefined
@@ -500,14 +686,14 @@ export const filterOutChangedMixins = (
   data: any,
   items: MixinsFormItem[]
 ): any => {
-  return removeFieldsByPath(data, getChangedPaths(items), true)
+  return removeFieldsByPath(data, getChangedPaths(items), true, items)
 }
 
 export const filterOutDeletedMixins = (
   data: any,
   items: MixinsFormItem[]
 ): any => {
-  return removeFieldsByPath(data, getToDeletePaths(items), false)
+  return removeFieldsByPath(data, getToDeletePaths(items), false, items)
 }
 
 export const applyDefaultsOnEmptyFields = (
@@ -638,6 +824,80 @@ const objectSourceFromArrayEntry = (
   return entry as Record<string, unknown>
 }
 
+/**
+ * True for a field the localized OBJECT form has an input for. It has none for
+ * arrays, localized objects, objects without fields and unknown types.
+ */
+export const hasLocalizedObjectInput = (item: MixinsFormItem): boolean =>
+  !item.localizedObject &&
+  [
+    MixinsFormItemType.text,
+    MixinsFormItemType.integer,
+    MixinsFormItemType.decimal,
+    MixinsFormItemType.boolean,
+    MixinsFormItemType.enum,
+    MixinsFormItemType.date,
+    MixinsFormItemType.dateTime,
+    MixinsFormItemType.time,
+    MixinsFormItemType.localized,
+    MixinsFormItemType.reference,
+  ].includes(item.type)
+
+// The localized OBJECT form does not ask for required values it cannot edit,
+// including nested objects none of whose fields has an input.
+const editableLocalizedObjectChildren = (
+  items: MixinsFormItem[]
+): MixinsFormItem[] =>
+  items.flatMap((child) => {
+    if (isNestedObjectMixinItem(child)) {
+      const nested = editableLocalizedObjectChildren(child.items ?? [])
+      return nested.length > 0 ? [{ ...child, items: nested }] : []
+    }
+    return hasLocalizedObjectInput(child) ? [child] : []
+  })
+
+// A localized OBJECT none of whose fields has an input cannot be filled in.
+const canFillLocalizedItem = (item: MixinsFormItem): boolean =>
+  !item.localizedObject ||
+  editableLocalizedObjectChildren(item.items ?? []).length > 0
+
+/**
+ * Required children of a localized OBJECT (or each element of an array of them)
+ * are validated per present, non-null language.
+ */
+const hasMissingLocalizedObjectChildren = (
+  item: MixinsFormItem,
+  value: unknown,
+  walkChildren: (
+    nodes: MixinsFormItem[],
+    source: Record<string, unknown> | undefined
+  ) => boolean
+): boolean => {
+  const children = editableLocalizedObjectChildren(item.items ?? [])
+  if (!item.localizedObject || children.length === 0) {
+    return false
+  }
+  const hasMissingInMap = (map: unknown): boolean =>
+    Object.values(toLocalizedValueMap(map, 'object')).some(
+      (entry) =>
+        entry !== null &&
+        walkChildren(children, entry as Record<string, unknown>)
+    )
+  if (item.type === MixinsFormItemType.localized) {
+    return hasMissingInMap(value)
+  }
+  if (
+    item.type === MixinsFormItemType.array &&
+    item.arrayType === MixinsFormItemType.localized &&
+    Array.isArray(value)
+  ) {
+    return value.some((entry) =>
+      hasMissingInMap(isArrayMixinField(entry) ? entry.value : entry)
+    )
+  }
+  return false
+}
+
 /** True when a required default-context field is missing a usable value. */
 export const hasMissingRequiredMixinValues = (
   data: Mixins | undefined,
@@ -679,6 +939,9 @@ export const hasMissingRequiredMixinValues = (
         }
         continue
       }
+      if (hasMissingLocalizedObjectChildren(item, value, walk)) {
+        return true
+      }
       if (!item.isRequired || item.type === MixinsFormItemType.unknown) {
         continue
       }
@@ -690,7 +953,7 @@ export const hasMissingRequiredMixinValues = (
         continue
       }
       if (item.type === MixinsFormItemType.localized) {
-        if (!hasLocalizedContent(value)) {
+        if (!hasLocalizedContent(value) && canFillLocalizedItem(item)) {
           return true
         }
         continue
@@ -750,6 +1013,9 @@ export const hasMissingRequiredSiteOverlayValues = (
         }
         continue
       }
+      if (hasMissingLocalizedObjectChildren(item, value, walkStrict)) {
+        return true
+      }
       if (!item.isRequired || item.type === MixinsFormItemType.unknown) {
         continue
       }
@@ -761,7 +1027,7 @@ export const hasMissingRequiredSiteOverlayValues = (
         continue
       }
       if (item.type === MixinsFormItemType.localized) {
-        if (!hasLocalizedContent(value)) {
+        if (!hasLocalizedContent(value) && canFillLocalizedItem(item)) {
           return true
         }
         continue
@@ -808,6 +1074,31 @@ export const hasMissingRequiredSiteOverlayValues = (
         }
         continue
       }
+      // Single localized OBJECT maps: overlay recursion so omitted children
+      // inherit from default. Replacement arrays of localized OBJECT stay strict.
+      if (
+        item.localizedObject &&
+        item.type === MixinsFormItemType.localized &&
+        hasMissingLocalizedObjectChildren(item, value, walkOverlay)
+      ) {
+        return true
+      }
+      if (
+        item.localizedObject &&
+        item.type === MixinsFormItemType.array &&
+        item.arrayType === MixinsFormItemType.localized &&
+        hasMissingLocalizedObjectChildren(item, value, walkStrict)
+      ) {
+        return true
+      }
+      // Emptied `{}` / null-only single localized OBJECT map → inherit.
+      if (
+        item.localizedObject &&
+        item.type === MixinsFormItemType.localized &&
+        isEmptiedLocalizedObjectOverride(value)
+      ) {
+        continue
+      }
       if (!item.isRequired || item.type === MixinsFormItemType.unknown) {
         continue
       }
@@ -819,7 +1110,7 @@ export const hasMissingRequiredSiteOverlayValues = (
         continue
       }
       if (item.type === MixinsFormItemType.localized) {
-        if (!hasLocalizedContent(value)) {
+        if (!hasLocalizedContent(value) && canFillLocalizedItem(item)) {
           return true
         }
         continue
@@ -929,6 +1220,17 @@ export const isAttributeOfArraySingleReference = (
   return attribute.type === 'array' && attribute.arrayType === 'reference'
 }
 
+/** Scalars first, then objects (including localized objects), then arrays. */
+const mixinFieldDisplayRank = (item: MixinsFormItem): number => {
+  if (item.type === MixinsFormItemType.array) {
+    return 2
+  }
+  if (item.type === MixinsFormItemType.object || item.localizedObject) {
+    return 1
+  }
+  return 0
+}
+
 export const sortTree = (
   attributes: MixinsFormItem[] | undefined
 ): MixinsFormItem[] | undefined => {
@@ -940,26 +1242,14 @@ export const sortTree = (
     return attributes
   }
 
-  const sortedAttributes = attributes?.sort((a, b) => {
-    if (isAttributeOfArrayObjectType(a) && !isAttributeOfArrayObjectType(b)) {
-      return 1
+  const sortedAttributes = attributes.sort((a, b) => {
+    const rank = mixinFieldDisplayRank(a) - mixinFieldDisplayRank(b)
+    if (rank !== 0) {
+      return rank
     }
-    if (isAttributeOfArrayObjectType(b) && !isAttributeOfArrayObjectType(a)) {
-      return -1
+    if (a.key === b.key) {
+      return 0
     }
-    if (isAttributeOfObjectType(a) && !isAttributeOfObjectType(b)) {
-      return 1
-    }
-    if (isAttributeOfObjectType(b) && !isAttributeOfObjectType(a)) {
-      return -1
-    }
-    if (isAttributeOfArraySimpleType(a) && !isAttributeOfArraySimpleType(b)) {
-      return 1
-    }
-    if (isAttributeOfArraySimpleType(b) && !isAttributeOfArraySimpleType(a)) {
-      return -1
-    }
-
     return a.key > b.key ? 1 : -1
   })
 

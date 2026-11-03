@@ -5,6 +5,7 @@ import {
   hasLocalizedContent,
   hasMissingRequiredMixinValues,
   hasMissingRequiredSiteOverlayValues,
+  isEmptiedLocalizedObjectOverride,
   isSiteOverlayKey,
   markDeleteDeep,
   MixinsFormItem,
@@ -333,5 +334,319 @@ describe('buildMixinFieldRules', () => {
     expect(child?.toDelete).toBe(true)
     const rules = buildMixinFieldRules(child as MixinsFormItem, REQUIRED_MSG)
     expect(rules.required).toBeUndefined()
+  })
+
+  it('validates required children inside a localized OBJECT map', () => {
+    const addr: MixinsFormItem = {
+      key: 'addr',
+      type: MixinsFormItemType.localized,
+      name: {},
+      isRequired: false,
+      localizedObject: true,
+      items: [
+        {
+          key: 'city',
+          type: MixinsFormItemType.text,
+          name: {},
+          isRequired: true,
+        },
+        {
+          key: 'zip',
+          type: MixinsFormItemType.text,
+          name: {},
+          isRequired: false,
+        },
+      ],
+    }
+    const rules = buildMixinFieldRules(addr, REQUIRED_MSG)
+    expect(rules.validate?.({ en: { zip: '1' } })).toBe(REQUIRED_MSG)
+    expect(rules.validate?.({ en: { city: 'Berlin' } })).toBe(true)
+    expect(rules.validate?.(undefined)).toBe(true)
+  })
+
+  it('does not require fields a localized OBJECT has no input for', () => {
+    const addr: MixinsFormItem = {
+      key: 'addr',
+      type: MixinsFormItemType.localized,
+      name: {},
+      isRequired: false,
+      localizedObject: true,
+      items: [
+        {
+          key: 'city',
+          type: MixinsFormItemType.text,
+          name: {},
+          isRequired: true,
+        },
+        {
+          key: 'tags',
+          type: MixinsFormItemType.array,
+          arrayType: MixinsFormItemType.text,
+          name: {},
+          isRequired: true,
+        },
+        {
+          key: 'inner',
+          type: MixinsFormItemType.localized,
+          name: {},
+          isRequired: true,
+          localizedObject: true,
+          items: [
+            {
+              key: 'street',
+              type: MixinsFormItemType.text,
+              name: {},
+              isRequired: true,
+            },
+          ],
+        },
+        {
+          key: 'geo',
+          type: MixinsFormItemType.object,
+          name: {},
+          isRequired: false,
+          items: [
+            {
+              key: 'geo.points',
+              type: MixinsFormItemType.array,
+              arrayType: MixinsFormItemType.object,
+              name: {},
+              isRequired: true,
+              items: [],
+            },
+          ],
+        },
+        {
+          key: 'raw',
+          type: MixinsFormItemType.object,
+          name: {},
+          isRequired: true,
+        },
+        {
+          key: 'frame',
+          type: MixinsFormItemType.object,
+          name: {},
+          isRequired: true,
+          items: [
+            {
+              key: 'frame.parts',
+              type: MixinsFormItemType.array,
+              arrayType: MixinsFormItemType.text,
+              name: {},
+              isRequired: true,
+            },
+          ],
+        },
+      ],
+    }
+    const rules = buildMixinFieldRules(addr, REQUIRED_MSG)
+    expect(rules.validate?.({ en: { city: 'Berlin', geo: {} } })).toBe(true)
+    expect(
+      rules.validate?.({ en: { city: 'Berlin', inner: { de: {} } } })
+    ).toBe(true)
+    expect(rules.validate?.({ en: { tags: ['a'] } })).toBe(REQUIRED_MSG)
+  })
+
+  it('does not require a localized OBJECT none of whose fields can be filled', () => {
+    const items: MixinsFormItem[] = [
+      {
+        key: 'specs',
+        type: MixinsFormItemType.localized,
+        name: {},
+        isRequired: true,
+        localizedObject: true,
+        items: [
+          {
+            key: 'parts',
+            type: MixinsFormItemType.array,
+            arrayType: MixinsFormItemType.text,
+            name: {},
+            isRequired: true,
+          },
+        ],
+      },
+    ]
+    expect(hasMissingRequiredMixinValues({}, items)).toBe(false)
+    expect(hasMissingRequiredSiteOverlayValues({ specs: {} }, items)).toBe(
+      false
+    )
+  })
+
+  it('skips scalar required rules when sparseInherit is set', () => {
+    const city: MixinsFormItem = {
+      key: 'city',
+      type: MixinsFormItemType.text,
+      name: {},
+      isRequired: true,
+    }
+    expect(
+      buildMixinFieldRules(city, REQUIRED_MSG, {
+        siteOverlay: true,
+        sparseInherit: true,
+      }).required
+    ).toBeUndefined()
+    expect(
+      buildMixinFieldRules(city, REQUIRED_MSG, {
+        siteOverlay: true,
+        sparseInherit: false,
+      }).required
+    ).toBe(REQUIRED_MSG)
+  })
+
+  it('validates localized text overlays under sparseInherit', () => {
+    const label: MixinsFormItem = {
+      key: 'label',
+      type: MixinsFormItemType.localized,
+      name: {},
+      isRequired: true,
+    }
+    const rules = buildMixinFieldRules(label, REQUIRED_MSG, {
+      siteOverlay: true,
+      sparseInherit: true,
+    })
+    expect(rules.validate?.({ en: '' })).toBe(REQUIRED_MSG)
+    expect(rules.validate?.({ en: 'Hi' })).toBe(true)
+    expect(rules.validate?.(undefined)).toBe(true)
+  })
+
+  it('allows sparse localized OBJECT overlays when siteOverlay is set', () => {
+    const addr: MixinsFormItem = {
+      key: 'addr',
+      type: MixinsFormItemType.localized,
+      name: {},
+      isRequired: false,
+      localizedObject: true,
+      items: [
+        {
+          key: 'city',
+          type: MixinsFormItemType.text,
+          name: {},
+          isRequired: true,
+        },
+        {
+          key: 'zip',
+          type: MixinsFormItemType.text,
+          name: {},
+          isRequired: false,
+        },
+      ],
+    }
+    const rules = buildMixinFieldRules(addr, REQUIRED_MSG, {
+      siteOverlay: true,
+    })
+    expect(rules.validate?.({ en: { zip: '1' } })).toBe(true)
+    expect(rules.validate?.({ en: { city: '' } })).toBe(REQUIRED_MSG)
+  })
+
+  it('allows emptied required localized OBJECT overlays to inherit under sparseInherit', () => {
+    const addr: MixinsFormItem = {
+      key: 'addr',
+      type: MixinsFormItemType.localized,
+      name: {},
+      isRequired: true,
+      localizedObject: true,
+      items: [
+        {
+          key: 'city',
+          type: MixinsFormItemType.text,
+          name: {},
+          isRequired: true,
+        },
+        {
+          key: 'zip',
+          type: MixinsFormItemType.text,
+          name: {},
+          isRequired: false,
+        },
+      ],
+    }
+    const rules = buildMixinFieldRules(addr, REQUIRED_MSG, {
+      siteOverlay: true,
+      sparseInherit: true,
+    })
+    expect(rules.validate?.({})).toBe(true)
+    expect(rules.validate?.({ de: null })).toBe(true)
+    expect(rules.validate?.({ de: undefined })).toBe(true)
+    expect(rules.validate?.(undefined)).toBe(true)
+    // Sparse overlay: omitted city inherits; explicit blank city still fails.
+    expect(rules.validate?.({ en: { zip: '1' } })).toBe(true)
+    expect(rules.validate?.({ en: { city: '' } })).toBe(REQUIRED_MSG)
+    expect(rules.validate?.({ en: {} })).toBe(REQUIRED_MSG)
+    expect(rules.validate?.({ en: { city: 'Berlin' } })).toBe(true)
+    expect(hasMissingRequiredSiteOverlayValues({ addr: {} }, [addr])).toBe(
+      false
+    )
+    expect(
+      hasMissingRequiredSiteOverlayValues({ addr: { de: null } }, [addr])
+    ).toBe(false)
+  })
+
+  it('keeps array-of-localized-OBJECT rows strict under siteOverlay', () => {
+    const blocks: MixinsFormItem = {
+      key: 'blocks',
+      type: MixinsFormItemType.array,
+      arrayType: MixinsFormItemType.localized,
+      name: {},
+      isRequired: true,
+      localizedObject: true,
+      items: [
+        {
+          key: 'city',
+          type: MixinsFormItemType.text,
+          name: {},
+          isRequired: true,
+        },
+        {
+          key: 'zip',
+          type: MixinsFormItemType.text,
+          name: {},
+          isRequired: false,
+        },
+      ],
+    }
+    const rules = buildMixinFieldRules(blocks, REQUIRED_MSG, {
+      siteOverlay: true,
+    })
+    expect(rules.validate?.({ en: { zip: '1' } })).toBe(REQUIRED_MSG)
+    // Row Controller validates one map: emptied `{}` stays strict (not inherit).
+    expect(rules.validate?.({})).toBe(REQUIRED_MSG)
+    expect(rules.validate?.({ en: { city: 'Berlin' } })).toBe(true)
+  })
+
+  it('validates a single array-of-localized-OBJECT row as a map', () => {
+    const blocks: MixinsFormItem = {
+      key: 'blocks',
+      type: MixinsFormItemType.array,
+      arrayType: MixinsFormItemType.localized,
+      name: {},
+      isRequired: false,
+      localizedObject: true,
+      items: [
+        {
+          key: 'title',
+          type: MixinsFormItemType.text,
+          name: {},
+          isRequired: true,
+        },
+      ],
+    }
+    const rules = buildMixinFieldRules(blocks, REQUIRED_MSG)
+    expect(rules.validate?.({ en: { body: 'x' } })).toBe(REQUIRED_MSG)
+    expect(rules.validate?.({ en: { title: 'Hi' } })).toBe(true)
+  })
+})
+
+describe('isEmptiedLocalizedObjectOverride', () => {
+  it('detects empty and null/undefined-only maps', () => {
+    expect(isEmptiedLocalizedObjectOverride(undefined)).toBe(true)
+    expect(isEmptiedLocalizedObjectOverride(null)).toBe(true)
+    expect(isEmptiedLocalizedObjectOverride({})).toBe(true)
+    expect(isEmptiedLocalizedObjectOverride({ de: null })).toBe(true)
+    expect(isEmptiedLocalizedObjectOverride({ de: undefined })).toBe(true)
+    expect(isEmptiedLocalizedObjectOverride({ en: {}, de: null })).toBe(false)
+    expect(isEmptiedLocalizedObjectOverride({ en: { city: '' } })).toBe(false)
+    expect(
+      isEmptiedLocalizedObjectOverride([{ language: 'en', value: '' }])
+    ).toBe(false)
   })
 })

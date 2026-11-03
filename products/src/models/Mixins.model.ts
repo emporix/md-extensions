@@ -36,6 +36,7 @@ export interface MixinsSchemaProperty {
   $ref?: string
   items?: MixinsSchemaProperty
   properties?: Record<string, MixinsSchemaProperty>
+  patternProperties?: Record<string, MixinsSchemaProperty>
   required?: string[]
   readOnly?: boolean
   pattern?: string

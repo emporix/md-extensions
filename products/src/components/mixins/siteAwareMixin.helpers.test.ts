@@ -477,7 +477,37 @@ describe('siteAwareMixin.helpers', () => {
           { emporixReferenceType: 'product', id: 'p1' },
           { emporixReferenceType: 'product', id: 'p2' },
         ])
-      ).toBe('p1, p2')
+      ).toBe('\n[1] p1\n[2] p2')
+    })
+
+    it('formats localized OBJECT maps with field names and stacks array rows', () => {
+      expect(
+        formatInheritedDisplayValue({
+          en: { city: 'Berlin', zip: '10115' },
+          de: { city: 'Berlin' },
+        })
+      ).toBe('en: {city: Berlin, zip: 10115}, de: {city: Berlin}')
+      expect(
+        formatInheritedDisplayValue([
+          { en: { title: 'Hi' }, de: { title: 'Hallo' } },
+        ])
+      ).toBe('en: {title: Hi}, de: {title: Hallo}')
+      expect(
+        formatInheritedDisplayValue([
+          { id: 'row-1', value: { en: { city: 'Berlin' } } },
+        ])
+      ).toBe('en: {city: Berlin}')
+      expect(
+        formatInheritedDisplayValue([
+          {
+            en: { superfield: 'bvcx', note: 'a' },
+            de: { superfield: 'bvxc' },
+          },
+          { en: { superfield: 'vczxvcxz' }, de: { superfield: 'b' } },
+        ])
+      ).toBe(
+        '\n[1] en: {superfield: bvcx, note: a}, de: {superfield: bvxc}\n[2] en: {superfield: vczxvcxz}, de: {superfield: b}'
+      )
     })
   })
 })

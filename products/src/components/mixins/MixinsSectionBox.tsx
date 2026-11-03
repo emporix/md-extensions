@@ -16,6 +16,10 @@ interface MixinsSectionBoxProps {
   readonly name: string
   readonly append?: () => void
   readonly remove?: () => void
+  /** Rendered after the title, e.g. a badge. */
+  readonly titleAddon?: ReactNode
+  /** Header controls rendered before the remove and add buttons. */
+  readonly actions?: ReactNode
 }
 
 const MixinsSectionBox = ({
@@ -25,6 +29,8 @@ const MixinsSectionBox = ({
   name,
   append,
   remove,
+  titleAddon,
+  actions,
 }: MixinsSectionBoxProps) => {
   const { t } = useTranslation()
 
@@ -36,8 +42,10 @@ const MixinsSectionBox = ({
           <span className={getIndicatorClassName(item)}>
             {textToTitleCase(name)}
           </span>
+          {titleAddon}
         </div>
         <div className={styles.actions}>
+          {actions}
           {remove && (
             <SecondaryButton
               size="small"

@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useState,
 } from 'react'
 import {
   PrimaryButton,
@@ -59,6 +60,8 @@ interface MixinFormProps {
   sidePanel?: React.ReactNode
   /** When true, form controls stay non-editable (e.g. while a batch save is in flight). */
   readOnly?: boolean
+  /** Name of the edited site, shown in the localized OBJECT overlay status. */
+  siteLabel?: string
 }
 
 const MixinsForm = forwardRef<MixinsFormHandle, MixinFormProps>(
@@ -76,6 +79,7 @@ const MixinsForm = forwardRef<MixinsFormHandle, MixinFormProps>(
       onPayloadChange,
       sidePanel,
       readOnly = false,
+      siteLabel,
     } = props
     const { t } = useTranslation()
     const isSiteContext = !!metadata.siteCode
@@ -112,9 +116,13 @@ const MixinsForm = forwardRef<MixinsFormHandle, MixinFormProps>(
       watch,
       trigger,
     } = methods
+    // Bumped on every reset so MixinsFormArray can clear its in-session
+    // "use default" latch and re-sync override state from loaded values.
+    const [formResetGeneration, setFormResetGeneration] = useState(0)
 
     const resetForm = () => {
       reset(prepareData())
+      setFormResetGeneration((generation) => generation + 1)
     }
 
     useEffect(() => {
@@ -168,15 +176,17 @@ const MixinsForm = forwardRef<MixinsFormHandle, MixinFormProps>(
         isDirty: () => formState.isDirty,
         validate: async () => {
           const payload = toPayload(getValues() as Mixins)
+          // Always run RHF rules first so localized OBJECT Controllers surface
+          // inline fieldState errors (including site batch Save).
+          const ok = await trigger()
+          if (!ok) {
+            return false
+          }
           if (isSiteContext) {
             return !hasMissingRequiredSiteOverlayValues(
               normalizeSiteOverlay(payload),
               items || []
             )
-          }
-          const ok = await trigger()
-          if (!ok) {
-            return false
           }
           return !hasMissingRequiredMixinValues(payload, items || [])
         },
@@ -196,7 +206,7 @@ const MixinsForm = forwardRef<MixinsFormHandle, MixinFormProps>(
         {(items || []).map((i) => (
           <MixinsFormItemTemplate
             key={i.key}
-            item={isSiteContext ? { ...i, isRequired: false } : i}
+            item={i}
             control={control}
             managerPermissions={!fieldsDisabled}
             isSingleReferenceArray={isAttributeOfArraySingleReference(i)}
@@ -204,6 +214,8 @@ const MixinsForm = forwardRef<MixinsFormHandle, MixinFormProps>(
               isSiteContext ? inheritedValues?.[i.key] : undefined
             }
             clearableOverride={isSiteContext}
+            formResetGeneration={formResetGeneration}
+            siteLabel={siteLabel}
           ></MixinsFormItemTemplate>
         ))}
       </div>

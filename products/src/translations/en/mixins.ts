@@ -8,6 +8,7 @@ export default {
     newVersion: 'New version',
     technical: 'Technical',
     addNew: 'Add New',
+    clearLanguage: 'Clear language',
   },
   labels: {
     classifications: 'Classifications',
@@ -29,6 +30,25 @@ export default {
     useDefaultValue: 'Use default',
     selectReference: 'Select a {{referenceType}}',
     unsupportedType: 'Unsupported reference type',
+    localizedObjectArrayUnsupported:
+      'Arrays inside a localized object cannot be edited here',
+    nestedLocalizedObjectUnsupported:
+      'Localized objects inside a localized object cannot be edited here',
+    localizedObject: 'Localized object',
+    localizedObjectList: 'Localized Items',
+    languageTabs: 'Language of {{name}}',
+    languageValueHint: '{{language}}: {{value}}',
+    clearLanguageNamed: 'Clear language: {{language}}',
+    requiredMissingInLanguages: 'Fill in the required fields in: {{languages}}',
+    siteOverriddenLanguages: 'Overridden on {{site}}: {{languages}}.',
+    siteOtherLanguagesInherit:
+      'Other languages and empty fields inherit from Default.',
+    siteEmptyFieldsInherit: 'Empty fields inherit from Default.',
+    siteNothingOverridden:
+      'Nothing is overridden on {{site}}. All languages inherit from Default.',
+    expandItem: 'Expand item {{index}}',
+    collapseItem: 'Collapse item {{index}}',
+    removeItem: 'Remove item {{index}}',
     saveBeforeNavigating: 'Save changes before navigating',
     reference: '{{type}} Reference',
     referenceProduct: 'Product Reference',

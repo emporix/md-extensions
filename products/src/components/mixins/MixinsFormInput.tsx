@@ -14,6 +14,7 @@ import {
   MixinsFormItemType,
 } from './helpers'
 import { fromLocalizedMap, toLocalizedMap } from './localizedMixin.helpers'
+import { formatInheritedDisplayValue } from './siteAwareMixin.helpers'
 import { isHourValid } from '../../helpers/time'
 import Localized from '../../models/Localized.model'
 import { useTranslation } from 'react-i18next'
@@ -31,6 +32,7 @@ type InputValueType =
   | boolean
   | string[]
   | Record<string, string>
+  | Record<string, unknown>
   | { language: string; value: string | number | boolean }[]
   | { emporixReferenceType: string; id: string }
   | null
@@ -48,6 +50,8 @@ interface SchemaFormInputProps {
   readonly inheritedValue?: unknown
   /** Site overlay: allow clearing a scalar override to resume inheritance. */
   readonly clearableOverride?: boolean
+  /** Shown when the field is empty; takes precedence over the inherited value. */
+  readonly placeholder?: string
 }
 
 const hasLocalizedValue = (value: unknown): boolean =>
@@ -66,6 +70,7 @@ const MixinsFormInput = (props: SchemaFormInputProps) => {
     externalItems,
     inheritedValue,
     clearableOverride = false,
+    placeholder,
   } = props
   const { i18n, t } = useTranslation()
   const { getContentLangValue } = useLocalizedValue()
@@ -103,12 +108,12 @@ const MixinsFormInput = (props: SchemaFormInputProps) => {
     inheritedValue !== null &&
     inheritedValue !== '' &&
     inheritedPlaceholder === undefined
-      ? t('mixins.labels.defaultValueHint', {
-          value:
-            typeof inheritedValue === 'object'
-              ? JSON.stringify(inheritedValue)
-              : String(inheritedValue),
-        })
+      ? (() => {
+          const formatted = formatInheritedDisplayValue(inheritedValue)
+          return formatted
+            ? t('mixins.labels.defaultValueHint', { value: formatted })
+            : undefined
+        })()
       : inheritedPlaceholder
         ? t('mixins.labels.defaultValueHint', { value: inheritedPlaceholder })
         : undefined
@@ -120,7 +125,7 @@ const MixinsFormInput = (props: SchemaFormInputProps) => {
           <InputText
             className={className}
             value={(value as string) || ''}
-            placeholder={inheritedPlaceholder}
+            placeholder={placeholder ?? inheritedPlaceholder}
             readOnly={disabled || isReadonly}
             onChange={(e) => {
               onInputChange(item.key as string, e.target.value)
@@ -133,7 +138,7 @@ const MixinsFormInput = (props: SchemaFormInputProps) => {
           <InputNumber
             className={className}
             value={value as number}
-            placeholder={inheritedPlaceholder}
+            placeholder={placeholder ?? inheritedPlaceholder}
             readOnly={disabled || isReadonly}
             onChange={({ value }) => {
               onInputChange(item.key as string, value as number)
@@ -146,7 +151,7 @@ const MixinsFormInput = (props: SchemaFormInputProps) => {
           <InputNumber
             className={className}
             value={value as number}
-            placeholder={inheritedPlaceholder}
+            placeholder={placeholder ?? inheritedPlaceholder}
             readOnly={disabled || isReadonly}
             onChange={({ value }) => {
               onInputChange(item.key as string, value as number)
@@ -210,7 +215,7 @@ const MixinsFormInput = (props: SchemaFormInputProps) => {
               className={className}
               options={options}
               value={value ?? null}
-              placeholder={inheritedPlaceholder}
+              placeholder={placeholder ?? inheritedPlaceholder}
               disabled={disabled || isReadonly}
               onChange={(e) => {
                 onInputChange(
@@ -445,6 +450,7 @@ const MixinsFormInput = (props: SchemaFormInputProps) => {
     inheritedPlaceholder,
     inheritedHint,
     clearableOverride,
+    placeholder,
     t,
   ])
 

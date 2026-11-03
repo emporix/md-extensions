@@ -8,6 +8,7 @@ export default {
     newVersion: 'Neue Version',
     technical: 'Technisch',
     addNew: 'Neu hinzufügen',
+    clearLanguage: 'Sprache leeren',
   },
   labels: {
     classifications: 'Klassifikationen',
@@ -30,6 +31,26 @@ export default {
     useDefaultValue: 'Standard verwenden',
     selectReference: '{{referenceType}} auswählen',
     unsupportedType: 'Nicht unterstützter Referenztyp',
+    localizedObjectArrayUnsupported:
+      'Arrays in einem lokalisierten Objekt können hier nicht bearbeitet werden',
+    nestedLocalizedObjectUnsupported:
+      'Lokalisierte Objekte in einem lokalisierten Objekt können hier nicht bearbeitet werden',
+    localizedObject: 'Lokalisiertes Objekt',
+    localizedObjectList: 'Lokalisierte Elemente',
+    languageTabs: 'Sprache von {{name}}',
+    languageValueHint: '{{language}}: {{value}}',
+    clearLanguageNamed: 'Sprache leeren: {{language}}',
+    requiredMissingInLanguages:
+      'Füllen Sie die Pflichtfelder aus in: {{languages}}',
+    siteOverriddenLanguages: 'Auf {{site}} überschrieben: {{languages}}.',
+    siteOtherLanguagesInherit:
+      'Andere Sprachen und leere Felder werden von Standard übernommen.',
+    siteEmptyFieldsInherit: 'Leere Felder werden von Standard übernommen.',
+    siteNothingOverridden:
+      'Auf {{site}} ist nichts überschrieben. Alle Sprachen werden von Standard übernommen.',
+    expandItem: 'Element {{index}} aufklappen',
+    collapseItem: 'Element {{index}} zuklappen',
+    removeItem: 'Element {{index}} entfernen',
     saveBeforeNavigating: 'Änderungen vor dem Navigieren speichern',
     reference: '{{type}}referenz',
     referenceProduct: 'Produktreferenz',

@@ -422,6 +422,14 @@ export const ensureInitialBindingPatch = (
   return { ...patch, [schemaId]: {} }
 }
 
+/** Nested object for default hints — always keep field names visible. */
+const formatNestedInheritedObject = (
+  value: Record<string, unknown>
+): string | undefined => {
+  const nested = formatInheritedDisplayValue(value)
+  return nested ? `{${nested}}` : undefined
+}
+
 export const formatInheritedDisplayValue = (
   value: unknown
 ): string | undefined => {
@@ -454,22 +462,48 @@ export const formatInheritedDisplayValue = (
         .map((entry) => `${entry.language}: ${entry.value ?? ''}`)
         .join(', ')
     }
-    return value
-      .map((entry) => formatInheritedDisplayValue(entry) ?? '')
+    const indexed = value
+      .map((entry, index) => {
+        const formatted = formatInheritedDisplayValue(entry)
+        return formatted ? `[${index + 1}] ${formatted}` : ''
+      })
       .filter((entry) => entry !== '')
-      .join(', ')
+    if (indexed.length === 0) {
+      return undefined
+    }
+    // Single-element arrays stay inline; multiple rows stack under the label.
+    if (indexed.length === 1) {
+      return indexed[0].replace(/^\[1] /, '')
+    }
+    return `\n${indexed.join('\n')}`
   }
   if (typeof value === 'object') {
+    const record = value as Record<string, unknown>
+    // Form id/value wrappers — show the payload, not the synthetic id.
     if (
-      'id' in (value as Record<string, unknown>) &&
-      (value as { id?: unknown }).id
+      typeof record.id === 'string' &&
+      'value' in record &&
+      Object.keys(record).every((key) => key === 'id' || key === 'value')
     ) {
-      return String((value as { id: unknown }).id)
+      return formatInheritedDisplayValue(record.value)
     }
-    const localized = value as Record<string, unknown>
-    const parts = Object.entries(localized)
+    if (record.id && !('value' in record && record.value !== undefined)) {
+      return String(record.id)
+    }
+    const parts = Object.entries(record)
       .filter(([, v]) => v !== undefined && v !== null && v !== '')
-      .map(([lang, v]) => `${lang}: ${String(v)}`)
+      .map(([key, v]) => {
+        if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
+          const nested = formatNestedInheritedObject(
+            v as Record<string, unknown>
+          )
+          return `${key}: ${nested ?? JSON.stringify(v)}`
+        }
+        if (Array.isArray(v)) {
+          return `${key}: ${formatInheritedDisplayValue(v) ?? '[]'}`
+        }
+        return `${key}: ${String(v)}`
+      })
     return parts.length ? parts.join(', ') : undefined
   }
   return undefined
