@@ -1,11 +1,13 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { withCategoryScope } from '@emporix/api-calls'
 import {
   Chip,
   Dialog,
   PrimaryButton,
   ProductsBrowser,
   QuantityStepper,
+  toProductsBrowserCategoryNodes,
   useToast,
   type DataTableColumnProps,
   type ProductsBrowserColumnKey,
@@ -25,9 +27,7 @@ import { apiPagination } from '../../../helpers/apiPagination'
 import { getApiErrorDetails, getApiErrorMessage } from '../../../helpers/api'
 import { addNewEntriesFromProducts } from '../../../helpers/orders'
 import {
-  toCategoryNodes,
   toProductRow,
-  withCategoryScope,
   type AddEntryProductRow,
 } from '../../../helpers/productsBrowser.helpers'
 import type { Product } from '../../../models/Product.model'
@@ -81,7 +81,8 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
   )
 
   const loadCategoryTree = useCallback(
-    async () => toCategoryNodes(await getCategoryTrees(), contentLanguage),
+    async () =>
+      toProductsBrowserCategoryNodes(await getCategoryTrees(), contentLanguage),
     [getCategoryTrees, contentLanguage]
   )
 
