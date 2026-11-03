@@ -265,16 +265,14 @@ export const convertToIdValuePair = (obj: any): any => {
   for (const field in obj) {
     const prop = obj[field]
     if (Array.isArray(prop) && prop.length > 0) {
-      newObj[field] = prop
-        .filter((value) => !isArrayMixinField(value))
-        .map((value) => {
-          if (isSimpleType(value) || Array.isArray(value)) {
-            return { id: uuidv4(), value }
-          } else if (typeof value === 'object') {
-            return { id: uuidv4(), value: convertToIdValuePair(value) }
-          }
-          return value
-        })
+      newObj[field] = prop.map((value) => {
+        if (isSimpleType(value) || Array.isArray(value)) {
+          return { id: uuidv4(), value }
+        } else if (typeof value === 'object') {
+          return { id: uuidv4(), value: convertToIdValuePair(value) }
+        }
+        return value
+      })
     } else if (Array.isArray(prop) && prop.length === 0) {
       newObj[field] = []
     } else if (typeof prop === 'object' && prop !== null) {
@@ -312,11 +310,9 @@ export const convertFromIdValuePair = (data: any): any => {
         return item
       })
     } else if (typeof prop === 'object' && prop !== null) {
-      if (isArrayMixinField(prop)) {
-        newData[field] = convertFromIdValuePair(prop.value)
-      } else {
-        newData[field] = convertFromIdValuePair(prop)
-      }
+      // Only array elements are id/value wrappers; an object outside an array
+      // may have `id` and `value` fields of its own.
+      newData[field] = convertFromIdValuePair(prop)
     } else {
       newData[field] = prop
     }
