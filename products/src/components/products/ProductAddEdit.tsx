@@ -37,6 +37,7 @@ import {
   persistedOverriddenFields,
   stripInheritedFields,
 } from '../../helpers/dynamicVariants/inheritableFields.helpers'
+import { withVariantMixinOverrides } from '../../helpers/variantMixinOverrides.helpers'
 import { deepClone } from '../../helpers/utils'
 import { getApiErrorStatus } from '../../helpers/api'
 import CategoriesAssignmentForm from './CategoriesAssignmentForm'
@@ -160,6 +161,12 @@ const ProductAddEditView = () => {
         )
       }
     }
+    productToUpdate = withVariantMixinOverrides(
+      productToUpdate,
+      product.mixins,
+      data,
+      mixinMetadata
+    )
     delete productToUpdate.metadata?.createdAt
     delete productToUpdate.metadata?.modifiedAt
     blockPanel(true)

@@ -83,7 +83,7 @@ A brand has optional `id`, `name`, `description`, `image`, `cloudinaryUrl`, and 
 
 ## Products
 
-A product has `code`, localized `name`, `productType`, `published`, mixins, media, a template id and version, and optional brand, labels, tax classes, suppliers, and bundled products (`products/src/models/Category.ts`). Product type: `BASIC`, `BUNDLE`, `VARIANT`, `PARENT_VARIANT`. A variant stores its parent id. Saving a variant appends dirty field names onto `metadata.overridden` (`products/src/components/products/ProductDetailsForm.tsx`). Related-item ids: `CONSUMABLE`, `ACCESSORY`, `YOU-MIGHT-LIKE-THIS`, `SUGGESTED-RELATED-ITEMS`, `SIMILAR-ITEMS`. Template attribute types: `TEXT`, `NUMBER`, `BOOLEAN`, `DATETIME`.
+A product has `code`, localized `name`, `productType`, `published`, mixins, media, a template id and version, and optional brand, labels, tax classes, suppliers, and bundled products (`products/src/models/Category.ts`). Product type: `BASIC`, `BUNDLE`, `VARIANT`, `PARENT_VARIANT`. A variant stores its parent id. Saving a variant appends dirty field names onto `metadata.overridden` (`products/src/components/products/ProductDetailsForm.tsx`); saving a mixin tab on a variant adds the changed mixin field paths and `metadata.mixins.<key>` (`products/src/helpers/variantMixinOverrides.helpers.ts`). Related-item ids: `CONSUMABLE`, `ACCESSORY`, `YOU-MIGHT-LIKE-THIS`, `SUGGESTED-RELATED-ITEMS`, `SIMILAR-ITEMS`. Template attribute types: `TEXT`, `NUMBER`, `BOOLEAN`, `DATETIME`.
 
 A category has `code`, localized name, slug, and description, `published`, optional `position`, `validity`, `parentId`, and `leaf`. Category fetch asks `showUnpublished=true`; save sends `publish` from `published` (`products/src/api/categories.ts`).
 
