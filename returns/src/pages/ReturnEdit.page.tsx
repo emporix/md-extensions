@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams } from 'react-router'
+import { useParams, useSearchParams } from 'react-router'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { object, string } from 'yup'
@@ -14,7 +14,9 @@ import {
 
 import HeaderSection from '../components/shared/HeaderSection'
 import ReturnEditDetails from '../components/returns/ReturnEditDetails'
-import useMixinsForm from '../components/mixins/useMixinsForm'
+import useMixinsForm, {
+  MIXINS_LOADING_TAB_ID,
+} from '../components/mixins/useMixinsForm'
 import type { MixinsFormMetadata } from '../components/mixins/helpers'
 import { useUIBlocker } from '../context/UIBlocker'
 import { usePermissions } from '../context/PermissionsProvider'
@@ -36,6 +38,7 @@ const DETAILS_TAB = 'details'
 
 const ReturnEditPage = () => {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
   const { blockPanel } = useUIBlocker()
@@ -145,7 +148,7 @@ const ReturnEditPage = () => {
     }
   }
 
-  const { loadMixins, mixinsForms } = useMixinsForm({
+  const { loadMixins, mixinsTabs, isMixinsLoading } = useMixinsForm({
     type: SchemaType.RETURN,
     onEdit: saveMixin,
     managerPermissions: canManage,
@@ -177,18 +180,20 @@ const ReturnEditPage = () => {
           />
         ),
       },
-      ...mixinsForms.map((form) => ({
-        id: form.id,
-        label: form.name,
-        content: form.template,
-      })),
+      ...mixinsTabs,
     ],
-    [t, returnDetails, control, errors, mixinsForms]
+    [t, returnDetails, control, errors, mixinsTabs]
   )
 
   const tabIds = useMemo(() => tabs.map((tab) => tab.id), [tabs])
   const { activeTab, onTabChange } = useTabs(tabIds, true)
-  const activeTabId = activeTab ?? DETAILS_TAB
+  // While mixins (re)load, a `?tab=<mixin>` URL has no matching tab yet:
+  // keep the loading placeholder selected instead of jumping to Details.
+  const urlTab = searchParams.get('tab')
+  const activeTabId =
+    isMixinsLoading && urlTab && !tabIds.includes(urlTab)
+      ? MIXINS_LOADING_TAB_ID
+      : (activeTab ?? DETAILS_TAB)
 
   return (
     <>

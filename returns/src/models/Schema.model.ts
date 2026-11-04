@@ -2,17 +2,26 @@ import Localized from './Localized.model'
 import { Metadata } from './Metadata.model'
 
 export enum SchemaType {
+  AVAILABILITY = 'AVAILABILITY',
+  CART = 'CART',
+  CART_ITEM = 'CART_ITEM',
   CATEGORY = 'CATEGORY',
+  CLASSIFICATION = 'CLASSIFICATION',
   COMPANY = 'COMPANY',
   COUPON = 'COUPON',
   CUSTOM_ENTITY = 'CUSTOM_ENTITY',
   CUSTOMER = 'CUSTOMER',
   CUSTOMER_ADDRESS = 'CUSTOMER_ADDRESS',
+  LOCATION = 'LOCATION',
   ORDER = 'ORDER',
+  ORDER_ENTRY = 'ORDER_ENTRY',
   PRICE_LIST = 'PRICE_LIST',
   PRODUCT = 'PRODUCT',
   QUOTE = 'QUOTE',
   RETURN = 'RETURN',
+  VENDOR = 'VENDOR',
+  VENDOR_LOCATION = 'VENDOR_LOCATION',
+  SITE = 'SITE',
 }
 
 export enum SchemaAttributeType {
@@ -24,9 +33,15 @@ export enum SchemaAttributeType {
   ENUM = 'ENUM',
   NUMBER = 'NUMBER',
   OBJECT = 'OBJECT',
-  REFERENCE = 'REFERENCE',
   TEXT = 'TEXT',
   TIME = 'TIME',
+  REFERENCE = 'REFERENCE',
+}
+
+export enum UpdateTypesMode {
+  REPLACE = 'REPLACE',
+  ADD = 'ADD',
+  REMOVE = 'REMOVE',
 }
 
 export interface SchemaAttributeMetadata {
@@ -45,6 +60,7 @@ export interface SchemaArrayType {
   values: SchemaAttributeValue[]
   localized: boolean
   attributes: SchemaAttribute[]
+  precision?: number
 }
 
 export interface SchemaAttribute {
@@ -56,6 +72,7 @@ export interface SchemaAttribute {
   values: SchemaAttributeValue[]
   attributes: SchemaAttribute[]
   arrayType: SchemaArrayType
+  precision?: number
 }
 
 export interface Schema {
@@ -63,6 +80,8 @@ export interface Schema {
   name: string | Localized
   attributes: SchemaAttribute[] | undefined
   types: SchemaType[] | string[] | undefined
+  /** When true, entities may store per-site overlays under mixinStorageKey(id, siteCode). */
+  siteAware?: boolean
   metadata?: Metadata & { url: string }
 }
 
@@ -71,5 +90,10 @@ export interface Reference {
   name: string | Localized
   attributes?: SchemaAttribute[] | undefined
   types: SchemaType[] | undefined
+  siteAware?: boolean
   metadata?: Metadata & { url: string }
+}
+
+export interface Type {
+  value: string
 }

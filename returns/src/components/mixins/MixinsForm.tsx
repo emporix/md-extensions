@@ -1,354 +1,270 @@
-import { ReactNode, useCallback, useEffect } from 'react'
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from 'react'
 import {
-  FieldLabel,
   PrimaryButton,
   SecondaryButton,
   SectionBox,
 } from '@emporix/component-library'
+
 import { useTranslation } from 'react-i18next'
+import { FieldValues, FormProvider, useForm } from 'react-hook-form'
 import {
-  Control,
-  Controller,
-  FieldValues,
-  FormProvider,
-  useFieldArray,
-  useForm,
-} from 'react-hook-form'
-import { HiMinus } from 'react-icons/hi'
-import { v4 as uuidv4 } from 'uuid'
-import {
+  applyDefaultsOnEmptyFields,
   convertFromIdValuePair,
   convertToIdValuePair,
   createForm,
-  defaultValueForMixinItem,
+  filterOutChangedMixins,
+  filterOutDeletedMixins,
+  hasMissingRequiredMixinValues,
+  hasMissingRequiredSiteOverlayValues,
+  isAttributeOfArraySingleReference,
+  mixinStorageKey,
   MixinsFormItem,
-  MixinsFormItemType,
   MixinsFormMetadata,
   sortTree,
 } from './helpers'
-import MixinsSectionBox from './MixinsSectionBox'
-import MixinsFormInput from './MixinsFormInput'
-import { useLocalizedValue } from '../../hooks/useLocalizedValue'
+import { serializeLocalizedFields } from './localizedMixin.helpers'
+import { normalizeSiteOverlay } from './siteAwareMixin.helpers'
 import { Mixins } from '../../models/Mixins.model'
-import Localized from '../../models/Localized.model'
-import styles from './MixinsForm.module.scss'
+import MixinsFormItemTemplate from './MixinsFormItemTemplate'
+import { deepMerge } from './mixins.utils'
+import styles from './Mixins.module.scss'
 
-type MixinsControl = Control<FieldValues>
-type GetUiLangValue = (value: Localized | string | undefined) => string
+export type MixinsFormHandle = {
+  flush: () => Mixins
+  isDirty: () => boolean
+  validate: () => Promise<boolean>
+}
 
 interface MixinFormProps {
   name: string
   mixins: Mixins
   metadata: MixinsFormMetadata
+  newerMetadata?: MixinsFormMetadata
   onSave: (data: Mixins, metadata: MixinsFormMetadata) => Promise<void> | void
   items: MixinsFormItem[] | undefined
   managerPermissions?: boolean
+  /** Default-context field values used as ghost placeholders when editing a site. */
+  inheritedValues?: Mixins
+  /** Replaces default Discard/Save (e.g. site-aware batch actions in the header). */
+  headerActions?: React.ReactNode
+  onDirtyChange?: (isDirty: boolean) => void
+  /** Emits current payload so parents can compare against received/baseline state. */
+  onPayloadChange?: (payload: Mixins) => void
+  /** Optional left panel rendered inside the SectionBox (e.g. site context). */
+  sidePanel?: React.ReactNode
+  /** When true, form controls stay non-editable (e.g. while a batch save is in flight). */
+  readOnly?: boolean
+  /** Name of the edited site, shown in the localized OBJECT overlay status. */
+  siteLabel?: string
 }
 
-const ArrayComponent = ({
-  item,
-  control,
-  managerPermissions,
-  parentKey,
-}: {
-  item: MixinsFormItem
-  control: MixinsControl
-  managerPermissions: boolean
-  parentKey?: string
-}) => {
-  const { getUiLangValue } = useLocalizedValue()
-  const { t } = useTranslation()
+const MixinsForm = forwardRef<MixinsFormHandle, MixinFormProps>(
+  (props, ref) => {
+    const {
+      name,
+      mixins,
+      metadata,
+      onSave,
+      items,
+      managerPermissions = true,
+      inheritedValues,
+      headerActions,
+      onDirtyChange,
+      onPayloadChange,
+      sidePanel,
+      readOnly = false,
+      siteLabel,
+    } = props
+    const { t } = useTranslation()
+    const isSiteContext = !!metadata.siteCode
+    // Site-aware batch editing compares live payloads to API baselines; synthesizing
+    // schema defaults would mark untouched fields dirty in the default context too.
+    const useSparseDefaults = isSiteContext || !!onPayloadChange
+    const fieldsDisabled = readOnly || !managerPermissions
 
-  const prefix = parentKey !== undefined ? `${parentKey}.` : ''
-  const newParentKey = prefix + item.key
-
-  const { fields, append, remove } = useFieldArray({
-    name: newParentKey,
-    control,
-  })
-
-  const renderColumns = () => {
-    const columns: ReactNode[] = []
-    let column: ReactNode[] = []
-
-    const renderItemArray = (items: MixinsFormItem[], index: number) => {
-      const parentName = getUiLangValue(item.name)
-      const elements: ReactNode[] = items.map((child) =>
-        renderItem(
-          child,
-          control,
-          managerPermissions,
-          getUiLangValue,
-          index,
-          newParentKey
-        )
-      )
-
-      const flexElements = <div className={styles.fieldRow}>{elements}</div>
-      if (parentName !== undefined) {
-        return (
-          <MixinsSectionBox
-            key={index}
-            name={`${index + 1} `}
-            remove={() => remove(index)}
-          >
-            {flexElements}
-          </MixinsSectionBox>
-        )
-      }
-
-      return flexElements
+    const prepareData = () => {
+      const schemaData = createForm(sortTree(items) ?? [], {
+        sparse: useSparseDefaults,
+      })
+      const mixinsData =
+        mixins[mixinStorageKey(metadata.key, metadata.siteCode)]
+      // Site-aware batch drafts are migrated once in MixinsFormBox; stripping
+      // toChange here on every remount would wipe replacements the user entered.
+      const filteredMixinsData = onPayloadChange
+        ? mixinsData
+        : filterOutChangedMixins(mixinsData, items || [])
+      const convertedSchemaData = convertToIdValuePair(schemaData)
+      const convertedMixinsData = convertToIdValuePair(filteredMixinsData)
+      return deepMerge(convertedSchemaData, convertedMixinsData)
     }
 
-    if (fields.length === 0) {
-      columns.push(
-        <span key={item.key} className={styles.emptyArray}>
-          {t('global.mixins.emptyArray', { type: item.arrayType })}
-        </span>
-      )
+    // Seed defaultValues so children (e.g. MixinsFormArray override detect) see
+    // the draft on first render, not only after the reset effect.
+    const methods = useForm<FieldValues>({ defaultValues: prepareData() })
+    const {
+      control,
+      reset,
+      handleSubmit,
+      formState,
+      getValues,
+      watch,
+      trigger,
+    } = methods
+    // Bumped on every reset so MixinsFormArray can clear its in-session
+    // "use default" latch and re-sync override state from loaded values.
+    const [formResetGeneration, setFormResetGeneration] = useState(0)
+
+    const resetForm = () => {
+      reset(prepareData())
+      setFormResetGeneration((generation) => generation + 1)
     }
 
-    fields.forEach((field, index) => {
-      column.push(
-        item.arrayType === MixinsFormItemType.object ? (
-          renderItemArray(item.items ?? [], index)
-        ) : (
-          <div key={field.id} className={styles.arrayItem}>
-            <Controller
-              name={`${prefix}${item.key}.${index}.value`}
-              control={control}
-              rules={{
-                required:
-                  item.type !== MixinsFormItemType.unknown && item.isRequired,
-              }}
-              render={({ field: controllerField }) => (
-                <div className={styles.field}>
-                  <FieldLabel
-                    required={
-                      item.type !== MixinsFormItemType.unknown &&
-                      item.isRequired
-                    }
-                  >
-                    {`${index + 1} `}
-                  </FieldLabel>
-                  <div className={styles.arrayItemControl}>
-                    <MixinsFormInput
-                      disabled={!managerPermissions}
-                      item={item}
-                      value={controllerField.value}
-                      onInputChange={(_key, value) =>
-                        controllerField.onChange(value)
-                      }
-                    />
-                    <SecondaryButton
-                      className={styles.removeButton}
-                      onClick={() => remove(index)}
-                    >
-                      <HiMinus size={20} />
-                    </SecondaryButton>
-                  </div>
-                </div>
-              )}
-            />
-          </div>
-        )
-      )
+    useEffect(() => {
+      resetForm()
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
+    }, [mixins, items, metadata.siteCode, metadata.key])
 
-      if ((index + 1) % 5 === 0 || index === fields.length - 1) {
-        columns.push(
-          <div key={`column-${index}`} className={styles.column}>
-            {column}
-          </div>
-        )
-        column = []
+    useEffect(() => {
+      onDirtyChange?.(formState.isDirty)
+    }, [formState.isDirty, onDirtyChange])
+
+    const toPayload = useCallback(
+      (data: Mixins): Mixins => {
+        const filteredData = filterOutDeletedMixins(data, items || [])
+        const withDefaults = useSparseDefaults
+          ? filteredData
+          : applyDefaultsOnEmptyFields(filteredData, items || [])
+        return serializeLocalizedFields(
+          convertFromIdValuePair(withDefaults),
+          items || []
+        ) as Mixins
+      },
+      [items, useSparseDefaults]
+    )
+
+    useEffect(() => {
+      if (!onPayloadChange) {
+        return
       }
-    })
-
-    return columns
-  }
-
-  return (
-    <MixinsSectionBox
-      key={item.key}
-      append={() =>
-        append({ id: uuidv4(), value: defaultValueForMixinItem(item, true) })
+      const emit = (values: Mixins) => {
+        onPayloadChange(toPayload(values))
       }
-      name={getUiLangValue(item.name)}
-    >
-      <div className={styles.fieldRow}>{renderColumns()}</div>
-    </MixinsSectionBox>
-  )
-}
+      emit(getValues() as Mixins)
+      const subscription = watch((values) => {
+        emit(values as Mixins)
+      })
+      return () => subscription.unsubscribe()
+    }, [
+      getValues,
+      onPayloadChange,
+      toPayload,
+      watch,
+      metadata.siteCode,
+      metadata.key,
+    ])
 
-const renderItems = (
-  formItems: MixinsFormItem[],
-  parentName: string | undefined,
-  control: MixinsControl,
-  managerPermissions: boolean,
-  getUiLangValue: GetUiLangValue,
-  index?: number,
-  arrayKey?: string
-) => {
-  const elements: ReactNode[] = formItems.map((item) =>
-    renderItem(
-      item,
-      control,
-      managerPermissions,
-      getUiLangValue,
-      index,
-      arrayKey
+    useImperativeHandle(
+      ref,
+      () => ({
+        flush: () => toPayload(getValues() as Mixins),
+        isDirty: () => formState.isDirty,
+        validate: async () => {
+          const payload = toPayload(getValues() as Mixins)
+          // Always run RHF rules first so localized OBJECT Controllers surface
+          // inline fieldState errors (including site batch Save).
+          const ok = await trigger()
+          if (!ok) {
+            return false
+          }
+          if (isSiteContext) {
+            return !hasMissingRequiredSiteOverlayValues(
+              normalizeSiteOverlay(payload),
+              items || []
+            )
+          }
+          return !hasMissingRequiredMixinValues(payload, items || [])
+        },
+      }),
+      [formState.isDirty, getValues, isSiteContext, items, toPayload, trigger]
     )
-  )
 
-  const flexElements = <div className={styles.fieldRow}>{elements}</div>
-  if (parentName !== undefined) {
-    return (
-      <MixinsSectionBox key={parentName} name={parentName}>
-        {flexElements}
-      </MixinsSectionBox>
+    const onSubmit = useCallback(
+      async (data: Mixins) => {
+        await onSave(toPayload(data), metadata)
+      },
+      [onSave, metadata, toPayload]
     )
-  }
 
-  return flexElements
-}
-
-const renderItem = (
-  item: MixinsFormItem,
-  control: MixinsControl,
-  managerPermissions: boolean,
-  getUiLangValue: GetUiLangValue,
-  index?: number,
-  arrayKey?: string
-): ReactNode => {
-  if (
-    item.type === MixinsFormItemType.object &&
-    item.items !== undefined &&
-    item.items.length > 0
-  ) {
-    return renderItems(
-      item.items,
-      getUiLangValue(item.name),
-      control,
-      managerPermissions,
-      getUiLangValue,
-      index,
-      arrayKey
-    )
-  }
-
-  if (item.type === MixinsFormItemType.array) {
-    const arrayParentKey =
-      index !== undefined && arrayKey !== undefined
-        ? `${arrayKey}[${index}].value`
-        : undefined
-
-    return (
-      <ArrayComponent
-        key={item.key}
-        item={item}
-        control={control}
-        managerPermissions={managerPermissions}
-        parentKey={arrayParentKey}
-      />
-    )
-  }
-
-  const uniqueKey =
-    index !== undefined ? `${arrayKey}.${index}.value.${item.key}` : item.key
-
-  return (
-    <Controller
-      key={uniqueKey}
-      name={uniqueKey}
-      control={control}
-      rules={{
-        required: item.type !== MixinsFormItemType.unknown && item.isRequired,
-      }}
-      render={({ field: controllerField }) => (
-        <div className={styles.field}>
-          <FieldLabel
-            required={
-              item.type !== MixinsFormItemType.unknown && item.isRequired
+    const formFields = (
+      <div className={styles.fieldsWrap}>
+        {(items || []).map((i) => (
+          <MixinsFormItemTemplate
+            key={i.key}
+            item={i}
+            control={control}
+            managerPermissions={!fieldsDisabled}
+            isSingleReferenceArray={isAttributeOfArraySingleReference(i)}
+            inheritedValue={
+              isSiteContext ? inheritedValues?.[i.key] : undefined
             }
-          >
-            {getUiLangValue(item.name)}
-          </FieldLabel>
-          <MixinsFormInput
-            disabled={!managerPermissions}
-            item={item}
-            value={controllerField.value}
-            onInputChange={(_key, value) => controllerField.onChange(value)}
-          />
-        </div>
-      )}
-    />
-  )
-}
+            clearableOverride={isSiteContext}
+            formResetGeneration={formResetGeneration}
+            siteLabel={siteLabel}
+          ></MixinsFormItemTemplate>
+        ))}
+      </div>
+    )
 
-const MixinsForm = ({
-  name,
-  mixins,
-  metadata,
-  onSave,
-  items,
-  managerPermissions = true,
-}: MixinFormProps) => {
-  const { t } = useTranslation()
-  const methods = useForm()
-  const { control, reset, handleSubmit, formState } = methods
-  const { getUiLangValue } = useLocalizedValue()
+    return (
+      <>
+        <SectionBox
+          name={name}
+          sectionClassName={sidePanel ? styles.sectionWithSidePanel : ''}
+          actions={
+            headerActions ?? (
+              <div className={styles.actions}>
+                <SecondaryButton
+                  onClick={() => resetForm()}
+                  disabled={
+                    !formState.isDirty || !managerPermissions || readOnly
+                  }
+                >
+                  {t('global.discard')}
+                </SecondaryButton>
+                <PrimaryButton
+                  disabled={
+                    !formState.isValid || !managerPermissions || readOnly
+                  }
+                  onClick={handleSubmit((data) => onSubmit(data as Mixins))}
+                >
+                  {t('global.save')}
+                </PrimaryButton>
+              </div>
+            )
+          }
+        >
+          <FormProvider {...methods}>
+            {sidePanel ? (
+              <div className={styles.siteAwareLayout}>
+                {sidePanel}
+                <div className={styles.siteAwareForm}>{formFields}</div>
+              </div>
+            ) : (
+              formFields
+            )}
+          </FormProvider>
+        </SectionBox>
+      </>
+    )
+  }
+)
 
-  const resetForm = useCallback(() => {
-    const form = convertToIdValuePair(createForm(sortTree(items) ?? []))
-    const mixinsKey = convertToIdValuePair(mixins[metadata.key])
-    reset({ ...form, ...mixinsKey })
-  }, [items, mixins, metadata.key, reset])
-
-  useEffect(() => {
-    resetForm()
-  }, [resetForm])
-
-  const onSubmit = useCallback(
-    async (data: Mixins) => {
-      await onSave(convertFromIdValuePair(data), metadata)
-    },
-    [metadata, onSave]
-  )
-
-  const headerActions = (
-    <div className={styles.actions}>
-      <SecondaryButton
-        onClick={resetForm}
-        disabled={!formState.isDirty || !managerPermissions}
-      >
-        {t('global.discard')}
-      </SecondaryButton>
-      <PrimaryButton
-        disabled={
-          !formState.isValid || !formState.isDirty || !managerPermissions
-        }
-        onClick={handleSubmit(onSubmit)}
-      >
-        {t('global.save')}
-      </PrimaryButton>
-    </div>
-  )
-
-  return (
-    <SectionBox name={name} actions={headerActions}>
-      <FormProvider {...methods}>
-        {items !== undefined &&
-          items.length > 0 &&
-          renderItems(
-            items,
-            undefined,
-            control,
-            managerPermissions,
-            getUiLangValue
-          )}
-      </FormProvider>
-    </SectionBox>
-  )
-}
+MixinsForm.displayName = 'MixinsForm'
 
 export default MixinsForm
