@@ -201,6 +201,26 @@ export const createRequestTracker = () => {
   }
 }
 
+/**
+ * Runs `load` and passes its result (or error) on only while it is still the
+ * tracker's latest request, so a slow response for an earlier route or tenant
+ * cannot overwrite the current one.
+ */
+export const loadLatest = async <T>(
+  trackRequest: ReturnType<typeof createRequestTracker>,
+  load: () => Promise<T>,
+  onSuccess: (value: T) => void,
+  onError: (error: unknown) => void
+): Promise<void> => {
+  const isLatest = trackRequest()
+  try {
+    const value = await load()
+    if (isLatest()) onSuccess(value)
+  } catch (e: unknown) {
+    if (isLatest()) onError(e)
+  }
+}
+
 export const mapParamsToQ = (params: Record<string, unknown>): string => {
   return Object.entries(params)
     .map(([key, value]) => `${key}:${value}`)

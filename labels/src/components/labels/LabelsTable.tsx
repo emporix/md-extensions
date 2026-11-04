@@ -30,6 +30,7 @@ import TableActions from '../shared/TableActions'
 import BatchDeleteButton from '../shared/BatchDeleteButton'
 import TableExtensions from '../shared/TableExtensions'
 import { useConfiguration } from '../../context/ConfigurationProvider'
+import { useDashboardContext } from '../../context/Dashboard.context'
 import { EmployeeDomains } from '../../configs/accessControls'
 import { labelDetailPath } from '../../constants/paths'
 import styles from './LabelsTable.module.scss'
@@ -50,6 +51,7 @@ const LabelsTable = () => {
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.LABELS_MANAGER)
   const { fetchTableConfiguration } = useConfiguration()
+  const { tenant } = useDashboardContext()
 
   const { paginationParams, onPageCallback, onFilterCallback, onSortCallback } =
     usePagination(INITIAL_PAGINATION)
@@ -101,6 +103,8 @@ const LabelsTable = () => {
     sortOrder,
     filtersKey,
     i18n.language,
+    // The host switches tenant without remounting this remote.
+    tenant,
   ])
 
   const deleteLabels = async (toDelete: Label[]) => {

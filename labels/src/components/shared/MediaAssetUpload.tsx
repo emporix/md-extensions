@@ -15,7 +15,7 @@ import { BsXCircle } from 'react-icons/bs'
 import { useMediaAssets } from '../../hooks/api/mediaAssets'
 import { useUIBlocker } from '../../context/UIBlcoker'
 import { getApiErrorDetails } from '../../helpers/api'
-import { sumFileSizes } from '../../helpers/media.helpers'
+import { removeReplacedAsset, sumFileSizes } from '../../helpers/media.helpers'
 import type { Asset, MediaRefIdType } from '../../models/Assets.model'
 import styles from './MediaAssetUpload.module.scss'
 
@@ -159,13 +159,19 @@ const MediaAssetUpload = ({
   }
 
   const uploadAssets = async (event: FileUploadHandlerEvent) => {
-    // Single-asset fields replace rather than append, so drop the old one first.
-    if (!multiple && currentAsset) {
-      try {
-        await deleteAsset(currentAsset.id)
-      } catch (e: unknown) {
-        showError(t('labels.media.toast.deleteFailure'), getApiErrorDetails(e))
-      }
+    // Single-asset fields replace rather than append, so drop the old one
+    // first and stop if that fails, so the label never ends up with two images.
+    if (!multiple) {
+      const replaced = await removeReplacedAsset(
+        currentAsset?.id,
+        deleteAsset,
+        (e: unknown) =>
+          showError(
+            t('labels.media.toast.deleteFailure'),
+            getApiErrorDetails(e)
+          )
+      )
+      if (!replaced) return
     }
 
     for (const file of event.files) {

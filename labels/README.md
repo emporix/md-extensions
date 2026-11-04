@@ -61,43 +61,38 @@ Before committing, run `npm run lint`, `npm run typecheck`, and `npm run test:ru
 
 ### Testing module
 
-To test it locally with the Emporix Management Dashboard, you first have to enable CORS in the Management Dashboard. To do this add the following to the `vite.config.ts` file:
+The remote runs on a fixed local port, `5179` (`server.port` and `preview.port` in `vite.config.ts`, both with `strictPort: true`). The Management Dashboard's `.env.local-*` files point `VITE_LABELS_URL` at `http://localhost:5179/assets/remoteEntry.js`.
 
-```typescript
-  server: {
-    cors: {
-      origin: '*',
-      credentials: true,
-    },
-  },
-  preview: {
-    cors: {
-      origin: '*',
-      credentials: true,
-    },
-  },
-```
+CORS is already configured. `vite.config.ts` keeps one shared `corsOrigins` whitelist that both the dev server and `vite preview` use:
 
+- `https://admin.emporix.io`
+- `https://dev-admin.emporix.io`
+- `https://stage-admin.emporix.io`
+- `http://localhost:4200` (the Management Dashboard dev server)
 
-Then build the project:
+Every `build*` script first runs `scripts/ensure-cors-origin.mjs`, which checks that the dashboard origin for that mode is in the whitelist. The origin comes from `CORS_ORIGIN`, else `VITE_DASHBOARD_ORIGIN` in `.env.{mode}` / `.env`, else `https://admin.emporix.io`. If it is missing, the script asks to add it in an interactive terminal and fails the build otherwise. Run the check on its own with:
 
 ```bash
-npm run build
+npm run check:cors -- --mode dev
 ```
 
-and then start the local server:
+To load the remote in a locally running Management Dashboard:
+
 ```bash
-npm run preview
+npm run build:dev
+npx vite preview --mode dev
 ```
 
-You also need to add the module to the Management Dashboard:
+Then start the dashboard with `serve:local-qa` (or another `local-*` mode) and open `/apps/management/labels`.
+
+To load it in a hosted dashboard instead, register it as an extension:
 - open the Dashboard
 - go to `Administration/Extensions` page
 - click `ADD NEW EXTENSION` button
 - provide the name of the module
-- enable module 
-- provide the URL to the `remoteEntry.js` file (`http://localhost:4173/assets/remoteEntry.js`)
-- add package name for the module - any name of your choosing. It should be a unique name for this tenant (e.g. `ordersmodule`)
+- enable module
+- provide the URL to the `remoteEntry.js` file (`http://localhost:5179/assets/remoteEntry.js`)
+- add package name for the module - any name of your choosing. It should be a unique name for this tenant (e.g. `labelsmodule`)
 
 You can find the Management Dashboard extensions documentation at [Administration - Extension Guides](https://developer.emporix.io/ce/management-dashboard/administration/extensions) and [Management Dashboard - Extension Guides](https://developer.emporix.io/ce/management-dashboard/administration/extensions).
 

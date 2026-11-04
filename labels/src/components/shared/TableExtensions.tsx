@@ -88,8 +88,15 @@ const TableExtensions = ({
     } catch (e: unknown) {
       showError(t('global.tableExtensions.saveError'), getApiErrorDetails(e))
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [columns, tableConfigurationKey])
+  }, [
+    columns,
+    tableConfigurationKey,
+    updateTableConfiguration,
+    setRefreshValue,
+    onSave,
+    showError,
+    t,
+  ])
 
   const toggleColumn = (index: number, visible: boolean) => {
     setColumns((prev) =>

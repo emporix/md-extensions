@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   createRequestTracker,
   getApiErrorDetails,
@@ -8,6 +8,7 @@ import {
   getApiErrorResourceId,
   getApiErrorStatus,
   getConflictErrorToast,
+  loadLatest,
 } from './api'
 
 const axiosLikeError = (status: number | string, data: unknown) => ({
@@ -238,5 +239,93 @@ describe('createRequestTracker', () => {
     createRequestTracker()()
 
     expect(isLatestA()).toBe(true)
+  })
+})
+
+describe('loadLatest', () => {
+  const deferred = <T>() => {
+    let resolve: (value: T) => void = () => undefined
+    let reject: (error: unknown) => void = () => undefined
+    const promise = new Promise<T>((res, rej) => {
+      resolve = res
+      reject = rej
+    })
+    return { promise, resolve, reject }
+  }
+
+  it('passes the result on when the request is still the latest', async () => {
+    const onSuccess = vi.fn()
+    const onError = vi.fn()
+
+    await loadLatest(
+      createRequestTracker(),
+      () => Promise.resolve('label-1'),
+      onSuccess,
+      onError
+    )
+
+    expect(onSuccess).toHaveBeenCalledWith('label-1')
+    expect(onError).not.toHaveBeenCalled()
+  })
+
+  it('drops a slower earlier response once a newer request started', async () => {
+    const trackRequest = createRequestTracker()
+    const first = deferred<string>()
+    const onSuccess = vi.fn()
+
+    const firstLoad = loadLatest(
+      trackRequest,
+      () => first.promise,
+      onSuccess,
+      vi.fn()
+    )
+    await loadLatest(
+      trackRequest,
+      () => Promise.resolve('label-2'),
+      onSuccess,
+      vi.fn()
+    )
+    first.resolve('label-1')
+    await firstLoad
+
+    expect(onSuccess).toHaveBeenCalledTimes(1)
+    expect(onSuccess).toHaveBeenCalledWith('label-2')
+  })
+
+  it('drops the error of a superseded request', async () => {
+    const trackRequest = createRequestTracker()
+    const first = deferred<string>()
+    const onError = vi.fn()
+
+    const firstLoad = loadLatest(
+      trackRequest,
+      () => first.promise,
+      vi.fn(),
+      onError
+    )
+    await loadLatest(
+      trackRequest,
+      () => Promise.resolve('label-2'),
+      vi.fn(),
+      onError
+    )
+    first.reject(new Error('404'))
+    await firstLoad
+
+    expect(onError).not.toHaveBeenCalled()
+  })
+
+  it('reports the error of the latest request', async () => {
+    const error = new Error('404')
+    const onError = vi.fn()
+
+    await loadLatest(
+      createRequestTracker(),
+      () => Promise.reject(error),
+      vi.fn(),
+      onError
+    )
+
+    expect(onError).toHaveBeenCalledWith(error)
   })
 })

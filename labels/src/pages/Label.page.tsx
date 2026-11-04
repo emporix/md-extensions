@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
 import { Controller, useForm } from 'react-hook-form'
@@ -18,7 +18,13 @@ import HeaderSection from '../components/shared/HeaderSection'
 import FormGrid from '../components/shared/FormGrid'
 import AssetsViewer from '../components/shared/AssetsViewer'
 import MediaAssetUpload from '../components/shared/MediaAssetUpload'
-import { getApiErrorDetails, makeCall } from '../helpers/api'
+import {
+  createRequestTracker,
+  getApiErrorDetails,
+  loadLatest,
+  makeCall,
+} from '../helpers/api'
+import { useDashboardContext } from '../context/Dashboard.context'
 import { useUIBlocker } from '../context/UIBlcoker'
 import { usePermissions } from '../context/PermissionsProvider'
 import { useRefresh } from '../context/RefreshValuesProvider'
@@ -49,6 +55,10 @@ const LabelPage = () => {
   const canManage = hasPermission(EmployeeDomains.LABELS_MANAGER)
   const { refresh, setRefreshValue } = useRefresh()
   const { getAllAssetsForId } = useMediaAssets()
+
+  const { tenant } = useDashboardContext()
+  const trackLabelRequest = useRef(createRequestTracker()).current
+  const trackAssetsRequest = useRef(createRequestTracker()).current
 
   const [label, setLabel] = useState<Label>()
   const [assets, setAssets] = useState<Asset[]>([])
@@ -88,39 +98,46 @@ const LabelPage = () => {
     [t]
   )
 
+  // The host can switch tenant or label id without remounting this page, so
+  // both loads re-run on either and drop responses a newer load superseded.
   useEffect(() => {
     if (!id) {
       return
     }
 
-    void (async () => {
-      try {
-        const fetched = await makeCall(() => fetchLabel(id), blockPanel)
+    void loadLatest(
+      trackLabelRequest,
+      () => makeCall(() => fetchLabel(id), blockPanel),
+      (fetched) => {
         setLabel(fetched)
         reset(createLabelForm(fetched))
-      } catch (e: unknown) {
+      },
+      (e: unknown) => {
         showError(t('labels.toasts.errorFetch'), getApiErrorDetails(e))
         navigate(listPath(), { replace: true })
       }
-    })()
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id])
+  }, [id, tenant])
+
+  useEffect(() => {
+    setAssets([])
+  }, [id, tenant])
 
   useEffect(() => {
     if (!id) {
       return
     }
 
-    void (async () => {
-      try {
-        setAssets(await getAllAssetsForId(id))
-      } catch {
-        // Assets are supplementary — the details tab stays usable without them.
-        setAssets([])
-      }
-    })()
+    void loadLatest(
+      trackAssetsRequest,
+      () => getAllAssetsForId(id),
+      setAssets,
+      // Assets are supplementary — the details tab stays usable without them.
+      () => setAssets([])
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, refresh])
+  }, [id, tenant, refresh])
 
   const submit = async (data: LabelFormFields) => {
     // An unset overlay position is sent as `{}`, like the MD form did.

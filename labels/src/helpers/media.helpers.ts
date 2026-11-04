@@ -58,3 +58,23 @@ export const isImageFile = (filename: string) => {
  */
 export const sumFileSizes = (files: ArrayLike<File>): number =>
   Array.from(files).reduce((sum, file) => sum + file.size, 0)
+
+/**
+ * Before a single-asset upload, removes the asset it replaces. Returns
+ * `false` when that delete fails, so the caller can stop instead of leaving
+ * two assets on an entity that should have one.
+ */
+export const removeReplacedAsset = async (
+  currentAssetId: string | undefined,
+  deleteAsset: (assetId: string) => Promise<unknown>,
+  onError: (error: unknown) => void
+): Promise<boolean> => {
+  if (!currentAssetId) return true
+  try {
+    await deleteAsset(currentAssetId)
+    return true
+  } catch (e: unknown) {
+    onError(e)
+    return false
+  }
+}
