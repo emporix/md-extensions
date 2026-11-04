@@ -6,6 +6,7 @@ import { useDashboardContext } from '../../context/Dashboard.context'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { EmployeeDomains } from '../../configs/accessControls'
 import { toApiPagination } from '../../helpers/apiPagination'
+import { fetchAllRecords } from '../../helpers/paginationUtils'
 
 export const useCustomerApi = () => {
   const { tenant } = useDashboardContext()
@@ -40,5 +41,15 @@ export const useCustomerApi = () => {
     [tenant]
   )
 
-  return { syncCustomers, syncCustomer }
+  const getAllCustomers = useCallback(
+    (pagination?: Partial<PaginationProps>): Promise<Customer[]> =>
+      fetchAllRecords((p) => syncCustomers(p), {
+        currentPage: 1,
+        rows: 100,
+        ...pagination,
+      }),
+    [syncCustomers]
+  )
+
+  return { syncCustomers, syncCustomer, getAllCustomers }
 }

@@ -33,6 +33,7 @@ export default {
     ascsv: 'Exportieren als .CSV',
   },
   download: 'Herunterladen',
+  copied: 'Kopiert',
   contentLanguageTooltip:
     'Dies ist die Sprache für Inhalte in Tabellen, Formularfeldern usw.',
   localizedInput: {
@@ -95,10 +96,6 @@ export default {
     },
   },
   email: 'E-Mail',
-  mixins: {
-    addNew: 'Neu hinzufügen',
-    emptyArray: 'Array vom Typ {{type}} ist leer. Keine Elemente zum Anzeigen.',
-  },
   net: 'Netto',
   gross: 'Brutto',
   submit: 'Bestätigen',

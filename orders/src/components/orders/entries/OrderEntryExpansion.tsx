@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ProgressSpinner, useToast } from '@emporix/component-library'
 import EmptyContent from '../../shared/EmptyContent'
 import useMixinsForm from '../../mixins/useMixinsForm'
-import type { MixinsFormMetadata } from '../../mixins/helpers'
 import { useUIBlocker } from '../../../context/UIBlocker'
 import { useOrderData } from '../../../contexts/OrderData.provider'
 import { useOrdersApi } from '../../../hooks/api/orders'
 import { getApiErrorMessage } from '../../../helpers/api'
+import type { Metadata } from '../../../models/Metadata.model'
 import type { Mixins } from '../../../models/Mixins.model'
 import type { Entry, Order } from '../../../models/Order.model'
 import { SchemaType } from '../../../models/Schema.model'
@@ -23,9 +23,7 @@ type OrderEntryExpansionProps = {
 
 /**
  * Order-entry mixins (`SchemaType.ORDER_ENTRY`) shown in the entry row
- * expansion. MD renders them as one accordion with a shared Save; here each
- * schema is a `MixinsForm` section with its own Save/Discard (the remote's
- * mixins subsystem has no accordion variant). Unsaved edits are still
+ * expansion as one accordion with a shared Save, as in MD. Unsaved edits are
  * reported so collapsing a dirty row asks for confirmation.
  */
 const OrderEntryExpansion = ({
@@ -40,19 +38,18 @@ const OrderEntryExpansion = ({
   const { blockPanel } = useUIBlocker()
   const { refreshData } = useOrderData()
   const { patchOrder } = useOrdersApi()
-  const dirtyForms = useRef<Set<string>>(new Set())
 
-  const saveMixin = async (data: Mixins, metadata: MixinsFormMetadata) => {
+  const saveMixins = async (mixins: Mixins, metadata: Metadata) => {
     const newEntries = entries.map((e) =>
       e.id === entry.id
         ? {
             ...e,
-            mixins: { ...e.mixins, [metadata.key]: data },
+            mixins: { ...e.mixins, ...mixins },
             metadata: {
               ...e.metadata,
               mixins: {
                 ...((e.metadata?.mixins as Record<string, string>) ?? {}),
-                [metadata.key]: metadata.url,
+                ...metadata,
               },
             },
           }
@@ -70,20 +67,17 @@ const OrderEntryExpansion = ({
     }
   }
 
-  const handleFormDirtyChange = useCallback(
-    (mixinKey: string, isDirty: boolean) => {
-      if (isDirty) dirtyForms.current.add(mixinKey)
-      else dirtyForms.current.delete(mixinKey)
-      onDirtyChange?.(entry.id, dirtyForms.current.size > 0)
-    },
+  const handleDirtyChange = useCallback(
+    (isDirty: boolean) => onDirtyChange?.(entry.id, isDirty),
     [onDirtyChange, entry.id]
   )
 
-  const { loadMixins, mixinsForms, isMixinsLoading } = useMixinsForm({
+  const { loadMixins, mixinsAccordion, isMixinsLoading } = useMixinsForm({
     type: SchemaType.ORDER_ENTRY,
-    onEdit: saveMixin,
+    onEdit: () => undefined,
+    onEditAccordion: saveMixins,
+    onAccordionDirtyChange: handleDirtyChange,
     managerPermissions: !readonly,
-    onFormDirtyChange: handleFormDirtyChange,
   })
 
   useEffect(() => {
@@ -107,12 +101,8 @@ const OrderEntryExpansion = ({
         <div className={styles.loading}>
           <ProgressSpinner />
         </div>
-      ) : mixinsForms.length > 0 ? (
-        <div className={styles.forms}>
-          {mixinsForms.map((form) => (
-            <div key={form.id}>{form.template}</div>
-          ))}
-        </div>
+      ) : mixinsAccordion ? (
+        mixinsAccordion
       ) : (
         <EmptyContent
           text={t('orders.tables.entries.emptyMixins')}

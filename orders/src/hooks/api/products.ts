@@ -3,6 +3,7 @@ import { fetchPaginatedProduct, fetchProductCall } from '@emporix/api-calls'
 import { PaginationProps } from '../usePagination'
 import { useDashboardContext } from '../../context/Dashboard.context'
 import { toApiPagination } from '../../helpers/apiPagination'
+import { fetchAllRecords } from '../../helpers/paginationUtils'
 import type { Product } from '../../models/Product.model'
 
 export const useProductsApi = () => {
@@ -39,5 +40,20 @@ export const useProductsApi = () => {
     [tenant]
   )
 
-  return { syncPaginatedProducts, getProduct }
+  const getAllProducts = useCallback(
+    (pagination?: Partial<PaginationProps>): Promise<Product[]> => {
+      const fetchPage = async (p: Partial<PaginationProps>) => {
+        const { data, totalCount } = await syncPaginatedProducts(p)
+        return { values: data, totalRecords: totalCount }
+      }
+      return fetchAllRecords(fetchPage, {
+        currentPage: 1,
+        rows: 100,
+        ...pagination,
+      })
+    },
+    [syncPaginatedProducts]
+  )
+
+  return { syncPaginatedProducts, getProduct, getAllProducts }
 }

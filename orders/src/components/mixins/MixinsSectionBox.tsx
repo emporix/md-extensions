@@ -4,30 +4,48 @@ import { BsPlusLg } from 'react-icons/bs'
 import { HiMinus } from 'react-icons/hi'
 import { useTranslation } from 'react-i18next'
 import { textToTitleCase } from '../../helpers/utils'
+import { MixinsFormItem } from './helpers'
+import MixinsFormItemChangeIndicator from './MixinsFormItemChangeIndicator'
+import { getIndicatorClassName } from './mixinsIndicator'
 import styles from './MixinsSectionBox.module.scss'
 
 interface MixinsSectionBoxProps {
-  children: ReactNode
-  className?: string
-  name: string
-  append?: () => void
-  remove?: () => void
+  readonly item?: MixinsFormItem
+  readonly children: ReactNode
+  readonly className?: string
+  readonly name: string
+  readonly append?: () => void
+  readonly remove?: () => void
+  /** Rendered after the title, e.g. a badge. */
+  readonly titleAddon?: ReactNode
+  /** Header controls rendered before the remove and add buttons. */
+  readonly actions?: ReactNode
 }
 
 const MixinsSectionBox = ({
+  item,
   children,
   className = '',
   name,
   append,
   remove,
+  titleAddon,
+  actions,
 }: MixinsSectionBoxProps) => {
   const { t } = useTranslation()
 
   return (
     <div className={[styles.wrapper, className].filter(Boolean).join(' ')}>
       <div className={styles.header}>
-        <div className={styles.title}>{textToTitleCase(name)}</div>
+        <div className={styles.title}>
+          <MixinsFormItemChangeIndicator item={item} />
+          <span className={getIndicatorClassName(item)}>
+            {textToTitleCase(name)}
+          </span>
+          {titleAddon}
+        </div>
         <div className={styles.actions}>
+          {actions}
           {remove && (
             <SecondaryButton
               size="small"
@@ -46,7 +64,7 @@ const MixinsSectionBox = ({
             >
               <BsPlusLg size={16} />
               <span className={styles.addLabel}>
-                {t('global.mixins.addNew')}
+                {t('mixins.buttons.addNew')}
               </span>
             </SecondaryButton>
           )}

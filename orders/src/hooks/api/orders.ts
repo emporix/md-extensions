@@ -24,6 +24,11 @@ import { usePermissions } from '../../context/PermissionsProvider'
 import { useSites } from '../../context/SitesProvider'
 import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
 import { toApiPagination } from '../../helpers/apiPagination'
+import { fetchAllRecords } from '../../helpers/paginationUtils'
+
+export interface OrderSummary {
+  id: string
+}
 
 // api-calls types its own (narrower) Order model; the remote keeps the full
 // MD shape, so payloads/results are cast at this boundary only.
@@ -111,6 +116,16 @@ export const useOrdersApi = () => {
       return getOrder(tenant, orderId) as unknown as Promise<Order>
     },
     [tenant]
+  )
+
+  const getAllOrders = useCallback(
+    (pagination?: Partial<PaginationProps>): Promise<OrderSummary[]> =>
+      fetchAllRecords((p) => syncOrders(p), {
+        currentPage: 1,
+        rows: 100,
+        ...pagination,
+      }),
+    [syncOrders]
   )
 
   const getStatusChanges = useCallback(
@@ -211,6 +226,7 @@ export const useOrdersApi = () => {
     addEntries,
     changeOrderStatus,
     deleteOrder,
+    getAllOrders,
     getOrderInvoiceLink,
     getStatusChanges,
     orderDeliveryNote,

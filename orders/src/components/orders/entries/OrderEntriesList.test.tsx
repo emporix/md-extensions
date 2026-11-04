@@ -38,7 +38,7 @@ vi.mock('../../../hooks/api/orders', () => ({
 vi.mock('../../mixins/useMixinsForm', () => ({
   default: () => ({
     loadMixins: vi.fn(),
-    mixinsForms: [],
+    mixinsAccordion: null,
     isMixinsLoading: false,
   }),
 }))
