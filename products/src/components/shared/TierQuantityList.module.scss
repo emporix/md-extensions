@@ -1,0 +1,51 @@
+// MD components/priceModels/TierQuantityList.scss + PrimeFlex utilities.
+// MD $grey-2 = #e8e9eb.
+
+.tierLabel {
+  margin-left: 72px;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.tierRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.tierIndex {
+  min-width: 56px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #e8e9eb;
+}
+
+.tierRowIndex {
+  margin-right: 1rem;
+}
+
+.tierInput {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: 1rem;
+}
+
+.tierQuantity {
+  padding-left: 0.5rem;
+  padding-right: 0.25rem;
+  text-align: right;
+}
+
+.tierUnit {
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #e8e9eb;
+}
+
+.priceInput {
+  width: 10rem;
+}

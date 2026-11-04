@@ -155,6 +155,25 @@ describe('AddEntryDialog', () => {
     expect(mocks.updateOrder).toHaveBeenCalledWith(savedOrder)
   })
 
+  it('keeps the chip row when the first product is picked', async () => {
+    await renderDialog()
+    const row = screen.getByTestId('add-entry-picks')
+    expect(row.textContent).toBe(' ')
+
+    fireEvent.click(increaseButton())
+
+    expect(screen.getByTestId('add-entry-picks')).toBe(row)
+    expect(row.textContent).toBe('1x Running shoe')
+  })
+
+  it('pins the quantity column to the right edge of the table', async () => {
+    await renderDialog()
+
+    const cell = increaseButton().closest('td')
+    expect(cell?.classList.contains('p-frozen-column')).toBe(true)
+    expect(cell?.style.right).toBe('0px')
+  })
+
   it('closes on a click outside the dialog', async () => {
     const onClose = await renderDialog()
 
@@ -235,6 +254,29 @@ describe('AddEntryDialog', () => {
         name: 'orders.entry.actions.addProduct.browser.unpublished',
       })
     ).not.toBeNull()
+  })
+
+  it('loads the products of the whole branch of a selected category', async () => {
+    mocks.getCategoryTrees.mockResolvedValue([
+      {
+        ...category('footwear', 'Footwear', true),
+        subcategories: [category('boots', 'Boots', true)],
+      },
+    ])
+    await renderDialog()
+
+    fireEvent.click(screen.getByRole('button', { name: TREE_VIEW }))
+    fireEvent.click(await screen.findByText('Footwear'))
+
+    await waitFor(() =>
+      expect(mocks.syncPaginatedProducts).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            categoryIds: { value: ['footwear', 'boots'], matchMode: 'in' },
+          }),
+        })
+      )
+    )
   })
 
   it('does not request the tree without access to categories', async () => {

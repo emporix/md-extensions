@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Dropdown } from 'primereact/dropdown'
 import {
   BsBoxArrowRight,
   BsCheckCircleFill,
@@ -7,48 +6,59 @@ import {
   BsChevronRight,
   BsXCircle,
 } from 'react-icons/bs'
-import TierQuantityListWithPrices from '../products/TierQuantityListWithPrices'
-import { Price, PriceTierValue } from '../../models/Price'
-import { PriceModel } from '../../models/PriceModel'
-import { MultiSelect } from 'primereact/multiselect'
-import { Calendar } from 'primereact/calendar'
+import {
+  Calendar,
+  ConfirmBox,
+  Dropdown,
+  SectionBox,
+  useToast,
+} from '@emporix/component-library'
+import TierQuantityListWithPrices from '../shared/TierQuantityListWithPrices'
+import { Price, PriceTierValue } from '../../models/Price.model'
+import { PriceModel } from '../../models/PriceModel.model'
 import InputField from '../shared/InputField'
 import { useTranslation } from 'react-i18next'
-import { Panel } from 'primereact/panel'
-import { Button } from 'primereact/button'
-import './ProductPricesPanelForm.scss'
-import { usePricesApi } from '../../api/prices_v2'
-import { useUIBlocker } from '../../context/UIBlcoker'
-import { useToast } from '../../context/ToastProvider'
-import ConfirmBox from '../shared/ConfirmBox'
-import { useCountries } from '../../hooks/useCountries.tsx'
-import { useLocalizedValue } from '../../hooks/useLocalizedValue.tsx'
-import { Link } from 'react-router-dom'
-import useForm from '../../hooks/useForm.tsx'
+import { usePricesApi } from '../../hooks/api/prices_v2'
+import { useUIBlocker } from '../../context/UIBlocker'
+import { useCountries } from '../../hooks/useCountries'
+import { useLocalizedValue } from '../../hooks/useLocalizedValue'
+import useForm from '../../hooks/useForm'
 import { useCurrencies } from '../../hooks/useCurrencies'
 import PriceInput from '../shared/PriceInput'
 import PercentageInput from '../shared/PercentageInput'
+import {
+  assignHostLocation,
+  HOST_PRICE_MODEL_PATH,
+} from '../../helpers/hostUrls'
+import styles from './ProductPricesPanelForm.module.scss'
 
-interface DiscountOption {
+type DiscountOption = {
   value: string
   label: string
 }
 
-interface ProductPricesPanelForm {
-  price: Price
-  priceIndex: number
-  currenciesDropdownOptions: { label: string; value: string }[]
-  sites: { label: string; value: string }[]
-  priceModelsDropdownOptions: { label: string; value: string }[]
-  priceModels: PriceModel[]
-  defaultPriceModel: PriceModel | undefined
-  removeLocalPrice: () => void
-  removeExistingPrice: (priceId: string) => void
-  updateLocalPrice: (price: Price) => void
-  isPanelOpened: boolean
-  taxCountriesDropdownOptions: { label: string; value: string }[]
-  readOnly?: boolean
+type ApiError = {
+  response: { data: { message: string; details: string[] } }
 }
+
+type ProductPricesPanelFormProps = {
+  readonly price: Price
+  readonly priceIndex: number
+  readonly currenciesDropdownOptions: { label: string; value: string }[]
+  readonly sites: { label: string; value: string }[]
+  readonly priceModelsDropdownOptions: { label: string; value: string }[]
+  readonly priceModels: PriceModel[]
+  readonly defaultPriceModel: PriceModel | undefined
+  readonly removeLocalPrice: () => void
+  readonly removeExistingPrice: (priceId: string) => void
+  readonly updateLocalPrice: (price: Price) => void
+  readonly isPanelOpened: boolean
+  readonly taxCountriesDropdownOptions: { label: string; value: string }[]
+  readonly readOnly?: boolean
+}
+
+const toIsoDate = (value: unknown): string | undefined =>
+  value instanceof Date ? value.toISOString() : undefined
 
 const ProductPricesPanelForm = ({
   price,
@@ -64,7 +74,7 @@ const ProductPricesPanelForm = ({
   isPanelOpened,
   taxCountriesDropdownOptions,
   readOnly,
-}: ProductPricesPanelForm) => {
+}: ProductPricesPanelFormProps) => {
   const { t, i18n } = useTranslation()
   const { getCountryLocalizedName } = useCountries()
   const { getContentLangValue } = useLocalizedValue()
@@ -84,30 +94,11 @@ const ProductPricesPanelForm = ({
       { value: 'PERCENT', label: t('coupons.type.percent') },
       { value: 'ABSOLUTE', label: t('coupons.type.absolute') },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
     [i18n.language]
   )
 
   const { selectedCurrency } = useCurrencies()
-  useEffect(() => {
-    setFormData(price)
-    setInitFormData(price)
-    setTierValues(price.tierValues)
-    const selectedPriceModel = priceModels.find(
-      (priceModel) => priceModel.id === price.priceModelId
-    )
-    setSelectedPriceModel(selectedPriceModel || defaultPriceModel)
-    setPanelCollapsed(!isPanelOpened)
-    initiateDiscountType()
-  }, [price, priceModels, defaultPriceModel])
-
-  const updateTierValue = (tierIndex: number, value: string) => {
-    if (value) {
-      setTierValues((prevState) => {
-        prevState[tierIndex].priceValue = value
-        return [...prevState]
-      })
-    }
-  }
 
   const initiateDiscountType = () => {
     const isDiscountAmountSet =
@@ -126,6 +117,35 @@ const ProductPricesPanelForm = ({
     setDiscountType('ABSOLUTE')
   }
 
+  useEffect(() => {
+    setFormData(price)
+    setInitFormData(price)
+    setTierValues(price.tierValues)
+    const selectedPriceModel = priceModels.find(
+      (priceModel) => priceModel.id === price.priceModelId
+    )
+    setSelectedPriceModel(selectedPriceModel ?? defaultPriceModel)
+    setPanelCollapsed(!isPanelOpened)
+    initiateDiscountType()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
+  }, [price, priceModels, defaultPriceModel])
+
+  const updateTierValue = (tierIndex: number, value: string) => {
+    if (value) {
+      setTierValues((prevState) => {
+        prevState[tierIndex].priceValue = value
+        return [...prevState]
+      })
+    }
+  }
+
+  const showApiError = (e: unknown) => {
+    const { response } = e as ApiError
+    const errorTitle = response.data.message
+    const errorDetails = response.data.details.join(', ')
+    toast.showError(errorTitle, errorDetails)
+  }
+
   const savePrice = useCallback(async () => {
     try {
       blockPanel(true)
@@ -134,7 +154,7 @@ const ProductPricesPanelForm = ({
         tierValues,
       } as Price
       if (formData.id) {
-        const successResponse = await editPrice(payload as Price)
+        const successResponse = await editPrice(payload)
         if (successResponse) {
           const { metadata } = await getPrice(formData.id)
           setFormField('metadata', metadata)
@@ -146,7 +166,7 @@ const ProductPricesPanelForm = ({
           )
         }
       } else {
-        const newPriceId = await createPrice(payload as Price)
+        const newPriceId = await createPrice(payload)
         if (newPriceId.id) {
           const newPrice = await getPrice(newPriceId.id)
           updateLocalPrice(newPrice)
@@ -157,13 +177,12 @@ const ProductPricesPanelForm = ({
           )
         }
       }
-    } catch (e: any) {
-      const errorTitle = e.response.data.message
-      const errorDetails = e.response.data.details.join(', ')
-      toast.showError(errorTitle, errorDetails)
+    } catch (e) {
+      showApiError(e)
     } finally {
       blockPanel(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
   }, [formData, tierValues])
 
   const deletePrice = async () => {
@@ -180,10 +199,8 @@ const ProductPricesPanelForm = ({
           )
         }
       }
-    } catch (e: any) {
-      const errorTitle = e.response.data.message
-      const errorDetails = e.response.data.details.join(', ')
-      toast.showError(errorTitle, errorDetails)
+    } catch (e) {
+      showApiError(e)
     } finally {
       blockPanel(false)
       setDialogVisible(false)
@@ -204,60 +221,9 @@ const ProductPricesPanelForm = ({
     return []
   }, [price, getCountryLocalizedName, getContentLangValue])
 
-  const pricePanelTemplate = (options: {
-    collapsed: boolean
-    onTogglerClick: React.MouseEventHandler<HTMLElement> | undefined
-  }) => {
-    return (
-      <div
-        className="price-panel flex justify-content-between align-items-center cursor-pointer"
-        onClick={options.onTogglerClick}
-      >
-        <div className="flex align-items-center">
-          <Button
-            className="p-button-text p-button-icon-only justify-content-start"
-            onClick={options.onTogglerClick}
-          >
-            {options.collapsed ? (
-              <BsChevronRight size={16} />
-            ) : (
-              <BsChevronDown size={16} />
-            )}
-          </Button>
-          <span className="price-panel-title">
-            {`${t('products.edit.tab.prices.form.price')} ${priceIndex + 1}`}
-          </span>
-        </div>
-        {!options.collapsed && (
-          <div className="flex absolute right-0 bottom-0 mr-2 mb-1">
-            <Button
-              disabled={readOnly}
-              type="button"
-              className="p-button-text p-button-plain p-button-icon-only"
-              onClick={(ev) => {
-                ev.stopPropagation()
-                formData.id ? setDialogVisible(true) : removeLocalPrice()
-              }}
-            >
-              <BsXCircle size={25} />
-            </Button>
-            <Button
-              disabled={readOnly}
-              data-test-id="confirm-button"
-              type="button"
-              className="p-button-text p-button-plain p-button-icon-only"
-              onClick={(ev) => {
-                ev.stopPropagation()
-                return savePrice()
-              }}
-            >
-              <BsCheckCircleFill color={'#128AFB'} size={25} />
-            </Button>
-          </div>
-        )}
-      </div>
-    )
-  }
+  const countryOptions = taxCountriesDropdownOptions.length
+    ? [...taxCountriesDropdownOptions, ...selectedCountryDropdownOption]
+    : selectedCountryDropdownOption
 
   const onPriceModelChange = useCallback(
     (priceModelId: string) => {
@@ -277,226 +243,291 @@ const ProductPricesPanelForm = ({
         setSelectedPriceModel(dropdownSelection)
       }
     },
-    [priceModels, price, formData]
+    [priceModels]
+  )
+
+  const togglePanel = () => setPanelCollapsed((prev) => !prev)
+
+  // Prime `Panel` with a custom header template → CL SectionBox (decision D2).
+  const pricePanelHeader = (
+    <div
+      className={[
+        styles.pricePanel,
+        panelCollapsed ? styles.pricePanelCollapsed : '',
+      ].join(' ')}
+      onClick={togglePanel}
+    >
+      <div className={styles.pricePanelHeading}>
+        <button
+          type="button"
+          className={`${styles.iconButton} ${styles.togglerButton}`}
+        >
+          {panelCollapsed ? (
+            <BsChevronRight size={16} />
+          ) : (
+            <BsChevronDown size={16} />
+          )}
+        </button>
+        <span className={styles.pricePanelTitle}>
+          {`${t('products.edit.tab.prices.form.price')} ${priceIndex + 1}`}
+        </span>
+      </div>
+      {!panelCollapsed && (
+        <div className={styles.pricePanelActions}>
+          <button
+            disabled={readOnly}
+            type="button"
+            className={styles.iconButton}
+            onClick={(ev) => {
+              ev.stopPropagation()
+              if (formData.id) {
+                setDialogVisible(true)
+              } else {
+                removeLocalPrice()
+              }
+            }}
+          >
+            <BsXCircle size={25} />
+          </button>
+          <button
+            disabled={readOnly}
+            data-test-id="confirm-button"
+            type="button"
+            className={`${styles.iconButton} ${styles.confirmIcon}`}
+            onClick={(ev) => {
+              ev.stopPropagation()
+              return savePrice()
+            }}
+          >
+            <BsCheckCircleFill size={25} />
+          </button>
+        </div>
+      )}
+    </div>
   )
 
   return (
     <div>
-      <Panel
-        key={price.id}
-        toggleable
-        headerTemplate={pricePanelTemplate}
-        collapsed={panelCollapsed}
-        onToggle={(e) => setPanelCollapsed(e.value)}
-      >
-        <InputField
-          label={t('priceModels.form.label.model')}
-          className="mb-6"
-          name="tierDefinition.tierType"
-        >
-          {price.priceModelId ? (
-            <div>{getContentLangValue(selectedPriceModel?.name)}</div>
-          ) : (
-            <Dropdown
-              options={priceModelsDropdownOptions}
-              value={selectedPriceModel?.id}
-              onChange={(ev) => {
-                setFormField('priceModelId', ev.value)
-                onPriceModelChange(ev.value)
-              }}
-            />
-          )}
-
-          {selectedPriceModel?.id && (
-            <Link
-              to={`/price-models/${selectedPriceModel.id}`}
-              className={
-                'text-xs highlight-text flex align-items-center cursor-pointer'
-              }
+      <SectionBox key={price.id} sectionClassName={styles.panelBox}>
+        {pricePanelHeader}
+        {!panelCollapsed && (
+          <div className={styles.panelContent}>
+            <InputField
+              label={t('priceModels.form.label.model')}
+              className={styles.modelField}
+              name="tierDefinition.tierType"
             >
-              <div>Go to model definition</div>
-              <BsBoxArrowRight className={'pl-1'} size={20} />
-            </Link>
-          )}
-        </InputField>
-        <div className="flex">
-          <InputField
-            label={t('products.edit.tab.prices.form.country')}
-            className="w-2 mr-4"
-          >
-            <Dropdown
-              disabled={readOnly}
-              emptyMessage={t(
-                'products.edit.tab.prices.form.countryEmptyMessage'
+              {price.priceModelId ? (
+                <div>{getContentLangValue(selectedPriceModel?.name)}</div>
+              ) : (
+                <Dropdown
+                  options={priceModelsDropdownOptions}
+                  value={selectedPriceModel?.id}
+                  onChange={(ev) => {
+                    setFormField('priceModelId', ev.value)
+                    onPriceModelChange(ev.value as string)
+                  }}
+                />
               )}
-              placeholder={t('products.edit.tab.prices.form.selectCountry')}
-              options={
-                taxCountriesDropdownOptions.length
-                  ? [
-                      ...taxCountriesDropdownOptions,
-                      ...selectedCountryDropdownOption,
-                    ]
-                  : selectedCountryDropdownOption
-              }
-              value={formData.location?.countryCode}
-              onChange={(ev) => {
-                setFormField('location.countryCode', ev.target.value)
-              }}
-            />
-          </InputField>
-          <InputField
-            label={t('products.edit.tab.prices.form.currency')}
-            className="w-2 mr-4"
-          >
-            <Dropdown
-              disabled={readOnly}
-              filter
-              options={currenciesDropdownOptions}
-              value={formData.currency || selectedCurrency?.code}
-              onChange={(ev) => {
-                setFormField('currency', ev.target.value)
-              }}
-            />
-          </InputField>
-          <InputField
-            label={t('products.edit.tab.prices.form.site')}
-            className="w-4 mr-4"
-          >
-            <MultiSelect
-              disabled={readOnly}
-              options={sites}
-              value={formData.restrictions?.siteCodes}
-              onChange={(ev) => {
-                setFormField('restrictions.siteCodes', ev.target.value)
-              }}
-            />
-          </InputField>
-          <InputField
-            label={t('products.edit.tab.prices.form.validFrom')}
-            className="w-2 mr-4"
-          >
-            <Calendar
-              disabled={readOnly}
-              selectionMode="single"
-              showTime={true}
-              showSeconds={true}
-              showButtonBar
-              maxDate={
-                formData.restrictions?.validity?.to
-                  ? new Date(formData.restrictions?.validity?.to)
-                  : undefined
-              }
-              value={
-                formData.restrictions?.validity?.from
-                  ? new Date(formData.restrictions?.validity?.from)
-                  : undefined
-              }
-              onChange={(ev) => {
-                setFormField(
-                  'restrictions.validity.from',
-                  ev.target.value
-                    ? (ev.target.value as Date).toISOString()
-                    : undefined
-                )
-              }}
-            />
-          </InputField>
-          <InputField
-            label={t('products.edit.tab.prices.form.validTo')}
-            className="w-2 mr-4"
-          >
-            <Calendar
-              disabled={readOnly}
-              selectionMode="single"
-              showTime={true}
-              showSeconds={true}
-              showButtonBar
-              minDate={
-                formData.restrictions?.validity?.from
-                  ? new Date(formData.restrictions?.validity?.from)
-                  : undefined
-              }
-              value={
-                formData.restrictions?.validity?.to
-                  ? new Date(formData.restrictions?.validity?.to)
-                  : undefined
-              }
-              onChange={(ev) => {
-                setFormField(
-                  'restrictions.validity.to',
-                  ev.target.value
-                    ? (ev.target.value as Date).toISOString()
-                    : undefined
-                )
-              }}
-            />
-          </InputField>
 
-          <InputField
-            className="w-2 mr-4"
-            label={t('products.edit.tab.prices.form.discountType')}
-          >
-            <Dropdown
-              disabled={readOnly}
-              value={discountType}
-              options={discountTypes}
-              onChange={(event) => setDiscountType(event.value)}
-            />
-          </InputField>
-
-          {discountType === 'PERCENT' && (
-            <InputField
-              className="w-2"
-              label={t('products.edit.tab.prices.form.discountPercentage')}
-            >
-              <PercentageInput
-                disabled={readOnly}
-                onChange={(event) => {
-                  setFormField('salePrice.discountRate', event.value)
-                  setFormField('salePrice.discountAmount', undefined)
-                }}
-                value={formData.salePrice?.discountRate || 0}
-              />
+              {selectedPriceModel?.id && (
+                // Price models are a host-owned route: leave the remote.
+                <a
+                  href={HOST_PRICE_MODEL_PATH(selectedPriceModel.id)}
+                  className={styles.modelLink}
+                  onClick={(ev) => {
+                    ev.preventDefault()
+                    if (selectedPriceModel.id) {
+                      assignHostLocation(
+                        HOST_PRICE_MODEL_PATH(selectedPriceModel.id)
+                      )
+                    }
+                  }}
+                >
+                  <div>Go to model definition</div>
+                  <BsBoxArrowRight className={styles.modelLinkIcon} size={20} />
+                </a>
+              )}
             </InputField>
-          )}
+            <div className={styles.fieldsRow}>
+              <InputField
+                label={t('products.edit.tab.prices.form.country')}
+                className={styles.fieldNarrow}
+              >
+                <Dropdown
+                  className={styles.fieldControl}
+                  disabled={readOnly}
+                  placeholder={
+                    countryOptions.length
+                      ? t('products.edit.tab.prices.form.selectCountry')
+                      : t('products.edit.tab.prices.form.countryEmptyMessage')
+                  }
+                  options={countryOptions}
+                  value={formData.location?.countryCode}
+                  onChange={(ev) => {
+                    setFormField('location.countryCode', ev.value)
+                  }}
+                />
+              </InputField>
+              <InputField
+                label={t('products.edit.tab.prices.form.currency')}
+                className={styles.fieldNarrow}
+              >
+                <Dropdown
+                  className={styles.fieldControl}
+                  disabled={readOnly}
+                  filter
+                  options={currenciesDropdownOptions}
+                  value={formData.currency || selectedCurrency?.code}
+                  onChange={(ev) => {
+                    setFormField('currency', ev.value)
+                  }}
+                />
+              </InputField>
+              <InputField
+                label={t('products.edit.tab.prices.form.site')}
+                className={styles.fieldWide}
+              >
+                <Dropdown
+                  className={styles.fieldControl}
+                  multiple
+                  display="chip"
+                  disabled={readOnly}
+                  options={sites}
+                  value={formData.restrictions?.siteCodes}
+                  onChange={(ev) => {
+                    setFormField('restrictions.siteCodes', ev.value)
+                  }}
+                />
+              </InputField>
+              <InputField
+                label={t('products.edit.tab.prices.form.validFrom')}
+                className={styles.fieldNarrow}
+              >
+                <Calendar
+                  className={styles.fieldControl}
+                  disabled={readOnly}
+                  selectionMode="single"
+                  showTime
+                  showButtonBar
+                  maxDate={
+                    formData.restrictions?.validity?.to
+                      ? new Date(formData.restrictions?.validity?.to)
+                      : undefined
+                  }
+                  value={
+                    formData.restrictions?.validity?.from
+                      ? new Date(formData.restrictions?.validity?.from)
+                      : undefined
+                  }
+                  onChange={(ev) => {
+                    setFormField(
+                      'restrictions.validity.from',
+                      toIsoDate(ev.value)
+                    )
+                  }}
+                />
+              </InputField>
+              <InputField
+                label={t('products.edit.tab.prices.form.validTo')}
+                className={styles.fieldNarrow}
+              >
+                <Calendar
+                  className={styles.fieldControl}
+                  disabled={readOnly}
+                  selectionMode="single"
+                  showTime
+                  showButtonBar
+                  minDate={
+                    formData.restrictions?.validity?.from
+                      ? new Date(formData.restrictions?.validity?.from)
+                      : undefined
+                  }
+                  value={
+                    formData.restrictions?.validity?.to
+                      ? new Date(formData.restrictions?.validity?.to)
+                      : undefined
+                  }
+                  onChange={(ev) => {
+                    setFormField(
+                      'restrictions.validity.to',
+                      toIsoDate(ev.value)
+                    )
+                  }}
+                />
+              </InputField>
 
-          {discountType === 'ABSOLUTE' && (
-            <InputField
-              label={t('products.edit.tab.prices.form.discountAbsolute')}
-              className="w-2"
-            >
-              <PriceInput
+              <InputField
+                className={styles.fieldNarrow}
+                label={t('products.edit.tab.prices.form.discountType')}
+              >
+                <Dropdown
+                  className={styles.fieldControl}
+                  disabled={readOnly}
+                  value={discountType}
+                  options={discountTypes}
+                  onChange={(event) => setDiscountType(event.value as string)}
+                />
+              </InputField>
+
+              {discountType === 'PERCENT' && (
+                <InputField
+                  className={styles.fieldNarrowLast}
+                  label={t('products.edit.tab.prices.form.discountPercentage')}
+                >
+                  <PercentageInput
+                    disabled={readOnly}
+                    onChange={(event) => {
+                      setFormField('salePrice.discountRate', event.value)
+                      setFormField('salePrice.discountAmount', undefined)
+                    }}
+                    value={formData.salePrice?.discountRate || 0}
+                  />
+                </InputField>
+              )}
+
+              {discountType === 'ABSOLUTE' && (
+                <InputField
+                  label={t('products.edit.tab.prices.form.discountAbsolute')}
+                  className={styles.fieldNarrowLast}
+                >
+                  <PriceInput
+                    disabled={readOnly}
+                    locale={i18n.language}
+                    mode="currency"
+                    currency={formData.currency}
+                    onChange={(event) => {
+                      setFormField('salePrice.discountAmount', event.value)
+                      setFormField('salePrice.discountRate', undefined)
+                    }}
+                    value={formData.salePrice?.discountAmount || 0}
+                  />
+                </InputField>
+              )}
+            </div>
+
+            {selectedPriceModel && (
+              <TierQuantityListWithPrices
                 disabled={readOnly}
-                locale={i18n.language}
-                mode="currency"
+                onTierValueUpdate={updateTierValue}
                 currency={formData.currency}
-                onChange={(event) => {
-                  setFormField('salePrice.discountAmount', event.value)
-                  setFormField('salePrice.discountRate', undefined)
-                }}
-                value={formData.salePrice?.discountAmount || 0}
+                priceTierValues={tierValues}
+                tiers={selectedPriceModel.tierDefinition.tiers}
+                unitCode={selectedPriceModel.measurementUnit.unitCode}
+                unitQuantity={selectedPriceModel.measurementUnit.quantity}
+                className={styles.tiers}
               />
-            </InputField>
-          )}
-        </div>
-
-        {selectedPriceModel && (
-          <TierQuantityListWithPrices
-            disabled={readOnly}
-            onTierValueUpdate={updateTierValue}
-            currency={formData.currency}
-            priceTierValues={tierValues}
-            tiers={selectedPriceModel.tierDefinition.tiers}
-            unitCode={selectedPriceModel.measurementUnit.unitCode}
-            unitQuantity={selectedPriceModel.measurementUnit.quantity}
-            className="mt-5"
-          />
+            )}
+          </div>
         )}
-      </Panel>
+      </SectionBox>
       <ConfirmBox
         key="delete-confirm-box"
         visible={dialogVisible}
         title={t('products.edit.tab.prices.dialog.delete')}
+        message={t('global.deleteConfirm.plural.description')}
+        acceptLabel={t('global.yes')}
+        rejectLabel={t('global.cancel')}
         onReject={() => setDialogVisible(false)}
         onAccept={deletePrice}
       />

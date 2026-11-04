@@ -1,0 +1,33 @@
+.page {
+  display: block;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.browser {
+  width: 100%;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.batchDelete {
+  margin-right: auto;
+}
+
+.extensions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.importUpload {
+  padding: 0.5rem 0;
+}

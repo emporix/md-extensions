@@ -76,6 +76,11 @@ export const ImportResultSection = ({
               'pi-server',
               'mcp_servers'
             )}
+            {renderSummaryItem(
+              importResult.summary.oauths ?? [],
+              'pi-key',
+              'oauths'
+            )}
           </div>
         </div>
       )}

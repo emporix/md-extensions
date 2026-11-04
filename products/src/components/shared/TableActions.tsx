@@ -1,22 +1,32 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Button } from 'primereact/button'
+import { ReactNode, useCallback, useMemo, useRef, useState } from 'react'
+import { Menu, type MenuItem, type MenuRef } from '@emporix/component-library'
 import { BsPencilFill, BsThreeDotsVertical, BsTrashFill } from 'react-icons/bs'
-import TooltipOptions from 'primereact/tooltip/tooltipoptions'
 import { useTranslation } from 'react-i18next'
-import { Menu } from 'primereact/menu'
+import { StylableProps } from '../../helpers/props'
+import DeleteConfirmBox from './DeleteConfirmBox'
+import styles from './TableActions.module.scss'
 
-interface TableActionsProps {
-  className: string
-  actions: CustomAction[]
-  menuActions: CustomAction[]
-  onEdit?: () => void
-  onDelete?: () => void
-  managerPermission?: boolean
-  disabled?: boolean
+type DeleteConfirmConfig = {
+  pluralsPath: string
+  entity?: unknown
+  entityLabel?: string
+  actionText?: string
 }
 
-interface CustomAction {
-  icon: JSX.Element
+type TableActionsProps = StylableProps & {
+  readonly actions?: CustomAction[]
+  readonly menuActions?: CustomAction[]
+  readonly onEdit?: () => void
+  readonly editDisabled?: boolean
+  readonly onDelete?: () => void | Promise<void>
+  readonly deleteDisabled?: boolean
+  readonly managerPermission?: boolean
+  readonly disabled?: boolean
+  readonly deleteConfirm?: DeleteConfirmConfig
+}
+
+type CustomAction = {
+  icon: ReactNode
   onClick?: () => void
   tooltip?: string
   disabled?: boolean
@@ -24,153 +34,180 @@ interface CustomAction {
   dataTestId?: string
 }
 
-const TableActionsButton = (props: { item: CustomAction }) => {
-  const { item } = props
-  const tooltipOptions: TooltipOptions = useMemo(() => {
-    return {
-      showOnDisabled: true,
-      style: { fontSize: '0.75rem' },
-      position: 'top',
-      showDelay: 1000,
-    }
-  }, [])
-
+const TableActionsButton = ({ item }: { readonly item: CustomAction }) => {
   return (
-    <>
-      <Button
-        data-test-id={item.dataTestId}
-        disabled={item.disabled}
-        className="p-button-text"
-        tooltip={item.tooltip}
-        tooltipOptions={tooltipOptions}
-        icon={item.icon}
-        onClick={(e) => {
-          item.onClick && item.onClick()
-          e.stopPropagation()
-        }}
-      />
-    </>
+    <button
+      type="button"
+      data-testid={item.dataTestId}
+      disabled={item.disabled}
+      className={styles.iconButton}
+      title={item.tooltip}
+      aria-label={item.tooltip}
+      onClick={(e) => {
+        item.onClick?.()
+        e.stopPropagation()
+      }}
+    >
+      {item.icon}
+    </button>
   )
 }
 
-const TableActions = (props: TableActionsProps) => {
-  const {
-    className,
-    onEdit,
-    onDelete,
-    actions,
-    menuActions,
-    managerPermission,
-    disabled,
-  } = props
+const TableActions = ({
+  className = '',
+  onEdit,
+  editDisabled = false,
+  onDelete,
+  deleteDisabled = false,
+  actions = [],
+  menuActions = [],
+  managerPermission = true,
+  disabled = false,
+  deleteConfirm,
+}: TableActionsProps) => {
   const { t } = useTranslation()
-  const menu = useRef<Menu>(null)
-  const [shownItems, setShownItems] = useState<CustomAction[]>([])
-  const [hiddenItems, setHiddenItems] = useState<CustomAction[]>([])
+  const [confirmVisible, setConfirmVisible] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const menu = useRef<MenuRef>(null)
 
-  useEffect(() => {
-    let shownItems: CustomAction[] = []
-    let hiddenItems: CustomAction[]
+  const handleDeleteClick = useCallback(() => {
+    if (deleteConfirm && onDelete) {
+      setConfirmVisible(true)
+    } else {
+      onDelete?.()
+    }
+  }, [deleteConfirm, onDelete])
+
+  const handleConfirmAccept = useCallback(async () => {
+    if (!onDelete) return
+    try {
+      setIsDeleting(true)
+      await onDelete()
+    } finally {
+      setIsDeleting(false)
+      setConfirmVisible(false)
+    }
+  }, [onDelete])
+
+  const { shownItems, hiddenItems } = useMemo(() => {
+    let shown: CustomAction[] = []
+    let hidden: CustomAction[]
     if (onEdit) {
-      shownItems.push({
-        icon: <BsPencilFill data-test-id="edit-button" size={16} />,
+      shown.push({
+        icon: <BsPencilFill data-testid="edit-button" size={16} />,
         onClick: onEdit,
         tooltip: t('global.edit'),
-        disabled: disabled,
+        disabled: disabled || editDisabled,
       })
     }
     if (onDelete) {
-      shownItems.push({
-        icon: <BsTrashFill data-test-id="delete-button" size={16} />,
-        onClick: onDelete,
+      shown.push({
+        icon: <BsTrashFill data-testid="delete-button" size={16} />,
+        onClick: handleDeleteClick,
         tooltip: t('global.delete'),
-        disabled: !managerPermission || disabled,
+        disabled: !managerPermission || disabled || deleteDisabled,
       })
     }
-    if (shownItems.length + actions.length > 4) {
-      const firstThreeItems = [...shownItems]
+    if (shown.length + actions.length > 4) {
+      const firstThreeItems = [...shown]
       const restItems: CustomAction[] = []
-      actions.forEach((a) => {
+      actions.forEach((action) => {
         if (firstThreeItems.length < 3) {
-          firstThreeItems.unshift(a)
+          firstThreeItems.unshift(action)
         } else {
-          restItems.push(a)
+          restItems.push(action)
         }
       })
-      shownItems = firstThreeItems
-      hiddenItems = [...restItems, ...menuActions]
+      shown = firstThreeItems
+      hidden = [...restItems, ...menuActions]
     } else {
-      shownItems = [...actions, ...shownItems]
-      hiddenItems = [...menuActions]
+      shown = [...actions, ...shown]
+      hidden = [...menuActions]
     }
-    setShownItems(shownItems)
-    setHiddenItems(hiddenItems)
-  }, [actions, menuActions, onDelete, onEdit, managerPermission, disabled])
+    return { shownItems: shown, hiddenItems: hidden }
+  }, [
+    actions,
+    menuActions,
+    onDelete,
+    onEdit,
+    managerPermission,
+    disabled,
+    t,
+    handleDeleteClick,
+    editDisabled,
+    deleteDisabled,
+  ])
+
+  const hiddenMenuItems = useMemo<MenuItem[]>(
+    () =>
+      hiddenItems.map((item, idx) => ({
+        label: item.tooltip ?? `${t('global.action')} ${idx + 1}`,
+        icon: item.icon,
+        disabled: item.disabled,
+        command: (event) => {
+          event.originalEvent.stopPropagation()
+          if (item.link) {
+            window.open(item.link, '_blank', 'noopener,noreferrer')
+            return
+          }
+          item.onClick?.()
+        },
+      })),
+    [hiddenItems, t]
+  )
 
   return (
     <div
-      className={`${className} flex justify-content-end align-items-center px-3`}
+      className={[styles.actions, className].filter(Boolean).join(' ')}
       onClick={(e) => e.stopPropagation()}
     >
-      {shownItems.map((i, idx) => (
+      {shownItems.map((item, idx) => (
         <a
-          href={i.link}
+          href={item.link}
           target="_blank"
           rel="noreferrer"
-          key={'shown' + idx}
+          key={`shown-${idx}`}
           onClick={(e) => e.preventDefault()}
         >
-          <TableActionsButton item={i} />
+          <TableActionsButton item={item} />
         </a>
       ))}
       {hiddenItems.length > 0 && (
         <>
-          <Button
-            key={'menuActions'}
-            className={`p-button-text`}
-            icon={<BsThreeDotsVertical size={18} />}
-            onClick={(event) => menu.current?.toggle(event)}
+          <button
+            type="button"
+            key="menuActions"
+            className={styles.iconButton}
+            onClick={(e) => menu.current?.toggle(e)}
             aria-controls="menuActions"
             aria-haspopup
-          />
+            aria-label={t('global.more')}
+          >
+            <BsThreeDotsVertical size={18} aria-hidden />
+          </button>
           <Menu
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: '2.5rem',
-              padding: '0.25rem',
-            }}
-            model={hiddenItems.map((i, idx) => ({
-              template: (
-                <a
-                  href={i.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  key={'hidden' + idx}
-                  onClick={(e) => e.preventDefault()}
-                >
-                  <TableActionsButton item={i} />
-                </a>
-              ),
-            }))}
+            className={styles.menuPanel}
+            model={hiddenMenuItems}
             popup
             ref={menu}
             id="menuActions"
           />
         </>
       )}
+      {deleteConfirm && onDelete && (
+        <DeleteConfirmBox
+          visible={confirmVisible}
+          onAccept={handleConfirmAccept}
+          onReject={() => setConfirmVisible(false)}
+          loading={isDeleting}
+          pluralsPath={deleteConfirm.pluralsPath}
+          entity={deleteConfirm.entity}
+          entityLabel={deleteConfirm.entityLabel}
+          actionText={deleteConfirm.actionText}
+        />
+      )}
     </div>
   )
-}
-
-TableActions.defaultProps = {
-  className: '',
-  actions: [],
-  menuActions: [],
-  managerPermission: true,
-  disabled: false,
 }
 
 export default TableActions

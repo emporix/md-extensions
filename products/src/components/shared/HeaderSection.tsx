@@ -1,40 +1,53 @@
-import SitesSelect from './SitesSelect'
+import { ReactNode, useMemo } from 'react'
+import { BackButton } from '@emporix/component-library'
+import { useLocation, useSearchParams } from 'react-router'
+import useCustomNavigate from '../../hooks/useCustomNavigate'
+import styles from './HeaderSection.module.scss'
 
-interface HeaderProps {
-  title: string | JSX.Element
-  moduleActions?: JSX.Element | boolean
-  siteSelect?: boolean
-  siteSelectDisabled?: boolean
-  activeSite?: boolean
-  setActiveSite?: (active: boolean) => unknown
-  children?: JSX.Element | JSX.Element[]
+type HeaderProps = {
+  readonly title: string | ReactNode
+  readonly subtitle?: string | ReactNode
+  readonly backTo?: string | (() => void)
+  readonly moduleActions?: ReactNode | boolean
+  readonly children?: ReactNode | ReactNode[]
 }
 
 const HeaderSection = ({
   title,
+  subtitle,
+  backTo,
   moduleActions,
-  siteSelect,
-  siteSelectDisabled,
-  activeSite = true,
-  setActiveSite = undefined,
   children,
 }: HeaderProps) => {
+  const { navigate } = useCustomNavigate()
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
+
+  const handleBackClick = useMemo(() => {
+    if (typeof backTo === 'function') {
+      return backTo
+    }
+    const paramBackTo = searchParams.get('backTo')
+    if (paramBackTo) {
+      return () => navigate(paramBackTo)
+    }
+    if (typeof backTo === 'string') {
+      return () => navigate(backTo)
+    }
+    return undefined
+  }, [backTo, location.search, navigate, searchParams])
+
   return (
-    <div className="w-full mb-6">
-      <div className="flex justify-content-between align-items-center">
-        <h1 className="module-title">{title}</h1>
-        {moduleActions && <div>{moduleActions}</div>}
-      </div>
-      {siteSelect && (
-        <div className="mt-4">
-          <SitesSelect
-            disabled={siteSelectDisabled}
-            defaultEmpty={!activeSite}
-            setActiveSite={setActiveSite}
-          />
+    <div className={styles.headerSection}>
+      <div className={styles.headerRow}>
+        {handleBackClick && <BackButton onClick={handleBackClick} />}
+        <div className={styles.titleRow}>
+          <h1 className={styles.moduleTitle}>{title}</h1>
+          {subtitle && <h1 className={styles.highlightText}>{subtitle}</h1>}
         </div>
-      )}
-      {children && <div className="mt-4">{children}</div>}
+        {moduleActions && <div className={styles.actions}>{moduleActions}</div>}
+      </div>
+      {children && <div className={styles.content}>{children}</div>}
     </div>
   )
 }

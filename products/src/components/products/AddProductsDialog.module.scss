@@ -1,0 +1,88 @@
+@use '../../styles/palette' as *;
+
+.dialog {
+  :global {
+    .p-dialog-header {
+      padding: 1rem 1.5rem 0.5rem;
+    }
+
+    .p-dialog-content {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 0 1.5rem 1rem;
+    }
+  }
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0; // column-flex dialog content was squashing the chips row
+  max-height: 100px;
+  padding: 0.25rem 0;
+  margin-bottom: 0.5rem;
+  overflow-y: auto;
+}
+
+.chip {
+  max-width: 250px;
+  background: $blue-1;
+  color: $grey-7;
+  font-size: 0.875rem;
+}
+
+.chipsPlaceholder {
+  flex-shrink: 0;
+  padding: 1rem;
+}
+
+.table {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  :global {
+    .p-datatable {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .p-datatable-wrapper {
+      flex: 1;
+      overflow: auto;
+    }
+
+    .p-datatable-table {
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .p-datatable-thead {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+
+      tr:first-child th {
+        border-bottom-width: 2px;
+      }
+    }
+  }
+}
+
+.rowAlreadySelected {
+  :global(.p-checkbox .p-checkbox-box) {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+}

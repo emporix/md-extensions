@@ -1,4 +1,4 @@
-import { Button } from 'primereact/button'
+import styles from './LabelChip.module.scss'
 
 export interface Option {
   id: string
@@ -6,26 +6,29 @@ export interface Option {
   name: string
 }
 
-interface Props {
-  data: Option
-  onDeleteCall: (id: string) => unknown
+type LabelChipProps = {
+  readonly data: Option
+  readonly onDeleteCall: (id: string) => unknown
 }
 
-const LabelChip = ({ data, onDeleteCall }: Props) => {
+const LabelChip = ({ data, onDeleteCall }: LabelChipProps) => {
   return (
-    <div className="col-3 flex shadow-1 w-16rem h-3rem mb-4 align-items-center m-2">
-      <div className="mr-2 ml-2">
-        <img src={data.image} />
+    <div className={styles.chip}>
+      <div className={styles.image}>
+        <img src={data.image} alt={data.name} />
       </div>
-      <span className="flex-grow-1">{data.name}</span>
-      <Button
-        icon="pi-times pi"
+      <span className={styles.name}>{data.name}</span>
+      <button
+        type="button"
+        className={styles.removeButton}
+        aria-label={data.name}
         onClick={(e) => {
           e.preventDefault()
           onDeleteCall(data.id)
         }}
-        className="p-button-text mr-2"
-      />
+      >
+        <i className="pi pi-times" />
+      </button>
     </div>
   )
 }

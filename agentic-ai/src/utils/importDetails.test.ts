@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { TFunction } from 'i18next'
 import {
   formatImportDetails,
+  getAllImportedItems,
   getImportStateClassName,
   getImportStateLabel,
   getImportStateSeverity,
@@ -12,6 +13,8 @@ import {
 import { ImportDetails } from '../types/Job'
 
 const translations: Record<string, string> = {
+  import_details_MISSING_OAUTH:
+    'OAuth config "{{objectId}}" was not found. The reference was removed.',
   import_details_MISSING_TOKEN: 'Token "{{objectId}}" was not found.',
   import_details_MISSING_FUNCTION:
     'Function "{{objectId}}" for tool "{{objectName}}" was not found. Imported tool has been disabled.',
@@ -91,6 +94,69 @@ describe('hasImportFailures', () => {
   })
 })
 
+describe('getAllImportedItems', () => {
+  const agent = { id: 'a', name: 'Agent', state: 'ENABLED' as const }
+  const tool = { id: 't', name: 'Tool', state: 'DISABLED' as const }
+  const mcp = { id: 'm', name: 'MCP', state: 'EXISTS' as const }
+  const oauth = { id: 'o', name: 'OAuth', state: 'FAILED' as const }
+
+  it('includes oauth configs when present', () => {
+    expect(
+      getAllImportedItems({
+        agents: [agent],
+        tools: [tool],
+        mcpServers: [mcp],
+        oauths: [oauth],
+      }).map((item) => item.id)
+    ).toEqual(['a', 't', 'm', 'o'])
+  })
+
+  it('treats a missing oauths list as empty', () => {
+    expect(
+      getAllImportedItems({
+        agents: [agent],
+        tools: [],
+        mcpServers: [],
+      }).map((item) => item.id)
+    ).toEqual(['a'])
+  })
+
+  it('counts a failed oauth config as an import failure', () => {
+    const items = getAllImportedItems({
+      agents: [agent],
+      tools: [],
+      mcpServers: [],
+      oauths: [oauth],
+    })
+    expect(hasImportFailures(items)).toBe(true)
+  })
+
+  it('counts oauth configs when deciding the legacy token note', () => {
+    const clean = getAllImportedItems({
+      agents: [{ id: 'a', name: 'Agent', state: 'DISABLED' }],
+      tools: [],
+      mcpServers: [],
+      oauths: [{ id: 'o', name: 'OAuth', state: 'ENABLED' }],
+    })
+    expect(shouldShowLegacyTokenNote(clean)).toBe(true)
+
+    const withDetails = getAllImportedItems({
+      agents: [{ id: 'a', name: 'Agent', state: 'DISABLED' }],
+      tools: [],
+      mcpServers: [],
+      oauths: [
+        {
+          id: 'o',
+          name: 'OAuth',
+          state: 'DISABLED',
+          details: [{ code: 'MISSING_TOKEN', objectId: 'tok' }],
+        },
+      ],
+    })
+    expect(shouldShowLegacyTokenNote(withDetails)).toBe(false)
+  })
+})
+
 describe('formatImportDetails', () => {
   it('interpolates localized copy from code', () => {
     const details: ImportDetails = {
@@ -100,6 +166,17 @@ describe('formatImportDetails', () => {
     }
     expect(formatImportDetails(interpolatingT, details)).toBe(
       'Token "openai-token" was not found.'
+    )
+  })
+
+  it('interpolates a missing oauth config', () => {
+    expect(
+      formatImportDetails(interpolatingT, {
+        code: 'MISSING_OAUTH',
+        objectId: 'oauth-export-1',
+      })
+    ).toBe(
+      'OAuth config "oauth-export-1" was not found. The reference was removed.'
     )
   })
 

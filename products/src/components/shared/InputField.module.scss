@@ -1,0 +1,41 @@
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.checkbox .labelRow {
+  margin-bottom: 0;
+}
+
+.labelRow > label {
+  margin-bottom: 0;
+}
+
+.inherited {
+  font-size: 0.875rem;
+  font-style: italic;
+  font-weight: normal;
+}
+
+.addon {
+  display: flex;
+  align-items: center;
+}
+
+.error {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-danger, #e24c4c);
+}
+
+.invalid :global(input),
+.invalid :global(textarea) {
+  border-color: var(--color-danger, #e24c4c);
+}

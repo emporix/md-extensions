@@ -1,0 +1,54 @@
+{
+  "baseBranch": "auto",
+  "tracker": "jira",
+  "codeHost": "github",
+  "jira": {
+    "project": "COP",
+    "site": "emporix.atlassian.net",
+    "buddyUrl": "http://ai-buddy.vpn.emporix.io"
+  },
+  "buddy": {
+    "sync": true
+  },
+  "validation": {
+    "commands": ["npm run lint", "npm run test:run", "npm run build:dev"]
+  },
+  "app": {
+    "kind": "ui",
+    "start": "npm run dev",
+    "baseUrl": "",
+    "readyPath": "/"
+  },
+  "browser": {
+    "provider": "agent-browser"
+  },
+  "docs": {
+    "targets": [
+      {
+        "flavor": "user-guides",
+        "workspace": "emporix-documentation-portal",
+        "repo": "emporix/emporix-documentation-portal",
+        "paths": [
+          "content/user-guides/management-dashboard/agentic-ai.md",
+          "content/aci-guides/agentic"
+        ]
+      }
+    ]
+  },
+  "standards": {
+    "frontend": {
+      "rules": [
+        "core",
+        "ui-components",
+        "emporix-component-library",
+        "testing",
+        "api-data",
+        "npm-dependencies",
+        "i18n",
+        "primereact",
+        "module-federation"
+      ]
+    }
+  },
+  "labels": { "enabled": false }
+}

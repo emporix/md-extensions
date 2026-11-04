@@ -1,113 +1,234 @@
-import { useCallback, useState } from 'react'
-import './ImageInputField.scss'
+import { useCallback, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Asset } from '../../models/Assets'
-import { Button } from 'primereact/button'
-import { Checkbox } from 'primereact/checkbox'
-import ConfirmBox from './ConfirmBox'
-import { useMediaAssets } from '../../api/mediaAssets'
-import { useUIBlocker } from '../../context/UIBlcoker'
-import { useToast } from '../../context/ToastProvider'
-import useCustomNavigate from '../../hooks/useCustomNavigate.tsx'
+import {
+  Checkbox,
+  ConfirmBox,
+  SecondaryButton,
+  useToast,
+} from '@emporix/component-library'
+import {
+  BsFileEarmark,
+  BsFileEarmarkText,
+  BsFileExcel,
+  BsFilePdf,
+} from 'react-icons/bs'
 
-const AssetsViewer = (props: {
-  assets: Asset[]
-  refresh?: () => void
-  categoryId: string
-  managerPermissions?: boolean
-}) => {
+import type { Asset } from '../../models/Assets.model'
+import { useMediaAssets } from '../../hooks/api/mediaAssets'
+import { useUIBlocker } from '../../context/UIBlocker'
+import { getApiErrorDetails } from '../../helpers/api'
+import { FileType, getFileType, isImageFile } from '../../helpers/media.helpers'
+import {
+  assignHostLocation,
+  HOST_MEDIA_ASSET_PATH,
+} from '../../helpers/hostUrls'
+import styles from './AssetsViewer.module.scss'
+
+type AssetsViewerProps = {
+  readonly assets: Asset[]
+  readonly refresh?: () => void
+  readonly managerPermissions?: boolean
+  readonly showAllMediaTypes?: boolean
+  readonly className?: string
+}
+
+type FileTileConfig = {
+  icon?: ReactNode
+  label: string
+  color: string
+}
+
+const getFileTileConfig = (filename: string): FileTileConfig => {
+  switch (getFileType(filename)) {
+    case FileType.PDF:
+      return { icon: <BsFilePdf size={40} />, label: 'PDF', color: '#E53E3E' }
+    case FileType.SHEET:
+      return {
+        icon: <BsFileExcel size={40} />,
+        label: 'Sheet',
+        color: '#217346',
+      }
+    case FileType.TXT:
+      return {
+        icon: <BsFileEarmarkText size={40} />,
+        label: 'TXT',
+        color: '#3e4ce5',
+      }
+    case FileType.PNG:
+      return { label: 'PNG', color: '#3e81e5' }
+    case FileType.JPEG:
+      return { label: 'JPEG', color: '#3e81e5' }
+    default:
+      return {
+        icon: <BsFileEarmark size={40} />,
+        label: 'FILE',
+        color: '#6b7280',
+      }
+  }
+}
+
+const AssetsViewer = ({
+  assets,
+  refresh,
+  managerPermissions = true,
+  showAllMediaTypes = false,
+  className = '',
+}: AssetsViewerProps) => {
   const { t } = useTranslation()
-  const { assets, refresh, categoryId, managerPermissions } = props
+  const { deleteAsset, downloadAssetFile } = useMediaAssets()
+  const { blockPanel } = useUIBlocker()
+  const { showSuccess, showError } = useToast()
+
   const [selectedAssets, setSelectedAssets] = useState<string[]>([])
   const [isDeleteConfirmOpened, setIsDeleteConfirmOpened] = useState(false)
-  const { deleteAsset } = useMediaAssets()
-  const { blockPanel } = useUIBlocker()
-  const toast = useToast()
-  const { navigate } = useCustomNavigate()
 
   const onCheck = (fileId: string) => {
-    selectedAssets.includes(fileId)
-      ? setSelectedAssets((prev) =>
-          prev.filter((assetId) => assetId !== fileId)
-        )
-      : setSelectedAssets((prev) => [...prev, fileId])
+    setSelectedAssets((prev) =>
+      prev.includes(fileId)
+        ? prev.filter((assetId) => assetId !== fileId)
+        : [...prev, fileId]
+    )
   }
 
   const deleteAssets = useCallback(async () => {
     try {
       setIsDeleteConfirmOpened(false)
       blockPanel(true)
-      await Promise.all(
-        selectedAssets.map(async (assetId) => await deleteAsset(assetId))
-      )
-      toast.showToast(
-        t('products.media.toast.bulkDeleteSuccess', {
+      await Promise.all(selectedAssets.map((assetId) => deleteAsset(assetId)))
+      showSuccess(
+        t('categories.media.toast.bulkDeleteSuccess', {
           itemsLength: selectedAssets.length,
-        }),
-        '',
-        'success'
+        })
       )
-    } catch (e) {
-      console.error(e)
+    } catch (e: unknown) {
+      showError(
+        t('categories.media.toast.deleteFailure'),
+        getApiErrorDetails(e)
+      )
     } finally {
       blockPanel(false)
       setSelectedAssets([])
-      if (refresh) {
-        refresh()
-      }
+      refresh?.()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAssets])
 
-  return (
-    <>
-      <h2>Images</h2>
-      <Button
-        className="p-button p-button-secondary mb-2 mt-4"
-        label={t('global.delete') + `  (${selectedAssets.length})`}
-        disabled={selectedAssets.length < 1 || !managerPermissions}
-        onClick={() => setIsDeleteConfirmOpened(true)}
-      />
-      <div className="flex gap-2 flex-wrap">
-        {assets.map((asset: Asset) => {
-          return (
-            <div
-              className={`relative border-2 border-round-xs ${
-                selectedAssets.includes(asset.id)
-                  ? ' border-blue-400'
-                  : 'border-transparent'
-              }`}
-              style={{ height: '228px' }}
-              key={asset.id}
-            >
-              <img
-                onClick={() =>
-                  navigate(`/categories/${categoryId}/${asset.id}`)
-                }
-                src={asset.url}
-                alt={asset.details.filename}
-                className="h-14rem max-w-10rem"
-                style={{ objectFit: 'cover' }}
-              />
+  const downloadAssets = useCallback(async () => {
+    const selectedAssetsData = assets.filter((asset) =>
+      selectedAssets.includes(asset.id)
+    )
 
-              <div className="h-2rem w-full top-0 left-0 absolute  flex justify-content-between bg-white-alpha-50 pl-1 pr-1">
-                <div className="mt-1">
-                  <Checkbox
-                    disabled={!managerPermissions}
-                    onChange={() => onCheck(asset.id)}
-                    checked={selectedAssets.includes(asset.id)}
-                  />
-                </div>
-                <div>...</div>
-              </div>
-              <div className="h-3rem pt-2 w-full max-w-140 bottom-0 left-0 absolute bg-white-alpha-50 text-center ">
-                <p className="pt-1 pl-1 pr-1 overflow-hidden text-overflow-ellipsis white-space-nowrap">
-                  {asset.details.filename}
-                </p>
-              </div>
+    for (const asset of selectedAssetsData) {
+      try {
+        const blob = await downloadAssetFile(asset.id)
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = asset.details?.filename
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      } catch (e: unknown) {
+        showError(
+          t('categories.media.toast.downloadFailure', {
+            filename: asset.details?.filename,
+          }),
+          getApiErrorDetails(e)
+        )
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAssets, assets, t, downloadAssetFile])
+
+  const openAssetDetails = (assetId: string) => {
+    // MD media detail (`/media-assets/:id`) is host-owned, outside this
+    // remote's HashRouter: leave the remote. `backTo` keeps MD's return path
+    // (the remote's hash route carries the `?tab=` state).
+    const backTo = `${window.location.pathname}${window.location.hash}`
+    assignHostLocation(
+      `${HOST_MEDIA_ASSET_PATH(assetId)}?backTo=${encodeURIComponent(backTo)}`
+    )
+  }
+
+  const assetTemplate = (asset: Asset) => {
+    const config = getFileTileConfig(asset.details?.filename)
+    const isSelected = selectedAssets.includes(asset.id)
+
+    return (
+      <div
+        key={asset.id}
+        className={[styles.tile, isSelected ? styles.tileSelected : '']
+          .filter(Boolean)
+          .join(' ')}
+      >
+        <Checkbox
+          className={styles.tileCheckbox}
+          disabled={!managerPermissions}
+          onChange={() => onCheck(asset.id)}
+          checked={isSelected}
+          data-testid={`asset-checkbox-${asset.id}`}
+        />
+        <div
+          className={styles.tilePreview}
+          role="button"
+          tabIndex={0}
+          onClick={() => openAssetDetails(asset.id)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault()
+              openAssetDetails(asset.id)
+            }
+          }}
+        >
+          {isImageFile(asset.details?.filename) ? (
+            <img
+              className={styles.tileImage}
+              src={asset.url}
+              alt={asset.details?.filename}
+            />
+          ) : (
+            <div className={styles.tileIcon} style={{ color: config.color }}>
+              {config.icon}
             </div>
-          )
-        })}
+          )}
+        </div>
+        <div className={styles.tileLabel} style={{ background: config.color }}>
+          {config.label}
+        </div>
+        <div className={styles.tileFilename}>
+          <p>{asset.details?.filename}</p>
+        </div>
       </div>
+    )
+  }
+
+  const visibleAssets = assets.filter((asset) =>
+    showAllMediaTypes ? true : isImageFile(asset.details?.filename)
+  )
+
+  return (
+    <div className={className}>
+      <div className={styles.actions}>
+        <SecondaryButton
+          disabled={selectedAssets.length < 1 || !managerPermissions}
+          onClick={() => setIsDeleteConfirmOpened(true)}
+        >
+          {/* Same glyph as management-dashboard (`pi pi-trash`). The
+              primeicons font ships inside @emporix/component-library/styles,
+              so this needs no primeicons dependency in the remote. */}
+          <i className="pi pi-trash" aria-hidden />
+          {`${t('global.delete')} (${selectedAssets.length})`}
+        </SecondaryButton>
+        <SecondaryButton
+          disabled={selectedAssets.length < 1}
+          onClick={downloadAssets}
+        >
+          <i className="pi pi-download" aria-hidden />
+          {`${t('global.download')} (${selectedAssets.length})`}
+        </SecondaryButton>
+      </div>
+      <div className={styles.grid}>{visibleAssets.map(assetTemplate)}</div>
       <ConfirmBox
         visible={isDeleteConfirmOpened}
         onAccept={deleteAssets}
@@ -116,17 +237,14 @@ const AssetsViewer = (props: {
           selectedAssets.length > 1
             ? 'categories.media.confirm.bulkDelete'
             : 'categories.media.confirm.singleDelete',
-          {
-            itemsLength: selectedAssets.length,
-          }
+          { itemsLength: selectedAssets.length }
         )}
+        message={t('confirmBox.message')}
+        acceptLabel={t('global.yes')}
+        rejectLabel={t('global.cancel')}
       />
-    </>
+    </div>
   )
-}
-
-AssetsViewer.defaultProps = {
-  managerPermissions: true,
 }
 
 export default AssetsViewer

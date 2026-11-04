@@ -1,11 +1,13 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { withCategoryScope } from '@emporix/api-calls'
 import {
   Chip,
   Dialog,
   PrimaryButton,
   ProductsBrowser,
   QuantityStepper,
+  toProductsBrowserCategoryNodes,
   useToast,
   type DataTableColumnProps,
   type ProductsBrowserColumnKey,
@@ -25,9 +27,7 @@ import { apiPagination } from '../../../helpers/apiPagination'
 import { getApiErrorDetails, getApiErrorMessage } from '../../../helpers/api'
 import { addNewEntriesFromProducts } from '../../../helpers/orders'
 import {
-  toCategoryNodes,
   toProductRow,
-  withCategoryScope,
   type AddEntryProductRow,
 } from '../../../helpers/productsBrowser.helpers'
 import type { Product } from '../../../models/Product.model'
@@ -81,7 +81,8 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
   )
 
   const loadCategoryTree = useCallback(
-    async () => toCategoryNodes(await getCategoryTrees(), contentLanguage),
+    async () =>
+      toProductsBrowserCategoryNodes(await getCategoryTrees(), contentLanguage),
     [getCategoryTrees, contentLanguage]
   )
 
@@ -184,6 +185,9 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
         columnKey: 'action',
         field: 'action',
         header: t('orders.entry.actions.addProduct.table.action'),
+        // The stepper stays in view when the table is wider than the dialog.
+        frozen: true,
+        alignFrozen: 'right',
         body: (row: AddEntryProductRow) => (
           <QuantityStepper
             min={0}
@@ -218,9 +222,9 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
         </div>
       }
     >
-      {productsToAdd.length > 0 ? (
-        <div className={styles.chips}>
-          {productsToAdd.map((p) => {
+      <div className={styles.chips} data-testid="add-entry-picks">
+        {productsToAdd.length > 0 ? (
+          productsToAdd.map((p) => {
             const label = `${p.quantity}x ${getContentLangValue(p.name)}`
             return (
               <Chip
@@ -237,11 +241,11 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
                 }
               />
             )
-          })}
-        </div>
-      ) : (
-        <div className={styles.chipsPlaceholder} />
-      )}
+          })
+        ) : (
+          <Chip className={styles.chipSpacer} label={' '} />
+        )}
+      </div>
       <ProductsBrowser<AddEntryProductRow>
         className={styles.browser}
         loadProducts={loadProducts}

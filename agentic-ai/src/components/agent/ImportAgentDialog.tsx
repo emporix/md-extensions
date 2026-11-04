@@ -13,6 +13,7 @@ import { importAgents } from '../../services/agentService'
 import { ImportedItem, ImportAgentsResult } from '../../types/Job'
 import { ImportEntityDetails } from '../shared/ImportEntityDetails'
 import {
+  getAllImportedItems,
   getImportStateLabel,
   getImportStateSeverity,
   hasImportFailures,
@@ -138,11 +139,7 @@ const ImportAgentDialog = ({
     ))
 
   const allImportedItems = importResult
-    ? [
-        ...importResult.summary.agents,
-        ...importResult.summary.tools,
-        ...importResult.summary.mcpServers,
-      ]
+    ? getAllImportedItems(importResult.summary)
     : []
   const hasFailures = hasImportFailures(allImportedItems)
 
@@ -244,6 +241,15 @@ const ImportAgentDialog = ({
                   <h3 className="import-section-title">{t('mcp_servers')}</h3>
                   <div className="import-summary-items">
                     {renderSummaryItems(importResult.summary.mcpServers)}
+                  </div>
+                </div>
+              )}
+
+              {(importResult.summary.oauths?.length ?? 0) > 0 && (
+                <div className="import-summary-section">
+                  <h3 className="import-section-title">{t('oauths')}</h3>
+                  <div className="import-summary-items">
+                    {renderSummaryItems(importResult.summary.oauths ?? [])}
                   </div>
                 </div>
               )}

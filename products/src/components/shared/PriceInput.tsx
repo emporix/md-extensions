@@ -1,51 +1,51 @@
-import React from 'react'
+import type { KeyboardEvent } from 'react'
 import {
   InputNumber,
-  InputNumberChangeParams,
-  InputNumberValueChangeParams,
-} from 'primereact/inputnumber'
-import { MAX_FRACTION_DIGIT } from '../../helpers/utils'
+  type InputNumberChangeEvent,
+  type InputNumberMode,
+} from '@emporix/component-library'
+import { useConfiguration } from '../../context/ConfigurationProvider'
 import { useCurrencies } from '../../hooks/useCurrencies'
-import { useDashboardContext } from '../../context/Dashboard.context.tsx'
+import { StylableProps } from '../../helpers/props'
 
-interface PriceInputProps {
-  value?: number
-  locale?: string
-  currency?: string | undefined
-  onChange?(e: InputNumberChangeParams): void
-  onKeyDown?(event: React.KeyboardEvent<HTMLInputElement>): void
-  onValueChange?(e: InputNumberValueChangeParams): void
-  min?: number
-  max?: number
-  minFractionDigits?: number
-  maxFractionDigits?: number
-  autoFocus?: boolean
-  mode?: string
-  disabled?: boolean
-  dataTestId?: string
+/** MD `helpers/utils` MAX_FRACTION_DIGIT (not exported by the remote utils). */
+const MAX_FRACTION_DIGIT = 20
+
+type PriceInputProps = StylableProps & {
+  readonly value?: number
+  readonly locale?: string
+  readonly currency?: string | undefined
+  readonly onChange?: (e: InputNumberChangeEvent) => void
+  readonly onKeyDown?: (event: KeyboardEvent<HTMLInputElement>) => void
+  readonly min?: number
+  readonly max?: number
+  readonly minFractionDigits?: number
+  readonly maxFractionDigits?: number
+  readonly mode?: InputNumberMode
+  readonly disabled?: boolean
+  readonly dataTestId?: string
 }
 
-export const PriceInput = (props: PriceInputProps) => {
+export const PriceInput = ({
+  className = '',
+  value,
+  locale,
+  currency,
+  onChange,
+  onKeyDown,
+  min,
+  max,
+  minFractionDigits,
+  mode,
+  disabled,
+  dataTestId,
+}: PriceInputProps) => {
   const { selectedCurrency } = useCurrencies()
-  const { currency: currentCurrency } = useDashboardContext()
-  const {
-    value,
-    locale,
-    currency,
-    onChange,
-    onKeyDown,
-    onValueChange,
-    min,
-    max,
-    minFractionDigits,
-    autoFocus,
-    mode,
-    disabled,
-    dataTestId,
-  } = props
+  const { currentCurrency } = useConfiguration()
   return (
     <InputNumber
-      disabled={disabled}
+      className={className}
+      readOnly={disabled}
       value={value}
       min={min}
       max={max}
@@ -55,10 +55,8 @@ export const PriceInput = (props: PriceInputProps) => {
       currency={currency ?? selectedCurrency?.code ?? currentCurrency?.id}
       onChange={onChange}
       onKeyDown={onKeyDown}
-      onValueChange={onValueChange}
-      autoFocus={autoFocus}
       mode={mode}
-      data-test-id={dataTestId}
+      data-testid={dataTestId}
     />
   )
 }

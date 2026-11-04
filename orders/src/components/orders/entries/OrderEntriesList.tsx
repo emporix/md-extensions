@@ -10,6 +10,7 @@ import OrderEntryExpansion from './OrderEntryExpansion'
 import useEntriesColumns from '../../../hooks/orders/useEntriesColumns'
 import { usePermissions } from '../../../context/PermissionsProvider'
 import { EmployeeDomains, VendorDomains } from '../../../configs/accessControls'
+import { getExpandedIds, type ExpandedRows } from '../../../helpers/tables'
 import { Entry, Order, OrderStatus } from '../../../models/Order.model'
 import styles from './OrderEntriesList.module.scss'
 
@@ -33,9 +34,9 @@ const OrderEntriesList = ({
   const isCompleted = order.status === OrderStatus.COMPLETED
 
   const [showAddEntryDialog, setShowAddEntryDialog] = useState(false)
-  const [expandedRows, setExpandedRows] = useState<Entry[]>([])
+  const [expandedRows, setExpandedRows] = useState<ExpandedRows<Entry>>()
   const [pendingCollapse, setPendingCollapse] = useState<{
-    rows: Entry[]
+    rows: ExpandedRows<Entry>
     entryId: string
   } | null>(null)
   const dirtyEntryIds = useRef<Set<string>>(new Set())
@@ -49,11 +50,11 @@ const OrderEntriesList = ({
   )
 
   const handleRowToggle = useCallback(
-    (rows: Entry[]) => {
-      const nextIds = new Set(rows.map((row) => row.id))
-      const collapsedId = expandedRows
-        .map((row) => row.id)
-        .find((id) => !nextIds.has(id))
+    (rows: ExpandedRows<Entry>) => {
+      const nextIds = getExpandedIds(rows)
+      const collapsedId = [...getExpandedIds(expandedRows)].find(
+        (id) => !nextIds.has(id)
+      )
       if (collapsedId && dirtyEntryIds.current.has(collapsedId)) {
         setPendingCollapse({ rows, entryId: collapsedId })
         return
@@ -99,7 +100,9 @@ const OrderEntriesList = ({
         {...(withMixins
           ? {
               expandedRows,
-              onRowToggle: (rows: unknown) => handleRowToggle(rows as Entry[]),
+              // With the `dataKey`, Prime reports an `{ [id]: true }` map.
+              onRowToggle: (rows: unknown) =>
+                handleRowToggle(rows as ExpandedRows<Entry>),
               rowExpansionTemplate: (entry: Entry) => (
                 <OrderEntryExpansion
                   entry={entry}
