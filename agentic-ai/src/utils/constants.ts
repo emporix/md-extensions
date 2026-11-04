@@ -156,6 +156,7 @@ export const MCP_SERVERS = {
       'queue-stream-file',
       'remove-stream-file',
       'reorder-stream-files',
+      'requeue-stream-file',
       'restore-mapping-version',
       'retry-failed-records',
       'sample-connection',
