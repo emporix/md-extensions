@@ -1,0 +1,71 @@
+export default {
+  title: 'Labels',
+  singular: 'Label',
+  plural: 'Labels',
+  table: {
+    columns: {
+      name: 'Name',
+      image: 'Image',
+      actions: 'Actions',
+    },
+    filters: {
+      name: 'Filter by name',
+    },
+  },
+  addLabel: 'Add Label',
+  editLabel: 'Edit Label',
+  actions: {
+    delete: 'Deleting labels',
+  },
+  dialog: {
+    titleAdd: 'Add new label',
+    titleEdit: 'Edit label',
+    name: 'Name',
+    desc: 'Description',
+    image: 'Image',
+    overlay: 'Show as overlay on product image',
+    submitAdd: 'Create Label',
+    submitSave: 'Save Label',
+    submitEdit: 'Edit Label',
+    overlayOptions: {
+      none: "Don't show as overlay",
+      topLeft: 'Top left corner',
+      topRight: 'Top right corner',
+      bottomLeft: 'Bottom left corner',
+      bottomRight: 'Bottom right corner',
+    },
+  },
+  tabs: {
+    details: 'Details',
+    media: 'Media',
+  },
+  toasts: {
+    errorUpdate: 'Error while updating label. Check logs for more details.',
+    errorCreate: 'Error while creating label. Check logs for more details.',
+    errorFetch: 'Error while fetching label. Check logs for more details.',
+    successUpdate: 'Label updated with success',
+    successCreate: 'Label created with success',
+    errorDelete: 'Error while deleting label. Check logs for more details.',
+  },
+  noLabels: 'You do not have any labels defined yet',
+  addFirstLabel: 'ADD YOUR FIRST LABEL',
+  media: {
+    choose: 'Choose',
+    upload: 'Upload',
+    clear: 'Clear',
+    dropImageHere: 'Drag & Drop Image Here',
+    dropFileHere: 'Drag & Drop File Here',
+    selectAsset: 'Select {{filename}}',
+    toast: {
+      uploadSuccess: '{{count}} file(s) uploaded',
+      bulkDeleteSuccess: '{{itemsLength}} image(s) were deleted',
+      deleteFailure: 'Failed to delete image',
+      downloadFailure: 'Failed to download {{filename}}',
+    },
+    confirm: {
+      singleDelete: 'Remove this image?',
+      bulkDelete: 'Remove {{itemsLength}} images?',
+      deleteDescription: 'This action cannot be undone.',
+    },
+  },
+}
