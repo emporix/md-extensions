@@ -257,6 +257,7 @@ export const CUSTOMER_DOMAINS: Domain[] = [
 export enum AccessControlsForEmployee {
   AGENT_VIEWER = '1ac869fc-d548-4ec8-8e06-c01491314233',
   AGENT_MANAGER = '4ac869fc-d548-4ec8-8e06-c01491314225',
+  AGENT_EXECUTE_MANAGER = '4ac869fc-d548-4ec8-8e06-c01491314231',
   LEGAL_ENTITIES_VIEWER = '1ac869fc-d548-4ec8-8e06-c01491314195',
   LEGAL_ENTITIES_MANAGER = '4ac869fc-d548-4ec8-8e06-c01491314195',
   CONTACT_ASSIGNMENTS_VIEWER = '1ac869fc-d548-4ec8-8e06-c01491314198',
@@ -366,6 +367,7 @@ export enum AccessControlsForEmployee {
 export enum EmployeeDomains {
   AGENT_VIEWER = 'Agent Viewer',
   AGENT_MANAGER = 'Agent Manager',
+  AGENT_ASSISTANT_VIEWER = 'Agent Assistant Viewer',
   COMPANIES_VIEWER = 'Companies Viewer',
   COMPANIES_MANAGER = 'Companies Manager',
   CUSTOMERS_VIEWER = 'Customers Viewer',
@@ -457,6 +459,13 @@ export const EMPLOYEE_DOMAINS: Domain[] = [
   {
     id: EmployeeDomains.AGENT_MANAGER,
     accessControls: [AccessControlsForEmployee.AGENT_MANAGER],
+  },
+  {
+    id: EmployeeDomains.AGENT_ASSISTANT_VIEWER,
+    accessControls: [
+      AccessControlsForEmployee.AGENT_VIEWER,
+      AccessControlsForEmployee.AGENT_EXECUTE_MANAGER,
+    ],
   },
   {
     id: EmployeeDomains.COMPANIES_VIEWER,
