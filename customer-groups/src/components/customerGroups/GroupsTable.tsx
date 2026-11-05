@@ -23,6 +23,11 @@ import usePagination, { PaginationProps } from '../../hooks/usePagination'
 import { EmployeeDomains } from '../../configs/accessControls'
 
 import { groupDetailPath } from '../../constants/paths'
+import {
+  PROTECTED_GROUP_CODES,
+  isNonDeletableGroupCode,
+  selectionIncludesNonDeletableGroup,
+} from '../../helpers/groups/systemGroupDelete'
 import styles from './GroupsTable.module.scss'
 
 interface Props {
@@ -130,6 +135,10 @@ const GroupsTable = (props: Props) => {
             })
           }
           managerPermission={canManage}
+          deleteDisabled={isNonDeletableGroupCode(
+            group.code,
+            PROTECTED_GROUP_CODES
+          )}
           onDelete={() => deleteGroups([group])}
           deleteConfirm={{
             pluralsPath: 'usersAndGroups.groups.plurals.groups',
@@ -164,7 +173,13 @@ const GroupsTable = (props: Props) => {
         onDelete={() => deleteGroups(selectedGroups)}
         isDeleting={isDeleting}
         pluralsPath="usersAndGroups.groups.plurals.groups"
-        disabled={!canManage}
+        disabled={
+          !canManage ||
+          selectionIncludesNonDeletableGroup(
+            selectedGroups,
+            PROTECTED_GROUP_CODES
+          )
+        }
       />
       <DataTable
         dataKey="id"

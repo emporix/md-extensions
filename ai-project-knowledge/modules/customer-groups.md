@@ -1,7 +1,7 @@
 # Customer groups
 
 Last scanned: da99643 (2026-11-02)
-Sources: `customer-groups/README.md`, `customer-groups/src/models/Groups.model.ts`, `customer-groups/src/hooks/api/iam.ts`, `customer-groups/src/RemoteComponent.tsx`, `customer-groups/src/pages/CustomerGroups.page.tsx`, `customer-groups/src/pages/Group.page.tsx`, `customer-groups/src/context/Group.provider.tsx`, `customer-groups/src/components/customerGroups/GroupsTable.tsx`, `customer-groups/src/components/group/GroupPageActions.tsx`, `customer-groups/src/configs/accessControls.ts`, `customer-groups/src/helpers/groups/accessControlsSaveDirty.test.tsx`
+Sources: `customer-groups/README.md`, `customer-groups/src/models/Groups.model.ts`, `customer-groups/src/hooks/api/iam.ts`, `customer-groups/src/RemoteComponent.tsx`, `customer-groups/src/pages/CustomerGroups.page.tsx`, `customer-groups/src/pages/Group.page.tsx`, `customer-groups/src/context/Group.provider.tsx`, `customer-groups/src/components/customerGroups/GroupsTable.tsx`, `customer-groups/src/components/group/GroupPageActions.tsx`, `customer-groups/src/configs/accessControls.ts`, `customer-groups/src/helpers/groups/accessControlsSaveDirty.test.tsx`, `customer-groups/src/helpers/groups/systemGroupDelete.ts`, `customer-groups/src/components/customerGroups/GroupsTable.delete.test.tsx`
 
 ## Scope
 
@@ -48,7 +48,7 @@ Create is disabled without `Users And Groups Manager` (`customer-groups/src/page
 
 The table requests one server page of `CUSTOMER` groups (`customer-groups/src/components/customerGroups/GroupsTable.tsx`). Default page size is 10 (`customer-groups/src/hooks/usePagination.tsx`). The column is the localized name (`customer-groups/src/hooks/useGroupsTableColumns.tsx`). Row click and edit open `/groups/:groupId` and store the current path as `backTo`. The detail header goes back to `/` and does not read `backTo` (`customer-groups/src/pages/Group.page.tsx`). No other reader of `backTo` was found.
 
-Delete calls IAM without force. Any thrown error opens a confirm dialog and retries that group with `force: true` (`customer-groups/src/components/customerGroups/GroupsTable.tsx`, `customer-groups/src/hooks/api/iam.ts`). Success refreshes the list. A group with no `id` stops the rest of the batch. Which IAM status means "needs force" is unknown; the UI treats every failure that way.
+Delete calls IAM without force. Any thrown error opens a confirm dialog and retries that group with `force: true` (`customer-groups/src/components/customerGroups/GroupsTable.tsx`, `customer-groups/src/hooks/api/iam.ts`). Success refreshes the list. A group with no `id` stops the rest of the batch. Which IAM status means "needs force" is unknown; the UI treats every failure that way. The row delete control and the selection Delete button stay visible and inactive when the row `code` is `CUSTOMER`, ignoring case, or when the selection includes such a group. A blank code stays deletable. Employee system codes are not protected on this list (`customer-groups/src/helpers/groups/systemGroupDelete.ts`, `customer-groups/src/components/customerGroups/GroupsTable.delete.test.tsx`).
 
 The list add-members dialog sits outside `GroupDataProvider`, so it uses the default `EMPLOYEE` for `getAllUsers` and `addUserToGroup` (`customer-groups/src/components/customerGroups/GroupsTable.tsx`, `customer-groups/src/components/group/GroupAddMembersDialog.tsx`). The same dialog on the detail page receives `CUSTOMER` from the provider.
 
@@ -123,7 +123,7 @@ With `Audit Log Viewer`, the third tab loads changelogs for entity `group` and t
 
 ## Tests that name this behaviour
 
-`accessControlsSaveDirty.test.tsx` builds a `CUSTOMER` group and expects Save to enable when only `accessControls` changes. `mapAccessControlsToTemplates` is covered by `customer-groups/src/helpers/groups/accessControls.helpers.test.ts`. `getEntityDetailPath` is covered by `customer-groups/src/configs/entityLinkConfig.test.ts`. IAM and platform error parsing, including conflict toasts, is covered by `customer-groups/src/helpers/api.test.ts`. Changelog pagination and path formatting are covered by `customer-groups/src/helpers/auditLog/changelog.helpers.test.ts` and `customer-groups/src/helpers/auditLog/entityChangelog.helpers.test.ts`. No page test covers list, create, delete, members, or the predefined-group rules.
+`accessControlsSaveDirty.test.tsx` builds a `CUSTOMER` group and expects Save to enable when only `accessControls` changes. `mapAccessControlsToTemplates` is covered by `customer-groups/src/helpers/groups/accessControls.helpers.test.ts`. `getEntityDetailPath` is covered by `customer-groups/src/configs/entityLinkConfig.test.ts`. IAM and platform error parsing, including conflict toasts, is covered by `customer-groups/src/helpers/api.test.ts`. Changelog pagination and path formatting are covered by `customer-groups/src/helpers/auditLog/changelog.helpers.test.ts` and `customer-groups/src/helpers/auditLog/entityChangelog.helpers.test.ts`. List delete for code `CUSTOMER` is covered by `customer-groups/src/components/customerGroups/GroupsTable.delete.test.tsx`. No page test covers list loading, create, members, or the predefined-group rules.
 
 ## Unknown
 
