@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   DataTable,
@@ -15,7 +15,6 @@ import { DateFilterTemplate } from '../shared/DateFilterTemplate'
 import TableActions from '../shared/TableActions'
 import BatchDeleteButton from '../shared/BatchDeleteButton'
 import TableExtensions from '../shared/TableExtensions'
-import { useSites } from '../../context/SitesProvider'
 import { useUIBlocker } from '../../context/UIBlocker'
 import { useRefresh } from '../../context/RefreshValuesProvider'
 import { usePermissions } from '../../context/PermissionsProvider'
@@ -28,7 +27,8 @@ import usePagination, {
 } from '../../hooks/usePagination'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import { getApiErrorDetails, makeCall } from '../../helpers/api'
-import { parseTableColumns } from '../../helpers/tables'
+import { isLatestRequest, nextRequestId } from '../../helpers/latestRequest'
+import { parseTableColumns, withSiteEqualsFilter } from '../../helpers/tables'
 import type { ColumnVisibility } from '../../models/Configuration.model'
 import type { DisplayMixin } from '../../models/DisplayMixin'
 import { SchemaType } from '../../models/Schema.model'
@@ -45,13 +45,20 @@ const TABLE_NAME = 'returns.table'
 /** Configuration key the column-visibility preference is stored under. */
 const TABLE_NAME_CONFIG_KEY = 'ext_returns'
 
-const ReturnsTable = ({ className = '' }: { readonly className?: string }) => {
+type ReturnsTableProps = {
+  readonly className?: string
+  readonly selectedSiteCode?: string
+}
+
+const ReturnsTable = ({
+  className = '',
+  selectedSiteCode,
+}: ReturnsTableProps) => {
   const { t, i18n } = useTranslation()
   const { showSuccess, showError } = useToast()
   const { navigate } = useCustomNavigate()
   const { getReturns, deleteReturns } = useReturnsApi()
   const { refresh, setRefreshValue } = useRefresh()
-  const { currentSite } = useSites()
   const { tenant } = useDashboardContext()
   const { blockPanel } = useUIBlocker()
   const { hasPermission } = usePermissions()
@@ -66,6 +73,7 @@ const ReturnsTable = ({ className = '' }: { readonly className?: string }) => {
     onFilterCallback,
     onSortCallback,
     setFilters,
+    setPaginationParams,
   } = usePagination({
     currentPage: 1,
     rows: 10,
@@ -99,20 +107,53 @@ const ReturnsTable = ({ className = '' }: { readonly className?: string }) => {
     }
   }
 
+  const selectedSiteRef = useRef(selectedSiteCode)
+  const latestRequestId = useRef(0)
+
   useEffect(() => {
+    const siteChanged = selectedSiteRef.current !== selectedSiteCode
+    selectedSiteRef.current = selectedSiteCode
+    latestRequestId.current = nextRequestId(latestRequestId.current)
+    const requestId = latestRequestId.current
+    if (siteChanged && paginationParams.currentPage !== 1) {
+      setPaginationParams((current) => ({
+        ...current,
+        currentPage: 1,
+        first: 0,
+      }))
+      return
+    }
+
     void (async () => {
       try {
         const newData = await makeCall(
-          () => getReturns(paginationParams),
-          setIsSyncing
+          () =>
+            getReturns({
+              ...paginationParams,
+              filters: withSiteEqualsFilter(
+                paginationParams.filters,
+                selectedSiteCode
+              ),
+            }),
+          (loading: boolean) => {
+            if (isLatestRequest(latestRequestId.current, requestId)) {
+              setIsSyncing(loading)
+            }
+          }
         )
+        if (!isLatestRequest(latestRequestId.current, requestId)) {
+          return
+        }
         setTableData(newData as PaginatedResponse<Return>)
       } catch (e: unknown) {
+        if (!isLatestRequest(latestRequestId.current, requestId)) {
+          return
+        }
         showError(t('returns.toasts.errorFetch'), getApiErrorDetails(e))
       }
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSite?.code, paginationParams, tenant, refresh])
+  }, [paginationParams, tenant, refresh, selectedSiteCode])
 
   useEffect(() => {
     setVisibleColumns(fetchTableConfiguration(TABLE_NAME_CONFIG_KEY))
@@ -188,6 +229,13 @@ const ReturnsTable = ({ className = '' }: { readonly className?: string }) => {
         filterElement: (options: DataTableColumnFilterElementOptions) => (
           <DateFilterTemplate filterOptions={options} />
         ),
+      },
+      {
+        columnKey: 'siteCode',
+        header: t(`${TABLE_NAME}.site`),
+        field: 'siteCode',
+        filter: false,
+        body: (rowData: Return) => rowData.siteCode,
       },
       {
         columnKey: 'approvalStatus',

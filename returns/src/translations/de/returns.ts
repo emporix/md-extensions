@@ -4,6 +4,9 @@ export default {
   plural: 'Retouren',
   createReturn: 'Retoure erstellen',
   editReturn: 'Retoure bearbeiten',
+  list: {
+    sitePlaceholder: 'Site auswählen',
+  },
   tabs: {
     first: 'Generell',
   },
@@ -41,6 +44,7 @@ export default {
     expiryDate: 'Retouren Datum',
     createdDate: 'Erstellungsdatum',
     approvalStatus: 'Status',
+    site: 'Site',
     filters: {
       id: 'Filtern nach Retourennummer',
       customer: {
@@ -51,6 +55,7 @@ export default {
       expiryDate: 'Filtern nach Datum',
       createdDate: 'Filtern nach Erstellungsdatum',
       approvalStatus: 'Filtern nach Status',
+      site: 'Site',
     },
     actions: 'Aktionen',
   },
@@ -60,6 +65,7 @@ export default {
     expiryDate: 'Retouren Ablaufdatum',
     returnCode: 'Begründungscode',
     status: 'Status',
+    site: 'Site',
     returnReason: 'Begründungsdetails',
     products: 'Produkte',
     received: 'Erhalten',
@@ -86,5 +92,7 @@ export default {
     successDelete: '{{count}} Retoure(n) gelöscht',
     errorDelete: 'Fehler beim Löschen der Retouren',
     errorFetch: 'Fehler beim Laden der Retouren',
+    siteRestrictionError:
+      'Sie haben keine Berechtigung, auf Retouren für Site {{siteCode}} zuzugreifen. Bitte wenden Sie sich an Ihren Administrator, um weitere Unterstützung zu erhalten.',
   },
 }

@@ -107,6 +107,15 @@ const ReturnEditDetails = ({
             />
           </FormGridRow>
           <FormGridRow>
+            <div className={styles.thirdField}>
+              <InputText
+                label={t('returns.details.site')}
+                value={returnDetails?.siteCode ?? ''}
+                disabled
+              />
+            </div>
+          </FormGridRow>
+          <FormGridRow>
             <Controller
               control={control}
               name="reason.code"

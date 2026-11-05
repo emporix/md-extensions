@@ -4,11 +4,11 @@ import {
   DataTableFilterEvent,
   DataTablePageEvent,
   DataTableSortEvent,
-  FilterMatchMode,
   type DataTableColumnProps,
 } from '@emporix/component-library'
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
+import { columnFiltersKeepingValues } from '../helpers/tables'
 import { Metadata } from '../models/Metadata.model'
 import { useTranslation } from 'react-i18next'
 import { useLocalizedValue } from './useLocalizedValue'
@@ -268,27 +268,9 @@ export default function usePagination(
   }, [paginationParams, withQuery, searchParams, pageKey, rowsKey])
 
   const setFilters = (columns: DataTableColumnProps[]) => {
-    const filters: {
-      [key: string]: {
-        value: string | null
-        matchMode: FilterMatchMode
-      }
-    } = {}
-    columns
-      .filter((column) => column.filter)
-      .forEach((column) => {
-        if (column.columnKey && typeof column.columnKey === 'string') {
-          filters[column.columnKey] = {
-            value: null,
-            matchMode:
-              (column.filterMatchMode as FilterMatchMode) ||
-              FilterMatchMode.CONTAINS,
-          }
-        }
-      })
     setPaginationParams({
       ...paginationParams,
-      filters,
+      filters: columnFiltersKeepingValues(columns, paginationParams.filters),
     })
   }
 
