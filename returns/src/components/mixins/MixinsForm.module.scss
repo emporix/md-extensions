@@ -5,6 +5,7 @@
 }
 
 .fieldRow {
+  // MD mixins layout: fixed-width fields wrapping (InputField was 240px).
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-lg);
@@ -19,6 +20,13 @@
 .field {
   display: flex;
   flex-direction: column;
+  width: 240px;
+  min-width: 0;
+}
+
+// Full-width for text/dropdown/calendar — not applied to InputSwitch.
+.control {
+  width: 100%;
   min-width: 0;
 }
 

@@ -11,6 +11,7 @@ import { PermissionsProvider } from './context/PermissionsProvider'
 import FeatureTogglesProvider from './context/FeatureTogglesProvider'
 import { ConfigurationProvider } from './context/ConfigurationProvider'
 import { SitesProvider } from './context/SitesProvider'
+import { ReferenceOptionsProvider } from './context/ReferenceOptionsProvider'
 import { UIBlockerProvider } from './context/UIBlocker'
 import ReturnsModule from './Returns.module'
 import ReturnsListPage from './pages/ReturnsList.page'
@@ -38,26 +39,31 @@ const RemoteComponent = ({ appState }: RemoteComponentProps) => {
           <FeatureTogglesProvider>
             <ConfigurationProvider>
               <SitesProvider>
-                <UIBlockerProvider>
-                  <HashRouter>
-                    <Routes>
-                      <Route element={<ReturnsModule />}>
-                        <Route index element={<ReturnsListPage />} />
-                        <Route
-                          path="add"
-                          element={
-                            <ReturnFormProvider>
-                              <ReturnCreatePage />
-                            </ReturnFormProvider>
-                          }
-                        />
-                        <Route path=":id" element={<ReturnEditPage />} />
+                <ReferenceOptionsProvider>
+                  <UIBlockerProvider>
+                    <HashRouter>
+                      <Routes>
+                        <Route element={<ReturnsModule />}>
+                          <Route index element={<ReturnsListPage />} />
+                          <Route
+                            path="add"
+                            element={
+                              <ReturnFormProvider>
+                                <ReturnCreatePage />
+                              </ReturnFormProvider>
+                            }
+                          />
+                          <Route path=":id" element={<ReturnEditPage />} />
+                          <Route
+                            path="*"
+                            element={<Navigate to="/" replace />}
+                          />
+                        </Route>
                         <Route path="*" element={<Navigate to="/" replace />} />
-                      </Route>
-                      <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                  </HashRouter>
-                </UIBlockerProvider>
+                      </Routes>
+                    </HashRouter>
+                  </UIBlockerProvider>
+                </ReferenceOptionsProvider>
               </SitesProvider>
             </ConfigurationProvider>
           </FeatureTogglesProvider>

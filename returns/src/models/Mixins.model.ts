@@ -1,5 +1,7 @@
 export interface Mixins {
-  [key: string]: unknown
+  // Mixin payloads are schema-driven JSON (MD parity: `any`).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
 }
 
 export enum MixinsPropertyType {
@@ -27,13 +29,14 @@ export interface MixinsSchema {
 }
 
 export interface MixinsSchemaProperty {
-  type: MixinsPropertyType | MixinsPropertyType[]
+  type?: MixinsPropertyType | MixinsPropertyType[]
   description: string
   format?: MixinsSchemaFormat
   enum?: (string | null)[]
   $ref?: string
-  items: MixinsSchemaProperty
+  items?: MixinsSchemaProperty
   properties?: Record<string, MixinsSchemaProperty>
+  patternProperties?: Record<string, MixinsSchemaProperty>
   required?: string[]
   readOnly?: boolean
   pattern?: string
