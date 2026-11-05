@@ -89,15 +89,27 @@ describe('nextToolActivityText', () => {
 
 describe('shouldShowAssistantActivity', () => {
   it('keeps the activity line after the assistant already has text', () => {
-    expect(shouldShowAssistantActivity(true, true, true, true)).toBe(true)
+    expect(shouldShowAssistantActivity(true, true, true, true, false)).toBe(
+      true
+    )
   })
 
   it('hides the activity line once text is showing and the tool has ended', () => {
-    expect(shouldShowAssistantActivity(true, true, true, false)).toBe(false)
+    expect(shouldShowAssistantActivity(true, true, true, false, false)).toBe(
+      false
+    )
   })
 
   it('shows a status while the assistant bubble is still empty', () => {
-    expect(shouldShowAssistantActivity(true, true, false, false)).toBe(true)
+    expect(shouldShowAssistantActivity(true, true, false, false, false)).toBe(
+      true
+    )
+  })
+
+  it('hides thinking while an image placeholder is visible', () => {
+    expect(shouldShowAssistantActivity(true, true, false, true, true)).toBe(
+      false
+    )
   })
 })
 

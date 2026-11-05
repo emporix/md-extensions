@@ -44,6 +44,45 @@ describe('sseHelpers', () => {
     expect(frames).toEqual(['token:{"content":"Hi"}'])
   })
 
+  it('parses a pretty-printed multiline artifact event', async () => {
+    const events = []
+    const body = [
+      'event:artifact',
+      'data:{',
+      'data:  "artifact_id" : "asset-1",',
+      'data:  "kind" : "image",',
+      'data:  "filename" : "download.png",',
+      'data:  "mime_type" : "image/png",',
+      'data:  "size" : 1151106,',
+      'data:  "status" : "ready",',
+      'data:  "generation_id" : "ig_123"',
+      'data:}',
+      '',
+      '',
+    ].join('\n')
+
+    for await (const frame of readSseStream(streamFromChunks([body]))) {
+      const event = mapAgentChatStreamEvent(frame)
+      if (event) {
+        events.push(event)
+      }
+    }
+
+    expect(events).toEqual([
+      {
+        type: 'artifact',
+        artifactId: 'asset-1',
+        kind: 'image',
+        filename: 'download.png',
+        mimeType: 'image/png',
+        size: 1151106,
+        status: 'ready',
+        errorCode: undefined,
+        generationId: 'ig_123',
+      },
+    ])
+  })
+
   it('maps token, error, and done events', () => {
     expect(
       mapAgentChatStreamEvent({

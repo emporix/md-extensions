@@ -95,17 +95,31 @@ export const artifactDownloadPath = (
 ): string =>
   `/media/${encodeURIComponent(tenant)}/assets/${encodeURIComponent(artifactId)}/download`
 
-export const formatArtifactSize = (size: number): string => {
+export type ArtifactSizeLabel = {
+  readonly key:
+    | 'chat_artifact_size_bytes'
+    | 'chat_artifact_size_kb'
+    | 'chat_artifact_size_mb'
+  readonly value: string
+}
+
+export const formatArtifactSize = (size: number): ArtifactSizeLabel => {
   if (!Number.isFinite(size) || size < 0) {
-    return '0 B'
+    return { key: 'chat_artifact_size_bytes', value: '0' }
   }
   if (size < 1024) {
-    return `${size} B`
+    return { key: 'chat_artifact_size_bytes', value: String(size) }
   }
   if (size < 1024 * 1024) {
-    return `${Math.ceil(size / 1024)} KB`
+    return {
+      key: 'chat_artifact_size_kb',
+      value: String(Math.ceil(size / 1024)),
+    }
   }
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`
+  return {
+    key: 'chat_artifact_size_mb',
+    value: (size / (1024 * 1024)).toFixed(1),
+  }
 }
 
 export const revokeObjectUrl = (url: string | null): void => {

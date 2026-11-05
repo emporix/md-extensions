@@ -49,6 +49,7 @@ import {
   getChatInvokeGates,
   hasAgentManageScope,
   CHAT_AGENT_QUERY_PARAM,
+  CHAT_CARD_VIEWPORT_GAP,
   CHAT_TRANSCRIPT_MIN_HEIGHT,
   initialAgentIdFromQuery,
   isTranscriptNearBottom,
@@ -208,7 +209,9 @@ const AgentChatPage = () => {
     const minHeight = chrome + CHAT_TRANSCRIPT_MIN_HEIGHT
     const maxHeight = Math.max(
       minHeight,
-      window.innerHeight - card.getBoundingClientRect().top - 16
+      window.innerHeight -
+        card.getBoundingClientRect().top -
+        CHAT_CARD_VIEWPORT_GAP
     )
     handle.setPointerCapture(event.pointerId)
     const move = (ev: globalThis.PointerEvent) => {
@@ -466,12 +469,16 @@ const AgentChatPage = () => {
     setPendingAgentId(null)
   }
 
-  const deliverSend = (text: string, source: PendingChatSend['source']) => {
+  const deliverSend = (
+    text: string,
+    source: PendingChatSend['source'],
+    images: readonly PendingChatImage[]
+  ) => {
     if (!agentId) {
       return
     }
     followTranscriptRef.current = true
-    const outgoing = source === 'composer' ? selectedImages : []
+    const outgoing = source === 'composer' ? images : []
     if (source === 'composer') {
       setDraft('')
     }
@@ -522,8 +529,9 @@ const AgentChatPage = () => {
       return
     }
     const gates = getChatInvokeGates(agent)
+    const images = source === 'composer' ? selectedImages : []
     if (gates.length === 0) {
-      deliverSend(text, source)
+      deliverSend(text, source, images)
       return
     }
     setInvokeGateState({
@@ -538,9 +546,10 @@ const AgentChatPage = () => {
     acceptedGates: readonly ChatInvokeGate[],
     pending: PendingChatSend
   ) => {
+    const imagesAtAccept = selectedImages
     const patches = buildChatInvokePatchOperations(agent, acceptedGates)
     if (patches.length === 0) {
-      deliverSend(pending.text, pending.source)
+      deliverSend(pending.text, pending.source, imagesAtAccept)
       return
     }
     setInvokePatching(true)
@@ -548,7 +557,7 @@ const AgentChatPage = () => {
       await patchCustomAgent(appState, agent.id, patches)
       await refreshCustomAgents()
       setInvokeGateState(null)
-      deliverSend(pending.text, pending.source)
+      deliverSend(pending.text, pending.source, imagesAtAccept)
     } catch (err) {
       console.error(err)
       showError(formatApiError(err, t('chat_gate_patch_error')))
@@ -671,12 +680,18 @@ const AgentChatPage = () => {
           )}
           {messages.map((message) => {
             const hasText = message.text.trim().length > 0
+            const hasPendingImage =
+              message.artifacts?.some(
+                (artifact) =>
+                  artifact.kind === 'image' && artifact.status === 'pending'
+              ) ?? false
             const showStatus = shouldShowAssistantActivity(
               streaming,
               message.role === 'assistant' &&
                 message.id === messages[messages.length - 1]?.id,
               hasText,
-              activity !== null
+              activity !== null,
+              hasPendingImage
             )
             return (
               <ChatBubble key={message.id} role={message.role}>
@@ -790,7 +805,7 @@ const AgentChatPage = () => {
                       ? 'chat_remove_image'
                       : 'chat_remove_file'
                   )}
-                  disabled={busy}
+                  disabled={composerLocked}
                   onClick={() => {
                     revokePreview(image.previewUrl)
                     setSelectedImages((current) =>

@@ -56,7 +56,10 @@ describe('chatArtifacts', () => {
     expect(artifactDownloadPath('tenant a', 'asset/1')).toBe(
       '/media/tenant%20a/assets/asset%2F1/download'
     )
-    expect(formatArtifactSize(2048)).toBe('2 KB')
+    expect(formatArtifactSize(2048)).toEqual({
+      key: 'chat_artifact_size_kb',
+      value: '2',
+    })
   })
 
   it('keeps a safe download name and revokes object URLs', () => {

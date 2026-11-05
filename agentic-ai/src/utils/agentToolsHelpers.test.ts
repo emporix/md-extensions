@@ -327,9 +327,8 @@ describe('agentToolsHelpers', () => {
     expect(getNativeToolTags({ type: 'slack' })).toEqual(['Slack'])
     expect(getNativeToolTags({ type: 'teams' })).toEqual(['Microsoft Teams'])
     expect(getNativeToolTags({ type: 'rag_custom' })).toEqual(['RAG Tools'])
-    expect(getNativeToolTags({ type: 'file' })).toEqual([
-      'Built-in file generator',
-    ])
+    expect(getNativeToolTags({ type: 'file' }, 'Datei')).toEqual(['Datei'])
+    expect(getNativeToolTags({ type: 'file' })).toEqual([])
   })
 
   it('withBuiltinFileTool adds one file choice and hides created file tools', () => {

@@ -11,7 +11,9 @@ describe('llmAdditionalParamsHelpers', () => {
     const printed = stringifyAdditionalParams(source)
 
     expect(printed.indexOf('"b"')).toBeLessThan(printed.indexOf('"reasoning"'))
-    expect(printed.indexOf('"effort"')).toBeLessThan(printed.indexOf('"summary"'))
+    expect(printed.indexOf('"effort"')).toBeLessThan(
+      printed.indexOf('"summary"')
+    )
     expect(source.reasoning.summary).toBe('auto')
   })
 
@@ -39,8 +41,8 @@ describe('llmAdditionalParamsHelpers', () => {
     expect(Object.prototype).not.toHaveProperty('keep')
 
     const parsed = JSON.parse(printed) as Record<string, unknown>
-    expect(Object.prototype.hasOwnProperty.call(parsed.reasoning, '__proto__')).toBe(
-      true
-    )
+    expect(
+      Object.prototype.hasOwnProperty.call(parsed.reasoning, '__proto__')
+    ).toBe(true)
   })
 })

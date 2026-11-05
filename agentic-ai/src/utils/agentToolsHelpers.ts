@@ -1,5 +1,6 @@
 import { McpServer, NativeTool } from '../types/Agent'
 import { Tool } from '../types/Tool'
+import { MCP_SERVERS, MCP_DOMAIN_TAGS, McpKey } from './constants'
 
 export const FILE_GENERATOR_TOOL_ID = 'file_generator'
 
@@ -21,7 +22,6 @@ export const withBuiltinFileTool = (
     },
   ]
 }
-import { MCP_SERVERS, MCP_DOMAIN_TAGS, McpKey } from './constants'
 
 const formatTagLabel = (segment: string): string =>
   segment
@@ -38,7 +38,10 @@ export const getDomainSectionTags = (domain: McpKey): string[] => [
   ...MCP_DOMAIN_TAGS[domain],
 ]
 
-export const getNativeToolTags = (tool: Pick<Tool, 'type'>): string[] => {
+export const getNativeToolTags = (
+  tool: Pick<Tool, 'type'>,
+  fileLabel?: string
+): string[] => {
   if (tool.type === 'slack') {
     return ['Slack']
   }
@@ -49,7 +52,7 @@ export const getNativeToolTags = (tool: Pick<Tool, 'type'>): string[] => {
     return ['RAG Tools']
   }
   if (tool.type === 'file') {
-    return ['Built-in file generator']
+    return fileLabel ? [fileLabel] : []
   }
   if (tool.type) {
     return [formatTagLabel(tool.type.replace(/_/g, '-'))]
@@ -59,12 +62,13 @@ export const getNativeToolTags = (tool: Pick<Tool, 'type'>): string[] => {
 
 export const getNativeToolSectionTags = (
   tools: Tool[],
-  maxTags = 3
+  maxTags = 3,
+  fileLabel?: string
 ): string[] => {
   const tags = new Set<string>()
 
   tools.forEach((tool) => {
-    getNativeToolTags(tool).forEach((tag) => tags.add(tag))
+    getNativeToolTags(tool, fileLabel).forEach((tag) => tags.add(tag))
   })
 
   return [...tags].sort((a, b) => a.localeCompare(b)).slice(0, maxTags)

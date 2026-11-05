@@ -11,6 +11,7 @@ import {
   createEmptyMcpServer,
   createEmptyMcpTool,
   getEnabledDynamicToolNames,
+  getMcpServerSearchValues,
   getMcpTransportLabel,
   getMcpTransportOptions,
   MCP_TOOL_NAME_PATTERN,
@@ -233,6 +234,21 @@ describe('getEnabledDynamicToolNames', () => {
 
   it('returns empty array when tools undefined', () => {
     expect(getEnabledDynamicToolNames(undefined)).toEqual([])
+  })
+})
+
+describe('getMcpServerSearchValues', () => {
+  it('includes the server name and enabled tool names and descriptions', () => {
+    expect(
+      getMcpServerSearchValues({
+        name: 'Orders MCP',
+        tools: [
+          { name: 'list_orders', description: 'List customer orders' },
+          { name: 'hidden_tool', description: 'Secret', enabled: false },
+          { name: '', description: 'blank' },
+        ],
+      })
+    ).toEqual(['Orders MCP', 'list_orders', 'List customer orders', 'blank'])
   })
 })
 

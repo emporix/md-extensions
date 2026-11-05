@@ -31,6 +31,9 @@ describe('ChatMessageArtifacts', () => {
     ])
 
     expect(markup).toContain('Generating image')
+    expect(markup).toContain('agent-chat-activity')
+    expect(markup).toContain('pi-spinner')
+    expect(markup).not.toContain('agent-chat-artifact-pending')
     expect(markup).not.toContain('pi-download')
     expect(markup).not.toContain('>Download<')
   })

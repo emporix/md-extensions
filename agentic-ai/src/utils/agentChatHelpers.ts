@@ -46,6 +46,7 @@ export const nextToolActivityText = (
 
 export const TRANSCRIPT_FOLLOW_THRESHOLD_PX = 80
 export const CHAT_TRANSCRIPT_MIN_HEIGHT = 200
+export const CHAT_CARD_VIEWPORT_GAP = 16
 
 export const nextChatCardHeight = (
   startHeight: number,
@@ -66,8 +67,13 @@ export const shouldShowAssistantActivity = (
   streaming: boolean,
   isActiveAssistant: boolean,
   hasText: boolean,
-  hasActivity: boolean
-): boolean => streaming && isActiveAssistant && (!hasText || hasActivity)
+  hasActivity: boolean,
+  hasPendingImage: boolean
+): boolean =>
+  streaming &&
+  isActiveAssistant &&
+  !hasPendingImage &&
+  (!hasText || hasActivity)
 
 export const shouldShowRecommendationEmpty = (
   helperPresent: boolean,

@@ -5,6 +5,7 @@ import {
   formatErrorPayloadMessage,
   isAbortError,
   isChatBadRequest,
+  shouldFallbackToSyncChat,
 } from './errorHelpers'
 
 describe('formatErrorPayloadMessage', () => {
@@ -133,5 +134,18 @@ describe('isChatBadRequest', () => {
     expect(
       isChatBadRequest(new Error('Stream error: Agent execution failed'))
     ).toBe(false)
+  })
+})
+
+describe('shouldFallbackToSyncChat', () => {
+  it('falls back only before any token or artifact arrives', () => {
+    const badRequest = new Error('Stream error: Error code: 400')
+
+    expect(shouldFallbackToSyncChat(badRequest, false)).toBe(true)
+    expect(shouldFallbackToSyncChat(badRequest, true)).toBe(false)
+    expect(shouldFallbackToSyncChat(new Error('failed'), false)).toBe(false)
+    const aborted = new Error('stopped')
+    aborted.name = 'AbortError'
+    expect(shouldFallbackToSyncChat(aborted, false)).toBe(false)
   })
 })

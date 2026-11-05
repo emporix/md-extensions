@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ApiClient } from '../../services/apiClient'
 import { AppState } from '../../types/common'
@@ -136,7 +136,8 @@ const ChatImagePreview = ({
 const ChatImagePending = () => {
   const { t } = useTranslation()
   return (
-    <p className="agent-chat-artifact-pending" role="status">
+    <p className="agent-chat-activity" role="status">
+      <i className="pi pi-spin pi-spinner" aria-hidden="true" />
       {t('chat_artifact_generating_image')}
     </p>
   )
@@ -155,57 +156,75 @@ const ChatFileCard = ({
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const bytesRef = useRef<ArrayBuffer | null>(null)
   const [bytes, setBytes] = useState<ArrayBuffer | null>(null)
+  const loadRef = useRef<Promise<ArrayBuffer> | null>(null)
   const filename = safeArtifactFilename(artifact.filename)
   const previewable = isPreviewableFile(artifact)
   const artifactId = artifact.artifactId ?? ''
   const { tenant, token, language, contentLanguage } = appState
-  const summary = `${filename} · ${artifact.mimeType} · ${formatArtifactSize(artifact.size)}`
+  const sizeLabel = formatArtifactSize(artifact.size)
+  const summary = `${filename} · ${artifact.mimeType} · ${t(sizeLabel.key, {
+    value: sizeLabel.value,
+  })}`
+  const mountedRef = useRef(true)
 
-  const ensureBytes = async (signal: AbortSignal) => {
+  const ensureBytes = useCallback(() => {
     if (bytesRef.current) {
-      return bytesRef.current
+      return Promise.resolve(bytesRef.current)
     }
-    const loaded = await new ApiClient({
+    const pending = loadRef.current
+    if (pending) {
+      return pending
+    }
+    const request = new ApiClient({
       tenant,
       token,
       language,
       contentLanguage,
-    }).getBoundedArrayBuffer(
-      artifactDownloadPath(tenant, artifactId),
-      MAX_ARTIFACT_DOWNLOAD_BYTES,
-      { signal }
-    )
-    bytesRef.current = loaded
-    setBytes(loaded)
-    return loaded
-  }
+    })
+      .getBoundedArrayBuffer(
+        artifactDownloadPath(tenant, artifactId),
+        MAX_ARTIFACT_DOWNLOAD_BYTES
+      )
+      .then((loaded) => {
+        bytesRef.current = loaded
+        if (mountedRef.current) {
+          setBytes(loaded)
+          setFailed(false)
+        }
+        return loaded
+      })
+    const tracked = request.finally(() => {
+      if (loadRef.current === tracked) {
+        loadRef.current = null
+      }
+    })
+    loadRef.current = tracked
+    return tracked
+  }, [artifactId, contentLanguage, language, tenant, token])
 
   useEffect(() => {
-    if (!open || !artifactId || bytesRef.current) {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!open || !artifactId) {
       return undefined
     }
-    const controller = new AbortController()
+    if (bytesRef.current) {
+      setBytes(bytesRef.current)
+      setFailed(false)
+      return undefined
+    }
     let cancelled = false
     const load = async () => {
       try {
-        if (bytesRef.current) {
-          return
+        await ensureBytes()
+        if (!cancelled) {
+          setFailed(false)
         }
-        const loaded = await new ApiClient({
-          tenant,
-          token,
-          language,
-          contentLanguage,
-        }).getBoundedArrayBuffer(
-          artifactDownloadPath(tenant, artifactId),
-          MAX_ARTIFACT_DOWNLOAD_BYTES,
-          { signal: controller.signal }
-        )
-        if (cancelled) {
-          return
-        }
-        bytesRef.current = loaded
-        setBytes(loaded)
       } catch {
         if (!cancelled) {
           setFailed(true)
@@ -215,9 +234,8 @@ const ChatFileCard = ({
     void load()
     return () => {
       cancelled = true
-      controller.abort()
     }
-  }, [open, artifactId, tenant, token, language, contentLanguage])
+  }, [open, artifactId, ensureBytes])
 
   useEffect(() => {
     if (!open || artifact.mimeType !== 'application/pdf' || !bytes) {
@@ -238,9 +256,9 @@ const ChatFileCard = ({
       setFailed(true)
       return
     }
-    const controller = new AbortController()
     try {
-      const loaded = await ensureBytes(controller.signal)
+      const loaded = await ensureBytes()
+      setFailed(false)
       const url = URL.createObjectURL(
         new Blob([loaded], { type: artifact.mimeType })
       )

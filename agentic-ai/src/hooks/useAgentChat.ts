@@ -21,7 +21,7 @@ import { appendChatArtifact, type ChatArtifact } from '../utils/chatArtifacts'
 import {
   formatApiError,
   isAbortError,
-  isChatBadRequest,
+  shouldFallbackToSyncChat,
 } from '../utils/errorHelpers'
 
 export type AgentChatRole = 'user' | 'assistant' | 'error'
@@ -193,6 +193,7 @@ export const useAgentChat = () => {
       }
 
       let result: AgentChatSendResult = 'ok'
+      let sawStreamOutput = false
       try {
         let reply: string
         try {
@@ -202,6 +203,7 @@ export const useAgentChat = () => {
             attachments,
             signal: controller.signal,
             onToken: (accumulated) => {
+              sawStreamOutput = true
               replaceAssistant({ role: 'assistant', text: accumulated })
               setActivity(null)
             },
@@ -220,6 +222,7 @@ export const useAgentChat = () => {
               setActivity(text ? { kind: 'tool', text } : null)
             },
             onArtifact: (artifact) => {
+              sawStreamOutput = true
               setMessages((current) =>
                 current.map((entry) =>
                   entry.id === assistantId
@@ -237,7 +240,7 @@ export const useAgentChat = () => {
             onSessionId: setSessionId,
           })
         } catch (streamErr) {
-          if (isAbortError(streamErr) || !isChatBadRequest(streamErr)) {
+          if (!shouldFallbackToSyncChat(streamErr, sawStreamOutput)) {
             throw streamErr
           }
           reply = await chatWithAgentOnce(appState, agentId, trimmed, {
