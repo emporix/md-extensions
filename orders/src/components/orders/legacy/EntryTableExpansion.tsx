@@ -93,7 +93,7 @@ const EntryTableExpansion = ({
   }
 
   // No schema type: legacy entries only show the mixins they already carry.
-  const { loadMixins, mixinsForms } = useMixinsForm({
+  const { loadMixins, mixinsTabs } = useMixinsForm({
     onEdit: saveMixin,
     managerPermissions: !readonly,
   })
@@ -143,12 +143,6 @@ const EntryTableExpansion = ({
     [contentLanguage]
   )
 
-  const tabs = mixinsForms.map((form) => ({
-    id: form.id,
-    label: form.name,
-    content: form.template,
-  }))
-
   return (
     <div>
       {isBundle && (
@@ -161,11 +155,11 @@ const EntryTableExpansion = ({
           showHeaders={false}
         />
       )}
-      {tabs.length > 0 && (
+      {mixinsTabs.length > 0 && (
         <div className={styles.expansionTabs}>
           <Tabs
-            tabs={tabs}
-            activeTabId={activeTab ?? tabs[0].id}
+            tabs={mixinsTabs}
+            activeTabId={activeTab ?? mixinsTabs[0].id}
             onTabChange={setActiveTab}
           />
         </div>

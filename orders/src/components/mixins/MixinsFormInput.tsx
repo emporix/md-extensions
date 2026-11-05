@@ -1,192 +1,478 @@
 import { useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
 import {
   Calendar,
   Dropdown,
+  DropdownOption,
+  InputNumber,
   InputSwitch,
   InputText,
 } from '@emporix/component-library'
 import LocalizedInput from '../shared/LocalizedInput'
 import {
-  LocalizedMixin,
-  mapLocalizedMixinToLocalized,
-  mapLocalizedToLocalizedMixins,
+  getDecimalMaxFractionDigits,
   MixinsFormItem,
   MixinsFormItemType,
 } from './helpers'
-import { toCalendarDate } from '../../helpers/date'
+import { fromLocalizedMap, toLocalizedMap } from './localizedMixin.helpers'
+import { formatInheritedDisplayValue } from './siteAwareMixin.helpers'
+import { isHourValid } from '../../helpers/time'
 import Localized from '../../models/Localized.model'
+import { useTranslation } from 'react-i18next'
+import { ReferenceItem, ReferenceSelector } from './ReferenceSelector'
+import { useLocalizedValue } from '../../hooks/useLocalizedValue'
+import { useReferenceOptions } from '../../context/ReferenceOptionsProvider'
+import styles from './Mixins.module.scss'
 
-interface MixinsFormInputProps {
-  item: MixinsFormItem
-  value: string | number | boolean | string[] | LocalizedMixin[]
-  onInputChange: (
-    key: string,
-    value: string | number | boolean | LocalizedMixin[]
-  ) => void
-  disabled?: boolean
-  className?: string
+/** Sentinel for the explicit "clear" option standing in for Prime `showClear`. */
+const CLEAR_OPTION_VALUE = '__mixins_clear__'
+
+type InputValueType =
+  | string
+  | number
+  | boolean
+  | string[]
+  | Record<string, string>
+  | Record<string, unknown>
+  | { language: string; value: string | number | boolean }[]
+  | { emporixReferenceType: string; id: string }
+  | null
+
+interface SchemaFormInputProps {
+  readonly item: MixinsFormItem
+  readonly value: InputValueType
+  readonly onInputChange: (key: string, value: InputValueType) => void
+  readonly disabled?: boolean
+  readonly className?: string
+  /** Kept from MD's API; the field label is rendered by the caller. */
+  readonly hideFieldName?: boolean
+  readonly disableReferenceSelector?: boolean
+  readonly externalItems?: ReferenceItem[]
+  readonly inheritedValue?: unknown
+  /** Site overlay: allow clearing a scalar override to resume inheritance. */
+  readonly clearableOverride?: boolean
+  /** Shown when the field is empty; takes precedence over the inherited value. */
+  readonly placeholder?: string
 }
 
-/**
- * Renders one mixin field.
- *
- * Date and date-time use CL `Calendar` (PrimeReact overlay, styles in the
- * library). Numeric and time fields still use native input types through CL
- * `InputText` until InputNumber / InputMask are promoted.
- */
+const hasLocalizedValue = (value: unknown): boolean =>
+  Object.values(toLocalizedMap(value) ?? {}).some(
+    (v) => v !== undefined && v !== null && v !== ''
+  )
 
-const MixinsFormInput = ({
-  item,
-  value,
-  onInputChange,
-  disabled = false,
-  className = '',
-}: MixinsFormInputProps) => {
-  const { t } = useTranslation()
+const MixinsFormInput = (props: SchemaFormInputProps) => {
+  const {
+    item,
+    value,
+    onInputChange,
+    disabled = false,
+    className = '',
+    disableReferenceSelector = false,
+    externalItems,
+    inheritedValue,
+    clearableOverride = false,
+    placeholder,
+  } = props
+  const { i18n, t } = useTranslation()
+  const { getContentLangValue } = useLocalizedValue()
+  const { referenceOptions } = useReferenceOptions()
+
   const isReadonly: boolean = item.isReadonly ?? false
-  const isDisabled = disabled || isReadonly
   const type =
     item.arrayType !== undefined &&
     item.arrayType !== MixinsFormItemType.unknown
       ? item.arrayType
       : item.type
 
+  const inheritedPlaceholder = (() => {
+    if (
+      inheritedValue === undefined ||
+      inheritedValue === null ||
+      inheritedValue === ''
+    ) {
+      return undefined
+    }
+    if (
+      typeof inheritedValue === 'string' ||
+      typeof inheritedValue === 'number'
+    ) {
+      return String(inheritedValue)
+    }
+    if (typeof inheritedValue === 'boolean') {
+      return inheritedValue ? 'true' : 'false'
+    }
+    return undefined
+  })()
+
+  const inheritedHint =
+    inheritedValue !== undefined &&
+    inheritedValue !== null &&
+    inheritedValue !== '' &&
+    inheritedPlaceholder === undefined
+      ? (() => {
+          const formatted = formatInheritedDisplayValue(inheritedValue)
+          return formatted
+            ? t('mixins.labels.defaultValueHint', { value: formatted })
+            : undefined
+        })()
+      : inheritedPlaceholder
+        ? t('mixins.labels.defaultValueHint', { value: inheritedPlaceholder })
+        : undefined
+
   const getField = useCallback(() => {
     switch (type) {
-      case MixinsFormItemType.text:
+      case MixinsFormItemType.text: {
         return (
           <InputText
             className={className}
             value={(value as string) || ''}
-            disabled={isDisabled}
-            onChange={(e) => onInputChange(item.key, e.target.value)}
-          />
-        )
-      case MixinsFormItemType.integer:
-        return (
-          <InputText
-            className={className}
-            type="number"
-            step={1}
-            value={value === undefined || value === null ? '' : String(value)}
-            disabled={isDisabled}
+            placeholder={placeholder ?? inheritedPlaceholder}
+            readOnly={disabled || isReadonly}
             onChange={(e) => {
-              const raw = e.target.value
-              onInputChange(item.key, raw === '' ? '' : Number(raw))
+              onInputChange(item.key as string, e.target.value)
             }}
           />
         )
-      case MixinsFormItemType.decimal:
+      }
+      case MixinsFormItemType.integer: {
         return (
-          <InputText
+          <InputNumber
             className={className}
-            type="number"
-            step="0.01"
-            value={value === undefined || value === null ? '' : String(value)}
-            disabled={isDisabled}
-            onChange={(e) => {
-              const raw = e.target.value
-              onInputChange(item.key, raw === '' ? '' : Number(raw))
+            value={value as number}
+            placeholder={placeholder ?? inheritedPlaceholder}
+            readOnly={disabled || isReadonly}
+            onChange={({ value }) => {
+              onInputChange(item.key as string, value as number)
             }}
           />
         )
-      case MixinsFormItemType.boolean:
+      }
+      case MixinsFormItemType.decimal: {
         return (
-          <InputSwitch
+          <InputNumber
             className={className}
-            checked={Boolean(value)}
-            disabled={isDisabled}
-            onChange={(e) => onInputChange(item.key, e.value)}
-          />
-        )
-      case MixinsFormItemType.enum:
-        return (
-          <Dropdown
-            className={className}
-            options={(item.enum ?? []).map((option) => ({
-              label: option,
-              value: option,
-            }))}
-            value={value as string}
-            disabled={isDisabled}
-            onChange={(e) => onInputChange(item.key, e.value as string)}
-          />
-        )
-      case MixinsFormItemType.date:
-        return (
-          <Calendar
-            className={className}
-            value={toCalendarDate(value)}
-            dateFormat={t('global.dateFormat')}
-            disabled={isDisabled}
-            showButtonBar
-            onChange={(event) => {
-              const next = event.value
-              onInputChange(
-                item.key,
-                next instanceof Date ? next.toISOString() : ''
-              )
+            value={value as number}
+            placeholder={placeholder ?? inheritedPlaceholder}
+            readOnly={disabled || isReadonly}
+            onChange={({ value }) => {
+              onInputChange(item.key as string, value as number)
             }}
+            mode="decimal"
+            locale={i18n.language}
+            maxFractionDigits={getDecimalMaxFractionDigits(item.multipleOf)}
           />
         )
-      case MixinsFormItemType.dateTime:
+      }
+      case MixinsFormItemType.boolean: {
+        const hasOverride = value === true || value === false
         return (
-          <Calendar
-            className={className}
-            value={toCalendarDate(value)}
-            dateFormat={t('global.dateFormat')}
-            disabled={isDisabled}
-            showTime
-            hourFormat="24"
-            showButtonBar
-            onChange={(event) => {
-              const next = event.value
-              onInputChange(
-                item.key,
-                next instanceof Date ? next.toISOString() : ''
-              )
-            }}
-          />
+          <div className={styles.column}>
+            <div className={styles.row}>
+              <InputSwitch
+                className={className}
+                checked={
+                  hasOverride ? (value as boolean) : Boolean(inheritedValue)
+                }
+                disabled={disabled || isReadonly}
+                onChange={({ value: next }) => {
+                  onInputChange(item.key as string, next || false)
+                }}
+              />
+              {clearableOverride && hasOverride && !disabled && !isReadonly ? (
+                <button
+                  type="button"
+                  className={styles.clearOverride}
+                  onClick={() => onInputChange(item.key as string, null)}
+                >
+                  {t('mixins.labels.useDefaultValue')}
+                </button>
+              ) : null}
+            </div>
+            {!hasOverride && inheritedHint ? (
+              <span className={styles.inheritedHint}>{inheritedHint}</span>
+            ) : null}
+          </div>
         )
-      case MixinsFormItemType.time:
-        // Native time input enforces HH:mm, replacing the PrimeReact
-        // InputMask "99:99" + manual range validation MD used.
+      }
+      case MixinsFormItemType.enum: {
+        // CL Dropdown has no `showClear`: an explicit empty option clears it.
+        const canClear =
+          item.isNullable ||
+          clearableOverride ||
+          inheritedPlaceholder !== undefined
+        const enumOptions: DropdownOption[] = (
+          item.enum?.filter((i) => i !== null) || []
+        ).map((option) => ({
+          label: String(option),
+          value: option as string,
+        }))
+        const options: DropdownOption[] =
+          canClear && value !== null && value !== undefined && value !== ''
+            ? [{ label: '\u00a0', value: CLEAR_OPTION_VALUE }, ...enumOptions]
+            : enumOptions
+        return (
+          <div className={styles.column}>
+            <Dropdown
+              className={className}
+              options={options}
+              value={value ?? null}
+              placeholder={placeholder ?? inheritedPlaceholder}
+              disabled={disabled || isReadonly}
+              onChange={(e) => {
+                onInputChange(
+                  item.key as string,
+                  e.value === CLEAR_OPTION_VALUE
+                    ? null
+                    : (e.value as InputValueType)
+                )
+              }}
+            />
+            {!value && inheritedHint ? (
+              <span className={styles.inheritedHint}>{inheritedHint}</span>
+            ) : null}
+          </div>
+        )
+      }
+      case MixinsFormItemType.date: {
+        const canClearDate = item.isNullable || clearableOverride
+        return (
+          <div className={styles.column}>
+            <Calendar
+              className={className}
+              key={`${item.key}-${JSON.stringify(value)}`}
+              showButtonBar={canClearDate}
+              panelClassName={styles.calendarHideToday}
+              value={
+                value && !Array.isArray(value)
+                  ? new Date(value as string)
+                  : undefined
+              }
+              disabled={disabled || isReadonly}
+              onChange={(event) => {
+                if (event.value instanceof Date) {
+                  onInputChange(item.key as string, event.value.toISOString())
+                } else if (canClearDate) {
+                  onInputChange(item.key as string, null)
+                }
+              }}
+            />
+            {clearableOverride &&
+            value &&
+            !disabled &&
+            !isReadonly &&
+            !item.isNullable ? (
+              <button
+                type="button"
+                className={styles.clearOverride}
+                onClick={() => onInputChange(item.key as string, null)}
+              >
+                {t('mixins.labels.useDefaultValue')}
+              </button>
+            ) : null}
+          </div>
+        )
+      }
+      case MixinsFormItemType.dateTime: {
+        const canClearDateTime = item.isNullable || clearableOverride
+        return (
+          <div className={styles.column}>
+            <Calendar
+              className={className}
+              key={`${item.key}-${value !== undefined}`}
+              showTime
+              hourFormat="24"
+              showButtonBar={canClearDateTime}
+              panelClassName={styles.calendarHideToday}
+              value={
+                value && !Array.isArray(value)
+                  ? new Date(value as string)
+                  : undefined
+              }
+              disabled={disabled || isReadonly}
+              onChange={(event) => {
+                if (event.value instanceof Date) {
+                  onInputChange(item.key as string, event.value.toISOString())
+                } else if (canClearDateTime) {
+                  onInputChange(item.key as string, null)
+                }
+              }}
+            />
+            {clearableOverride &&
+            value &&
+            !disabled &&
+            !isReadonly &&
+            !item.isNullable ? (
+              <button
+                type="button"
+                className={styles.clearOverride}
+                onClick={() => onInputChange(item.key as string, null)}
+              >
+                {t('mixins.labels.useDefaultValue')}
+              </button>
+            ) : null}
+          </div>
+        )
+      }
+      case MixinsFormItemType.time: {
+        // CL has no InputMask: native time input replaces MD's "99:99" mask;
+        // incomplete/invalid times clear the value like MD's onBlur check.
         return (
           <InputText
             className={className}
             type="time"
             value={(value as string) || ''}
-            disabled={isDisabled}
-            onChange={(e) => onInputChange(item.key, e.target.value)}
+            disabled={disabled || isReadonly}
+            onChange={(e) => {
+              const time = e.target.value
+              onInputChange(item.key as string, isHourValid(time) ? time : '')
+            }}
           />
         )
-      case MixinsFormItemType.localized:
+      }
+      case MixinsFormItemType.localized: {
+        const inheritedLocalized =
+          inheritedValue !== undefined &&
+          inheritedValue !== null &&
+          inheritedValue !== ''
+            ? toLocalizedMap(inheritedValue)
+            : undefined
         return (
-          <LocalizedInput
-            className={className}
-            displayOnly={isDisabled}
-            value={mapLocalizedMixinToLocalized(value as LocalizedMixin[])}
-            onChange={(val) =>
-              onInputChange(
-                item.key,
-                mapLocalizedToLocalizedMixins(
-                  val as Localized
-                ) as LocalizedMixin[]
-              )
-            }
-          />
+          <div className={styles.column}>
+            <LocalizedInput
+              className={className}
+              displayOnly={disabled || isReadonly}
+              onChange={(val) =>
+                onInputChange(
+                  item.key as string,
+                  fromLocalizedMap(
+                    val as Localized,
+                    item.localizedVersion ?? 'v1'
+                  ) as InputValueType
+                )
+              }
+              value={toLocalizedMap(value)}
+            />
+            {/* MD showed per-language placeholders; the remote LocalizedInput
+                has no placeholder passthrough, so show the default as a hint. */}
+            {inheritedLocalized && !hasLocalizedValue(value) ? (
+              <span className={styles.inheritedHint}>
+                {t('mixins.labels.defaultValueHint', {
+                  value: getContentLangValue(inheritedLocalized),
+                })}
+              </span>
+            ) : null}
+          </div>
         )
-      default:
+      }
+      case MixinsFormItemType.reference: {
+        const referenceValue = (value as {
+          emporixReferenceType: string
+          id: string
+        }) || { emporixReferenceType: '', id: '' }
+
+        const referenceType =
+          referenceValue.emporixReferenceType ||
+          (item.referenceTypeEnum && item.referenceTypeEnum.length === 1
+            ? item.referenceTypeEnum[0]
+            : '')
+
+        const isReferenceTypeSupported =
+          referenceType && referenceOptions.includes(referenceType)
+        const hasReferenceOverride = !!referenceValue.id
+
+        return (
+          <div className={styles.column}>
+            {isReferenceTypeSupported ? (
+              <ReferenceSelector
+                value={referenceValue.id ? [referenceValue.id] : []}
+                onChange={(selectedIds) => {
+                  const nextId = selectedIds[selectedIds.length - 1] || ''
+                  if (!nextId && clearableOverride) {
+                    onInputChange(item.key as string, null)
+                    return
+                  }
+                  onInputChange(item.key as string, {
+                    emporixReferenceType: referenceType,
+                    id: nextId,
+                  })
+                }}
+                referenceType={referenceType}
+                disabled={disabled || isReadonly}
+                disableDropdown={disableReferenceSelector}
+                externalItems={externalItems}
+                className={`${className} ${styles.referenceInput}`}
+              />
+            ) : (
+              // For unsupported reference types, show a disabled text input with the ID
+              <InputText
+                className={className}
+                value={referenceValue.id || ''}
+                readOnly={true}
+                placeholder={t('mixins.labels.unsupportedType')}
+              />
+            )}
+            {clearableOverride &&
+            hasReferenceOverride &&
+            !disabled &&
+            !isReadonly ? (
+              <button
+                type="button"
+                className={styles.clearOverride}
+                onClick={() => onInputChange(item.key as string, null)}
+              >
+                {t('mixins.labels.useDefaultValue')}
+              </button>
+            ) : null}
+          </div>
+        )
+      }
+      default: {
         return (
           <div>
             <i>Field not available</i>
           </div>
         )
+      }
     }
-  }, [type, value, item, className, isDisabled, onInputChange, t])
+  }, [
+    type,
+    isReadonly,
+    value,
+    item,
+    i18n.language,
+    disabled,
+    className,
+    disableReferenceSelector,
+    externalItems,
+    referenceOptions,
+    getContentLangValue,
+    onInputChange,
+    inheritedValue,
+    inheritedPlaceholder,
+    inheritedHint,
+    clearableOverride,
+    placeholder,
+    t,
+  ])
 
-  return <>{getField()}</>
+  const field = getField()
+  const showGenericHint =
+    inheritedHint &&
+    type !== MixinsFormItemType.text &&
+    type !== MixinsFormItemType.integer &&
+    type !== MixinsFormItemType.decimal &&
+    type !== MixinsFormItemType.boolean &&
+    type !== MixinsFormItemType.enum &&
+    type !== MixinsFormItemType.localized &&
+    (value === undefined || value === null || value === '')
+
+  return (
+    <div className={styles.column}>
+      {field}
+      {showGenericHint ? (
+        <span className={styles.inheritedHint}>{inheritedHint}</span>
+      ) : null}
+    </div>
+  )
 }
 
 export default MixinsFormInput

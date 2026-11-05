@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router'
 import {
   Dropdown,
   PrimaryButton,
@@ -23,7 +24,9 @@ import OrderEntries from '../components/orders/entries/OrderEntries'
 import EntryTable from '../components/orders/legacy/EntryTable'
 import OrderData from '../components/orders/legacy/OrderData'
 import OrderPaymentInfo from '../components/orders/payment/OrderPaymentInfo'
-import useMixinsForm from '../components/mixins/useMixinsForm'
+import useMixinsForm, {
+  MIXINS_LOADING_TAB_ID,
+} from '../components/mixins/useMixinsForm'
 import type { MixinsFormMetadata } from '../components/mixins/helpers'
 import { useOrderData } from '../contexts/OrderData.provider'
 import { useUIBlocker } from '../context/UIBlocker'
@@ -77,6 +80,7 @@ const canSaveEntries = (order: Order) => {
 
 const OrderViewPage = () => {
   const { t } = useTranslation()
+  const [searchParams] = useSearchParams()
   const { showSuccess, showError } = useToast()
   const { blockPanel } = useUIBlocker()
   const {
@@ -124,7 +128,7 @@ const OrderViewPage = () => {
     }
   }
 
-  const { loadMixins, mixinsForms, isMixinsLoading } = useMixinsForm({
+  const { loadMixins, mixinsTabs, isMixinsLoading } = useMixinsForm({
     type: SchemaType.ORDER,
     onEdit: saveMixin,
     managerPermissions: canManage,
@@ -241,12 +245,20 @@ const OrderViewPage = () => {
       DATA_TAB,
       ENTRIES_TAB,
       ...(paymentTabEnabled ? [PAYMENT_TAB] : []),
-      ...(isMixinsLoading ? [] : mixinsForms.map((form) => form.id)),
+      ...mixinsTabs.map((tab) => tab.id),
       ...(canViewAuditLog ? [AUDIT_LOG_TAB] : []),
     ],
-    [paymentTabEnabled, isMixinsLoading, mixinsForms, canViewAuditLog]
+    [paymentTabEnabled, mixinsTabs, canViewAuditLog]
   )
   const { activeTab, onTabChange } = useTabs(tabIds, true)
+
+  // While mixins (re)load, a `?tab=<mixin>` URL has no matching tab yet:
+  // keep the loading placeholder selected instead of jumping to Data.
+  const urlTab = searchParams.get('tab')
+  const activeTabId =
+    isMixinsLoading && urlTab && !tabIds.includes(urlTab)
+      ? MIXINS_LOADING_TAB_ID
+      : (activeTab ?? DATA_TAB)
 
   const tabs: TabItem[] = useMemo(() => {
     const items: TabItem[] = [
@@ -282,15 +294,7 @@ const OrderViewPage = () => {
         content: tabContent(<OrderPaymentInfo />),
       })
     }
-    if (!isMixinsLoading) {
-      items.push(
-        ...mixinsForms.map((form) => ({
-          id: form.id,
-          label: form.name,
-          content: form.template,
-        }))
-      )
-    }
+    items.push(...mixinsTabs)
     if (canViewAuditLog) {
       items.push({
         id: AUDIT_LOG_TAB,
@@ -300,7 +304,7 @@ const OrderViewPage = () => {
           <EntityChangelogTab
             entity="order"
             entityId={order.id}
-            isActive={activeTab === AUDIT_LOG_TAB}
+            isActive={activeTabId === AUDIT_LOG_TAB}
           />
         ) : null,
       })
@@ -315,10 +319,9 @@ const OrderViewPage = () => {
     canManage,
     refreshFlag,
     paymentTabEnabled,
-    mixinsForms,
-    isMixinsLoading,
+    mixinsTabs,
     canViewAuditLog,
-    activeTab,
+    activeTabId,
     refreshData,
   ])
 
@@ -358,11 +361,7 @@ const OrderViewPage = () => {
           </div>
         }
       />
-      <Tabs
-        tabs={tabs}
-        activeTabId={activeTab ?? DATA_TAB}
-        onTabChange={onTabChange}
-      />
+      <Tabs tabs={tabs} activeTabId={activeTabId} onTabChange={onTabChange} />
     </>
   )
 }
