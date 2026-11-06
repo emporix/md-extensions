@@ -7,6 +7,22 @@
 .notice {
   width: 100%;
   margin-bottom: 1rem;
+  // Dashboard info banner: lara-light-indigo .p-message-info
+  --color-message-info-bg: #e9e9ff;
+  --color-message-info-border: #696cff;
+  --color-message-info-icon: #696cff;
+}
+
+.notice.notice {
+  background: #e9e9ff;
+  border-style: solid;
+  border-color: #696cff;
+  border-width: 0 0 0 6px;
+  color: #696cff;
+}
+
+.notice span {
+  color: #696cff;
 }
 
 .languages {
