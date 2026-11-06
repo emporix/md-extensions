@@ -6,8 +6,6 @@
   "scripts": {
     "dev": "vite --mode dev",
     "dev:stage": "vite --mode stage",
-    "postinstall": "node node_modules/frontend-ai-rules/scripts/sync-rules.js && node scripts/customize-ai-rules-index.mjs",
-    "sync:ai-rules": "node node_modules/frontend-ai-rules/scripts/sync-rules.js && node scripts/customize-ai-rules-index.mjs",
     "check:cors": "node scripts/ensure-cors-origin.mjs",
     "build:watch": "node scripts/ensure-cors-origin.mjs --mode dev && tsc -b && vite build --mode dev --watch",
     "build:dev": "node scripts/ensure-cors-origin.mjs --mode dev && tsc -b && vite build --mode dev",
@@ -49,7 +47,6 @@
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.26",
-    "frontend-ai-rules": "git+https://github.com/emporix/frontend-ai-rules.git#md-module-migration",
     "globals": "^15.15.0",
     "jsdom": "^29.1.1",
     "prettier": "3.5.0",

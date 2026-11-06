@@ -97,6 +97,17 @@ In-flight dedup (`getOrLoad`) covers order stats, quote stats, customers, last o
 
 Vitest script is `npm run test:run` (`dashboard/package.json`). Specs under `dashboard/src/dashboard` cover helpers and `base.api` only: `base.api.test.ts`, `cart.helpers.test.ts`, `chart.helpers.test.ts`, `customer.helpers.test.ts`, `date.helpers.test.ts`, `employee.helpers.test.ts`, `geo.helpers.test.ts`, `layout.helpers.test.ts`, `order.helpers.test.ts`, `orderStats.helpers.test.ts`, `person.helpers.test.ts`, `quote.helpers.test.ts`, `quoteStats.helpers.test.ts`, `requestCache.helpers.test.ts`, `return.helpers.test.ts`, `timeRange.helpers.test.ts` (this file’s only `describe` is `parseISODateString`). No widget, hook, page, or `RemoteComponent` spec is present. `layout.helpers.test.ts` covers add, remove, parse, KPI id check, and `localStorage`. The 3-column migration is implemented and has no `describe` in that file.
 
+## Host wiring
+
+| Fact | Value |
+|---|---|
+| Kind | legacy — PrimeReact 8, no component library (`dashboard/package.json`) |
+| Federation `name` | `extension` (`dashboard/vite.config.ts`) |
+| Host route `key` → path | `dashboardIndex` → `''` and `dashboard` → `dashboard`, both on the same remote (`management-dashboard` `src/router/module-routes.tsx`) |
+| Host env var | `VITE_DASHBOARD_EXTENSION_URL` (`management-dashboard` `.env.*`) |
+| Local port | not pinned (`npm run dev` is `vite`) |
+| Local deviations | own `fetch` client in `src/dashboard/api/base.api.ts`; no router; CI on Node `24.x` |
+
 ## Unknown
 
 Which ISO2 codes `iso2ToMapId.ts` contains, beyond the lookup rule above. Whether a stats `groupBy` other than week is what the API returns for these ranges. Whether configuration `PUT` requires `version`. Whether the site API marks a default site or filters `active`. Host permission names other than `systemPreferences.manager`. Copy inside `dashboard/src/shared/i18n/` (bodies were not used). Styling under `*.scss` and `dataTableStyles.ts`.

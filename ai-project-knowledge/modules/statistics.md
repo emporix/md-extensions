@@ -86,6 +86,17 @@ When more than one tenant is selected, totals are summed in the browser (`statis
 
 Expanded multi-tenant API calls sum `requestsCount` by date and `apiproxy` across the selected tenants, then store that as `tenant: 'aggregated'` with zeroed summary counts (`ApiCallsView.tsx`). A single tenant, including the total label when only one tenant is selected, calls the expanded endpoint for that tenant. The total label with one selected tenant uses the context tenant as the data tenant.
 
+## Host wiring
+
+| Fact | Value |
+|---|---|
+| Kind | legacy — PrimeReact 8, no component library (`statistics/package.json`) |
+| Federation `name` | `extension` (`statistics/vite.config.ts`) |
+| Host route `key` → path | `statistics` → `/apps/administration/statistics` (`management-dashboard` `src/router/module-routes.tsx`) |
+| Host env var | `VITE_STATISTICS_URL` (`management-dashboard` `.env.*`) |
+| Local port | not pinned (`npm run dev` is `vite`) |
+| Local deviations | own `fetch` in `src/api.ts`; no router (PrimeReact `TabView`) |
+
 ## Not yet scanned
 
 - `statistics/src/translations/de/index.ts` — German strings not compared with English.

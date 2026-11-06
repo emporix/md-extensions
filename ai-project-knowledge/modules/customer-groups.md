@@ -1,6 +1,6 @@
 # Customer groups
 
-Last scanned: da99643 (2026-11-02)
+Last scanned: 05d8d1d (2026-11-06)
 Sources: `customer-groups/README.md`, `customer-groups/src/models/Groups.model.ts`, `customer-groups/src/hooks/api/iam.ts`, `customer-groups/src/RemoteComponent.tsx`, `customer-groups/src/pages/CustomerGroups.page.tsx`, `customer-groups/src/pages/Group.page.tsx`, `customer-groups/src/context/Group.provider.tsx`, `customer-groups/src/components/customerGroups/GroupsTable.tsx`, `customer-groups/src/components/group/GroupPageActions.tsx`, `customer-groups/src/configs/accessControls.ts`, `customer-groups/src/helpers/groups/accessControlsSaveDirty.test.tsx`, `customer-groups/src/helpers/groups/systemGroupDelete.ts`, `customer-groups/src/components/customerGroups/GroupsTable.delete.test.tsx`
 
 ## Scope
@@ -124,6 +124,17 @@ With `Audit Log Viewer`, the third tab loads changelogs for entity `group` and t
 ## Tests that name this behaviour
 
 `accessControlsSaveDirty.test.tsx` builds a `CUSTOMER` group and expects Save to enable when only `accessControls` changes. `mapAccessControlsToTemplates` is covered by `customer-groups/src/helpers/groups/accessControls.helpers.test.ts`. `getEntityDetailPath` is covered by `customer-groups/src/configs/entityLinkConfig.test.ts`. IAM and platform error parsing, including conflict toasts, is covered by `customer-groups/src/helpers/api.test.ts`. Changelog pagination and path formatting are covered by `customer-groups/src/helpers/auditLog/changelog.helpers.test.ts` and `customer-groups/src/helpers/auditLog/entityChangelog.helpers.test.ts`. List delete for code `CUSTOMER` is covered by `customer-groups/src/components/customerGroups/GroupsTable.delete.test.tsx`. No page test covers list loading, create, members, or the predefined-group rules.
+
+## Host wiring
+
+| Fact | Value |
+|---|---|
+| Kind | playbook-aligned (derived from users-and-groups) (`customer-groups/package.json`) |
+| Federation `name` | `customerGroups` (`customer-groups/vite.config.ts`) |
+| Host route `key` → path | `customerGroups` → `administration/customer-groups/*` (`management-dashboard` `src/router/module-routes.tsx`) |
+| Host env var | `VITE_CUSTOMER_GROUPS_URL` (`management-dashboard` `.env.*`) |
+| Local port | `5174`, `strictPort` |
+| Local deviations | none beyond showing `CUSTOMER` groups only |
 
 ## Unknown
 
