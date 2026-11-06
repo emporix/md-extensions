@@ -328,10 +328,26 @@ describe('agentToolsHelpers', () => {
     expect(getNativeToolTags({ type: 'slack' })).toEqual(['Slack'])
     expect(getNativeToolTags({ type: 'teams' })).toEqual(['Microsoft Teams'])
     expect(getNativeToolTags({ type: 'rag_custom' })).toEqual(['RAG Tools'])
-    expect(getNativeToolTags({ type: 'file' })).toEqual(['file_generator'])
-    expect(getNativeToolTags({ id: 'file_generator', type: 'file' })).toEqual([
-      'file_generator',
-    ])
+    expect(getNativeToolTags({ type: 'file' })).toEqual([])
+    expect(
+      getNativeToolTags({ type: 'file' }, 'Built-in file generator')
+    ).toEqual(['Built-in file generator'])
+    expect(
+      getNativeToolTags(
+        { id: 'file_generator', type: 'file' },
+        'Eingebauter Dateigenerator'
+      )
+    ).toEqual(['Eingebauter Dateigenerator'])
+  })
+
+  it('getNativeToolSectionTags keeps the translated file label', () => {
+    expect(
+      getNativeToolSectionTags(
+        [{ id: 'file_generator', name: 'Files', type: 'file', config: {} }],
+        3,
+        'Built-in file generator'
+      )
+    ).toEqual(['Built-in file generator'])
   })
 
   it('getNativeToolSearchValues includes the file generator id and runtime names', () => {

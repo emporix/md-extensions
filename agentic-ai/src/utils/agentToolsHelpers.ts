@@ -44,7 +44,8 @@ const FILE_GENERATOR_RUNTIME_NAMES = [
 ] as const
 
 export const getNativeToolTags = (
-  tool: Pick<Tool, 'type'> & { readonly id?: string }
+  tool: Pick<Tool, 'type'> & { readonly id?: string },
+  fileLabel?: string
 ): string[] => {
   if (tool.type === 'slack') {
     return ['Slack']
@@ -56,7 +57,7 @@ export const getNativeToolTags = (
     return ['RAG Tools']
   }
   if (tool.type === 'file' || tool.id === FILE_GENERATOR_TOOL_ID) {
-    return [FILE_GENERATOR_TOOL_ID]
+    return fileLabel ? [fileLabel] : []
   }
   if (tool.type) {
     return [formatTagLabel(tool.type.replace(/_/g, '-'))]
@@ -76,12 +77,13 @@ export const getNativeToolSearchValues = (
 
 export const getNativeToolSectionTags = (
   tools: Tool[],
-  maxTags = 3
+  maxTags = 3,
+  fileLabel?: string
 ): string[] => {
   const tags = new Set<string>()
 
   tools.forEach((tool) => {
-    getNativeToolTags(tool).forEach((tag) => tags.add(tag))
+    getNativeToolTags(tool, fileLabel).forEach((tag) => tags.add(tag))
   })
 
   return [...tags].sort((a, b) => a.localeCompare(b)).slice(0, maxTags)
