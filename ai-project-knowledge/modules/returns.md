@@ -171,6 +171,17 @@ Wizard and edit behaviour above is from the implementation, not from tests.
 - Whether mixin `ADD` replaces an existing key.
 - Host route guard that decides who can open the remote.
 
+## Host wiring
+
+| Fact | Value |
+|---|---|
+| Kind | playbook-aligned (`returns/package.json`) |
+| Federation `name` | `returns` (`returns/vite.config.ts`) |
+| Host route `key` → path | `returns` → `/apps/management/returns/*` (`management-dashboard` `src/router/module-routes.tsx`) |
+| Host env var | `VITE_RETURNS_URL` (`management-dashboard` `.env.*`) |
+| Local port | `5176`, `strictPort` |
+| Local deviations | none |
+
 ## Not yet scanned
 
 `returns/src/translations/**`, `returns/src/**/*.scss`, mixin widget internals (`MixinsFormInput.tsx`, `MixinsFormItemTemplate.tsx`, `ReferenceSelector.tsx` rendering, per-type loader bodies in `useReferenceSelectorConfig.tsx`), `returns/src/hooks/api/{schema,iam,configuration}.ts` request shapes, the access-control UUID catalog in `returns/src/configs/accessControls.ts`, and the mixin test bodies. `node_modules`, `dist`, `.env*`, and the synced AI rule folders were skipped.

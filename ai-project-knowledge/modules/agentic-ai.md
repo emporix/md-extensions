@@ -97,6 +97,17 @@ Conversations: `GET /ai-service/{tenant}/agentic/conversations`, default sort `l
 
 Custom entity labels for RAG: `GET /schema/{tenant}/custom-entities` page size 2000 (`agentic-ai/src/services/schemaService.ts`).
 
+## Host wiring
+
+| Fact | Value |
+|---|---|
+| Kind | legacy — PrimeReact 8 next to component-library 2.10.4 (`agentic-ai/package.json`) |
+| Federation `name` | `extension` (`agentic-ai/vite.config.ts`) |
+| Host route `key` → path | `aiAgents` → `/apps/administration/ai-agents` (`management-dashboard` `src/router/module-routes.tsx`) |
+| Host env var | `VITE_AI_AGENTS_URL` (`management-dashboard` `.env.*`) |
+| Local port | not pinned (`npm run dev` is `vite --mode dev`) |
+| Local deviations | own `fetch` client in `src/services/apiClient.ts` instead of `@emporix/api-calls`; UI language `en` or `de` only; its own `AGENTS.md` and `ai-setup.json` |
+
 ## Not yet scanned
 
 Chat rich-content rendering (Markdown, Mermaid, Vega-Lite, CSV), exact CSS and layout of the attachment strip and artifact cards, how `chat_*` messages are worded, log-analysis and JSON-schema assistant prompt bodies, MCP-from-function zip parsing, session-flow grouping, reindex poll interval, conversations tab UI, OAuth/token/MCP page chrome, slider CSS, translations, styles, and test bodies beyond the rules cited above.

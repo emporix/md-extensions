@@ -10,7 +10,7 @@ description: >-
 
 # MD Module Extraction
 
-> **Canonical location:** `md-extensions/.cursor/skills/md-module-extraction/` (mirror to `.claude/skills/` and `.github/skills/`; also synced in frontend-ai-rules).  
+> **Canonical location:** `md-extensions/.cursor/skills/md-module-extraction/` (mirror to `.claude/skills/` and `.github/skills/`). Remotes carry no copy.  
 > **Host wiring rules:** `management-dashboard/.cursor/rules/federated-module-wiring.mdc`  
 > **Remote rules:** `md-extensions/.cursor/rules/md-extension-migration.mdc`, `md-extension-port-validation.mdc`  
 > **Hooks:** `md-extensions/.cursor/hooks.json`
@@ -86,7 +86,7 @@ git clone -b md-module-migration --single-branch \
 rm -rf {kebab-module}/.git   # absorb into the md-extensions monorepo
 ```
 
-Then rename federation `name`, pin the next free port from `MIGRATED_MODULES.md`, scrub leftovers, `npm install`. Align Tier 1 with **playbook-aligned remotes** (not the template folder as domain code). Details also in playbook §1 "Scaffold starter".
+Then rename federation `name`, pin the next free port from `MIGRATED_MODULES.md`, scrub leftovers, remove the template's AI-rule sync (`frontend-ai-rules` devDependency, `postinstall` / `sync:ai-rules`, `scripts/customize-ai-rules-index.mjs`, `.claude/`, `.cursor/`, `.github/`, `.cursorrules` — see `md-extension-migration` § Agent rules), `npm install`. Align Tier 1 with **playbook-aligned remotes** (not the template folder as domain code). Details also in playbook §1 "Scaffold starter".
 
 Key checks: `strictPort: true`, `"dev": "vite --mode dev"`, `VITE_API_URL` (not `BASE_URL`), published CL semver, no nested `.git`.
 

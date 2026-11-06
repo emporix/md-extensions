@@ -141,6 +141,17 @@ No page or table specs. Names only:
 - `brands/src/helpers/settings.helpers.test.ts` — stored settings, dev dialog when tenant or token is missing or whitespace, save writes keys and does not mutate the input.
 - `brands/src/helpers/localized.test.ts` — `localizedKeysToLowerCase`. Not referenced by brand pages.
 
+## Host wiring
+
+| Fact | Value |
+|---|---|
+| Kind | playbook-aligned (`brands/package.json`) |
+| Federation `name` | `brands` (`brands/vite.config.ts`) |
+| Host route `key` → path | `brands` → `/apps/management/brands/*` (inline `ExternalModule moduleName="brands"`) (`management-dashboard` `src/router/module-routes.tsx`) |
+| Host env var | `VITE_BRANDS_URL` (`management-dashboard` `.env.*`) |
+| Local port | `5175`, `strictPort` |
+| Local deviations | none |
+
 ## Not yet scanned
 
 Skipped on purpose: `brands/node_modules`, `brands/dist`, `brands/.env*`, `brands/src/**/*.scss`, `brands/src/index.css`, translation string bodies under `brands/src/translations/`, and the generated assistant trees `brands/.github/`, `brands/.claude/`, `brands/.cursor/`.

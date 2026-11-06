@@ -126,6 +126,17 @@ Names only (vitest, beside the source):
 
 No page, table, or provider specs.
 
+## Host wiring
+
+| Fact | Value |
+|---|---|
+| Kind | playbook-aligned (`labels/package.json`) |
+| Federation `name` | `labels` (`labels/vite.config.ts`) |
+| Host route `key` → path | `labels` → `/apps/management/labels/*` (`management-dashboard` `src/router/module-routes.tsx`) |
+| Host env var | `VITE_LABELS_URL` (`management-dashboard` `.env.*`) |
+| Local port | `5179`, `strictPort` |
+| Local deviations | the list call is local (`src/api/labels.ts`) because the service ignores the filter params the api-calls `fetchLabels` sends |
+
 ## Not yet scanned
 
 Skipped on purpose: `labels/node_modules`, `labels/dist`, `.env*`, lockfile, styles, translation bodies, `labels/.claude`, `labels/.cursor`, `labels/.github`. Not read in detail: `labels/scripts/`, shared components other than the upload (`SidePanel`, `FormGrid`, `HeaderSection`, `TableExtensions`), `labels/src/context/ConfigurationProvider.tsx`, `SitesProvider.tsx`, `FeatureTogglesProvider.tsx`.

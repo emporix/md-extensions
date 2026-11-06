@@ -127,6 +127,17 @@ The tab calls `getChangelogs` with filter `{ entity: 'order', entityId }` and pa
 
 Behaviour specs: `orders/src/components/orders/entries/AddEntryDialog.test.tsx` (add-entry flow, saving lock, category tree), `orders/src/components/orders/entries/OrderEntriesList.test.tsx`, `orders/src/helpers/productsBrowser.helpers.test.ts` (`toProductRow`), `orders/src/helpers/tables.test.ts` (`getExpandedIds`), the mixin suites listed under Mixins, `orders/src/helpers/orders.test.ts` (`orders helpers`), `orders/src/helpers/restrictions.test.ts` (`parseRestrictions`), `orders/src/components/orders/payment/paymentStatus.test.ts` (`payment severities`). Other suite names, bodies unread: `escapeCsvCell`, `mapToCsv`, `getStoredSettings`, `shouldOpenDevSettingsDialog`, `saveStoredSettings`, `createForm`, `fetchAllRecords`, `getApiErrorStatus`, `IAM ErrorResponse parsing`, `platform validation-style error parsing`, `getConflictErrorToast`, `getValueFromPath`, `textToTitleCase`, `removeEmptyValues`, `removeObjectEmptyValues`, `toChangelogPagination`, `toChangelogOptions`, `ChangelogChangeType`, `flatten`, `parseMixinColumns`, `localizedKeysToLowerCase`, `buildRelatedEntityBadgeLabel`, `getOtherRelatedItems`, `getChangeTypeKey`, `formatChangelogValue`, `filterMeaningfulChangelogPaths`, `trimCloudinaryImage`.
 
+## Host wiring
+
+| Fact | Value |
+|---|---|
+| Kind | playbook-aligned (`orders/package.json`) |
+| Federation `name` | `orders` (`orders/vite.config.ts`) |
+| Host route `key` → path | `orders` → `apps/management/orders/*` (`management-dashboard` `src/router/module-routes.tsx`) |
+| Host env var | `VITE_ORDERS_URL` (`management-dashboard` `.env.*`) |
+| Local port | `5177`, `strictPort` |
+| Local deviations | none |
+
 ## Not yet scanned
 
 `orders/src/translations/**` (i18n bodies), `orders/src/**/*.scss`, `orders/src/index.css`, `orders/src/App.tsx`, `orders/src/api/bootstrap.ts`, `orders/src/api/sites.ts`, `orders/src/hooks/api/schema.ts`, `orders/src/hooks/api/iam.ts`, `orders/src/hooks/api/customers.ts` request shapes, `orders/src/helpers/api.ts` error-body parsing, mixin field widget internals (`MixinsFormInput.tsx`, `MixinsFormItemTemplate.tsx`, `ReferenceSelector.tsx` rendering), per-reference-type loader bodies other than `ORDER`/`PRODUCT`, shared chrome under `orders/src/components/shared/` beyond the list/detail calls above, `useSubOrdersColumns.tsx` and `useSubOrderEntriesColumns.tsx` column sets, `OrderTooltip.tsx` and the price-row components, the access-control UUID catalog and non-order domains in `orders/src/configs/accessControls.ts`, `.github/`, `.claude/`, `.cursor/`, and the test bodies listed as names only. `node_modules`, `dist`, and `.env*` were skipped.

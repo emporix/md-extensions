@@ -75,3 +75,14 @@ Delete opens a dialog titled by `Deleting synonym: {objectID}` (`algolia-synonym
 `deleteSynonym` forwards its first argument unchanged to `index.deleteSynonym(objectId, {forwardToReplicas})` (`algolia-synonyms/src/lib/algolia-search.js`). The parameter is named `objectId`. The caller passes the record, not `synonym.objectID` (`SynonymDelete.jsx`). Whether the Algolia client deletes that id is unknown from this module. The same unreturned `.wait()`, success alert, and `error.message` alert apply. Local removal does not wait for that result.
 
 `handleUpdate` with `isDelete` true drops every row whose `objectID` equals the record, after the same replace-or-append step (`algolia-synonyms/src/components/SynonymView.jsx`). There is no other confirm step. Cancel and X do not delete.
+
+## Host wiring
+
+| Fact | Value |
+|---|---|
+| Kind | legacy — PrimeReact 10, no component library (`algolia-synonyms/package.json`) |
+| Federation `name` | none — no federation plugin (`algolia-synonyms/vite.config.js`) |
+| Host route `key` → path | not a route in `management-dashboard` `src/router/module-routes.tsx`; the host context arrives through `md-ext` `registerClient` / `registerCallback`, and how the host loads it is unknown (`management-dashboard` `src/router/module-routes.tsx`) |
+| Host env var | none in the host `.env.*` (`management-dashboard` `.env.*`) |
+| Local port | not pinned (`npm run dev` is `vite`) |
+| Local deviations | JavaScript (JSX), Tailwind, axios, and `algoliasearch` against Algolia directly |

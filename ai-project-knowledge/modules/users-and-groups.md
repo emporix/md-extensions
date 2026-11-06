@@ -118,6 +118,17 @@ On the routes this remote mounts, `groupType` stays `EMPLOYEE`, so those locks d
 
 No page-level test was found for Entra restriction, force delete, or the customer-group lock.
 
+## Host wiring
+
+| Fact | Value |
+|---|---|
+| Kind | playbook-aligned (original pilot, Tier 1 source) (`users-and-groups/package.json`) |
+| Federation `name` | `usersAndGroups` (`users-and-groups/vite.config.ts`) |
+| Host route `key` → path | `usersAndGroups` → `/administration/users-and-groups/*` (inline `ExternalModule moduleName="usersAndGroups"`) (`management-dashboard` `src/router/module-routes.tsx`) |
+| Host env var | `VITE_USERS_AND_GROUPS_URL` (`management-dashboard` `.env.*`) |
+| Local port | not pinned; `docs/MIGRATED_MODULES.md` lists `5173` (Vite's default) |
+| Local deviations | `npm run dev` is plain `vite`, so `.env.dev` is not loaded by mode |
+
 ## Not yet scanned
 
 - i18n message bodies, styles, `node_modules`, `dist`, `.env*`, and the README (template text).

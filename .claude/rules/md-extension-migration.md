@@ -24,7 +24,7 @@ git clone -b md-module-migration --single-branch \
 rm -rf {kebab}/.git
 ```
 
-Do **not** `cp -R` / rsync `users-and-groups`, `brands`, `returns`, or template `master`.
+Do **not** `cp -R` / rsync `users-and-groups`, `brands`, `returns`, or template `master`. After cloning, strip the template's AI-rule sync (see **Agent rules**).
 
 **Tier 1 copy:** playbook-aligned remotes in `MIGRATED_MODULES.md` — not U&G alone, not template `master`. U&G is a reference implementation, not the scaffold source.
 
@@ -69,7 +69,22 @@ ToastProvider → DashboardProvider → PermissionsProvider → ConfigurationPro
 ## API
 
 - `VITE_API_URL` (not `VITE_API_BASE_URL`).
-- Tenant/token via `useDashboardContext()` + `api/bootstrap.ts` + `@emporix/api-calls`.
+- `src/api/bootstrap.ts` creates the `@emporix/api-calls` client (`createApiClient`) and exports `useApiCredentials(tenant, token)`; `RemoteComponent` calls it with the host `appState`.
+- Calls go through `src/hooks/api/<domain>.ts` hooks that wrap `@emporix/api-calls` functions, with tenant and language from `useDashboardContext()`. No requests in components and no `src/services/` layer.
+- Endpoint missing from `@emporix/api-calls`: add it to the library first (`emporix-frontend-standards` → `references/library/workflow.md`). A local call in `src/api/` is the exception and says why in a comment (`labels/src/api/labels.ts`).
+- Legacy remotes (`agentic-ai`, `dashboard`, `statistics`, `algolia-synonyms`) keep their own clients; see the Remotes table in the root `AGENTS.md`.
+
+## i18n
+
+Match the keys the remote already uses, which come from the ported MD screens (for example `usersAndGroups.titles.main`). Do not rename them into a new key hierarchy.
+
+## Standalone shell
+
+`main.tsx` → `App.tsx` → `RemoteComponent`. In dev, `App.tsx` opens a tenant / token / language dialog when `shouldOpenDevSettingsDialog()` is true and keeps the values in `localStorage` (`src/helpers/settings.helpers.ts`). Never commit tenant or token values.
+
+## Agent rules
+
+Generic frontend rules come from the `emporix-frontend-standards` skill (see the root `AGENTS.md`). Project rules live only at the repository root (`.claude/rules/`, `.cursor/rules/`, `.github/instructions/`). A remote carries no rule copies: after cloning `md-module-template`, remove its `frontend-ai-rules` devDependency, the `postinstall` and `sync:ai-rules` scripts, `scripts/customize-ai-rules-index.mjs`, and the remote's `.claude/`, `.cursor/`, `.github/`, and `.cursorrules`.
 
 ## Derived remotes
 

@@ -125,6 +125,17 @@ With `Audit Log Viewer`, the third tab loads changelogs for entity `group` and t
 
 `accessControlsSaveDirty.test.tsx` builds a `CUSTOMER` group and expects Save to enable when only `accessControls` changes. `mapAccessControlsToTemplates` is covered by `customer-groups/src/helpers/groups/accessControls.helpers.test.ts`. `getEntityDetailPath` is covered by `customer-groups/src/configs/entityLinkConfig.test.ts`. IAM and platform error parsing, including conflict toasts, is covered by `customer-groups/src/helpers/api.test.ts`. Changelog pagination and path formatting are covered by `customer-groups/src/helpers/auditLog/changelog.helpers.test.ts` and `customer-groups/src/helpers/auditLog/entityChangelog.helpers.test.ts`. List delete for code `CUSTOMER` is covered by `customer-groups/src/components/customerGroups/GroupsTable.delete.test.tsx`. No page test covers list loading, create, members, or the predefined-group rules.
 
+## Host wiring
+
+| Fact | Value |
+|---|---|
+| Kind | playbook-aligned (derived from users-and-groups) (`customer-groups/package.json`) |
+| Federation `name` | `customerGroups` (`customer-groups/vite.config.ts`) |
+| Host route `key` → path | `customerGroups` → `administration/customer-groups/*` (`management-dashboard` `src/router/module-routes.tsx`) |
+| Host env var | `VITE_CUSTOMER_GROUPS_URL` (`management-dashboard` `.env.*`) |
+| Local port | `5174`, `strictPort` |
+| Local deviations | none beyond showing `CUSTOMER` groups only |
+
 ## Unknown
 
 Whether IAM rejects a non-customer id on these `CUSTOMER` calls. How force-delete differs from delete. Whether omitting `restrictions` clears them. What `code` and `mixins` mean beyond being copied on edit. Host registration of the remote.

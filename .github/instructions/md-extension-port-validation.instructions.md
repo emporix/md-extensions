@@ -17,6 +17,11 @@ After porting domain code into a remote, verify:
 
 Exclude `*.md` from anti-pattern greps — notes often name forbidden patterns.
 
+## Must be absent in the remote folder
+
+- `frontend-ai-rules` in `package.json` / `package-lock.json`, and `postinstall` / `sync:ai-rules` scripts
+- `.claude/`, `.cursor/`, `.github/`, `.cursorrules`, `scripts/customize-ai-rules-index.mjs` — project rules live at the repository root
+
 ## Must be present
 
 - Federation `name` matching MD route key

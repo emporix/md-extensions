@@ -114,6 +114,17 @@ Tabs in order (`products/src/components/products/ProductAddEdit.tsx`): general; 
 
 The remote reads permissions itself: user access controls, tenant access controls, templates and scopes through IAM calls (`products/src/context/PermissionsProvider.tsx`, `hooks/api/iam.ts`); children render only after they load. `hasPermission(domain)` needs every access control of the domain after viewer/editor/manager implication expansion (`products/src/helpers/accessControls.ts`; domains and ids in `products/src/configs/accessControls.ts`). Domains used here: Products viewer/manager, Categories viewer/manager, Vendors viewer, Price Models viewer, Taxes viewer, Audit Log viewer, and the vendor-scoped domains for products, prices, availability, media, publish and unpublish. `restrictions.ts` parses order-scope site restrictions (`parseRestrictions`); no caller in the products screens was found.
 
+## Host wiring
+
+| Fact | Value |
+|---|---|
+| Kind | playbook-aligned (`products/package.json`) |
+| Federation `name` | `products` (`products/vite.config.ts`) |
+| Host route `key` → path | `products` → `apps/management/products/*` (`management-dashboard` `src/router/module-routes.tsx`) |
+| Host env var | `VITE_PRODUCTS_URL` (`management-dashboard` `.env.*`) |
+| Local port | `5178`, `strictPort` |
+| Local deviations | none |
+
 ## Not yet scanned
 
 - Mixin form widgets: `MixinsFormInput.tsx`, `MixinsFormArray.tsx`, `MixinsFormBox.tsx`, `MixinsAccordion*.tsx`, `ReferenceSelector.tsx`, `useReferenceSelectorConfig.tsx`, `MixinsTechnicalDialog.tsx`, `MixinsLanguageTabs.tsx`; `helpers.ts` beyond the storage-key helpers.
