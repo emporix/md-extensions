@@ -12,7 +12,9 @@
     "sync": true
   },
   "validation": {
-    "commands": []
+    "commands": [
+      "for m in $({ git diff --name-only \"$(git merge-base HEAD origin/master)\"; git ls-files --others --exclude-standard; } | cut -d/ -f1 | sort -u); do [ -f \"$m/package.json\" ] || continue; echo \"== $m\"; (cd \"$m\" && { [ -d node_modules ] || npm ci; } && npm run --if-present typecheck && npm run lint && npm run --if-present test:run && npm run build:dev) || exit 1; done"
+    ]
   },
   "app": {
     "kind": "ui",
@@ -20,6 +22,21 @@
   },
   "browser": {
     "provider": "agent-browser"
+  },
+  "standards": {
+    "frontend": {
+      "rules": [
+        "core",
+        "ui-components",
+        "emporix-component-library",
+        "testing",
+        "api-data",
+        "npm-dependencies",
+        "i18n",
+        "primereact",
+        "module-federation"
+      ]
+    }
   },
   "labels": {
     "enabled": false

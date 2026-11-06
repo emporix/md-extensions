@@ -1,9 +1,9 @@
 # Integrations
 
-Last scanned: da99643 (2026-11-02)
-Sources: `agentic-ai/src/services`, `agentic-ai/src/components/tool`, `algolia-synonyms/src`, `brands/src`, `brands/package.json`, `customer-groups/src`, `customer-groups/package.json`, `dashboard/src/dashboard/api`, `dashboard/src/dashboard/widgets/OrdersByCountryMapWidget/OrdersByCountryMapWidget.tsx`, `dashboard/src/vite-env.d.ts`, `orders/src`, `orders/package.json`, `products/src/api`, `products/src/context`, `products/package.json`, `returns/src`, `returns/package.json`, `statistics/src/api.ts`, `users-and-groups/src`, `users-and-groups/package.json`, `.github/workflows`
+Last scanned: 05d8d1d (2026-11-06)
+Sources: `agentic-ai/src/services`, `agentic-ai/src/components/tool`, `algolia-synonyms/src`, `brands/src`, `brands/package.json`, `customer-groups/src`, `customer-groups/package.json`, `dashboard/src/dashboard/api`, `dashboard/src/dashboard/widgets/OrdersByCountryMapWidget/OrdersByCountryMapWidget.tsx`, `dashboard/src/vite-env.d.ts`, `labels/src`, `labels/package.json`, `orders/src`, `orders/package.json`, `products/src/api`, `products/src/hooks/api`, `products/src/context`, `products/src/helpers/hostUrls.ts`, `products/package.json`, `returns/src`, `returns/package.json`, `statistics/src/api.ts`, `users-and-groups/src`, `users-and-groups/package.json`, `.github/workflows`
 
-Ten UI extensions call the Emporix HTTP API. Nine take the base URL from `VITE_API_URL`. `algolia-synonyms` takes it from the host callback field `emporixApiUrl`. No `.env*` file was opened. Env names below are names only. No literal API key, token, or tenant id was found in source; UI strings in `agentic-ai/src/translations/en/index.ts` label fields such as an API key and a client secret and are not values. HTTP paths inside `@emporix/api-calls` were not read (`node_modules` skipped), so those paths are unknown.
+Eleven UI extensions call the Emporix HTTP API. Ten take the base URL from `VITE_API_URL`. `algolia-synonyms` takes it from the host callback field `emporixApiUrl`. No `.env*` file was opened. Env names below are names only. No literal API key, token, or tenant id was found in source; UI strings in `agentic-ai/src/translations/en/index.ts` label fields such as an API key and a client secret and are not values. HTTP paths inside `@emporix/api-calls` were not read (`node_modules` skipped), so those paths are unknown.
 
 Firebase Hosting deploy and preview workflows under `.github/workflows/*firebase*.yaml` are deployment only and are not a runtime API.
 
@@ -13,21 +13,21 @@ Firebase Hosting deploy and preview workflows under `.github/workflows/*firebase
 
 ### `@emporix/api-calls` (axios)
 
-`orders` 1.2.14, `customer-groups` 1.2.9, `brands` 1.2.1, `returns` 1.2.1, `users-and-groups` 1.2.1 (`*/package.json`). Each `src/api/bootstrap.ts` calls `createApiClient` with `baseURL` `VITE_API_URL` and throws `VITE_API_URL is not configured` when that value is missing. The access token and tenant come from the host via `setApiCredentials` / `useApiCredentials`. Retry and the concrete URL paths live in the package and are unknown here.
+`orders`, `products`, and `returns` 1.5.1, `labels` 1.2.14, `customer-groups` 1.2.9, `brands` and `users-and-groups` 1.2.1 (`*/package.json`). Each `src/api/bootstrap.ts` calls `createApiClient` with `baseURL` `VITE_API_URL` and throws `VITE_API_URL is not configured` when that value is missing. The access token and tenant come from the host via `setApiCredentials` / `useApiCredentials`. Retry and the concrete URL paths live in the package and are unknown here.
 
-Screens that only check permissions call `getAccessControlsTemplates` and `getScopesForUser` (`*/src/context/PermissionsProvider.tsx` in orders, returns, and brands). `hooks/api/iam.ts` in those three also imports user, group, scope, and access-control mutators. No file outside that hook imports `useIamApi` except `PermissionsProvider`, so those mutators have no caller outside the hook.
+Screens that only check permissions call `getAccessControlsTemplates` and `getScopesForUser` (`*/src/context/PermissionsProvider.tsx` in orders, returns, brands, and labels). `products/src/context/PermissionsProvider.tsx` also loads tenant access controls and templates, and renders its children only after the load. `hooks/api/iam.ts` in those three also imports user, group, scope, and access-control mutators. No file outside that hook imports `useIamApi` except `PermissionsProvider`, so those mutators have no caller outside the hook.
 
 `customer-groups` and `users-and-groups` do call IAM from group and user screens (`GroupsTable`, `UsersTable`, `Group.provider`, `GroupPageActions`, `GroupMembers`, `GroupAddMembersDialog`, `User.page`, `UserAccessForm`). Wrapped calls cover groups, users, membership, scopes, and access controls. Paths unknown.
 
-All five also call:
+All seven (`brands`, `customer-groups`, `labels`, `orders`, `products`, `returns`, `users-and-groups`) also call:
 
 - Sites: `getSitesCall` from `src/api/sites.ts`, used by `src/context/SitesProvider.tsx`.
 - Feature toggles: `getFeatureToggleValuesCall` from `src/hooks/api/featureToggles.ts`, used by `src/context/FeatureTogglesProvider.tsx`.
-- Configuration: `fetchBasicConfiguration` and `updateSingleConfiguration` from `src/context/ConfigurationProvider.tsx`. `fetchSingleConfiguration`, `updateSingleConfiguration`, `createSingleConfiguration` (on 404 from update), and `deleteSingleConfiguration` are wrapped in `src/hooks/api/configuration.ts`.
+- Configuration: `fetchBasicConfiguration` and `updateSingleConfiguration` from `src/context/ConfigurationProvider.tsx`. `fetchSingleConfiguration`, `updateSingleConfiguration`, `createSingleConfiguration` (on 404 from update), and `deleteSingleConfiguration` are wrapped in `src/hooks/api/configuration.ts` (not present in `labels`).
 
 ### Direct HTTP
 
-Bearer token plus an Emporix tenant header. Products and the api-calls client also send language headers. Dashboard retries idempotent GETs. The others do not retry in this repo.
+Bearer token plus an Emporix tenant header. The api-calls client also sends language headers; a call can override `Accept-Language: *` (`labels/src/api/labels.ts`). Dashboard retries idempotent GETs. The others do not retry in this repo.
 
 ## agentic-ai
 
@@ -43,6 +43,8 @@ Paths on that base URL:
 - Schema (`schemaService.ts`): GET `/schema/{tenant}/custom-entities`.
 - Webhook (`agentService.ts` `fetchEventSubscriptions`): GET `/webhook/{tenant}/event-subscriptions`.
 - Automation and media (`hostingFunctionsService.ts`): GET `/automation/{tenant}/projects/functions` and `.../functions/{id}/deployments` (404 and 403 are handled in that file), GET `/media/{tenant}/assets/{id}/download` as an array buffer.
+- Chat attachments (`agentService.ts`): multipart POST `/ai-service/{tenant}/agentic/{agentId}/attachments`; chat request bodies then carry `attachments` refs.
+- Chat artifacts: the chat stream emits an `artifact` event (image or file, `ready` / `pending` / `failed`, `generation_id`) (`agentic-ai/src/utils/sseHelpers.ts`). The file is read from GET `/media/{tenant}/assets/{artifactId}/download`, capped at 8 MB (`MAX_ARTIFACT_DOWNLOAD_BYTES` in `agentic-ai/src/utils/chatArtifacts.ts`).
 
 Browser navigations, not `fetch`:
 
@@ -103,54 +105,56 @@ Paths (all under that base URL):
 
 `dashboard/src/vite-env.d.ts` declares `VITE_SENTRY_DSN`, `VITE_DATADOG_APP_ID`, `VITE_DATADOG_CLIENT_TOKEN`, `VITE_FEATURE_*`, and other `VITE_` names. The only `import.meta.env.VITE_*` reads under `dashboard/src` are `VITE_API_URL` and `VITE_API_TIMEOUT`. No Sentry or Datadog client was found.
 
+## labels
+
+Shared api-calls client (`labels/package.json` `@emporix/api-calls` 1.2.14), plus sites, configuration, feature toggles, and the IAM permission reads.
+
+- Label list: the one local call, `GET label/labels` in `labels/src/api/labels.ts`, with `pageNumber`, `pageSize`, `sort=field:ASC|DESC`, `q=name:~(…)`, headers `x-total-count: true` and `Accept-Language` set to the UI language. It is local because api-calls `fetchLabels` sends filter params the service ignores (`labels/src/helpers/labels.helpers.ts`).
+- Delete: `removeLabelImageFromCloudinary` (api-calls) when the label has an image, then `deleteLabel`; on any failure `deleteLabel` is retried once (`labels/src/helpers/labels.helpers.ts`).
+- Media: `getAssetsForId` and `postFileAsset` with ref type `LABEL` (`labels/src/hooks/api/mediaAssets.ts`, `labels/src/models/Assets.model.ts`).
+
 ## orders
 
-Shared api-calls client (`@emporix/api-calls` 1.2.14), plus sites, configuration, feature toggles, and the two IAM permission reads.
+Shared api-calls client (`@emporix/api-calls` 1.5.1), plus sites, configuration, feature toggles, and the two IAM permission reads.
 
 Callers outside the hook files:
 
 - Orders (`hooks/api/orders.ts`): list, get, put, patch, delete, status change, possible statuses, recalculate, add entries, CSV export, delivery note, shipping confirmation, invoice send, invoice link. Used from the orders table, order page, entry dialogs, and `OrderDocumentActions.tsx`. `getOrderInvoiceLink` is also called directly in `legacy/OrderInvoice.tsx`.
-- Products: `fetchPaginatedProduct`, `fetchProductCall` (`hooks/api/products.ts`), used by entry dialogs.
+- Products: `fetchPaginatedProduct`, `fetchProductCall` (`hooks/api/products.ts`), used by `AddEntryDialog.tsx` (component-library `ProductsBrowser`), `legacy/EntryTableExpansion.tsx`, and the mixin reference selector.
 - Customers: `getCustomers`, `getCustomer` (`hooks/api/customers.ts`), used by `OrderDetailsCustomer.tsx`.
 - Payment gateway: `getPaymentMethodsCall` (orders table), `fetchTransactionCall` and `refundCall` (`OrderPaymentInfo.tsx`).
 - Invoice job: `sendInvoiceJobCall` from `OrderDocumentActions.tsx` when the `PAYMENT_GATEWAY` toggle is on. `getInvoiceJobStatusCall` is wrapped in `hooks/api/invoice.ts` and has no caller outside that file.
 - Changelog: `getChangelogs` from `EntityChangelogTab.tsx`.
 - Schema: `getSchemasCall`, `getSchemaCall`, `getReferencesCall`, `getReferenceCall` (`hooks/api/schema.ts`). Mixin JSON is `getMixinsSchemaCall(url)` with an absolute URL from schema metadata (`components/mixins/useMixinsForm.tsx`). The host is that URL. `components/mixins/helpers.ts` matches Cloudinary `res.cloudinary.com/saas-ag/raw/upload/schemata2/...` URLs; it does not itself send HTTP.
 - Configuration sync flag: `OrdersTable.tsx` calls `getSyncBetweenRestrictionsAndSiteCodes`.
+- Mixin reference fields (`components/mixins/useReferenceSelectorConfig.tsx`, `context/ReferenceOptionsProvider.tsx`): carts (`getCartByIdCall`, `searchCartsCall`), segments, custom entities and instances, legal entities, media assets, category trees, and orders (`getAllOrders`) through `hooks/api/*.ts`.
+- Host links: reference chips navigate the host with `window.location.assign` to paths built in `orders/src/helpers/hostUrls.ts` (`/apps/management/products#/<id>`, media assets, categories, price lists, companies, segments, custom instances).
 
 `helpers/images.ts` rewrites image URLs that contain `cloudinary` before they are used as image sources. That is not a Cloudinary Admin API client. `window.open` in `OrderDocumentActions.tsx` opens a blob URL for a delivery-note PDF, not a remote host.
 
 ## products
 
-Axios instance in `products/src/api/index.ts`, `baseURL` `import.meta.env.VITE_API_URL` (no throw when it is missing). `products/src/context/ApiProvider.tsx` sets `Authorization: Bearer`, `Emporix-Tenant`, `Accept-Language` (default `*`), `Content-Language: *`, and rejects 401 through the host `onError`. No retry interceptor. `axios-retry` is in `products/package.json` and is not imported under `products/src`.
+Shared api-calls client (`products/package.json` `@emporix/api-calls` 1.5.1, `products/src/api/bootstrap.ts`), plus sites, configuration, feature toggles, and IAM permission reads. The legacy axios modules under `products/src/api/` were replaced when COP-6993 re-scaffolded the remote; only `bootstrap.ts` and `sites.ts` remain there.
 
-Paths are those written in `products/src/api/` (whether every export is mounted on a page was not fully traced):
+Calls used by the screens (`products/src/hooks/api/*.ts`):
 
-- Product: `/product/{tenant}/products` and `/product/{tenant}/product-templates` (GET, POST, PUT, PATCH, DELETE). One products list GET sends `x-version: v2` (`products.ts`). Media: `/product/{tenant}/products/{id}/media` and `.../media2` (`products.ts`, `productsMedia.ts`).
-- Category: `/category/{tenant}/categories` including assignments, parents, subcategories, with header `x-version: v2` (`categories.ts`). PATCH is `/category/{tenant}/categories/{id}` plus an optional `publish` query.
-- Price: `price/{tenant}/prices`, `price/{tenant}/prices/search`, `price/{tenant}/prices/matchProductCurrency`, `price/{tenant}/match-prices`, `price/{tenant}/priceModels`. `prices_v2.ts` and `priceModels.ts` send `x-version: v2`. `prices.ts` sends `x-version: v2` on search.
-- Availability: `availability/{tenant}/availability/{productId}` GET, PUT, POST.
-- Brand list: GET `brand/brands` (no tenant segment in the string). Label list: GET `label/labels`.
-- Site: `site/{tenant}/sites` GET, POST, PUT, DELETE.
-- Supplier: `/supplier/suppliers` and `/supplier/PSRelations/{productId}/{siteCode}` (no tenant segment).
-- Tax: `tax/{tenant}/taxes` and PUT `tax/{tenant}/taxes/calculation-commands`.
-- Currency: `currency/{tenant}/currencies` and `currency/{tenant}/exchanges`.
-- Country: `country/{tenant}/countries` and `country/{tenant}/regions`; PATCH `country/{tenant}/countries/{code}`.
-- Schema: `schema/{tenant}/types`, `references`, `schemas`, including POST `schema/{tenant}/schemas/file`.
-- Configuration: GET `/configuration/{tenant}/basic-configuration`, GET and PUT `/configuration/{tenant}/configurations/{key}`, POST `/configuration/{tenant}/configurations/`.
-- Media assets: `/media/{tenant}/assets` POST, GET, PUT, DELETE.
-- AI text: POST `ai-service/{tenant}/texts` (`ai.ts`).
+- Products and templates: `fetchPaginatedProduct`, `deleteProductWithForceCall` (force for dynamic variants), `triggerDynamicVariantRecalculationCall`, `fetchProductTemplatesCall` (`products.ts`).
+- Catalog: `getCategoryTreesCall` (`categoryTree.ts`; its `type` filter depends on backend change COP-6124), `assignProductToCategoryCall`, `deleteAssignmentToCategoryCall` (`categories.ts`), `fetchBrands`, `fetchLabels`.
+- Pricing and stock: `searchPricesCall`, `createPriceV2Call` (`prices_v2.ts`), `searchAvailabilitiesCall` (`availability.ts`).
+- Platform: `fetchBasicConfiguration`, `updateSingleConfiguration` (`configuration.ts`), `getFeatureToggleValuesCall` (`featureToggles.ts`), IAM access controls and scopes (`iam.ts`), `getVendors` (`vendors.ts`), `generateTextRequest` (`ai.ts`), `getEntityChangelog` (`changelog.ts`), `getSitesCall` (`products/src/api/sites.ts`).
+- Mixin reference fields: the same reference-option clients as orders (`context/ReferenceOptionsProvider.tsx`).
 
-Mixin schemas: `products/src/api/mixins.ts` does `axios.get` on the absolute URL passed in (not the Emporix `baseURL`). `ProductDataProvider.tsx` stores `https://res.cloudinary.com/saas-ag/raw/upload/v1684918636/jsonschemas/subscription.json` plus a random query as the subscription mixin schema URL. `helpers/images.ts` only rewrites Cloudinary image URLs for display.
+Host links use `window.location.assign` with paths from `products/src/helpers/hostUrls.ts`. Other `hooks/api/*` clients (carts, orders, customers, segments, units, currencies, countries, schema, custom instances) were not traced to a caller; see `ai-project-knowledge/modules/products.md`.
 
 ## returns
 
-Shared api-calls client (`@emporix/api-calls` 1.2.1), plus sites, configuration, feature toggles, and the two IAM permission reads.
+Shared api-calls client (`@emporix/api-calls` 1.5.1), plus sites, configuration, feature toggles, and the two IAM permission reads.
 
 - Returns: `getReturnsCall`, `getReturnsDetailsCall`, `createReturnCall`, `updateReturnCall`, `patchReturnCall`, `deleteReturnCall` (`hooks/api/returns.ts`), used by `ReturnsTable.tsx`, `ReturnEdit.page.tsx`, and `ReturnForm.provider.tsx`.
-- Orders: `getOrdersCall` (`hooks/api/orders.ts`), used by `ReturnForm.provider.tsx`.
+- Orders: `getOrdersCall` and `getOrder` (`hooks/api/orders.ts`). `ReturnForm.provider.tsx` loads orders without a site; the mixin reference selector loads the current site's orders (`syncOrders`).
 - Customers: `getCustomers`, `getCustomer`, used by `ReturnForm.provider.tsx`.
 - Schema and mixin absolute-URL GET: same shape as orders (`hooks/api/schema.ts`, `components/mixins/useMixinsForm.tsx`, Cloudinary schemata2 matcher in `components/mixins/helpers.ts`).
+- Mixin reference fields and host links: same clients and `hostUrls.ts` helpers as orders (`returns/src/context/ReferenceOptionsProvider.tsx`, `returns/src/helpers/hostUrls.ts`).
 
 ## statistics
 

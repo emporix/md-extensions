@@ -1,6 +1,6 @@
 # Customer groups
 
-Last scanned: da99643 (2026-11-02)
+Last scanned: 05d8d1d (2026-11-06)
 Sources: `customer-groups/README.md`, `customer-groups/src/models/Groups.model.ts`, `customer-groups/src/hooks/api/iam.ts`, `customer-groups/src/RemoteComponent.tsx`, `customer-groups/src/pages/CustomerGroups.page.tsx`, `customer-groups/src/pages/Group.page.tsx`, `customer-groups/src/context/Group.provider.tsx`, `customer-groups/src/components/customerGroups/GroupsTable.tsx`, `customer-groups/src/components/group/GroupPageActions.tsx`, `customer-groups/src/configs/accessControls.ts`, `customer-groups/src/helpers/groups/accessControlsSaveDirty.test.tsx`, `customer-groups/src/helpers/groups/systemGroupDelete.ts`, `customer-groups/src/components/customerGroups/GroupsTable.delete.test.tsx`
 
 ## Scope
