@@ -1,0 +1,9 @@
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+// MD sized the comment column to 30rem.
+.message {
+  max-width: 30rem;
+}

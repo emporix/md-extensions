@@ -1,7 +1,7 @@
 # Domain
 
 Last scanned: 05d8d1d (2026-11-06)
-Sources: `README.md`, `docs/MIGRATED_MODULES.md`, `returns/README.md`, `orders/README.md`, `users-and-groups/README.md`, `customer-groups/README.md`, `brands/README.md`, `products/README.md`, `statistics/README.md`, `dashboard/README.md`, `agentic-ai/README.md`, `algolia-synonyms/README.md`, `*/src/models/AppState.model.ts`, `*/src/RemoteComponent.tsx`, `agentic-ai/src/types/common.ts`, `agentic-ai/src/types/Agent.ts`, `orders/src/models/Order.model.ts`, `returns/src/models/Returns.model.ts`, `users-and-groups/src/models/Groups.model.ts`, `users-and-groups/src/models/User.model.ts`, `products/src/models/Category.model.ts`, `products/src/models/PriceModel.model.ts`, `products/src/helpers/dynamicVariants/inheritableFields.helpers.ts`, `products/src/helpers/parentVariantPath.ts`, `products/src/helpers/variantMixinOverrides.helpers.ts`, `products/src/components/mixins/helpers.ts`, `orders/src/components/mixins/useMixinsForm.tsx`, `returns/src/helpers/returnsSiteAccess.ts`, `labels/src/models/Label.model.ts`, `labels/src/configs/accessControls.ts`, `users-and-groups/src/configs/accessControls.ts`, `agentic-ai/src/utils/constants.ts`, `dashboard/src/dashboard/data/widgetRegistry.tsx`, `statistics/src/models/Statistics.model.ts`, `algolia-synonyms/src/App.jsx`
+Sources: `README.md`, `docs/MIGRATED_MODULES.md`, `status-codes/src/models/QuoteReason.model.ts`, `status-codes/src/configs/accessControls.ts`, `returns/README.md`, `orders/README.md`, `users-and-groups/README.md`, `customer-groups/README.md`, `brands/README.md`, `products/README.md`, `statistics/README.md`, `dashboard/README.md`, `agentic-ai/README.md`, `algolia-synonyms/README.md`, `*/src/models/AppState.model.ts`, `*/src/RemoteComponent.tsx`, `agentic-ai/src/types/common.ts`, `agentic-ai/src/types/Agent.ts`, `orders/src/models/Order.model.ts`, `returns/src/models/Returns.model.ts`, `users-and-groups/src/models/Groups.model.ts`, `users-and-groups/src/models/User.model.ts`, `products/src/models/Category.model.ts`, `products/src/models/PriceModel.model.ts`, `products/src/helpers/dynamicVariants/inheritableFields.helpers.ts`, `products/src/helpers/parentVariantPath.ts`, `products/src/helpers/variantMixinOverrides.helpers.ts`, `products/src/components/mixins/helpers.ts`, `orders/src/components/mixins/useMixinsForm.tsx`, `returns/src/helpers/returnsSiteAccess.ts`, `labels/src/models/Label.model.ts`, `labels/src/configs/accessControls.ts`, `users-and-groups/src/configs/accessControls.ts`, `agentic-ai/src/utils/constants.ts`, `dashboard/src/dashboard/data/widgetRegistry.tsx`, `statistics/src/models/Statistics.model.ts`, `algolia-synonyms/src/App.jsx`
 
 ## What this repository is
 
@@ -17,7 +17,7 @@ Fields present on every opened `AppState`: `tenant`, `language`, `token`.
 |---|---|---|
 | `returns`, `orders` | `tenant`, `language`, `token`, optional `currency`, `contentLanguage`, optional `user`, `onError`. No permissions field. | `appState` required. |
 | `products` | Same shape, with `currency` required. No permissions field. | `appState` required. |
-| `brands`, `users-and-groups`, `customer-groups`, `labels` | Same shape as returns/orders. | `appState` optional; fallback tenant/token `'default'`, language and content language `'en'`. |
+| `brands`, `users-and-groups`, `customer-groups`, `labels`, `status-codes` | Same shape as returns/orders. | `appState` optional; fallback tenant/token `'default'`, language and content language `'en'`. |
 | `dashboard` | `tenant`, `language`, `token`, required `currency` and `user`, optional `permissions`. No `onError`. | Optional. Missing tenant or token renders “Missing required configuration”. Omitted language and content language become `'en'`. Omitted currency becomes `id`/`label` `EUR`, `default: true`. |
 | `statistics` | `tenant`, `language`, `token` only. | Optional; fallback tenant/language/token `'default'`. |
 | `agentic-ai` | `tenant`, `language`, `token`, `contentLanguage` in `agentic-ai/src/types/common.ts`. The provider keeps only those four. | Optional; same four-field fallback, content language `'en'`. UI language is `en` or `de`; anything else becomes `en`. |
@@ -88,6 +88,10 @@ A brand has optional `id`, `name`, `description`, `image`, `cloudinaryUrl`, and 
 ## Labels
 
 A label has a name, an HTML description, an optional image, and an overlay position: `NONE` (0), `TOP_LEFT`, `TOP_RIGHT`, `BOTTOM_LEFT`, `BOTTOM_RIGHT` (`labels/src/models/Label.model.ts`). Media attached to a label uses ref type `LABEL`. Managing labels needs both the Labels Manager access controls and `CONFIGURATION_MANAGER`; the Labels Viewer domain is declared but never checked (`labels/src/configs/accessControls.ts`). Rules: `ai-project-knowledge/modules/labels.md`.
+
+## Status codes
+
+A status code is a quote reason of the Quote Service: a type `CHANGE` or `DECLINE`, a code, and a localized comment (`status-codes/src/models/QuoteReason.model.ts`). Updates carry the loaded `metadata.version`. The Management Dashboard quote change-status dialog offers the `DECLINE` reasons; it stays in the host. Viewing needs Status Codes Viewer (Quotes Viewer), changing needs Status Codes Manager (Quotes Manager). Rules: `ai-project-knowledge/modules/status-codes.md`.
 
 ## Products
 
