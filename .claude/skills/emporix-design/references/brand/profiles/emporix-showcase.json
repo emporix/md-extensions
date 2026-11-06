@@ -1,0 +1,670 @@
+{
+  "target": "emporix-showcase",
+  "emitter": "css-vars-override",
+  "tokenSources": [
+    "src/app/styles/brand.css",
+    "src/app/styles/alias.css",
+    "src/app/styles/mapped.css",
+    "src/app/globals.css"
+  ],
+  "output": {
+    "file": "public/themes/{site}.css",
+    "registry": {
+      "file": "src/app/styles/themes/index.ts",
+      "anchor": "export const THEME_MAP",
+      "entry": "  {siteKey}: '/themes/{site}.css',"
+    }
+  },
+  "fonts": {
+    "hosting": "fontsource",
+    "subsets": [
+      "latin",
+      "latin-ext"
+    ],
+    "dir": "public/themes/fonts/{site}",
+    "href": "/themes/fonts/{site}"
+  },
+  "figma": {
+    "labels": {
+      "brand": "Brand color",
+      "accent": "Secondary colors",
+      "neutral": "Neutral colors"
+    },
+    "library": {
+      "status": "applied once to a duplicate of the library (2026-11-03), single lever: modes only on brand",
+      "collections": {
+        "primitives": "brand",
+        "aliases": "alias",
+        "roles": "mapped"
+      },
+      "modes": "one mode per direction on the brand collection only; alias and mapped keep their single mode, so one dropdown switches a frame",
+      "primitives": {
+        "palette.brand.<step>": "color/blue/<step>",
+        "palette.accent.<step>": "color/teal/<step> (step 50 has no counterpart)",
+        "palette.neutral.<step>": "color/grey/<step> (grey/25 has no counterpart)",
+        "palette.white": "color/white",
+        "palette.black": "color/black",
+        "font.heading": "font family/primary",
+        "font.body": "font family/secondary"
+      },
+      "roles": "no per-mode role edits: brand ramps are role-aligned (blue/500 = surface.action, blue/700 = surface.action-hover, blue/50 = surface.action-subtle, blue/600-900 darker steps; teal/500 = surface.accent, other teal steps shifted); grey stays step-wise. Mode 1 and Mode 2 keep the library's original values",
+      "roleMap": [
+        {
+          "role": "colors/text/headings",
+          "from": "color.text.heading"
+        },
+        {
+          "role": "colors/text/body",
+          "from": "color.text.body"
+        },
+        {
+          "role": "colors/text/action",
+          "from": "color.text.action"
+        },
+        {
+          "role": "colors/text/action-hover",
+          "from": "color.text.action-hover"
+        },
+        {
+          "role": "colors/text/on-action",
+          "from": "color.text.on-action"
+        },
+        {
+          "role": "colors/text/placeholders",
+          "from": "color.text.muted",
+          "approx": true
+        },
+        {
+          "role": "colors/text/on-disabled",
+          "from": "color.text.muted",
+          "approx": true
+        },
+        {
+          "role": "colors/surface/page",
+          "from": "color.surface.canvas"
+        },
+        {
+          "role": "colors/surface/primary",
+          "from": "color.surface.raised"
+        },
+        {
+          "role": "colors/surface/secondary",
+          "from": "color.surface.accent"
+        },
+        {
+          "role": "colors/surface/action",
+          "from": "color.surface.action"
+        },
+        {
+          "role": "colors/surface/action-hover",
+          "from": "color.surface.action-hover"
+        },
+        {
+          "role": "colors/surface/action-hover 2",
+          "from": "color.surface.action-subtle"
+        },
+        {
+          "role": "colors/surface/neutral",
+          "from": "color.surface.inverse"
+        },
+        {
+          "role": "colors/surface/image background",
+          "from": "color.surface.subtle"
+        },
+        {
+          "role": "colors/surface/search input",
+          "from": "color.surface.subtle",
+          "approx": true
+        },
+        {
+          "role": "colors/surface/hover grey",
+          "from": "palette.neutral.200",
+          "approx": true
+        },
+        {
+          "role": "colors/icon/neutral",
+          "from": "color.text.heading"
+        },
+        {
+          "role": "colors/icon/secondary",
+          "from": "color.text.muted",
+          "approx": true
+        },
+        {
+          "role": "colors/icon/action",
+          "from": "color.text.action"
+        },
+        {
+          "role": "colors/icon/action-hover",
+          "from": "color.text.action-hover"
+        },
+        {
+          "role": "colors/icon/on-action",
+          "from": "color.text.on-action"
+        },
+        {
+          "role": "colors/icon/primary dark",
+          "from": "color.text.action",
+          "approx": true
+        },
+        {
+          "role": "colors/border/primary",
+          "from": "color.border.default"
+        },
+        {
+          "role": "colors/border/secondary",
+          "from": "color.border.action"
+        },
+        {
+          "role": "colors/border/action",
+          "from": "color.border.action"
+        },
+        {
+          "role": "colors/border/focus",
+          "from": "color.border.focus"
+        },
+        {
+          "role": "colors/border/neutral black",
+          "from": "color.border.strong",
+          "approx": true
+        },
+        {
+          "role": "colors/gradient/primary/start",
+          "from": "color.surface.action"
+        },
+        {
+          "role": "colors/gradient/primary/end",
+          "from": "color.surface.accent"
+        },
+        {
+          "role": "colors/gradient/secondary/start",
+          "from": "color.surface.action"
+        },
+        {
+          "role": "colors/gradient/secondary/end",
+          "from": "color.surface.action-hover"
+        },
+        {
+          "role": "type/desktop/font weight/heading/h1",
+          "from": "type.heading.weight"
+        },
+        {
+          "role": "type/desktop/font weight/heading/h2",
+          "from": "type.heading.weight"
+        },
+        {
+          "role": "type/desktop/font weight/heading/h3",
+          "from": "type.heading.weight"
+        },
+        {
+          "role": "type/desktop/font weight/heading/h4",
+          "from": "type.heading.weight"
+        },
+        {
+          "role": "type/desktop/font weight/heading/h5",
+          "from": "type.heading.weight"
+        },
+        {
+          "role": "type/desktop/font weight/heading/h6",
+          "from": "type.heading.weight"
+        },
+        {
+          "role": "type/desktop/font weight/heading/overline",
+          "from": "type.heading.weight"
+        },
+        {
+          "role": "type/mobile/font weight/heading/h1",
+          "from": "type.heading.weight"
+        },
+        {
+          "role": "type/mobile/font weight/heading/h2",
+          "from": "type.heading.weight"
+        },
+        {
+          "role": "type/mobile/font weight/heading/h3",
+          "from": "type.heading.weight"
+        },
+        {
+          "role": "type/mobile/font weight/heading/h4",
+          "from": "type.heading.weight"
+        },
+        {
+          "role": "type/mobile/font weight/heading/h5",
+          "from": "type.heading.weight"
+        },
+        {
+          "role": "type/mobile/font weight/heading/h6",
+          "from": "type.heading.weight"
+        },
+        {
+          "role": "type/mobile/font weight/heading/overline",
+          "from": "type.heading.weight"
+        },
+        {
+          "role": "type/desktop/font weight/action/button",
+          "from": "type.action.weight"
+        },
+        {
+          "role": "type/mobile/font weight/action/button",
+          "from": "type.action.weight"
+        },
+        {
+          "role": "border/radius/button",
+          "from": "radius.control"
+        },
+        {
+          "role": "border/radius/form field",
+          "from": "radius.control"
+        },
+        {
+          "role": "border/radius/pills",
+          "from": "radius.control"
+        },
+        {
+          "role": "border/radius/notification",
+          "from": "radius.container",
+          "approx": true
+        }
+      ],
+      "notGenerated": [
+        "alias/color/*, alias/border/radius/*: single mode, shared by all directions",
+        "type sizes: brand has no size tokens",
+        "success, information, warning, error ramps: brand has no tokens",
+        "colors/text/disabled, surface/disabled*, border/disabled, border/action-hover, icon/information 75, shadow/*: no brand token"
+      ],
+      "newBrandVariables": {
+        "radius/control": "Mode 1: 4; directions: 64 (library rounded-full; 999 turns tall menus into bubbles); mapped button, form field, pills point at it",
+        "radius/md|lg|xl|2xl": "Mode 1: 8, 16, 24, 32; directions: container, feature, feature, feature; alias border/radius/md|lg|xl|2xl point at them",
+        "font weight/heading": "Mode 1: bold; directions: type.heading.weight; the 14 mapped heading weights point at it"
+      },
+      "collapsedRoles": [
+        "colors/text/action and colors/surface/action share blue/500, so a brand with a lighter text-action step (Soft ink 700 vs 800) loses it",
+        "colors/border/focus follows the action colour (Soft ink focus uses the accent in the brand)",
+        "colors/surface/page stays white; image background and search input stay grey/50; placeholders stay grey/600"
+      ],
+      "chain": {
+        "colors/text/headings": "color/neutral/900",
+        "colors/text/body": "color/neutral/800",
+        "colors/text/action": "color/primary/500",
+        "colors/text/action-hover": "color/primary/700",
+        "colors/text/on-action": "color/neutral/white",
+        "colors/text/placeholders": "color/neutral/600",
+        "colors/text/on-disabled": "color/neutral/600",
+        "colors/surface/page": "color/neutral/white",
+        "colors/surface/primary": "color/neutral/white",
+        "colors/surface/secondary": "color/secondary/500",
+        "colors/surface/action": "color/primary/500",
+        "colors/surface/action-hover": "color/primary/700",
+        "colors/surface/action-hover 2": "color/primary/50",
+        "colors/surface/neutral": "color/neutral/900",
+        "colors/surface/image background": "color/neutral/50",
+        "colors/surface/search input": "color/neutral/50",
+        "colors/surface/hover grey": "color/neutral/200",
+        "colors/icon/neutral": "color/neutral/900",
+        "colors/icon/secondary": "color/neutral/500",
+        "colors/icon/action": "color/primary/500",
+        "colors/icon/action-hover": "color/primary/700",
+        "colors/icon/on-action": "color/neutral/white",
+        "colors/icon/primary dark": "color/primary/600",
+        "colors/border/primary": "color/neutral/200",
+        "colors/border/secondary": "color/primary/500",
+        "colors/border/action": "color/primary/500",
+        "colors/border/focus": "color/primary/500",
+        "colors/border/neutral black": "color/neutral/900",
+        "colors/gradient/primary/start": "color/primary/500",
+        "colors/gradient/primary/end": "color/secondary/500",
+        "colors/gradient/secondary/start": "color/primary/500",
+        "colors/gradient/secondary/end": "color/primary/700"
+      },
+      "radiusCap": {
+        "roles": [
+          "radius.control"
+        ],
+        "max": 64,
+        "why": "the library uses the form-field radius for tall panels (menus); a pill value (999) turns them into bubbles, so the library's own full step (64) is the cap"
+      },
+      "fixedInLibrary": [
+        "tertiary black button (color/black)",
+        "semantic ramps success, information, warning, error (no brand tokens)",
+        "warning swatches in Form Fields",
+        "slate page background on Product Cards",
+        "white and black primitives",
+        "button casing and letter spacing (per-frame overrides, cannot be variables)"
+      ],
+      "anchors": {
+        "color/primary/500": "color.surface.action",
+        "color/primary/700": "color.surface.action-hover",
+        "color/primary/600": "color.surface.action-hover",
+        "color/primary/50": "color.surface.action-subtle",
+        "color/secondary/500": "color.surface.accent"
+      }
+    }
+  },
+  "preview": {
+    "baseUrl": "http://localhost:3000",
+    "themeHref": "/themes/{site}.css",
+    "sites": {
+      "main": "",
+      "us-branch": "/us-branch"
+    },
+    "suggestedSite": "us-branch",
+    "routes": [
+      {
+        "name": "home",
+        "path": "/"
+      },
+      {
+        "name": "plp",
+        "path": "/browse"
+      },
+      {
+        "name": "pdp",
+        "discover": {
+          "from": "/browse",
+          "selector": "a[href*='/product/']"
+        }
+      }
+    ]
+  },
+  "knownConflicts": [
+    {
+      "file": "e2e/per-site-theme.spec.ts",
+      "when": "writing a theme for a registered site (main, us-branch, showcase)",
+      "why": "Asserts that registered sites keep the shared default palette (no colour overrides), so any brand fails it without a behaviour change."
+    },
+    {
+      "file": "src/lib/figma-alignment.test.ts, e2e/figma-grid.spec.ts",
+      "when": "a brand changes geometry the current Figma file measured (radii, fonts that change text metrics)",
+      "why": "Pin values measured from the current Figma design; they guard the default look, not behaviour."
+    }
+  ],
+  "map": [
+    {
+      "from": "palette.brand.*",
+      "to": "--color-primary-*"
+    },
+    {
+      "from": "palette.accent.*",
+      "to": "--color-secondary-*"
+    },
+    {
+      "from": "palette.neutral.*",
+      "to": "--color-neutral-*"
+    },
+    {
+      "from": "palette.white",
+      "to": "--color-neutral-white",
+      "refOnly": true
+    },
+    {
+      "from": "palette.black",
+      "to": "--color-neutral-black",
+      "refOnly": true
+    },
+    {
+      "from": "color.surface.canvas",
+      "to": [
+        "--color-surface-page",
+        "--tw-ring-offset-color"
+      ]
+    },
+    {
+      "from": "color.surface.raised",
+      "to": "--color-surface-primary"
+    },
+    {
+      "from": "color.surface.subtle",
+      "to": [
+        "--color-surface-image-background",
+        "--color-surface-search-input"
+      ],
+      "approx": "no generic subtle-surface token; image wells and the search field are the closest uses"
+    },
+    {
+      "from": "palette.neutral.200",
+      "to": "--color-surface-hover-grey",
+      "approx": "hover-grey has no canonical role; pinned to the neutral 200 step"
+    },
+    {
+      "from": "color.surface.accent",
+      "to": [
+        "--color-surface-secondary",
+        "--color-gradient-primary-end"
+      ]
+    },
+    {
+      "from": "color.surface.inverse",
+      "to": "--color-surface-neutral"
+    },
+    {
+      "from": "color.surface.action",
+      "to": [
+        "--color-surface-action",
+        "--color-gradient-primary-start",
+        "--color-gradient-secondary-start"
+      ]
+    },
+    {
+      "from": "color.surface.action-hover",
+      "to": [
+        "--color-surface-action-hover",
+        "--color-gradient-secondary-end"
+      ]
+    },
+    {
+      "from": "color.surface.action-subtle",
+      "to": "--color-surface-action-hover-2"
+    },
+    {
+      "from": "color.text.heading",
+      "to": [
+        "--color-text-headings",
+        "--color-icon-neutral"
+      ]
+    },
+    {
+      "from": "color.text.body",
+      "to": "--color-text-body"
+    },
+    {
+      "from": "color.text.muted",
+      "to": [
+        "--color-text-placeholders",
+        "--color-icon-secondary"
+      ],
+      "approx": "no muted-text token; placeholder text is the closest role"
+    },
+    {
+      "from": "color.text.muted",
+      "to": "--color-text-on-disabled",
+      "approx": "secondary text (ratings, review counts, VAT line, filter counts) uses the disabled-text token; labels on disabled buttons get the muted colour too"
+    },
+    {
+      "from": "color.text.action",
+      "to": [
+        "--color-text-action",
+        "--color-icon-action",
+        "--color-icon-primary-dark"
+      ],
+      "approx": "--color-icon-primary-dark (a darker icon variant) gets the plain action colour"
+    },
+    {
+      "from": "color.text.action-hover",
+      "to": [
+        "--color-text-action-hover",
+        "--color-icon-action-hover"
+      ]
+    },
+    {
+      "from": "color.text.on-action",
+      "to": [
+        "--color-text-on-action",
+        "--color-icon-on-action"
+      ]
+    },
+    {
+      "from": "color.border.default",
+      "to": "--color-border-primary"
+    },
+    {
+      "from": "color.border.strong",
+      "to": "--color-border-neutral-black",
+      "approx": "the app names this border by colour (black), not role"
+    },
+    {
+      "from": "color.border.action",
+      "to": [
+        "--color-border-action",
+        "--color-border-secondary"
+      ]
+    },
+    {
+      "from": "color.border.focus",
+      "to": [
+        "--color-border-focus",
+        "--tw-ring-color"
+      ]
+    },
+    {
+      "from": "radius.control",
+      "to": [
+        "--border-radius-button",
+        "--border-radius-form-field",
+        "--border-radius-pills"
+      ]
+    },
+    {
+      "from": "radius.container",
+      "to": "--border-radius-md"
+    },
+    {
+      "from": "radius.feature",
+      "to": [
+        "--border-radius-lg",
+        "--border-radius-xl",
+        "--border-radius-2xl"
+      ],
+      "approx": "the app has three large radii (16/24/32px) and the brand one; all three collapse to radius.feature"
+    },
+    {
+      "from": "font.heading",
+      "to": "--font-primary",
+      "fontImport": true
+    },
+    {
+      "from": "font.body",
+      "to": "--font-secondary",
+      "fontImport": true
+    },
+    {
+      "from": "type.heading.weight",
+      "to": [
+        "--desktop-font-weight-heading-h1",
+        "--desktop-font-weight-heading-h2",
+        "--desktop-font-weight-heading-h3",
+        "--desktop-font-weight-heading-h4",
+        "--desktop-font-weight-heading-h5",
+        "--desktop-font-weight-heading-h6",
+        "--mobile-font-weight-heading-h1",
+        "--mobile-font-weight-heading-h2",
+        "--mobile-font-weight-heading-h3",
+        "--mobile-font-weight-heading-h4",
+        "--mobile-font-weight-heading-h5",
+        "--mobile-font-weight-heading-h6"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "token": "type.action.transform",
+      "ticket": "G-09",
+      "where": "src/components/ui/button.tsx (cva base: `uppercase`)",
+      "why": "Button casing is a hard-coded utility class, not a token.",
+      "fix": "Add --text-transform-action-button in mapped.css and use it in the button base class."
+    },
+    {
+      "token": "type.action.letterSpacing",
+      "ticket": "G-09",
+      "where": "src/components/ui/button.tsx (cva base: `tracking-widest`)",
+      "why": "The button ignores the existing --desktop-spacing-action-button token and uses tracking-widest.",
+      "fix": "Use tracking-[var(--desktop-spacing-action-button)] (as other components already do) and expose it per breakpoint."
+    },
+    {
+      "token": "color.text.on-inverse",
+      "ticket": "G-02",
+      "where": "src/app/styles/mapped.css",
+      "why": "No context token for text on the dark neutral surface; components reuse --color-text-on-action. A brand with dark labels on its action colour (e.g. black on gold) makes that text unreadable, e.g. product capacity badges (`bg-surface-neutral … text-text-on-action`, 4 places).",
+      "fix": "Add --color-text-on-neutral and use it where bg-surface-neutral is set."
+    },
+    {
+      "token": "type.action.weight",
+      "ticket": "G-09",
+      "where": "src/components/ui/button.tsx (cva base: `font-bold`)",
+      "why": "The app has --desktop/--mobile-font-weight-action-button, but the button hard-codes font-bold, so a brand's label weight has no visible effect.",
+      "fix": "Drop font-bold from buttonVariants; text-action-button already applies --text-action-button--font-weight."
+    },
+    {
+      "token": "type.body.weight",
+      "ticket": "G-16",
+      "where": "src/app/globals.css (no body weight variable)",
+      "why": "Body text uses the font's default weight; there is no variable a theme could set.",
+      "fix": "Add a body font-weight token next to --token-text-md and apply it on body."
+    },
+    {
+      "token": "type.heading.weight",
+      "ticket": "G-08",
+      "where": "src/components/ui/h.tsx (cva base: `font-bold`)",
+      "why": "Mapped, but overridden: the heading component hard-codes font-bold, so the 12 --*-font-weight-heading-* variables have no visible effect.",
+      "fix": "Use the per-level weight tokens in headingVariants (e.g. font-[var(--token-text-h1--font-weight)]) instead of font-bold."
+    },
+    {
+      "token": "color.text.muted",
+      "ticket": "G-04",
+      "where": "src/components/product/product-detail.tsx, product-price.tsx, product-item-row.tsx (`text-text-on-disabled`)",
+      "why": "Secondary text (ratings, review counts, VAT line, filter counts) uses the disabled-text token. Mapped as an approximation so the brand's muted colour reaches it; real disabled labels change with it.",
+      "fix": "Use a muted/secondary text token (e.g. text-text-placeholders or a new --color-text-secondary) for non-disabled secondary text."
+    },
+    {
+      "token": "asset.logo",
+      "ticket": "G-07",
+      "where": "src/components/header/common/header-logo.tsx (/images/logo.svg, fixed 148×22)",
+      "why": "Logo is a fixed image: invisible on dark headers and not replaceable per site; the text-contrast scan cannot see it.",
+      "fix": "Per-site logo path (light/dark variant) and aspect ratio via the theme registry or CSS variables."
+    },
+    {
+      "token": "color.feedback.*",
+      "ticket": "G-05",
+      "where": "src/app/styles/mapped.css (--color-text-success, --color-text-error, …)",
+      "why": "Feedback colours are tuned for light pages and are not part of the brand vocabulary; on a dark brand 'Online Available' (green) and sale prices (red) drop to ~2.5:1.",
+      "fix": "Add feedback roles to the canonical vocabulary and map them; until then dark brands are not supported."
+    },
+    {
+      "token": "theme.dark",
+      "ticket": "G-06",
+      "where": "src/app/styles/mapped.css (--color-surface-hover-grey, --color-surface-disabled, --color-border-neutral-black)",
+      "why": "Several context tokens are named and valued by colour rather than role, so they stay light on a dark brand (white icon buttons, carousel arrows, disabled cart buttons).",
+      "fix": "Rename to role tokens (hover, disabled, strong border) and give them dark values through the brand."
+    },
+    {
+      "token": "radius.small",
+      "ticket": "G-10",
+      "where": "`rounded-sm` in 40 component files (checkbox, chips, small icon buttons)",
+      "why": "The generic small radius is shared by checkboxes and other small elements; mapping it to the control radius turns checkboxes into circles (they read as radio buttons). It stays at 4px for every brand. Side effect for pill brands: the sort select and variant chips also use rounded-sm, so they stay at 4px next to pill-shaped inputs.",
+      "fix": "Give checkboxes, selects and chips their own radius tokens (e.g. --border-radius-selection, use --border-radius-form-field on selects) instead of rounded-sm."
+    },
+    {
+      "token": "radius.media",
+      "ticket": "G-11",
+      "where": "src/components/product/product-tile.tsx:400, product-detail.tsx:305, product-variant-carousel.tsx:348, product-add-to-cart-bar.tsx:68 (`bg-surface-image-background`, no radius)",
+      "why": "Product image wells are square boxes with no radius class, so rounded brands get square wells inside rounded cards.",
+      "fix": "Add a media radius token (e.g. --border-radius-media) and use it on the image wells."
+    },
+    {
+      "token": "color.text.on-accent",
+      "ticket": "G-03",
+      "where": "src/components/ui/badge.tsx (secondary variant) and other `bg-surface-secondary` uses",
+      "why": "Text on the accent/secondary surface uses the body/heading colour, assuming the accent is light (teal by default); a darker brand accent makes 'Secondary' badges unreadable (2.13:1 with Soft ink).",
+      "fix": "Add --color-text-on-secondary and use it wherever bg-surface-secondary is set; add the matching role to the brand vocabulary."
+    }
+  ]
+}

@@ -1,0 +1,532 @@
+openapi: 3.0.0
+info:
+  title: Product Service
+  version: ''
+  description: The Emporix API Product Service allows you to manage products for a tenant.
+  contact:
+    name: Emporix
+    url: 'https://www.emporix.com/contact-us'
+servers:
+  - url: 'https://api.emporix.io'
+security:
+  - OAuth2: []
+paths:
+  '/product/{tenant}/products':
+    parameters:
+      - $ref: '#/components/parameters/path_tenant'
+    get:
+      summary: Retrieving all products
+      operationId: GET-tenant-products
+      description: |-
+        Retrieves all products assigned to the tenant. You can filter the results with query parameters.
+      security:
+        - OAuth2:
+            - product.product_read
+      parameters:
+        - $ref: '#/components/parameters/query_pageNumber'
+        - $ref: '#/components/parameters/query_pageSize'
+        - $ref: '#/components/parameters/query_q'
+        - $ref: '#/components/parameters/query_sort'
+        - $ref: '#/components/parameters/header_Accept-Language'
+        - $ref: '#/components/parameters/header_X-Total-Count'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_resp_GET_products'
+        '401':
+          $ref: '#/components/responses/401_resp_common'
+        '403':
+          $ref: '#/components/responses/403_resp_common'
+        '500':
+          $ref: '#/components/responses/500_resp_common'
+    post:
+      summary: Creating a new product
+      operationId: POST-tenant-products
+      description: |-
+        Creates a new product.
+      security:
+        - OAuth2:
+            - product.product_manage
+      parameters:
+        - $ref: '#/components/parameters/header_Content-Language'
+      requestBody:
+        $ref: '#/components/requestBodies/products_POST'
+      responses:
+        '201':
+          $ref: '#/components/responses/201_resp_POST_products'
+        '400':
+          $ref: '#/components/responses/400_resp_product'
+        '401':
+          $ref: '#/components/responses/401_resp_common'
+        '403':
+          $ref: '#/components/responses/403_resp_common'
+        '500':
+          $ref: '#/components/responses/500_resp_common'
+  '/product/{tenant}/products/{productId}':
+    parameters:
+      - $ref: '#/components/parameters/path_tenant'
+      - $ref: '#/components/parameters/path_productId'
+    get:
+      summary: Retrieving a single product
+      operationId: GET-tenant-products-productId
+      description: |-
+        Retrieves a specified product's details.
+      security:
+        - OAuth2:
+            - product.product_read
+      parameters:
+        - $ref: '#/components/parameters/header_Accept-Language'
+      responses:
+        '200':
+          $ref: '#/components/responses/200_resp_GET_productId'
+        '401':
+          $ref: '#/components/responses/401_resp_common'
+        '403':
+          $ref: '#/components/responses/403_resp_common'
+        '404':
+          $ref: '#/components/responses/404_resp_product'
+        '500':
+          $ref: '#/components/responses/500_resp_common'
+    put:
+      summary: Updating a product
+      operationId: PUT-tenant-products-productId
+      description: |-
+        Updates a specified product by replacing all of its existing data with data from the request body.
+      security:
+        - OAuth2:
+            - product.product_manage
+      parameters:
+        - $ref: '#/components/parameters/header_Content-Language'
+      requestBody:
+        $ref: '#/components/requestBodies/productId_PUT'
+      responses:
+        '204':
+          $ref: '#/components/responses/204_resp_PUT-PATCH-DELETE_productId'
+        '400':
+          $ref: '#/components/responses/400_resp_product'
+        '401':
+          $ref: '#/components/responses/401_resp_common'
+        '403':
+          $ref: '#/components/responses/403_resp_common'
+        '404':
+          $ref: '#/components/responses/404_resp_product'
+        '500':
+          $ref: '#/components/responses/500_resp_common'
+    patch:
+      summary: Partially updating a product
+      operationId: PATCH-tenant-products-productId
+      description: |-
+        Partially updates a specified product.
+      security:
+        - OAuth2:
+            - product.product_manage
+      parameters:
+        - $ref: '#/components/parameters/header_Content-Language'
+      requestBody:
+        $ref: '#/components/requestBodies/productId_PATCH'
+      responses:
+        '204':
+          $ref: '#/components/responses/204_resp_PUT-PATCH-DELETE_productId'
+        '400':
+          $ref: '#/components/responses/400_resp_product'
+        '401':
+          $ref: '#/components/responses/401_resp_common'
+        '403':
+          $ref: '#/components/responses/403_resp_common'
+        '404':
+          $ref: '#/components/responses/404_resp_product'
+        '500':
+          $ref: '#/components/responses/500_resp_common'
+    delete:
+      summary: Deleting a product
+      operationId: DELETE-tenant-products-productId
+      description: |-
+        Deletes a specified product.
+      security:
+        - OAuth2:
+            - product.product_manage
+      responses:
+        '204':
+          $ref: '#/components/responses/204_resp_PUT-PATCH-DELETE_productId'
+        '400':
+          $ref: '#/components/responses/400_resp_product'
+        '401':
+          $ref: '#/components/responses/401_resp_common'
+        '403':
+          $ref: '#/components/responses/403_resp_common'
+        '404':
+          $ref: '#/components/responses/404_resp_product'
+        '500':
+          $ref: '#/components/responses/500_resp_common'
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: 'https://api.emporix.io/oauth/token'
+          scopes:
+            product.product_read: Needed to retrieve product information.
+            product.product_manage: Needed to manage products.
+  schemas:
+    Product_GET:
+      description: Product details returned by read operations.
+      allOf:
+        - $ref: '#/components/schemas/productId'
+        - $ref: '#/components/schemas/Product_POST'
+        - $ref: '#/components/schemas/Metadata'
+    Product_POST:
+      type: object
+      description: Payload used when creating a product.
+      properties:
+        name:
+          type: string
+          description: Product name.
+        code:
+          type: string
+          description: Unique product code within the tenant.
+        published:
+          type: boolean
+          description: Indicates whether the product is published.
+      required:
+        - name
+        - code
+    Product_PUT:
+      description: Payload used when fully updating a product.
+      allOf:
+        - $ref: '#/components/schemas/Product_POST'
+        - $ref: '#/components/schemas/Metadata'
+    productId:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Product's unique identifier, generated when the product is created.
+    Metadata:
+      type: object
+      properties:
+        metadata:
+          type: object
+          properties:
+            createdAt:
+              description: Date and time when the object was created.
+              type: string
+            modifiedAt:
+              description: Date and time when the object was last modified.
+              type: string
+            version:
+              minimum: 1
+              type: integer
+              description: Version of the object.
+          required:
+            - createdAt
+            - modifiedAt
+            - version
+    ErrorMessage:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: HTTP status code.
+        status:
+          type: string
+          description: HTTP status text.
+        type:
+          type: string
+          description: Error type identifier.
+        message:
+          type: string
+          description: Human-readable error message.
+        moreInfo:
+          type: string
+          description: Link to additional error documentation.
+        details:
+          type: array
+          description: Field-level validation details.
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              type:
+                type: string
+              message:
+                type: string
+              moreInfo:
+                type: string
+    ErrorMessageFault:
+      type: object
+      properties:
+        fault:
+          type: object
+          properties:
+            faultstring:
+              type: string
+              description: Human-readable fault message.
+            detail:
+              type: object
+              properties:
+                errorcode:
+                  type: string
+                  description: Machine-readable fault code.
+  parameters:
+    path_tenant:
+      name: tenant
+      in: path
+      required: true
+      schema:
+        pattern: '^[a-z][a-z0-9]+$'
+        minLength: 3
+        maxLength: 16
+        type: string
+      description: |
+        Your Emporix tenant's name.
+        **Note**: The tenant should always be written in lowercase.
+    path_productId:
+      name: productId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Product's unique identifier, generated when the product is created.
+    header_Accept-Language:
+      name: Accept-Language
+      in: header
+      required: false
+      schema:
+        type: string
+      description: |
+        List of language codes acceptable for the response. You can specify factors that indicate which language should be retrieved if the one with a higher factor was not found in the localized fields.
+        * If the header is set to a specific language or a list of languages, localized fields are retrieved as maps containing a single translation, where the key is a language code and the value is the field in the specified language.
+        * If the header is set to `*`, localized fields are retrieved as maps of translations, where the keys are language codes and values are the fields in their respective languages.
+        * If the header is empty, localized fields are retrieved as maps containing a single translation, where the key is a language code and the value is the field in the specified language. The endpoint will assume that localized fields should be retrieved in the tenant's default language defined in the Configuration Service.
+    header_Content-Language:
+      name: Content-Language
+      in: header
+      required: false
+      schema:
+        type: string
+      description: |
+        Language in which localized fields in the request body are provided.
+        * If the header is set to a specific language, localized fields should be provided as maps containing a single translation, where the key is a language code and the value is the field in the specified language.
+        * If the header is set to `*`, localized fields should be provided as maps of translations, where the keys are language codes and values are the fields in their respective languages.
+        * If the header is empty, localized fields should be provided as maps containing a single translation, where the key is a language code and the value is the field in the specified language. The endpoint will assume that localized fields are provided in the tenant's default language defined in the Configuration Service.
+        **Note**: You can provide the localized fields only in languages defined in the Configuration Service. In case the fields are provided in languages that are not defined in the Configuration Service, the request will be rejected.
+    query_q:
+      name: q
+      in: query
+      required: false
+      schema:
+        type: string
+      description: |
+        Standard query parameter used to search for specific values.
+        * Searching for an item by a string-based property: `q=id:31065d5b-b62e`, where `id` is the field name and `31065d5b-b62e` is its desired value.
+        * Searching for an item by a localized property: `q=name.en:T-s` where `name` is the name of the field, `en` is a language code and `T-s` is the desired value of the field. **Note**: This query works only for localized fields, which are stored in a map format, where `key` is a language code and `value` is the field expressed in the indicated language.
+    query_pageNumber:
+      name: pageNumber
+      in: query
+      required: false
+      schema:
+        default: 1
+        minimum: 1
+        type: integer
+      description: |
+        Page number to be retrieved. The number of the first page is 1.
+        **Note:** If the `pageNumber` parameter is passed, size of the pages must be specified in the `pageSize` parameter.
+    query_pageSize:
+      name: pageSize
+      in: query
+      required: false
+      schema:
+        default: 16
+        minimum: 1
+        type: integer
+      description: |
+        Number of items to be retrieved per page.
+    query_sort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+      description: |-
+        List of properties used to sort the results, separated by commas. The order of properties indicates their priority in sorting.
+        Possible values:
+        * `{fieldName}`
+        * `{fieldName}.asc`
+        * `{fieldName}.desc`
+        **Note:** If you want to sort the results by localized properties, the possible values are:
+          * `{fieldName}.{language}`
+          * `{fieldName}.{language}.asc`
+          * `{fieldName}.{language}.desc`
+        If the sorting direction is not specified, the fields are sorted in ascending order.
+    header_X-Total-Count:
+      name: X-Total-Count
+      in: header
+      required: false
+      schema:
+        default: false
+        type: boolean
+      description: Flag indicating whether the total count of retrieved items should be returned.
+  responses:
+    401_resp_common:
+      description: The authorization token is invalid or has expired.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessageFault'
+          examples:
+            Invalid access token:
+              value:
+                fault:
+                  faultstring: Invalid access token
+                  detail:
+                    errorcode: oauth.v2.InvalidAccessToken
+            Access token expired:
+              value:
+                fault:
+                  faultstring: Access Token expired
+                  detail:
+                    errorcode: keymanagement.service.access_token_expired
+    403_resp_common:
+      description: Authorization scopes of the access token are not sufficient and do not match the scopes required by the endpoint.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          examples:
+            Access forbidden:
+              value:
+                code: 403
+                status: Forbidden
+                message: The access to the requested resource has been forbidden by the server.
+    500_resp_common:
+      description: A server-side error occurred.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          examples:
+            Internal Server Error:
+              value:
+                code: 500
+                status: Internal Server Error
+                message: Problem encountered while trying to connect to the database.
+    400_resp_product:
+      description: The request was syntactically incorrect.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          examples:
+            Code must not be null:
+              value:
+                code: 400
+                status: Bad Request
+                message: Validation problem with request body.
+                details:
+                  - field: code
+                    message: code must not be null nor blank
+    404_resp_product:
+      description: The requested product was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+          examples:
+            Product not found:
+              value:
+                code: 404
+                status: Not Found
+                message: The product with id 628cd20c6e8b2432b6346ca6 has not been found.
+    200_resp_GET_products:
+      description: The request was successful. A list of products is returned.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Product_GET'
+          examples:
+            List of products:
+              value:
+                - id: 628cd20c6e8b2432b6346ca6
+                  name: Sample Product
+                  code: SAMPLE_PRODUCT
+                  published: true
+                  metadata:
+                    createdAt: '2024-01-15T10:00:00Z'
+                    modifiedAt: '2024-01-15T10:00:00Z'
+                    version: 1
+    200_resp_GET_productId:
+      description: The request was successful. The product is returned.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Product_GET'
+          examples:
+            Product:
+              value:
+                id: 628cd20c6e8b2432b6346ca6
+                name: Sample Product
+                code: SAMPLE_PRODUCT
+                published: true
+                metadata:
+                  createdAt: '2024-01-15T10:00:00Z'
+                  modifiedAt: '2024-01-15T10:00:00Z'
+                  version: 1
+    201_resp_POST_products:
+      description: The request was successful. The product has been created.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Product's unique identifier, generated when the product is created.
+          examples:
+            Product created:
+              value:
+                id: 631b4bfe61f5e1663c745ffd
+    204_resp_PUT-PATCH-DELETE_productId:
+      description: The request was successful. No content is returned.
+  requestBodies:
+    products_POST:
+      description: Request body for creating a product.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Product_POST'
+          examples:
+            Product creation:
+              value:
+                name: Sample Product
+                code: SAMPLE_PRODUCT
+                published: true
+    productId_PUT:
+      description: Request body for fully updating a product.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Product_PUT'
+          examples:
+            Full update of a product:
+              value:
+                name: Example Product
+                code: EXAMPLE_PRODUCT
+                published: true
+                metadata:
+                  createdAt: '2024-01-15T10:00:00Z'
+                  modifiedAt: '2024-01-15T10:00:00Z'
+                  version: 1
+    productId_PATCH:
+      description: Request body for partially updating a product.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Product_POST'
+          examples:
+            Partial update of a product:
+              value:
+                name: Example Product
+                published: false

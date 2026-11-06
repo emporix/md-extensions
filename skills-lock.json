@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "skills": {
+    "emporix-certification-review": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-certification-review/SKILL.md",
+      "computedHash": "313115a251331dd54d2fca2cf7efae0336ad9e9643eb3190aaceb8f6630fd4f6"
+    },
+    "emporix-demo-record": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-demo-record/SKILL.md",
+      "computedHash": "a2ff746fad6e76bf99abbbcc2e9f378073e3aaf1b23578617ee17e694c779540"
+    },
+    "emporix-design": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-design/SKILL.md",
+      "computedHash": "c49057e01032daf57e561c088bbde93979ae7f4654ea9b196c68612324ad6f1d"
+    },
+    "emporix-docs-update": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-docs-update/SKILL.md",
+      "computedHash": "16266c50f042dfa8b564f54e85a100eeb4775b0ceee520316a35aef2fff656ac"
+    },
+    "emporix-feature": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-feature/SKILL.md",
+      "computedHash": "987d3fca768624ced4c43581d7737165de9fbe948721b2d80edc3115505cda83"
+    },
+    "emporix-frontend-standards": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-frontend-standards/SKILL.md",
+      "computedHash": "0d168828544d0d3c9a84ce1d9f19487d43b0175d3ef93af67973c3c805781316"
+    },
+    "emporix-improve-service-performance": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-improve-service-performance/SKILL.md",
+      "computedHash": "81f61466f1b6036d742d387ab0be0f50787a6925ee088fa39d603033f847f1dc"
+    },
+    "emporix-logs-check": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-logs-check/SKILL.md",
+      "computedHash": "3b11ad792dfdb25a2f8c601d40a75bb65631bbc552711cfee8658c4da9443cbd"
+    },
+    "emporix-pr": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-pr/SKILL.md",
+      "computedHash": "7d8eb7dcecbab0246921811aa6e61b51708b98e5b61a67c07b50a12e3f991a1a"
+    },
+    "emporix-qa-local-api": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-qa-local-api/SKILL.md",
+      "computedHash": "9c388b1a7533c6f171bd1cb8866e66dc94764cc48d8f3cce71e09f771ea707be"
+    },
+    "emporix-qa-postman": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-qa-postman/SKILL.md",
+      "computedHash": "ca5d1df97898afb6ce4ae26c40d1a47e78a37796352d3a52338d4bf721205157"
+    },
+    "emporix-qa-ui": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-qa-ui/SKILL.md",
+      "computedHash": "f9fbe47f462fe38d65b60a352fe67d1d9f9b782af504fcf4e108fa1a8d66d109"
+    },
+    "emporix-service-create": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-service-create/SKILL.md",
+      "computedHash": "118f4b325a973e2fe732fe652e112ab4be17de3ac7d78cfca4afb5490cf3dad5"
+    },
+    "emporix-setup": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-setup/SKILL.md",
+      "computedHash": "7628c7b5ca5aa9e0936641fbfe47f076c508f17171ba280b2a67f0d316824e49"
+    },
+    "emporix-worktree-cleanup": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-worktree-cleanup/SKILL.md",
+      "computedHash": "c698bae99213b41a3b46ea4af83c0396f2a08a42dcf54557edbd8e5f0e03e69e"
+    }
+  }
+}

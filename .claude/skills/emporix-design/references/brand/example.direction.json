@@ -1,0 +1,29 @@
+{
+  "id": "raw-steel",
+  "name": "Raw steel",
+  "brief": "Baking equipment manufacturer, heavy industrial steel aesthetic",
+  "archetype": "industrial-b2b",
+  "summary": "Brushed-steel neutrals, furnace-orange action colour, tight corners, condensed headings.",
+  "seeds": { "brand": "#c2410c", "accent": "#334155", "neutral": "#64748b" },
+  "roles": { "surface.action": "brand.600", "surface.subtle": "neutral.100" },
+  "radius": { "control": "2px", "container": "2px", "feature": "4px" },
+  "font": {
+    "heading": { "family": "Barlow Condensed", "weights": [500, 700] },
+    "body": { "family": "Inter", "weights": [400, 600] }
+  },
+  "type": { "heading.weight": 700, "action.transform": "uppercase", "action.letterSpacing": "0.06em" },
+  "sample": {
+    "shop": "Ofenwerk Pro",
+    "products": [
+      { "name": "Deck oven DO-3 / 3 decks", "price": "€12,480.00", "badge": "In stock" },
+      { "name": "Spiral mixer SM-80", "price": "€6,950.00", "badge": "Lead time 3 wks" },
+      { "name": "Proofing cabinet PC-20", "price": "€3,120.00", "badge": "New" }
+    ]
+  },
+  "references": [],
+  "decisions": [
+    { "id": "DEC-1", "topic": "Action colour", "choice": "Furnace orange (#c2410c) on brushed-steel neutrals", "why": "Reads as heat and metal; orange-600 keeps 4.5:1 with white button text." },
+    { "id": "DEC-2", "topic": "Shape", "choice": "2px corners everywhere", "why": "Machined, sheet-metal feel; avoids consumer softness." },
+    { "id": "DEC-3", "topic": "Type", "choice": "Barlow Condensed headings, Inter body", "why": "Industrial signage character in headings; Inter keeps dense spec tables readable." }
+  ]
+}

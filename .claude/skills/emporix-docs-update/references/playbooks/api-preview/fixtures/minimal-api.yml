@@ -1,0 +1,37 @@
+openapi: 3.0.0
+info:
+  title: Sandbox Sample API
+  version: ''
+  description: >-
+    Minimal OpenAPI sample for emporix-docs-api-preview smoke tests.
+    Registered in GitBook as sandbox-sample-{branch}-{digest}. Not a real Emporix service.
+servers:
+  - url: 'https://api.emporix.io'
+paths:
+  '/sandbox/{tenant}/ping':
+    parameters:
+      - name: tenant
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Tenant identifier.
+    get:
+      summary: Retrieving a sandbox ping
+      operationId: GET-sandbox-tenant-ping
+      description: Returns a simple acknowledgement for sandbox preview rendering checks.
+      parameters: []
+      responses:
+        '200':
+          description: Ping succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: string
+                    example: ok
+components: {}

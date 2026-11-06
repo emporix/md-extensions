@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "fingerprint": "first 4 and last 4 characters of the Figma file key, joined by an ellipsis. A hint for matching by plain string comparison; the remaining characters are not stored. Never store file keys or links here.",
+  "hashAlgorithm": "optional strict check: sha256 of the file key, first 16 hex characters (scripts/resolve-area.sh)",
+  "note": "Resolve by fingerprint with the Read tool only (areas/README.md). Never store file keys or links here.",
+  "areas": [
+    {
+      "id": "b2b-commerce-frontend",
+      "name": "B2B Commerce Frontend",
+      "ruleFile": "b2b-commerce-frontend.md",
+      "files": [
+        {
+          "alias": "MAIN - B2B New Showcase",
+          "role": "release",
+          "hash": "04103625ad90cce4",
+          "fingerprint": "KQmq…FS2q",
+          "integratesInto": "DESIGN - B2B New Showcase"
+        },
+        {
+          "alias": "DESIGN - B2B New Showcase",
+          "role": "design",
+          "hash": "54a77c8ca8bf4073",
+          "fingerprint": "AOtv…IWEK"
+        },
+        {
+          "alias": "B2B New Showcase (working copy seen in ticket COP-4827)",
+          "role": "working-copy",
+          "hash": "7547689a2b09e422",
+          "confirmed": false,
+          "fingerprint": "TYdP…9urk"
+        }
+      ]
+    },
+    {
+      "id": "management-dashboard",
+      "name": "Management Dashboard",
+      "ruleFile": "management-dashboard.md",
+      "notes": "Includes the AI perspective.",
+      "files": [
+        {
+          "alias": "Management Dashboard",
+          "role": "design",
+          "hash": "03e273c0dc60a636",
+          "fingerprint": "ZHkY…Nyhd"
+        }
+      ]
+    }
+  ],
+  "roles": "release = published library (prior art to read); design = work-in-progress file where designs are merged; working-copy = a copy seen in a ticket. A release file's integratesInto names the design file to merge into; a design file integrates into itself."
+}

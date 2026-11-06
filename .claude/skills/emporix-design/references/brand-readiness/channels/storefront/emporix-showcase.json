@@ -1,0 +1,48 @@
+{
+  "channel": "storefront",
+  "target": "emporix-showcase",
+  "scan": {
+    "roots": ["src"],
+    "extensions": [".ts", ".tsx", ".js", ".jsx", ".css"],
+    "exclude": ["\\.test\\.", "\\.spec\\.", "__tests__", "\\.stories\\.", "^src/app/styles/"]
+  },
+  "theme": {
+    "file": "src/app/globals.css",
+    "tokenFiles": ["src/app/styles/brand.css", "src/app/styles/alias.css", "src/app/styles/mapped.css", "src/app/globals.css"],
+    "siteThemes": "public/themes"
+  },
+  "utilities": [
+    {
+      "theme": "--color-",
+      "match": "namespace",
+      "literals": true,
+      "builtins": ["transparent", "current", "inherit"],
+      "prefixes": ["text", "bg", "border", "border-x", "border-y", "border-t", "border-r", "border-b", "border-l", "border-s", "border-e", "ring", "ring-offset", "inset-ring", "outline", "fill", "stroke", "from", "via", "to", "decoration", "divide", "placeholder", "caret", "accent", "shadow", "inset-shadow"]
+    },
+    {
+      "theme": "--radius-",
+      "match": "all",
+      "builtins": ["none", "full"],
+      "prefixes": ["rounded", "rounded-t", "rounded-r", "rounded-b", "rounded-l", "rounded-s", "rounded-e", "rounded-tl", "rounded-tr", "rounded-br", "rounded-bl", "rounded-ss", "rounded-se", "rounded-es", "rounded-ee"]
+    }
+  ],
+  "contrast": {
+    "page": "--color-surface-page",
+    "text": 4.5,
+    "large": 3,
+    "nonText": 3,
+    "largeClasses": ["text-3xl", "text-4xl", "text-5xl", "text-6xl", "text-7xl"],
+    "nonTextNamespaces": ["icon", "border"],
+    "exemptRoles": ["disabled"]
+  },
+  "checks": {
+    "R2": {
+      "guard": null,
+      "tracked": "COP-7095 G-01, G-12"
+    },
+    "R4": {
+      "guard": null,
+      "tracked": "COP-7095 G-02, G-03, G-04, G-05"
+    }
+  }
+}
