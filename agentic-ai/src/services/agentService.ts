@@ -129,7 +129,12 @@ export const chatWithAgent = async (
 
   let text = ''
   let sawArtifact = false
+  let streamError: Error | null = null
   for await (const event of stream) {
+    if (streamError && event.type !== 'done') {
+      continue
+    }
+
     if (event.type === 'thinking') {
       options.onThinking?.(event.content)
       continue
@@ -168,7 +173,8 @@ export const chatWithAgent = async (
     }
 
     if (event.type === 'error') {
-      throw new Error(event.message)
+      streamError = new Error(event.message)
+      continue
     }
 
     if (event.type === 'done') {
@@ -177,6 +183,10 @@ export const chatWithAgent = async (
       }
       break
     }
+  }
+
+  if (streamError) {
+    throw streamError
   }
 
   const trimmed = text.trim()

@@ -3,6 +3,7 @@ import {
   formatDomainSectionTitle,
   getDomainSectionTags,
   FILE_GENERATOR_TOOL_ID,
+  getNativeToolSearchValues,
   getNativeToolSectionTags,
   getNativeToolTags,
   withBuiltinFileTool,
@@ -327,8 +328,25 @@ describe('agentToolsHelpers', () => {
     expect(getNativeToolTags({ type: 'slack' })).toEqual(['Slack'])
     expect(getNativeToolTags({ type: 'teams' })).toEqual(['Microsoft Teams'])
     expect(getNativeToolTags({ type: 'rag_custom' })).toEqual(['RAG Tools'])
-    expect(getNativeToolTags({ type: 'file' }, 'Datei')).toEqual(['Datei'])
-    expect(getNativeToolTags({ type: 'file' })).toEqual([])
+    expect(getNativeToolTags({ type: 'file' })).toEqual(['file_generator'])
+    expect(getNativeToolTags({ id: 'file_generator', type: 'file' })).toEqual([
+      'file_generator',
+    ])
+  })
+
+  it('getNativeToolSearchValues includes the file generator id and runtime names', () => {
+    expect(
+      getNativeToolSearchValues({
+        id: 'file_generator',
+        name: 'Built-in file generator',
+        type: 'file',
+      })
+    ).toEqual([
+      'file_generator',
+      'Built-in file generator',
+      'create_downloadable_file',
+      'inspect_attached_file',
+    ])
   })
 
   it('withBuiltinFileTool adds one file choice and hides created file tools', () => {

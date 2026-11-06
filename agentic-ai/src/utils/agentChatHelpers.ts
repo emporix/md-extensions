@@ -44,6 +44,19 @@ export const nextToolActivityText = (
   return trimmed.length > 0 ? trimmed : null
 }
 
+export const chatErrorLogsPath = (
+  sessionId: string | null,
+  agentId: string | null
+): string => {
+  if (sessionId) {
+    return `/logs/sessions/${encodeURIComponent(sessionId)}`
+  }
+  if (agentId) {
+    return `/logs/requests?agentId=${encodeURIComponent(agentId)}`
+  }
+  return '/logs/requests'
+}
+
 export const TRANSCRIPT_FOLLOW_THRESHOLD_PX = 80
 export const CHAT_TRANSCRIPT_MIN_HEIGHT = 200
 export const CHAT_CARD_VIEWPORT_GAP = 16

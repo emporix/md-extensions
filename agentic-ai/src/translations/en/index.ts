@@ -1154,6 +1154,8 @@ const TRANSLATIONS_EN = {
   chat_stop: 'Stop',
   chat_welcome: 'Welcome! Please tell me what I may help you with.',
   chat_error: 'The reply could not be loaded.',
+  chat_error_details: 'You can check more details',
+  chat_error_details_here: 'here',
   chat_attach_files: 'Attach files',
   chat_drop_files: 'Drop files to attach',
   chat_remove_image: 'Remove image',

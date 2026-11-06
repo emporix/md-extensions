@@ -10,6 +10,7 @@ import { MCP_SERVERS, McpKey } from '../../../utils/constants'
 import {
   formatDomainSectionTitle,
   getDomainSectionTags,
+  getNativeToolSearchValues,
   getNativeToolSectionTags,
   getNativeToolTags,
   withBuiltinFileTool,
@@ -491,6 +492,7 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
     const nativeAllItems: ToolListItem[] = nativeCatalog.map((tool) => ({
       id: tool.id,
       label: tool.name,
+      searchValues: getNativeToolSearchValues(tool),
     }))
 
     if (nativeCatalog.length > 0 && isSectionVisible(nativeAllItems)) {
@@ -671,9 +673,10 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
   const nativeAllItems: ToolListItem[] = nativeCatalog.map((tool) => ({
     id: tool.id,
     label: tool.name,
-    tags: getNativeToolTags(tool, t('file_tool')),
+    tags: getNativeToolTags(tool),
     toolType: tool.type,
     disabled: tool.enabled === false,
+    searchValues: getNativeToolSearchValues(tool),
   }))
   const nativeSelectedItems: ToolListItem[] = nativeTools
     .map((nativeTool) => {
@@ -681,12 +684,13 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
       return {
         id: nativeTool.id,
         label: tool?.name ?? nativeTool.id,
-        tags: tool ? getNativeToolTags(tool, t('file_tool')) : undefined,
+        tags: tool ? getNativeToolTags(tool) : undefined,
         toolType: tool?.type,
+        searchValues: tool ? getNativeToolSearchValues(tool) : [nativeTool.id],
       }
     })
     .filter((item) => item.id)
-  const nativeTags = getNativeToolSectionTags(nativeCatalog, 3, t('file_tool'))
+  const nativeTags = getNativeToolSectionTags(nativeCatalog, 3)
   const nativeVisibleItems = filterItems(nativeAllItems)
   const showNativeSection =
     nativeCatalog.length > 0 && isSectionVisible(nativeAllItems)

@@ -15,6 +15,7 @@ import {
   nextSessionId,
   shouldRestoreComposerDraft,
   nextThinkingText,
+  chatErrorLogsPath,
   nextToolActivityText,
   shouldShowAssistantActivity,
   shouldShowRecommendationEmpty,
@@ -73,6 +74,21 @@ describe('nextThinkingText', () => {
 
     expect(second).toBe('I will look up quotes.')
     expect(nextThinkingText(second, null)).toBeNull()
+  })
+})
+
+describe('chatErrorLogsPath', () => {
+  it('opens the session log when the chat already has one', () => {
+    expect(chatErrorLogsPath('sess 1', 'agent-1')).toBe(
+      '/logs/sessions/sess%201'
+    )
+  })
+
+  it('opens that agent request log when the session is still unknown', () => {
+    expect(chatErrorLogsPath(null, 'agent 1')).toBe(
+      '/logs/requests?agentId=agent%201'
+    )
+    expect(chatErrorLogsPath(null, null)).toBe('/logs/requests')
   })
 })
 
