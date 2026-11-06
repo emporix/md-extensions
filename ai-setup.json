@@ -13,7 +13,7 @@
   },
   "validation": {
     "commands": [
-      "for m in $({ git diff --name-only \"$(git merge-base HEAD origin/master)\"; git ls-files --others --exclude-standard; } | cut -d/ -f1 | sort -u); do [ -f \"$m/package.json\" ] || continue; echo \"== $m\"; (cd \"$m\" && { [ -d node_modules ] || npm ci; } && npm run --if-present typecheck && npm run lint && npm run --if-present test:run && npm run build:dev) || exit 1; done"
+      "base=$(git merge-base HEAD origin/master) && changed=$(git diff --name-only \"$base\") && untracked=$(git ls-files --others --exclude-standard) || exit 1; for m in $(printf \"%s\\n%s\\n\" \"$changed\" \"$untracked\" | cut -d/ -f1 | sort -u); do [ -f \"$m/package.json\" ] || continue; echo \"== $m\"; (cd \"$m\" && { [ -d node_modules ] || npm ci; } && npm run --if-present typecheck && npx eslint . && npm run --if-present test:run && npm run build:dev) || exit 1; done"
     ]
   },
   "app": {

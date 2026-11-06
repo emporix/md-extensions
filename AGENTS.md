@@ -68,7 +68,7 @@ Run inside the remote folder (`cd <remote>`), never at the repository root.
 
 Run in order before declaring work done (`ai-setup.json` → `validation.commands`):
 
-1. The changed-remotes loop in `ai-setup.json`. From the repository root it lists the remotes that differ from `origin/master` (committed, staged, unstaged, and untracked files). In each one it runs `npm ci` when `node_modules` is missing, then `typecheck` (if present), `lint`, `test:run` (if present), and `build:dev`. That is the extension gate of `.claude/skills/md-module-extraction/SKILL.md` (Phase 4) plus the `npm ci` and `build:dev` each `*-firebase-preview.yaml` runs on a PR. Changes outside remote folders (docs, workflows, knowledge) run nothing.
+1. The changed-remotes loop in `ai-setup.json`. From the repository root it lists the remotes that differ from `origin/master` (committed, staged, unstaged, and untracked files). It stops with an error when the base or the diff cannot be read. In each remote it runs `npm ci` when `node_modules` is missing, then `typecheck` (if present), `npx eslint .` (not `npm run lint`, which is `eslint . --fix` in `agentic-ai`), `test:run` (if present), and `build:dev`. That is the extension gate of `.claude/skills/md-module-extraction/SKILL.md` (Phase 4) plus the `npm ci` and `build:dev` each `*-firebase-preview.yaml` runs on a PR. Changes outside remote folders (docs, workflows, knowledge) run nothing.
 
 ## Tests
 
@@ -126,7 +126,7 @@ Rules observed in those files (not inferred from framework habit):
 
 | Path | Responsibility | Entry points / rules |
 |---|---|---|
-| `<remote>/` (eleven folders, see **Remotes**) | One federated remote each | `src/RemoteComponent.tsx` (federated entry), `src/App.tsx` + `src/main.tsx` (standalone shell), `vite.config.ts` |
+| `<remote>/` (eleven folders, see **Remotes**) | One Vite app each; all but `algolia-synonyms` are federated remotes | `src/RemoteComponent.tsx` (federated entry), `src/App.tsx` + `src/main.tsx` (standalone shell), `vite.config.ts` |
 | `<remote>/src/` (playbook-aligned remotes) | `api/` (`bootstrap.ts`, `sites.ts`), `hooks/api/` (api-calls wrappers), `context/` (providers), `pages/`, `components/`, `models/`, `helpers/`, `configs/` (access controls), `constants/paths.ts`, `translations/` | `orders/src`, `.claude/rules/md-extension-migration.md` |
 | `docs/` | Migration playbook, migrated-modules registry, Tier 1 copy inventory, component-library widget status | `MODULE_MIGRATION_PLAYBOOK.md`, `MIGRATED_MODULES.md` |
 | `.github/workflows/` | Firebase preview, dev + stage, and prod workflows per remote | `{remote}-firebase-*.yaml` |
