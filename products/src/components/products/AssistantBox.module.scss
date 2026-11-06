@@ -4,6 +4,20 @@
   min-height: 100%;
 }
 
+.notice {
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 1rem;
+  --color-message-info-bg: color-mix(in srgb, var(--blue-3, #79a3da) 15%, transparent);
+  --color-message-info-border: color-mix(in srgb, var(--blue-3, #79a3da) 30%, transparent);
+  --color-message-info-icon: var(--blue-3, #79a3da);
+}
+
+.notice.notice,
+.notice span {
+  color: var(--blue-3, #79a3da);
+}
+
 .languages {
   margin-bottom: 1rem;
 }

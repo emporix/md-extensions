@@ -5,6 +5,7 @@ import {
   Dialog,
   Dropdown,
   InputText,
+  Message,
   PrimaryButton,
   ProgressSpinner,
   RadioButton,
@@ -264,6 +265,11 @@ const AssistantBox = ({
       }
     >
       <div className={styles.content}>
+        <Message
+          severity="info"
+          className={styles.notice}
+          text={t('assistantBox.notice')}
+        />
         {aiExecutionInProgress && (
           <div className={styles.overlay}>
             <div className={styles.progress}>
