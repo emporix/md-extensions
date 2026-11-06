@@ -14,4 +14,6 @@ export default {
   error: {
     generateText: 'Generierungsfehler bei AI-Text aufgetreten',
   },
+  notice:
+    'HINWEIS: Die Ausgabe wird von KI erzeugt. Bitte prüfen Sie sie, da Fehler auftreten können.',
 }
