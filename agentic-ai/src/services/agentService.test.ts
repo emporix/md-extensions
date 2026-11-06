@@ -2,19 +2,25 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { AppState } from '../types/common'
 import { COMMERCE_FILTER_ASSISTANT_I18N_KEYS } from '../utils/agentFilterDslHelpers'
 
-const { mockPostSse, mockPost } = vi.hoisted(() => ({
+const { mockPostSse, mockPost, mockPostForm } = vi.hoisted(() => ({
   mockPostSse: vi.fn(),
   mockPost: vi.fn(),
+  mockPostForm: vi.fn(),
 }))
 
 vi.mock('./apiClient', () => ({
   ApiClient: class MockApiClient {
     postSse = mockPostSse
     post = mockPost
+    postForm = mockPostForm
   },
 }))
 
-import { chatWithAgent, chatWithAgentOnce } from './agentService'
+import {
+  chatWithAgent,
+  chatWithAgentOnce,
+  uploadChatImage,
+} from './agentService'
 
 const appState: AppState = {
   tenant: 'testtenant',
@@ -109,6 +115,80 @@ describe('chatWithAgent', () => {
     expect(onToken).toHaveBeenLastCalledWith('Hello world')
     expect(onToolActivity).toHaveBeenCalledWith('search')
     expect(onToolActivity).toHaveBeenLastCalledWith(null)
+  })
+
+  it('reports an artifact without replacing the accumulated text', async () => {
+    const onToken = vi.fn()
+    const onArtifact = vi.fn()
+    mockPostSse.mockReturnValue(
+      createStream(
+        { type: 'token', content: 'Here is the forest.' },
+        {
+          type: 'artifact',
+          artifactId: 'asset-1',
+          kind: 'image',
+          filename: 'forest.png',
+          mimeType: 'image/png',
+          size: 12,
+          status: 'ready',
+        },
+        {
+          type: 'done',
+          agentId: 'agent-1',
+          agentType: 'generic',
+          sessionId: 'sess-1',
+          toolsUsed: [],
+        }
+      )
+    )
+
+    await expect(
+      chatWithAgent(appState, 'agent-1', 'draw a forest', {
+        onToken,
+        onArtifact,
+      })
+    ).resolves.toBe('Here is the forest.')
+
+    expect(onToken).toHaveBeenCalledWith('Here is the forest.')
+    expect(onArtifact).toHaveBeenCalledWith({
+      artifactId: 'asset-1',
+      kind: 'image',
+      filename: 'forest.png',
+      mimeType: 'image/png',
+      size: 12,
+      status: 'ready',
+      errorCode: undefined,
+      generationId: undefined,
+    })
+  })
+
+  it('accepts an image-only reply', async () => {
+    mockPostSse.mockReturnValue(
+      createStream(
+        {
+          type: 'artifact',
+          artifactId: 'asset-1',
+          kind: 'image',
+          filename: 'forest.png',
+          mimeType: 'image/png',
+          size: 12,
+          status: 'ready',
+        },
+        {
+          type: 'done',
+          agentId: 'agent-1',
+          agentType: 'generic',
+          sessionId: 'sess-1',
+          toolsUsed: [],
+        }
+      )
+    )
+
+    await expect(
+      chatWithAgent(appState, 'agent-1', 'draw a forest', {
+        emptyResponseKey: COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse,
+      })
+    ).resolves.toBe('')
   })
 
   it('passes session-id header and onSessionId callback when provided', async () => {
@@ -291,6 +371,73 @@ describe('chatWithAgentOnce', () => {
       '/ai-service/testtenant/agentic/chat',
       { agentId: 'agent-1', message: 'suggest' },
       { signal: controller.signal }
+    )
+  })
+})
+
+describe('chat image attachments', () => {
+  beforeEach(() => {
+    mockPostSse.mockReset()
+    mockPost.mockReset()
+    mockPostForm.mockReset()
+  })
+
+  it('uploads one image with the session header and without JSON content', async () => {
+    mockPostForm.mockResolvedValue({ id: 'asset-1', sessionId: 'session-1' })
+    const image = new File(['png'], 'forest.png', { type: 'image/png' })
+
+    await expect(
+      uploadChatImage(appState, 'agent-1', image, { sessionId: 'session-1' })
+    ).resolves.toEqual({ id: 'asset-1', sessionId: 'session-1' })
+
+    const [path, body, init] = mockPostForm.mock.calls[0]
+    expect(path).toBe('/ai-service/testtenant/agentic/agent-1/attachments')
+    expect(body).toBeInstanceOf(FormData)
+    expect(init.headers['session-id']).toBe('session-1')
+  })
+
+  it('rejects an upload response that has no id', async () => {
+    mockPostForm.mockResolvedValue({ sessionId: 'session-1' })
+    const image = new File(['png'], 'forest.png', { type: 'image/png' })
+
+    await expect(uploadChatImage(appState, 'agent-1', image)).rejects.toThrow(
+      'chat_image_upload_failed'
+    )
+  })
+
+  it('sends attachment ids with the chat stream', async () => {
+    mockPostSse.mockReturnValue(
+      createStream({
+        type: 'token',
+        content: 'done',
+      })
+    )
+
+    await chatWithAgent(appState, 'agent-1', 'describe this', {
+      sessionId: 'session-1',
+      attachments: [
+        {
+          attachmentId: 'asset-1',
+          purpose: 'chat image',
+          caption: 'forest.png',
+        },
+      ],
+    })
+
+    expect(mockPostSse).toHaveBeenCalledWith(
+      '/ai-service/testtenant/agentic/chat-stream',
+      {
+        agentId: 'agent-1',
+        message: 'describe this',
+        attachments: [
+          {
+            attachmentId: 'asset-1',
+            purpose: 'chat image',
+            caption: 'forest.png',
+          },
+        ],
+      },
+      { headers: { 'session-id': 'session-1' } }
     )
   })
 })

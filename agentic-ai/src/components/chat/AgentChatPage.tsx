@@ -4,7 +4,9 @@ import {
   useMemo,
   useRef,
   useState,
+  type DragEvent,
   type ReactNode,
+  type PointerEvent,
   type WheelEvent,
 } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -19,9 +21,11 @@ import {
 } from '@emporix/component-library'
 import { AiGeneratedNotice } from '../shared/AiGeneratedNotice'
 import { AssistantMessageContent } from './AssistantMessageContent'
+import ChatMessageArtifacts from './ChatMessageArtifacts'
+import { RichResizeHandle } from './RichResizeHandle'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../contexts/ToastContext'
-import { useAgentChat } from '../../hooks/useAgentChat'
+import { useAgentChat, type PendingChatImage } from '../../hooks/useAgentChat'
 import { useAgents } from '../../hooks/useAgents'
 import { useMyIamScopes } from '../../hooks/useMyIamScopes'
 import { useChatRecommendations } from '../../hooks/useChatRecommendations'
@@ -45,14 +49,24 @@ import {
   getChatInvokeGates,
   hasAgentManageScope,
   CHAT_AGENT_QUERY_PARAM,
+  CHAT_CARD_VIEWPORT_GAP,
+  CHAT_TRANSCRIPT_MIN_HEIGHT,
   initialAgentIdFromQuery,
   isTranscriptNearBottom,
+  nextChatCardHeight,
   nextAgentIdFromQuery,
+  shouldRestoreComposerDraft,
   shouldShowAssistantActivity,
   shouldShowRecommendationEmpty,
   type ChatInvokeGate,
 } from '../../utils/agentChatHelpers'
 import { formatApiError } from '../../utils/errorHelpers'
+import {
+  newChatAttachmentKey,
+  safeImageName,
+  selectChatImages,
+  withChatAttachmentType,
+} from '../../utils/chatImageSelection'
 import { getLocalizedValue } from '../../utils/agentHelpers'
 
 type AgentOption = {
@@ -124,8 +138,17 @@ const AgentChatPage = () => {
     useState<InvokeGateState | null>(null)
   const [invokePatching, setInvokePatching] = useState(false)
   const [draft, setDraft] = useState('')
+  const [selectedImages, setSelectedImages] = useState<
+    readonly PendingChatImage[]
+  >([])
+  const [fileDragActive, setFileDragActive] = useState(false)
   const transcriptRef = useRef<HTMLDivElement>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const retainedPreviewUrls = useRef(new Set<string>())
+  const selectedImagesRef = useRef(selectedImages)
   const followTranscriptRef = useRef(true)
+  selectedImagesRef.current = selectedImages
 
   const enabledAgents = useMemo(
     () =>
@@ -172,6 +195,46 @@ const AgentChatPage = () => {
     setSearchParams(nextParams, { replace: true })
   }, [agentId, requestedAgentId, searchParams, setSearchParams])
 
+  const startCardResize = (event: PointerEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    const card = cardRef.current
+    const transcript = transcriptRef.current
+    const handle = event.currentTarget
+    if (!card || !transcript) {
+      return
+    }
+    const startHeight = card.getBoundingClientRect().height
+    const originY = event.clientY
+    const chrome = startHeight - transcript.getBoundingClientRect().height
+    const minHeight = chrome + CHAT_TRANSCRIPT_MIN_HEIGHT
+    const maxHeight = Math.max(
+      minHeight,
+      window.innerHeight -
+        card.getBoundingClientRect().top -
+        CHAT_CARD_VIEWPORT_GAP
+    )
+    handle.setPointerCapture(event.pointerId)
+    const move = (ev: globalThis.PointerEvent) => {
+      card.style.height = `${nextChatCardHeight(
+        startHeight,
+        ev.clientY - originY,
+        minHeight,
+        maxHeight
+      )}px`
+    }
+    const stop = (ev: globalThis.PointerEvent) => {
+      if (handle.hasPointerCapture(ev.pointerId)) {
+        handle.releasePointerCapture(ev.pointerId)
+      }
+      handle.removeEventListener('pointermove', move)
+      handle.removeEventListener('pointerup', stop)
+      handle.removeEventListener('pointercancel', stop)
+    }
+    handle.addEventListener('pointermove', move)
+    handle.addEventListener('pointerup', stop)
+    handle.addEventListener('pointercancel', stop)
+  }
+
   const handleTranscriptWheel = (event: WheelEvent<HTMLDivElement>) => {
     if (event.deltaY < 0) {
       followTranscriptRef.current = false
@@ -199,6 +262,7 @@ const AgentChatPage = () => {
   }, [messages, activity?.text])
 
   const streaming = status === 'streaming'
+  const busy = status !== 'idle'
   const selectedAgent =
     enabledAgents.find((agent) => agent.id === agentId) ?? null
   const recommendationTarget = useMemo(() => {
@@ -261,14 +325,129 @@ const AgentChatPage = () => {
     )
 
   useEffect(() => {
-    if (!agentId || streaming || invokePatching) {
+    if (!agentId || busy || invokePatching) {
       return
     }
     document.getElementById('agent-chat-prompt')?.focus({ preventScroll: true })
-  }, [agentId, streaming, invokePatching])
+  }, [agentId, busy, invokePatching])
+
+  const revokePreview = (previewUrl: string | undefined) => {
+    if (!previewUrl || retainedPreviewUrls.current.has(previewUrl)) {
+      return
+    }
+    URL.revokeObjectURL(previewUrl)
+  }
+
+  const clearSelectedImages = () => {
+    setSelectedImages((current) => {
+      current.forEach((image) => revokePreview(image.previewUrl))
+      return []
+    })
+  }
+
+  const composerLocked = !agentId || busy || invokePatching
+
+  const acceptPickedFiles = (picked: readonly File[]) => {
+    const selection = selectChatImages(selectedImages.length, picked)
+    if (selection.errorKey) {
+      showError(t(selection.errorKey))
+    }
+    if (selection.accepted.length === 0) {
+      return
+    }
+    setSelectedImages((current) => [
+      ...current,
+      ...selection.accepted.map((file) => {
+        const typed = withChatAttachmentType(file)
+        const kind = typed.type.startsWith('image/')
+          ? ('image' as const)
+          : ('file' as const)
+        return {
+          id: newChatAttachmentKey(),
+          file: typed,
+          name: safeImageName(typed.name),
+          ...(kind === 'image'
+            ? { previewUrl: URL.createObjectURL(typed) }
+            : {}),
+          kind,
+        }
+      }),
+    ])
+  }
+
+  const isFileDrag = (event: DragEvent<HTMLDivElement>) =>
+    Array.from(event.dataTransfer?.types ?? []).includes('Files')
+
+  const dragStaysInside = (event: DragEvent<HTMLDivElement>) => {
+    const next = event.relatedTarget
+    return next instanceof Node && event.currentTarget.contains(next)
+  }
+
+  const handleCardDragEnter = (event: DragEvent<HTMLDivElement>) => {
+    if (!isFileDrag(event) || dragStaysInside(event)) {
+      return
+    }
+    event.preventDefault()
+    if (!composerLocked) {
+      setFileDragActive(true)
+    }
+  }
+
+  const handleCardDragOver = (event: DragEvent<HTMLDivElement>) => {
+    if (!isFileDrag(event)) {
+      return
+    }
+    event.preventDefault()
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = composerLocked ? 'none' : 'copy'
+    }
+  }
+
+  const handleCardDragLeave = (event: DragEvent<HTMLDivElement>) => {
+    if (!isFileDrag(event) || dragStaysInside(event)) {
+      return
+    }
+    setFileDragActive(false)
+  }
+
+  const handleCardDrop = (event: DragEvent<HTMLDivElement>) => {
+    if (!isFileDrag(event)) {
+      return
+    }
+    event.preventDefault()
+    setFileDragActive(false)
+    if (composerLocked) {
+      return
+    }
+    acceptPickedFiles(Array.from(event.dataTransfer?.files ?? []))
+  }
+
+  useEffect(
+    () => () => {
+      selectedImagesRef.current.forEach((image) => {
+        if (image.previewUrl) {
+          URL.revokeObjectURL(image.previewUrl)
+        }
+      })
+      retainedPreviewUrls.current.forEach((previewUrl) => {
+        URL.revokeObjectURL(previewUrl)
+      })
+      retainedPreviewUrls.current.clear()
+    },
+    []
+  )
+
+  const handleReset = () => {
+    clearSelectedImages()
+    retainedPreviewUrls.current.forEach((previewUrl) => {
+      URL.revokeObjectURL(previewUrl)
+    })
+    retainedPreviewUrls.current.clear()
+    reset()
+  }
 
   const handleAgentChange = (nextId: string) => {
-    if (!nextId || nextId === agentId) {
+    if (!nextId || nextId === agentId || busy) {
       return
     }
     if (hasUserMessage) {
@@ -276,6 +455,7 @@ const AgentChatPage = () => {
       return
     }
     setInvokeGateState(null)
+    clearSelectedImages()
     setAgentId(nextId)
   }
 
@@ -283,35 +463,65 @@ const AgentChatPage = () => {
     if (!pendingAgentId) {
       return
     }
-    reset()
+    handleReset()
     setInvokeGateState(null)
     setAgentId(pendingAgentId)
     setPendingAgentId(null)
   }
 
-  const deliverSend = (text: string, source: PendingChatSend['source']) => {
+  const deliverSend = (
+    text: string,
+    source: PendingChatSend['source'],
+    images: readonly PendingChatImage[]
+  ) => {
     if (!agentId) {
       return
     }
     followTranscriptRef.current = true
+    const outgoing = source === 'composer' ? images : []
     if (source === 'composer') {
       setDraft('')
     }
-    void send(agentId, text).then((result) => {
-      if (result === 'error') {
-        if (source === 'composer') {
-          setDraft(text)
-          return
-        }
-        if (draft.trim().length === 0) {
-          setDraft(text)
-        }
+    void send(
+      agentId,
+      text,
+      outgoing,
+      () => {
+        outgoing.forEach((image) => {
+          if (image.previewUrl) {
+            retainedPreviewUrls.current.add(image.previewUrl)
+          }
+        })
+        setSelectedImages((current) =>
+          current.filter(
+            (image) => !outgoing.some((sent) => sent.id === image.id)
+          )
+        )
+      },
+      (attachmentIds) => {
+        setSelectedImages((current) =>
+          current.map((image) => {
+            const index = outgoing.findIndex((item) => item.id === image.id)
+            const attachmentId = index >= 0 ? attachmentIds[index] : undefined
+            if (!attachmentId || image.attachmentId === attachmentId) {
+              return image
+            }
+            return { ...image, attachmentId }
+          })
+        )
+      }
+    ).then((result) => {
+      if (!shouldRestoreComposerDraft(result)) {
+        return
+      }
+      if (source === 'composer' || draft.trim().length === 0) {
+        setDraft(text)
       }
     })
   }
 
   const attemptSend = (text: string, source: PendingChatSend['source']) => {
-    if (!agentId || streaming || invokePatching || text.length === 0) {
+    if (!agentId || busy || invokePatching || text.length === 0) {
       return
     }
     const agent = enabledAgents.find((entry) => entry.id === agentId)
@@ -319,8 +529,9 @@ const AgentChatPage = () => {
       return
     }
     const gates = getChatInvokeGates(agent)
+    const images = source === 'composer' ? selectedImages : []
     if (gates.length === 0) {
-      deliverSend(text, source)
+      deliverSend(text, source, images)
       return
     }
     setInvokeGateState({
@@ -335,9 +546,10 @@ const AgentChatPage = () => {
     acceptedGates: readonly ChatInvokeGate[],
     pending: PendingChatSend
   ) => {
+    const imagesAtAccept = selectedImages
     const patches = buildChatInvokePatchOperations(agent, acceptedGates)
     if (patches.length === 0) {
-      deliverSend(pending.text, pending.source)
+      deliverSend(pending.text, pending.source, imagesAtAccept)
       return
     }
     setInvokePatching(true)
@@ -345,7 +557,7 @@ const AgentChatPage = () => {
       await patchCustomAgent(appState, agent.id, patches)
       await refreshCustomAgents()
       setInvokeGateState(null)
-      deliverSend(pending.text, pending.source)
+      deliverSend(pending.text, pending.source, imagesAtAccept)
     } catch (err) {
       console.error(err)
       showError(formatApiError(err, t('chat_gate_patch_error')))
@@ -437,14 +649,24 @@ const AgentChatPage = () => {
             <i className="pi pi-pencil" aria-hidden="true" />
             {t('chat_edit_agent')}
           </SecondaryButton>
-          <SecondaryButton className="agent-chat-reset-btn" onClick={reset}>
+          <SecondaryButton
+            className="agent-chat-reset-btn"
+            onClick={handleReset}
+          >
             <i className="pi pi-refresh" aria-hidden="true" />
             {t('chat_reset')}
           </SecondaryButton>
         </div>
       </header>
       <AiGeneratedNotice variant="short" />
-      <div className="agent-chat-card">
+      <div
+        className="agent-chat-card"
+        ref={cardRef}
+        onDragEnter={handleCardDragEnter}
+        onDragOver={handleCardDragOver}
+        onDragLeave={handleCardDragLeave}
+        onDrop={handleCardDrop}
+      >
         <div
           className="agent-chat-transcript"
           ref={transcriptRef}
@@ -458,17 +680,51 @@ const AgentChatPage = () => {
           )}
           {messages.map((message) => {
             const hasText = message.text.trim().length > 0
+            const hasPendingImage =
+              message.artifacts?.some(
+                (artifact) =>
+                  artifact.kind === 'image' && artifact.status === 'pending'
+              ) ?? false
             const showStatus = shouldShowAssistantActivity(
               streaming,
               message.role === 'assistant' &&
                 message.id === messages[messages.length - 1]?.id,
               hasText,
-              activity !== null
+              activity !== null,
+              hasPendingImage
             )
             return (
               <ChatBubble key={message.id} role={message.role}>
                 {message.role === 'assistant' && hasText ? (
                   <AssistantMessageContent text={message.text} />
+                ) : null}
+                {message.role === 'assistant' && message.artifacts?.length ? (
+                  <ChatMessageArtifacts
+                    appState={appState}
+                    artifacts={message.artifacts}
+                  />
+                ) : null}
+                {message.role === 'user' && message.images?.length ? (
+                  <span className="agent-chat-sent-images">
+                    {message.images.map((image) =>
+                      image.kind === 'image' && image.previewUrl ? (
+                        <img
+                          key={image.id}
+                          src={image.previewUrl}
+                          alt={image.name}
+                        />
+                      ) : (
+                        <span
+                          key={image.id}
+                          className="agent-chat-sent-file"
+                          title={image.name}
+                        >
+                          <i className="pi pi-file" aria-hidden="true" />
+                          <span>{image.name}</span>
+                        </span>
+                      )
+                    )}
+                  </span>
                 ) : null}
                 {message.role === 'assistant' ? null : message.text}
                 {showStatus ? (
@@ -481,25 +737,97 @@ const AgentChatPage = () => {
             )
           })}
         </div>
-        <label className="agent-chat-prompt-label" htmlFor="agent-chat-prompt">
-          {t('chat_prompt_label')}
-        </label>
-        <InputText
-          textarea
-          inputId="agent-chat-prompt"
-          className="agent-chat-input"
-          rows={4}
-          value={draft}
-          placeholder={t('chat_placeholder')}
-          disabled={!agentId || streaming || invokePatching}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-              event.preventDefault()
-              handleSend()
-            }
-          }}
-        />
+        <div
+          className={
+            fileDragActive
+              ? 'agent-chat-composer agent-chat-composer-drop'
+              : 'agent-chat-composer'
+          }
+        >
+          <label
+            className="agent-chat-prompt-label"
+            htmlFor="agent-chat-prompt"
+          >
+            {t('chat_prompt_label')}
+          </label>
+          <InputText
+            textarea
+            inputId="agent-chat-prompt"
+            className="agent-chat-input"
+            rows={6}
+            value={draft}
+            placeholder={t('chat_placeholder')}
+            disabled={composerLocked}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault()
+                handleSend()
+              }
+            }}
+          />
+          <div className="agent-chat-attachments">
+            <input
+              ref={fileInputRef}
+              className="agent-chat-file-input"
+              type="file"
+              accept="image/png,image/jpeg,application/pdf,text/csv,text/plain,.jpg,.jpeg,.png,.pdf,.csv,.txt,.text"
+              multiple
+              onChange={(event) => {
+                acceptPickedFiles(Array.from(event.target.files ?? []))
+                event.target.value = ''
+              }}
+            />
+            <SecondaryButton
+              className="agent-chat-attach-btn"
+              aria-label={t('chat_attach_files')}
+              disabled={composerLocked}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <i className="pi pi-paperclip" aria-hidden="true" />
+            </SecondaryButton>
+            {selectedImages.map((image) => (
+              <span
+                key={image.id}
+                className="agent-chat-attachment"
+                title={image.name}
+              >
+                {image.kind === 'image' && image.previewUrl ? (
+                  <img src={image.previewUrl} alt={image.name} />
+                ) : (
+                  <i className="pi pi-file" aria-hidden="true" />
+                )}
+                <span>{image.name}</span>
+                <button
+                  type="button"
+                  aria-label={t(
+                    image.kind === 'image'
+                      ? 'chat_remove_image'
+                      : 'chat_remove_file'
+                  )}
+                  disabled={composerLocked}
+                  onClick={() => {
+                    revokePreview(image.previewUrl)
+                    setSelectedImages((current) =>
+                      current.filter((entry) => entry.id !== image.id)
+                    )
+                  }}
+                >
+                  <i className="pi pi-times" aria-hidden="true" />
+                </button>
+              </span>
+            ))}
+          </div>
+          {fileDragActive ? (
+            <p className="agent-chat-drop-hint">{t('chat_drop_files')}</p>
+          ) : null}
+        </div>
+        {status === 'uploading' ? (
+          <p className="agent-chat-activity" aria-live="polite">
+            <i className="pi pi-spin pi-spinner" aria-hidden="true" />
+            {t('chat_uploading_files')}
+          </p>
+        ) : null}
         <div className="agent-chat-toolbar">
           <div className="agent-chat-picker">
             <FieldLabel
@@ -521,10 +849,10 @@ const AgentChatPage = () => {
                   handleAgentChange(event.value)
                 }
               }}
-              disabled={agentOptions.length === 0}
+              disabled={agentOptions.length === 0 || busy}
             />
           </div>
-          {streaming ? (
+          {busy ? (
             <PrimaryButton className="agent-chat-send-btn" onClick={stop}>
               <i className="pi pi-stop" aria-hidden="true" />
               {t('chat_stop')}
@@ -584,7 +912,7 @@ const AgentChatPage = () => {
                   key={`${item.label}-${index}`}
                   type="button"
                   className="agent-chat-recommended-chip"
-                  disabled={streaming || invokePatching}
+                  disabled={busy || invokePatching}
                   onClick={() => handleRecommendation(item.prompt)}
                 >
                   {item.icon ? (
@@ -605,6 +933,10 @@ const AgentChatPage = () => {
             </p>
           ) : null}
         </div>
+        <RichResizeHandle
+          label={t('chat_card_resize')}
+          onPointerDown={startCardResize}
+        />
       </div>
       <ConfirmBox
         className="agent-chat-confirm"

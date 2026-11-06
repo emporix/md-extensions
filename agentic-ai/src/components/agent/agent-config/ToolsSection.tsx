@@ -12,6 +12,7 @@ import {
   getDomainSectionTags,
   getNativeToolSectionTags,
   getNativeToolTags,
+  withBuiltinFileTool,
   getSelectedDomainTools,
   getSelectedDynamicMcpTools,
   formatManagedMcpServerLabel,
@@ -26,6 +27,7 @@ import {
 import {
   getDynamicMcpToolCounts,
   getEnabledDynamicToolNames,
+  getMcpServerSearchValues,
   isDynamicMcpServer,
 } from '../../../utils/mcpHelpers'
 import { AgentToolTypeTags } from '../../shared/AgentToolTypeTags'
@@ -64,6 +66,7 @@ interface ToolListItem {
   disabled?: boolean
   tags?: string[]
   toolType?: string
+  searchValues?: string[]
 }
 
 interface ToolsAccordionSectionProps {
@@ -309,9 +312,14 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
     [mcpServers, onFieldChange]
   )
 
+  const nativeCatalog = useMemo(
+    () => withBuiltinFileTool(availableTools, t('file_tool')),
+    [availableTools, t]
+  )
+
   const handleNativeToolToggle = useCallback(
     (toolId: string, checked: boolean) => {
-      const tool = availableTools.find((item) => item.id === toolId)
+      const tool = nativeCatalog.find((item) => item.id === toolId)
       if (checked && tool?.enabled === false) {
         return
       }
@@ -319,14 +327,14 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
       if (tool?.type === 'teams') {
         nextNativeTools = toggleTeamsNativeTool(
           nativeTools,
-          availableTools,
+          nativeCatalog,
           toolId,
           checked
         )
       } else if (tool?.type === 'slack') {
         nextNativeTools = toggleSlackNativeTool(
           nativeTools,
-          availableTools,
+          nativeCatalog,
           toolId,
           checked
         )
@@ -336,7 +344,7 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
 
       onFieldChange('nativeTools', nextNativeTools)
     },
-    [availableTools, nativeTools, onFieldChange]
+    [nativeCatalog, nativeTools, onFieldChange]
   )
 
   const handleCommunicationOperationToggle = useCallback(
@@ -439,7 +447,9 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
         return items
       }
 
-      return items.filter((item) => matchesSearch(searchQuery, [item.label]))
+      return items.filter((item) =>
+        matchesSearch(searchQuery, item.searchValues ?? [item.label])
+      )
     },
     [searchQuery]
   )
@@ -450,7 +460,9 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
         return true
       }
 
-      return items.some((item) => matchesSearch(searchQuery, [item.label]))
+      return items.some((item) =>
+        matchesSearch(searchQuery, item.searchValues ?? [item.label])
+      )
     },
     [searchQuery]
   )
@@ -476,12 +488,12 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
       }
     })
 
-    const nativeAllItems: ToolListItem[] = availableTools.map((tool) => ({
+    const nativeAllItems: ToolListItem[] = nativeCatalog.map((tool) => ({
       id: tool.id,
       label: tool.name,
     }))
 
-    if (availableTools.length > 0 && isSectionVisible(nativeAllItems)) {
+    if (nativeCatalog.length > 0 && isSectionVisible(nativeAllItems)) {
       ids.add('native')
     }
 
@@ -489,6 +501,7 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
       (server) => ({
         id: server.id,
         label: server.name,
+        searchValues: getMcpServerSearchValues(server),
       })
     )
 
@@ -500,7 +513,7 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
   }, [
     searchQuery,
     sortedDomains,
-    availableTools,
+    nativeCatalog,
     availableMcpServers,
     isSectionVisible,
   ])
@@ -655,28 +668,28 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
     })
     .filter(Boolean)
 
-  const nativeAllItems: ToolListItem[] = availableTools.map((tool) => ({
+  const nativeAllItems: ToolListItem[] = nativeCatalog.map((tool) => ({
     id: tool.id,
     label: tool.name,
-    tags: getNativeToolTags(tool),
+    tags: getNativeToolTags(tool, t('file_tool')),
     toolType: tool.type,
     disabled: tool.enabled === false,
   }))
   const nativeSelectedItems: ToolListItem[] = nativeTools
     .map((nativeTool) => {
-      const tool = availableTools.find((item) => item.id === nativeTool.id)
+      const tool = nativeCatalog.find((item) => item.id === nativeTool.id)
       return {
         id: nativeTool.id,
         label: tool?.name ?? nativeTool.id,
-        tags: tool ? getNativeToolTags(tool) : undefined,
+        tags: tool ? getNativeToolTags(tool, t('file_tool')) : undefined,
         toolType: tool?.type,
       }
     })
     .filter((item) => item.id)
-  const nativeTags = getNativeToolSectionTags(availableTools)
+  const nativeTags = getNativeToolSectionTags(nativeCatalog, 3, t('file_tool'))
   const nativeVisibleItems = filterItems(nativeAllItems)
   const showNativeSection =
-    availableTools.length > 0 && isSectionVisible(nativeAllItems)
+    nativeCatalog.length > 0 && isSectionVisible(nativeAllItems)
 
   const getDynamicMcpTags = useCallback(
     (managed: ManagedMcpServer | undefined): string[] | undefined => {
@@ -716,6 +729,7 @@ export const ToolsSection: React.FC<ToolsSectionProps> = ({
     label: server.name,
     disabled: server.enabled === false,
     tags: getDynamicMcpTags(server),
+    searchValues: getMcpServerSearchValues(server),
   }))
   const customSelectedItems: ToolListItem[] = mcpServers
     .filter(isManagedAgentMcp)

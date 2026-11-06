@@ -11,7 +11,9 @@ import {
   nextAgentId,
   nextAgentIdFromQuery,
   isTranscriptNearBottom,
+  nextChatCardHeight,
   nextSessionId,
+  shouldRestoreComposerDraft,
   nextThinkingText,
   nextToolActivityText,
   shouldShowAssistantActivity,
@@ -19,6 +21,18 @@ import {
   withApiEndpointTrigger,
   withEmployeeRequiredScope,
 } from './agentChatHelpers'
+
+describe('shouldRestoreComposerDraft', () => {
+  it('puts the prompt back when upload fails or the user stops', () => {
+    expect(shouldRestoreComposerDraft('error')).toBe(true)
+    expect(shouldRestoreComposerDraft('aborted')).toBe(true)
+  })
+
+  it('leaves the composer empty after a finished send', () => {
+    expect(shouldRestoreComposerDraft('ok')).toBe(false)
+    expect(shouldRestoreComposerDraft('ignored')).toBe(false)
+  })
+})
 
 describe('nextSessionId', () => {
   it('keeps the stored session across sends', () => {
@@ -31,6 +45,14 @@ describe('nextSessionId', () => {
 
   it('clears the session when the conversation resets', () => {
     expect(nextSessionId(true, 'sess-1')).toBeNull()
+  })
+})
+
+describe('nextChatCardHeight', () => {
+  it('grows the card with the drag and stays inside the limits', () => {
+    expect(nextChatCardHeight(640, 120, 480, 900)).toBe(760)
+    expect(nextChatCardHeight(640, -400, 480, 900)).toBe(480)
+    expect(nextChatCardHeight(640, 800, 480, 900)).toBe(900)
   })
 })
 
@@ -67,15 +89,27 @@ describe('nextToolActivityText', () => {
 
 describe('shouldShowAssistantActivity', () => {
   it('keeps the activity line after the assistant already has text', () => {
-    expect(shouldShowAssistantActivity(true, true, true, true)).toBe(true)
+    expect(shouldShowAssistantActivity(true, true, true, true, false)).toBe(
+      true
+    )
   })
 
   it('hides the activity line once text is showing and the tool has ended', () => {
-    expect(shouldShowAssistantActivity(true, true, true, false)).toBe(false)
+    expect(shouldShowAssistantActivity(true, true, true, false, false)).toBe(
+      false
+    )
   })
 
   it('shows a status while the assistant bubble is still empty', () => {
-    expect(shouldShowAssistantActivity(true, true, false, false)).toBe(true)
+    expect(shouldShowAssistantActivity(true, true, false, false, false)).toBe(
+      true
+    )
+  })
+
+  it('hides thinking while an image placeholder is visible', () => {
+    expect(shouldShowAssistantActivity(true, true, false, true, true)).toBe(
+      false
+    )
   })
 })
 

@@ -2,8 +2,10 @@ import { describe, it, expect } from 'vitest'
 import {
   formatDomainSectionTitle,
   getDomainSectionTags,
+  FILE_GENERATOR_TOOL_ID,
   getNativeToolSectionTags,
   getNativeToolTags,
+  withBuiltinFileTool,
   getPredefinedMcpForDomain,
   getSelectedDomainTools,
   getSelectedDynamicMcpTools,
@@ -325,6 +327,27 @@ describe('agentToolsHelpers', () => {
     expect(getNativeToolTags({ type: 'slack' })).toEqual(['Slack'])
     expect(getNativeToolTags({ type: 'teams' })).toEqual(['Microsoft Teams'])
     expect(getNativeToolTags({ type: 'rag_custom' })).toEqual(['RAG Tools'])
-    expect(getNativeToolTags({ type: 'file' })).toEqual(['File'])
+    expect(getNativeToolTags({ type: 'file' }, 'Datei')).toEqual(['Datei'])
+    expect(getNativeToolTags({ type: 'file' })).toEqual([])
+  })
+
+  it('withBuiltinFileTool adds one file choice and hides created file tools', () => {
+    const tools = withBuiltinFileTool(
+      [
+        { id: 'slack-1', name: 'Slack', type: 'slack', config: {} },
+        { id: 'files', name: 'Files', type: 'file', config: {} },
+      ],
+      'File'
+    )
+
+    expect(tools.map((tool) => tool.id)).toEqual([
+      'slack-1',
+      FILE_GENERATOR_TOOL_ID,
+    ])
+    expect(tools[1]).toMatchObject({
+      type: 'file',
+      name: 'File',
+      enabled: true,
+    })
   })
 })

@@ -140,6 +140,22 @@ export class ApiClient {
    * GET binary response (e.g. media download). Parses JSON/text only for error responses.
    */
   async getArrayBuffer(path: string, init?: RequestInit): Promise<ArrayBuffer> {
+    return this.readBoundedArrayBuffer(path, MAX_ZIP_DOWNLOAD_BYTES, init)
+  }
+
+  async getBoundedArrayBuffer(
+    path: string,
+    maxBytes: number,
+    init?: RequestInit
+  ): Promise<ArrayBuffer> {
+    return this.readBoundedArrayBuffer(path, maxBytes, init)
+  }
+
+  private async readBoundedArrayBuffer(
+    path: string,
+    maxBytes: number,
+    init?: RequestInit
+  ): Promise<ArrayBuffer> {
     const { headers: extraHeaders, ...restInit } = init || {}
     const headers = new Headers(
       this.buildHeaders(extraHeaders as Record<string, string> | undefined)
@@ -158,25 +174,66 @@ export class ApiClient {
     const contentLength = response.headers.get('content-length')
     if (contentLength) {
       const declaredSize = Number.parseInt(contentLength, 10)
-      if (
-        Number.isFinite(declaredSize) &&
-        declaredSize > MAX_ZIP_DOWNLOAD_BYTES
-      ) {
+      if (Number.isFinite(declaredSize) && declaredSize > maxBytes) {
+        await response.body?.cancel()
         throw new ApiClientError(
-          `Response exceeds maximum size of ${MAX_ZIP_DOWNLOAD_BYTES} bytes`,
+          `Response exceeds maximum size of ${maxBytes} bytes`,
           response.status
         )
       }
     }
 
-    const buffer = await response.arrayBuffer()
-    if (buffer.byteLength > MAX_ZIP_DOWNLOAD_BYTES) {
-      throw new ApiClientError(
-        `Response exceeds maximum size of ${MAX_ZIP_DOWNLOAD_BYTES} bytes`,
-        response.status
-      )
+    return this.readResponseBody(response, maxBytes)
+  }
+
+  private async readResponseBody(
+    response: Response,
+    maxBytes: number
+  ): Promise<ArrayBuffer> {
+    const reader = response.body?.getReader()
+    if (!reader) {
+      const buffer = await response.arrayBuffer()
+      if (buffer.byteLength > maxBytes) {
+        throw new ApiClientError(
+          `Response exceeds maximum size of ${maxBytes} bytes`,
+          response.status
+        )
+      }
+      return buffer
     }
-    return buffer
+
+    const chunks: Uint8Array[] = []
+    let received = 0
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) {
+          break
+        }
+        if (!value) {
+          continue
+        }
+        received += value.byteLength
+        if (received > maxBytes) {
+          await reader.cancel()
+          throw new ApiClientError(
+            `Response exceeds maximum size of ${maxBytes} bytes`,
+            response.status
+          )
+        }
+        chunks.push(value)
+      }
+    } finally {
+      reader.releaseLock()
+    }
+
+    const buffer = new Uint8Array(received)
+    let offset = 0
+    for (const chunk of chunks) {
+      buffer.set(chunk, offset)
+      offset += chunk.byteLength
+    }
+    return buffer.buffer
   }
 
   async get<T>(path: string, init?: RequestInit): Promise<T> {
@@ -214,6 +271,24 @@ export class ApiClient {
       ),
       body: body !== undefined ? JSON.stringify(body) : undefined,
       ...init,
+    })
+    return this.handleResponse<T>(response)
+  }
+
+  async postForm<T>(
+    path: string,
+    body: FormData,
+    init?: RequestInit
+  ): Promise<T> {
+    const headers = this.buildHeaders(
+      init?.headers as Record<string, string> | undefined
+    ) as Record<string, string>
+    delete headers['Content-Type']
+    const response = await fetch(this.buildUrl(path), {
+      method: 'POST',
+      headers,
+      body,
+      signal: init?.signal,
     })
     return this.handleResponse<T>(response)
   }

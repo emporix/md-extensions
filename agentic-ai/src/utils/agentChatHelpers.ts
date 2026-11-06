@@ -28,6 +28,10 @@ export type ChatInvokeGate = 'employee_scope' | 'api_trigger'
 
 const normalizeToken = (value: string): string => value.trim().toLowerCase()
 
+export const shouldRestoreComposerDraft = (
+  result: 'ok' | 'error' | 'aborted' | 'ignored'
+): boolean => result === 'error' || result === 'aborted'
+
 export const nextSessionId = (
   reset: boolean,
   stored: string | null
@@ -41,6 +45,16 @@ export const nextToolActivityText = (
 }
 
 export const TRANSCRIPT_FOLLOW_THRESHOLD_PX = 80
+export const CHAT_TRANSCRIPT_MIN_HEIGHT = 200
+export const CHAT_CARD_VIEWPORT_GAP = 16
+
+export const nextChatCardHeight = (
+  startHeight: number,
+  deltaY: number,
+  minHeight: number,
+  maxHeight: number
+): number =>
+  Math.round(Math.min(maxHeight, Math.max(minHeight, startHeight + deltaY)))
 
 export const isTranscriptNearBottom = (
   scrollTop: number,
@@ -53,8 +67,13 @@ export const shouldShowAssistantActivity = (
   streaming: boolean,
   isActiveAssistant: boolean,
   hasText: boolean,
-  hasActivity: boolean
-): boolean => streaming && isActiveAssistant && (!hasText || hasActivity)
+  hasActivity: boolean,
+  hasPendingImage: boolean
+): boolean =>
+  streaming &&
+  isActiveAssistant &&
+  !hasPendingImage &&
+  (!hasText || hasActivity)
 
 export const shouldShowRecommendationEmpty = (
   helperPresent: boolean,

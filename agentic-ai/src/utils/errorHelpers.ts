@@ -155,6 +155,11 @@ export const isChatBadRequest = (err: unknown): boolean => {
   return err instanceof Error && STREAM_ERROR_CODE_400.test(err.message)
 }
 
+export const shouldFallbackToSyncChat = (
+  err: unknown,
+  sawStreamOutput: boolean
+): boolean => !sawStreamOutput && !isAbortError(err) && isChatBadRequest(err)
+
 type EntityLoadErrorKeys = {
   readonly notFoundKey: string
   readonly errorKey: string

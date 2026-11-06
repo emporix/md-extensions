@@ -44,6 +44,45 @@ describe('sseHelpers', () => {
     expect(frames).toEqual(['token:{"content":"Hi"}'])
   })
 
+  it('parses a pretty-printed multiline artifact event', async () => {
+    const events = []
+    const body = [
+      'event:artifact',
+      'data:{',
+      'data:  "artifact_id" : "asset-1",',
+      'data:  "kind" : "image",',
+      'data:  "filename" : "download.png",',
+      'data:  "mime_type" : "image/png",',
+      'data:  "size" : 1151106,',
+      'data:  "status" : "ready",',
+      'data:  "generation_id" : "ig_123"',
+      'data:}',
+      '',
+      '',
+    ].join('\n')
+
+    for await (const frame of readSseStream(streamFromChunks([body]))) {
+      const event = mapAgentChatStreamEvent(frame)
+      if (event) {
+        events.push(event)
+      }
+    }
+
+    expect(events).toEqual([
+      {
+        type: 'artifact',
+        artifactId: 'asset-1',
+        kind: 'image',
+        filename: 'download.png',
+        mimeType: 'image/png',
+        size: 1151106,
+        status: 'ready',
+        errorCode: undefined,
+        generationId: 'ig_123',
+      },
+    ])
+  })
+
   it('maps token, error, and done events', () => {
     expect(
       mapAgentChatStreamEvent({
@@ -121,6 +160,53 @@ describe('sseHelpers', () => {
       mapAgentChatStreamEvent({
         event: 'tool_result',
         data: '{"content":"hidden"}',
+      })
+    ).toBeNull()
+  })
+
+  it('maps a ready artifact and drops a malformed one', () => {
+    expect(
+      mapAgentChatStreamEvent({
+        event: 'artifact',
+        data: '{"artifact_id":"asset-1","kind":"image","filename":"forest.png","mime_type":"image/png","size":12,"status":"ready","base64":"nope"}',
+      })
+    ).toEqual({
+      type: 'artifact',
+      artifactId: 'asset-1',
+      kind: 'image',
+      filename: 'forest.png',
+      mimeType: 'image/png',
+      size: 12,
+      status: 'ready',
+      errorCode: undefined,
+      generationId: undefined,
+    })
+
+    expect(
+      mapAgentChatStreamEvent({
+        event: 'artifact',
+        data: '{"kind":"html","filename":"x.html","mime_type":"text/html","size":1,"status":"ready"}',
+      })
+    ).toBeNull()
+  })
+
+  it('maps a pending image and drops a pending file', () => {
+    expect(
+      mapAgentChatStreamEvent({
+        event: 'artifact',
+        data: '{"kind":"image","filename":"image.png","mime_type":"image/png","size":0,"status":"pending","generation_id":"ig_forest","base64":"nope"}',
+      })
+    ).toMatchObject({
+      type: 'artifact',
+      status: 'pending',
+      generationId: 'ig_forest',
+      artifactId: undefined,
+    })
+
+    expect(
+      mapAgentChatStreamEvent({
+        event: 'artifact',
+        data: '{"kind":"file","filename":"notes.pdf","mime_type":"application/pdf","size":0,"status":"pending","generation_id":"ig_forest"}',
       })
     ).toBeNull()
   })

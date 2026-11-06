@@ -27,6 +27,20 @@ export const getEnabledDynamicToolNames = (tools?: McpTool[]): string[] =>
     .filter((tool) => tool.enabled !== false && Boolean(tool.name))
     .map((tool) => tool.name)
 
+export const getMcpServerSearchValues = (
+  server: Pick<McpServer, 'name' | 'tools'>
+): string[] => {
+  const toolValues = (server.tools ?? []).flatMap((tool) => {
+    if (tool.enabled === false) {
+      return []
+    }
+    return [tool.name, tool.description ?? ''].filter(
+      (value) => value.trim().length > 0
+    )
+  })
+  return [server.name, ...toolValues]
+}
+
 export const createEmptyMcpTool = (): McpTool => ({
   name: '',
   description: '',
