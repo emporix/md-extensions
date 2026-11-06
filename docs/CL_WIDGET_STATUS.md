@@ -48,6 +48,7 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/datatable` | `in-cl` | `DataTable` | 1.10.0 | 19 | `rowActions` prop, not an actions column. Filter APIs + `FilterMatchMode` since 2.0.0. `checkboxSelectionOnly` (only the row checkbox selects) + `selectionPageOnly` (header checkbox covers the current page) since 2.14.0. A `frozen` column (`alignFrozen: 'right'` for the right edge) stays in view while the table scrolls sideways since 2.16.0. |
 | `primereact/checkbox` | `in-cl` | `Checkbox` | 1.10.0 | 14 | **No** `label` prop — render `<label htmlFor>`. |
 | `primereact/progressspinner` | `in-cl` | `ProgressSpinner` | 2.0.0 | 11+ | Also imported from barrel. |
+| `primereact/divider` | `in-cl` | `Divider` | **2.19.0** | 3 | Pattern A (no Prime runtime). Same props as Prime (`layout`, `align`, `type`, `children`); styled like MD lara `.p-divider`. Form section separators — coupons Rules tab (COP-7188). |
 | `primereact/tooltip` | `in-cl` | `Tooltip` | 1.8.0 | 11 | Children mode or selector mode. |
 | `primereact/radiobutton` | `in-cl` | `RadioButton` | 1.10.0 | 8 | |
 | `primereact/message` | `in-cl` | `Message` | 1.10.0 | 7 | |
@@ -70,7 +71,6 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/tag` | `missing` | — | — | 6 | List status/label chips. Do not silently swap to `StatusBadge` without checking API. |
 | `primereact/treetable` | `missing` | — | — | 4 | `EmporixTreeTable`, categories. |
 | `primereact/inputmask` | `missing` | — | — | 4 | Documented substitute: `InputText` `type="time"` for `"99:99"` masks. Promote for other masks. |
-| `primereact/divider` | `missing` | — | — | 3 | Form section separators. |
 | `primereact/sidebar` | `missing` | — | — | 1 | `TableExtensions.tsx`. Documented substitute: local `SidePanel` (right drawer, 20rem) + CL `InputSwitch`. Copy from `returns` or `brands` `components/shared/SidePanel`. Do not fall back to CL `Dialog` + `Checkbox`. |
 | `primereact/paginator` | `missing` | — | — | 1 | Standalone (`EntityChangelogTab`). Table pagination is already on CL `DataTable`. `customer-groups` used custom control + CL `Dropdown`. |
 | `primereact/panel` | `missing` | — | — | 1 | `ProductPricesPanelForm.tsx`. Documented substitute (products, COP-6993): CL `SectionBox` with a custom collapsible header. |

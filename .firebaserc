@@ -38,6 +38,9 @@
         ],
         "emporix-status-codes": [
           "emporix-status-codes"
+        ],
+        "emporix-coupons": [
+          "emporix-coupons"
         ]
       }
     },
@@ -78,6 +81,9 @@
         ],
         "emporix-status-codes-stage": [
           "emporix-status-codes-stage"
+        ],
+        "emporix-coupons-stage": [
+          "emporix-coupons-stage"
         ]
       }
     },
@@ -118,6 +124,9 @@
         ],
         "emporix-status-codes-develop": [
           "emporix-status-codes-develop"
+        ],
+        "emporix-coupons-develop": [
+          "emporix-coupons-develop"
         ]
       }
     }
