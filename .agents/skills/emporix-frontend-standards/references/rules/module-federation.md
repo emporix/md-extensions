@@ -61,6 +61,15 @@ These rules (and the port rule above) apply to new remotes and to remotes a task
 - Use `HashRouter` inside the remote — the host owns `BrowserRouter`.
 - Route paths are hash-relative (`/`, `/users/:id`), kept in a constants module. Never use host absolute paths such as `/administration/...`.
 
+### Hosting and CI
+
+- A remote deployed to Firebase Hosting has one hosting entry per environment in `firebase.json` (`target`, `public` inside the remote folder), each target mapped to a site in `.firebaserc` `targets`, and deploy workflows that name those targets.
+- The sites must exist in their Firebase projects, and the workflows' service-account secrets must be available to the repository, **before the first push of a new remote**. The PR preview workflow deploys to a channel of the develop site and fails when the site is missing. Adding the target to `.firebaserc` does not create the site.
+- Check with `$SKILLS_ROOT/emporix-frontend-standards/scripts/ensure-firebase-hosting.sh --changed` from the repository root (`--remote <folder>` for one remote) before every push that opens or updates a pull request (`SKILL.md` § Before a pull request). Exit `3` lists `SITE … missing`, `SECRET … missing`, or `UNMAPPED …`.
+- A missing site: ask the user, then re-run with `--create`. Creating a site writes to a shared Firebase project and needs the user's Firebase login with access to it. Never create one unasked, and never guess another site name to make the check pass.
+- A missing secret or an unmapped target: stop and tell the user. Secrets are set by a repository or organization admin; the agent never creates them.
+- Never commit `.firebase/` (the CLI deploy cache).
+
 ### Styling and widgets
 
 - Use SCSS Modules for feature UI so host global CSS does not override the remote and remote styles do not leak into the host. Keep any global stylesheet to a minimal shell.

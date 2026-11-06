@@ -46,6 +46,23 @@ Read only the rules listed in `standards.frontend.rules` in `ai-setup.json` (`FR
 | `primereact` | `src/**/*.tsx` | `primereact` |
 | `module-federation` | `**/RemoteComponent.tsx`, `**/vite.config.ts`, `**/main.tsx` | `@originjs/vite-plugin-federation` |
 
+## Before a pull request
+
+When the repository has a `firebase.json` and `standards.frontend.rules` lists `module-federation`, run this check before you commit and push a branch that opens or updates a pull request. Run it on the first push and on later pushes, whichever workflow or tool does the pushing:
+
+```sh
+sh "$SKILLS_ROOT/emporix-frontend-standards/scripts/ensure-firebase-hosting.sh" --changed
+```
+
+| Result | Do |
+|---|---|
+| Exit `0` | Continue. |
+| Exit `3`, `SITE … missing` | Ask the user once to create the listed sites. Yes → run again with `--create`. No → do not push; the PR preview deploy would fail. |
+| Exit `3`, `SECRET … missing` or `UNMAPPED …` | Do not push. Name them to the user; a repository or organization admin sets secrets, and the agent never does. |
+| Exit `2` | Do not push. Show the message (no `firebase` CLI, not logged in, or no access to the project). |
+
+Background and the rest of the hosting rules: `module-federation` § Hosting and CI.
+
 ## Library contributions
 
 When `@emporix/api-calls` lacks an endpoint method or `@emporix/component-library` lacks a component, follow `references/library/workflow.md` with `api-calls` or `component-library`. The `api-data` and `emporix-component-library` rules send you there. Read the workflow and its playbooks only when that happens — they are not rules and are not listed in `standards.frontend.rules`.

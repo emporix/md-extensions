@@ -115,6 +115,7 @@ Rules observed in those files (not inferred from framework habit):
 - Vitest `vi` only, never `jest.*` — `md-extension-port-validation.md`
 - No rule copies or `frontend-ai-rules` sync inside a remote; strip them from a fresh `md-module-template` clone — `md-extension-migration.md` § Agent rules, `md-extension-port-validation.md`
 - Generated files, do not edit: `<remote>/dist/` (`.gitignore`)
+- Vendored, do not edit in place: `.claude/skills/emporix-*` (update from `emporix/emporix-ai-sdlc-skills` and refresh `skills-lock.json`) — `skills-lock.json`
 
 ## App
 
@@ -131,6 +132,7 @@ Rules observed in those files (not inferred from framework habit):
 | `docs/` | Migration playbook, migrated-modules registry, Tier 1 copy inventory, component-library widget status | `MODULE_MIGRATION_PLAYBOOK.md`, `MIGRATED_MODULES.md` |
 | `.github/workflows/` | Firebase preview, dev + stage, and prod workflows per remote | `{remote}-firebase-*.yaml` |
 | `CLAUDE.md`, `.claude/`, `.cursor/`, `.github/instructions/`, `.github/skills/` | Agent index for Claude Code (`@AGENTS.md`), repository rules, extraction skill, Cursor hooks | `.cursor/README.md` |
+| `.claude/skills/emporix-*`, `skills-lock.json` | Emporix SDLC skills vendored from `emporix/emporix-ai-sdlc-skills`, pinned by hash | `skills-lock.json` |
 
 ## Task routing
 
