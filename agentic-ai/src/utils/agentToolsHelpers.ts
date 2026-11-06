@@ -38,9 +38,13 @@ export const getDomainSectionTags = (domain: McpKey): string[] => [
   ...MCP_DOMAIN_TAGS[domain],
 ]
 
+const FILE_GENERATOR_RUNTIME_NAMES = [
+  'create_downloadable_file',
+  'inspect_attached_file',
+] as const
+
 export const getNativeToolTags = (
-  tool: Pick<Tool, 'type'>,
-  fileLabel?: string
+  tool: Pick<Tool, 'type'> & { readonly id?: string }
 ): string[] => {
   if (tool.type === 'slack') {
     return ['Slack']
@@ -51,8 +55,8 @@ export const getNativeToolTags = (
   if (tool.type === 'rag_emporix' || tool.type === 'rag_custom') {
     return ['RAG Tools']
   }
-  if (tool.type === 'file') {
-    return fileLabel ? [fileLabel] : []
+  if (tool.type === 'file' || tool.id === FILE_GENERATOR_TOOL_ID) {
+    return [FILE_GENERATOR_TOOL_ID]
   }
   if (tool.type) {
     return [formatTagLabel(tool.type.replace(/_/g, '-'))]
@@ -60,15 +64,24 @@ export const getNativeToolTags = (
   return []
 }
 
+export const getNativeToolSearchValues = (
+  tool: Pick<Tool, 'id' | 'name' | 'type'>
+): string[] => {
+  const values = [tool.id, tool.name, ...getNativeToolTags(tool)]
+  if (tool.type === 'file' || tool.id === FILE_GENERATOR_TOOL_ID) {
+    values.push(FILE_GENERATOR_TOOL_ID, ...FILE_GENERATOR_RUNTIME_NAMES)
+  }
+  return [...new Set(values.filter((value) => value.trim().length > 0))]
+}
+
 export const getNativeToolSectionTags = (
   tools: Tool[],
-  maxTags = 3,
-  fileLabel?: string
+  maxTags = 3
 ): string[] => {
   const tags = new Set<string>()
 
   tools.forEach((tool) => {
-    getNativeToolTags(tool, fileLabel).forEach((tag) => tags.add(tag))
+    getNativeToolTags(tool).forEach((tag) => tags.add(tag))
   })
 
   return [...tags].sort((a, b) => a.localeCompare(b)).slice(0, maxTags)

@@ -138,6 +138,15 @@
   color: var(--color-danger);
 }
 
+.agent-chat-error-details {
+  margin: var(--space-sm) 0 0;
+}
+
+.agent-chat-error-details-link {
+  color: inherit;
+  font-weight: var(--font-weight-semibold);
+}
+
 .agent-chat-artifacts {
   display: flex;
   flex-direction: column;
@@ -358,6 +367,7 @@
 
 .agent-chat-composer {
   position: relative;
+  overflow: hidden;
   border: 2px solid var(--color-chat-line);
   border-radius: var(--radius-md);
   background: var(--bg-secondary);
@@ -377,16 +387,15 @@
   --color-primary: var(--color-brand-primary);
 }
 
-.agent-chat-input textarea {
+.agent-chat-composer .agent-chat-input textarea {
   width: 100%;
   min-height: var(--chat-composer-min-height);
   max-height: var(--chat-composer-max-height);
   resize: none;
   box-sizing: border-box;
   padding: var(--space-lg);
-  padding-bottom: calc(var(--chat-attach-size) + var(--space-lg));
   border: 0;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   color: var(--text-heading);
   background: transparent;
   box-shadow: none;
@@ -395,15 +404,15 @@
   line-height: var(--line-height-base);
 }
 
-.agent-chat-input textarea::placeholder {
+.agent-chat-composer .agent-chat-input textarea::placeholder {
   color: var(--text-muted);
 }
 
-.agent-chat-input textarea:focus {
+.agent-chat-composer .agent-chat-input textarea:focus {
   outline: none;
 }
 
-.agent-chat-input textarea:disabled {
+.agent-chat-composer .agent-chat-input textarea:disabled {
   color: var(--text-disabled);
   background: transparent;
 }
@@ -421,18 +430,24 @@
 }
 
 .agent-chat-attachments {
-  position: absolute;
-  left: var(--space-sm);
-  right: var(--space-sm);
-  bottom: var(--space-sm);
+  position: relative;
   z-index: 1;
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
   gap: var(--space-xs);
-  height: var(--chat-attach-size);
+  box-sizing: border-box;
+  width: 100%;
+  height: calc(var(--chat-attach-size) + var(--space-sm));
+  margin-top: var(--space-sm);
+  padding: 0 var(--space-sm) var(--space-sm);
   overflow-x: auto;
   overflow-y: hidden;
+  background: var(--bg-secondary);
+}
+
+.agent-chat-composer-drop .agent-chat-attachments {
+  background: var(--color-chat-hover);
 }
 
 .agent-chat-attach-btn {

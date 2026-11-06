@@ -1170,6 +1170,8 @@ const TRANSLATIONS_DE = {
   chat_stop: 'Stopp',
   chat_welcome: 'Willkommen! Wobei kann ich Ihnen helfen?',
   chat_error: 'Die Antwort konnte nicht geladen werden.',
+  chat_error_details: 'Weitere Details finden Sie',
+  chat_error_details_here: 'hier',
   chat_attach_files: 'Dateien anhängen',
   chat_drop_files: 'Dateien zum Anhängen ablegen',
   chat_remove_image: 'Bild entfernen',

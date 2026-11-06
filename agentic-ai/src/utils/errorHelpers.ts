@@ -49,6 +49,34 @@ const stripSseDataPrefix = (content: string): string => {
   return trimmed
 }
 
+const MESSAGE_FIELD =
+  /['"]message['"]\s*:\s*(['"])([\s\S]*?)\1(?=\s*,\s*['"](?:type|param|code|details|error|status)['"]|\s*})/g
+
+const unescapeMessageLiteral = (value: string): string =>
+  value.replace(/\\(['"\\nrt])/g, (_, ch: string) => {
+    if (ch === 'n') {
+      return '\n'
+    }
+    if (ch === 'r') {
+      return '\r'
+    }
+    if (ch === 't') {
+      return '\t'
+    }
+    return ch
+  })
+
+const extractEmbeddedMessages = (source: string): string[] => {
+  const found: string[] = []
+  for (const match of source.matchAll(MESSAGE_FIELD)) {
+    const value = unescapeMessageLiteral(match[2] ?? '').trim()
+    if (value) {
+      found.push(value)
+    }
+  }
+  return found
+}
+
 const collectDetailMessages = (details: unknown): string[] => {
   if (!Array.isArray(details)) {
     return []
@@ -68,18 +96,42 @@ const collectDetailMessages = (details: unknown): string[] => {
     .filter(Boolean)
 }
 
+const messageFromUnknownJson = (source: string): string | null => {
+  const jsonStart = source.indexOf('{')
+  if (jsonStart < 0) {
+    return null
+  }
+
+  try {
+    return formatErrorPayloadMessage(JSON.parse(source.slice(jsonStart)))
+  } catch {
+    return null
+  }
+}
+
 export const formatErrorPayloadMessage = (payload: unknown): string | null => {
   if (typeof payload === 'string') {
     const normalized = stripSseDataPrefix(payload)
-    if (!normalized.startsWith('{') && !normalized.startsWith('[')) {
-      return payload.trim() || null
+    if (normalized.startsWith('{') || normalized.startsWith('[')) {
+      try {
+        return formatErrorPayloadMessage(JSON.parse(normalized))
+      } catch {
+        const embedded = extractEmbeddedMessages(normalized)
+        return embedded[embedded.length - 1] ?? (payload.trim() || null)
+      }
     }
 
-    try {
-      return formatErrorPayloadMessage(JSON.parse(normalized))
-    } catch {
-      return payload.trim() || null
+    const parsed = messageFromUnknownJson(normalized)
+    if (parsed) {
+      return parsed
     }
+
+    const embedded = extractEmbeddedMessages(normalized)
+    if (embedded.length > 0) {
+      return embedded[embedded.length - 1] ?? null
+    }
+
+    return payload.trim() || null
   }
 
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
@@ -87,6 +139,17 @@ export const formatErrorPayloadMessage = (payload: unknown): string | null => {
   }
 
   const record = payload as ErrorPayloadLike
+  if (
+    record.error &&
+    typeof record.error === 'object' &&
+    !Array.isArray(record.error)
+  ) {
+    const nested = formatErrorPayloadMessage(record.error)
+    if (nested) {
+      return nested
+    }
+  }
+
   const primaryCandidates = [
     record.message,
     record.status,

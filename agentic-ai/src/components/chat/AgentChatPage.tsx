@@ -10,7 +10,7 @@ import {
   type WheelEvent,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import {
   ConfirmBox,
   Dropdown,
@@ -51,6 +51,7 @@ import {
   CHAT_AGENT_QUERY_PARAM,
   CHAT_CARD_VIEWPORT_GAP,
   CHAT_TRANSCRIPT_MIN_HEIGHT,
+  chatErrorLogsPath,
   initialAgentIdFromQuery,
   isTranscriptNearBottom,
   nextChatCardHeight,
@@ -127,7 +128,8 @@ const AgentChatPage = () => {
   })
   const { scopes, loading: scopesLoading } = useMyIamScopes()
   const canManageAgents = hasAgentManageScope(scopes.map((scope) => scope.id))
-  const { messages, status, activity, send, reset, stop } = useAgentChat()
+  const { messages, status, activity, sessionId, send, reset, stop } =
+    useAgentChat()
   const [searchParams, setSearchParams] = useSearchParams()
   const requestedAgentId = searchParams.get(CHAT_AGENT_QUERY_PARAM)
   const [agentId, setAgentId] = useState<string | null>(() =>
@@ -726,7 +728,22 @@ const AgentChatPage = () => {
                     )}
                   </span>
                 ) : null}
-                {message.role === 'assistant' ? null : message.text}
+                {message.role === 'error' ? (
+                  <>
+                    <span>{message.text}</span>
+                    <p className="agent-chat-error-details">
+                      {t('chat_error_details')}{' '}
+                      <Link
+                        to={chatErrorLogsPath(sessionId, agentId)}
+                        className="agent-chat-error-details-link"
+                      >
+                        {t('chat_error_details_here')}
+                      </Link>
+                    </p>
+                  </>
+                ) : message.role === 'assistant' ? null : (
+                  message.text
+                )}
                 {showStatus ? (
                   <p className="agent-chat-activity" aria-live="polite">
                     <i className="pi pi-spin pi-spinner" aria-hidden="true" />

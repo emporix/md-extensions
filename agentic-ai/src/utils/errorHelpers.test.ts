@@ -63,6 +63,25 @@ describe('formatErrorPayloadMessage', () => {
     ).toBe('Validation failed: Field is required')
   })
 
+  it('reads a provider message out of a stream error payload', () => {
+    expect(
+      formatErrorPayloadMessage(
+        "Stream error: Error code: 404 - {'error': {'message': 'The model 'babbage-002' does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'param': None, 'code': 'model_not_found'}}"
+      )
+    ).toBe(
+      "The model 'babbage-002' does not exist or you do not have access to it."
+    )
+  })
+
+  it('prefers a nested error message over the wrapper text', () => {
+    expect(
+      formatErrorPayloadMessage({
+        message: 'Stream error',
+        error: { message: 'Model missing', type: 'invalid_request_error' },
+      })
+    ).toBe('Model missing')
+  })
+
   it('ignores disableable and force detail types', () => {
     expect(
       formatErrorPayloadMessage({

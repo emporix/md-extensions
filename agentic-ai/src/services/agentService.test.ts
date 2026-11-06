@@ -284,6 +284,31 @@ describe('chatWithAgent', () => {
       chatWithAgent(appState, 'agent-1', 'build filter')
     ).rejects.toThrow('Agent execution failed')
   })
+
+  it('keeps the session id when the stream fails before done', async () => {
+    const onSessionId = vi.fn()
+    mockPostSse.mockReturnValue(
+      createStream(
+        {
+          type: 'error',
+          message: 'Agent execution failed',
+          code: 'INTERNAL_ERROR',
+        },
+        {
+          type: 'done',
+          agentId: 'agent-1',
+          agentType: 'generic',
+          sessionId: 'sess-err',
+          toolsUsed: [],
+        }
+      )
+    )
+
+    await expect(
+      chatWithAgent(appState, 'agent-1', 'build filter', { onSessionId })
+    ).rejects.toThrow('Agent execution failed')
+    expect(onSessionId).toHaveBeenCalledWith('sess-err')
+  })
 })
 
 describe('chatWithAgentOnce', () => {
