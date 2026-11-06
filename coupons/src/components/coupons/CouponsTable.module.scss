@@ -1,0 +1,24 @@
+.root {
+  width: 100%;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+// MD `components/NumericColumn` (12px) and the code column (1rem) end padding.
+.numericCell {
+  padding-right: 12px !important;
+}
+
+.codeCell {
+  padding-right: 1rem !important;
+}
+
+.actionsCell {
+  width: 120px;
+}

@@ -1,0 +1,206 @@
+@use '../../styles/palette' as *;
+
+// Layout — MD used `grid` / `col-6` / `col-12` helpers from the host.
+.formGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.innerGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+}
+
+.half {
+  flex: 1 1 calc(50% - 0.5rem);
+  min-width: 0;
+}
+
+.full {
+  flex: 1 1 100%;
+  width: 100%;
+}
+
+.fieldGap {
+  margin-bottom: 1rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.error {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--color-danger, #ff0000);
+  font-size: 0.75rem;
+}
+
+// Percent input with the MD `p-inputgroup-addon` "%" suffix.
+.inputGroup {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.inputGroupInput {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.inputGroupAddon {
+  display: flex;
+  align-items: center;
+  padding: 0 0.75rem;
+  border: 1px solid var(--color-border-medium, #{$grey-3});
+  border-left: 0;
+  border-radius: 0 var(--border-radius-sm, 4px) var(--border-radius-sm, 4px) 0;
+  background: var(--color-bg-secondary, #f8f9fa);
+  color: $grey-5;
+}
+
+// Rules tab section titles (MD `section-title`).
+.sectionTitle {
+  margin-bottom: 0.75rem;
+  color: $grey-5;
+  font-weight: 700;
+}
+
+.sectionGap {
+  margin-bottom: 1.5rem;
+}
+
+// "Applies to" restriction options (MD `Coupons.scss`).
+.appliesTo {
+  width: 100%;
+}
+
+.appliesToTitle {
+  font-weight: 700;
+  color: $grey-9;
+  margin-bottom: 0.5rem;
+}
+
+.appliesToHint {
+  color: $grey-5;
+  font-size: 0.875rem;
+  margin-bottom: 1.125rem;
+}
+
+.restrictionOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.restrictionOption {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin: 0;
+  border: 1px solid $grey-3;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+
+.restrictionOptionWithBody {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  cursor: default;
+}
+
+.restrictionOptionSelected {
+  background: $blue-0;
+  border-color: $blue-3;
+}
+
+.restrictionOptionDisabled {
+  cursor: default;
+  opacity: 0.6;
+
+  .restrictionHeader {
+    cursor: default;
+  }
+}
+
+.restrictionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+
+.restrictionBody {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.75rem;
+  padding-left: 1.875rem;
+  cursor: default;
+}
+
+.restrictionCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.restrictionTitle {
+  display: block;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: $grey-8;
+  line-height: 1.25rem;
+}
+
+.restrictionDescription {
+  display: block;
+  color: $grey-5;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+// Vendor restriction checkbox (MD `coupon-vendor-option`).
+.vendorOption {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  cursor: pointer;
+}
+
+.vendorOptionDisabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.vendorTitle {
+  display: block;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: $grey-9;
+  line-height: 1.25rem;
+}
+
+.vendorDescription {
+  display: block;
+  margin-top: 0.125rem;
+  color: $grey-5;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.vendorBody {
+  margin-top: 0.75rem;
+  padding-left: 2.125rem;
+}
