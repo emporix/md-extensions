@@ -45,6 +45,13 @@ const StatusCodesTable = () => {
   const trackRequest = useRef(createRequestTracker()).current
 
   useEffect(() => {
+    // Rows and selection belong to the previous tenant; batch delete must not
+    // send their ids to the new one.
+    setSelected([])
+    setReasons([])
+  }, [tenant])
+
+  useEffect(() => {
     // The host switches tenant without remounting this remote; only the
     // latest request may fill the table.
     const isLatest = trackRequest()

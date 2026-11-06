@@ -234,6 +234,27 @@ describe('Status codes list', () => {
     expect(toast.showSuccess).not.toHaveBeenCalled()
   })
 
+  it('drops the selection and the rows when the host switches tenant', async () => {
+    const { switchTenant } = renderAt(
+      '/',
+      { list: <StatusCodesPage />, detail: <div>detail</div> },
+      'tenant-a'
+    )
+    await screen.findByText('PRICE')
+    fireEvent.click(within(rowFor('PRICE')).getByRole('checkbox'))
+    expect(batchDeleteButton().textContent).toBe('Delete (1)')
+
+    // The new tenant's list is still loading.
+    vi.mocked(getQuotesReasonsCall).mockReturnValue(new Promise(() => {}))
+    switchTenant('tenant-b')
+
+    await waitFor(() => expect(batchDeleteButton().textContent).toBe('Delete'))
+    expect(batchDeleteButton().disabled).toBe(true)
+    expect(screen.queryByText('PRICE')).toBeNull()
+    expect(getQuotesReasonsCall).toHaveBeenLastCalledWith('tenant-b')
+    expect(deleteQuoteReasonCall).not.toHaveBeenCalled()
+  })
+
   it('batch deletes the selected codes one after another with a toast each', async () => {
     const order: string[] = []
     vi.mocked(deleteQuoteReasonCall).mockImplementation(async (_t, id) => {

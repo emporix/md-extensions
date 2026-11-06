@@ -243,6 +243,63 @@ describe('Status code add / edit', () => {
     )
   })
 
+  it('clears and locks the form while another tenant loads the code', async () => {
+    const { switchTenant } = renderAt(
+      '/r1',
+      { list: <div>list</div>, detail: <StatusCodePage /> },
+      'tenant-a'
+    )
+    await waitFor(() =>
+      expect((codeInput() as HTMLInputElement).value).toBe('PRICE')
+    )
+    type(codeInput(), 'PRICE_UP')
+    await waitFor(() => expect(saveButton().disabled).toBe(false))
+
+    let resolveB: (value: unknown) => void = () => {}
+    vi.mocked(getQuoteReasonByIdCall).mockReturnValue(
+      new Promise((resolve) => {
+        resolveB = resolve
+      }) as never
+    )
+    switchTenant('tenant-b')
+
+    await waitFor(() => expect(saveButton().disabled).toBe(true))
+    expect(discardButton().disabled).toBe(true)
+    expect((codeInput() as HTMLInputElement).value).toBe('')
+    expect((codeInput() as HTMLInputElement).disabled).toBe(true)
+    expect(getQuoteReasonByIdCall).toHaveBeenLastCalledWith('tenant-b', 'r1')
+
+    resolveB({ ...loaded, code: 'B_CODE', metadata: { version: 9 } })
+    await waitFor(() =>
+      expect((codeInput() as HTMLInputElement).value).toBe('B_CODE')
+    )
+    expect((codeInput() as HTMLInputElement).disabled).toBe(false)
+    expect(editQuoteReasonCall).not.toHaveBeenCalled()
+  })
+
+  it('stays locked when the host switches back before the reload finishes', async () => {
+    const { switchTenant } = renderAt(
+      '/r1',
+      { list: <div>list</div>, detail: <StatusCodePage /> },
+      'tenant-a'
+    )
+    await waitFor(() =>
+      expect((codeInput() as HTMLInputElement).value).toBe('PRICE')
+    )
+
+    vi.mocked(getQuoteReasonByIdCall).mockReturnValue(
+      new Promise(() => {}) as never
+    )
+    switchTenant('tenant-b')
+    switchTenant('tenant-a')
+
+    await waitFor(() =>
+      expect(getQuoteReasonByIdCall).toHaveBeenLastCalledWith('tenant-a', 'r1')
+    )
+    expect((codeInput() as HTMLInputElement).value).toBe('')
+    expect((codeInput() as HTMLInputElement).disabled).toBe(true)
+  })
+
   it('makes the form read-only for a viewer', async () => {
     permissions.granted = [EmployeeDomains.STATUS_CODES_VIEWER]
     renderDetail('/r1')

@@ -91,6 +91,9 @@ const restrictDomains =
 
 export const usePermissions = () => useContext(PermissionsContext)
 
+type IsCurrent = () => boolean
+const always: IsCurrent = () => true
+
 export const PermissionsProvider = ({ children }: PropsWithChildren) => {
   const { tenant, token } = useDashboardContext()
   const { t } = useTranslation()
@@ -113,11 +116,14 @@ export const PermissionsProvider = ({ children }: PropsWithChildren) => {
     AccessControl[]
   >([])
 
-  const syncUserAccessControls = async () => {
+  // `isCurrent` is false once the tenant or token changed; a late response
+  // for the previous one must not overwrite the current state.
+  const syncUserAccessControls = async (isCurrent: IsCurrent = always) => {
     try {
       const userACs = await getAllAccessControlsForUser()
-      setUserAccessControls(userACs)
+      if (isCurrent()) setUserAccessControls(userACs)
     } catch (e: unknown) {
+      if (!isCurrent()) return
       console.error(e)
       const details =
         e &&
@@ -135,11 +141,12 @@ export const PermissionsProvider = ({ children }: PropsWithChildren) => {
     }
   }
 
-  const syncTenantAccessControls = async () => {
+  const syncTenantAccessControls = async (isCurrent: IsCurrent = always) => {
     try {
       const tenantACs = await getAllAccessControls()
-      setTenantAccessControls(tenantACs.values)
+      if (isCurrent()) setTenantAccessControls(tenantACs.values)
     } catch (e: unknown) {
+      if (!isCurrent()) return
       console.error(e)
       const details =
         e &&
@@ -157,22 +164,24 @@ export const PermissionsProvider = ({ children }: PropsWithChildren) => {
     }
   }
 
-  const syncTemplates = async () => {
+  const syncTemplates = async (isCurrent: IsCurrent = always) => {
     try {
       const fetchedTemplates = await getAccessControlsTemplates()
-      setTemplates(fetchedTemplates as unknown as Template[])
+      if (isCurrent()) setTemplates(fetchedTemplates as unknown as Template[])
     } catch (e: unknown) {
       console.error(e)
     }
   }
 
-  const syncScopes = async () => {
+  const syncScopes = async (isCurrent: IsCurrent = always) => {
     try {
       const { scopes, vendorId } = await getScopesForUser()
+      if (!isCurrent()) return
       const scopesArray = scopes.split(' ')
       setVendor(vendorId)
       setUserScopes(scopesArray)
     } catch (e: unknown) {
+      if (!isCurrent()) return
       console.error(e)
       showError(t('global.toasts.fetchUserAccessControls.error'))
     }
@@ -257,14 +266,15 @@ export const PermissionsProvider = ({ children }: PropsWithChildren) => {
       return
     }
     let cancelled = false
+    const isCurrent = () => !cancelled
     setIsPermissionsLoading(true)
     ;(async () => {
       try {
-        await syncUserAccessControls()
+        await syncUserAccessControls(isCurrent)
         if (cancelled) return
-        await syncScopes()
+        await syncScopes(isCurrent)
         if (cancelled) return
-        await syncTemplates()
+        await syncTemplates(isCurrent)
       } catch (e: unknown) {
         console.error(e)
       } finally {
@@ -282,8 +292,7 @@ export const PermissionsProvider = ({ children }: PropsWithChildren) => {
     let cancelled = false
     ;(async () => {
       if (hasPermission(EmployeeDomains.ACCESS_CONTROLS_VIEWER)) {
-        await syncTenantAccessControls()
-        if (cancelled) return
+        await syncTenantAccessControls(() => !cancelled)
       }
     })()
     return () => {
@@ -310,9 +319,9 @@ export const PermissionsProvider = ({ children }: PropsWithChildren) => {
         accessControlsForEmployee,
         vendor,
         hasPermission,
-        syncScopes,
-        syncUserAccessControls,
-        syncTenantAccessControls,
+        syncScopes: () => syncScopes(),
+        syncUserAccessControls: () => syncUserAccessControls(),
+        syncTenantAccessControls: () => syncTenantAccessControls(),
       }}
     >
       {children}

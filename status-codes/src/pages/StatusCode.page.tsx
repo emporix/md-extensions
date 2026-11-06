@@ -70,6 +70,25 @@ const StatusCodePage = () => {
     []
   )
 
+  // Which tenant + id the form holds. Until it matches the current one, the
+  // form shows nothing and cannot be edited or saved.
+  const currentKey = id ? `${tenant}:${id}` : undefined
+  const [loadedKey, setLoadedKey] = useState<string>()
+  const isLoaded = !currentKey || loadedKey === currentKey
+  const isLocked = !canManage || !isLoaded
+
+  useEffect(() => {
+    if (!id) {
+      return
+    }
+    // A new tenant or id: drop the previous record and its version so they
+    // cannot be saved against the new one.
+    setReason(undefined)
+    setLoadedKey(undefined)
+    reset(createQuoteReasonForm())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, tenant])
+
   // The host can switch tenant without remounting this page; a save reloads
   // through `refresh`. Responses a newer load superseded are dropped.
   useEffect(() => {
@@ -77,12 +96,14 @@ const StatusCodePage = () => {
       return
     }
 
+    const key = `${tenant}:${id}`
     void loadLatest(
       trackRequest,
       () => makeCall(() => getQuoteReason(id), blockPanel),
       (fetched) => {
         setReason(fetched)
         reset(createQuoteReasonForm(fetched))
+        setLoadedKey(key)
       },
       (e: unknown) => {
         showError(t('quotesReasons.toasts.errorFetch'), getApiErrorDetails(e))
@@ -128,14 +149,14 @@ const StatusCodePage = () => {
         moduleActions={
           <div className={styles.actions}>
             <SecondaryButton
-              disabled={!isDirty || !canManage}
+              disabled={!isDirty || isLocked}
               onClick={() => reset()}
               data-testid="status-code-discard"
             >
               {t('global.discard')}
             </SecondaryButton>
             <PrimaryButton
-              disabled={!isDirty || !isValid || !canManage}
+              disabled={!isDirty || !isValid || isLocked}
               onClick={handleSubmit(submit)}
               data-testid="status-code-save"
             >
@@ -157,7 +178,7 @@ const StatusCodePage = () => {
                 options={typeOptions}
                 value={field.value}
                 onChange={(event) => field.onChange(event.value)}
-                disabled={!canManage}
+                disabled={isLocked}
                 data-testid="status-code-type"
               />
             )}
@@ -172,7 +193,7 @@ const StatusCodePage = () => {
                 required
                 value={field.value}
                 onChange={(event) => field.onChange(event.target.value)}
-                disabled={!canManage}
+                disabled={isLocked}
                 error={fieldState.error ? t('global.fieldRequired') : undefined}
                 data-testid="status-code-code"
               />
@@ -190,7 +211,7 @@ const StatusCodePage = () => {
                 textarea
                 value={field.value}
                 onChange={field.onChange}
-                disabled={!canManage}
+                disabled={isLocked}
                 error={fieldState.error ? t('global.fieldRequired') : undefined}
                 data-testid="status-code-message"
               />
