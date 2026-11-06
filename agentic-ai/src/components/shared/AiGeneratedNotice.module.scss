@@ -2,22 +2,14 @@
   box-sizing: border-box;
   width: 100%;
   margin: 0;
-  // Dashboard info banner: lara-light-indigo .p-message-info
-  --color-message-info-bg: #e9e9ff;
-  --color-message-info-border: #696cff;
-  --color-message-info-icon: #696cff;
+  --color-message-info-bg: color-mix(in srgb, var(--blue-3, #79a3da) 15%, transparent);
+  --color-message-info-border: color-mix(in srgb, var(--blue-3, #79a3da) 30%, transparent);
+  --color-message-info-icon: var(--blue-3, #79a3da);
 }
 
-.notice.notice {
-  background: #e9e9ff;
-  border-style: solid;
-  border-color: #696cff;
-  border-width: 0 0 0 6px;
-  color: #696cff;
-}
-
+.notice.notice,
 .notice span {
-  color: #696cff;
+  color: var(--blue-3, #79a3da);
 }
 
 .detail {
