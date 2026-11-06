@@ -12,7 +12,7 @@ Keep Cursor / Copilot / Claude mirrors in sync whenever you edit migration rules
 | Host wiring | **`management-dashboard`** `.cursor/rules/federated-module-wiring.mdc` | `.github/instructions/federated-module-wiring.instructions.md` | `.claude/rules/federated-module-wiring.md` |
 | MD discovery skill (pointer) | `management-dashboard/.cursor/skills/md-module-extraction/` | `.github/skills/…` | `.claude/skills/…` |
 
-Upstream mirrors also live in **`frontend-ai-rules`** (`cursor/` / `copilot/` / `claude/`) and **`md-module-template`** so `npm install` / template clones stay current.
+These root files are the only copies in this repository. Remotes no longer sync rules from **`frontend-ai-rules`**; generic frontend rules come from the global `emporix-frontend-standards` skill (see `AGENTS.md`, which Cursor and Copilot read directly and Claude Code reads through `CLAUDE.md`). **`md-module-template`** still ships the old sync, so strip it when scaffolding (`md-extension-migration` § Agent rules).
 
 **Pilots:** see `docs/MIGRATED_MODULES.md` (`users-and-groups`, `customer-groups`, …).
 
