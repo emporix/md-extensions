@@ -70,7 +70,7 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/chips` | `missing` | — | — | 10 | Free-text token input. **Not** Dropdown chip display. |
 | `primereact/tag` | `missing` | — | — | 6 | List status/label chips. Do not silently swap to `StatusBadge` without checking API. |
 | `primereact/treetable` | `missing` | — | — | 4 | `EmporixTreeTable`, categories. |
-| `primereact/inputmask` | `missing` | — | — | 4 | Documented substitute: `InputText` `type="time"` for `"99:99"` masks. Promote for other masks. |
+| `primereact/inputmask` | `partial` | `TimePicker` | **2.21.0** | 4 | `"99:99"` time masks → `TimePicker` (Pattern A: typed `HH:mm` + branded hour/minute dropdown, emits `HH:mm`, clears invalid text on blur). Do not fall back to native `InputText type="time"`. Other masks: still missing — promote when needed (COP-7188). |
 | `primereact/sidebar` | `missing` | — | — | 1 | `TableExtensions.tsx`. Documented substitute: local `SidePanel` (right drawer, 20rem) + CL `InputSwitch`. Copy from `returns` or `brands` `components/shared/SidePanel`. Do not fall back to CL `Dialog` + `Checkbox`. |
 | `primereact/paginator` | `missing` | — | — | 1 | Standalone (`EntityChangelogTab`). Table pagination is already on CL `DataTable`. `customer-groups` used custom control + CL `Dropdown`. |
 | `primereact/panel` | `missing` | — | — | 1 | `ProductPricesPanelForm.tsx`. Documented substitute (products, COP-6993): CL `SectionBox` with a custom collapsible header. |
@@ -117,7 +117,7 @@ Order by MD usage. Ask the user before implementing; Pattern A vs B is mandatory
 1. ~~`InputNumber`~~ / ~~`Skeleton`~~ — done in 2.11.0 (COP-6917)
 2. `Chips` (10)
 4. ~~`Tree`~~ — done in 2.12.0; `TreeTable` (4)
-5. `InputMask` (4) — unless `type="time"` is enough
+5. `InputMask` (4) — time masks done in 2.21.0 (`TimePicker`); other masks still open
 6. `Sidebar` (1, but `TableExtensions` is common) — or keep the local `SidePanel` substitute
 7. `Tag` / Prime `Badge` if `StatusBadge` is the wrong shape
 
