@@ -68,6 +68,8 @@ const useCouponsColumns = () => {
         columnKey: 'name',
         header: t(`${TABLE_COLUMNS_PATH}.name`),
         field: 'name',
+        bodyClassName: styles.nameCell,
+        headerClassName: styles.nameCell,
         filter: true,
         showFilterMenu: false,
         showClearButton: true,

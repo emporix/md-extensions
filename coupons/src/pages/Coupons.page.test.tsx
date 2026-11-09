@@ -14,6 +14,7 @@ import i18n from '../translations/i18n'
 import { EmployeeDomains } from '../configs/accessControls'
 import { renderAt } from '../test/renderWithRouter'
 import CouponsPage from './Coupons.page'
+import tableStyles from '../components/coupons/CouponsTable.module.scss'
 
 const toast = vi.hoisted(() => ({
   showSuccess: vi.fn(),
@@ -255,6 +256,15 @@ describe('Coupons list', () => {
     expect(
       within(headerRow).getAllByRole('button', { name: 'Clear' })
     ).toHaveLength(3)
+  })
+
+  it('gives the name column its wider minimum width', async () => {
+    renderList()
+    const nameCell = (await screen.findByText('Ten percent')).closest('td')
+    const nameHeader = within(table()).getByText('Name').closest('th')
+
+    expect(nameCell?.classList.contains(tableStyles.nameCell)).toBe(true)
+    expect(nameHeader?.classList.contains(tableStyles.nameCell)).toBe(true)
   })
 
   // Scenario 2

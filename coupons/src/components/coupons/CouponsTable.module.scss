@@ -19,6 +19,11 @@
   padding-right: 1rem !important;
 }
 
+// Names are the longest text column; keep it readable next to the filters.
+.nameCell {
+  min-width: 18rem;
+}
+
 .actionsCell {
   width: 120px;
 }
