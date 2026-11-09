@@ -4,11 +4,7 @@ import { ConfirmBox } from '@emporix/component-library'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import type Localized from '../../models/Localized.model'
 
-type DeleteConfirmBoxProps = {
-  readonly visible: boolean
-  readonly onAccept: () => void | Promise<void>
-  readonly onReject: () => void
-  readonly loading?: boolean
+export type DeleteConfirmTextsOptions = {
   readonly pluralsPath: string
   readonly entity?: unknown
   readonly entityLabel?: string
@@ -16,25 +12,34 @@ type DeleteConfirmBoxProps = {
   readonly count?: number
 }
 
-const DeleteConfirmBox = ({
-  visible,
-  onAccept,
-  onReject,
-  loading = false,
+type DeleteConfirmBoxProps = DeleteConfirmTextsOptions & {
+  readonly visible: boolean
+  readonly onAccept: () => void | Promise<void>
+  readonly onReject: () => void
+  readonly loading?: boolean
+}
+
+const upperFirst = (text?: string): string => {
+  if (!text) return ''
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+/**
+ * Translated title, message and button labels of a delete confirmation
+ * (MD `DeleteConfirmBox` texts), e.g. for the component library's
+ * `TableActions` `deleteConfirm`.
+ */
+// eslint-disable-next-line react-refresh/only-export-components -- hook co-located with the box that renders its texts
+export const useDeleteConfirmTexts = ({
   pluralsPath,
   entity,
   entityLabel,
   actionText,
   count = 1,
-}: DeleteConfirmBoxProps) => {
+}: DeleteConfirmTextsOptions) => {
   const { t, i18n } = useTranslation()
   const { getContentLangValue } = useLocalizedValue()
   const isPlural = count > 1
-
-  const upperFirst = (text?: string): string => {
-    if (!text) return ''
-    return text.charAt(0).toUpperCase() + text.slice(1)
-  }
 
   const resolveEntityLabel = (item: unknown): string => {
     if (!item) return ''
@@ -82,6 +87,7 @@ const DeleteConfirmBox = ({
           : upperFirst(entityText),
       id: label,
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
   }, [i18n.language, pluralsPath, entity, entityLabel, actionText, t])
 
   const pluralTitle = useMemo(() => {
@@ -102,16 +108,30 @@ const DeleteConfirmBox = ({
     return t('global.deleteConfirm.plural.description')
   }, [t])
 
+  return {
+    title: isPlural ? pluralTitle : singularTitle,
+    message: isPlural ? pluralMessage : singularMessage,
+    acceptLabel: t('global.yes'),
+    rejectLabel: t('global.cancel'),
+  }
+}
+
+const DeleteConfirmBox = ({
+  visible,
+  onAccept,
+  onReject,
+  loading = false,
+  ...textOptions
+}: DeleteConfirmBoxProps) => {
+  const texts = useDeleteConfirmTexts(textOptions)
+
   return (
     <ConfirmBox
       visible={visible}
       onAccept={onAccept}
       onReject={onReject}
       loading={loading}
-      title={isPlural ? pluralTitle : singularTitle}
-      message={isPlural ? pluralMessage : singularMessage}
-      acceptLabel={t('global.yes')}
-      rejectLabel={t('global.cancel')}
+      {...texts}
     />
   )
 }
