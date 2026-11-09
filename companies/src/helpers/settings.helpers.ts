@@ -1,4 +1,5 @@
 import type { AppState } from '../models/AppState.model'
+import { DEFAULT_APP_CURRENCY } from '../constants/currency'
 
 const TENANT_KEY = 'tenant'
 const LANGUAGE_KEY = 'language'
@@ -11,6 +12,7 @@ export const getStoredSettings = (): AppState => {
     language: localStorage.getItem(LANGUAGE_KEY) ?? 'en',
     token: localStorage.getItem(TOKEN_KEY) ?? '',
     contentLanguage: localStorage.getItem(CONTENT_LANGUAGE_KEY) ?? 'en',
+    currency: DEFAULT_APP_CURRENCY,
     onError: (error: unknown) => {
       console.error(error)
     },

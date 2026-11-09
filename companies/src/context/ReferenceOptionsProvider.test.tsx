@@ -9,6 +9,7 @@ import {
   useReferenceOptions,
 } from './ReferenceOptionsProvider'
 import type { AppState } from '../models/AppState.model'
+import { DEFAULT_APP_CURRENCY } from '../constants/currency'
 
 const api = vi.hoisted(() => ({ getAllCustomEntities: vi.fn() }))
 vi.mock('../hooks/api/customEntities', () => ({
@@ -20,6 +21,7 @@ const appStateFor = (tenant: string): AppState => ({
   language: 'en',
   token: '',
   contentLanguage: 'en',
+  currency: DEFAULT_APP_CURRENCY,
   onError: () => {
     // NOOP
   },

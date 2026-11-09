@@ -19,6 +19,7 @@ import {
 } from './ReferenceOptionsProvider'
 import { SitesProvider, useSites } from './SitesProvider'
 import type { AppState } from '../models/AppState.model'
+import { DEFAULT_APP_CURRENCY } from '../constants/currency'
 
 /** One pending request per tenant, resolved by the test in any order. */
 const pending = vi.hoisted(() => {
@@ -95,6 +96,7 @@ const appState = (tenant: string): AppState => ({
   language: 'en',
   token: 'token',
   contentLanguage: 'en',
+  currency: DEFAULT_APP_CURRENCY,
   onError: () => {
     // NOOP
   },

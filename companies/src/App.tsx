@@ -6,6 +6,7 @@ import {
   saveStoredSettings,
   shouldOpenDevSettingsDialog,
 } from './helpers/settings.helpers'
+import { DEFAULT_APP_CURRENCY } from './constants/currency'
 import styles from './App.module.scss'
 
 const isDev = import.meta.env.DEV
@@ -24,6 +25,7 @@ const App = () => {
       tenant,
       language,
       token,
+      currency: DEFAULT_APP_CURRENCY,
       contentLanguage: language,
       onError: (error) => {
         console.error(error)
@@ -83,6 +85,7 @@ const App = () => {
           tenant,
           language,
           token,
+          currency: DEFAULT_APP_CURRENCY,
           contentLanguage: language,
           onError: (error) => {
             console.error(error)

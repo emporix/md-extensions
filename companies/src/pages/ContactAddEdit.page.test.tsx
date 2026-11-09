@@ -16,6 +16,7 @@ import { ContactType } from '../models/LegalEntity.model'
 import ContactAddEditPage from './ContactAddEdit.page'
 import { DashboardProvider } from '../context/Dashboard.context'
 import type { AppState } from '../models/AppState.model'
+import { DEFAULT_APP_CURRENCY } from '../constants/currency'
 
 const calls = vi.hoisted(() => [] as string[])
 const tracked = vi.hoisted(
@@ -100,6 +101,7 @@ const appStateFor = (tenant: string): AppState => ({
   language: 'en',
   token: '',
   contentLanguage: 'en',
+  currency: DEFAULT_APP_CURRENCY,
   onError: () => {
     // NOOP
   },

@@ -5,7 +5,7 @@ export type AppState = {
   tenant: string
   language: string
   token: string
-  currency?: Currency
+  currency: Currency
   contentLanguage: string
   user?: SessionUser
   onError: (error: unknown) => void

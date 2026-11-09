@@ -1,5 +1,6 @@
 import { createContext, useContext, type PropsWithChildren } from 'react'
 import { AppState } from '../models/AppState.model'
+import { DEFAULT_APP_CURRENCY } from '../constants/currency'
 
 type DashboardContextType = AppState
 
@@ -7,7 +8,7 @@ const defaultAppState: AppState = {
   tenant: '',
   language: 'en',
   token: '',
-  currency: undefined,
+  currency: DEFAULT_APP_CURRENCY,
   contentLanguage: 'en',
   user: undefined,
   onError: () => {

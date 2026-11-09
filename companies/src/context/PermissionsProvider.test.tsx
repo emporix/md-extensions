@@ -9,6 +9,7 @@ import {
 } from '../configs/accessControls'
 import type { AccessControl } from '../models/Permissions.model'
 import type { AppState } from '../models/AppState.model'
+import { DEFAULT_APP_CURRENCY } from '../constants/currency'
 import { DashboardProvider } from './Dashboard.context'
 import { PermissionsProvider, usePermissions } from './PermissionsProvider'
 
@@ -36,6 +37,7 @@ const appState = (tenant: string): AppState => ({
   token: `token-${tenant}`,
   language: 'en',
   contentLanguage: 'en',
+  currency: DEFAULT_APP_CURRENCY,
   onError: () => {
     // NOOP
   },

@@ -17,6 +17,7 @@ import { DashboardProvider } from '../context/Dashboard.context'
 import { NavigationConfirmProvider } from '../context/NavigationConfirmProvider'
 import { RefreshValuesProvider } from '../context/RefreshValuesProvider'
 import type { AppState } from '../models/AppState.model'
+import { DEFAULT_APP_CURRENCY } from '../constants/currency'
 import CompanyAddEditPage from './CompanyAddEdit.page'
 
 const api = vi.hoisted(() => ({
@@ -177,6 +178,7 @@ const appStateFor = (tenant: string): AppState => ({
   language: 'en',
   token: '',
   contentLanguage: 'en',
+  currency: DEFAULT_APP_CURRENCY,
   onError: () => {
     // NOOP
   },

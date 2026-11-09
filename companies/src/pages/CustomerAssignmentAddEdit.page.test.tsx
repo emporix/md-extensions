@@ -18,6 +18,7 @@ import { NavigationConfirmProvider } from '../context/NavigationConfirmProvider'
 import CustomerAssignmentAddEditPage from './CustomerAssignmentAddEdit.page'
 import { DashboardProvider } from '../context/Dashboard.context'
 import type { AppState } from '../models/AppState.model'
+import { DEFAULT_APP_CURRENCY } from '../constants/currency'
 
 const management = vi.hoisted(() => ({
   getContactAssignment: vi.fn(),
@@ -89,6 +90,7 @@ const appStateFor = (tenant: string): AppState => ({
   language: 'en',
   token: '',
   contentLanguage: 'en',
+  currency: DEFAULT_APP_CURRENCY,
   onError: () => {
     // NOOP
   },
