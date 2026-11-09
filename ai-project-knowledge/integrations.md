@@ -1,9 +1,9 @@
 # Integrations
 
 Last scanned: 05d8d1d (2026-11-06)
-Sources: `agentic-ai/src/services`, `agentic-ai/src/components/tool`, `algolia-synonyms/src`, `brands/src`, `brands/package.json`, `customer-groups/src`, `customer-groups/package.json`, `dashboard/src/dashboard/api`, `dashboard/src/dashboard/widgets/OrdersByCountryMapWidget/OrdersByCountryMapWidget.tsx`, `dashboard/src/vite-env.d.ts`, `labels/src`, `labels/package.json`, `companies/src`, `companies/package.json`, `status-codes/src`, `status-codes/package.json`, `orders/src`, `orders/package.json`, `products/src/api`, `products/src/hooks/api`, `products/src/context`, `products/src/helpers/hostUrls.ts`, `products/package.json`, `returns/src`, `returns/package.json`, `statistics/src/api.ts`, `users-and-groups/src`, `users-and-groups/package.json`, `.github/workflows`
+Sources: `agentic-ai/src/services`, `agentic-ai/src/components/tool`, `algolia-synonyms/src`, `brands/src`, `brands/package.json`, `customer-groups/src`, `customer-groups/package.json`, `dashboard/src/dashboard/api`, `dashboard/src/dashboard/widgets/OrdersByCountryMapWidget/OrdersByCountryMapWidget.tsx`, `dashboard/src/vite-env.d.ts`, `labels/src`, `labels/package.json`, `companies/src`, `companies/package.json`, `status-codes/src`, `coupons/src`, `coupons/package.json`, `status-codes/package.json`, `orders/src`, `orders/package.json`, `products/src/api`, `products/src/hooks/api`, `products/src/context`, `products/src/helpers/hostUrls.ts`, `products/package.json`, `returns/src`, `returns/package.json`, `statistics/src/api.ts`, `users-and-groups/src`, `users-and-groups/package.json`, `.github/workflows`
 
-Thirteen UI extensions call the Emporix HTTP API. Twelve take the base URL from `VITE_API_URL`. `algolia-synonyms` takes it from the host callback field `emporixApiUrl`. No `.env*` file was opened. Env names below are names only. No literal API key, token, or tenant id was found in source; UI strings in `agentic-ai/src/translations/en/index.ts` label fields such as an API key and a client secret and are not values. HTTP paths inside `@emporix/api-calls` were not read (`node_modules` skipped), so those paths are unknown.
+Fourteen UI extensions call the Emporix HTTP API. Thirteen take the base URL from `VITE_API_URL`. `algolia-synonyms` takes it from the host callback field `emporixApiUrl`. No `.env*` file was opened. Env names below are names only. No literal API key, token, or tenant id was found in source; UI strings in `agentic-ai/src/translations/en/index.ts` label fields such as an API key and a client secret and are not values. HTTP paths inside `@emporix/api-calls` were not read (`node_modules` skipped), so those paths are unknown.
 
 Firebase Hosting deploy and preview workflows under `.github/workflows/*firebase*.yaml` are deployment only and are not a runtime API.
 
@@ -13,13 +13,13 @@ Firebase Hosting deploy and preview workflows under `.github/workflows/*firebase
 
 ### `@emporix/api-calls` (axios)
 
-`companies` 1.5.2, `orders`, `products`, `returns`, and `status-codes` 1.5.1, `labels` 1.2.14, `customer-groups` 1.2.9, `brands` and `users-and-groups` 1.2.1 (`*/package.json`). Each `src/api/bootstrap.ts` calls `createApiClient` with `baseURL` `VITE_API_URL` and throws `VITE_API_URL is not configured` when that value is missing. The access token and tenant come from the host via `setApiCredentials` / `useApiCredentials`. Retry and the concrete URL paths live in the package and are unknown here.
+`coupons` 1.5.3, `companies` 1.5.2, `orders`, `products`, `returns`, and `status-codes` 1.5.1, `labels` 1.2.14, `customer-groups` 1.2.9, `brands` and `users-and-groups` 1.2.1 (`*/package.json`). Each `src/api/bootstrap.ts` calls `createApiClient` with `baseURL` `VITE_API_URL` and throws `VITE_API_URL is not configured` when that value is missing. The access token and tenant come from the host via `setApiCredentials` / `useApiCredentials`. Retry and the concrete URL paths live in the package and are unknown here.
 
-Screens that only check permissions call `getAccessControlsTemplates` and `getScopesForUser` (`*/src/context/PermissionsProvider.tsx` in orders, returns, brands, labels, status-codes, and companies). `products/src/context/PermissionsProvider.tsx` also loads tenant access controls and templates, and renders its children only after the load. `hooks/api/iam.ts` in those six also imports user, group, scope, and access-control mutators. No file outside that hook imports `useIamApi` except `PermissionsProvider`, so those mutators have no caller outside the hook.
+Screens that only check permissions call `getAccessControlsTemplates` and `getScopesForUser` (`*/src/context/PermissionsProvider.tsx` in orders, returns, brands, labels, status-codes, coupons, and companies). `products/src/context/PermissionsProvider.tsx` also loads tenant access controls and templates, and renders its children only after the load. `hooks/api/iam.ts` in those seven also imports user, group, scope, and access-control mutators. No file outside that hook imports `useIamApi` except `PermissionsProvider`, so those mutators have no caller outside the hook.
 
 `customer-groups` and `users-and-groups` do call IAM from group and user screens (`GroupsTable`, `UsersTable`, `Group.provider`, `GroupPageActions`, `GroupMembers`, `GroupAddMembersDialog`, `User.page`, `UserAccessForm`). Wrapped calls cover groups, users, membership, scopes, and access controls. Paths unknown.
 
-All nine (`brands`, `companies`, `customer-groups`, `labels`, `orders`, `products`, `returns`, `status-codes`, `users-and-groups`) also call:
+All ten (`brands`, `companies`, `coupons`, `customer-groups`, `labels`, `orders`, `products`, `returns`, `status-codes`, `users-and-groups`) also call:
 
 - Sites: `getSitesCall` from `src/api/sites.ts`, used by `src/context/SitesProvider.tsx`.
 - Feature toggles: `getFeatureToggleValuesCall` from `src/hooks/api/featureToggles.ts`, used by `src/context/FeatureTogglesProvider.tsx`.
@@ -112,6 +112,14 @@ Shared api-calls client (`labels/package.json` `@emporix/api-calls` 1.2.14), plu
 - Label list: the one local call, `GET label/labels` in `labels/src/api/labels.ts`, with `pageNumber`, `pageSize`, `sort=field:ASC|DESC`, `q=name:~(…)`, headers `x-total-count: true` and `Accept-Language` set to the UI language. It is local because api-calls `fetchLabels` sends filter params the service ignores (`labels/src/helpers/labels.helpers.ts`).
 - Delete: `removeLabelImageFromCloudinary` (api-calls) when the label has an image, then `deleteLabel`; on any failure `deleteLabel` is retried once (`labels/src/helpers/labels.helpers.ts`).
 - Media: `getAssetsForId` and `postFileAsset` with ref type `LABEL` (`labels/src/hooks/api/mediaAssets.ts`, `labels/src/models/Assets.model.ts`).
+
+## coupons
+
+Shared api-calls client (`coupons/package.json` `@emporix/api-calls` 1.5.3 — boolean `equals` filters such as `categoryRestricted` are sent unquoted), plus sites, configuration (incl. `ext_coupons` table configuration via `updateSingleConfiguration`), feature toggles, schemas and mixins (copied from `orders`), the audit log changelog, and the IAM permission reads.
+
+- Coupons (Coupon Service): `fetchCoupons` (server-side page, sort and `q` filters), `fetchCoupon`, `createNewCoupon` (returns the code), `modifyCoupon` (`PUT` by the original code, whole coupon), `patchCouponCall` (mixins and `metadata.mixins` only), `removeCoupon`, all bound to the host tenant in `coupons/src/hooks/api/coupons.ts`. Paths per api-calls: `/coupon/{tenant}/coupons[/{code}]`.
+- Restriction selectors: `getCustomers` (only with Customers Viewer, `coupons/src/hooks/api/customers.ts`), `getSegmentsCall` (`segments.ts`), `getCategories` (`categories.ts`), `getVendorsCall` (`vendors.ts`); currencies: `fetchCurrencies` (`currencies.ts`).
+- Media: `coupons/src/hooks/api/mediaAssets.ts` (copied from `orders`) wraps the api-calls asset calls; only the mixin reference selector reads assets through it (`useReferenceSelectorConfig.tsx`). No upload from the coupon screens, no direct HTTP.
 
 ## status-codes
 

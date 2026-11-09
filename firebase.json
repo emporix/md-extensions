@@ -751,6 +751,72 @@
       } ]
     },
     {
+      "target": "emporix-status-codes-stage",
+      "public": "status-codes/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [ {
+        "source" : "**",
+        "headers": [ {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        } ]
+      } ]
+    },
+    {
+      "target": "emporix-status-codes-develop",
+      "public": "status-codes/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [ {
+        "source" : "**",
+        "headers": [ {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        } ]
+      } ]
+    },
+    {
+      "target": "emporix-coupons",
+      "public": "coupons/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [ {
+        "source" : "**",
+        "headers": [ {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        } ]
+      } ]
+    },
+    {
       "target": "emporix-companies",
       "public": "companies/dist",
       "ignore": [
@@ -773,8 +839,8 @@
       } ]
     },
     {
-      "target": "emporix-status-codes-stage",
-      "public": "status-codes/dist",
+      "target": "emporix-coupons-stage",
+      "public": "coupons/dist",
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -817,8 +883,8 @@
       } ]
     },
     {
-      "target": "emporix-status-codes-develop",
-      "public": "status-codes/dist",
+      "target": "emporix-coupons-develop",
+      "public": "coupons/dist",
       "ignore": [
         "firebase.json",
         "**/.*",
