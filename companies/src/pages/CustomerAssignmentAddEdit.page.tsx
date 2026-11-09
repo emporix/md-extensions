@@ -23,6 +23,7 @@ import InputField from '../components/shared/InputField'
 import { useCustomerManagementApi } from '../hooks/api/customerManagement'
 import { useCustomerApi } from '../hooks/api/customers'
 import useForm from '../hooks/useForm'
+import { useNavigationConfirm } from '../context/NavigationConfirmProvider'
 import usePagination from '../hooks/usePagination'
 import useCustomNavigate from '../hooks/useCustomNavigate'
 import { useUIBlocker } from '../context/UIBlocker'
@@ -80,6 +81,7 @@ const CustomerAssignmentAddEditPage = () => {
 
   const { formData, setInitFormData, formDirty, setFormField, resetForm } =
     useForm<ContactAssignment>()
+  const { releaseNavigation } = useNavigationConfirm()
   const [searchParams] = useSearchParams()
   const { syncCustomers } = useCustomerApi()
   const [customers, setCustomers] = useState<Customer[]>([])
@@ -96,6 +98,7 @@ const CustomerAssignmentAddEditPage = () => {
   // pages, so the previous tenant's record is never shown or saved.
   const { tenant } = useDashboardContext()
   useUpdateEffect(() => {
+    releaseNavigation()
     simpleNavigate(companiesListPath())
   }, [tenant])
   const { hasPermission } = usePermissions()
@@ -264,6 +267,8 @@ const CustomerAssignmentAddEditPage = () => {
         const newContactAssignmentId =
           await createContactWithAssignment(createModel)
         toast.showToast(t('contacts.toast.add.success.title'), '', 'success')
+        // Saved: the pages below are not "leaving unsaved changes".
+        releaseNavigation()
 
         if (singleLegalEntity && isApproval && newContactAssignmentId) {
           await addApprovalGroupContact(singleLegalEntity, [
@@ -331,6 +336,7 @@ const CustomerAssignmentAddEditPage = () => {
     if (contactAssignmentId && companyId) {
       await deleteContactAssignment(contactAssignmentId)
       setCustomerUnassignDialogVisible(false)
+      releaseNavigation()
       navigate(companyDetailPath(companyId, 'tab=customers'))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity

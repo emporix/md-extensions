@@ -37,6 +37,7 @@ import { useCurrencies } from '../hooks/useCurrencies'
 import { useLocalizedValue } from '../hooks/useLocalizedValue'
 import { useTabs } from '../hooks/useTabs'
 import useForm from '../hooks/useForm'
+import { useNavigationConfirm } from '../context/NavigationConfirmProvider'
 import useCustomNavigate from '../hooks/useCustomNavigate'
 import { useUIBlocker } from '../context/UIBlocker'
 import { useRefresh } from '../context/RefreshValuesProvider'
@@ -99,6 +100,7 @@ const CompanyAddEdit = () => {
   const routerLocation = useLocation()
   const { formData, setInitFormData, formDirty, setFormField, resetForm } =
     useForm<LegalEntity>()
+  const { releaseNavigation } = useNavigationConfirm()
   const { navigate } = useCustomNavigate()
   const { refresh } = useRefresh()
   const { activeCountries } = useCountries()
@@ -270,6 +272,8 @@ const CompanyAddEdit = () => {
         blockPanel(true)
         const createResponse = await createLegalEntity(companyData)
         showSuccess(t('companies.toast.create.title'))
+        // Saved: the new company's page is not "leaving unsaved changes".
+        releaseNavigation()
         navigate(companyDetailPath(createResponse.data.id))
       } catch (e: unknown) {
         showError(t('companies.toasts.errorSave'), getApiErrorDetails(e))
@@ -680,6 +684,7 @@ const CompanyAddEdit = () => {
       />
       <ContactAssignmentList
         managerPermissions={canManage}
+        customerViewPermission={canViewCustomers}
         legalEntity={formData}
       />
     </>

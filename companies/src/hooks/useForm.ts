@@ -44,6 +44,9 @@ const useForm = <T extends object>(args?: UseFormArgs): FormParameters<T> => {
   const { navigationBlocked, setNavigationBlocked } = useNavigationConfirm()
   const [touchedFields, setTouchedFields] = useState<string[]>([])
 
+  // Leaving the page (or a tenant switch unmounting it) ends its edits.
+  useEffect(() => () => setNavigationBlocked(false), [setNavigationBlocked])
+
   useEffect(() => {
     setDirty()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
