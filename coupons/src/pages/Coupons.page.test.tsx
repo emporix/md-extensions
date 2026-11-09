@@ -258,6 +258,15 @@ describe('Coupons list', () => {
     ).toHaveLength(3)
   })
 
+  it('gives the code column its wider minimum width', async () => {
+    renderList()
+    const codeCell = (await screen.findByText('SALE10')).closest('td')
+    const codeHeader = within(table()).getByText('Code').closest('th')
+
+    expect(codeCell?.classList.contains(tableStyles.codeCell)).toBe(true)
+    expect(codeHeader?.classList.contains(tableStyles.codeCell)).toBe(true)
+  })
+
   it('gives the name column its wider minimum width', async () => {
     renderList()
     const nameCell = (await screen.findByText('Ten percent')).closest('td')
