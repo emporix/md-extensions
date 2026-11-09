@@ -28,15 +28,12 @@ const COLUMN_MIN_WIDTHS: Record<string, string> = {
   primaryContact: '160px',
   groups: '180px',
   legalName: '180px',
-  taxRegistrationNumber: '180px',
   registrationDate: '140px',
   createdAt: '140px',
   modifiedAt: '140px',
 }
 
-export const withMinWidth = (
-  column: CompanyColumnProps
-): CompanyColumnProps => {
+const withMinWidth = (column: CompanyColumnProps): CompanyColumnProps => {
   const minWidth = COLUMN_MIN_WIDTHS[column.columnKey ?? '']
   if (!minWidth) {
     return column

@@ -10,18 +10,21 @@ import {
 } from '@emporix/component-library'
 import { LegalEntity } from '../../models/LegalEntity.model'
 import { useCustomerManagementApi } from '../../hooks/api/customerManagement'
+import { useCountries } from '../../hooks/useCountries'
 import { formatCustomerName } from '../../helpers/companyFormat.helpers'
 import { getApiErrorDetails } from '../../helpers/api'
-import { TABLE_NAME, withMinWidth } from '../../hooks/useCompaniesColumns'
+import { DropdownFilter } from '../shared/DropdownFilter'
 import { LegalEntityActions } from './LegalEntityActions'
 import { useRefresh } from '../../context/RefreshValuesProvider'
+
+const TABLE_NAME = 'companies'
 
 // Client-side filters (MD MdDataTable with `filter` columns, non-lazy).
 const INITIAL_FILTERS: DataTableFilterMeta = {
   name: { value: null, matchMode: FilterMatchMode.CONTAINS },
   'legalInfo.countryOfRegistration': {
     value: null,
-    matchMode: FilterMatchMode.CONTAINS,
+    matchMode: FilterMatchMode.EQUALS,
   },
   'legalInfo.taxRegistrationNumber': {
     value: null,
@@ -39,6 +42,7 @@ export const Subsidiaries = (props: {
   const { refresh } = useRefresh()
   const { t, i18n } = useTranslation()
   const [subsidiaries, setSubsidiaries] = useState<LegalEntity[]>([])
+  const { activeCountriesDropdownOptions } = useCountries()
   const { showError } = useToast()
   const { paginationParams, onPageCallback, onSortCallback } =
     useDataTablePagination()
@@ -67,56 +71,56 @@ export const Subsidiaries = (props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [i18n.language, legalEntity?.id, refresh])
 
-  // Same filter row as the companies list: full-width text filters without
-  // a clear button, and the list's column widths.
   const columns = useMemo<DataTableColumnProps[]>(
-    () =>
-      [
-        {
-          columnKey: 'name',
-          header: t(`${TABLE_NAME}.name`),
-          field: 'name',
-          sortable: true,
-          filter: true,
-          showFilterMenu: false,
-          showClearButton: false,
+    () => [
+      {
+        columnKey: 'name',
+        header: t(`${TABLE_NAME}.name`),
+        field: 'name',
+        sortable: true,
+        filter: true,
+        showFilterMenu: false,
+      },
+      {
+        columnKey: 'legalInfo.countryOfRegistration',
+        field: 'legalInfo.countryOfRegistration',
+        header: t(`${TABLE_NAME}.countryOfRegistration`),
+        sortable: true,
+        filter: true,
+        showFilterMenu: false,
+        filterElement: (options) => (
+          <DropdownFilter
+            dropdownOptions={activeCountriesDropdownOptions}
+            filterOptions={options}
+          />
+        ),
+      },
+      {
+        columnKey: 'legalInfo.taxRegistrationNumber',
+        field: 'legalInfo.taxRegistrationNumber',
+        header: t(`${TABLE_NAME}.taxRegistrationNumber`),
+        sortable: true,
+        filter: true,
+        showFilterMenu: false,
+      },
+      {
+        columnKey: 'contact',
+        header: t(`${TABLE_NAME}.primaryContact`),
+        body: (rowData: LegalEntity) => {
+          if (!rowData.contacts || rowData.contacts.length === 0) {
+            return '-'
+          }
+          const primaryContact = rowData.contacts.filter(
+            (contact) => contact.primary
+          )[0]
+          return primaryContact
+            ? formatCustomerName(primaryContact.customer)
+            : formatCustomerName(rowData.contacts[0].customer)
         },
-        {
-          columnKey: 'countryOfRegistration',
-          field: 'legalInfo.countryOfRegistration',
-          header: t(`${TABLE_NAME}.countryOfRegistration`),
-          sortable: true,
-          filter: true,
-          showFilterMenu: false,
-          showClearButton: false,
-        },
-        {
-          columnKey: 'taxRegistrationNumber',
-          field: 'legalInfo.taxRegistrationNumber',
-          header: t(`${TABLE_NAME}.taxRegistrationNumber`),
-          sortable: true,
-          filter: true,
-          showFilterMenu: false,
-          showClearButton: false,
-        },
-        {
-          columnKey: 'primaryContact',
-          header: t(`${TABLE_NAME}.primaryContact`),
-          body: (rowData: LegalEntity) => {
-            if (!rowData.contacts || rowData.contacts.length === 0) {
-              return '-'
-            }
-            const primaryContact = rowData.contacts.filter(
-              (contact) => contact.primary
-            )[0]
-            return primaryContact
-              ? formatCustomerName(primaryContact.customer)
-              : formatCustomerName(rowData.contacts[0].customer)
-          },
-        },
-      ].map(withMinWidth),
+      },
+    ],
     // eslint-disable-next-line react-hooks/exhaustive-deps -- rebuilt per language
-    [i18n.language]
+    [i18n.language, activeCountriesDropdownOptions]
   )
 
   return (
@@ -125,6 +129,7 @@ export const Subsidiaries = (props: {
       dataKey="id"
       value={subsidiaries}
       columns={columns}
+      showFilter={true}
       pagination={{ ...paginationParams, filters }}
       onPage={onPageCallback}
       onSort={onSortCallback}
