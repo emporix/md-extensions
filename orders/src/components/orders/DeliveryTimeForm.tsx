@@ -35,7 +35,7 @@ type DeliveryTimeFormProps = {
 /**
  * Delivery time window editor (`mixins.deliveryTime`), editable only while
  * the order is CREATED. MD's `InputMask "99:99"` is replaced by CL `TimePicker`
- * (same `HH:MM` value; an invalid typed time clears on blur).
+ * (same `HH:mm` value; an invalid typed time clears on blur).
  */
 const DeliveryTimeForm = ({
   order,
