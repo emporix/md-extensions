@@ -10,7 +10,7 @@ Management Dashboard "Returns" module, extracted into an `md-extensions` federat
 | Exposes | `./RemoteComponent` → `src/RemoteComponent.tsx` (named **and** default export) |
 | Local dev port | `5176` (`strictPort`) |
 | Host env var | `VITE_RETURNS_URL` → `.../assets/remoteEntry.js` |
-| Component library | `@emporix/component-library` `2.5.0` |
+| Component library | `@emporix/component-library` `2.21.0` |
 | MD wiring mode | A — permanent remote (`url:` on the route) |
 
 ## Screens
