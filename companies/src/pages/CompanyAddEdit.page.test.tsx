@@ -629,6 +629,55 @@ describe('Company add / edit', () => {
   })
 
   // Restrictions
+  it('lets a user with full restriction access clear the restriction', async () => {
+    configurationApi.getRestrictions.mockResolvedValue({
+      value: ['SITE_A', 'SITE_B'],
+    })
+    api.getLegalEntity.mockResolvedValue({
+      ...structuredClone(company),
+      restrictions: ['SITE_A'],
+    })
+    renderPage('/C1')
+    await companyLoaded()
+    await waitFor(() =>
+      expect(screen.getByTestId('company-restriction').textContent).toContain(
+        'SITE_A'
+      )
+    )
+
+    // The placeholder is only a placeholder, not a selectable option.
+    fireEvent.click(screen.getByTestId('company-restriction-control'))
+    const options = await screen.findAllByRole('option')
+    expect(options.map((option) => option.textContent)).toEqual([
+      'SITE_A',
+      'SITE_B',
+    ])
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear' }))
+    fireEvent.click(button('Save'))
+
+    await waitFor(() =>
+      expect(api.updateLegalEntity).toHaveBeenCalledWith(
+        expect.objectContaining({ restrictions: undefined })
+      )
+    )
+  })
+
+  it('offers no clear button to a restricted user', async () => {
+    permissions.userScopes = ['customermanagement.legalentity_manage--SITE_A']
+    configurationApi.getRestrictions.mockResolvedValue({
+      value: ['SITE_A', 'SITE_B'],
+    })
+    renderPage('/add')
+    await waitFor(() =>
+      expect(screen.getByTestId('company-restriction').textContent).toContain(
+        'SITE_A'
+      )
+    )
+
+    expect(screen.queryByRole('button', { name: 'Clear' })).toBeNull()
+  })
+
   it('preselects the only restriction a restricted user may assign', async () => {
     permissions.userScopes = ['customermanagement.legalentity_manage--SITE_A']
     configurationApi.getRestrictions.mockResolvedValue({

@@ -377,24 +377,6 @@ const CompanyAddEdit = () => {
     formData.restrictions,
   ])
 
-  /**
-   * CL Dropdown has no `showClear`: with full restriction access (MD
-   * `showClear`) an empty option clears the restriction instead.
-   */
-  const restrictionDropdownOptions = useMemo(
-    () =>
-      hasFullRestrictionAccess && restrictionsOptions.length > 0
-        ? [
-            {
-              label: t('companies.edit.form.details.restrictionPlaceholder'),
-              value: '',
-            },
-            ...restrictionsOptions,
-          ]
-        : restrictionsOptions,
-    [hasFullRestrictionAccess, restrictionsOptions, t]
-  )
-
   const countryOptions = useMemo(
     () =>
       activeCountries.map((country: Country) => ({
@@ -546,10 +528,14 @@ const CompanyAddEdit = () => {
                   ? formData.restrictions[0]
                   : ''
               }
-              options={restrictionDropdownOptions}
+              options={restrictionsOptions}
               placeholder={t(
                 'companies.edit.form.details.restrictionPlaceholder'
               )}
+              // MD `showClear`: only a user with full restriction access may
+              // leave a company without a restriction.
+              showClear={hasFullRestrictionAccess}
+              clearAriaLabel={t('global.clear')}
               onChange={(event) => {
                 const value = event.value
                 setFormField('restrictions', value ? [value] : null)
