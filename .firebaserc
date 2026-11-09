@@ -38,6 +38,9 @@
         ],
         "emporix-status-codes": [
           "emporix-status-codes"
+        ],
+        "emporix-companies": [
+          "emporix-companies"
         ]
       }
     },
@@ -78,6 +81,9 @@
         ],
         "emporix-status-codes-stage": [
           "emporix-status-codes-stage"
+        ],
+        "emporix-companies-stage": [
+          "emporix-companies-stage"
         ]
       }
     },
@@ -118,6 +124,9 @@
         ],
         "emporix-status-codes-develop": [
           "emporix-status-codes-develop"
+        ],
+        "emporix-companies-develop": [
+          "emporix-companies-develop"
         ]
       }
     }

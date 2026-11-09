@@ -1,9 +1,9 @@
 # Integrations
 
 Last scanned: 05d8d1d (2026-11-06)
-Sources: `agentic-ai/src/services`, `agentic-ai/src/components/tool`, `algolia-synonyms/src`, `brands/src`, `brands/package.json`, `customer-groups/src`, `customer-groups/package.json`, `dashboard/src/dashboard/api`, `dashboard/src/dashboard/widgets/OrdersByCountryMapWidget/OrdersByCountryMapWidget.tsx`, `dashboard/src/vite-env.d.ts`, `labels/src`, `labels/package.json`, `status-codes/src`, `status-codes/package.json`, `orders/src`, `orders/package.json`, `products/src/api`, `products/src/hooks/api`, `products/src/context`, `products/src/helpers/hostUrls.ts`, `products/package.json`, `returns/src`, `returns/package.json`, `statistics/src/api.ts`, `users-and-groups/src`, `users-and-groups/package.json`, `.github/workflows`
+Sources: `agentic-ai/src/services`, `agentic-ai/src/components/tool`, `algolia-synonyms/src`, `brands/src`, `brands/package.json`, `customer-groups/src`, `customer-groups/package.json`, `dashboard/src/dashboard/api`, `dashboard/src/dashboard/widgets/OrdersByCountryMapWidget/OrdersByCountryMapWidget.tsx`, `dashboard/src/vite-env.d.ts`, `labels/src`, `labels/package.json`, `companies/src`, `companies/package.json`, `status-codes/src`, `status-codes/package.json`, `orders/src`, `orders/package.json`, `products/src/api`, `products/src/hooks/api`, `products/src/context`, `products/src/helpers/hostUrls.ts`, `products/package.json`, `returns/src`, `returns/package.json`, `statistics/src/api.ts`, `users-and-groups/src`, `users-and-groups/package.json`, `.github/workflows`
 
-Twelve UI extensions call the Emporix HTTP API. Eleven take the base URL from `VITE_API_URL`. `algolia-synonyms` takes it from the host callback field `emporixApiUrl`. No `.env*` file was opened. Env names below are names only. No literal API key, token, or tenant id was found in source; UI strings in `agentic-ai/src/translations/en/index.ts` label fields such as an API key and a client secret and are not values. HTTP paths inside `@emporix/api-calls` were not read (`node_modules` skipped), so those paths are unknown.
+Thirteen UI extensions call the Emporix HTTP API. Twelve take the base URL from `VITE_API_URL`. `algolia-synonyms` takes it from the host callback field `emporixApiUrl`. No `.env*` file was opened. Env names below are names only. No literal API key, token, or tenant id was found in source; UI strings in `agentic-ai/src/translations/en/index.ts` label fields such as an API key and a client secret and are not values. HTTP paths inside `@emporix/api-calls` were not read (`node_modules` skipped), so those paths are unknown.
 
 Firebase Hosting deploy and preview workflows under `.github/workflows/*firebase*.yaml` are deployment only and are not a runtime API.
 
@@ -13,13 +13,13 @@ Firebase Hosting deploy and preview workflows under `.github/workflows/*firebase
 
 ### `@emporix/api-calls` (axios)
 
-`orders`, `products`, `returns`, and `status-codes` 1.5.1, `labels` 1.2.14, `customer-groups` 1.2.9, `brands` and `users-and-groups` 1.2.1 (`*/package.json`). Each `src/api/bootstrap.ts` calls `createApiClient` with `baseURL` `VITE_API_URL` and throws `VITE_API_URL is not configured` when that value is missing. The access token and tenant come from the host via `setApiCredentials` / `useApiCredentials`. Retry and the concrete URL paths live in the package and are unknown here.
+`companies` 1.5.2, `orders`, `products`, `returns`, and `status-codes` 1.5.1, `labels` 1.2.14, `customer-groups` 1.2.9, `brands` and `users-and-groups` 1.2.1 (`*/package.json`). Each `src/api/bootstrap.ts` calls `createApiClient` with `baseURL` `VITE_API_URL` and throws `VITE_API_URL is not configured` when that value is missing. The access token and tenant come from the host via `setApiCredentials` / `useApiCredentials`. Retry and the concrete URL paths live in the package and are unknown here.
 
-Screens that only check permissions call `getAccessControlsTemplates` and `getScopesForUser` (`*/src/context/PermissionsProvider.tsx` in orders, returns, brands, labels, and status-codes). `products/src/context/PermissionsProvider.tsx` also loads tenant access controls and templates, and renders its children only after the load. `hooks/api/iam.ts` in those five also imports user, group, scope, and access-control mutators. No file outside that hook imports `useIamApi` except `PermissionsProvider`, so those mutators have no caller outside the hook.
+Screens that only check permissions call `getAccessControlsTemplates` and `getScopesForUser` (`*/src/context/PermissionsProvider.tsx` in orders, returns, brands, labels, status-codes, and companies). `products/src/context/PermissionsProvider.tsx` also loads tenant access controls and templates, and renders its children only after the load. `hooks/api/iam.ts` in those six also imports user, group, scope, and access-control mutators. No file outside that hook imports `useIamApi` except `PermissionsProvider`, so those mutators have no caller outside the hook.
 
 `customer-groups` and `users-and-groups` do call IAM from group and user screens (`GroupsTable`, `UsersTable`, `Group.provider`, `GroupPageActions`, `GroupMembers`, `GroupAddMembersDialog`, `User.page`, `UserAccessForm`). Wrapped calls cover groups, users, membership, scopes, and access controls. Paths unknown.
 
-All eight (`brands`, `customer-groups`, `labels`, `orders`, `products`, `returns`, `status-codes`, `users-and-groups`) also call:
+All nine (`brands`, `companies`, `customer-groups`, `labels`, `orders`, `products`, `returns`, `status-codes`, `users-and-groups`) also call:
 
 - Sites: `getSitesCall` from `src/api/sites.ts`, used by `src/context/SitesProvider.tsx`.
 - Feature toggles: `getFeatureToggleValuesCall` from `src/hooks/api/featureToggles.ts`, used by `src/context/FeatureTogglesProvider.tsx`.
@@ -183,3 +183,11 @@ Those usage paths read Emporix statistics. This extension does not call Make, Mo
 ## users-and-groups
 
 Shared api-calls client (`@emporix/api-calls` 1.2.1). Same IAM screen usage as customer-groups (groups, users, membership, scopes, access controls). Same vendor note: only `getVendors` is called from `GroupDetailsGeneralFormRolesVendor.tsx`; other wrappers in `hooks/api/vendors.ts` have no caller outside that file. Changelog and configuration-restriction calls match customer-groups (`EntityChangelogTab.tsx`, `GroupDetailsGeneralForm.tsx`). No legal-entity client was found under `users-and-groups/src`.
+
+## companies
+
+Shared api-calls client (`companies/package.json` `@emporix/api-calls` 1.5.2), plus sites, configuration (table config `ext_companies`, `restrictions` values), feature toggles, schemas and mixins, the changelog (audit log), and the IAM permission reads.
+
+- Customer Management Service, bound to the host tenant in `companies/src/hooks/api/customerManagement.ts`: legal entities (`fetchLegalEntitiesCall`, `fetchLegalEntityCall`, `createLegalEntityCall`, `updateLegalEntityCall` — also used for the approval group and mixins, `deleteLegalEntityCall`), locations (`fetchLocationCall`, `createLocationCall` — POST then PUT of the legal entity, `updateLocationCall`, `deleteLocationCall`), contact assignments (`fetchContactsForEntityCall`, `fetchContactAssignmentCall`, `createContactFlow`, `updateContactFlow`, `deleteContactAssignmentCall`). Paths per api-calls: `/customer-management/{tenant}/legal-entities`, `/locations`, `/contact-assignments`.
+- Customer Service, in `companies/src/hooks/api/customers.ts`: `getCustomers`, `getCustomer`, `addCustomer`, `updateCustomer`, `patchCustomerCall`, `removeCustomer`, `addCustomerAddress`, `updateCustomerAddress`.
+- No media, no direct HTTP.

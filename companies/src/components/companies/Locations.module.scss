@@ -1,0 +1,36 @@
+@use '../../styles/palette' as *;
+
+.list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.row {
+  border-bottom: 1px solid $grey-4;
+  margin-bottom: 0.5rem;
+}
+
+.location {
+  display: grid;
+  grid-template-columns: 1fr 2fr 2fr 3fr 3fr 1fr;
+  gap: 1rem;
+  align-items: center;
+  width: 100%;
+  padding: 1rem 0.5rem;
+}
+
+.icon {
+  margin-top: 1.5rem;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.actions {
+  display: flex;
+  align-items: flex-end;
+}

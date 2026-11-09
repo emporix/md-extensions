@@ -1,0 +1,14 @@
+// MD palette values used by the ported order screens. Plain SCSS variables
+// (not MD CSS custom properties) so the remote never depends on host globals.
+// Prefer CL tokens (var(--color-*)) where one exists.
+$grey-0: #fcfcfc;
+$grey-1: #f2f3f5;
+$grey-2: #e8e9eb;
+$grey-4: #c7cad1;
+$grey-5: #828a99;
+$grey-6: #3e4759;
+$grey-8: #1b2029;
+$blue-5: #3b73bb;
+$blue-7: #265bb7;
+$green: #2fbea9;
+$red: #e8615a;

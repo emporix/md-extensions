@@ -63,10 +63,11 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/skeleton` | `in-cl` | `Skeleton` | **2.11.0** | ~15 | Pattern A. Prime props (`width`, `height`, `size`, `shape`, `borderRadius`, `animation`). |
 | `primereact/chip` | `in-cl` | `Chip` | **2.11.0** | 3 | Pattern A. `label`, `icon`, `removable` + `onRemove` (`pi-times-circle`), `removeAriaLabel`. Not the `Chips` input. |
 | `primereact/tree` | `in-cl` | `Tree` | **2.12.0** | 6 | Pattern B; host theme cannot leak in (2.12.1). `compact` (2.14.0) matches MD's category trees (28px nodes). A `nodeTemplate` replaces Prime's label, so put `options.className` on its text or compact nodes shrink to 20px. Product pickers by category: use `ProductsBrowser` (below). |
+| `primereact/chips` | `in-cl` | `Chips` | **2.20.0** | 10 | Pattern A (COP-7186). `value` / `onChange` `{ value, originalEvent }`, `separator`, `addOnBlur`, `allowDuplicate`, `max`, plus `label` / `error` / `required`. Tokens are CL `Chip`. Like Prime, the separator is compared to one key press (MD's `", "` only splits pasted text). |
+| `primereact/splitbutton` | `in-cl` | `SplitButton` | **2.20.0** | 1 | Pattern A (COP-7186). `label`, `icon`, `model` (`MenuItem[]`), `onClick`, `disabled`, `menuButtonAriaLabel`; the arrow opens CL `Menu`. |
 | `primereact/multiselect` | `partial` | `Dropdown` `multiple` | 1.7.0 | 11+ | Not a dedicated MultiSelect. Chip display via `display="chip"`. |
 | `primereact/inputtextarea` | `partial` | `InputText` `textarea` | 1.4.1 | 6+ | No separate textarea export. |
 | `primereact/badge` | `partial` | `StatusBadge` is **not** a drop-in | 2.5.0 | 6+ | CL `StatusBadge` = outlined status pill (`status` + `color`). Prime `Badge` = notification count badge. Promote Badge if you need the Prime widget. |
-| `primereact/chips` | `missing` | — | — | 10 | Free-text token input. **Not** Dropdown chip display. |
 | `primereact/tag` | `missing` | — | — | 6 | List status/label chips. Do not silently swap to `StatusBadge` without checking API. |
 | `primereact/treetable` | `missing` | — | — | 4 | `EmporixTreeTable`, categories. |
 | `primereact/inputmask` | `missing` | — | — | 4 | Documented substitute: `InputText` `type="time"` for `"99:99"` masks. Promote for other masks. |
@@ -74,7 +75,6 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/sidebar` | `missing` | — | — | 1 | `TableExtensions.tsx`. Documented substitute: local `SidePanel` (right drawer, 20rem) + CL `InputSwitch`. Copy from `returns` or `brands` `components/shared/SidePanel`. Do not fall back to CL `Dialog` + `Checkbox`. |
 | `primereact/paginator` | `missing` | — | — | 1 | Standalone (`EntityChangelogTab`). Table pagination is already on CL `DataTable`. `customer-groups` used custom control + CL `Dropdown`. |
 | `primereact/panel` | `missing` | — | — | 1 | `ProductPricesPanelForm.tsx`. Documented substitute (products, COP-6993): CL `SectionBox` with a custom collapsible header. |
-| `primereact/splitbutton` | `missing` | — | — | 1 | `AddNewContactButton.tsx`. |
 | `primereact/overlaypanel` | `missing` | — | — | 1 | `JsonPathFilterInput.tsx`. |
 | `primereact/chart` | `missing` | — | — | 1 | `WebhooksStatistics.tsx`. Do not add `chart.js` to remote `shared` (playbook §2). |
 | `primereact/togglebutton` | `missing` | — | — | 1 | `Language.module.tsx`. |
@@ -115,7 +115,7 @@ Import these when the remote needs them; they are not Prime replacements:
 Order by MD usage. Ask the user before implementing; Pattern A vs B is mandatory in `migrate-to-component-library`.
 
 1. ~~`InputNumber`~~ / ~~`Skeleton`~~ — done in 2.11.0 (COP-6917)
-2. `Chips` (10)
+2. ~~`Chips`~~ — done in 2.20.0 (COP-7186)
 4. ~~`Tree`~~ — done in 2.12.0; `TreeTable` (4)
 5. `InputMask` (4) — unless `type="time"` is enough
 6. `Sidebar` (1, but `TableExtensions` is common) — or keep the local `SidePanel` substitute

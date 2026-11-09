@@ -1,0 +1,13 @@
+// MD inline `display: flex; align-items: center` around the type filter.
+.typeFilter {
+  display: flex;
+  align-items: center;
+}
+
+.typeFilterDropdown {
+  width: 100%;
+}
+
+.clearButton {
+  flex-shrink: 0;
+}

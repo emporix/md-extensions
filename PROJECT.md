@@ -1,6 +1,6 @@
 # Management Dashboard Extensions
 
-Management Dashboard extensions, one Vite app per top-level folder, loaded by the host as module-federation remotes. Operators use them for brands, labels, orders, returns, products, customer groups, users and groups, status codes, statistics, the home dashboard, agentic AI, and Algolia synonyms. Source: `README.md`, `docs/MIGRATED_MODULES.md`.
+Management Dashboard extensions, one Vite app per top-level folder, loaded by the host as module-federation remotes. Operators use them for brands, labels, orders, returns, products, customer groups, users and groups, status codes, companies, statistics, the home dashboard, agentic AI, and Algolia synonyms. Source: `README.md`, `docs/MIGRATED_MODULES.md`.
 
 Platform context (callers, deployment, cross-service conventions): ask Emporix
 AI Buddy `get_service_context` with `service: "Management Dashboard Extensions"`. This repository's own
@@ -23,6 +23,7 @@ knowledge is below; open only what the task needs.
 | `ai-project-knowledge/modules/products.md` | ProductsBrowser list and category tree, edit tabs, templates, dynamic-variant inheritance, site-aware and localized mixins, variant overrides, prices | `05d8d1d` 2026-11-06 |
 | `ai-project-knowledge/modules/returns.md` | Return list with site filter and restriction, create wizard, detail edit, mixin tabs | `05d8d1d` 2026-11-06 |
 | `ai-project-knowledge/modules/status-codes.md` | Status codes (quote reasons): list with client-side filters and sequential delete, add/edit with localized comment and version, permissions, host wiring | `74b6236` 2026-11-06 |
+| `ai-project-knowledge/modules/companies.md` | Companies (legal entities): list with column visibility, editor with subsidiaries, locations, approval group, contact assignments, customer groups, mixins and audit log; location, contact and customer-assignment pages; permissions, host wiring | `d8edeb2` 2026-11-09 |
 | `ai-project-knowledge/modules/statistics.md` | Tenant usage charts | `da99643` 2026-11-02 |
 | `ai-project-knowledge/modules/users-and-groups.md` | Employee users and their IAM groups | `05d8d1d` 2026-11-06 |
 
