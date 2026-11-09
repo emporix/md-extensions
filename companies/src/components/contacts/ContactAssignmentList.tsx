@@ -25,12 +25,18 @@ import styles from './ContactAssignmentList.module.scss'
 type ContactAssignmentListProps = {
   readonly legalEntity: Partial<LegalEntity>
   readonly managerPermissions?: boolean
+  /**
+   * Customers Viewer: the assignments carry customer names, emails and
+   * phones, so without it they are neither loaded nor shown.
+   */
+  readonly customerViewPermission: boolean
 }
 
 /** Contact assignments of a company, with row and batch delete. */
 export const ContactAssignmentList = ({
   legalEntity,
   managerPermissions = true,
+  customerViewPermission,
 }: ContactAssignmentListProps) => {
   const { i18n, t } = useTranslation()
   const { getContactsForEntity, deleteContactAssignment } =
@@ -59,7 +65,10 @@ export const ContactAssignmentList = ({
 
   useEffect(() => {
     void (async () => {
-      if (!legalEntity.id) return
+      if (!legalEntity.id || !customerViewPermission) {
+        setContacts([])
+        return
+      }
 
       try {
         const contactsForEntity = await getContactsForEntity(
@@ -72,7 +81,7 @@ export const ContactAssignmentList = ({
       }
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
-  }, [i18n.language, refresh, legalEntity.id])
+  }, [i18n.language, refresh, legalEntity.id, customerViewPermission])
 
   const batchDelete = useCallback(async () => {
     try {
@@ -204,6 +213,14 @@ export const ContactAssignmentList = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
     [i18n.language, managerPermissions, selectedContacts]
   )
+
+  if (!customerViewPermission) {
+    return (
+      <p className={styles.noPermissions} data-testid="contacts-no-permission">
+        {t('global.noPermissions')}
+      </p>
+    )
+  }
 
   return (
     <>

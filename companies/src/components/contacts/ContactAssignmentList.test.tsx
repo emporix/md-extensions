@@ -76,7 +76,7 @@ const LocationDisplay = () => (
   <div data-testid="location">{useLocation().pathname}</div>
 )
 
-const renderList = (managerPermissions = true) =>
+const renderList = (managerPermissions = true, customerViewPermission = true) =>
   render(
     <MemoryRouter initialEntries={['/C-1']}>
       <RefreshValuesProvider>
@@ -87,6 +87,7 @@ const renderList = (managerPermissions = true) =>
               <ContactAssignmentList
                 legalEntity={{ id: 'C-1' }}
                 managerPermissions={managerPermissions}
+                customerViewPermission={customerViewPermission}
               />
             }
           />
@@ -125,6 +126,17 @@ describe('ContactAssignmentList', () => {
     api.getContactsForEntity.mockResolvedValue(assignments)
     api.deleteContactAssignment.mockResolvedValue({})
     api.deleteCustomer.mockResolvedValue({})
+  })
+
+  it('neither loads nor shows customer data without Customers Viewer', async () => {
+    renderList(true, false)
+
+    expect(
+      (await screen.findByTestId('contacts-no-permission')).textContent
+    ).toBe('No permissions')
+    expect(api.getContactsForEntity).not.toHaveBeenCalled()
+    expect(screen.queryByTestId('contact-assignments-table')).toBeNull()
+    expect(screen.queryByText('ann@x.io')).toBeNull()
   })
 
   afterEach(() => {

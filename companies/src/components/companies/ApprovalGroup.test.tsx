@@ -166,6 +166,7 @@ describe('ApprovalGroup', () => {
   })
 
   it('adds an existing contact picked in the dialog', async () => {
+    permissions.granted.push(EmployeeDomains.CUSTOMERS_VIEWER)
     renderGroup()
     const addExisting = i18n.t('companies.approvalGroup.add.existing.label')
 

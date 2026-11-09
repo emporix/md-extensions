@@ -2,6 +2,8 @@ import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Dialog, PrimaryButton, useToast } from '@emporix/component-library'
 import { ContactAssignmentList } from '../contacts/ContactAssignmentList'
+import { usePermissions } from '../../context/PermissionsProvider'
+import { EmployeeDomains } from '../../configs/accessControls'
 import { AddNewContactButton } from '../contacts/AddNewContactButton'
 import {
   SelectionValuesProvider,
@@ -27,6 +29,8 @@ const AddNewApprovalGroupComponent = ({
   legalEntity,
   managerPermissions = true,
 }: AddNewApprovalGroupProps) => {
+  const { hasPermission } = usePermissions()
+  const canViewCustomers = hasPermission(EmployeeDomains.CUSTOMERS_VIEWER)
   const { i18n, t } = useTranslation()
   const [dialogVisible, setDialogVisible] = useState(false)
   const { selection } = useSelection()
@@ -74,6 +78,7 @@ const AddNewApprovalGroupComponent = ({
         {legalEntity.id && (
           <ContactAssignmentList
             managerPermissions={managerPermissions}
+            customerViewPermission={canViewCustomers}
             legalEntity={legalEntity}
           />
         )}
