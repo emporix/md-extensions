@@ -18,6 +18,20 @@
   border-radius: 999px;
   cursor: pointer;
 
+  transition: color 0.2s ease;
+
+  // MD renders these as PrimeReact text buttons, which take the primary color
+  // on hover.
+  &:hover:not(:disabled),
+  &:focus-visible {
+    color: var(--color-primary, #3b73bb);
+  }
+
+  &:focus-visible {
+    outline: 0;
+    box-shadow: var(--focus-ring-box-shadow);
+  }
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
