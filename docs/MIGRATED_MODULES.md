@@ -44,7 +44,7 @@ Living list of Management Dashboard modules extracted into `md-extensions` under
 - **The mixins subsystem is portable.** `returns/src/components/mixins/` (helpers, `useMixinsForm`, `MixinsForm`, `MixinsFormInput`, `MixinsSectionBox`) is a CL-only rewrite of the `products` remote's copy; `MixinColumns` / `SelectedMixinRow` / `AddCustomMixinDialog` under `components/shared/` add the mixin-as-table-column feature. Take these from `returns`, not `products` (which still imports `primereact`).
 - **`ConfigurationProvider` gained `getTableMixinColumns`**, and `TableExtensions` gained `tableColumnHeaders` + `schemaType`. Copy from `returns` when a table needs mixin columns.
 - **`@emporix/api-calls` already exports schema and mixin calls** (`getSchemasCall`, `getSchemaCall`, `getReferencesCall`, `getReferenceCall`, `getMixinsSchemaCall`) — no local axios client is needed for mixins, unlike the `products` remote.
-- **Remaining widget gaps** are not listed here (they go stale). Lookup: [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md). `returns` still substitutes native `<input type="number|time">` through CL `InputText` for `InputNumber` / `InputMask`, and an explicit “All” option for Dropdown `showClear`.
+- **Remaining widget gaps** are not listed here (they go stale). Lookup: [CL_WIDGET_STATUS.md](./CL_WIDGET_STATUS.md). `returns` still substitutes native `<input type="number">` through CL `InputText` for `InputNumber`, and an explicit “All” option for Dropdown `showClear`; mixin time fields use CL `TimePicker` (2.21.0, COP-7188).
 
 ### Deltas worth reusing from `orders` (COP-6917)
 
@@ -54,7 +54,7 @@ Living list of Management Dashboard modules extracted into `md-extensions` under
 - **`components/shared/LabeledValue`** replaces MD `InputField` wrapping read-only text (CL `FieldLabel` + value). **`LinkWithIcon`** takes `to` (in-remote) or `hostHref` (host route via `window.location.assign`). **`NumberFilterTemplate`** (`=`/`>`/`<` + CL `InputNumber`) and **`SitesSelect`** (CL Dropdown + "All sites") are reusable.
 - **`MixinsForm` / `useMixinsForm` gained `onDirtyChange` / `onFormDirtyChange`** so expansion rows can confirm before discarding unsaved mixin edits.
 - **Audit-log SCSS from `customer-groups` used MD CSS variables with fallbacks** (`var(--grey-5, #828a99)`); `orders` strips them to the fallback values. `customer-groups` / `users-and-groups` still carry the leak.
-- **CL gaps that remain:** no accordion variant of the mixins form (entry mixins render one `MixinsForm` per schema), no `InputMask` (time → `InputText type="time"`), Prime-style severity `Badge` (→ `StatusBadge` colour map); CL `DataTable` always renders the selection column before an `expander` column (MD had expander first).
+- **CL gaps that remain:** no accordion variant of the mixins form (entry mixins render one `MixinsForm` per schema), no general `InputMask` (time fields → CL `TimePicker` since 2.21.0, COP-7188), Prime-style severity `Badge` (→ `StatusBadge` colour map); CL `DataTable` always renders the selection column before an `expander` column (MD had expander first).
 
 ### Deltas worth reusing from `products` (COP-6993)
 

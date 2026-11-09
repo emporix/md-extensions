@@ -4,8 +4,8 @@ import { Controller, useForm } from 'react-hook-form'
 import {
   Calendar,
   DateValue,
-  InputText,
   PrimaryButton,
+  TimePicker,
   useToast,
 } from '@emporix/component-library'
 import LabeledValue from '../shared/LabeledValue'
@@ -34,9 +34,8 @@ type DeliveryTimeFormProps = {
 
 /**
  * Delivery time window editor (`mixins.deliveryTime`), editable only while
- * the order is CREATED. MD's `InputMask "99:99"` is replaced by CL `InputText`
- * `type="time"` (same `HH:MM` value) — documented substitute in
- * CL_WIDGET_STATUS.md.
+ * the order is CREATED. MD's `InputMask "99:99"` is replaced by CL `TimePicker`
+ * (same `HH:MM` value; an invalid typed time clears on blur).
  */
 const DeliveryTimeForm = ({
   order,
@@ -96,13 +95,12 @@ const DeliveryTimeForm = ({
         name={name}
         control={control}
         render={({ field }) => (
-          <InputText
+          <TimePicker
             className={styles.time}
             label={label}
-            type="time"
             disabled={!canManage}
             value={field.value ?? ''}
-            onChange={(e) => field.onChange(e.target.value)}
+            onChange={field.onChange}
           />
         )}
       />

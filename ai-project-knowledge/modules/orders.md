@@ -69,7 +69,7 @@ Delivery time (`orders/src/components/orders/DeliveryTimeForm.tsx`) is editable 
 
 Calculated entries (`orders/src/components/orders/entries/OrderEntries.tsx`): when status is not `COMPLETED` and authorized amount is below `calculatedPrice.finalPrice.grossValue`, a warning is shown. Add entry is hidden when status is `COMPLETED` or the list is read-only, and disabled without manager (`orders/src/components/orders/entries/OrderEntriesList.tsx`). A quantity change posts the full deduplicated entry list immediately via `addEntries` (`orders/src/hooks/orders/useEntriesColumns.tsx`). Quantity `0` is a legal value on that call.
 
-Add-entry dialog (`orders/src/components/orders/entries/AddEntryDialog.tsx`, tests in `AddEntryDialog.test.tsx`), built on the component-library `ProductsBrowser` (CL 2.18.0, `orders/package.json`):
+Add-entry dialog (`orders/src/components/orders/entries/AddEntryDialog.tsx`, tests in `AddEntryDialog.test.tsx`), built on the component-library `ProductsBrowser` (CL 2.21.0, `orders/package.json`):
 
 - Two views, list and tree. Columns: image, name, id, code, product type. The image is the first media item that is an image (or has no content type), resized to a 32x32 thumbnail (`orders/src/helpers/productsBrowser.helpers.ts`).
 - Products load through `syncPaginatedProducts`. A selected category loads the products of its whole branch, via `withCategoryScope` from `@emporix/api-calls` (test `loads the products of the whole branch of a selected category`).

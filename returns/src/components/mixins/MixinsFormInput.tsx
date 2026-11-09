@@ -6,6 +6,7 @@ import {
   InputNumber,
   InputSwitch,
   InputText,
+  TimePicker,
 } from '@emporix/component-library'
 import LocalizedInput from '../shared/LocalizedInput'
 import {
@@ -15,7 +16,6 @@ import {
 } from './helpers'
 import { fromLocalizedMap, toLocalizedMap } from './localizedMixin.helpers'
 import { formatInheritedDisplayValue } from './siteAwareMixin.helpers'
-import { isHourValid } from '../../helpers/time'
 import Localized from '../../models/Localized.model'
 import { useTranslation } from 'react-i18next'
 import { ReferenceItem, ReferenceSelector } from './ReferenceSelector'
@@ -313,18 +313,14 @@ const MixinsFormInput = (props: SchemaFormInputProps) => {
         )
       }
       case MixinsFormItemType.time: {
-        // CL has no InputMask: native time input replaces MD's "99:99" mask;
-        // incomplete/invalid times clear the value like MD's onBlur check.
+        // CL TimePicker replaces MD's "99:99" InputMask; it emits `HH:mm`, and
+        // an incomplete/invalid time clears the value like MD's onBlur check.
         return (
-          <InputText
+          <TimePicker
             className={className}
-            type="time"
             value={(value as string) || ''}
             disabled={disabled || isReadonly}
-            onChange={(e) => {
-              const time = e.target.value
-              onInputChange(item.key as string, isHourValid(time) ? time : '')
-            }}
+            onChange={(time) => onInputChange(item.key as string, time)}
           />
         )
       }
