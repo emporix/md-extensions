@@ -8,6 +8,7 @@ import {
 import { createPortal } from 'react-dom'
 import classNames from 'classnames'
 import { FiX } from 'react-icons/fi'
+import { useTranslation } from 'react-i18next'
 
 import styles from './SidePanel.module.scss'
 
@@ -37,6 +38,7 @@ const SidePanel = ({
   children,
   'data-testid': dataTestId,
 }: SidePanelProps) => {
+  const { t } = useTranslation()
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const onHideRef = useRef(onHide)
   onHideRef.current = onHide
@@ -121,7 +123,7 @@ const SidePanel = ({
         className={classNames(styles.mask, {
           [styles.maskClosing]: isClosing,
         })}
-        aria-label="Close"
+        aria-label={t('global.close')}
         tabIndex={-1}
         onClick={isClosing ? undefined : onHide}
       />
@@ -140,7 +142,7 @@ const SidePanel = ({
             type="button"
             className={styles.close}
             onClick={isClosing ? undefined : onHide}
-            aria-label="Close"
+            aria-label={t('global.close')}
             data-testid="side-panel-close"
           >
             <FiX size={22} aria-hidden />

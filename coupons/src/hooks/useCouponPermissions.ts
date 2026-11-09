@@ -2,6 +2,7 @@ import { usePermissions } from '../context/PermissionsProvider'
 import { EmployeeDomains } from '../configs/accessControls'
 
 export interface CouponPermissions {
+  canView: boolean
   canManage: boolean
   canViewAuditLog: boolean
   canViewCustomers: boolean
@@ -28,6 +29,8 @@ const useCouponPermissions = (): CouponPermissions => {
   const canViewVendors = hasPermission(EmployeeDomains.VENDORS_VIEWER)
 
   return {
+    // Managers get the implied viewer access control from PermissionsProvider.
+    canView: hasPermission(EmployeeDomains.COUPONS_VIEWER),
     canManage,
     canViewAuditLog: hasPermission(EmployeeDomains.AUDIT_LOG_VIEWER),
     canViewCustomers,

@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import { useCustomEntitiesApi } from '../hooks/api/customEntities'
@@ -56,20 +57,28 @@ export const ReferenceOptionsProvider = ({ children }: Props) => {
   const [customEntities, setCustomEntities] = useState<CustomEntity[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // A response for a previous tenant must not leak its custom entities into
+  // the current tenant's reference options.
+  const tenantRef = useRef(tenant)
+  tenantRef.current = tenant
 
   const loadReferenceOptions = useCallback(async () => {
-    if (!tenant) return
+    const requestTenant = tenant
+    setCustomEntities([])
+    if (!requestTenant) return
 
     try {
       setLoading(true)
       setError(null)
       const entities = await getAllCustomEntities()
+      if (requestTenant !== tenantRef.current) return
       setCustomEntities(entities)
     } catch (err) {
+      if (requestTenant !== tenantRef.current) return
       console.error('Failed to fetch custom entities:', err)
       setError('Failed to fetch custom entities')
     } finally {
-      setLoading(false)
+      if (requestTenant === tenantRef.current) setLoading(false)
     }
   }, [tenant, getAllCustomEntities])
 

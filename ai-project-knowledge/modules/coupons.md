@@ -22,7 +22,7 @@ Hash routes (`coupons/src/constants/paths.ts`, `coupons/src/RemoteComponent.tsx`
 
 ## Permissions
 
-`Coupons Viewer` can view; `Coupons Manager` is needed for Add, row and batch delete, Save, Discard, field changes and mixin saves. An audience or vendor restriction is editable only when the operator manages coupons **and** can view the restricted entity (`Customers Viewer`, `Segments Viewer`, `Categories Viewer`, `Vendors Viewer`); categories are also locked for free-shipping coupons. `Audit Log Viewer` shows the Audit log tab (`coupons/src/hooks/useCouponPermissions.ts`). Permissions come from the remote's own `PermissionsProvider`.
+`Coupons Viewer` can view — without it the module renders "No permissions" and requests nothing (`coupons/src/Coupons.module.tsx`; the host only hides the menu entry). `Coupons Manager` is needed for Add, row and batch delete, Save, Discard, field changes and mixin saves. An audience or vendor restriction is editable only when the operator manages coupons **and** can view the restricted entity (`Customers Viewer`, `Segments Viewer`, `Categories Viewer`, `Vendors Viewer`); categories are also locked for free-shipping coupons. `Audit Log Viewer` shows the Audit log tab (`coupons/src/hooks/useCouponPermissions.ts`). Permissions come from the remote's own `PermissionsProvider`.
 
 ## List
 
@@ -31,7 +31,7 @@ Hash routes (`coupons/src/constants/paths.ts`, `coupons/src/RemoteComponent.tsx`
 - Server-side paging, sorting and filters. Columns code, name, discount type (dropdown filter), discount percentage, discount amount (`MoneyValue`), redemption count (number filter), category coupon (true/false filter). Percentage and amount are not filterable (the service returns no rows for them). Every filter can be cleared: code, name and redemption count with the column clear button, discount type and category coupon with the dropdown's × (CL `Dropdown` `showClear`, 2.22.0).
 - Column visibility and coupon mixin columns are stored under the configuration key `ext_coupons` (`TableExtensions`), the same shape MD used.
 - Row click and row edit open `/:code`. Delete (row or batch) asks for confirmation, deletes in parallel, shows one summary toast (failed codes with their messages plus the deleted ones), keeps only failed rows selected and reloads. A page that comes back empty after deletes steps back to the last page with rows.
-- A host tenant switch drops the rows and the selection.
+- A host tenant switch drops the rows and the selection. The configuration, feature-toggle, reference-option and sites providers ignore a late response for the previous tenant (`coupons/src/context/tenantSwitch.test.tsx`).
 
 Pinned by `coupons/src/pages/Coupons.page.test.tsx`.
 
