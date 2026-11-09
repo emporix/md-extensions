@@ -9,6 +9,7 @@ import {
 import { useCustomEntitiesApi } from '../hooks/api/customEntities'
 import { CustomEntity } from '../models/CustomEntity.model'
 import { Props } from '../helpers/props'
+import { createRequestTracker, loadLatest } from '../helpers/api'
 import { useDashboardContext } from './Dashboard.context'
 
 const PREDEFINED_REFERENCE_TYPES = [
@@ -57,21 +58,31 @@ export const ReferenceOptionsProvider = ({ children }: Props) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Only the latest request (current tenant) may update the list.
+  const trackRequest = useMemo(() => createRequestTracker(), [])
+
   const loadReferenceOptions = useCallback(async () => {
+    // A tenant switch drops the previous tenant's entities at once, so the
+    // selector never offers ids that belong to another tenant.
+    setCustomEntities([])
     if (!tenant) return
 
-    try {
-      setLoading(true)
-      setError(null)
-      const entities = await getAllCustomEntities()
-      setCustomEntities(entities)
-    } catch (err) {
-      console.error('Failed to fetch custom entities:', err)
-      setError('Failed to fetch custom entities')
-    } finally {
-      setLoading(false)
-    }
-  }, [tenant, getAllCustomEntities])
+    setLoading(true)
+    setError(null)
+    await loadLatest(
+      trackRequest,
+      () => getAllCustomEntities(),
+      (entities) => {
+        setCustomEntities(entities)
+        setLoading(false)
+      },
+      (err) => {
+        console.error('Failed to fetch custom entities:', err)
+        setError('Failed to fetch custom entities')
+        setLoading(false)
+      }
+    )
+  }, [tenant, getAllCustomEntities, trackRequest])
 
   useEffect(() => {
     loadReferenceOptions()
