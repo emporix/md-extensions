@@ -925,6 +925,72 @@
           "value": "*"
         } ]
       } ]
+    },
+    {
+      "target": "emporix-units",
+      "public": "units/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [ {
+        "source" : "**",
+        "headers": [ {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        } ]
+      } ]
+    },
+    {
+      "target": "emporix-units-stage",
+      "public": "units/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [ {
+        "source" : "**",
+        "headers": [ {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        } ]
+      } ]
+    },
+    {
+      "target": "emporix-units-develop",
+      "public": "units/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [ {
+        "source" : "**",
+        "headers": [ {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        } ]
+      } ]
     }
-  ]
+]
 }

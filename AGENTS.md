@@ -12,8 +12,8 @@ This is a monorepo of independent Management Dashboard remotes, one Vite app per
 
 | Concern | Technology / version | Evidence |
 |---|---|---|
-| Language / runtime | TypeScript `~5.6.2` (`strict`) in thirteen remotes, JavaScript (JSX) in `algolia-synonyms`. CI Node `20.x`, `24.x` for `dashboard`. No `.nvmrc`. | `*/package.json`, `*/tsconfig.app.json`, `.github/workflows/*-firebase-*.yaml` |
-| Package / build tool | npm with one `package-lock.json` per remote. Vite `^8.2.2` (`companies`, `coupons`, `labels`, `orders`, `products`, `returns`, `status-codes`), `^7.3.1` (`algolia-synonyms`), `^6.0.5` (the rest) | `*/package.json` |
+| Language / runtime | TypeScript `~5.6.2` (`strict`) in fourteen remotes, JavaScript (JSX) in `algolia-synonyms`. CI Node `20.x`, `24.x` for `dashboard`. No `.nvmrc`. | `*/package.json`, `*/tsconfig.app.json`, `.github/workflows/*-firebase-*.yaml` |
+| Package / build tool | npm with one `package-lock.json` per remote. Vite `^8.2.2` (`companies`, `coupons`, `labels`, `orders`, `products`, `returns`, `status-codes`, `units`), `^7.3.1` (`algolia-synonyms`), `^6.0.5` (the rest) | `*/package.json` |
 | Primary framework | React `^18.3.1`; `@originjs/vite-plugin-federation` (all but `algolia-synonyms`); `react-router` v7 and `react-i18next` (all but `algolia-synonyms` and `dashboard`); `@emporix/component-library` and `@emporix/api-calls` (see **Remotes**); PrimeReact only in `agentic-ai`, `dashboard`, `statistics` (8.x) and `algolia-synonyms` (10.x) | `*/package.json`, `*/vite.config.*` |
 | Persistence | none (standalone dev shells keep tenant and token in browser storage) | `*/src/helpers/settings.helpers.ts` |
 | Messaging / events | none | `*/package.json` |
@@ -36,6 +36,7 @@ This is a monorepo of independent Management Dashboard remotes, one Vite app per
 | `status-codes` | playbook-aligned | `statusCodes` | `statusCodes` → `/apps/management/status-codes/*` | `VITE_STATUS_CODES_URL` | `5180` | yes / yes | `2.18.1` / `1.5.1` |
 | `coupons` | playbook-aligned | `coupons` | `coupons` → `/apps/management/coupons/*` | `VITE_COUPONS_URL` | `5181` | yes / yes | `2.22.0` / `1.5.3` |
 | `companies` | playbook-aligned | `companies` | `companies` → `/apps/management/companies/*` | `VITE_COMPANIES_URL` | `5183` | yes / yes | `2.25.0` / `1.5.2` |
+| `units` | playbook-aligned | `units` | `units` → `/apps/management/units/*` | `VITE_UNITS_URL` | `5182` | yes / yes | `2.18.1` / `1.5.1` |
 | `statistics` | legacy (PrimeReact) | `extension` | `statistics` → `/apps/administration/statistics` | `VITE_STATISTICS_URL` | not pinned | no / no | — / — |
 | `users-and-groups` | playbook-aligned | `usersAndGroups` | `usersAndGroups` → `/administration/users-and-groups/*` | `VITE_USERS_AND_GROUPS_URL` | not pinned (`5173` in docs) | yes / yes | `2.4.1` / `1.2.1` |
 
@@ -48,7 +49,7 @@ Local deviations:
 - `labels`: the list call is local (`src/api/labels.ts`) because the api-calls `fetchLabels` filter params are ignored by the service.
 - `users-and-groups`: `dev` runs plain `vite` and the port is not pinned.
 
-Sources: `*/vite.config.*`, `*/package.json`, `docs/MIGRATED_MODULES.md` (playbook-aligned remotes, next free port `5184`; `5182` is claimed by the unmerged Units branch), and in `management-dashboard` `src/router/module-routes.tsx` and `.env.*` (host route keys and env vars). Per-remote detail: `ai-project-knowledge/modules/<remote>.md` → **Host wiring**.
+Sources: `*/vite.config.*`, `*/package.json`, `docs/MIGRATED_MODULES.md` (playbook-aligned remotes, next free port `5184`), and in `management-dashboard` `src/router/module-routes.tsx` and `.env.*` (host route keys and env vars). Per-remote detail: `ai-project-knowledge/modules/<remote>.md` → **Host wiring**.
 
 ## Commands
 
@@ -58,7 +59,7 @@ Run inside the remote folder (`cd <remote>`), never at the repository root.
 |---|---|---|
 | Install | `npm ci` | `.github/workflows/*-firebase-preview.yaml` |
 | Start / dev | `npm run dev` (standalone shell; `vite --mode dev`, plain `vite` in `algolia-synonyms`, `dashboard`, `statistics`, `users-and-groups`) | `*/package.json` |
-| Build | `npm run build:dev` / `build:stage` / `build:prod` (`tsc -b` first, except `algolia-synonyms`). `brands`, `companies`, `coupons`, `labels`, `orders`, `products`, `returns`, `status-codes` first run `scripts/ensure-cors-origin.mjs`, which fails without a terminal when the dashboard origin is not in the `vite.config.ts` CORS list | `*/package.json`, `labels/scripts/ensure-cors-origin.mjs` |
+| Build | `npm run build:dev` / `build:stage` / `build:prod` (`tsc -b` first, except `algolia-synonyms`). `brands`, `companies`, `coupons`, `labels`, `orders`, `products`, `returns`, `status-codes`, `units` first run `scripts/ensure-cors-origin.mjs`, which fails without a terminal when the dashboard origin is not in the `vite.config.ts` CORS list | `*/package.json`, `labels/scripts/ensure-cors-origin.mjs` |
 | Generate (API clients, schemas) | none | `*/package.json` |
 | Format | no `format` script; Prettier `3.5.0` with `<remote>/.prettierrc` (all but `algolia-synonyms`) | `*/package.json`, `*/.prettierrc` |
 | Lint / static analysis | `npm run lint` (`eslint .`; in `agentic-ai` it is `eslint . --fix` and rewrites files) | `*/package.json`, `*/eslint.config.js` |
@@ -130,7 +131,7 @@ Rules observed in those files (not inferred from framework habit):
 
 | Path | Responsibility | Entry points / rules |
 |---|---|---|
-| `<remote>/` (fourteen folders, see **Remotes**) | One Vite app each; all but `algolia-synonyms` are federated remotes | `src/RemoteComponent.tsx` (federated entry), `src/App.tsx` + `src/main.tsx` (standalone shell), `vite.config.ts` |
+| `<remote>/` (fifteen folders, see **Remotes**) | One Vite app each; all but `algolia-synonyms` are federated remotes | `src/RemoteComponent.tsx` (federated entry), `src/App.tsx` + `src/main.tsx` (standalone shell), `vite.config.ts` |
 | `<remote>/src/` (playbook-aligned remotes) | `api/` (`bootstrap.ts`, `sites.ts`), `hooks/api/` (api-calls wrappers), `context/` (providers), `pages/`, `components/`, `models/`, `helpers/`, `configs/` (access controls), `constants/paths.ts`, `translations/` | `orders/src`, `.claude/rules/md-extension-migration.md` |
 | `docs/` | Migration playbook, migrated-modules registry, Tier 1 copy inventory, component-library widget status | `MODULE_MIGRATION_PLAYBOOK.md`, `MIGRATED_MODULES.md` |
 | `.github/workflows/` | Firebase preview, dev + stage, and prod workflows per remote | `{remote}-firebase-*.yaml` |
