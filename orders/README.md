@@ -10,7 +10,7 @@ Management Dashboard "Orders" module, extracted into an `md-extensions` federate
 | Exposes | `./RemoteComponent` → `src/RemoteComponent.tsx` (named **and** default export) |
 | Local dev port | `5177` (`strictPort`) |
 | Host env var | `VITE_ORDERS_URL` → `.../assets/remoteEntry.js` |
-| Component library | `@emporix/component-library` `2.18.0` |
+| Component library | `@emporix/component-library` `2.21.0` |
 | MD wiring mode | A — permanent remote (`url:` on the route) |
 
 ## Screens
@@ -30,7 +30,7 @@ The remote is PrimeReact-free. `InputNumber`, `Skeleton` and `Chip` were promote
 
 | MD used | Here |
 |---|---|
-| `InputMask` `"99:99"` (delivery time) | CL `InputText` with `type="time"` |
+| `InputMask` `"99:99"` (delivery time, mixin time fields) | CL `TimePicker` (≥ 2.21.0, `HH:mm`) |
 | `Badge` severity (payment / transaction status) | CL `StatusBadge` with a severity → colour map |
 | `Dropdown showClear` (status, payment filters, site selector) | explicit "All" option |
 | `Sidebar` (table extensions) | local `SidePanel` + CL `InputSwitch` |

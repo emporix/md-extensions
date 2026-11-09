@@ -10,7 +10,7 @@ Management Dashboard "Products" module (list, create, edit), extracted into an `
 | Exposes | `./RemoteComponent` → `src/RemoteComponent.tsx` (named **and** default export) |
 | Local dev port | `5178` (`strictPort`) |
 | Host env var | `VITE_PRODUCTS_URL` → `.../assets/remoteEntry.js` |
-| Component library | `@emporix/component-library` `2.18.0` |
+| Component library | `@emporix/component-library` `2.21.0` |
 | MD wiring mode | A — permanent remote (`url:` on the route) |
 
 ## Screens
@@ -34,7 +34,7 @@ The remote is PrimeReact-free. `Tree` was promoted into the component library in
 | `Panel` (price panels) | CL `SectionBox` with a custom collapsible header |
 | `MultiSelect` (labels, AI languages, attribute values, price sites) | CL `Dropdown multiple display="chip"` |
 | `Dropdown showClear` | explicit empty / "All" option |
-| `InputMask` `"99:99"` (time mixins) | CL `InputText type="time"` |
+| `InputMask` `"99:99"` (time mixins) | CL `TimePicker` (≥ 2.21.0, `HH:mm`) |
 | `TabView` / `TabPanel` (incl. mixin tabs with badges) | CL `Tabs`; a newer schema version shows as `(vN)` in the label |
 | `TreeTable` mode of `CategoriesTree` | dropped (not used by products) |
 | MD `ProductsBrowser` (products list) | CL `ProductsBrowser` (≥ 2.18.0) with `withCategoryScope` from api-calls (≥ 1.5.1) and `toProductsBrowserCategoryNodes`; column settings (`TableExtensions`), mixin columns, the CSV export and the URL page stay in `ProductsList.page.tsx` |
