@@ -302,6 +302,25 @@ describe('Coupons list', () => {
     expect(booleanFilter).not.toBeNull()
   })
 
+  it('filters category coupons by a boolean value, not the text "false"', async () => {
+    renderList()
+    await screen.findByText('SALE10')
+    const comboboxes = within(table()).getAllByRole('combobox')
+    const categoryFilter = comboboxes[comboboxes.length - 1]
+
+    fireEvent.click(categoryFilter)
+    fireEvent.mouseDown(await screen.findByRole('option', { name: 'False' }))
+
+    // api-calls ≥ 1.5.3 sends a boolean `equals` value unquoted
+    // (`categoryRestricted:false`); a string here would be quoted and match nothing.
+    await waitFor(() =>
+      expect(vi.mocked(fetchCoupons).mock.lastCall?.[1]).toMatchObject({
+        filters: { categoryRestricted: { value: false, matchMode: 'equals' } },
+      })
+    )
+    expect(categoryFilter.textContent).toContain('False')
+  })
+
   // Scenario 2
   it('reads column visibility from the ext_coupons configuration', async () => {
     tableConfig.columns = [{ key: 'name', visible: false }]

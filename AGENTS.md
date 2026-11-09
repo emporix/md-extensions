@@ -34,7 +34,7 @@ This is a monorepo of independent Management Dashboard remotes, one Vite app per
 | `products` | playbook-aligned | `products` | `products` → `apps/management/products/*` | `VITE_PRODUCTS_URL` | `5178` | yes / yes | `2.18.1` / `1.5.1` |
 | `returns` | playbook-aligned | `returns` | `returns` → `/apps/management/returns/*` | `VITE_RETURNS_URL` | `5176` | yes / yes | `2.18.0` / `1.5.1` |
 | `status-codes` | playbook-aligned | `statusCodes` | `statusCodes` → `/apps/management/status-codes/*` | `VITE_STATUS_CODES_URL` | `5180` | yes / yes | `2.18.1` / `1.5.1` |
-| `coupons` | playbook-aligned | `coupons` | `coupons` → `/apps/management/coupons/*` | `VITE_COUPONS_URL` | `5181` | yes / yes | `2.22.0` / `1.5.1` |
+| `coupons` | playbook-aligned | `coupons` | `coupons` → `/apps/management/coupons/*` | `VITE_COUPONS_URL` | `5181` | yes / yes | `2.22.0` / `1.5.3` |
 | `statistics` | legacy (PrimeReact) | `extension` | `statistics` → `/apps/administration/statistics` | `VITE_STATISTICS_URL` | not pinned | no / no | — / — |
 | `users-and-groups` | playbook-aligned | `usersAndGroups` | `usersAndGroups` → `/administration/users-and-groups/*` | `VITE_USERS_AND_GROUPS_URL` | not pinned (`5173` in docs) | yes / yes | `2.4.1` / `1.2.1` |
 

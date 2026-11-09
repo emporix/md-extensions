@@ -19,7 +19,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
-    "@emporix/api-calls": "1.5.1",
+    "@emporix/api-calls": "1.5.3",
     "@emporix/component-library": "2.22.0",
     "@originjs/vite-plugin-federation": "^1.4.1",
     "axios": "^1.18.1",

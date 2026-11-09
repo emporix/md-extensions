@@ -13,7 +13,7 @@ Firebase Hosting deploy and preview workflows under `.github/workflows/*firebase
 
 ### `@emporix/api-calls` (axios)
 
-`coupons`, `orders`, `products`, `returns`, and `status-codes` 1.5.1, `labels` 1.2.14, `customer-groups` 1.2.9, `brands` and `users-and-groups` 1.2.1 (`*/package.json`). Each `src/api/bootstrap.ts` calls `createApiClient` with `baseURL` `VITE_API_URL` and throws `VITE_API_URL is not configured` when that value is missing. The access token and tenant come from the host via `setApiCredentials` / `useApiCredentials`. Retry and the concrete URL paths live in the package and are unknown here.
+`coupons` 1.5.3, `orders`, `products`, `returns`, and `status-codes` 1.5.1, `labels` 1.2.14, `customer-groups` 1.2.9, `brands` and `users-and-groups` 1.2.1 (`*/package.json`). Each `src/api/bootstrap.ts` calls `createApiClient` with `baseURL` `VITE_API_URL` and throws `VITE_API_URL is not configured` when that value is missing. The access token and tenant come from the host via `setApiCredentials` / `useApiCredentials`. Retry and the concrete URL paths live in the package and are unknown here.
 
 Screens that only check permissions call `getAccessControlsTemplates` and `getScopesForUser` (`*/src/context/PermissionsProvider.tsx` in orders, returns, brands, labels, status-codes, and coupons). `products/src/context/PermissionsProvider.tsx` also loads tenant access controls and templates, and renders its children only after the load. `hooks/api/iam.ts` in those six also imports user, group, scope, and access-control mutators. No file outside that hook imports `useIamApi` except `PermissionsProvider`, so those mutators have no caller outside the hook.
 
@@ -115,7 +115,7 @@ Shared api-calls client (`labels/package.json` `@emporix/api-calls` 1.2.14), plu
 
 ## coupons
 
-Shared api-calls client (`coupons/package.json` `@emporix/api-calls` 1.5.1), plus sites, configuration (incl. `ext_coupons` table configuration via `updateSingleConfiguration`), feature toggles, schemas and mixins (copied from `orders`), the audit log changelog, and the IAM permission reads.
+Shared api-calls client (`coupons/package.json` `@emporix/api-calls` 1.5.3 — boolean `equals` filters such as `categoryRestricted` are sent unquoted), plus sites, configuration (incl. `ext_coupons` table configuration via `updateSingleConfiguration`), feature toggles, schemas and mixins (copied from `orders`), the audit log changelog, and the IAM permission reads.
 
 - Coupons (Coupon Service): `fetchCoupons` (server-side page, sort and `q` filters), `fetchCoupon`, `createNewCoupon` (returns the code), `modifyCoupon` (`PUT` by the original code, whole coupon), `patchCouponCall` (mixins and `metadata.mixins` only), `removeCoupon`, all bound to the host tenant in `coupons/src/hooks/api/coupons.ts`. Paths per api-calls: `/coupon/{tenant}/coupons[/{code}]`.
 - Restriction selectors: `getCustomers` (only with Customers Viewer, `coupons/src/hooks/api/customers.ts`), `getSegmentsCall` (`segments.ts`), `getCategories` (`categories.ts`), `getVendorsCall` (`vendors.ts`); currencies: `fetchCurrencies` (`currencies.ts`).
