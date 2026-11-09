@@ -36,7 +36,10 @@ import {
 } from '../models/LegalEntity.model'
 import { Customer } from '../models/Customer.model'
 import { getApiErrorDetails } from '../helpers/api'
+import useUpdateEffect from '../hooks/useUpdateEffect'
+import { useDashboardContext } from '../context/Dashboard.context'
 import {
+  companiesListPath,
   companyDetailPath,
   contactAddPath,
   customerAssignmentEditPath,
@@ -89,6 +92,13 @@ const CustomerAssignmentAddEditPage = () => {
     ContactAssignment[]
   >([])
   const { navigate, simpleNavigate } = useCustomNavigate()
+
+  // A host tenant switch leaves for the list, like the company and location
+  // pages, so the previous tenant's record is never shown or saved.
+  const { tenant } = useDashboardContext()
+  useUpdateEffect(() => {
+    simpleNavigate(companiesListPath())
+  }, [tenant])
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.COMPANIES_MANAGER)
   const canViewCustomers = hasPermission(EmployeeDomains.CUSTOMERS_VIEWER)
@@ -206,8 +216,8 @@ const CustomerAssignmentAddEditPage = () => {
     ;(async () => {
       await loadData()
     })()
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity: load once
-  }, [])
+    // Reload when the route switches to another assignment or company.
+  }, [loadData])
 
   const approvalParam = searchParams.get('approval')
   useEffect(() => {

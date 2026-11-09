@@ -2,13 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   DataTable,
+  DotIndicator,
   useToast,
   type DataTableColumnFilterElementOptions,
   type DataTableColumnProps,
 } from '@emporix/component-library'
 import BatchDeleteButton from '../shared/BatchDeleteButton'
 import DropdownFilterTemplate from '../shared/DropdownFilter'
-import { DotIndicator } from '../shared/DotIndicator'
 import { ContactActions } from './ContactActions'
 import { useSelection } from './SelectionValues.context'
 import { useCustomerManagementApi } from '../../hooks/api/customerManagement'
@@ -129,7 +129,10 @@ export const ContactAssignmentList = ({
         showFilterMenu: false,
         showClearButton: false,
         body: (rowData: ContactAssignment) => (
-          <DotIndicator value={rowData.primary} />
+          <DotIndicator
+            value={rowData.primary}
+            label={t(rowData.primary ? 'global.true' : 'global.false')}
+          />
         ),
         filterElement: (options: DataTableColumnFilterElementOptions) =>
           DropdownFilterTemplate(options, primaryOptions),

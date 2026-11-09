@@ -3,6 +3,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -15,6 +16,8 @@ import { EmployeeDomains } from '../configs/accessControls'
 import { ContactType } from '../models/LegalEntity.model'
 import { NavigationConfirmProvider } from '../context/NavigationConfirmProvider'
 import CustomerAssignmentAddEditPage from './CustomerAssignmentAddEdit.page'
+import { DashboardProvider } from '../context/Dashboard.context'
+import type { AppState } from '../models/AppState.model'
 
 const management = vi.hoisted(() => ({
   getContactAssignment: vi.fn(),
@@ -79,6 +82,38 @@ const renderAt = (path: string) => {
       </NavigationConfirmProvider>
     </HashRouter>
   )
+}
+
+const appStateFor = (tenant: string): AppState => ({
+  tenant,
+  language: 'en',
+  token: '',
+  contentLanguage: 'en',
+  onError: () => {
+    // NOOP
+  },
+})
+
+const renderWithTenant = (path: string) => {
+  window.history.replaceState(null, '', `/#${path}`)
+  const tree = (tenant: string) => (
+    <DashboardProvider appState={appStateFor(tenant)}>
+      <HashRouter>
+        <NavigationConfirmProvider>
+          <Routes>
+            <Route
+              path="/:companyId/assignments/customer/:contactAssignmentId?"
+              element={<CustomerAssignmentAddEditPage />}
+            />
+            <Route path="*" element={<div>elsewhere</div>} />
+          </Routes>
+          <LocationDisplay />
+        </NavigationConfirmProvider>
+      </HashRouter>
+    </DashboardProvider>
+  )
+  const result = render(tree('tenant-a'))
+  return { switchTenant: (next: string) => result.rerender(tree(next)) }
 }
 
 const pathname = () => screen.getByTestId('pathname').textContent
@@ -154,6 +189,32 @@ describe('Customer assignment add / edit', () => {
   })
 
   // Scenario 14
+  it('returns to the list when the host switches tenant', async () => {
+    const { switchTenant } = renderWithTenant('/c1/assignments/customer/as-1')
+    await waitFor(() =>
+      expect(management.getContactAssignment).toHaveBeenCalledWith('as-1')
+    )
+
+    switchTenant('tenant-b')
+
+    await waitFor(() => expect(pathname()).toBe('/'))
+  })
+
+  it('reloads when the route switches to another assignment', async () => {
+    renderAt('/c1/assignments/customer/as-1')
+    await waitFor(() =>
+      expect(management.getContactAssignment).toHaveBeenCalledWith('as-1')
+    )
+
+    act(() => {
+      window.location.hash = '#/c1/assignments/customer/as-2'
+    })
+
+    await waitFor(() =>
+      expect(management.getContactAssignment).toHaveBeenCalledWith('as-2')
+    )
+  })
+
   it('loads 10 customers and marks the ones already assigned', async () => {
     renderAt('/c1/assignments/customer')
     await waitForTable()

@@ -14,6 +14,8 @@ import i18n from '../translations/i18n'
 import { EmployeeDomains } from '../configs/accessControls'
 import { ContactType } from '../models/LegalEntity.model'
 import ContactAddEditPage from './ContactAddEdit.page'
+import { DashboardProvider } from '../context/Dashboard.context'
+import type { AppState } from '../models/AppState.model'
 
 const calls = vi.hoisted(() => [] as string[])
 const tracked = vi.hoisted(
@@ -92,6 +94,35 @@ const renderAt = (path: string) =>
       <LocationDisplay />
     </MemoryRouter>
   )
+
+const appStateFor = (tenant: string): AppState => ({
+  tenant,
+  language: 'en',
+  token: '',
+  contentLanguage: 'en',
+  onError: () => {
+    // NOOP
+  },
+})
+
+const renderWithTenant = (path: string) => {
+  const tree = (tenant: string) => (
+    <DashboardProvider appState={appStateFor(tenant)}>
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route
+            path="/:companyId/assignments/contact/:contactAssignmentId?"
+            element={<ContactAddEditPage />}
+          />
+          <Route path="*" element={<div>elsewhere</div>} />
+        </Routes>
+        <LocationDisplay />
+      </MemoryRouter>
+    </DashboardProvider>
+  )
+  const result = render(tree('tenant-a'))
+  return { switchTenant: (next: string) => result.rerender(tree(next)) }
+}
 
 const currentPath = () => screen.getByTestId('location').textContent
 const input = (id: string) => document.getElementById(id) as HTMLInputElement
@@ -199,6 +230,15 @@ describe('Contact add / edit', () => {
   })
 
   // Scenario 12
+  it('returns to the list when the host switches tenant', async () => {
+    const { switchTenant } = renderWithTenant('/c1/assignments/contact/as-1')
+    await waitFor(() => expect(management.getLegalEntity).toHaveBeenCalled())
+
+    switchTenant('tenant-b')
+
+    await waitFor(() => expect(currentPath()).toBe('/'))
+  })
+
   it('creates customer, address, assignment and approval entry in order', async () => {
     renderAt('/c1/assignments/contact?approval=true&primary=true')
     await waitFor(() =>

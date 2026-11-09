@@ -63,7 +63,7 @@ Companies Viewer views; Companies Manager is needed to create, edit, delete and 
 
 ## Translations
 
-`companies/src/translations/{en,de}/` keep MD's `companies.*` and `contacts.*` keys, plus the borrowed `customers.*` subset, `priceLists.settings.form.currency.label` and `confirmBox.*`. Added keys: `companies.approvalGroup.add.dialogTitle` (MD hard-coded the string), `contacts.toast.delete.customer.*`, and the DE values MD lacked. EN and DE key parity is pinned by `companies/src/translations/translations.test.ts`.
+`companies/src/translations/{en,de}/` keep MD's `companies.*` and `contacts.*` keys, plus the borrowed `customers.*` subset, `priceLists.settings.form.currency.label` and `confirmBox.*`. Added keys: `companies.approvalGroup.add.dialogTitle` (MD hard-coded the string), `contacts.toast.delete.customer.*`, `global.close` / `global.clear` (side panel and type-filter controls, English literals in MD), and the DE values MD lacked. The company type filter uses `companies.subsidiary` / `companies.singular`; the primary dot is CL `DotIndicator` labelled `global.true` / `global.false`. EN and DE key parity is pinned by `companies/src/translations/translations.test.ts`.
 
 ## Host wiring
 

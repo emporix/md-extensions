@@ -148,7 +148,13 @@ describe('ContactAssignmentList', () => {
         i18n.t('contacts.assignment.customerType')
       )
     ).toBeTruthy()
-    expect(within(rowFor('Ann')).getByTestId('dot-indicator')).toBeTruthy()
+    // The primary dot carries an accessible true / false label.
+    expect(
+      within(rowFor('Ann')).getByLabelText(i18n.t('global.true'))
+    ).toBeTruthy()
+    expect(
+      within(rowFor('Bob')).getByLabelText(i18n.t('global.false'))
+    ).toBeTruthy()
     for (const key of [
       'contacts.name',
       'contacts.surname',

@@ -33,7 +33,10 @@ import {
 } from '../models/Customer.model'
 import { Metadata } from '../models/Metadata.model'
 import { getApiErrorDetails, getApiErrorMessage } from '../helpers/api'
+import useUpdateEffect from '../hooks/useUpdateEffect'
+import { useDashboardContext } from '../context/Dashboard.context'
 import {
+  companiesListPath,
   companyDetailPath,
   contactEditPath,
   HOST_CUSTOMER_PATH,
@@ -118,6 +121,13 @@ const ContactAddEditPage = () => {
     syncCustomer,
   } = useCustomerApi()
   const { simpleNavigate } = useCustomNavigate()
+
+  // A host tenant switch leaves for the list, like the company and location
+  // pages, so the previous tenant's record is never shown or saved.
+  const { tenant } = useDashboardContext()
+  useUpdateEffect(() => {
+    simpleNavigate(companiesListPath())
+  }, [tenant])
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.COMPANIES_MANAGER)
   const canManageCustomers = hasPermission(EmployeeDomains.CUSTOMERS_MANAGER)

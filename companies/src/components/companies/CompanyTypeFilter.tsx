@@ -2,6 +2,7 @@ import {
   Dropdown,
   type DataTableColumnFilterElementOptions,
 } from '@emporix/component-library'
+import { useTranslation } from 'react-i18next'
 import { CompanyType } from '../../models/LegalEntity.model'
 import styles from './CompanyTypeFilter.module.scss'
 
@@ -11,6 +12,7 @@ const CompanyTypeFilter = ({
 }: {
   readonly options: DataTableColumnFilterElementOptions
 }) => {
+  const { t } = useTranslation()
   const handleChange = (value: CompanyType | '') => {
     options.filterApplyCallback(value, options.index)
   }
@@ -21,8 +23,8 @@ const CompanyTypeFilter = ({
         className={styles.typeFilterDropdown}
         data-testid="company-type-filter"
         options={[
-          { label: 'Subsidiary', value: CompanyType.SUBSIDIARY },
-          { label: 'Company', value: CompanyType.COMPANY },
+          { label: t('companies.subsidiary'), value: CompanyType.SUBSIDIARY },
+          { label: t('companies.singular'), value: CompanyType.COMPANY },
         ]}
         value={options.value}
         onChange={(e) => handleChange(e.value as CompanyType)}
@@ -32,7 +34,7 @@ const CompanyTypeFilter = ({
           onClick={() => handleChange('')}
           className={`${styles.clearButton} p-column-filter-clear-button p-link`}
           type="button"
-          aria-label="Clear"
+          aria-label={t('global.clear')}
         >
           <span className="pi pi-filter-slash" aria-hidden="true"></span>
         </button>

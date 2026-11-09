@@ -26,6 +26,8 @@ export default {
     required: 'Erforderlich',
   },
   fieldRequired: 'Dieses Feld ist erforderlich',
+  close: 'Schließen',
+  clear: 'Zurücksetzen',
   false: 'False',
   true: 'True',
   export: {
