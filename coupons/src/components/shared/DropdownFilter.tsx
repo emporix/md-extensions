@@ -26,6 +26,7 @@ export const DropdownFilter = ({
       placeholder={placeholder}
       options={dropdownOptions}
       value={filterOptions.value}
+      showClear
       onChange={(e) =>
         filterOptions.filterApplyCallback(e.value, filterOptions.index)
       }
@@ -41,6 +42,8 @@ const DropdownFilterTemplate = (
     <Dropdown
       value={options.value}
       options={menu}
+      // MD parity (Prime `showClear`): the × resets the column filter.
+      showClear
       onChange={(e) => {
         options.filterApplyCallback(e.value, options.index)
       }}

@@ -39,7 +39,7 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 |--------------|--------|-----------|--------|----------|-------|
 | `primereact/button` | `in-cl` | `PrimaryButton` / `SecondaryButton` | 1.2.0 | 181 | Toolbar icon buttons: `SecondaryButton` `size="small"` `iconOnly` (2.6.0). Keep `pi pi-*` glyphs. |
 | `primereact/column` | `in-cl` | `DataTable` `columns` prop | 1.10.0 | 102 | **No** standalone `Column`. Never nest host `primereact/column` into CL DataTable. Types → `DataTableColumnProps`. |
-| `primereact/dropdown` | `in-cl` | `Dropdown` | 1.3.0 | 61 | No `appendTo` / `showClear`. Multi-select since 1.7.0 (`multiple`). Explicit “All” option stands in for `showClear`. |
+| `primereact/dropdown` | `in-cl` | `Dropdown` | 1.3.0 | 61 | No `appendTo`. `showClear` (× button, emits `null` / `[]`) since **2.22.0** — use it for column filters instead of an explicit “All” option. Multi-select since 1.7.0 (`multiple`). |
 | `primereact/inputtext` | `in-cl` | `InputText` | 1.4.0 | 60 | Also `textarea` boolean (1.4.1) — prefer this over Prime `InputTextarea` when porting. |
 | `primereact/dialog` | `in-cl` | `Dialog` / `ConfirmBox` | 1.10.0 / 2.2.0 | 35 | Confirm flows → `ConfirmBox` (`message` is required). |
 | `primereact/tabview` | `in-cl` | `Tabs` / `TabItem` | 2.0.0 | 29 | `disabled` on `TabItem` + `keepMounted` (≡ `renderActiveOnly={false}`) since **2.5.0**. |

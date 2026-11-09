@@ -186,6 +186,34 @@ describe('Coupons list', () => {
     )
   })
 
+  it('filters by discount type and clears the filter with the × button', async () => {
+    renderList()
+    await screen.findByText('SALE10')
+    const [discountTypeFilter] = within(table()).getAllByRole('combobox')
+
+    fireEvent.click(discountTypeFilter)
+    fireEvent.mouseDown(await screen.findByRole('option', { name: 'Percent' }))
+
+    await waitFor(() =>
+      expect(vi.mocked(fetchCoupons).mock.lastCall?.[1]).toMatchObject({
+        filters: { discountType: { value: 'PERCENT' } },
+      })
+    )
+
+    fireEvent.click(within(table()).getByRole('button', { name: 'Clear' }))
+
+    // The cleared column filter is dropped from the request.
+    await waitFor(() => {
+      const filters = (
+        vi.mocked(fetchCoupons).mock.lastCall?.[1] as {
+          filters?: Record<string, { value?: unknown }>
+        }
+      ).filters
+      expect(filters?.discountType?.value ?? null).toBeNull()
+    })
+    expect(within(table()).queryByRole('button', { name: 'Clear' })).toBeNull()
+  })
+
   // Scenario 2
   it('reads column visibility from the ext_coupons configuration', async () => {
     tableConfig.columns = [{ key: 'name', visible: false }]
