@@ -447,7 +447,9 @@ const CompanyAddEdit = () => {
               inputId="company-id"
               label={t('companies.edit.form.details.id')}
               tooltip={t('companies.edit.form.tooltip.id')}
-              readOnly={!canManage || companyId !== undefined}
+              // Disabled (not just read-only) so it renders greyed out like
+              // MD, whose global styles grey out read-only inputs.
+              disabled={!canManage || companyId !== undefined}
               value={formData.id || ''}
               onChange={(event) => setFormField('id', event.target.value)}
             />

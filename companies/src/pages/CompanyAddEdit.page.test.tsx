@@ -320,7 +320,8 @@ describe('Company add / edit', () => {
       company.metadata.mixins,
       company.mixins
     )
-    expect(input('company-id').readOnly).toBe(true)
+    // An existing company's id is shown greyed out and cannot be changed.
+    expect(input('company-id').disabled).toBe(true)
     expect(isDisabled(button('Save'))).toBe(true)
 
     typeInto('company-name', 'Acme 2')
