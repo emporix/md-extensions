@@ -36,7 +36,9 @@ export const DropdownFilter = ({
 
 const DropdownFilterTemplate = (
   options: DataTableColumnFilterElementOptions,
-  menu: DropdownFilterOption[]
+  menu: DropdownFilterOption[],
+  /** Replaces the default 180px-minimum filter width (e.g. short true/false lists). */
+  className: string = styles.filterDropdown
 ) => {
   return (
     <Dropdown
@@ -47,7 +49,7 @@ const DropdownFilterTemplate = (
       onChange={(e) => {
         options.filterApplyCallback(e.value, options.index)
       }}
-      className={`${styles.filterDropdown} p-column-filter`}
+      className={`${className} p-column-filter`}
     />
   )
 }

@@ -267,6 +267,21 @@ describe('Coupons list', () => {
     expect(nameHeader?.classList.contains(tableStyles.nameCell)).toBe(true)
   })
 
+  it('keeps the category coupon column and its filter narrow', async () => {
+    renderList()
+    await screen.findByText('SALE10')
+    const header = within(table()).getByText('Category coupon').closest('th')
+    const comboboxes = within(table()).getAllByRole('combobox')
+    const booleanFilter = comboboxes[comboboxes.length - 1].closest(
+      `.${tableStyles.booleanFilter}`
+    )
+
+    expect(header?.classList.contains(tableStyles.categoryCouponCell)).toBe(
+      true
+    )
+    expect(booleanFilter).not.toBeNull()
+  })
+
   // Scenario 2
   it('reads column visibility from the ext_coupons configuration', async () => {
     tableConfig.columns = [{ key: 'name', visible: false }]

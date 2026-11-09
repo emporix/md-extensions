@@ -148,6 +148,8 @@ const useCouponsColumns = () => {
         columnKey: 'categoriesCoupon',
         header: t(`${TABLE_COLUMNS_PATH}.categoriesCoupon`),
         field: 'categoryRestricted',
+        headerClassName: styles.categoryCouponCell,
+        bodyClassName: styles.categoryCouponCell,
         sortable: true,
         filter: true,
         showFilterMenu: false,
@@ -156,7 +158,7 @@ const useCouponsColumns = () => {
         filterMatchMode: FilterMatchMode.EQUALS,
         dataType: 'boolean',
         filterElement: (options: DataTableColumnFilterElementOptions) =>
-          DropdownFilterTemplate(options, booleanOptions),
+          DropdownFilterTemplate(options, booleanOptions, styles.booleanFilter),
         body: (coupon: Coupon) => (
           <DotIndicator value={!!coupon.categoryRestricted} />
         ),

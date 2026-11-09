@@ -24,6 +24,16 @@
   min-width: 18rem;
 }
 
+// A true/false column: the header wraps and the filter fits the cell.
+.categoryCouponCell {
+  width: 9rem;
+}
+
+.booleanFilter {
+  min-width: 0;
+  width: 100%;
+}
+
 .actionsCell {
   width: 120px;
 }
