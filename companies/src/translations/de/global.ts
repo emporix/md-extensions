@@ -28,8 +28,8 @@ export default {
   fieldRequired: 'Dieses Feld ist erforderlich',
   close: 'Schließen',
   clear: 'Zurücksetzen',
-  false: 'False',
-  true: 'True',
+  false: 'Falsch',
+  true: 'Wahr',
   export: {
     csv: 'Export',
     ascsv: 'Exportieren als .CSV',

@@ -33,7 +33,7 @@ Hash routes (`companies/src/constants/paths.ts`, `companies/src/RemoteComponent.
 | `/:companyId/assignments/contact[/:id]` | `pages/ContactAddEdit.page.tsx` (`?primary=true`, `?approval=true`, `?backTo=`) |
 | `/:companyId/assignments/customer[/:id]` | `pages/CustomerAssignmentAddEdit.page.tsx` (`?primary=true`, `?approval=true`, `?backTo=`) |
 
-Other paths redirect to `/`. Customer pages (`/apps/management/customers/:id`) and customer groups (`/administration/customer-groups#/groups/:id`) are host routes, left with `window.location.assign` (`HOST_CUSTOMER_PATH`, `HOST_CUSTOMER_GROUP_PATH`). A host tenant switch sends every page back to the list; loads go through `createRequestTracker` / `loadLatest` so a late response for an earlier tenant or id cannot overwrite the current one.
+Other paths redirect to `/`. The location, contact and customer-assignment pages are wrapped in `components/shared/RemountOnParams.tsx`, so a change of route params (edit → add, another company or record) remounts the page with fresh state; the company page keys itself by `companyId`. `ReferenceOptionsProvider` is mounted (as in `orders` / `products`) so custom-entity mixin references get their selector. Customer pages (`/apps/management/customers/:id`) and customer groups (`/administration/customer-groups#/groups/:id`) are host routes, left with `window.location.assign` (`HOST_CUSTOMER_PATH`, `HOST_CUSTOMER_GROUP_PATH`). A host tenant switch sends every page back to the list; loads go through `createRequestTracker` / `loadLatest` so a late response for an earlier tenant or id cannot overwrite the current one.
 
 ## Permissions
 

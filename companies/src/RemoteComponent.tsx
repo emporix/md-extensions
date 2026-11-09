@@ -13,6 +13,8 @@ import { ConfigurationProvider } from './context/ConfigurationProvider'
 import { SitesProvider } from './context/SitesProvider'
 import { UIBlockerProvider } from './context/UIBlocker'
 import { NavigationConfirmProvider } from './context/NavigationConfirmProvider'
+import { ReferenceOptionsProvider } from './context/ReferenceOptionsProvider'
+import RemountOnParams from './components/shared/RemountOnParams'
 import CompaniesModule from './Companies.module'
 import CompaniesListPage from './pages/CompaniesList.page'
 import CompanyAddEditPage from './pages/CompanyAddEdit.page'
@@ -54,39 +56,56 @@ const RemoteComponent = ({
           <FeatureTogglesProvider>
             <ConfigurationProvider>
               <SitesProvider>
-                <UIBlockerProvider>
-                  <HashRouter>
-                    <NavigationConfirmProvider>
-                      {/* Mirrors MD's /apps/management/companies/... routes. */}
-                      <Routes>
-                        <Route element={<CompaniesModule />}>
-                          <Route index element={<CompaniesListPage />} />
-                          <Route path="add" element={<CompanyAddEditPage />} />
-                          <Route
-                            path=":companyId"
-                            element={<CompanyAddEditPage />}
-                          />
-                          <Route
-                            path=":companyId/locations/:locationId?"
-                            element={<LocationAddEditPage />}
-                          />
-                          <Route
-                            path=":companyId/assignments/contact/:contactAssignmentId?"
-                            element={<ContactAddEditPage />}
-                          />
-                          <Route
-                            path=":companyId/assignments/customer/:contactAssignmentId?"
-                            element={<CustomerAssignmentAddEditPage />}
-                          />
-                          <Route
-                            path="*"
-                            element={<Navigate to="/" replace />}
-                          />
-                        </Route>
-                      </Routes>
-                    </NavigationConfirmProvider>
-                  </HashRouter>
-                </UIBlockerProvider>
+                <ReferenceOptionsProvider>
+                  <UIBlockerProvider>
+                    <HashRouter>
+                      <NavigationConfirmProvider>
+                        {/* Mirrors MD's /apps/management/companies/... routes. */}
+                        <Routes>
+                          <Route element={<CompaniesModule />}>
+                            <Route index element={<CompaniesListPage />} />
+                            <Route
+                              path="add"
+                              element={<CompanyAddEditPage />}
+                            />
+                            <Route
+                              path=":companyId"
+                              element={<CompanyAddEditPage />}
+                            />
+                            <Route
+                              path=":companyId/locations/:locationId?"
+                              element={
+                                <RemountOnParams>
+                                  <LocationAddEditPage />
+                                </RemountOnParams>
+                              }
+                            />
+                            <Route
+                              path=":companyId/assignments/contact/:contactAssignmentId?"
+                              element={
+                                <RemountOnParams>
+                                  <ContactAddEditPage />
+                                </RemountOnParams>
+                              }
+                            />
+                            <Route
+                              path=":companyId/assignments/customer/:contactAssignmentId?"
+                              element={
+                                <RemountOnParams>
+                                  <CustomerAssignmentAddEditPage />
+                                </RemountOnParams>
+                              }
+                            />
+                            <Route
+                              path="*"
+                              element={<Navigate to="/" replace />}
+                            />
+                          </Route>
+                        </Routes>
+                      </NavigationConfirmProvider>
+                    </HashRouter>
+                  </UIBlockerProvider>
+                </ReferenceOptionsProvider>
               </SitesProvider>
             </ConfigurationProvider>
           </FeatureTogglesProvider>
