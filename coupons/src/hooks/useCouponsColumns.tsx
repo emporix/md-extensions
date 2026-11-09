@@ -143,6 +143,8 @@ const useCouponsColumns = () => {
             '-'
           ),
         ...numericColumn,
+        bodyClassName: `${styles.numericCell} ${styles.redemptionCountCell}`,
+        headerClassName: `${styles.numericCell} ${styles.redemptionCountCell}`,
       },
       {
         columnKey: 'categoriesCoupon',

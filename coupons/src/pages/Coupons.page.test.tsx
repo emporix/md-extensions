@@ -276,6 +276,17 @@ describe('Coupons list', () => {
     expect(nameHeader?.classList.contains(tableStyles.nameCell)).toBe(true)
   })
 
+  it('keeps the redemption count column narrow and right aligned', async () => {
+    renderList()
+    await screen.findByText('SALE10')
+    const header = within(table()).getByText('Redemption count').closest('th')
+
+    expect(header?.classList.contains(tableStyles.redemptionCountCell)).toBe(
+      true
+    )
+    expect(header?.classList.contains(tableStyles.numericCell)).toBe(true)
+  })
+
   it('keeps the category coupon column and its filter narrow', async () => {
     renderList()
     await screen.findByText('SALE10')

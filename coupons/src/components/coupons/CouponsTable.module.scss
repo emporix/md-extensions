@@ -25,6 +25,11 @@
   min-width: 18rem;
 }
 
+// Number filter (mode + value + clear) fits; the header wraps.
+.redemptionCountCell {
+  width: 11rem;
+}
+
 // A true/false column: the header wraps and the filter fits the cell.
 .categoryCouponCell {
   width: 9rem;
