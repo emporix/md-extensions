@@ -28,7 +28,7 @@ Hash routes (`coupons/src/constants/paths.ts`, `coupons/src/RemoteComponent.tsx`
 
 `CouponsTable` (`coupons/src/components/coupons/CouponsTable.tsx`):
 
-- Server-side paging, sorting and filters. Columns code, name, discount type (dropdown filter), discount percentage, discount amount (`MoneyValue`), redemption count (number filter), category coupon (true/false filter). Percentage and amount are not filterable (the service returns no rows for them).
+- Server-side paging, sorting and filters. Columns code, name, discount type (dropdown filter), discount percentage, discount amount (`MoneyValue`), redemption count (number filter), category coupon (true/false filter). Percentage and amount are not filterable (the service returns no rows for them). Every filter can be cleared: code, name and redemption count with the column clear button, discount type and category coupon with the dropdown's × (CL `Dropdown` `showClear`, 2.22.0).
 - Column visibility and coupon mixin columns are stored under the configuration key `ext_coupons` (`TableExtensions`), the same shape MD used.
 - Row click and row edit open `/:code`. Delete (row or batch) asks for confirmation, deletes in parallel, shows one summary toast (failed codes with their messages plus the deleted ones), keeps only failed rows selected and reloads. A page that comes back empty after deletes steps back to the last page with rows.
 - A host tenant switch drops the rows and the selection.

@@ -200,7 +200,9 @@ describe('Coupons list', () => {
       })
     )
 
-    fireEvent.click(within(table()).getByRole('button', { name: 'Clear' }))
+    fireEvent.click(
+      within(discountTypeFilter).getByRole('button', { name: 'Clear' })
+    )
 
     // The cleared column filter is dropped from the request.
     await waitFor(() => {
@@ -211,7 +213,48 @@ describe('Coupons list', () => {
       ).filters
       expect(filters?.discountType?.value ?? null).toBeNull()
     })
-    expect(within(table()).queryByRole('button', { name: 'Clear' })).toBeNull()
+    expect(
+      within(discountTypeFilter).queryByRole('button', { name: 'Clear' })
+    ).toBeNull()
+  })
+
+  it('clears a text column filter with its clear button', async () => {
+    renderList()
+    await screen.findByText('SALE10')
+    const [codeFilter] = within(table()).getAllByRole('textbox')
+    const codeFilterCell = codeFilter.closest('th') as HTMLElement
+
+    fireEvent.change(codeFilter, { target: { value: 'SALE' } })
+    await waitFor(() =>
+      expect(vi.mocked(fetchCoupons).mock.lastCall?.[1]).toMatchObject({
+        filters: { code: { value: 'SALE' } },
+      })
+    )
+
+    fireEvent.click(
+      within(codeFilterCell).getByRole('button', { name: 'Clear' })
+    )
+
+    await waitFor(() => {
+      const filters = (
+        vi.mocked(fetchCoupons).mock.lastCall?.[1] as {
+          filters?: Record<string, { value?: unknown }>
+        }
+      ).filters
+      expect(filters?.code?.value ?? null).toBeNull()
+    })
+    expect((codeFilter as HTMLInputElement).value).toBe('')
+  })
+
+  it('offers one clear control per filterable column', async () => {
+    renderList()
+    await screen.findByText('SALE10')
+    const headerRow = within(table()).getAllByRole('row')[1]
+    // code, name, redemption count: column clear buttons; the two dropdown
+    // filters clear through their own × once a value is picked.
+    expect(
+      within(headerRow).getAllByRole('button', { name: 'Clear' })
+    ).toHaveLength(3)
   })
 
   // Scenario 2

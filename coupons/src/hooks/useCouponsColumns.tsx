@@ -57,7 +57,7 @@ const useCouponsColumns = () => {
         field: 'code',
         filter: true,
         showFilterMenu: false,
-        showClearButton: false,
+        showClearButton: true,
         sortable: true,
         align: 'left' as const,
         bodyClassName: styles.codeCell,
@@ -70,7 +70,7 @@ const useCouponsColumns = () => {
         field: 'name',
         filter: true,
         showFilterMenu: false,
-        showClearButton: false,
+        showClearButton: true,
         sortable: true,
       },
       {
@@ -79,6 +79,7 @@ const useCouponsColumns = () => {
         field: 'discountType',
         filter: true,
         showFilterMenu: false,
+        // The dropdown's own × (`showClear`) clears this filter.
         showClearButton: false,
         sortable: true,
         filterMatchMode: FilterMatchMode.EQUALS,
@@ -130,7 +131,7 @@ const useCouponsColumns = () => {
         sortable: true,
         filter: true,
         showFilterMenu: false,
-        showClearButton: false,
+        showClearButton: true,
         filterElement: numberFilterElement(),
         body: (coupon: Coupon) =>
           coupon.redemptionCount !== undefined &&
@@ -148,6 +149,7 @@ const useCouponsColumns = () => {
         sortable: true,
         filter: true,
         showFilterMenu: false,
+        // The dropdown's own × (`showClear`) clears this filter.
         showClearButton: false,
         filterMatchMode: FilterMatchMode.EQUALS,
         dataType: 'boolean',
