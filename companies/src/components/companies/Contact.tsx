@@ -1,7 +1,7 @@
-import { BsPencilFill } from 'react-icons/bs'
 import { useTranslation } from 'react-i18next'
 import { ContactAssignment } from '../../models/LegalEntity.model'
 import { LabelValueCell } from './LabelValueCell'
+import TableActions from '../shared/TableActions'
 import { formatCustomerName } from '../../helpers/companyFormat.helpers'
 import useCustomNavigate from '../../hooks/useCustomNavigate'
 import { usePermissions } from '../../context/PermissionsProvider'
@@ -46,26 +46,18 @@ const Contact = (props: Props) => {
             : '--'
         }
       />
-      <div className={styles.actions}>
-        <button
-          type="button"
-          className={styles.editButton}
-          disabled={!canViewCustomers}
-          aria-label={t('global.edit')}
-          title={t('global.edit')}
-          onClick={(e) => {
-            e.preventDefault()
-            const companyId = contactAssignment.legalEntity.id
-            navigate(
-              contactAssignment.customer.type === 'CONTACT'
-                ? contactEditPath(companyId, contactAssignment.id)
-                : customerAssignmentEditPath(companyId, contactAssignment.id)
-            )
-          }}
-        >
-          <BsPencilFill />
-        </button>
-      </div>
+      {/* Same edit control as the table rows (size, colours, hover). */}
+      <TableActions
+        editDisabled={!canViewCustomers}
+        onEdit={() => {
+          const companyId = contactAssignment.legalEntity.id
+          navigate(
+            contactAssignment.customer.type === 'CONTACT'
+              ? contactEditPath(companyId, contactAssignment.id)
+              : customerAssignmentEditPath(companyId, contactAssignment.id)
+          )
+        }}
+      />
     </div>
   )
 }

@@ -19,27 +19,3 @@
 .type {
   color: $grey-2;
 }
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.editButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  color: var(--color-primary, #{$blue-5});
-  background: transparent;
-  border: 0;
-  border-radius: 999px;
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: default;
-  }
-}
