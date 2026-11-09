@@ -30,9 +30,9 @@ This is a monorepo of independent Management Dashboard remotes, one Vite app per
 | `customer-groups` | playbook-aligned | `customerGroups` | `customerGroups` → `administration/customer-groups/*` | `VITE_CUSTOMER_GROUPS_URL` | `5174` | yes / yes | `2.10.2` / `1.2.9` |
 | `dashboard` | legacy (PrimeReact) | `extension` | `dashboardIndex` → `''` and `dashboard` → `dashboard` | `VITE_DASHBOARD_EXTENSION_URL` | not pinned | no / yes | — / — |
 | `labels` | playbook-aligned | `labels` | `labels` → `/apps/management/labels/*` | `VITE_LABELS_URL` | `5179` | yes / yes | `2.18.0` / `1.2.14` |
-| `orders` | playbook-aligned | `orders` | `orders` → `apps/management/orders/*` | `VITE_ORDERS_URL` | `5177` | yes / yes | `2.18.0` / `1.5.1` |
-| `products` | playbook-aligned | `products` | `products` → `apps/management/products/*` | `VITE_PRODUCTS_URL` | `5178` | yes / yes | `2.18.1` / `1.5.1` |
-| `returns` | playbook-aligned | `returns` | `returns` → `/apps/management/returns/*` | `VITE_RETURNS_URL` | `5176` | yes / yes | `2.18.0` / `1.5.1` |
+| `orders` | playbook-aligned | `orders` | `orders` → `apps/management/orders/*` | `VITE_ORDERS_URL` | `5177` | yes / yes | `2.21.0` / `1.5.1` |
+| `products` | playbook-aligned | `products` | `products` → `apps/management/products/*` | `VITE_PRODUCTS_URL` | `5178` | yes / yes | `2.21.0` / `1.5.1` |
+| `returns` | playbook-aligned | `returns` | `returns` → `/apps/management/returns/*` | `VITE_RETURNS_URL` | `5176` | yes / yes | `2.21.0` / `1.5.1` |
 | `status-codes` | playbook-aligned | `statusCodes` | `statusCodes` → `/apps/management/status-codes/*` | `VITE_STATUS_CODES_URL` | `5180` | yes / yes | `2.18.1` / `1.5.1` |
 | `statistics` | legacy (PrimeReact) | `extension` | `statistics` → `/apps/administration/statistics` | `VITE_STATISTICS_URL` | not pinned | no / no | — / — |
 | `users-and-groups` | playbook-aligned | `usersAndGroups` | `usersAndGroups` → `/administration/users-and-groups/*` | `VITE_USERS_AND_GROUPS_URL` | not pinned (`5173` in docs) | yes / yes | `2.4.1` / `1.2.1` |

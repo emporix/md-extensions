@@ -10,7 +10,7 @@ Management Dashboard "Returns" module, extracted into an `md-extensions` federat
 | Exposes | `./RemoteComponent` → `src/RemoteComponent.tsx` (named **and** default export) |
 | Local dev port | `5176` (`strictPort`) |
 | Host env var | `VITE_RETURNS_URL` → `.../assets/remoteEntry.js` |
-| Component library | `@emporix/component-library` `2.5.0` |
+| Component library | `@emporix/component-library` `2.21.0` |
 | MD wiring mode | A — permanent remote (`url:` on the route) |
 
 ## Screens
@@ -32,7 +32,7 @@ The remote is PrimeReact-free. Where the dashboard used a PrimeReact widget the 
 | `Sidebar` (table extensions) | CL `Dialog` |
 | `InputNumber` | CL `InputText` with `type="number"` |
 | `Calendar` (mixin date fields, date column filters) | CL `InputText` with `type="date"` / `type="datetime-local"` |
-| `InputMask` `"99:99"` (mixin time fields) | CL `InputText` with `type="time"` |
+| `InputMask` `"99:99"` (mixin time fields) | CL `TimePicker` (≥ 2.21.0, `HH:mm`) |
 | `Dropdown showClear` (status filter) | explicit "All" option |
 | `TabView renderActiveOnly={false}` | CL `Tabs` with `keepMounted` |
 
