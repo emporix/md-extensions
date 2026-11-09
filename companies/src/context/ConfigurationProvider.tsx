@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type PropsWithChildren,
 } from 'react'
@@ -62,15 +63,26 @@ export const useConfiguration = () => useContext(ConfigurationContext)
 export const ConfigurationProvider = ({ children }: PropsWithChildren) => {
   const { tenant, contentLanguage, currency } = useDashboardContext()
   const [configuration, setConfig] = useState<Configuration>()
+  // The host can switch tenants while a request is in flight; a response for
+  // the previous tenant must not overwrite the current tenant's configuration.
+  const tenantRef = useRef(tenant)
+  tenantRef.current = tenant
 
   const refreshConfiguration = async () => {
-    if (!tenant) return
-    const c = await fetchBasicConfiguration(tenant)
+    const requestTenant = tenant
+    if (!requestTenant) return
+    const c = await fetchBasicConfiguration(requestTenant)
+    if (requestTenant !== tenantRef.current) return
     setConfig(c)
   }
 
   useEffect(() => {
+    setConfig(undefined)
+  }, [tenant])
+
+  useEffect(() => {
     void refreshConfiguration()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reload per tenant / content language
   }, [tenant, contentLanguage])
 
   const currencies = useMemo(

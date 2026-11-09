@@ -81,7 +81,6 @@ const CustomerAssignmentAddEditPage = () => {
   const { formData, setInitFormData, formDirty, setFormField, resetForm } =
     useForm<ContactAssignment>()
   const [searchParams] = useSearchParams()
-  const [isApproval, setIsApproval] = useState(false)
   const { syncCustomers } = useCustomerApi()
   const [customers, setCustomers] = useState<Customer[]>([])
   const [currentContactAssignment, setCurrentContactAssignment] =
@@ -219,12 +218,10 @@ const CustomerAssignmentAddEditPage = () => {
     // Reload when the route switches to another assignment or company.
   }, [loadData])
 
+  // Derived from the query on every render (MD: any non-empty `approval`), so
+  // leaving `?approval=true` on the same mounted page turns it off again.
   const approvalParam = searchParams.get('approval')
-  useEffect(() => {
-    if (approvalParam) {
-      setIsApproval(Boolean(approvalParam))
-    }
-  }, [approvalParam])
+  const isApproval = Boolean(approvalParam)
 
   const isCustomerAlreadyAssigned = useCallback(
     (customerId: string) => {

@@ -14,18 +14,23 @@ export const useCurrencies = () => {
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>()
   const { getContentLangValue } = useLocalizedValue()
 
-  const loadCurrencies = async () => {
-    const curr = await syncCurrencies()
-    setCurrencies(curr)
-    const initialCurrency =
-      curr.find((item) => item.code === currentCurrency?.id) || curr[0]
-    setSelectedCurrency(initialCurrency)
-  }
-
   useEffect(() => {
+    // A tenant switch drops the previous tenant's currencies at once;
+    // responses of a superseded load are ignored.
+    setCurrencies([])
+    setSelectedCurrency(undefined)
+    let cancelled = false
     ;(async () => {
-      await loadCurrencies()
+      const curr = await syncCurrencies()
+      if (cancelled) return
+      setCurrencies(curr)
+      const initialCurrency =
+        curr.find((item) => item.code === currentCurrency?.id) || curr[0]
+      setSelectedCurrency(initialCurrency)
     })()
+    return () => {
+      cancelled = true
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity (reload per tenant)
   }, [tenant])
 
@@ -63,7 +68,6 @@ export const useCurrencies = () => {
   }, [currencies])
 
   return {
-    loadCurrencies,
     selectCurrency,
     currencies,
     selectedCurrency,

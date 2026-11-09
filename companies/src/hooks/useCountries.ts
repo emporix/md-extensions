@@ -22,16 +22,28 @@ export const useCountries = () => {
   const canReadTaxes = hasPermission(EmployeeDomains.TAXES_VIEWER)
 
   useEffect(() => {
+    // A tenant switch drops the previous tenant's data at once; responses of a
+    // superseded load are ignored.
+    setCountries([])
+    setRegions([])
+    setTaxes([])
+    let cancelled = false
     ;(async () => {
       const countries = await syncAllCountries()
+      if (cancelled) return
       setCountries(countries.values as unknown as Country[])
       const regions = await syncAllRegions()
+      if (cancelled) return
       setRegions(regions)
       if (canReadTaxes) {
         const allTaxes = await getAllTaxesUnpaginated()
+        if (cancelled) return
         setTaxes(allTaxes)
       }
     })()
+    return () => {
+      cancelled = true
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity (reload per tenant)
   }, [tenant])
 

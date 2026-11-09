@@ -263,6 +263,24 @@ describe('Customer assignment add / edit', () => {
     expect(management.addApprovalGroupContact).not.toHaveBeenCalled()
   })
 
+  it('drops the approval mode when the query no longer asks for it', async () => {
+    renderAt('/c1/assignments/customer?approval=true')
+    await waitForTable()
+    expect(button('assignment-save').textContent).toBe(
+      'Save as approval contact'
+    )
+
+    act(() => {
+      window.location.hash = '#/c1/assignments/customer'
+    })
+
+    await waitFor(() =>
+      expect(button('assignment-save').textContent).not.toBe(
+        'Save as approval contact'
+      )
+    )
+  })
+
   it('with ?approval=true adds the assignment to the approval group', async () => {
     renderAt('/c1/assignments/customer?approval=true')
     await waitForTable()
