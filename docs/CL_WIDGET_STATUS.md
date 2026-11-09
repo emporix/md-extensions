@@ -39,7 +39,7 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 |--------------|--------|-----------|--------|----------|-------|
 | `primereact/button` | `in-cl` | `PrimaryButton` / `SecondaryButton` | 1.2.0 | 181 | Toolbar icon buttons: `SecondaryButton` `size="small"` `iconOnly` (2.6.0). Keep `pi pi-*` glyphs. |
 | `primereact/column` | `in-cl` | `DataTable` `columns` prop | 1.10.0 | 102 | **No** standalone `Column`. Never nest host `primereact/column` into CL DataTable. Types → `DataTableColumnProps`. |
-| `primereact/dropdown` | `in-cl` | `Dropdown` | 1.3.0 | 61 | No `appendTo` / `showClear`. Multi-select since 1.7.0 (`multiple`). Explicit “All” option stands in for `showClear`. |
+| `primereact/dropdown` | `in-cl` | `Dropdown` | 1.3.0 | 61 | No `appendTo`. `showClear` (× button, emits `null` / `[]`) since **2.22.0** — use it for column filters instead of an explicit “All” option. Multi-select since 1.7.0 (`multiple`). |
 | `primereact/inputtext` | `in-cl` | `InputText` | 1.4.0 | 60 | Also `textarea` boolean (1.4.1) — prefer this over Prime `InputTextarea` when porting. |
 | `primereact/dialog` | `in-cl` | `Dialog` / `ConfirmBox` | 1.10.0 / 2.2.0 | 35 | Confirm flows → `ConfirmBox` (`message` is required). |
 | `primereact/tabview` | `in-cl` | `Tabs` / `TabItem` | 2.0.0 | 29 | `disabled` on `TabItem` + `keepMounted` (≡ `renderActiveOnly={false}`) since **2.5.0**. |
@@ -48,6 +48,7 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/datatable` | `in-cl` | `DataTable` | 1.10.0 | 19 | `rowActions` prop, not an actions column. Filter APIs + `FilterMatchMode` since 2.0.0. `checkboxSelectionOnly` (only the row checkbox selects) + `selectionPageOnly` (header checkbox covers the current page) since 2.14.0. A `frozen` column (`alignFrozen: 'right'` for the right edge) stays in view while the table scrolls sideways since 2.16.0. |
 | `primereact/checkbox` | `in-cl` | `Checkbox` | 1.10.0 | 14 | **No** `label` prop — render `<label htmlFor>`. |
 | `primereact/progressspinner` | `in-cl` | `ProgressSpinner` | 2.0.0 | 11+ | Also imported from barrel. |
+| `primereact/divider` | `in-cl` | `Divider` | **2.19.0** | 3 | Pattern A (no Prime runtime). Same props as Prime (`layout`, `align`, `type`, `children`); styled like MD lara `.p-divider`. Form section separators — coupons Rules tab (COP-7188). |
 | `primereact/tooltip` | `in-cl` | `Tooltip` | 1.8.0 | 11 | Children mode or selector mode. |
 | `primereact/radiobutton` | `in-cl` | `RadioButton` | 1.10.0 | 8 | |
 | `primereact/message` | `in-cl` | `Message` | 1.10.0 | 7 | |
@@ -69,8 +70,7 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/chips` | `missing` | — | — | 10 | Free-text token input. **Not** Dropdown chip display. |
 | `primereact/tag` | `missing` | — | — | 6 | List status/label chips. Do not silently swap to `StatusBadge` without checking API. |
 | `primereact/treetable` | `missing` | — | — | 4 | `EmporixTreeTable`, categories. |
-| `primereact/inputmask` | `missing` | — | — | 4 | Documented substitute: `InputText` `type="time"` for `"99:99"` masks. Promote for other masks. |
-| `primereact/divider` | `missing` | — | — | 3 | Form section separators. |
+| `primereact/inputmask` | `partial` | `TimePicker` | **2.21.0** | 4 | `"99:99"` time masks → `TimePicker` (Pattern A: typed `HH:mm` + branded hour/minute dropdown, emits `HH:mm`, clears invalid text on blur). Do not fall back to native `InputText type="time"`. Other masks: still missing — promote when needed (COP-7188). |
 | `primereact/sidebar` | `missing` | — | — | 1 | `TableExtensions.tsx`. Documented substitute: local `SidePanel` (right drawer, 20rem) + CL `InputSwitch`. Copy from `returns` or `brands` `components/shared/SidePanel`. Do not fall back to CL `Dialog` + `Checkbox`. |
 | `primereact/paginator` | `missing` | — | — | 1 | Standalone (`EntityChangelogTab`). Table pagination is already on CL `DataTable`. `customer-groups` used custom control + CL `Dropdown`. |
 | `primereact/panel` | `missing` | — | — | 1 | `ProductPricesPanelForm.tsx`. Documented substitute (products, COP-6993): CL `SectionBox` with a custom collapsible header. |
@@ -117,7 +117,7 @@ Order by MD usage. Ask the user before implementing; Pattern A vs B is mandatory
 1. ~~`InputNumber`~~ / ~~`Skeleton`~~ — done in 2.11.0 (COP-6917)
 2. `Chips` (10)
 4. ~~`Tree`~~ — done in 2.12.0; `TreeTable` (4)
-5. `InputMask` (4) — unless `type="time"` is enough
+5. `InputMask` (4) — time masks done in 2.21.0 (`TimePicker`); other masks still open
 6. `Sidebar` (1, but `TableExtensions` is common) — or keep the local `SidePanel` substitute
 7. `Tag` / Prime `Badge` if `StatusBadge` is the wrong shape
 

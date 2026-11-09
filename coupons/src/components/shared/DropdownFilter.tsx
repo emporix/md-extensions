@@ -1,0 +1,57 @@
+import {
+  Dropdown,
+  type DataTableColumnFilterElementOptions,
+} from '@emporix/component-library'
+import styles from './DropdownFilter.module.scss'
+
+type DropdownFilterOption = {
+  readonly label: string
+  readonly value: string
+}
+
+type DropdownFilterProps = {
+  readonly dropdownOptions: DropdownFilterOption[]
+  readonly filterOptions: DataTableColumnFilterElementOptions
+  readonly placeholder?: string
+}
+
+export const DropdownFilter = ({
+  placeholder,
+  dropdownOptions,
+  filterOptions,
+}: DropdownFilterProps) => {
+  return (
+    <Dropdown
+      data-testid="dropdown-filter"
+      placeholder={placeholder}
+      options={dropdownOptions}
+      value={filterOptions.value}
+      showClear
+      onChange={(e) =>
+        filterOptions.filterApplyCallback(e.value, filterOptions.index)
+      }
+    />
+  )
+}
+
+const DropdownFilterTemplate = (
+  options: DataTableColumnFilterElementOptions,
+  menu: DropdownFilterOption[],
+  /** Replaces the default 180px-minimum filter width (e.g. short true/false lists). */
+  className: string = styles.filterDropdown
+) => {
+  return (
+    <Dropdown
+      value={options.value}
+      options={menu}
+      // MD parity (Prime `showClear`): the × resets the column filter.
+      showClear
+      onChange={(e) => {
+        options.filterApplyCallback(e.value, options.index)
+      }}
+      className={`${className} p-column-filter`}
+    />
+  )
+}
+
+export default DropdownFilterTemplate
