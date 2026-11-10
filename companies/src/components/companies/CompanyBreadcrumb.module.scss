@@ -1,0 +1,22 @@
+.breadcrumb {
+  display: flex;
+  align-items: center;
+}
+
+.separator {
+  margin: 0 0.5rem;
+}
+
+.item {
+  padding: 0;
+  font: inherit;
+  font-weight: bold;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.highlight {
+  color: var(--color-primary, #3b73bb);
+}

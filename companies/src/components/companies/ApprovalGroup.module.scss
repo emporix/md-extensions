@@ -1,0 +1,25 @@
+// MD `mb-3` on the section title.
+.title {
+  margin-bottom: 1rem;
+}
+
+// MD `mt-2` on the approval group table.
+.table {
+  margin-top: 0.5rem;
+}
+
+// MD `flex justify-content-end` around the row action.
+.actionCell {
+  display: flex;
+  justify-content: flex-end;
+}
+
+// MD inline `width: 60vw` on the add dialog.
+.addDialog {
+  width: 60vw;
+}
+
+// MD `mt-2` on the dialog save button.
+.addDialogSave {
+  margin-top: 0.5rem;
+}

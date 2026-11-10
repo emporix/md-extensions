@@ -41,6 +41,9 @@
         ],
         "emporix-coupons": [
           "emporix-coupons"
+        ],
+        "emporix-companies": [
+          "emporix-companies"
         ]
       }
     },
@@ -84,6 +87,9 @@
         ],
         "emporix-coupons-stage": [
           "emporix-coupons-stage"
+        ],
+        "emporix-companies-stage": [
+          "emporix-companies-stage"
         ]
       }
     },
@@ -127,6 +133,9 @@
         ],
         "emporix-coupons-develop": [
           "emporix-coupons-develop"
+        ],
+        "emporix-companies-develop": [
+          "emporix-companies-develop"
         ]
       }
     }

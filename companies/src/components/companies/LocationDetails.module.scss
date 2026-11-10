@@ -1,0 +1,25 @@
+.section {
+  margin-bottom: 3rem;
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  max-width: 50rem;
+}
+
+.half {
+  flex: 1 1 calc(50% - 0.5rem);
+  min-width: 0;
+}
+
+.third {
+  flex: 1 1 calc(33.333% - 0.67rem);
+  min-width: 0;
+}
+
+.tags {
+  flex: 0 1 calc(50% - 0.5rem);
+  min-width: 0;
+}

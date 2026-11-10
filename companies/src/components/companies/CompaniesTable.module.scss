@@ -1,0 +1,16 @@
+.root {
+  width: 100%;
+}
+
+// MD `flex justify-content-between mb-2 w-full` toolbar.
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.actionsCell {
+  width: 120px;
+}

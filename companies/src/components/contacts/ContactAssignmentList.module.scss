@@ -1,0 +1,13 @@
+// MD `mb-2` on the batch delete button.
+.batchDelete {
+  margin-bottom: 0.5rem;
+}
+
+.actionsCell {
+  width: 120px;
+}
+
+.noPermissions {
+  margin: 1rem 0;
+  color: var(--color-text-secondary);
+}

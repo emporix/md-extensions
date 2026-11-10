@@ -1,0 +1,21 @@
+@use '../../styles/palette' as *;
+
+.contact {
+  display: grid;
+  grid-template-columns: 2fr 3fr 4fr 2fr 1fr;
+  align-items: center;
+  width: 100%;
+  border-bottom: 1px solid $grey-1;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+
+  &:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+}
+
+.type {
+  color: $grey-2;
+}
