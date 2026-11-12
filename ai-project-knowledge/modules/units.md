@@ -32,6 +32,7 @@ Hash routes (`units/src/constants/paths.ts`, `units/src/RemoteComponent.tsx`): `
 `UnitsTable` (`units/src/components/units/UnitsTable.tsx`) is lazy, as MD was: every page, filter or tenant change or refresh loads one page from the service.
 
 - Columns Code, Name (content language), Symbol, Type, each with a contains filter (Name filters on `name.<contentLanguage>`), and Factor (right-aligned, no filter). No sorting and no column visibility (MD had neither).
+- Row actions (edit, delete) are the component-library `TableActions` (2.25.0), wrapped by `units/src/components/shared/TableActions.tsx` for translated labels and the delete confirmation; the icons take the primary color on hover.
 - Row click and row edit open `/:code`. A failed load shows an error toast and an empty table.
 - Delete (row or batch) asks for confirmation, then deletes the units in parallel; a failed code gets an error toast naming it; the selection clears and the table reloads. A successful delete shows no toast (as MD).
 - A host tenant switch clears the rows and the selection before the new tenant loads.
@@ -40,7 +41,7 @@ Pinned by `units/src/components/units/UnitsTable.test.tsx`.
 
 ## Create and edit
 
-`UnitPage` (`units/src/pages/Unit.page.tsx`): header "Unit" with the code as subtitle and a back button to the list; Discard and Save in the header; one section with Name (component-library `LocalizedInput`), Code (read-only on edit), Symbol, Type (component-library `AutoComplete` with a dropdown button: suggests the tenant's types from `getAllUnitTypesCall` and keeps any typed value), Base Unit (True / False dropdown) and Factor (`InputNumber`, decimal, up to two fractions, UI-language locale).
+`UnitPage` (`units/src/pages/Unit.page.tsx`): header "Unit" with the code as subtitle and a back button to the list; Discard and Save in the header; one section, laid out like MD as a three-column grid (two columns up to 1200px, one up to 768px), with Name (component-library `LocalizedInput`), Code (read-only on edit), Symbol, Type (component-library `AutoComplete` with a dropdown button: suggests the tenant's types from `getAllUnitTypesCall` and keeps any typed value), Base Unit (True / False dropdown) and Factor (`InputNumber`, decimal, up to two fractions, UI-language locale).
 
 - Save is enabled only for a dirty, valid form: a name in one language, code and type not blank.
 - Create: success toast "Unit was created!", then the page switches to `/:code` (replace).

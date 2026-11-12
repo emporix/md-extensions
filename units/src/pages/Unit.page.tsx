@@ -185,7 +185,7 @@ const UnitPage = () => {
         }
       />
       <SectionBox>
-        <FormGrid>
+        <FormGrid className={styles.form}>
           <Controller
             name="name"
             control={control}
