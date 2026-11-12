@@ -25,6 +25,7 @@ knowledge is below; open only what the task needs.
 | `ai-project-knowledge/modules/status-codes.md` | Status codes (quote reasons): list with client-side filters and sequential delete, add/edit with localized comment and version, permissions, host wiring | `74b6236` 2026-11-06 |
 | `ai-project-knowledge/modules/coupons.md` | Coupons: server-side list with `ext_coupons` columns and batch delete, add/edit with discount, validity, audience and vendor restrictions, mixins, audit log, permissions, host wiring | `d8edeb2` 2026-11-06 |
 | `ai-project-knowledge/modules/companies.md` | Companies (legal entities): list with column visibility, editor with subsidiaries, locations, approval group, contact assignments, customer groups, mixins and audit log; location, contact and customer-assignment pages; permissions, host wiring | `d8edeb2` 2026-11-09 |
+| `ai-project-knowledge/modules/units.md` | Units: lazy list with server filters and parallel delete, add/edit with free-text type, base unit, factor and version, permissions, host wiring | `d8edeb2` 2026-11-07 |
 | `ai-project-knowledge/modules/statistics.md` | Tenant usage charts | `da99643` 2026-11-02 |
 | `ai-project-knowledge/modules/users-and-groups.md` | Employee users and their IAM groups | `05d8d1d` 2026-11-06 |
 

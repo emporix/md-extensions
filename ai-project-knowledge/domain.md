@@ -101,6 +101,10 @@ A status code is a quote reason of the Quote Service: a type `CHANGE` or `DECLIN
 
 A company is a legal entity of the Customer Management Service: type `COMPANY` or `SUBSIDIARY` (with `parentId`), legal info, an account limit, read-only customer groups, locations (`HEADQUARTER`, `WAREHOUSE`, `OFFICE`), an approval group of contact assignments, and one restriction value (`companies/src/models/LegalEntity.model.ts`). A contact assignment links a customer record to the company with a type (`PRIMARY`, `BILLING`, `LOGISTICS`, `CONTACT`) and a primary flag; a *contact* is a customer of type `CONTACT`, created by the company screens and deleted with its assignment. Viewing needs Companies Viewer, changing needs Companies Manager, contacts also Customers Manager. Rules: `ai-project-knowledge/modules/companies.md`.
 
+## Units
+
+A unit of the Unit Handling Service has a code, a localized name, an optional symbol, a type (free text such as `mass`; the tenant's existing types are suggested), a base-unit flag and a conversion factor (`units/src/models/Unit.model.ts`). The code cannot change after create; updates carry the loaded `metadata.version`. Management Dashboard price models use units for their measurement unit and stay in the host. Viewing needs Units Viewer, changing needs Units Manager. Rules: `ai-project-knowledge/modules/units.md`.
+
 ## Products
 
 A product has `code`, localized `name`, `productType`, `published`, mixins, media, a template id and version, and optional brand, labels, tax classes, and related items (`products/src/models/Category.model.ts`). Product type: `BASIC`, `BUNDLE`, `VARIANT`, `PARENT_VARIANT`, `DYNAMIC_VARIANT`. Related-item ids: `CONSUMABLE`, `ACCESSORY`, `YOU-MIGHT-LIKE-THIS`, `SUGGESTED-RELATED-ITEMS`, `SIMILAR-ITEMS`. Category type: `STANDARD` or `CLASSIFICATION`.
