@@ -1,12 +1,16 @@
-# Build overlay — `implement` and `review` against the design sketch
+# Build overlay — `implement` against the design sketch
 
 `emporix-feature` `references/implement.md` runs **as written**, with
 `--worktree` when the ticket checkout is a worktree: approved plan and
 ready gate, mockups, ticket and existing PR, the ticket checkout, the existing suite and
-`validation.commands`, project knowledge, the report, then review. This
-file replaces only the order in which implement
-**applies the plan** (its todos), and adds the sketch to review's
-boundary.
+`validation.commands`, project knowledge, and the report. This
+file replaces the order in which implement
+**applies the plan** (its todos), and it ends implement at its report:
+implement § 8's "start `references/review.md` in the same turn" does **not**
+run, because that review launches Bugbot. On a green gate the playbook's
+next step is the **Review** playbook (`references/playbooks/review.md`),
+which posts the implement + review Jira evidence. A red gate stops with
+`Ready: no` and the failed-gate evidence, as implement § 8 says.
 
 Nothing here commits. Implement still ends with an uncommitted tree; the
 one commit is made by `emporix-feature` `pr`, as the token owner.
@@ -21,7 +25,7 @@ build progress (where implement applies the plan):
 - [ ] B2. scaffold — sketched shapes, stub bodies, compiles
 - [ ] B3. pin — new Scenario tests, all red on the stubs
 - [ ] B4. bodies — no stub left, pinning tests green
-- [ ] → implement's test run, knowledge, report … review
+- [ ] → implement's test run, knowledge, report … then **Review**
 ```
 
 ## B0. Load the sketch and run the first tests
@@ -52,11 +56,8 @@ no plan edits, no files outside the tree, stop at any deviation and return
 `before → after` with evidence. The parent verifies every returned diff
 against the sketch; an unreported deviation is still a deviation.
 
-When a coder subagent wrote the code, `review` uses a reviewer that is
-**not the coder's model** as well as not this conversation's (pass
-`--review-model` when the default would collide). Prefer another family;
-on a single-family host, another model of that family; when only one model
-is left, `inherit`, recorded in the ledger as `emporix-feature` review does.
+When a coder subagent wrote the code, **Review** must not use the coder's
+model as its reviewer (`references/review-loop.md` § Reviewer model).
 
 ## B1. Cleanup (optional)
 
@@ -108,7 +109,7 @@ never reach green through a cast, `any`, a suppressed warning, or a widened
 type. A body that needs one is a deviation (§ Deviations).
 
 Done when no stub, `not implemented`, or pseudocode comment is left in the
-diff and the pinning tests are green. Then implement continues as written: the full suite and `validation.commands`, project knowledge, the report, review.
+diff and the pinning tests are green. Then implement continues as written: the full suite and `validation.commands`, project knowledge, the report. Then the playbook's **Review** step, never `emporix-feature` review.
 
 ## Deviations — the sketch is the contract
 
@@ -150,20 +151,6 @@ Then:
 2. Mark the sketch `Discarded: {ISO date} — {reason}`; it stays only as a rejected shape. Remove the code written against it with targeted edits to that slice's files — never `git checkout` / `reset` over files other slices share. Keep the Scenario tests' assertions; retarget them later. A discarded Cross-repo sketch makes every dependent todo sketch `stale`.
 3. Redesign from scratch through `references/architect.md` § Reground, with the friction log as evidence and the discarded fingerprint as rejected. Then B2–B4 again for that slice.
 4. The same slice thrown out twice → ask once whether the plan needs `update` before a third design.
-
-## Review — the sketch joins the boundary
-
-Run `emporix-feature` `references/review.md` as written. Its scoped plan
-already contains `### Design sketch`; classify findings with these extra
-rules:
-
-- **In-plan defects** (fixed by the loop): a silent deviation from the sketch (public shape differs and no `#### Deviations` entry covers it); a leftover stub, `not implemented`, `TODO`, or pseudocode body; code left from a `Discarded` sketch; a Scenario from the sketch's **Scenario mapping** with no test.
-- **Planned**: shapes recorded under `#### Deviations` with the user's answer, like **Accepted deviations**.
-- **Beyond-plan** (the loop stops): a fix that would need a new public shape the sketch does not have — that is a deviation; surface it with § Deviations instead of fixing.
-
-The ledger, cycle cap, visibility lines, Verdict, Jira evidence, and the PR
-question are `emporix-feature`'s, unchanged. Add one line to the review
-report: `sketch: matches | deviations: {n} (each: diagnosis) | thrown out: {n}`.
 
 ## Rules
 
