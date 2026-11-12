@@ -185,6 +185,18 @@ describe('Status codes list', () => {
     expect(screen.getByTestId('location').textContent).toBe('/r3')
   })
 
+  it('keeps the list open when a row action is clicked', async () => {
+    renderList()
+    await screen.findByText('PRICE')
+
+    fireEvent.click(
+      within(rowFor('PRICE')).getByRole('button', { name: 'Delete' })
+    )
+
+    expect(screen.getByTestId('location').textContent).toBe('/')
+    expect(confirmDialog()).toBeTruthy()
+  })
+
   it('opens the create page from the create button', async () => {
     renderList()
     await screen.findByText('PRICE')
