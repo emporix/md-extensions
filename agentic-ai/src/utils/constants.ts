@@ -127,8 +127,10 @@ export const MCP_SERVERS = {
   importtool: {
     name: 'Import Tool MCP',
     tools: [
+      'add-feed-target',
       'cancel-import-run',
       'check-schema-drift',
+      'check-stream-key',
       'create-import-connection',
       'create-import-job',
       'create-import-stream',
@@ -150,6 +152,7 @@ export const MCP_SERVERS = {
       'list-stream-files',
       'list-target-fields',
       'list-target-types',
+      'list-target-writers',
       'list-transforms',
       'preview-stream-mappings',
       'publish-stream-mappings',
