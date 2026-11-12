@@ -6,7 +6,7 @@ DIR="$ROOT/skills/emporix-frontend-standards"
 R="$DIR/references/rules"
 fail() { echo "FAIL: $1" >&2; exit 1; }
 
-expected="api-data core emporix-component-library i18n module-federation npm-dependencies primereact testing ui-components"
+expected="api-data core e2e-test-ids emporix-component-library i18n module-federation npm-dependencies primereact testing ui-components"
 [ -d "$R" ] || fail "missing $R"
 got=$(cd "$R" && ls -- *.md | sed 's/\.md$//' | LC_ALL=C sort | tr '\n' ' ' | sed 's/ $//')
 [ "$got" = "$expected" ] || fail "rule set: $got"
@@ -20,7 +20,7 @@ table=$(awk -F'[|`]' '
 [ "$table" = "$expected" ] || fail "SKILL.md table: $table"
 
 # frontend-rules.md base + optional names must exist as rule files.
-for r in core ui-components emporix-component-library testing api-data npm-dependencies i18n primereact module-federation; do
+for r in core ui-components emporix-component-library testing e2e-test-ids api-data npm-dependencies i18n primereact module-federation; do
   [ -f "$R/$r.md" ] || fail "frontend-rules.md references missing rule: $r"
 done
 
@@ -61,6 +61,7 @@ check_paths() {
 check_paths ui-components '["src/components/**", "src/pages/**"]'
 check_paths emporix-component-library '["src/**/*.tsx"]'
 check_paths testing '["**/*.test.ts", "**/*.test.tsx"]'
+check_paths e2e-test-ids '["src/**/*.tsx"]'
 check_paths api-data '["src/api/**", "**/*.api.ts"]'
 check_paths npm-dependencies '["**/package.json", "**/yarn.lock", "**/package-lock.json"]'
 check_paths i18n '["src/translations/**"]'

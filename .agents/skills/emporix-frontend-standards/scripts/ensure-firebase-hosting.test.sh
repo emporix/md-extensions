@@ -114,7 +114,7 @@ out=$(sh "$SCRIPT" --remote alpha --no-secrets) || fail "gh failure with --no-se
 rm "$TMP/gh-fail"
 
 # --changed against a base git cannot resolve → exit 2, not a silent pass.
-git init -q . && git -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
+git init -q . && git add -A && git -c user.email=t@t -c user.name=t commit -q -m init
 set +e; out=$(sh "$SCRIPT" --changed --base no-such-ref 2>&1); code=$?; set -e
 [ "$code" = 2 ] || fail "bad --base exit $code: $out"
 # --changed picks up a changed folder.
@@ -122,7 +122,32 @@ touch alpha/new-file
 out=$(sh "$SCRIPT" --changed --base HEAD) || fail "--changed: $out"
 echo "$out" | grep -qx "SITE proj-develop alpha-develop ok" || fail "--changed scope: $out"
 echo "$out" | grep -q "beta" && fail "--changed beta out of scope: $out"
-rm -rf .git alpha/new-file
+rm alpha/new-file
+# Other .github files keep the per-folder scope.
+echo "* @acme/team" >.github/CODEOWNERS
+out=$(sh "$SCRIPT" --changed --base HEAD) || fail "--changed CODEOWNERS: $out"
+echo "$out" | grep -q "SITE" && fail "--changed CODEOWNERS checked sites: $out"
+rm .github/CODEOWNERS
+# A change only to hosting or deploy config checks every hosting entry.
+check_all() {
+  set +e; out=$(sh "$SCRIPT" --changed --base HEAD --no-secrets); code=$?; set -e
+  [ "$code" = 3 ] || fail "--changed $1 exit $code: $out"
+  # All five entries, nothing skipped (alpha-stage was created above).
+  sites=$(echo "$out" | grep '^SITE ' | LC_ALL=C sort)
+  expected=$(printf '%s\n' \
+    "SITE proj-develop alpha-develop ok" \
+    "SITE proj-develop beta-develop ok" \
+    "SITE proj-develop delta ok" \
+    "SITE proj-develop delta-stage missing" \
+    "SITE proj-stage alpha-stage ok" | LC_ALL=C sort)
+  [ "$sites" = "$expected" ] || fail "--changed $1 sites: $out"
+  git checkout -q -- . && git clean -qfd
+}
+echo >>firebase.json; check_all firebase.json
+echo >>.firebaserc; check_all .firebaserc
+echo "# touched" >>.github/workflows/beta-preview.yaml; check_all "modified workflow"
+echo "on: push" >.github/workflows/new.yaml; check_all "new workflow"
+rm -rf .git
 
 # A target with no site in .firebaserc → UNMAPPED, exit 3.
 cat >"$R/firebase.json" <<'EOF'
