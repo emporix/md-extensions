@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type PropsWithChildren,
 } from 'react'
@@ -59,15 +60,26 @@ export const useConfiguration = () => useContext(ConfigurationContext)
 export const ConfigurationProvider = ({ children }: PropsWithChildren) => {
   const { tenant, contentLanguage, currency } = useDashboardContext()
   const [configuration, setConfig] = useState<Configuration>()
+  // Requests can overlap: the host switches tenant or content language, or a
+  // table-config save reloads. Only the latest request may set the
+  // configuration, so a late response never overwrites a newer one.
+  const latestRequest = useRef(0)
 
   const refreshConfiguration = async () => {
+    const request = ++latestRequest.current
     if (!tenant) return
     const c = await fetchBasicConfiguration(tenant)
+    if (request !== latestRequest.current) return
     setConfig(c)
   }
 
   useEffect(() => {
+    setConfig(undefined)
+  }, [tenant])
+
+  useEffect(() => {
     void refreshConfiguration()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reload per tenant / content language
   }, [tenant, contentLanguage])
 
   const currencies = useMemo(

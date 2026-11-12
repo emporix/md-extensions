@@ -47,7 +47,7 @@ Pinned by `units/src/components/units/UnitsTable.test.tsx`.
 - Create: success toast "Unit was created!", then the page switches to `/:code` (replace).
 - Update: sends the loaded version, success toast "Unit was edited!", reloads the unit.
 - A failed save shows "Something went wrong. Check form data or try later." with the service details; the form keeps the entered values.
-- A code that cannot be loaded shows "Unit not found. Please create a new one" (an error toast; MD used an info toast, which the component library does not have) and goes to `/add`.
+- A code the service answers with 404 shows "Unit not found. Please create a new one" (an error toast; MD used an info toast, which the component library does not have) and goes to `/add`. Any other load failure shows the generic error and stays on `/:code` (PR #143 review; MD redirected on every failure).
 - A host tenant switch empties and locks the form until the unit of the new tenant has loaded.
 
 Pinned by `units/src/pages/Unit.page.test.tsx`.

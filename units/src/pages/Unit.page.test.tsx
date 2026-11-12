@@ -164,6 +164,28 @@ describe('Unit add / edit', () => {
     expect(screen.queryByText('mass')).toBeNull()
   })
 
+  it('keeps a picked suggestion as the type text and sends it', async () => {
+    renderDetail('/add')
+    await waitFor(() => expect(getAllUnitTypesCall).toHaveBeenCalled())
+
+    type(nameInput(), 'Litre')
+    type(codeInput(), 'l')
+    type(typeInput(), 'vol')
+    // CL options select on mousedown and report the label string to onChange.
+    fireEvent.mouseDown(await screen.findByText('volume'))
+
+    await waitFor(() => expect(typeInput().value).toBe('volume'))
+    await waitFor(() => expect(saveButton().disabled).toBe(false))
+    fireEvent.click(saveButton())
+
+    await waitFor(() =>
+      expect(createUnitCall).toHaveBeenCalledWith(
+        'tenant-a',
+        expect.objectContaining({ type: 'volume' })
+      )
+    )
+  })
+
   it.each([
     ['the code', () => type(codeInput(), '  ')],
     ['the type', () => type(typeInput(), '')],
@@ -283,14 +305,35 @@ describe('Unit add / edit', () => {
     expect(discardButton().disabled).toBe(true)
   })
 
-  it('sends the operator to the add page when the code cannot be loaded', async () => {
-    vi.mocked(getUnitByCodeCall).mockRejectedValue(new Error('404'))
+  it('sends the operator to the add page when the code does not exist', async () => {
+    vi.mocked(getUnitByCodeCall).mockRejectedValue({
+      response: { status: 404 },
+    })
     renderDetail('/missing')
 
     await waitFor(() =>
       expect(screen.getByTestId('location').textContent).toBe('/add')
     )
     expect(toast.showError).toHaveBeenCalledWith(
+      'Unit not found. Please create a new one',
+      undefined
+    )
+  })
+
+  it('stays on the edit page with the generic error when loading fails otherwise', async () => {
+    vi.mocked(getUnitByCodeCall).mockRejectedValue({
+      response: { status: 500 },
+    })
+    renderDetail('/kg')
+
+    await waitFor(() =>
+      expect(toast.showError).toHaveBeenCalledWith(
+        'Something went wrong. Check form data or try later.',
+        undefined
+      )
+    )
+    expect(screen.getByTestId('location').textContent).toBe('/kg')
+    expect(toast.showError).not.toHaveBeenCalledWith(
       'Unit not found. Please create a new one',
       undefined
     )

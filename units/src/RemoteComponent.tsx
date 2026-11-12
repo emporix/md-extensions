@@ -18,24 +18,12 @@ import UnitPage from './pages/Unit.page'
 import './translations/i18n'
 
 type RemoteComponentProps = {
-  readonly appState?: AppState
+  // The host and the standalone shell always pass the real tenant and token;
+  // there is no placeholder to fall back to.
+  readonly appState: AppState
 }
 
-const defaultAppState: AppState = {
-  tenant: 'default',
-  language: 'en',
-  token: 'default',
-  contentLanguage: 'en',
-  currency: undefined,
-  user: undefined,
-  onError: () => {
-    // NOOP
-  },
-}
-
-const RemoteComponent = ({
-  appState = defaultAppState,
-}: RemoteComponentProps) => {
+const RemoteComponent = ({ appState }: RemoteComponentProps) => {
   useApiCredentials(appState.tenant, appState.token)
 
   const { i18n } = useTranslation()

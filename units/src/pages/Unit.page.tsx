@@ -19,6 +19,7 @@ import LocalizedInput from '../components/shared/LocalizedInput'
 import {
   createRequestTracker,
   getApiErrorDetails,
+  getApiErrorStatus,
   loadLatest,
   makeCall,
 } from '../helpers/api'
@@ -121,9 +122,14 @@ const UnitPage = () => {
         setLoadedKey(key)
       },
       (e: unknown) => {
-        // MD sent the operator to the add page.
-        showError(t('units.toasts.noUnit'), getApiErrorDetails(e))
-        navigate(unitAddPath(), { replace: true })
+        // An unknown code goes to the add page, as in MD. Any other failure
+        // keeps the operator on this route.
+        if (getApiErrorStatus(e) === 404) {
+          showError(t('units.toasts.noUnit'), getApiErrorDetails(e))
+          navigate(unitAddPath(), { replace: true })
+          return
+        }
+        showError(t('units.toasts.error'), getApiErrorDetails(e))
       }
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
