@@ -5,7 +5,7 @@ import {
 } from '@emporix/component-library'
 import { useTranslation } from 'react-i18next'
 import { StylableProps } from '../../helpers/props'
-import { useDeleteConfirmTexts } from './DeleteConfirmBox'
+import { useDeleteConfirmTexts } from './useDeleteConfirmTexts'
 
 type DeleteConfirmConfig = {
   pluralsPath: string
