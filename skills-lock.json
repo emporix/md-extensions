@@ -1,95 +1,107 @@
 {
-  "version": 1,
+  "version": 2,
   "skills": {
     "emporix-certification-review": {
       "source": "emporix/emporix-ai-sdlc-skills",
       "sourceType": "github",
       "skillPath": "skills/emporix-certification-review/SKILL.md",
-      "computedHash": "313115a251331dd54d2fca2cf7efae0336ad9e9643eb3190aaceb8f6630fd4f6"
+      "computedHash": "9583bd070683ea0832cb1d376e65fe0ccdb733bf4223e956e96d308b6d0e92f6"
     },
     "emporix-demo-record": {
       "source": "emporix/emporix-ai-sdlc-skills",
       "sourceType": "github",
       "skillPath": "skills/emporix-demo-record/SKILL.md",
-      "computedHash": "a2ff746fad6e76bf99abbbcc2e9f378073e3aaf1b23578617ee17e694c779540"
+      "computedHash": "358ee0ca4545c068ed1b34f4a744c6e78ca4a4463431580e6855cb1fcb3e051d"
     },
     "emporix-design": {
       "source": "emporix/emporix-ai-sdlc-skills",
       "sourceType": "github",
       "skillPath": "skills/emporix-design/SKILL.md",
-      "computedHash": "c49057e01032daf57e561c088bbde93979ae7f4654ea9b196c68612324ad6f1d"
+      "computedHash": "9c413f2383bba560e7f4963f5fd4f1e1cf3afd3a8f3764d5b9e0ee5a4278d860"
+    },
+    "emporix-dev": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/emporix-dev/SKILL.md",
+      "computedHash": "776b37679b5d62c05ee5a928ff3a7a9bbf0ed246d9b8fd12ad20b861c470a55c"
     },
     "emporix-docs-update": {
       "source": "emporix/emporix-ai-sdlc-skills",
       "sourceType": "github",
       "skillPath": "skills/emporix-docs-update/SKILL.md",
-      "computedHash": "16266c50f042dfa8b564f54e85a100eeb4775b0ceee520316a35aef2fff656ac"
+      "computedHash": "5dcddc47b589d62172a6d80e488f027701e7efd98be4e8edcc3f0033dd1dfbc8"
     },
     "emporix-feature": {
       "source": "emporix/emporix-ai-sdlc-skills",
       "sourceType": "github",
       "skillPath": "skills/emporix-feature/SKILL.md",
-      "computedHash": "987d3fca768624ced4c43581d7737165de9fbe948721b2d80edc3115505cda83"
+      "computedHash": "052ecab6311fbd9cb22c60afe9636ed5ac201e9b3be5efcc573986223c6fb7df"
     },
     "emporix-frontend-standards": {
       "source": "emporix/emporix-ai-sdlc-skills",
       "sourceType": "github",
       "skillPath": "skills/emporix-frontend-standards/SKILL.md",
-      "computedHash": "9fe809c3f7e79c715ed09d469c11d9af6e187bf41edb6266bc7ca027765a299f"
+      "computedHash": "eb16a04eeb56a8a3d67a383673128ccbf2c047a3b1045f98838e7ab753123465"
     },
     "emporix-improve-service-performance": {
       "source": "emporix/emporix-ai-sdlc-skills",
       "sourceType": "github",
       "skillPath": "skills/emporix-improve-service-performance/SKILL.md",
-      "computedHash": "81f61466f1b6036d742d387ab0be0f50787a6925ee088fa39d603033f847f1dc"
+      "computedHash": "c1395cfe34bc3b679ebcc86481453c55b270be8986d0f9153c9fadb29b7cc6dc"
     },
     "emporix-logs-check": {
       "source": "emporix/emporix-ai-sdlc-skills",
       "sourceType": "github",
       "skillPath": "skills/emporix-logs-check/SKILL.md",
-      "computedHash": "3b11ad792dfdb25a2f8c601d40a75bb65631bbc552711cfee8658c4da9443cbd"
+      "computedHash": "c593a91e58672f5472952cb7ea6bac8ac07764ad6c64ae386cfd9720109bf2fe"
     },
     "emporix-pr": {
       "source": "emporix/emporix-ai-sdlc-skills",
       "sourceType": "github",
       "skillPath": "skills/emporix-pr/SKILL.md",
-      "computedHash": "7d8eb7dcecbab0246921811aa6e61b51708b98e5b61a67c07b50a12e3f991a1a"
+      "computedHash": "1a0b909a0c688a3715c1e3cfe7b731c189548e83e1882511de8870ac033c4de0"
     },
     "emporix-qa-local-api": {
       "source": "emporix/emporix-ai-sdlc-skills",
       "sourceType": "github",
       "skillPath": "skills/emporix-qa-local-api/SKILL.md",
-      "computedHash": "9c388b1a7533c6f171bd1cb8866e66dc94764cc48d8f3cce71e09f771ea707be"
+      "computedHash": "5629564cb2e29ca51458f1082b7a5d79c336f945c625e707e4bedec272628644"
     },
     "emporix-qa-postman": {
       "source": "emporix/emporix-ai-sdlc-skills",
       "sourceType": "github",
       "skillPath": "skills/emporix-qa-postman/SKILL.md",
-      "computedHash": "ca5d1df97898afb6ce4ae26c40d1a47e78a37796352d3a52338d4bf721205157"
+      "computedHash": "06c35766899341117b666391137f35a49477c386101c82927c994b8f48815b0a"
     },
     "emporix-qa-ui": {
       "source": "emporix/emporix-ai-sdlc-skills",
       "sourceType": "github",
       "skillPath": "skills/emporix-qa-ui/SKILL.md",
-      "computedHash": "f9fbe47f462fe38d65b60a352fe67d1d9f9b782af504fcf4e108fa1a8d66d109"
+      "computedHash": "da789b5e85baf9aeb1ba21d03e800dc10d6302692a4e54a8b1897e770d1ff9d6"
     },
     "emporix-service-create": {
       "source": "emporix/emporix-ai-sdlc-skills",
       "sourceType": "github",
       "skillPath": "skills/emporix-service-create/SKILL.md",
-      "computedHash": "118f4b325a973e2fe732fe652e112ab4be17de3ac7d78cfca4afb5490cf3dad5"
+      "computedHash": "90b22bdb279d6eb1220314f04de3ebe8bafd1e5ceeb57535a60ef15a73dc7686"
     },
     "emporix-setup": {
       "source": "emporix/emporix-ai-sdlc-skills",
       "sourceType": "github",
       "skillPath": "skills/emporix-setup/SKILL.md",
-      "computedHash": "7628c7b5ca5aa9e0936641fbfe47f076c508f17171ba280b2a67f0d316824e49"
+      "computedHash": "623facde7c3819200b2a15aabedc772586804c895d5b266387304aae0a99d9d6"
     },
     "emporix-worktree-cleanup": {
       "source": "emporix/emporix-ai-sdlc-skills",
       "sourceType": "github",
       "skillPath": "skills/emporix-worktree-cleanup/SKILL.md",
-      "computedHash": "c698bae99213b41a3b46ea4af83c0396f2a08a42dcf54557edbd8e5f0e03e69e"
+      "computedHash": "a9d2b850a4f83f03cfbea02e916c782ac0fa169e903b31d9f0c9e6204d403170"
+    },
+    "how": {
+      "source": "emporix/emporix-ai-sdlc-skills",
+      "sourceType": "github",
+      "skillPath": "skills/how/SKILL.md",
+      "computedHash": "4a678049f74499ad34dce4af32b66393f61647f123a3fc1f3c5e3d5e0ab57bce"
     }
   }
 }

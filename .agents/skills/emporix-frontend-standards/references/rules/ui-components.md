@@ -97,7 +97,7 @@ export default BulkDeleteButton
 ## Accessibility
 
 - Associate every input with `<label htmlFor={id}>` and matching `inputId` (never placeholder-only inputs)
-- Use `<button type="button">` for non-submit actions instead of clickable `<div>` elements
+- Use `<button type="button">` for non-submit actions instead of clickable `<div>` elements, with a `data-testid` (`e2e-test-ids`)
 - Use semantic HTML (`nav`, `main`, `label`) and `aria-label` when there is no visible text
 
 ## Refs and Event Handling

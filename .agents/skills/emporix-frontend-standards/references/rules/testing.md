@@ -47,8 +47,8 @@ Cover: happy path, null/undefined properties, empty strings, boundary indices.
 - Mock context providers and external services
 - Test user interactions (clicks, form input, keyboard)
 - Test that menus/popovers do not trigger parent click handlers
-- Use `data-testid` only when role/text queries are impractical
-- Prefer accessible queries: `getByRole`, `getByLabelText`, `getByText`
+- Prefer accessible queries: `getByRole`, `getByLabelText`, `getByText`; use `getByTestId` only when they are impractical
+- This is about how tests query, not about which attributes components carry. Actionable controls still get a `data-testid` for bugbug.io (`e2e-test-ids`)
 
 ## Run
 

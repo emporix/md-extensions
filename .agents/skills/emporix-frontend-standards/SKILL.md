@@ -40,6 +40,7 @@ Read only the rules listed in `standards.frontend.rules` in `ai-setup.json` (`FR
 | `ui-components` | `src/components/**`, `src/pages/**` | — |
 | `emporix-component-library` | `src/**/*.tsx` | — |
 | `testing` | `**/*.test.ts`, `**/*.test.tsx` | — |
+| `e2e-test-ids` | `src/**/*.tsx` | — |
 | `api-data` | `src/api/**`, `**/*.api.ts` | — |
 | `npm-dependencies` | `**/package.json`, `**/yarn.lock`, `**/package-lock.json` | — |
 | `i18n` | `src/translations/**` | — |

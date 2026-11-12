@@ -8,7 +8,8 @@
 #
 # Scope: hosting entries in firebase.json whose "public" lives in a --remote
 # folder, or in a top-level folder changed against --base (default origin/HEAD),
-# or every entry when neither is given. Each entry's "target" is resolved to
+# or every entry when neither is given or when --changed finds a change to
+# firebase.json, .firebaserc, or .github/workflows/. Each entry's "target" is resolved to
 # (project, site) through .firebaserc "targets"; a target with no site in any
 # project is an error. Secrets are the `secrets.X` names (except GITHUB_TOKEN)
 # of every workflow in .github/workflows that names one of those targets.
@@ -37,7 +38,7 @@ while [ $# -gt 0 ]; do
     --base) [ $# -ge 2 ] || die "--base needs a ref"; BASE=$2; shift 2 ;;
     --create) CREATE=1; shift ;;
     --no-secrets) SECRETS=0; shift ;;
-    -h|--help) sed -n '2,23p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,24p' "$0"; exit 0 ;;
     *) die "unknown argument: $1" ;;
   esac
 done
@@ -52,9 +53,15 @@ if [ "$CHANGED" = 1 ]; then
   committed=$(git diff --name-only "$BASE"...HEAD 2>/dev/null) || die "cannot diff against $BASE"
   worktree=$(git diff --name-only HEAD 2>/dev/null) || die "cannot diff the working tree"
   untracked=$(git ls-files --others --exclude-standard 2>/dev/null) || die "cannot list untracked files"
-  changed=$(printf '%s\n%s\n%s\n' "$committed" "$worktree" "$untracked" | awk -F/ 'NF > 1 { print $1 }' | LC_ALL=C sort -u)
-  for d in $changed; do REMOTES="$REMOTES $d"; done
-  [ -n "$REMOTES" ] || { echo "No changed folders — nothing to check."; exit 0; }
+  paths=$(printf '%s\n%s\n%s\n' "$committed" "$worktree" "$untracked")
+  # Hosting and deploy config can move any target or secret: check every entry.
+  if printf '%s\n' "$paths" | grep -qE '^(firebase\.json|\.firebaserc|\.github/workflows/.+)$'; then
+    REMOTES=""
+  else
+    changed=$(printf '%s\n' "$paths" | awk -F/ 'NF > 1 { print $1 }' | LC_ALL=C sort -u)
+    for d in $changed; do REMOTES="$REMOTES $d"; done
+    [ -n "$REMOTES" ] || { echo "No changed folders — nothing to check."; exit 0; }
+  fi
 fi
 
 # Lines: "SITE <project> <site>", "UNMAPPED <target>", "SECRET <name>".
