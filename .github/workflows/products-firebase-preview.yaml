@@ -10,6 +10,11 @@ on:
     paths:
       - 'products/**'
 
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+
 jobs:
   build_and_deploy_preview:
     runs-on: ubuntu-26.04
@@ -34,7 +39,7 @@ jobs:
       - run: npm ci
 
       - run: npm run build:dev
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a # v0.11.0
         id: firebase-preview
         with:
           firebaseToolsVersion: "12.9.1"
