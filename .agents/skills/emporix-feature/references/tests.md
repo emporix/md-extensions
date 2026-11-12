@@ -9,7 +9,8 @@ A run without **written** tests and without **executing** the existing suite is 
 - Prefer the project's black-box layer (API / integration / contract tests) for Scenario coverage. Match `AGENTS.md` location and pattern (`*.spec.ts`, `__tests__`, …).
 - A legacy plan's **Tests** section is required work, same as its **Implementation steps**. **Extend** the files it names. **Add** files when it says add.
 - If the plan states no behaviour change, still cover any contract the todos change.
-- Match neighbouring tests (names, setup, assertions). Do not introduce a new runner or framework.
+- Match neighbouring tests (naming style, setup, assertions). Do not introduce a new runner or framework.
+- Name each test after the behaviour it checks, never after the plan: no Scenario or Requirement numbers and no ticket keys in test names, display names, comments, or test data (`scenario3_…`, `requirement12_…`, `cop7151_…`, `// COP-7151:`, `(Scenario 8)`). Those numbers mean nothing in the code and collide across tickets. If neighbouring tests already carry them, do not copy the numbering.
 - Greenfield / no test harness in `AGENTS.md` → **stop** and say so. Do not invent a stack. "No tests in the plan" is not permission to skip.
 
 A production-only change with no test diff is **not done**. Edits under `ai-project-knowledge/` and `PROJECT.md` are documentation; they need no test and do not count as the test diff.

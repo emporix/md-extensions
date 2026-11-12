@@ -36,9 +36,9 @@ run; when the source is `default`, add `— set yours with /emporix-setup --set-
 ## When
 
 The playbook's Worktrees step, after approve and **before architect**.
-Every later step that runs `emporix-feature` (implement, review, pr) runs
-with cwd = that repository's ticket checkout, and gets `--worktree` only
-when that checkout is a worktree.
+Every later step (implement, Review, Open a PR, PR comments, Watch PR) runs
+with cwd = that repository's ticket checkout. The `emporix-feature` stage
+files it runs get `--worktree` only when that checkout is a worktree.
 
 ## Which
 

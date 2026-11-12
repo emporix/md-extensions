@@ -103,20 +103,21 @@ master). A slice is the dev-plan with:
 - **Design sketch**: `#### Cross-repo` plus only this repository's `#### Todo {id}` sketches and deviations.
 - **Project knowledge**: only this repository's files.
 
-A slice is an ordinary `emporix-feature` plan. That is why
-`/emporix-feature review`, `/emporix-feature pr`, and `/emporix-pr` work on
-each repository without knowing about the others. Do not hand-edit slices;
-change the dev-plan and re-slice. `emporix-pr apply` may append
-**Accepted deviations** to a slice — copy those bullets back into the
-dev-plan the next time `emporix-dev` runs on the key.
+A slice is an ordinary `emporix-feature` plan. That is why Review, Open a
+PR, and PR comments (and, outside `emporix-dev`, `/emporix-feature` and
+`/emporix-pr`) work on each repository without knowing about the others. Do not hand-edit slices;
+change the dev-plan and re-slice. An accepted deviation from PR comments,
+a CI fix, an Auto resume, or `/emporix-pr apply` is appended to a slice's
+**Accepted deviations** — copy those bullets back into the dev-plan the
+next time `emporix-dev` runs on the key.
 
 ### Implement and review, per repository
 
 In **Merge plan** order, for each repository: cwd = its ticket checkout
 (`references/worktrees.md`), then `emporix-feature`
 `references/implement.md` (with `--worktree` when that checkout is a worktree) and
-`references/build.md`, then `references/review.md` with
-`references/build.md` § Review.
+`references/build.md`, then **Review** (`references/playbooks/review.md`)
+for that repository.
 
 - The branch name is `{KEY}-{slug}` with the same slug in every repository (implement derives it from the plan title, which the slices share).
 - Repositories with no edge between them in the Cross-repo **System map** may run in parallel, one subagent per repository, each in its own ticket checkout. Dependent repositories run in order.
@@ -132,8 +133,10 @@ one repository → its *fix by hand / waive / stop* question first; its
 dependents in the **Merge plan** do not ship until it passes; independent
 ones may.
 
-On yes: `emporix-feature` `references/pr.md` **once per repository**, in
-**Merge plan** order, cwd = that repository's ticket checkout. Each run makes its own
+On yes: **Open a PR** step 3 **once per repository**, in **Merge plan**
+order, cwd = that repository's ticket checkout (`emporix-feature`
+`references/pr.md` on a first ship, `references/reship.md` on a
+re-ship; never Bugbot). Each run makes its own
 token-owner commit, push, PR, self-review comment, and Jira pointer, so the
 ticket collects every PR URL. `emporix-dev` does not edit PR bodies to
 cross-link them.

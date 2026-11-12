@@ -82,14 +82,25 @@ Resolve the human who owns the GitHub token. Use this for **author and committer
 ```bash
 CURRENT_USER=$(gh api user --jq '.login')
 COMMIT_NAME=$(gh api user --jq 'if (.name | type) == "string" and (.name | length) > 0 then .name else .login end')
-COMMIT_EMAIL=$(gh api user --jq 'if (.email | type) == "string" and (.email | length) > 0 then .email else empty end')
+is_email() { printf '%s\n' "$1" | grep -Eq '^[^][[:space:]@{}"<>(),;:]+@[^][[:space:]@{}"<>(),;:]+\.[^][[:space:]@{}"<>(),;:]+$'; }
+is_agent() { echo "$1" | grep -Ei 'cursor[[:space:]]*agent|^cursor$|noreply@cursor|copilot\[bot\]|github-actions\[bot\]' >/dev/null; }
+COMMIT_EMAIL=$(gh api user --jq 'if (.email | type) == "string" and (.email | length) > 0 then .email else empty end' 2>/dev/null || true)
+is_email "$COMMIT_EMAIL" || COMMIT_EMAIL=""
 if [ -z "$COMMIT_EMAIL" ]; then
+  # Without the token's "user" scope this 404s and gh prints the JSON error body on stdout — never use it.
   COMMIT_EMAIL=$(gh api user/emails --jq '[.[] | select(.primary == true)][0].email // empty' 2>/dev/null || true)
+  is_email "$COMMIT_EMAIL" || COMMIT_EMAIL=""
+fi
+if [ -z "$COMMIT_EMAIL" ]; then
+  COMMIT_EMAIL=$(git config user.email 2>/dev/null || true)   # the human's own identity; skip if an agent set it
+  { is_email "$COMMIT_EMAIL" && ! is_agent "$COMMIT_EMAIL"; } || COMMIT_EMAIL=""
 fi
 if [ -z "$COMMIT_EMAIL" ]; then
   COMMIT_EMAIL="$(gh api user --jq .id)+${CURRENT_USER}@users.noreply.github.com"
 fi
 ```
+
+The commit message starts with `{KEY}`, or with the branch name and a space on a key-less re-ship (`emporix-feature/references/pr.md` § Rules); the script refuses anything else. It soft-resets the commit when the author or committer is an agent or is not the resolved address.
 
 Skills call `"$(skill_script emporix-feature git-commit-as-user.sh)"`. After commit, `git log -1 --format='%an <%ae>'` must match `$COMMIT_NAME` / `$COMMIT_EMAIL`.
 
