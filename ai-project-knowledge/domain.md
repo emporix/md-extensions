@@ -101,6 +101,10 @@ A status code is a quote reason of the Quote Service: a type `CHANGE` or `DECLIN
 
 A company is a legal entity of the Customer Management Service: type `COMPANY` or `SUBSIDIARY` (with `parentId`), legal info, an account limit, read-only customer groups, locations (`HEADQUARTER`, `WAREHOUSE`, `OFFICE`), an approval group of contact assignments, and one restriction value (`companies/src/models/LegalEntity.model.ts`). A contact assignment links a customer record to the company with a type (`PRIMARY`, `BILLING`, `LOGISTICS`, `CONTACT`) and a primary flag; a *contact* is a customer of type `CONTACT`, created by the company screens and deleted with its assignment. Viewing needs Companies Viewer, changing needs Companies Manager, contacts also Customers Manager. Rules: `ai-project-knowledge/modules/companies.md`.
 
+## Catalogs
+
+A catalog of the Catalog Service has an id (generated when not given), a localized name and description, the categories it exposes (`categoryIds`), the site codes it is published to, and a visibility window (`visible`, optional `from` and `to`); the service sets `status` (`visible` / `not_visible`) (`catalogs/src/models/Catalog.model.ts`). The id cannot change after create. Management Dashboard price lists pick catalogs and stay in the host. Viewing needs Catalogs Viewer, changing needs Catalogs Manager; the categories need Categories Viewer to show and Categories Manager to change. Rules: `ai-project-knowledge/modules/catalogs.md`.
+
 ## Units
 
 A unit of the Unit Handling Service has a code, a localized name, an optional symbol, a type (free text such as `mass`; the tenant's existing types are suggested), a base-unit flag and a conversion factor (`units/src/models/Unit.model.ts`). The code cannot change after create; updates carry the loaded `metadata.version`. Management Dashboard price models use units for their measurement unit and stay in the host. Viewing needs Units Viewer, changing needs Units Manager. Rules: `ai-project-knowledge/modules/units.md`.
