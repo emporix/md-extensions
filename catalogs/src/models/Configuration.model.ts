@@ -18,13 +18,13 @@ export interface ColumnVisibility {
 
 /**
  * Per-table configuration persisted under a configuration key
- * (Labels uses `ext_labels`). Shape must stay compatible with
+ * (the catalogs list uses `ext_catalogs`). Shape must stay compatible with
  * management-dashboard so preferences saved there keep working.
  */
 export interface TableConfiguration {
   key: string
   columns: ColumnVisibility[]
-  /** Mixin columns — unused by Labels, preserved so saved config round-trips. */
+  /** Mixin columns — unused by Catalogs, preserved so saved config round-trips. */
   mixins?: unknown[]
 }
 

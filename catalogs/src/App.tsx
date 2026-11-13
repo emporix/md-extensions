@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { InputText, PrimaryButton } from '@emporix/component-library'
 import RemoteComponent from './RemoteComponent'
+import { DEFAULT_APP_CURRENCY } from './constants/currency'
 import {
   getStoredSettings,
   saveStoredSettings,
@@ -25,6 +26,7 @@ const App = () => {
       language,
       token,
       contentLanguage: language,
+      currency: DEFAULT_APP_CURRENCY,
       onError: (error) => {
         console.error(error)
       },
@@ -84,6 +86,7 @@ const App = () => {
           language,
           token,
           contentLanguage: language,
+          currency: DEFAULT_APP_CURRENCY,
           onError: (error) => {
             console.error(error)
           },

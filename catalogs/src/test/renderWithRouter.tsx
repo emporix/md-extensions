@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { RefreshValuesProvider } from '../context/RefreshValuesProvider'
 import { DashboardProvider } from '../context/Dashboard.context'
 import type { AppState } from '../models/AppState.model'
+import { DEFAULT_APP_CURRENCY } from '../constants/currency'
 
 const LocationDisplay = () => {
   const location = useLocation()
@@ -15,6 +16,7 @@ const appStateFor = (tenant: string): AppState => ({
   language: 'en',
   token: '',
   contentLanguage: 'en',
+  currency: DEFAULT_APP_CURRENCY,
   onError: () => {
     // NOOP
   },

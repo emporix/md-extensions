@@ -18,9 +18,9 @@ import styles from './TableExtensions.module.scss'
 type TableExtensionsProps = {
   /** Column field keys, in display order. */
   readonly tableColumns: string[]
-  /** Configuration key the preference is persisted under (e.g. `ext_labels`). */
+  /** Configuration key the preference is persisted under (e.g. `ext_catalogs`). */
   readonly tableConfigurationKey: string
-  /** Translation prefix for column labels, e.g. `labels.table.columns`. */
+  /** Translation prefix for column labels, e.g. `catalogs.table.columns`. */
   readonly tableName: string
   readonly managerPermission?: boolean
   readonly onSave?: () => void

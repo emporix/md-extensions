@@ -11,6 +11,7 @@ import {
   useConfiguration,
 } from './ConfigurationProvider'
 import type { AppState } from '../models/AppState.model'
+import { DEFAULT_APP_CURRENCY } from '../constants/currency'
 
 /** One pending configuration request per tenant, resolved in any order. */
 const pending = vi.hoisted(() => {
@@ -36,6 +37,7 @@ const appState = (tenant: string, contentLanguage = 'en'): AppState => ({
   language: 'en',
   token: 'token',
   contentLanguage,
+  currency: DEFAULT_APP_CURRENCY,
   onError: () => {
     // NOOP
   },

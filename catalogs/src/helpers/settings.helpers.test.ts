@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import type { AppState } from '../models/AppState.model'
+import { DEFAULT_APP_CURRENCY } from '../constants/currency'
 import {
   getStoredSettings,
   saveStoredSettings,
@@ -37,6 +38,7 @@ describe('getStoredSettings', () => {
       language: 'de',
       token: 'jwt-123',
       contentLanguage: 'en',
+      currency: DEFAULT_APP_CURRENCY,
       onError: expect.any(Function),
     })
     vi.unstubAllGlobals()
@@ -105,6 +107,7 @@ describe('saveStoredSettings', () => {
       language: 'de',
       token: 'tok',
       contentLanguage: 'de',
+      currency: DEFAULT_APP_CURRENCY,
       onError: () => {
         // NOOP
       },
@@ -124,6 +127,7 @@ describe('saveStoredSettings', () => {
       language: 'b',
       token: 'c',
       contentLanguage: 'b',
+      currency: DEFAULT_APP_CURRENCY,
       onError: () => {
         // NOOP
       },
