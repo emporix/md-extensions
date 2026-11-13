@@ -47,6 +47,9 @@
         ],
         "emporix-units": [
           "emporix-units"
+        ],
+        "emporix-customers": [
+          "emporix-customers"
         ]
       }
     },
@@ -96,6 +99,9 @@
         ],
         "emporix-units-stage": [
           "emporix-units-stage"
+        ],
+        "emporix-customers-stage": [
+          "emporix-customers-stage"
         ]
       }
     },
@@ -145,6 +151,9 @@
         ],
         "emporix-units-develop": [
           "emporix-units-develop"
+        ],
+        "emporix-customers-develop": [
+          "emporix-customers-develop"
         ]
       }
     }

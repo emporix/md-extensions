@@ -1,0 +1,98 @@
+// Keys of MD `translations/en/customers.ts` used by the ported screens.
+// Added: `actions.deleteMessage` (missing in MD, which showed the raw key),
+// `address.general` (MD hard-coded "General"), `details.passwordToggle.*`.
+export default {
+  singular: 'Customer',
+  plural: 'Customers',
+  createCustomer: 'Add new customer',
+  addAddress: 'Add new address',
+  details: {
+    subtitle: 'Details',
+    id: 'Id',
+    customerNumber: 'Customer number',
+    firstName: 'First name',
+    lastName: 'Last name',
+    preferredSite: 'Preferred site',
+    title: 'Title',
+    preferredCurrency: 'Preferred currency',
+    onHold: 'On hold',
+    active: 'Active',
+    contactPhone: 'Contact phone',
+    contactEmail: 'Contact email',
+    password: 'Initial Password',
+    autogenerate: 'Autogenerate',
+    bonusPoints: 'Bonus points',
+    referralCouponCode: 'Referral coupon code',
+    registered: 'Registered',
+    unregistered: 'Unregistered',
+    lastDeliveryDate: 'Last delivery date',
+    lastOrderDate: 'Last order date',
+    creationDate: 'Creation date',
+    lastLogin: 'Last login',
+    assignedSegments: 'Assigned Segments',
+    assignedCompanies: 'Assigned Company',
+    groups: 'Groups',
+    restriction: 'Restriction',
+    tooltip: {
+      id: 'Unique Id of the customer. It will be generated if not provided.',
+      autogenerate:
+        'Creates a random 12-character initial password with mixed case, numbers, and special characters.',
+      password: 'Password must be at least 6 characters long.',
+    },
+    passwordToggle: {
+      show: 'Show password',
+      hide: 'Hide password',
+    },
+    noSegments: 'No segment assigned',
+    noCompanies: 'No companies assigned',
+    noGroups: 'No groups assigned',
+  },
+  marketing: {
+    subtitle: 'Marketing information',
+  },
+  table: {
+    columns: {
+      id: 'Id',
+      firstName: 'First name',
+      lastName: 'Last name',
+      contactEmail: 'Contact email',
+      preferredSite: 'Preferred site',
+    },
+  },
+  tabs: {
+    first: 'Details',
+    second: 'Addresses',
+  },
+  address: {
+    general: 'General',
+    id: 'Id',
+    tooltip: {
+      id: 'Unique Id of the customer address. It will be generated if not provided.',
+    },
+    contactName: 'Contact name',
+    companyName: 'Company name',
+    street: 'Street',
+    streetAppendix: 'Street appendix',
+    streetNumber: 'Street number',
+    city: 'City',
+    zipCode: 'Zip code',
+    country: 'Country',
+    tags: 'Tags',
+    isDefault: 'Is default',
+    contactPhone: 'Contact phone',
+  },
+  actions: {
+    deleteMessage:
+      'Do you really want to delete this customer? This cannot be undone.',
+  },
+  toasts: {
+    successCreate: 'Customer created successfully',
+    successUpdate: 'Customer updated successfully',
+    successDelete: 'Customer deleted successfully',
+    errorDelete: 'Cannot delete the customer',
+    errorSave: 'Cannot save the customer',
+  },
+  assistedBuying: {
+    button: 'Assisted buying',
+  },
+}

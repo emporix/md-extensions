@@ -80,7 +80,7 @@ Promote **generic** widgets to CL (Calendar, InputSwitch, Editor, …). Substitu
 | `primereact/togglebutton` | `missing` | — | — | 1 | `Language.module.tsx`. |
 | `primereact/confirmpopup` | `missing` | — | — | 1 | `FeatureTogglesList.page.tsx`. Prefer CL `ConfirmBox` / `Dialog` unless the popover placement is required. |
 | `primereact/image` | `missing` | — | — | 1 | `settings/Card.tsx`. |
-| `primereact/password` | `missing` | — | — | 1 | Barrel. `CustomersAddEdit.module.tsx`. |
+| `primereact/password` | `in-cl` | `InputText` `type="password"` | **2.26.0** | 1 | Pattern A (COP-7185). Eye toggle on by default (`toggleMask`), labels via `toggleMaskLabels`. MD used `feedback={false}`; no strength meter in CL. |
 | `primereact/tristatecheckbox` | `missing` | — | — | 1 | Barrel. `TemplateAttributes.tsx`. |
 | `primereact/treenode` | `type` | `TreeNode` | **2.12.0** | 13 | Exported by CL with `Tree` (plus `TreeExpandedKeys`, `TreeSelectionKeys`, event types). |
 | `primereact/selectitem` | `type` | — | — | 3 | `SelectItemOptionsType`. Map to CL `DropdownOption[]`. |
