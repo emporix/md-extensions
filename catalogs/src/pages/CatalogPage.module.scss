@@ -1,0 +1,30 @@
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+// MD lays the details out in two columns (Id, Name), with the description
+// across the full width. `form.form` outranks the shared FormGrid column.
+form.form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  max-width: none;
+
+  @media (max-width: 768px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.fullRow {
+  grid-column: 1 / -1;
+}
+
+.categories {
+  margin-top: 0.5rem;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
