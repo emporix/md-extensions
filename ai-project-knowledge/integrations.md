@@ -199,3 +199,11 @@ Shared api-calls client (`companies/package.json` `@emporix/api-calls` 1.5.2), p
 - Customer Management Service, bound to the host tenant in `companies/src/hooks/api/customerManagement.ts`: legal entities (`fetchLegalEntitiesCall`, `fetchLegalEntityCall`, `createLegalEntityCall`, `updateLegalEntityCall` — also used for the approval group and mixins, `deleteLegalEntityCall`), locations (`fetchLocationCall`, `createLocationCall` — POST then PUT of the legal entity, `updateLocationCall`, `deleteLocationCall`), contact assignments (`fetchContactsForEntityCall`, `fetchContactAssignmentCall`, `createContactFlow`, `updateContactFlow`, `deleteContactAssignmentCall`). Paths per api-calls: `/customer-management/{tenant}/legal-entities`, `/locations`, `/contact-assignments`.
 - Customer Service, in `companies/src/hooks/api/customers.ts`: `getCustomers`, `getCustomer`, `addCustomer`, `updateCustomer`, `patchCustomerCall`, `removeCustomer`, `addCustomerAddress`, `updateCustomerAddress`.
 - No media, no direct HTTP.
+
+## customers
+
+Shared api-calls client (`customers/package.json` `@emporix/api-calls` 1.5.2), plus sites, configuration (table config `ext_customers`, `restrictions`, `enableSyncBetweenRestrictionsAndSiteCodes`), feature toggles, schemas and mixins, the changelog (audit log), and the IAM permission reads.
+
+- Customer Service, in `customers/src/hooks/api/customers.ts`: `getCustomers`, `getCustomer`, `addCustomer`, `updateCustomer`, `patchCustomerCall`, `removeCustomer`, `addCustomerAddress`, `updateCustomerAddress`, `patchCustomerAddress`, `removeCustomerAddress`, `getAssistedBuyingLoginCall` (its tokens go into the assisted-buying storefront URL).
+- Coupon Service: `fetchCoupons` for the referral coupon (`customers/src/hooks/api/coupons.ts`). IAM: `getAllGroupsForUserCall`. Customer Segments: `getSegmentsCall` with `customerId`. Legal entities (`customers/src/hooks/api/customerManagement.ts`) only for company mixin reference fields.
+- No media, no direct HTTP.

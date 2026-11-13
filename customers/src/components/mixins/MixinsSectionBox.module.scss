@@ -1,0 +1,46 @@
+// MD `mixins-section-box-wrapper`: bordered card per nested mixin section.
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.5rem;
+  padding: 1rem;
+  background-color: white;
+  border: 1px solid #e8e9eb;
+  border-radius: 0.25rem;
+}
+
+// MD `flex justify-content-between align-items-start w-full mb-3`
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.title {
+  color: #828a99;
+  font-size: 0.875rem;
+  font-weight: bold;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.body {
+  width: 100%;
+  flex-grow: 1;
+  background-color: white;
+}
+
+// CL small SecondaryButton sets text-transform: none; MD secondary-small keeps uppercase.
+.addButton {
+  text-transform: uppercase;
+}
+
+.addLabel {
+  margin-left: 0.5rem;
+}
