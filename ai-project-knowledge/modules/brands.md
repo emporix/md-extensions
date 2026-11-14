@@ -141,6 +141,8 @@ No page or table specs. Names only:
 - `brands/src/helpers/settings.helpers.test.ts` — stored settings, dev dialog when tenant or token is missing or whitespace, save writes keys and does not mutate the input.
 - `brands/src/helpers/localized.test.ts` — `localizedKeysToLowerCase`. Not referenced by brand pages.
 
+A host tenant switch does not remount the remote. `FeatureTogglesProvider` applies toggles, errors and the end of loading only for the tenant that is still current, and `SitesProvider` clears `sites` and `currentSite` on a tenant or token change and ignores a late response for the previous tenant, so no other tenant's site code reaches a form (`brands/src/context/tenantSwitch.test.tsx`).
+
 ## Host wiring
 
 | Fact | Value |

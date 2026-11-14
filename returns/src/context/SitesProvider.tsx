@@ -32,10 +32,15 @@ export const SitesProvider = ({ children }: PropsWithChildren) => {
   const [currentSite, setCurrentSite] = useState<Site>()
 
   useEffect(() => {
+    // Drop the previous tenant's sites; a late response for it is ignored.
+    setSites([])
+    setCurrentSite(undefined)
     if (!token || !tenant) return
+    let cancelled = false
     ;(async () => {
       try {
         const newSites: Site[] = await getSites()
+        if (cancelled) return
         const defaultSite = newSites.find((site) => site.default)
         if (defaultSite) {
           setCurrentSite(defaultSite)
@@ -44,9 +49,13 @@ export const SitesProvider = ({ children }: PropsWithChildren) => {
         }
         setSites(newSites)
       } catch (error) {
+        if (cancelled) return
         console.error('Error fetching sites:', error)
       }
     })()
+    return () => {
+      cancelled = true
+    }
   }, [token, tenant, getSites])
 
   const updateCurrentSite = (site?: Site) => {

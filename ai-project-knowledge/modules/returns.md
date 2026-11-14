@@ -171,6 +171,8 @@ Wizard and edit behaviour above is from the implementation, not from tests.
 - Whether mixin `ADD` replaces an existing key.
 - Host route guard that decides who can open the remote.
 
+A host tenant switch does not remount the remote. `FeatureTogglesProvider` applies toggles, errors and the end of loading only for the tenant that is still current, and `SitesProvider` clears `sites` and `currentSite` on a tenant or token change and ignores a late response for the previous tenant, so no other tenant's site code reaches a form (`returns/src/context/tenantSwitch.test.tsx`).
+
 ## Host wiring
 
 | Fact | Value |

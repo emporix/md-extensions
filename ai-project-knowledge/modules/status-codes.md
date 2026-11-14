@@ -52,6 +52,8 @@ Pinned by `status-codes/src/pages/StatusCode.page.test.tsx`.
 
 `status-codes/src/translations/{en,de}/quotesReasons.ts` keep MD's `quotesReasons.*` keys, plus `toasts.errorSave`. EN and DE key parity and the absence of `primereact` are pinned by `status-codes/src/translations/translations.test.ts`.
 
+A host tenant switch does not remount the remote. `FeatureTogglesProvider` applies toggles, errors and the end of loading only for the tenant that is still current, and `SitesProvider` clears `sites` and `currentSite` on a tenant or token change and ignores a late response for the previous tenant, so no other tenant's site code reaches a form (`status-codes/src/context/tenantSwitch.test.tsx`).
+
 ## Host wiring
 
 | Fact | Value |
