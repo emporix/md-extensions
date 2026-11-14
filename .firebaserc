@@ -47,6 +47,9 @@
         ],
         "emporix-units": [
           "emporix-units"
+        ],
+        "emporix-categories": [
+          "emporix-categories"
         ]
       }
     },
@@ -96,6 +99,9 @@
         ],
         "emporix-units-stage": [
           "emporix-units-stage"
+        ],
+        "emporix-categories-stage": [
+          "emporix-categories-stage"
         ]
       }
     },
@@ -145,6 +151,9 @@
         ],
         "emporix-units-develop": [
           "emporix-units-develop"
+        ],
+        "emporix-categories-develop": [
+          "emporix-categories-develop"
         ]
       }
     }

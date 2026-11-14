@@ -1,0 +1,8 @@
+// MD `p-selectbutton-small`: compact icon-only buttons.
+.switch :global(.p-button) {
+  padding: 0.5rem 0.75rem;
+}
+
+.treeIcon {
+  transform: rotate(-90deg);
+}
