@@ -122,9 +122,7 @@ export const MixinColumns = ({
         optionLabel="key"
         optionValue="key"
         panelClassName={styles.dropdownPanel}
-        itemTemplate={(option) => (
-          <span title={option.key}>{option.key}</span>
-        )}
+        itemTemplate={(option) => <span title={option.key}>{option.key}</span>}
         onChange={(e) => {
           const picked = activeMixinOptions.find(
             (mixin) => mixin.key === e.value

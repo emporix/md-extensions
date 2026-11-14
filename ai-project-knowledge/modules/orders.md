@@ -127,6 +127,8 @@ The tab calls `getChangelogs` with filter `{ entity: 'order', entityId }` and pa
 
 Behaviour specs: `orders/src/components/orders/entries/AddEntryDialog.test.tsx` (add-entry flow, saving lock, category tree), `orders/src/components/orders/entries/OrderEntriesList.test.tsx`, `orders/src/helpers/productsBrowser.helpers.test.ts` (`toProductRow`), `orders/src/helpers/tables.test.ts` (`getExpandedIds`), the mixin suites listed under Mixins, `orders/src/helpers/orders.test.ts` (`orders helpers`), `orders/src/helpers/restrictions.test.ts` (`parseRestrictions`), `orders/src/components/orders/payment/paymentStatus.test.ts` (`payment severities`). Other suite names, bodies unread: `escapeCsvCell`, `mapToCsv`, `getStoredSettings`, `shouldOpenDevSettingsDialog`, `saveStoredSettings`, `createForm`, `fetchAllRecords`, `getApiErrorStatus`, `IAM ErrorResponse parsing`, `platform validation-style error parsing`, `getConflictErrorToast`, `getValueFromPath`, `textToTitleCase`, `removeEmptyValues`, `removeObjectEmptyValues`, `toChangelogPagination`, `toChangelogOptions`, `ChangelogChangeType`, `flatten`, `parseMixinColumns`, `localizedKeysToLowerCase`, `buildRelatedEntityBadgeLabel`, `getOtherRelatedItems`, `getChangeTypeKey`, `formatChangelogValue`, `filterMeaningfulChangelogPaths`, `trimCloudinaryImage`.
 
+A host tenant switch does not remount the remote. `FeatureTogglesProvider` applies toggles, errors and the end of loading only for the tenant that is still current, and `SitesProvider` clears `sites` and `currentSite` on a tenant or token change and ignores a late response for the previous tenant, so no other tenant's site code reaches a form (`orders/src/context/tenantSwitch.test.tsx`).
+
 ## Host wiring
 
 | Fact | Value |

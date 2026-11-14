@@ -114,6 +114,8 @@ Tabs in order (`products/src/components/products/ProductAddEdit.tsx`): general; 
 
 The remote reads permissions itself: user access controls, tenant access controls, templates and scopes through IAM calls (`products/src/context/PermissionsProvider.tsx`, `hooks/api/iam.ts`); children render only after they load. `hasPermission(domain)` needs every access control of the domain after viewer/editor/manager implication expansion (`products/src/helpers/accessControls.ts`; domains and ids in `products/src/configs/accessControls.ts`). Domains used here: Products viewer/manager, Categories viewer/manager, Vendors viewer, Price Models viewer, Taxes viewer, Audit Log viewer, and the vendor-scoped domains for products, prices, availability, media, publish and unpublish. `restrictions.ts` parses order-scope site restrictions (`parseRestrictions`); no caller in the products screens was found.
 
+A host tenant switch does not remount the remote. `FeatureTogglesProvider` applies toggles, errors and the end of loading only for the tenant that is still current, and `SitesProvider` clears `sites` and `currentSite` on a tenant or token change and ignores a late response for the previous tenant, so no other tenant's site code reaches a form (`products/src/context/tenantSwitch.test.tsx`).
+
 ## Host wiring
 
 | Fact | Value |

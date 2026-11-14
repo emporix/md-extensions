@@ -181,7 +181,9 @@ const UserPage = () => {
               {t('global.discard')}
             </SecondaryButton>
             <PrimaryButton
-              disabled={!formState.isValid || !formState.isDirty || !canSaveUser}
+              disabled={
+                !formState.isValid || !formState.isDirty || !canSaveUser
+              }
               onClick={handleSubmit(user ? submitEditUser : submitCreateUser)}
             >
               {t('global.save')}
