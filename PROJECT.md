@@ -1,6 +1,6 @@
 # Management Dashboard Extensions
 
-Management Dashboard extensions, one Vite app per top-level folder, loaded by the host as module-federation remotes. Operators use them for brands, labels, orders, returns, products, customer groups, users and groups, status codes, coupons, companies, statistics, the home dashboard, agentic AI, and Algolia synonyms. Source: `README.md`, `docs/MIGRATED_MODULES.md`.
+Management Dashboard extensions, one Vite app per top-level folder, loaded by the host as module-federation remotes. Operators use them for brands, labels, orders, returns, products, customer groups, users and groups, status codes, coupons, companies, units, categories, statistics, the home dashboard, agentic AI, and Algolia synonyms. Source: `README.md`, `docs/MIGRATED_MODULES.md`.
 
 Platform context (callers, deployment, cross-service conventions): ask Emporix
 AI Buddy `get_service_context` with `service: "Management Dashboard Extensions"`. This repository's own
@@ -26,6 +26,7 @@ knowledge is below; open only what the task needs.
 | `ai-project-knowledge/modules/coupons.md` | Coupons: server-side list with `ext_coupons` columns and batch delete, add/edit with discount, validity, audience and vendor restrictions, mixins, audit log, permissions, host wiring | `d8edeb2` 2026-11-06 |
 | `ai-project-knowledge/modules/companies.md` | Companies (legal entities): list with column visibility, editor with subsidiaries, locations, approval group, contact assignments, customer groups, mixins and audit log; location, contact and customer-assignment pages; permissions, host wiring | `d8edeb2` 2026-11-09 |
 | `ai-project-knowledge/modules/units.md` | Units: lazy list with server filters and parallel delete, add/edit with free-text type, base unit, factor and version, permissions, host wiring | `d8edeb2` 2026-11-07 |
+| `ai-project-knowledge/modules/categories.md` | Categories: server-paged list with `ext_categories` columns via CL `TableExtensions`, tree view with quick edit, add above/below/child and drag-and-drop moves, add/edit with path, validity, media and mixins, root-tree rebuilds, permissions, host wiring | `c51b985` 2026-11-14 |
 | `ai-project-knowledge/modules/statistics.md` | Tenant usage charts | `da99643` 2026-11-02 |
 | `ai-project-knowledge/modules/users-and-groups.md` | Employee users and their IAM groups | `05d8d1d` 2026-11-06 |
 
