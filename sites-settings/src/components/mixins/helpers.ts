@@ -443,6 +443,8 @@ export const defaultValueForMixinItem = (
     case MixinsFormItemType.boolean:
       return false
     case MixinsFormItemType.enum:
+      // Only a new array entry starts with an option; a field without data stays unset.
+      if (!isArrayElement) return undefined
       return item.enum && item.enum.length > 0 ? item.enum[0] : ''
     case MixinsFormItemType.date:
       return new Date().toISOString()
@@ -472,6 +474,22 @@ export const setAtPath = (obj: any, path: string, value: any) => {
     cursor = cursor[k]
   }
   cursor[keys[keys.length - 1]] = value
+}
+
+/** Like setAtPath, but an `undefined` value removes the key so it is left out of the payload. */
+const setOrOmitAtPath = (obj: any, path: string, value: any) => {
+  if (value !== undefined) {
+    setAtPath(obj, path, value)
+    return
+  }
+  const keys = path.split('.')
+  let cursor = obj
+  for (let i = 0; i < keys.length - 1; i++) {
+    cursor = cursor?.[keys[i]]
+  }
+  if (cursor && typeof cursor === 'object') {
+    delete cursor[keys[keys.length - 1]]
+  }
 }
 
 export const hasValue = (val: any) => {
@@ -722,7 +740,7 @@ export const applyDefaultsOnEmptyFields = (
         const item = findItemForPath(path, items)
         if (item) {
           if (!hasValue(value)) {
-            setAtPath(
+            setOrOmitAtPath(
               result,
               path,
               item.isNullable
@@ -748,7 +766,7 @@ export const applyDefaultsOnEmptyFields = (
     if (!hasValue(node) && basePath) {
       const item = findItemForPath(basePath, items)
       if (item) {
-        setAtPath(
+        setOrOmitAtPath(
           result,
           basePath,
           item.isNullable

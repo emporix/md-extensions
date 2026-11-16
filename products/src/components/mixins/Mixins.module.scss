@@ -87,6 +87,11 @@
   gap: 0.5rem;
 }
 
+.saveHint {
+  color: var(--color-danger, #e24c4c);
+  font-size: 0.75rem;
+}
+
 // Site-aware layout
 .sectionWithSidePanel {
   padding: 0;

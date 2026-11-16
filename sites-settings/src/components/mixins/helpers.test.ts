@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createForm, MixinsFormItem, MixinsFormItemType } from './helpers'
+import {
+  applyDefaultsOnEmptyFields,
+  createForm,
+  defaultValueForMixinItem,
+  MixinsFormItem,
+  MixinsFormItemType,
+} from './helpers'
 
 const item = (
   overrides: Partial<MixinsFormItem> & Pick<MixinsFormItem, 'key' | 'type'>
@@ -31,16 +37,17 @@ describe('createForm', () => {
     expect(form.dateTime).toBe('2026-08-17T13:08:00.000Z')
   })
 
-  it('prefills enum fields with the first option', () => {
+  it('leaves enum fields without data unset', () => {
     const form = createForm([
       item({
         key: 'size',
         type: MixinsFormItemType.enum,
         enum: ['S', 'M', 'L'],
+        isRequired: true,
       }),
     ])
 
-    expect(form.size).toBe('S')
+    expect(form.size).toBeUndefined()
   })
 
   it('keeps empty defaults for text, time, and boolean-off', () => {
@@ -58,5 +65,30 @@ describe('createForm', () => {
     expect(form.boolean).toBe(false)
     expect(form.time).toBe('')
     expect(form.number).toBe(0)
+  })
+})
+
+describe('enum defaults', () => {
+  const sizeItem = item({
+    key: 'size',
+    type: MixinsFormItemType.enum,
+    enum: ['S', 'M', 'L'],
+  })
+
+  it('leaves an empty enum out of the save payload', () => {
+    const payload = applyDefaultsOnEmptyFields({ size: undefined }, [sizeItem])
+
+    expect(payload).not.toHaveProperty('size')
+  })
+
+  it('starts a newly added enum array entry with the first option', () => {
+    const arrayItem = item({
+      key: 'sizes',
+      type: MixinsFormItemType.array,
+      arrayType: MixinsFormItemType.enum,
+      enum: ['S', 'M', 'L'],
+    })
+
+    expect(defaultValueForMixinItem(arrayItem, true)).toBe('S')
   })
 })
