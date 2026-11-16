@@ -146,12 +146,19 @@ export const ProductAttributes = ({ product }: ProductAttributesProps) => {
   )
 
   useEffect(() => {
+    // Only the answer for the current template, version and product may write
+    // into the form; a late answer for an earlier one (e.g. the parent's, when
+    // a variant is opened from its list) is ignored (COP-7138).
+    let isCurrent = true
     ;(async () => {
       if (templateVersion) {
         const productTemplateToSelect = await fetchProductTemplate(
           templateId,
           templateVersion
         )
+        if (!isCurrent) {
+          return
+        }
         if (productTemplateToSelect) {
           if (product.productType === ProductType.parentVariant && !id) {
             setValue(
@@ -213,6 +220,9 @@ export const ProductAttributes = ({ product }: ProductAttributesProps) => {
         setWillProduceVariants(false)
       }
     })()
+    return () => {
+      isCurrent = false
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity: re-run only on template/version/id change
   }, [templateVersion, templateId, id])
 

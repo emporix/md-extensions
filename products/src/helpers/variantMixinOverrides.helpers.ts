@@ -33,14 +33,23 @@ const withoutBlankFields = (value: unknown): unknown => {
 }
 
 /**
- * Override paths for the values of `next` that differ from `previous`, in
- * Product Service's grammar: objects are walked, arrays and other values are
- * leaves. Blank values get no path; the variant inherits them from its parent.
+ * The form fills an empty boolean with `false`. Where the loaded value has
+ * nothing (the parent has no value, e.g. a field added in a newer schema
+ * version), that `false` is a form default, not a value the user set.
  */
-export const changedMixinPaths = (
+const isUntouchedBooleanDefault = (previous: unknown, next: unknown) =>
+  next === false && (previous === null || previous === undefined)
+
+/**
+ * Walks `next` in Product Service's override grammar: objects are walked,
+ * arrays and other values are leaves. Blank values and untouched boolean
+ * defaults get no path; `includeLeaf` decides for every other leaf.
+ */
+const leafPaths = (
   previous: unknown,
   next: unknown,
-  path: string
+  path: string,
+  includeLeaf: (previous: unknown, next: unknown) => boolean
 ): string[] => {
   if (isNullable(next) || isEmptyObject(next)) {
     return []
@@ -48,17 +57,42 @@ export const changedMixinPaths = (
   if (isObject(next)) {
     const previousObject = isObject(previous) ? previous : {}
     return Object.entries(next).flatMap(([key, value]) =>
-      changedMixinPaths(previousObject[key], value, `${path}.${key}`)
+      leafPaths(previousObject[key], value, `${path}.${key}`, includeLeaf)
     )
   }
-  return isSameValue(previous, next) ? [] : [path]
+  if (isUntouchedBooleanDefault(previous, next)) {
+    return []
+  }
+  return includeLeaf(previous, next) ? [path] : []
 }
 
 /**
+ * Override paths for the values of `next` that differ from `previous`. Blank
+ * values get no path; the variant inherits them from its parent.
+ */
+export const changedMixinPaths = (
+  previous: unknown,
+  next: unknown,
+  path: string
+): string[] =>
+  leafPaths(previous, next, path, (left, right) => !isSameValue(left, right))
+
+/**
+ * Override paths for every value of `next`, changed or not. Replaces a path
+ * that covers a whole mixin, so stored values stay the variant's own field by
+ * field and a cleared field inherits again.
+ */
+const ownMixinPaths = (previous: unknown, next: unknown, path: string) =>
+  leafPaths(previous, next, path, () => true)
+
+/**
  * A variant stores only the mixin paths listed in `metadata.overridden`; any
- * other mixin value is taken from its parent. Marks the fields this save
+ * other mixin value is taken from its parent. `payload.metadata.overridden`
+ * must be the variant's own stored list (raw read). Marks the fields this save
  * changed (compared with the loaded, parent-merged `loadedMixins`) plus the
- * schema binding, and drops blank fields so they inherit again.
+ * schema binding, and drops blank fields so they inherit again. A path that
+ * covers a saved mixin as a whole (`mixins.<storageKey>`, set through the API)
+ * is replaced by paths for each of its non-blank fields.
  */
 export const withVariantMixinOverrides = (
   payload: Partial<Product>,
@@ -77,23 +111,29 @@ export const withVariantMixinOverrides = (
     : [[mixinStorageKey(mixinMetadata.key, mixinMetadata.siteCode), data]]
   const mixins: Mixins = { ...payload.mixins }
   const paths: string[] = []
+  const wholeMixinPaths = new Set<string>()
   saved.forEach(([storageKey, value]) => {
     if (value == null) {
       return
     }
     const cleaned = withoutBlankFields(value)
+    const mixinPath = `mixins.${storageKey}`
     mixins[storageKey] = cleaned
     paths.push(
-      ...changedMixinPaths(
-        loadedMixins?.[storageKey],
-        cleaned,
-        `mixins.${storageKey}`
-      )
+      ...changedMixinPaths(loadedMixins?.[storageKey], cleaned, mixinPath)
     )
+    if (payload.metadata?.overridden?.includes(mixinPath)) {
+      wholeMixinPaths.add(mixinPath)
+      paths.push(
+        ...ownMixinPaths(loadedMixins?.[storageKey], cleaned, mixinPath)
+      )
+    }
   })
   const overridden = [
     ...new Set([
-      ...(payload.metadata?.overridden ?? []),
+      ...(payload.metadata?.overridden ?? []).filter(
+        (path) => !wholeMixinPaths.has(path)
+      ),
       ...paths,
       `metadata.mixins.${mixinMetadata.key}`,
     ]),

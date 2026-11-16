@@ -238,6 +238,167 @@ describe('withVariantMixinOverrides', () => {
     expect(result).toBe(payload)
   })
 
+  describe('COP-7138: own list from the raw read', () => {
+    it('keeps basic and other entries of the own list on a mixin save (Scenario 1)', () => {
+      const result = save(inherited, { articleNumber: 'A-2', color: 'red' }, [
+        'description',
+        'name',
+      ])
+
+      expect(result.metadata?.overridden).toEqual([
+        'description',
+        'name',
+        `mixins.${KEY}.articleNumber`,
+        `metadata.mixins.${KEY}`,
+      ])
+    })
+  })
+
+  describe('an untouched boolean default is not an override (Scenario 4)', () => {
+    it('lists no path for false where the loaded value is missing', () => {
+      const result = save(inherited, {
+        articleNumber: 'A-1',
+        color: 'red',
+        giftWrapping: false,
+      })
+
+      expect(result.metadata?.overridden).toEqual([`metadata.mixins.${KEY}`])
+    })
+
+    it('lists no path for false where the loaded value is null', () => {
+      const result = save(
+        { [KEY]: { ...inherited[KEY], giftWrapping: null } },
+        { articleNumber: 'A-1', color: 'red', giftWrapping: false }
+      )
+
+      expect(result.metadata?.overridden).toEqual([`metadata.mixins.${KEY}`])
+    })
+
+    it('lists true set where the loaded value is missing', () => {
+      const result = save(inherited, {
+        articleNumber: 'A-1',
+        color: 'red',
+        giftWrapping: true,
+      })
+
+      expect(result.metadata?.overridden).toEqual([
+        `mixins.${KEY}.giftWrapping`,
+        `metadata.mixins.${KEY}`,
+      ])
+    })
+
+    it('lists false set over a loaded true', () => {
+      const result = save(
+        { [KEY]: { ...inherited[KEY], giftWrapping: true } },
+        { articleNumber: 'A-1', color: 'red', giftWrapping: false }
+      )
+
+      expect(result.metadata?.overridden).toEqual([
+        `mixins.${KEY}.giftWrapping`,
+        `metadata.mixins.${KEY}`,
+      ])
+    })
+
+    it('lists no path for a nested false default', () => {
+      const result = save(
+        { [KEY]: { delivery: { express: undefined } } },
+        { delivery: { express: false } }
+      )
+
+      expect(result.metadata?.overridden).toEqual([`metadata.mixins.${KEY}`])
+    })
+  })
+
+  describe('a whole-mixin path from the API (Scenario 5)', () => {
+    const stored = {
+      [KEY]: { active: true, articleNumber: 'B-ART', note: 'B-API' },
+    }
+
+    it('replaces the whole path with paths for the stored fields', () => {
+      const result = save(
+        stored,
+        { active: true, articleNumber: 'B-ART', note: 'B-API' },
+        [`mixins.${KEY}`]
+      )
+
+      expect(result.metadata?.overridden).toEqual([
+        `mixins.${KEY}.active`,
+        `mixins.${KEY}.articleNumber`,
+        `mixins.${KEY}.note`,
+        `metadata.mixins.${KEY}`,
+      ])
+      expect(result.mixins?.[KEY]).toEqual(stored[KEY])
+    })
+
+    it('gives a cleared field no path, so it inherits again', () => {
+      const result = save(
+        stored,
+        { active: true, articleNumber: 'B-ART', note: '' },
+        [`mixins.${KEY}`]
+      )
+
+      expect(result.metadata?.overridden).toEqual([
+        `mixins.${KEY}.active`,
+        `mixins.${KEY}.articleNumber`,
+        `metadata.mixins.${KEY}`,
+      ])
+      expect(result.mixins?.[KEY]).toEqual({
+        active: true,
+        articleNumber: 'B-ART',
+      })
+    })
+
+    it('walks nested objects and keeps arrays whole', () => {
+      const result = save(
+        { [KEY]: { size: { width: 10 }, tags: ['a'] } },
+        { size: { width: 10 }, tags: ['a'] },
+        [`mixins.${KEY}`]
+      )
+
+      expect(result.metadata?.overridden).toEqual([
+        `mixins.${KEY}.size.width`,
+        `mixins.${KEY}.tags`,
+        `metadata.mixins.${KEY}`,
+      ])
+    })
+
+    it('keeps a whole path of another mixin as it is', () => {
+      const result = save(
+        stored,
+        { active: true, articleNumber: 'B-ART', note: 'B-API' },
+        ['mixins.other', `mixins.${KEY}`]
+      )
+
+      expect(result.metadata?.overridden?.[0]).toBe('mixins.other')
+      expect(result.metadata?.overridden).not.toContain(`mixins.${KEY}`)
+    })
+  })
+
+  it('keeps the own values when a new schema version is saved without edits (Scenario 3)', () => {
+    // COP-7138 diagnosis: a variant overridden through the API with the whole
+    // mixin; the form opens on the new version, which adds two booleans.
+    const loaded = {
+      [KEY]: { active: true, articleNumber: 'B-ART', note: 'B-API' },
+    }
+    const data = {
+      active: true,
+      articleNumber: 'B-ART',
+      note: 'B-API',
+      giftWrapping: false,
+      expressShipping: false,
+    }
+
+    const result = save(loaded, data, [`mixins.${KEY}`], meta({ version: 3 }))
+
+    expect(result.metadata?.overridden).toEqual([
+      `mixins.${KEY}.active`,
+      `mixins.${KEY}.articleNumber`,
+      `mixins.${KEY}.note`,
+      `metadata.mixins.${KEY}`,
+    ])
+    expect(result.mixins?.[KEY]).toEqual(data)
+  })
+
   it('does not mutate its inputs', () => {
     const loaded = deepClone(inherited)
     const data = { articleNumber: '', color: 'blue' }
