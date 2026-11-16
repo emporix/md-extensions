@@ -1,0 +1,14 @@
+// MD `VersionBadge` inline styles.
+.versionBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-width: 16px;
+  height: 16px;
+  padding: 2px 4px;
+  border-radius: 2px;
+  background-color: #f39c12;
+  color: white;
+  font-size: 0.75em;
+}

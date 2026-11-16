@@ -1,0 +1,113 @@
+.tiles {
+  display: flex;
+  flex-direction: column;
+}
+
+.tile {
+  margin-bottom: 1rem;
+}
+
+.addRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.addIcon {
+  display: block;
+}
+
+// Tile header
+.tileHeader {
+  display: flex;
+  align-items: center;
+}
+
+.tileToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.chevron {
+  transition: transform 0.1s;
+}
+
+.chevronExpanded {
+  transform: rotate(90deg);
+}
+
+.tileName {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.tileDelete {
+  margin-left: auto;
+}
+
+// MD kept the collapsed form mounted (and validated) but out of sight.
+.formExpanded {
+  margin-top: 1rem;
+}
+
+.formCollapsed {
+  height: 0;
+  margin-top: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+// Tile form
+.typeRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0 0.5rem 1rem;
+}
+
+.radio {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.requiredRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: min-content;
+  // MD `--grey-8`
+  color: #1b2029;
+  font-size: 0.875rem;
+
+  label {
+    margin-bottom: 0;
+  }
+}
+
+.requiredSwitch {
+  display: flex;
+  transform: scale(0.75);
+}
+
+.versionRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0 0.5rem 1rem;
+}

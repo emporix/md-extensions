@@ -1,0 +1,20 @@
+// MD `--blue-4`, `--red` and `--gold`.
+.indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: -4px;
+  font-size: 12px;
+}
+
+.added {
+  color: #5f93d6;
+}
+
+.deleted {
+  color: #e8615a;
+}
+
+.changed {
+  color: #ebb050;
+}
