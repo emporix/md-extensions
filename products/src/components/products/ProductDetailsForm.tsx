@@ -43,6 +43,8 @@ import FormGridRow from '../shared/FormGridRow'
 import { useVendorsApi } from '../../hooks/api/vendors'
 import { EmployeeDomains, VendorDomains } from '../../configs/accessControls'
 import { productDetailPath } from '../../constants/paths'
+import { withVariantBasicOverrides } from '../../helpers/variantBasicOverrides.helpers'
+import { withOwnOverriddenList } from '../../helpers/variantOwnOverridden.helpers'
 import styles from './ProductDetailsForm.module.scss'
 
 const AI_ASSISTANT_FEATURE_TOGGLE_NAME = 'DCP_PRODUCT_AI_ASSISTANT'
@@ -113,7 +115,8 @@ export const ProductDetailsForm = () => {
     setInheritedValues,
     isAddFlow,
   } = useActiveNode()
-  const { createProduct, updateProduct } = useProductsApi()
+  const { createProduct, updateProduct, getOwnOverriddenPaths } =
+    useProductsApi()
   const { id } = useParams()
   const [searchParams] = useSearchParams()
   const siblingIdParam = searchParams.get('siblingId')
@@ -345,12 +348,14 @@ export const ProductDetailsForm = () => {
       blockPanel(true)
       try {
         if (data.productType === ProductType.variant && data.metadata) {
-          const dirtyFields = formState.dirtyFields
-          const newOverridden = [...Object.keys(dirtyFields)]
-          if (data.metadata.overridden) {
-            newOverridden.push(...data.metadata.overridden)
+          data = await withOwnOverriddenList(data, getOwnOverriddenPaths)
+          data.metadata = {
+            ...data.metadata,
+            overridden: withVariantBasicOverrides(
+              data.metadata?.overridden ?? [],
+              Object.keys(formState.dirtyFields)
+            ),
           }
-          data.metadata.overridden = [...newOverridden]
           delete data.template
         }
         if (product.productType === ProductType.dynamicVariant) {
@@ -393,6 +398,7 @@ export const ProductDetailsForm = () => {
       t,
       toast,
       updateProduct,
+      getOwnOverriddenPaths,
     ]
   )
 

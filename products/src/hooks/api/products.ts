@@ -240,6 +240,24 @@ export const useProductsApi = () => {
     [tenant]
   )
 
+  /**
+   * A variant's own `metadata.overridden` as stored. The plain read returns
+   * `null` when the list has no `metadata.*` path (Product Service), so saves
+   * that resend the list must start from this one.
+   */
+  const getOwnOverriddenPaths = useCallback(
+    async (productId: string): Promise<string[]> => {
+      if (!tenant) {
+        return Promise.reject('no client')
+      }
+      const product = await fetchProductCall(tenant, productId, {
+        rawValue: true,
+      })
+      return product.metadata?.overridden ?? []
+    },
+    [tenant]
+  )
+
   const patchProduct = useCallback(
     (product: Partial<Product>) => {
       if (tenant) {
@@ -318,6 +336,7 @@ export const useProductsApi = () => {
     fetchAllProducts,
     getAllProducts,
     getProduct,
+    getOwnOverriddenPaths,
     syncProducts,
     patchProduct,
     syncPaginatedProducts,

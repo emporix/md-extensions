@@ -38,6 +38,7 @@ import {
   stripInheritedFields,
 } from '../../helpers/dynamicVariants/inheritableFields.helpers'
 import { withVariantMixinOverrides } from '../../helpers/variantMixinOverrides.helpers'
+import { withOwnOverriddenList } from '../../helpers/variantOwnOverridden.helpers'
 import { deepClone } from '../../helpers/utils'
 import { getApiErrorStatus } from '../../helpers/api'
 import CategoriesAssignmentForm from './CategoriesAssignmentForm'
@@ -90,7 +91,8 @@ const ProductAddEditView = () => {
   const [isDeleteConfirmOpened, setIsDeleteConfirmOpened] = useState(false)
   const [isDeletingProduct, setIsDeletingProduct] = useState(false)
   const [assets, setAssets] = useState<Asset[]>([])
-  const { deleteProduct, patchProduct, updateProduct } = useProductsApi()
+  const { deleteProduct, patchProduct, updateProduct, getOwnOverriddenPaths } =
+    useProductsApi()
   const { navigate } = useCustomNavigate()
   const { setRefreshValue, refresh } = useRefresh()
   const toast = useToast()
@@ -161,16 +163,20 @@ const ProductAddEditView = () => {
         )
       }
     }
-    productToUpdate = withVariantMixinOverrides(
-      productToUpdate,
-      product.mixins,
-      data,
-      mixinMetadata
-    )
-    delete productToUpdate.metadata?.createdAt
-    delete productToUpdate.metadata?.modifiedAt
     blockPanel(true)
     try {
+      productToUpdate = await withOwnOverriddenList(
+        productToUpdate,
+        getOwnOverriddenPaths
+      )
+      productToUpdate = withVariantMixinOverrides(
+        productToUpdate,
+        product.mixins,
+        data,
+        mixinMetadata
+      )
+      delete productToUpdate.metadata?.createdAt
+      delete productToUpdate.metadata?.modifiedAt
       await updateProduct(productToUpdate)
       await refreshData()
       toast.showToast(t('products.edit.toast.update.success'), '', 'success')
@@ -295,7 +301,9 @@ const ProductAddEditView = () => {
     {
       id: GENERAL_TAB,
       label: t('products.edit.tab.general.title'),
-      content: <ProductDetailsForm />,
+      // One form per product: a variant opened from its parent's list would
+      // otherwise inherit the parent's form and template state (COP-7138).
+      content: <ProductDetailsForm key={product.id ?? 'new'} />,
     },
     {
       id: CATEGORIES_TAB,
