@@ -993,6 +993,138 @@
       } ]
     },
     {
+      "target": "emporix-catalogs",
+      "public": "catalogs/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [ {
+        "source" : "**",
+        "headers": [ {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        } ]
+      } ]
+    },
+    {
+      "target": "emporix-catalogs-stage",
+      "public": "catalogs/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [ {
+        "source" : "**",
+        "headers": [ {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        } ]
+      } ]
+    },
+    {
+      "target": "emporix-catalogs-develop",
+      "public": "catalogs/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [ {
+        "source" : "**",
+        "headers": [ {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        } ]
+      } ]
+    },
+    {
+      "target": "emporix-customers",
+      "public": "customers/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [ {
+        "source" : "**",
+        "headers": [ {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        } ]
+      } ]
+    },
+    {
+      "target": "emporix-customers-stage",
+      "public": "customers/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [ {
+        "source" : "**",
+        "headers": [ {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        } ]
+      } ]
+    },
+    {
+      "target": "emporix-customers-develop",
+      "public": "customers/dist",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ],
+      "headers": [ {
+        "source" : "**",
+        "headers": [ {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        } ]
+      } ]
+    },
+    {
       "target": "emporix-categories",
       "public": "categories/dist",
       "ignore": [

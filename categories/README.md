@@ -65,7 +65,7 @@ npm run build:dev
 
 ### Loading the remote in the Management Dashboard
 
-The remote runs on a fixed local port, `5184` (`server.port` and `preview.port` in `vite.config.ts`, `strictPort: true`). The dashboard's `.env.local-*` files point `VITE_CATEGORIES_URL` at `http://localhost:5184/assets/remoteEntry.js`.
+The remote runs on a fixed local port, `5186` (`server.port` and `preview.port` in `vite.config.ts`, `strictPort: true`). The dashboard's `.env.local-*` files point `VITE_CATEGORIES_URL` at `http://localhost:5186/assets/remoteEntry.js`.
 
 ```bash
 npm run build:dev

@@ -1,0 +1,66 @@
+.tabs {
+  width: 100%;
+}
+
+.section {
+  margin-bottom: 2rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+// MD `grid` rows with `col-N` spans (12 columns).
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 0 1rem;
+  align-items: start;
+
+  > * {
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: minmax(0, 1fr);
+
+    > * {
+      grid-column: auto !important;
+    }
+  }
+}
+
+.span2 {
+  grid-column: span 2;
+}
+
+.span3 {
+  grid-column: span 3;
+}
+
+.span4 {
+  grid-column: span 4;
+}
+
+.span6 {
+  grid-column: span 6;
+}
+
+.span12 {
+  grid-column: span 12;
+}
+
+.rowStart {
+  grid-column-start: 1;
+}
+
+.address {
+  margin-bottom: 0.5rem;
+}
+
+.addAddress {
+  margin: 0.5rem 0;
+}

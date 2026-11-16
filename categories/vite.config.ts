@@ -45,7 +45,7 @@ export default defineConfig({
   server: {
     // Pinned so the remote does not collide with other md-extensions remotes
     // on Vite's default ports; matches VITE_CATEGORIES_URL in the MD .env.local-* files.
-    port: 5184,
+    port: 5186,
     strictPort: true,
     cors: {
       origin: corsOrigins,
@@ -53,7 +53,7 @@ export default defineConfig({
     },
   },
   preview: {
-    port: 5184,
+    port: 5186,
     strictPort: true,
     cors: {
       origin: corsOrigins,
