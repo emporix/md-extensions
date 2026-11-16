@@ -266,6 +266,8 @@ describe('Customer add / edit', () => {
     mixins.onEdit = {}
     api.syncCustomer.mockImplementation(async (id: string) => {
       if (id === 'C1') return structuredClone(customer)
+      // The customer a create test just made: the page opens it after saving.
+      if (id === 'NEW1') return { ...structuredClone(customer), id: 'NEW1' }
       throw { response: { status: 404, data: { message: 'Not found' } } }
     })
     api.createCustomer.mockResolvedValue({ id: 'NEW1', link: '' })
