@@ -57,7 +57,7 @@ Other paths redirect to `/`. `ClassificationAddEditRoute` keys `ClassificationDa
 
 - Lazy, server-paged table of classifications, unpublished included (`getCategories(…, CLASSIFICATION, showRoots=false, showUnpublished=true)`), initial sort field `metadata.createdAt`, reloaded on every page, sort, filter, refresh or tenant change; a response for earlier params or a previous tenant is dropped.
 - Columns: name (content language, filter, sortable), valid from and valid to (`validity.from` / `validity.to`, date filters with `DateFilterTemplate`, sortable).
-- Column visibility: CL `TableExtensions` with the three columns and no mixin column picker; saved under `ext_classifications` with MD's shape `{ table: { columns, mixins } }` (`hooks/useClassificationsTableConfig.ts`, `helpers/classificationsTable.helpers.ts`). The table shows no mixin columns, but mixin columns stored earlier under that key are written back untouched. A failed save shows an error toast and keeps the panel open. The control is shown in both views.
+- Column visibility: CL `TableExtensions` with the three columns and no mixin column picker; saved under `ext_classifications` with MD's shape `{ table: { columns, mixins } }` (`hooks/useClassificationsTableConfig.ts`, `helpers/classificationsTable.helpers.ts`). The hook reads the preference with its own `fetchSingleConfiguration` call (a 404 means nothing saved) and writes it with `updateSingleConfiguration`, because `fetchBasicConfiguration` in api-calls returns table configurations for a fixed list of keys that does not include `ext_classifications`; the shared `ConfigurationProvider` is not used for it. In MD the saved preference was never read back for the same reason. The table shows no mixin columns, but mixin columns stored earlier under that key are written back untouched. A failed save shows an error toast and keeps the panel open. The control is shown in both views.
 - `ViewSwitch` sets `?view=tree` or removes `view`, and clears the selection.
 - Row click and row edit open `/:id`. Row and batch delete resolve the roots first, then delete one by one (subcategories included) with a toast per item (success or error); what failed stays selected. Then the surviving roots are rebuilt (a failed rebuild shows its own error) and the list reloads. If the roots cannot be resolved nothing is deleted.
 - A host tenant switch clears rows, total and selection.
@@ -124,6 +124,7 @@ Pinned by `helpers/classificationSchema.helpers.test.ts` and the `schema tiles` 
 - The write controls of a schema tile (type, required, schema, key, URL, delete, add, apply version) are read-only or disabled for a viewer; MD only disabled Save.
 - Field errors of the schema tiles show while typing (`mode: 'onChange'`); MD only disabled Save.
 - A failed reload after a save keeps the user on the page.
+- A saved column visibility is applied; in MD it was stored but never read back, so a choice saved there earlier takes effect here.
 
 ## Not yet scanned
 

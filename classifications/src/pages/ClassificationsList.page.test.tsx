@@ -19,6 +19,8 @@ import {
   getCategoryTreesCall,
   patchCategoryCall,
   rebuildCategoryTreeCall,
+  fetchSingleConfiguration,
+  updateSingleConfiguration,
 } from '@emporix/api-calls'
 import i18n from '../translations/i18n'
 import { EmployeeDomains } from '../configs/accessControls'
@@ -34,11 +36,6 @@ const permissions = vi.hoisted(() => ({ granted: [] as string[] }))
 const tableConfig = vi.hoisted(() => ({
   columns: [] as { key: string; label: string; visible: boolean }[],
   mixins: [] as unknown[],
-  // A new array after each save, as the provider reloads the configuration.
-  configurations: [] as unknown[],
-  fetchTableConfiguration: vi.fn(),
-  getTableMixinColumns: vi.fn(),
-  updateTableConfiguration: vi.fn(),
 }))
 
 vi.mock('@emporix/api-calls', async () => {
@@ -49,6 +46,8 @@ vi.mock('@emporix/api-calls', async () => {
   return {
     ...actual,
     getCategories: vi.fn(),
+    fetchSingleConfiguration: vi.fn(),
+    updateSingleConfiguration: vi.fn(),
     deleteSingleCategory: vi.fn(),
     getCategoryParentsCall: vi.fn(),
     rebuildCategoryTreeCall: vi.fn(),
@@ -67,10 +66,6 @@ vi.mock('../context/PermissionsProvider', () => ({
 
 vi.mock('../context/ConfigurationProvider', () => ({
   useConfiguration: () => ({
-    tableConfigurations: tableConfig.configurations,
-    fetchTableConfiguration: tableConfig.fetchTableConfiguration,
-    getTableMixinColumns: tableConfig.getTableMixinColumns,
-    updateTableConfiguration: tableConfig.updateTableConfiguration,
     contentLanguage: 'en',
     languages: [{ id: 'en' }],
     currencies: [],
@@ -223,21 +218,25 @@ describe('Classifications list', () => {
     ]
     tableConfig.columns = []
     tableConfig.mixins = []
-    tableConfig.configurations = []
-    tableConfig.fetchTableConfiguration.mockImplementation(
-      () => tableConfig.columns
+    // The stored `ext_classifications` configuration, read and written
+    // through the single-configuration calls.
+    vi.mocked(fetchSingleConfiguration).mockImplementation(
+      async (_tenant, key) =>
+        ({
+          key,
+          value: {
+            table: { columns: tableConfig.columns, mixins: tableConfig.mixins },
+          },
+        }) as never
     )
-    tableConfig.getTableMixinColumns.mockImplementation(
-      () => tableConfig.mixins
-    )
-    tableConfig.updateTableConfiguration.mockImplementation(
-      async (
-        _key: string,
-        { table }: { table: { columns: never[]; mixins: unknown[] } }
-      ) => {
+    vi.mocked(updateSingleConfiguration).mockImplementation(
+      async (_tenant, _key, data) => {
+        const { table } = data.value as {
+          table: { columns: never[]; mixins: unknown[] }
+        }
         tableConfig.columns = table.columns
         tableConfig.mixins = table.mixins
-        tableConfig.configurations = [{ key: 'ext_classifications' }]
+        return true
       }
     )
     vi.mocked(getCategories).mockResolvedValue({
@@ -426,7 +425,8 @@ describe('Classifications list', () => {
       renderList()
       await screen.findByText('Slim')
 
-      expect(tableConfig.fetchTableConfiguration).toHaveBeenCalledWith(
+      expect(fetchSingleConfiguration).toHaveBeenCalledWith(
+        'tnt',
         'ext_classifications'
       )
       expect(within(table()).queryByText('Valid From')).toBeNull()
@@ -444,16 +444,20 @@ describe('Classifications list', () => {
       )
 
       await waitFor(() =>
-        expect(tableConfig.updateTableConfiguration).toHaveBeenCalledWith(
+        expect(updateSingleConfiguration).toHaveBeenCalledWith(
+          'tnt',
           'ext_classifications',
           {
-            table: {
-              columns: [
-                { key: 'name', label: 'Name', visible: true },
-                { key: 'validFrom', label: 'Valid From', visible: true },
-                { key: 'validTo', label: 'Valid To', visible: false },
-              ],
-              mixins: [],
+            key: 'ext_classifications',
+            value: {
+              table: {
+                columns: [
+                  { key: 'name', label: 'Name', visible: true },
+                  { key: 'validFrom', label: 'Valid From', visible: true },
+                  { key: 'validTo', label: 'Valid To', visible: false },
+                ],
+                mixins: [],
+              },
             },
           }
         )
@@ -500,14 +504,18 @@ describe('Classifications list', () => {
       )
 
       await waitFor(() =>
-        expect(tableConfig.updateTableConfiguration).toHaveBeenCalledWith(
+        expect(updateSingleConfiguration).toHaveBeenCalledWith(
+          'tnt',
           'ext_classifications',
           {
-            table: {
-              columns: expect.arrayContaining([
-                { key: 'name', label: 'Name', visible: false },
-              ]),
-              mixins: stored,
+            key: 'ext_classifications',
+            value: {
+              table: {
+                columns: expect.arrayContaining([
+                  { key: 'name', label: 'Name', visible: false },
+                ]),
+                mixins: stored,
+              },
             },
           }
         )
@@ -515,7 +523,7 @@ describe('Classifications list', () => {
     })
 
     it('keeps the table settings open when saving fails', async () => {
-      tableConfig.updateTableConfiguration.mockRejectedValue(new Error('down'))
+      vi.mocked(updateSingleConfiguration).mockRejectedValue(new Error('down'))
       renderList()
       await screen.findByText('Slim')
 
