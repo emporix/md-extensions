@@ -37,6 +37,48 @@ export type AgentChatStreamEvent =
       readonly ttftMs?: number
     }
 
+const GENERATION_ID = /^[A-Za-z0-9._:-]{1,128}$/
+
+const firstNonBlank = (
+  payload: Record<string, unknown>,
+  names: readonly string[]
+): string => {
+  for (const name of names) {
+    const value = payload[name]
+    if (typeof value === 'string' && value.trim()) {
+      return value
+    }
+  }
+  return ''
+}
+
+const firstMatching = (
+  payload: Record<string, unknown>,
+  names: readonly string[],
+  pattern: RegExp
+): string | undefined => {
+  for (const name of names) {
+    const value = payload[name]
+    if (typeof value === 'string' && pattern.test(value)) {
+      return value
+    }
+  }
+  return undefined
+}
+
+const firstString = (
+  payload: Record<string, unknown>,
+  names: readonly string[]
+): string | undefined => {
+  for (const name of names) {
+    const value = payload[name]
+    if (typeof value === 'string') {
+      return value
+    }
+  }
+  return undefined
+}
+
 const parseSseChunk = (chunk: string): SseFrame | null => {
   if (!chunk.trim() || chunk.startsWith(':')) {
     return null
@@ -183,18 +225,18 @@ export const mapAgentChatStreamEvent = (
       const status = payload.status
       const filename =
         typeof payload.filename === 'string' ? payload.filename : ''
-      const mimeType =
-        typeof payload.mime_type === 'string' ? payload.mime_type : ''
+      const mimeType = firstNonBlank(payload, ['mimeType', 'mime_type'])
       const size = typeof payload.size === 'number' ? payload.size : -1
-      const artifactId =
-        typeof payload.artifact_id === 'string' && payload.artifact_id.trim()
-          ? payload.artifact_id
-          : undefined
-      const generationId =
-        typeof payload.generation_id === 'string' &&
-        /^[A-Za-z0-9._:-]{1,128}$/.test(payload.generation_id)
-          ? payload.generation_id
-          : undefined
+      const rawArtifactId = firstNonBlank(payload, [
+        'artifactId',
+        'artifact_id',
+      ])
+      const artifactId = rawArtifactId || undefined
+      const generationId = firstMatching(
+        payload,
+        ['generationId', 'generation_id'],
+        GENERATION_ID
+      )
       if (
         (kind !== 'image' && kind !== 'file') ||
         (status !== 'ready' && status !== 'failed' && status !== 'pending') ||
@@ -215,10 +257,7 @@ export const mapAgentChatStreamEvent = (
         mimeType,
         size,
         status,
-        errorCode:
-          typeof payload.error_code === 'string'
-            ? payload.error_code
-            : undefined,
+        errorCode: firstString(payload, ['errorCode', 'error_code']),
         generationId,
       }
     }
