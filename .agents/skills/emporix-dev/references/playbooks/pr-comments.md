@@ -7,8 +7,8 @@
 1. Setup and checkout: `references/pr-fix.md` § Setup, then the ticket checkout for the PR's `headRefName` (`references/worktrees.md`, `--key {KEY}` when there is one).
 2. Plan: `references/pr-fix.md` § Plan. Hard stop at its step 5: *approve · change X · cancel*. Change → edit the plan file, show the delta, stop again.
 3. Apply, on approval: `references/pr-fix.md` § Apply, attended (every proposed reply you saw in the plan is posted).
-4. Name the next owner: `/emporix-dev watch-pr {pr}` to watch for the next review round and CI until the PR can merge. Do not start it.
+4. Name the next owner: `/emporix-dev pr-watch {pr}` to watch for the next review round and CI until the PR can merge. Do not start it.
 
-**Reply:** the triage counts, what was fixed with its failing-then-passing test, the conformance result, the review-loop result, the pushed SHA, the threads replied and resolved, the threads left for you, and the principles that changed a decision.
+**Reply:** the triage counts, what was fixed with its failing-then-passing test, the conformance result, the review-loop result, the LOW findings (fixed, and each one left open with why), the pushed SHA, the threads replied and resolved, the threads left for you, and the principles that changed a decision.
 
-**Watch PR** runs steps 2–3 unattended (its step 5): invoking Watch PR is the approval, so `references/pr-fix.md` § Plan does not stop, and its § Apply step 9 posts only the unattended replies.
+**PR watch** runs steps 2–3 unattended (its step 5): invoking PR watch is the approval, so `references/pr-fix.md` § Plan does not stop, and its § Apply step 9 posts only the unattended replies.

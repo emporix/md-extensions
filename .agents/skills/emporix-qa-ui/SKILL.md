@@ -73,7 +73,7 @@ Invoking `run {KEY}` directly uses the newest approved `{QA_DIR}/*-{KEY}-qa-plan
 Execute the approved plan:
 
 1. **App** — `references/boot.md`. Stop whatever is on the port, start the detected `START` / `app.start` (MD → `serve:local-qa`), wait for ready.
-2. **Tenant** — `references/cockpit-auth.md` when `GATE=1`. Resolve the profile named in the plan, run `check-cockpit-token.sh --tenant {alias}`; a bad token is a hard stop, never a UI finding.
+2. **Tenant** — `references/cockpit-auth.md` when `GATE=1`. Resolve the profile named in the plan, run `check-cockpit-token.sh --tenant {alias} --gate {AUTH}` (`AUTH` from `detect-ui-auth.sh`; `md-token` refuses a `client-credentials` profile and prints the `employee-token` profile to add); a bad token is a hard stop, never a UI finding.
 3. **Browser** — `references/browser-howto.md`: `sh "$(skill_script emporix-qa-ui qa-browser.sh)" ensure`, then **open / snapshot / interact / assert / screenshot / close** from `$BROWSER_FILE`, driven by `references/drive.md`. The gate is filled only by `fill-cockpit-gate.sh --tenant {alias}` with snapshot refs.
 4. **Steps** — each plan row in order. Unsure where to click → `references/ask-executor.md`. A skipped step is `not exercised`, never PASS.
 5. **Report** — `references/report-templates.md`; show verdict, failed steps, and screenshots in chat. PASS + key → `references/publish.md`. FAIL → hard stop.
@@ -82,7 +82,7 @@ Execute the approved plan:
 ## Hard rules
 
 - One browser: `agent-browser` via `qa-browser.sh` + `$BROWSER_FILE`. Never the IDE browser, Playwright, or the user's Chrome. Install once; later runs reuse `.ai/qa/browser-local.json`.
-- **Credentials come from `~/.emporix/tenants.json` only** (`tenants.sh`, shared with the MD-extension skill). The user names an alias; the scripts mint the token from the profile's API client. No `EMPORIX_QA_*` variables, no `.env` files, no token in chat, in a flag, in a `fill` argument, in the plan, the report, screenshots, or Jira. Never "fix" a JWT character.
+- **Credentials come from `~/.emporix/tenants.json` only** (`tenants.sh`, shared with the MD-extension skill). The user names an alias; the scripts mint the token from the profile's API client, or read an `employee-token` profile's token file (Management Dashboard local-qa needs a signed-in employee; an expired one is a hard stop, the user creates it with `tenants.sh setup` and refreshes it with `tenants.sh refresh <alias>` in their own terminal). No `EMPORIX_QA_*` variables, no `.env` files, no token in chat, in a flag, in a `fill` argument, in the plan, the report, screenshots, or Jira. Never "fix" a JWT character.
 - Management Dashboard is **not** a cockpit template: `AUTH=md-token` → `serve:local-qa`, same Tenant/Token/Language gate as cockpits. Never default `serve`, Ory login, or cookie injection.
 - Fill the gate **only** via `fill-cockpit-gate.sh`. Never add `Bearer` (the client prefixes it). After `open`, clear cookies and storage and reload before the gate.
 - Run only what the approved plan says. A step the plan does not have is not executed; a finding outside the plan's scope is reported as an observation, not a FAIL.

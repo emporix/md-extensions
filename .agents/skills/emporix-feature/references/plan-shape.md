@@ -12,12 +12,17 @@ Required when behaviour changes. These are what implement must prove with tests,
 | **Requirement** | A standing invariant that is not one path | One normative sentence |
 
 ```markdown
-1. **Scenario** — short label
-   - WHEN {observable precondition / actor action / request}
-   - THEN {observable outcome}
-   - AND {further observable outcome}
+- **Scenario 1** — short label
+  - WHEN {observable precondition / actor action / request}
+  - THEN {observable outcome}
+  - AND {further observable outcome}
+- **Scenario 2** — short label
+  - WHEN …
+  - THEN …
+- **Requirement 3** — {one normative sentence}
 ```
 
+- **Numbering** — Scenarios and Requirements share one sequence, 1..N, with no gaps or repeats. Write the number in the text (`**Scenario 1**`). Never rely on Markdown ordered-list numbering (`1.`): the Jira comment converter restarts the count at every item that has nested bullets, so every Scenario shows as 1.
 - **Black box** — what a client, operator, or external system can observe (HTTP status and body, event, UI state, a resource via the public API). Do not name internal classes, private methods, storage layout, or “call HelperX”.
 - One Scenario = one path (happy path or one failure mode). Split nested conditionals.
 - Failures are Scenarios (`WHEN` invalid input → `THEN` 4xx and the error shape).
@@ -27,7 +32,7 @@ Unknown behaviour → **Open questions**. Do not invent Scenarios. No behaviour 
 
 ## Todos
 
-Every numbered **Scenario** and every testable **Requirement** appears in **Todos** with explicit coverage. Implement must be able to tick “this Scenario is done” without guessing.
+Every **Scenario N** and every testable **Requirement** appears in **Todos** with explicit coverage. Implement must be able to tick “this Scenario is done” without guessing.
 
 Prefer **one todo per Scenario** when the path is independently implementable. **Bundle** only when several Scenarios are one inseparable seam change — that todo must list every Scenario number and label. Never leave a Scenario with no todo.
 

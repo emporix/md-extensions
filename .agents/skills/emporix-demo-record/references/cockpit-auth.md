@@ -23,19 +23,23 @@ Credentials come from a **tenant profile** in `~/.emporix/tenants.json`
 `skill_script emporix-setup tenants.sh`). The user names the alias
 (`--tenant`, or ask once from `tenants.sh list`). The file holds no token:
 the scripts mint a fresh one per run from the profile's `clientId` /
-`clientSecret`. No environment variables, no `.env` files, no JWT in chat or
+`clientSecret`, or, for Management Dashboard local-qa, read an
+`employee-token` profile's token file (a signed-in employee, refreshed by the
+user with `tenants.sh refresh <alias>` in their own terminal; check `TOKEN_EXPIRES` covers the dry run
+and the take). No environment variables, no `.env` files, no JWT in chat or
 in a `--token` flag (the model will rewrite a payload character). The token
 carries the API client's scopes — a 401 is a scope or tenant problem, see
 `emporix-qa-ui` `references/cockpit-auth.md`.
 
 ```bash
 CHECK=$(skill_script emporix-qa-ui check-cockpit-token.sh)
-bash "$CHECK" --tenant "$TENANT_ALIAS"
+bash "$CHECK" --tenant "$TENANT_ALIAS" --gate "$AUTH"   # AUTH from detect-ui-auth.sh
 # optional: bash "$CHECK" --tenant "$TENANT_ALIAS" --probe "https://api.emporix.io/…"
 ```
 
-Need `TOKEN_PAYLOAD=valid_json` and `CONTROL_CHARS=0`. Invalid → **stop**. Do
-not edit the JWT. Probe **401/403** → **stop**; do not dry-run or record.
+Need `TOKEN_PAYLOAD=valid_json` (a JWT) or `opaque` (Emporix client-credentials
+tokens are opaque, not JWTs) and `CONTROL_CHARS=0`. Invalid → **stop**. Do
+not edit the access token. Probe **401/403** → **stop**; do not dry-run or record.
 
 ## After `open` (never on camera)
 

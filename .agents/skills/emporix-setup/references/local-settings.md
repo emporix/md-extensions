@@ -19,6 +19,7 @@ with `/emporix-setup --set-local key=value`.
 | Key | Values | Unset |
 |---|---|---|
 | `worktree.mode` | `ALWAYS_WORKTREE` · `WORKTREE_ON_DIRTY_BRANCH` · `ASK_USER` · `IN_PLACE` · `CURRENT_BRANCH` (any case) | The calling skill's default: `emporix-dev` → `ALWAYS_WORKTREE`; `emporix-feature` → a branch in this checkout (`--worktree` for a sibling) |
+| `sonar.enabled` | `true` · `false` | `true`: `emporix-feature` `sonar-scan` runs a local SonarQube in Docker on Java repositories. `false` skips it (`sonar: SKIP \| reason=disabled`; the PR's Sonar comment says so). `EMPORIX_SONAR=off` does the same for one shell |
 | `worktree.repos.<repo>.mode` | same values | `worktree.mode`. `<repo>` is the origin repository name (`emporix/cockpits` → `cockpits`), else the main checkout's folder name. Set with `--repo <repo>` (`local-settings.sh set worktree.mode IN_PLACE --repo cockpits`); names with dots are fine |
 
 Precedence, first match wins: `EMPORIX_WORKTREE_MODE` (env var, one shell or one run) → `worktree.repos.<repo>.mode` → `worktree.mode` → the calling skill's default. A present `worktree`, `worktree.repos`, or `worktree.repos.<repo>` that is not an object is an error, never a silent fallback.

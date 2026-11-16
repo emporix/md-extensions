@@ -75,7 +75,7 @@ Scenario coverage: Step 1–2 → Scenario 1; Step 3 → Scenario 2.
 - At least one required step with a visible expected result.
 - Every required step traces to a Scenario, a done-when line, or the user's brief.
 - Preconditions are `none` or each has a source; an unknown one is a **blocking** open question.
-- Tenant profile alias set and present in `tenants.sh list` (read, not guessed).
+- Tenant profile alias set and present in `tenants.sh list` (read, not guessed), and its `AUTH` kind fits the app: `employee-token` for Management Dashboard local-qa, `client-credentials` for cockpits.
 - No invented routes or labels: each route or control name was seen in `ui.md`, the diff, or confirmed by the user.
 
 A plan whose steps are "open the page, check it works" is a failed plan. Keep exploring.

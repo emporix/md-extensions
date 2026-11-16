@@ -38,6 +38,13 @@ run set worktree.mode '' --repo cockpits >/dev/null
 if run set worktree.mode IN_PLACE --repo 2>/dev/null; then fail "--repo without a name accepted"; fi
 if run get worktree.mode --repo 2>/dev/null; then fail "get --repo without a name accepted"; fi
 
+# sonar.enabled: true or false in any case; anything else is refused; no --repo.
+run set sonar.enabled FALSE >/dev/null
+[ "$(run get sonar.enabled)" = false ] || fail "sonar.enabled normalised"
+if run set sonar.enabled maybe 2>/dev/null; then fail "sonar.enabled accepted a non-boolean"; fi
+if run set sonar.enabled true --repo cockpits 2>/dev/null; then fail "--repo accepted for sonar.enabled"; fi
+[ "$(run get worktree.mode)" = CURRENT_BRANCH ] || fail "worktree.mode untouched by sonar.enabled"
+
 # The file is written atomically and leaves no temp files.
 ls -a "$(dirname "$EMPORIX_SETTINGS_FILE")" | grep -q '\.tmp\.' && fail "temp file left"
 

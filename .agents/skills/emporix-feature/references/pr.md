@@ -1,18 +1,20 @@
 # Stage `pr` — commit, push, open the pull request
 
-Ship the reviewed change. This is the last gate before the remote sees it: review PASS for this tree, formatted, full suite green, then commit **as the GitHub token owner**, push, open or reuse one PR whose body carries Jira business + technical context, and post one **self-review summary** comment built from the ledger. Then the Jira pointer.
+Ship the reviewed change. This is the last gate before the remote sees it: review PASS for this tree, Sonar PASS / SKIP for this tree on a Java repository, formatted, full suite green, then commit **as the GitHub token owner**, push, open or reuse one PR whose body carries Jira business + technical context, and post one **self-review summary** comment built from the ledger and one **Sonar summary** comment built from the Sonar ledger. Then the Jira pointer.
 
 Does not implement. Does not merge. Never force-pushes. Does not close or transition Jira.
 
 ```text
 pr progress:
 - [ ] 1. preconditions: review verdict for this tree, something to ship, no stale/closed PR
+- [ ] 1b. Sonar gate (Java): a sonar Verdict for this exact tree, or run sonar-scan now
 - [ ] 2. format changed files → re-run the gate if files changed
 - [ ] 3. full local suite + validation.commands (reuse a green run on an unchanged tree)
 - [ ] 4. commit as the token owner; changelog merge when the resolver exists
 - [ ] 5. push (no force)
 - [ ] 6. PR create / update with Jira context
 - [ ] 7. self-review summary comment
+- [ ] 7b. Sonar summary comment (Java)
 - [ ] 8. Jira pointer; report
 ```
 
@@ -25,7 +27,7 @@ Run every git command with cwd = the ticket tree (`Worktree:` when one exists, e
 | **First ship** | No open PR for this branch yet | The review ledger's latest Verdict is `PASS` / `PASS (waived)` for this exact tree (step 1) |
 | **Re-ship** | An open PR for this branch exists and the tree holds new work — reviewer-requested fixes from `emporix-pr apply`, or a hand edit | One **Bugbot pass** over everything the PR does not have yet (the PR head to the working tree: unpushed commits plus uncommitted changes), defects only, **no plan boundary** (step 1a); a clean Bugbot result from `emporix-pr apply` on this unchanged tree counts when nothing is committed but unpushed (its pass saw only uncommitted changes). Reviewer-requested fixes often add handling the plan never described; judging them against the plan would stop every re-ship |
 
-Both shapes run format, the full suite, commit as the token owner, push, PR update, the summary comment, and the Jira pointer.
+Both shapes run the Sonar gate (§ 1b; on a re-ship **before** § 1a, so the Bugbot pass sees the Sonar fixes), format, the full suite, commit as the token owner, push, PR update, the summary comments, and the Jira pointer.
 
 ## 1. Preconditions
 
@@ -34,7 +36,7 @@ Both shapes run format, the full suite, commit as the token owner, push, PR upda
 - The issue plan has `**Working branch:**` (`CURRENT_BRANCH` mode, `references/worktree.md` § Current branch) → `git branch --show-current` equals it, checked before any format, commit, or push. A different branch → stop, name both, and do not switch: this ticket's work must not ship from another branch.
 - `git status` + unpushed commits: nothing dirty and nothing unpushed → stop; there is nothing to ship. Unrelated dirty files → stop and ask.
 - **search-prs** for this branch and `{KEY}`. Open PR for this branch → **re-ship** (step 1a, then reuse in step 6). Open PR for the key on **another** branch → stop and ask. Closed or merged PR for this branch → stop; a merged branch needs a new branch, not a push. None → **first ship**.
-- **First ship — review verdict for this exact tree**: the ledger's latest Verdict is `PASS` or `PASS (waived)` and nothing was edited since (compare the working tree + `HEAD` against what the Verdict saw; when in doubt, `review` again — a stale PASS is no PASS). No ledger, or `FAIL` → stop; point at `/emporix-feature review {KEY}`.
+- **First ship — review verdict for this exact tree**: the ledger's latest Verdict is `PASS` or `PASS (waived)` and nothing was edited since (compare the working tree + `HEAD` against what the Verdict saw; when in doubt, `review` again — a stale PASS is no PASS). The one exception: edits made by the `sonar-scan` run that followed this Verdict (its ledger's `After review:` line names it, every edit is a row with `fixed — …`, and its gate ran green) do not stale it. No ledger, or `FAIL` → stop; point at `/emporix-feature review {KEY}`.
 
 ### 1a. Re-ship review gate (Bugbot pass)
 
@@ -44,6 +46,17 @@ First `BRANCH=$(git branch --show-current)` and `git fetch origin "$BRANCH"`, so
 - **LOW** / none → continue.
 
 Append a `## Run {n} — re-ship` block to the ledger (`references/review-ledger.md`): `Reviewer model: Bugbot pass (no plan boundary)` (`reused from emporix-pr apply` when reused), one row per finding, the plan-conformance result when `emporix-pr` passed one in (`clean` or the accepted deviations), `Result: clean | blocked`, and a Verdict line `review: PASS | re-ship | bugbot: clean` or `review: FAIL | re-ship | remaining: …`. **No ledger for this branch** (PR opened by hand or by an older skill) → create the file with the `review-ledger.md` header and this block as `## Run 1 — re-ship`. The summary comment in step 7 is built or updated from it.
+
+## 1b. Sonar gate (Java repositories)
+
+`SONAR=$(skill_script emporix-feature sonar-local.py)`. `python3 "$SONAR" detect --root .` → `STATUS=skip` (no `pom.xml` / `build.gradle`) → skip this step, and § 7b posts nothing.
+
+Java → read the latest Verdict in `{RUN_FOLDER}/{KEY}-sonar-findings.md` (key-less: `{TASK_BRANCH}-sonar-findings.md`) and `python3 "$SONAR" fingerprint --root .`:
+
+- `sonar: PASS` / `PASS (waived)` whose `tree:` equals `TREE=` → continue.
+- `sonar: SKIP` for `docker-unavailable` or `disabled` → continue; § 7b says it was skipped. A SKIP from an earlier tree is re-tried here once (Docker may be up now).
+- No Verdict, or one for another tree → run `references/sonar-scan.md` now, with cwd = the ticket tree. **First ship**: the approved plan is the boundary. **Re-ship**: the PR's diff is the boundary (no plan classification), and this runs **before** § 1a. Its fixes are the only product edits this stage makes besides formatting; they go through its own gate.
+- `sonar: FAIL` (from that run or the ledger) → stop with `Ready: no`, name the open rows and `/emporix-feature sonar-scan {KEY}`. The fix / waive / stop question belongs to `sonar-scan`; this stage does not waive.
 
 ## 2. Format
 
@@ -55,7 +68,7 @@ Files rewritten → the tree changed: re-run the gate (step 3) on this tree. For
 
 `references/tests.md` § Execute, PR shape: every suite `AGENTS.md` **Tests** lists for a PR (unit **and** integration when both exist, e2e when PR CI runs it), then `validation.commands`. CI alone does not count.
 
-Reuse a green **PR-shape** run from this conversation — the review stage's final gate, or `emporix-pr apply`'s test gate — only when nothing changed since it (no format rewrite, no hand edit). A narrower run (single suite, touched files) does not count. Red → stop with `Ready: no`; this stage does not repair code. Record the exact commands and results for the PR body.
+Reuse a green **PR-shape** run from this conversation — the review stage's final gate, the `sonar-scan` stage's last gate, or `emporix-pr apply`'s test gate — only when nothing changed since it (no format rewrite, no hand edit). A narrower run (single suite, touched files) does not count. Red → stop with `Ready: no`; this stage does not repair code. Record the exact commands and results for the PR body.
 
 ## 4. Commit as the token owner
 
@@ -122,18 +135,28 @@ One comment on the PR, built from the ledger (`references/review-ledger.md`): th
 - Posted with the plain `gh` session (token owner). Lists: reviewer model, cycles, every finding with its resolution, open or waived rows with the reason, the gate that ran. No diff. No secrets.
 - Re-ship: keep the original self-review section and add a **Re-ships** list — one line per push (`{date} · {short SHA} · Bugbot pass clean | n LOW noted · conformance clean | k deviation(s) accepted`). Ledger with no first-ship run → the Findings section reads `No self-review run on record (PR opened outside emporix-feature).` followed by the Re-ships list.
 
-The body is the summary of the change; this comment is the summary of the review. No other status comments.
+The body is the summary of the change; this comment is the summary of the review; § 7b's is the summary of Sonar. No other status comments.
+
+## 7b. Sonar summary comment (Java repositories)
+
+Skip when § 1b found no Java build. Otherwise one comment on the PR, built from the Sonar ledger (`references/sonar-scan.md` § Ledger): the template is `references/pr-body.md` § Sonar summary. Marker `<!-- emporix-sonar-scan -->` on the first line.
+
+- **list-issue-comments**; an existing comment with the marker → **update-comment** (new head, new numbers). None → **comment-pr**.
+- Counts are for the **whole PR**: every distinct Sonar key on new code across all runs of the ledger (first ship and re-ships), with its latest resolution. Found = fixed + false positive + waived + open.
+- **Local scan time** from the ledger's `Scan time:` lines (seconds the script measured, per scan and in total), so the team can see what the local scan costs.
+- A SKIP Verdict → the comment says the scan was skipped and why, so a reviewer knows nothing was checked.
+- Posted with the plain `gh` session (token owner). No secrets: never the token, the password, or the local dashboard URL.
 
 ## 8. Jira pointer and report
 
-When `{KEY}` is known: **comment-issue** on that key only, preamble `🤖 emporix-feature — pr`, two or three lines: PR URL, branch, head SHA, review verdict. When this push carried new **Accepted deviations** in the issue plan, add a `Plan amended:` line with those bullets, so the ticket's copy of the plan is corrected without a second `approve`. **register-issue** if **get-issue** had no `registeredFeatureId`. Do not comment on a parent. No key → skip this step; say so in the report.
+When `{KEY}` is known: **comment-issue** on that key only, preamble `🤖 emporix-feature — pr`, two to four lines: PR URL, branch, head SHA, review verdict, and the Sonar Verdict (`sonar: PASS | found {f} | fixed {x} | …`, or `skipped — {reason}`) on a Java repository. When this push carried new **Accepted deviations** in the issue plan, add a `Plan amended:` line with those bullets, so the ticket's copy of the plan is corrected without a second `approve`. **register-issue** if **get-issue** had no `registeredFeatureId`. Do not comment on a parent. No key → skip this step; say so in the report.
 
 Report per `references/report-templates.md` § PR. When `docs.targets` is non-empty, add `Next: /emporix-docs-update {KEY}`.
 
 ## Rules
 
-- Ship gate is hard: review PASS (or explicit waiver) for this tree on a first ship, a clean Bugbot pass on a re-ship, formatted tree, full suite and `validation.commands` green. Any miss → `Ready: no`, no commit, no push. CI green is not a substitute.
-- This stage edits nothing but formatting. Defects go back to `review` (automatic in-plan fixes), to `/emporix-pr apply` (re-ship), or to the user.
+- Ship gate is hard: review PASS (or explicit waiver) for this tree on a first ship, a clean Bugbot pass on a re-ship, Sonar PASS / SKIP for this tree on a Java repository, formatted tree, full suite and `validation.commands` green. Any miss → `Ready: no`, no commit, no push. CI green is not a substitute.
+- This stage edits nothing but formatting, apart from the `sonar-scan` run § 1b starts (its fixes, under its own gate). Defects go back to `review` (automatic in-plan fixes), to `/emporix-pr apply` (re-ship), or to the user.
 - Do not commit as an agent. Do not commit `.ai/`, secrets, or `.env*`.
 - Never force-push. One PR per branch and key. Do not merge.
 - **Key-less branch.** `/emporix-feature pr` without a key (and no `ABC-123` in the branch or PR) is allowed only for a **re-ship** onto an existing PR — `emporix-pr apply` needs it for PRs with no Jira ticket. Jira steps are skipped, the ledger is `{RUN_FOLDER}/{TASK_BRANCH}-review-findings.md` (`emporix-setup/references/runs-layout.md`), and the commit message starts with the branch name instead of `{KEY}`. A first ship still needs a key.

@@ -36,7 +36,7 @@ done
 [ -n "$SESSION" ] || { echo "Missing --session" >&2; exit 1; }
 
 emporix_require_env || { echo "Could not resolve tenant credentials. Run tenants.sh list and pass --tenant <alias>." >&2; exit 1; }
-emporix_token_check >/dev/null || { echo "The token minted for profile '$EMPORIX_PROFILE' is not a usable JWT — check apiUrl / clientId / clientSecret." >&2; exit 1; }
+emporix_token_check >/dev/null || { echo "The token of profile '$EMPORIX_PROFILE' is not a usable access token — check the profile (tenants.sh check $EMPORIX_PROFILE)." >&2; exit 1; }
 [ -n "$LANGUAGE" ] || LANGUAGE="${EMPORIX_LANGUAGE:-en}"
 
 TMP=$(mktemp "${TMPDIR:-/tmp}/emporix-demo-restore.XXXXXX")

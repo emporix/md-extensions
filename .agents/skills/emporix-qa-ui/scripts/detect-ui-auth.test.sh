@@ -42,7 +42,16 @@ grep -q 'clientId + clientSecret' "$TMP/err" || fail "missing incomplete-profile
 # A real JWT passes the sanity check; the stub token does not
 out=$(EMPORIX_TOKEN='eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.sig' bash -c '. "$0"; emporix_token_check' "$ENV_SH") || fail "valid JWT rejected: $out"
 echo "$out" | grep -Fq 'TOKEN_PAYLOAD=valid_json' || fail "token check output: $out"
-if EMPORIX_TOKEN='not-a-jwt' bash -c '. "$0"; emporix_token_check' "$ENV_SH" >/dev/null; then fail "non-JWT accepted"; fi
+if EMPORIX_TOKEN='not-a-jwt' bash -c '. "$0"; emporix_token_check' "$ENV_SH" >/dev/null; then fail "short non-JWT accepted"; fi
+# An opaque client-credentials token (28 characters, no dots) passes
+out=$(EMPORIX_TOKEN='AbCdEfGhIjKlMnOpQrStUvWxYz12' bash -c '. "$0"; emporix_token_check' "$ENV_SH") || fail "opaque token rejected: $out"
+echo "$out" | grep -Fq 'TOKEN_PAYLOAD=opaque' || fail "opaque token output: $out"
+# Error bodies, spaces and control characters do not
+for bad in '{"error":"invalid_client"}' 'Bearer AbCdEfGhIjKlMnOpQrSt' '<html>Bad Gateway</html>' "$(printf 'AbCdEfGhIjKl\001MnOpQrStUvWx')"; do
+  if EMPORIX_TOKEN="$bad" bash -c '. "$0"; emporix_token_check' "$ENV_SH" >/dev/null; then fail "malformed token accepted"; fi
+done
+# A JWT-shaped token with a broken payload still fails
+if EMPORIX_TOKEN='eyJhbGciOiJIUzI1NiJ9.bm90IGpzb24.sig' bash -c '. "$0"; emporix_token_check' "$ENV_SH" >/dev/null; then fail "invalid JWT payload accepted"; fi
 if EMPORIX_TENANTS_FILE="$TMP/tenants.json" EMPORIX_PROFILE=nope bash -c '. "$0"; emporix_require_env' "$ENV_SH" 2>"$TMP/err"; then
   fail "unknown profile accepted"
 fi

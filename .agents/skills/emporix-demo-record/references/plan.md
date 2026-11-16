@@ -79,7 +79,7 @@ Turn the story into one file that `record` can dry-run and film without re-decid
 - Every beat names a visible result; no beat is "explore" or "check".
 - Demo data is `none` or each item has a source; an unknown one is a **blocking** open question.
 - Reset is reversible and touches only demo data.
-- Tenant profile alias is present in `tenants.sh list` (read, not guessed).
+- Tenant profile alias is present in `tenants.sh list` (read, not guessed), and its `AUTH` kind fits the app: `employee-token` for Management Dashboard local-qa, `client-credentials` for cockpits.
 - Do-not-show list present. No route or label that `ui.md`, the code, or the user did not confirm.
 
 A plan that is "click through the orders module" is a failed plan. Keep exploring.

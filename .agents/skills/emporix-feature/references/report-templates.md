@@ -50,10 +50,10 @@ Ledger: .ai/runs/{TASK_BRANCH}/{KEY}-review-findings.md
 Reviewer: {model} · Bugbot: yes | unavailable
 review: PASS | cycles: {n} | open: 0 | waived: {w}
 Jira comment: {commentId}
-Ready: pr
+Ready: sonar-scan
 ```
 
-Then the question: *Open the PR now?* (with the QA options). On FAIL:
+Then `sonar-scan` (its report: `references/sonar-scan.md` § After the loop), and after it the question: *Open the PR now?* (with the QA options). On FAIL:
 
 ```text
 review: FAIL | cycles: {n} | reason={beyond-plan | cap | gate-red} | remaining: {one-liners}
@@ -70,6 +70,8 @@ Branch: {branch}
 Commit: {pushed head SHA}
 Author: {token-owner login} ({commit author email})
 Review: self-review {reviewer model} — {n} cycles, PASS | PASS (waived: w)
+Sonar: {found} found · {fixed} fixed · {false-positive} false positive · {open} open | skipped — {reason} | not Java
+Sonar comment: {url}                     (only when one was posted)
 Gate: {commands, comma-separated} — pass
 PR: {number} (link: {prUrl})
 Self-review comment: {url}
@@ -82,7 +84,7 @@ Next: /emporix-docs-update {KEY}        (only when docs.targets is set)
 
 ## Handoff lines other skills read
 
-- `Ready:` — `Ready: {next stage}` (`review`, `pr`) = gate green, continuing or waiting for the user; `Ready: yes` = done; `Ready: no` = blocked, with the reason and how to resume. `emporix-pr` uses the same vocabulary (`Ready: ship`).
+- `Ready:` — `Ready: {next stage}` (`review`, `sonar-scan`, `pr`) = gate green, continuing or waiting for the user; `Ready: yes` = done; `Ready: no` = blocked, with the reason and how to resume. `emporix-pr` uses the same vocabulary (`Ready: ship`).
 
 - `Issue:` — the ticket (the child in parent mode).
 - `Plan:` — the approved plan path, under `.ai/runs/{TASK_BRANCH}/`. `emporix-pr` (plan-conformance gate) and `emporix-docs-update` resolve it with `emporix-setup/references/runs-layout.md` and read its **Approved plan** section. A glob of only `.ai/runs/*-{KEY}-issue-plan.md` misses the folder.

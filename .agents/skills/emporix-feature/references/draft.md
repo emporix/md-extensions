@@ -73,6 +73,7 @@ When unsure: one sentence more on **why / contract**, one sentence less on **how
 
 - At least one real seam confirmed in a file you opened, or an explicit greenfield.
 - Behaviour change → Acceptance criteria present, every Scenario / testable Requirement has a todo.
+- Scenarios and Requirements are numbered in the text (`**Scenario 1**`, `**Requirement 4**`; not a Markdown `1.` list), in one sequence 1..N with no gaps or repeats. Every `Scenario N` / `Requirement N` reference, in any section of the plan, names an item that exists.
 - **Project knowledge** present. A change to a rule, state, entity, endpoint, event, route, or integration names at least one file under **Update after implementation** and has a `knowledge-update` todo.
 - No invented APIs, files, or Scenarios.
 - Description (parent + prompt) promises only outcomes the Scenarios cover, nothing in **Out of scope**.

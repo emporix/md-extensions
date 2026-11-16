@@ -51,8 +51,9 @@ Header: replace the `**Source:**` line with these two:
 
 Section rules:
 
-- **Acceptance criteria.** Requirements only, one per contract from explore:
-  `**Requirement** — {contract} is unchanged for the same input.` No
+- **Acceptance criteria.** Requirements only, one per contract from explore,
+  numbered 1..N in the text (`emporix-feature` `references/plan-shape.md`, **Numbering**):
+  `- **Requirement N** — {contract} is unchanged for the same input.` No
   Scenario: nothing new is observable. `plan-shape.md`'s "N/A — no behaviour
   change" does **not** apply; the Requirements are the boundary review
   checks against. For `emporix-feature`'s rule that a plan needs a seam, a

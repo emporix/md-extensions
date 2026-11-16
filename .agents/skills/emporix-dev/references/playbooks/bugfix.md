@@ -10,6 +10,6 @@
 6. Architect: `references/architect.md`, only when the fix crosses a function boundary, changes a type or public signature, or moves a decision between layers. Otherwise `skip: fix stays inside {function}`.
 7. Implement: `emporix-feature` `references/implement.md` with `references/build.md`, stopping at its report (step 8 reviews; never `emporix-feature` review). Tests first: run the regression test against the **unchanged** code. It must fail with the reported symptom (quote the assertion). If it passes, stop with `Ready: no` and run `update`, because the root cause is wrong. Then fix at the root-cause seam (with a sketch: scaffold and bodies), and get every test green.
 8. Run **Review** (`references/playbooks/review.md`).
-9. Run **Open a PR** (`references/playbooks/open-a-pr.md`).
+9. Run **PR open** (`references/playbooks/pr-open.md`).
 
-**Reply:** what was broken and for whom, the root cause, the fix, and the failing-then-passing regression output verbatim. Then the blast-radius paths covered, the review verdict, and the PR URL(s), and the principles that changed a decision.
+**Reply:** what was broken and for whom, the root cause, the fix, and the failing-then-passing regression output verbatim. Then the blast-radius paths covered, the review verdict with its LOW findings (fixed, and each one left open with why), and the PR URL(s), and the principles that changed a decision.

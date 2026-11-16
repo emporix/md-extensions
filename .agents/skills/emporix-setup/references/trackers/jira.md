@@ -17,7 +17,7 @@ If Buddy tools return unauthorized, call that server's `mcp_auth` once and retry
 
 ## Conventions
 
-- Work-item ids are keys such as `COP-123`. Put that token in branch names and GitHub PR bodies. GitHub does not close Jira issues. Buddy has no transition tool yet — do not invent a close.
+- Work-item ids are keys such as `COP-123`. Put that token in branch names and GitHub PR bodies. GitHub does not close Jira issues. Buddy never closes a ticket; its only status change is **transition-issue** to In Progress, and only where a skill says so.
 - Browse URL: `https://${JIRA_SITE}/browse/{issueKey}` when a tool does not return `browseUrl`.
 - `{repo}` is a Jira project key for issue scope and `owner/name` for delegated GitHub operations. Project is otherwise `jira.project`. Buddy infers project from the issue key prefix; it has no project env var.
 - Tool names below are exact MCP names. Do not use the stale README names (`get_feature_by_jira_key`, `get_parent_ticket_context`, `create_or_update_subticket`).
@@ -42,7 +42,7 @@ Confirm Buddy MCP tools are invocable and `gh` is authenticated. Do not call `ac
 
 #### current-user
 
-For a PR, execute **current-user** from `$CODE_HOST_FILE`. Buddy has no “who am I in Jira” tool; do not invent one.
+For a PR, execute **current-user** from `$CODE_HOST_FILE`. Buddy has no “who am I in Jira” tool; do not invent one. Buddy calls Jira with a service account, so "me" in Jira is the developer's company email: `emporix-feature/scripts/resolve-user-email.sh` suggests it (env, Claude account, git, GitHub), and the user confirms or types it before **assign-issue**.
 
 #### repo-info
 
@@ -107,9 +107,25 @@ Load context first with **breakdown-context** when splitting a parent.
 - Use: parent summary/description/comments, the parent's sprint(s) and labels, the project's active sprints, existing children, linked feature
 - Called with a non-parent key it still works: the "Parent sprint" / "Parent labels" lines are then that ticket's own sprint and labels. It is the only Buddy read that returns them; **get-issue** and **plan-issue** return no sprint, labels, or parent.
 
+#### assign-issue
+
+`jira_assign_ticket` — **only when it is in the Buddy MCP tool list.** Older Buddy servers do not have it: then the operation is unavailable; skip it and say so, never fall back to REST or `acli`.
+
+- Required: `issue_key`, `assignee_email` (the address the user confirmed)
+- Buddy resolves the email to a Jira account and sets the assignee. Returns the assignee's display name, or an error when no Jira user matches (report it; do not guess another address).
+- Used by `emporix-feature` approve, on the child it just created, only with the user's answer.
+
+#### transition-issue
+
+`jira_transition_ticket` — **only when it is in the Buddy MCP tool list**; same fallback rule as **assign-issue**.
+
+- Required: `issue_key`, `status` (target status name; skills send only `In Progress`)
+- Buddy applies the workflow transition that leads to that status. Returns the new status, or an error when no such transition is available from the current one (report it; do not try other statuses).
+- Used by `emporix-feature` approve, on the child it just created and assigned, only with the user's answer.
+
 #### close-issue
 
-**Unsupported.** Buddy does not transition Jira status via MCP (workflow reacts to Jira webhooks). Leave status to a human or to Buddy’s server-side workflow. Do not call Jira transitions.
+**Unsupported.** Buddy never closes or resolves a ticket via MCP (workflow reacts to Jira webhooks). Leave that to a human or to Buddy’s server-side workflow. **transition-issue** is never used for Done, Closed, or any status other than In Progress.
 
 #### comment-issue
 
@@ -171,9 +187,9 @@ Prefer **attach-issue-files** (the shell script) which posts the comment after u
 
 **update-comment** is unsupported. Read comments via **get-issue** / **plan-issue**. Do not post comments via REST.
 
-#### update-issue / assign-issue / unassign-issue / label-issue / unlabel-issue
+#### update-issue / unassign-issue / label-issue / unlabel-issue
 
-**Unsupported.** Stop. `jira_upsert_subticket` can change a **child**'s summary, description, sprint, and labels only, and only when the user asked for that change.
+**Unsupported.** Stop. `jira_upsert_subticket` can change a **child**'s summary, description, sprint, and labels only, and only when the user asked for that change. Assigning is **assign-issue** above.
 
 ### Context (Buddy, not Jira mutations)
 
@@ -229,7 +245,7 @@ Prefer **attach-issue-files** (the shell script) which posts the comment after u
 
 Every operation in this section is the same-named operation in `$CODE_HOST_FILE`.
 
-#### get-pr / list-prs / search-prs / create-pr / update-pr / comment-pr / attach-image-evidence / assign-pr / unassign-pr / label-pr / unlabel-pr / get-pr-diff / get-pr-files / checkout-pr / review-pr / merge-pr / mark-pr-ready / get-pr-checks / get-required-checks / get-pr-comment / get-review-comment / list-review-comments / list-reviews / list-review-threads / reply-review-comment / resolve-review-thread
+#### get-pr / list-prs / search-prs / create-pr / update-pr / comment-pr / attach-image-evidence / assign-pr / unassign-pr / label-pr / unlabel-pr / get-pr-diff / get-pr-files / checkout-pr / review-pr / merge-pr / get-pr-merge-queue / mark-pr-ready / get-pr-checks / get-required-checks / get-pr-comment / get-review-comment / list-review-comments / list-reviews / list-review-threads / reply-review-comment / resolve-review-thread
 
 Delegate to GitHub. For **search-prs**, search a Jira key (`COP-123`) as plain text, not `#123`. For **create-pr**, put the Jira key in the body. Do not call Jira **close-issue** after merge (unsupported).
 

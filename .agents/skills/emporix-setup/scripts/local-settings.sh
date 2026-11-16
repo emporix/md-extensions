@@ -15,6 +15,7 @@
 # Known keys (others are refused, so a typo never silently does nothing):
 #   worktree.mode  ALWAYS_WORKTREE | WORKTREE_ON_DIRTY_BRANCH | ASK_USER |
 #                  IN_PLACE | CURRENT_BRANCH   (references/local-settings.md)
+#   sonar.enabled  true | false   (emporix-feature sonar-scan; unset = true)
 
 set -eu
 
@@ -43,7 +44,13 @@ validate() { # $1 key, $2 value (already normalised)
         *) die "worktree.mode must be ALWAYS_WORKTREE, WORKTREE_ON_DIRTY_BRANCH, ASK_USER, IN_PLACE, or CURRENT_BRANCH (got '$2')." ;;
       esac
       ;;
-    *) die "Unknown local setting '$1'. Known: worktree.mode" ;;
+    sonar.enabled)
+      case "$2" in
+        ''|true|false) ;;
+        *) die "sonar.enabled must be true or false (got '$2')." ;;
+      esac
+      ;;
+    *) die "Unknown local setting '$1'. Known: worktree.mode, sonar.enabled" ;;
   esac
 }
 
@@ -87,6 +94,7 @@ case "$cmd" in
     key=$1; value=$2
     case "$key" in
       worktree.mode) value=$(printf '%s' "$value" | tr '[:lower:]' '[:upper:]') ;;
+      sonar.enabled) value=$(printf '%s' "$value" | tr '[:upper:]' '[:lower:]') ;;
     esac
     validate "$key" "$value"
     current=$(read_file)

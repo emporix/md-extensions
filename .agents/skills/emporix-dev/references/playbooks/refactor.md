@@ -17,6 +17,6 @@ A behaviour change found on the way is not part of this playbook. Note it as a f
    - Pin: `skip: no new Scenario`.
    - Bodies: the `step-…` todos, with the full suite green after each.
 8. Run **Review** (`references/playbooks/review.md`; its Refactor row keeps every Requirement in the plan and stops on a behaviour-changing repair).
-9. Run **Open a PR** (`references/playbooks/open-a-pr.md`).
+9. Run **PR open** (`references/playbooks/pr-open.md`).
 
-**Reply:** the structure that changed, the contracts it held and the safety net that proves it, and the steps taken. Then what got simpler for the next maintainer, in layers to trace and state to hold (`minimize-reader-load.md`), the follow-up tickets for bugs found on the way, the review verdict, the PR URL(s), and the principles that changed a decision. No new behaviour.
+**Reply:** the structure that changed, the contracts it held and the safety net that proves it, and the steps taken. Then what got simpler for the next maintainer, in layers to trace and state to hold (`minimize-reader-load.md`), the follow-up tickets for bugs found on the way, the review verdict with its LOW findings (fixed, and each one left open with why), the PR URL(s), and the principles that changed a decision. No new behaviour.

@@ -50,6 +50,7 @@ Cap **Business context** and **Technical context** at ~4 000 characters each. If
 
 - Format: {formatter command on changed files, or "none configured"}
 - Review: {emporix-feature self-review — {reviewer model}, n cycles, PASS | PASS (waived: w)}
+- Sonar: {local SonarQube {version}, Emporix Java profile — f found on new code, x fixed, p false positive, open 0 | skipped — {reason}} (Java repositories only; details in the Sonar comment)
 - Suite: {each unit / integration / e2e command} — pass
 - Validation gate: {each `validation.commands` entry} — pass
 
@@ -105,9 +106,43 @@ _No findings_ → keep the heading and write `No findings in {n} cycle(s).`
 
 No diff. No secrets. Do not paste reviewer prose; one row per finding.
 
+## Sonar summary comment
+
+Built from the Sonar ledger (`references/sonar-scan.md` § Ledger), every run. One comment, marker first; **update-comment** on re-ship. Java repositories only.
+
+```markdown
+<!-- emporix-sonar-scan -->
+## Sonar scan — {KEY}
+
+**Verdict:** sonar: PASS | cycles: {n} | open: 0
+**Analysis:** local SonarQube {version} (Community Build) · profile Emporix Java ({PROFILE_RULES} rules) · new code = lines changed against `{BASE_BRANCH}` · **Head:** {short SHA}
+**Local scan time:** {total}s over {n} scans — {per scan: `{SCAN_SECONDS}s (server {s}s · build + scanner {a}s · processing {p}s)`, comma-separated}
+
+| Found on new code | Fixed | False positive | Waived | Open |
+|---|---|---|---|---|
+| {f} | {x} | {p} | {w} | {o} |
+
+### Findings
+
+| # | Severity | Rule | Location | Message | Resolution |
+|---|---|---|---|---|---|
+| 1 | MEDIUM | java:S4973 | `cart-service-api/src/main/java/…/Totals.java:42` | Strings should be compared using equals() | fixed — `Objects.equals` |
+| 2 | LOW | java:S1155 | `…/Totals.java:57` | Use isEmpty() | false positive — `size()` of a lazy Page is the documented total |
+
+### Not touched
+
+{x} pre-existing finding(s) in the changed files, not on changed lines. {PROJECT_TOTAL} in the project. Pre-existing findings are out of this PR's scope.
+
+### Runs
+
+{One line per run: `{date} · {short SHA} · first ship | re-ship · {cycles} cycle(s) · {found} found / {fixed} fixed · {total scan seconds}s`.}
+```
+
+_No findings_ → keep the table with zeros and write `No Sonar findings on new code.` under it. Skipped → `**Verdict:** sonar: SKIP — {docker-unavailable: Docker was not running on the developer's machine | disabled: turned off in local settings}. Nothing was analysed for this head.` and no tables. No local URLs, tokens, or passwords.
+
 ## Jira pointer (when `{KEY}` is known)
 
 On that key only — not the parent:
 
-- **comment-issue** preamble `🤖 emporix-feature — pr`: PR URL, branch, head SHA, review verdict line.
+- **comment-issue** preamble `🤖 emporix-feature — pr`: PR URL, branch, head SHA, review verdict line, and the Sonar Verdict line on a Java repository.
 - **register-issue** only if **get-issue** had no `registeredFeatureId`.

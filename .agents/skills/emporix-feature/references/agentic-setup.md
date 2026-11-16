@@ -18,12 +18,13 @@ In plan mode (`explore`, `draft`, `update` on Claude Code — `references/plan-m
 |---|---|
 | explore | **auth-check**, **get-issue**, **plan-issue**, **breakdown-context**, **service-context**, **ask-buddy** |
 | draft / update | none (reads only) |
-| approve | **breakdown-context**, then **create-subticket** (parent + prompt) or **update-subticket** (existing child ticket), with the sprint and labels the user confirmed; **comment-issue**, **register-issue** |
+| approve | **breakdown-context**, then **create-subticket** (parent + prompt) or **update-subticket** (existing child ticket), with the sprint and labels the user confirmed; on a created child, **assign-issue** and **transition-issue** (In Progress) when the user chose them and Buddy has the tools; **comment-issue**, **register-issue** |
 | implement | **get-issue**, **search-prs**, **default-branch**, **ensure-branch** / **ensure-worktree**, **upsert-service-context** (only when a knowledge file changed) |
 | review | **comment-issue** (implement + review evidence), **upsert-service-context** (only when a fix changed a knowledge file) |
+| sonar-scan | none (local Docker only; no tracker or code-host writes) |
 | pr | **search-prs**, **get-pr**, **create-pr**, **update-pr**, **comment-pr**, **update-comment**, **list-issue-comments**, **get-issue**, **comment-issue**, **register-issue** |
 
-Scripts live in this skill: `resolve-checkout.sh`, `ensure-branch.sh`, `ensure-worktree.sh`, `git-commit-as-user.sh` — resolve them with `skill_script emporix-feature <script>`.
+Scripts live in this skill: `resolve-checkout.sh`, `ensure-branch.sh`, `ensure-worktree.sh`, `git-commit-as-user.sh`, `sonar-local.py` (run with `python3`) — resolve them with `skill_script emporix-feature <script>`.
 
 ## Run folder
 

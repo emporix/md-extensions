@@ -2,7 +2,7 @@
 
 Approval is the user accepting `ExitPlanMode` in plan mode (`references/plan-mode.md` § After the user answers), an explicit reply in this conversation after the chat hard stop (`approve`, `looks good`, `create it`, `go`, `yes`), or `/emporix-feature approve {KEY}`. The approved text, the user's edits included, is the plan. Do not re-analyse.
 
-Persist it on the Jira ticket so a later `implement` can use **either** the local file **or** the ticket. Jira is the durable copy across machines and worktrees. Does **not** transition status.
+Persist it on the Jira ticket so a later `implement` can use **either** the local file **or** the ticket. Jira is the durable copy across machines and worktrees. Does **not** transition status, with one exception: a child this stage just created moves to In Progress when the user assigned it and chose **Move to In Progress** (§ 4, parent + prompt).
 
 ## 1. Read the approved text
 
@@ -30,12 +30,18 @@ Comment preamble: `🤖 emporix-feature`. Body = the plan's `**Source:**` line, 
 0. **Sprint and labels — always ask.** Never copy them from the parent: a parent can sit in two sprints and carry labels that do not fit this child. **breakdown-context** on the parent (fresh, not from explore) gives the parent's sprint(s) and labels and the project's active sprints. Ask both in one prompt, two questions (AskUserQuestion when available; otherwise one chat question with both parts), then wait:
    - **Sprint** (single choice): the active sprints by name, the parent's ones marked `(parent)`, plus **No sprint**. More active sprints than fit (AskUserQuestion: 4 options) → list them all in the question text; the user types one under Other. Buddy sets a sprint by the id of an **active** sprint only: map a typed name to one of the listed active sprints' id, and a name that matches none → ask again with the list. No active sprint → do not ask; the child gets **No sprint** (say so in the report), and only the labels question is asked.
    - **Labels** (multiple choice): each of the parent's labels as its own option, none pre-selected and none marked recommended, plus **No labels**. More parent labels than fit → list them all in the question text; the user types the ones to keep under Other. The user may type new labels too (no spaces; Jira labels are single tokens).
+   - **Assignee** (single choice), a third question in the same prompt, asked only when Buddy has **assign-issue** (`jira_assign_ticket` in its tool list; `emporix-setup/references/trackers/jira.md`). Missing tool → do not ask; the child is created unassigned and the report says `Assignee: not set — Buddy has no jira_assign_ticket`. Find the developer's company email first, without asking: `scripts/resolve-user-email.sh --root {this checkout}` prints `EMAIL` and `SOURCE` (env, Claude account, git `user.email`, GitHub — first `@emporix.com` address wins). Options:
+     - `EMAIL` found → **Assign to me ({EMAIL})**, then **Leave unassigned**. Say in the question where the address came from (`SOURCE`) and that a different address can be typed under Other.
+     - `SOURCE=none` → **Enter my email**, then **Leave unassigned**, and say no company email was found in the Claude account, git, or GitHub. **Enter my email** with no address typed → ask once in chat for it.
+     - A typed address is used as given (no format guessing; one without `@` → ask again). Never assign without this answer; a silent answer means **Leave unassigned**.
+   - **Status** — asked only after the answers above, only when the user chose an assignee, and only when Buddy has **transition-issue** (`jira_transition_ticket`). One single-choice question: **Move to In Progress**, then **Leave as created**. Missing tool → do not ask; report `Status: unchanged — Buddy has no jira_transition_ticket`.
    - The answers are this ticket's only source. A silent answer, "same as parent", or "whatever" is not an answer for a parent with more than one sprint or label: ask which ones.
-   - Auto and every caller wait here too; no playbook answers this question for the user.
+   - Auto and every caller wait here too; no playbook answers these questions for the user.
 1. **create-subticket** (`jira_upsert_subticket`): `parent_issue_key` = parent, `summary` = **Title**, `description` = **Description** body, `sprint` = the chosen sprint's id or `"none"`, `labels` = the chosen labels or `[]`. **Always pass both.** Omitting either makes Buddy copy the parent's, and `"parent"` is never sent. Returns `{CHILD}` + `browseUrl` and the sprint and label outcome; a sprint or label Buddy could not set → say so in the report, do not retry with the parent's values.
-2. **comment-issue** on `{CHILD}` with the approved-plan body (placeholders replaced).
-3. Rename the folder and the file onto the child key (`runs-layout.md` `--rename-from {PARENT} --key {CHILD} --title` the plan title `--adopt`). Set **Ticket** to `{CHILD}` and **Branch** to the new `TASK_BRANCH`. Keep **Parent**. This is the `Plan:` path from now on. Do not keep the parent-key folder or file.
-4. **register-issue** on `{CHILD}`. Do not comment on the parent.
+2. Assignee chosen → **assign-issue** (`jira_assign_ticket`): `issue_key` = `{CHILD}`, `assignee_email` = the confirmed address. Then, only if the assignment succeeded and the user chose **Move to In Progress** → **transition-issue** (`jira_transition_ticket`): `issue_key` = `{CHILD}`, `status` = `In Progress`. Either call failing (no Jira user for that email, no transition to In Progress from the current status) → say so in the report with Buddy's reason and go on; do not retry with another address or status, and never fall back to Jira REST or `acli`.
+3. **comment-issue** on `{CHILD}` with the approved-plan body (placeholders replaced).
+4. Rename the folder and the file onto the child key (`runs-layout.md` `--rename-from {PARENT} --key {CHILD} --title` the plan title `--adopt`). Set **Ticket** to `{CHILD}` and **Branch** to the new `TASK_BRANCH`. Keep **Parent**. This is the `Plan:` path from now on. Do not keep the parent-key folder or file.
+5. **register-issue** on `{CHILD}`. Do not comment on the parent.
 
 **Existing ticket**
 
@@ -50,7 +56,7 @@ Comment preamble: `🤖 emporix-feature`. Body = the plan's `**Source:**` line, 
 2. **comment-issue** the approved-plan body on `{KEY}`.
 3. **register-issue** on `{KEY}` only if **get-issue** / **plan-issue** did not already return `registeredFeatureId`.
 
-**Re-approve** (after `update` on an approved plan) posts a **new** comment; Buddy has no update-comment for Jira. Do not call **register-issue** again on a registered key. Do not ask about sprint and labels again; that was settled at the first approve.
+**Re-approve** (after `update` on an approved plan) posts a **new** comment; Buddy has no update-comment for Jira. Do not call **register-issue** again on a registered key. Do not ask about sprint, labels, assignee, or status again; that was settled at the first approve.
 
 Do not invent `acli` or Jira REST. Do not claim the description was updated when only a comment was posted.
 
@@ -63,6 +69,8 @@ Issue: {KEY} (link: {browseUrl})
 Plan: .ai/runs/{TASK_BRANCH}/{YYYY-MM-DD}-{KEY}-issue-plan.md
 Jira: comment {commentId} (+ child created | registered)
 Sprint: {name | none | kept} · Labels: {a, b | none | kept}   (child tickets; `unchanged — top-level ticket` otherwise)
+Assignee: {email | unassigned | failed: reason | not set — Buddy has no jira_assign_ticket}   (created child only)
+Status: {In Progress | unchanged | failed: reason}   (created child only)
 Ready: yes
 ```
 

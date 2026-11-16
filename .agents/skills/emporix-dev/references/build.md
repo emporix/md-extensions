@@ -56,8 +56,8 @@ no plan edits, no files outside the tree, stop at any deviation and return
 `before → after` with evidence. The parent verifies every returned diff
 against the sketch; an unreported deviation is still a deviation.
 
-When a coder subagent wrote the code, **Review** must not use the coder's
-model as its reviewer (`references/review-loop.md` § Reviewer model).
+When a coder subagent wrote the code, **Review** must not put the coder's
+model on its reviewer panel (`references/review-loop.md` § Reviewer model).
 
 ## B1. Cleanup (optional)
 

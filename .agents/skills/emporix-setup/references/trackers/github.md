@@ -14,7 +14,7 @@ GitHub implementation of the tracker operations. Skills name operations (**get-p
 
 - Issue and PR identifiers are numbers; in text they are `#123`.
 - Never include `projectCards` in a `--json` field list.
-- A PR links a GitHub issue with `Fixes #{issueId}` in the body. That does **not** close a Jira work item. Buddy has no transition tool — do not close Jira from this file.
+- A PR links a GitHub issue with `Fixes #{issueId}` in the body. That does **not** close a Jira work item. Buddy never closes Jira — do not close Jira from this file.
 - Multi-line bodies use `--body-file` (or process substitution) so formatting survives.
 - CI truth for a PR comes from **get-pr-checks**. Required checks come from **get-required-checks**; on 404, treat every reported check as required.
 
@@ -199,7 +199,7 @@ gh api -X PATCH repos/{owner}/{repo}/issues/comments/{commentId} -F body=@<path>
 
 #### get-pr
 ```bash
-gh pr view {prNumber} --json number,title,url,body,state,author,isDraft,baseRefName,headRefName,headRefOid,mergeable,mergeStateStatus,reviewDecision,labels,assignees,comments,createdAt,mergedAt,closedAt
+gh pr view {prNumber} [--repo {owner}/{repo}] --json number,title,url,body,state,author,isDraft,baseRefName,headRefName,headRefOid,mergeable,mergeStateStatus,reviewDecision,labels,assignees,comments,createdAt,mergedAt,closedAt
 ```
 
 #### list-prs
@@ -364,8 +364,18 @@ GitHub rejects self-approval; surface that instead of working around it.
 
 #### merge-pr
 ```bash
-gh pr merge {prNumber} --squash
+gh pr merge {prNumber} [--repo {owner}/{repo}] {--squash | --merge | --rebase} [--match-head-commit {headRefOid}]
 ```
+Pass exactly one method flag, the one the caller chose; never rely on `gh`'s own default. `--match-head-commit` makes GitHub refuse the merge when the head moved after the caller checked it. Never `--admin`.
+
+#### get-pr-merge-queue
+```bash
+gh api graphql -F owner={owner} -F name={repo} -F number={prNumber} -f query='
+query($owner:String!,$name:String!,$number:Int!){
+  repository(owner:$owner,name:$name){ pullRequest(number:$number){ isInMergeQueue } }
+}' --jq '.data.repository.pullRequest.isInMergeQueue'
+```
+`true` while the PR waits in the base branch's merge queue.
 
 #### mark-pr-ready
 ```bash
@@ -374,7 +384,7 @@ gh pr ready {prNumber}
 
 #### get-pr-checks
 ```bash
-gh pr checks {prNumber} --json name,state,link
+gh pr checks {prNumber} [--repo {owner}/{repo}] --json name,state,link
 ```
 
 #### get-required-checks
@@ -412,6 +422,7 @@ GraphQL thread `id` is required to resolve. Match a REST comment `id` to
 `comments.nodes[].databaseId`.
 
 ```bash
+# Another repository: set OWNER and REPO from its {owner}/{repo} instead.
 OWNER=$(gh repo view --json owner --jq .owner.login)
 REPO=$(gh repo view --json name --jq .name)
 gh api graphql -F owner="$OWNER" -F name="$REPO" -F number={prNumber} -f query='

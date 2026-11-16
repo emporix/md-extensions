@@ -1,0 +1,14 @@
+{
+  "_comment": "Pinned local SonarQube for the sonar-scan stage. servers: first entry whose maxJava covers the project's Java level wins, so keep the preferred one first. The first entry is the Community Build closest to the Emporix SonarQube Server (2026.5.3, build 133540) so the Java analyzer matches what CI reported. Bump together with sonar-local.test.sh.",
+  "servers": [
+    { "image": "sonarqube:26.10.0.133078-community", "maxJava": 25 }
+  ],
+  "scanners": {
+    "maven": "org.sonarsource.scanner.maven:sonar-maven-plugin:5.8.0.7211",
+    "gradle": "7.5.0.8588"
+  },
+  "profile": {
+    "name": "Emporix Java",
+    "file": "emporix-java-profile.xml"
+  }
+}

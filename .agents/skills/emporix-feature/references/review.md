@@ -154,10 +154,10 @@ Each cycle:
 1. Append the **Verdict** block to the ledger (`references/review-ledger.md`).
 2. **Jira evidence** — **comment-issue** on `{KEY}` only, preamble `🤖 emporix-feature — implement + review`, body = the implement report (branch, files, tests, commands, `Knowledge:`, `Buddy:`, how to try) plus the review summary (cycles, findings found / fixed / open, verdict). No diff, no secrets. Skip only if the user cancelled before any edit.
 3. Report per `references/report-templates.md` § Review.
-4. **PASS** → ask once: *open the PR now?* Name QA first as an option (`/emporix-qa-ui {KEY}` on `ui`/`fullstack`; `/emporix-qa-local-api {KEY}` on `backend` with `qa.postman`; `/emporix-qa-postman {KEY}` when an HTTP contract changed). Yes → `references/pr.md`. Not now → stop; `/emporix-feature pr {KEY}` later.
+4. **PASS** → `references/sonar-scan.md` in the same turn (it skips itself on a non-Java repository). The PR question is asked after it: *open the PR now?* Name QA first as an option (`/emporix-qa-ui {KEY}` on `ui`/`fullstack`; `/emporix-qa-local-api {KEY}` on `backend` with `qa.postman`; `/emporix-qa-postman {KEY}` when an HTTP contract changed). Yes → `references/pr.md`. Not now → stop; `/emporix-feature pr {KEY}` later.
 5. **FAIL** → ask once: *fix by hand, waive the listed findings, or stop?*
    - Fix by hand → stop. When they return, `/emporix-feature review {KEY}` runs a new review run (new `## Run` block).
-   - Waive → only on explicit user words naming the rows. Set each row to `waived — {user's reason}`. Append a Verdict `PASS (waived)` block. Then the PR question. Waived rows appear in the PR summary comment as waived.
+   - Waive → only on explicit user words naming the rows. Set each row to `waived — {user's reason}`. Append a Verdict `PASS (waived)` block. Then `references/sonar-scan.md`, then the PR question. Waived rows appear in the PR summary comment as waived.
    - Stop → leave the tree as-is.
 
 ## Rules

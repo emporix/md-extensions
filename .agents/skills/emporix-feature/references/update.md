@@ -25,7 +25,7 @@ Same stance as `references/explore.md`: think, read code, diagram — **no produ
   | add todo | new id + content |
   | edit todo | change content / reorder; keep the id when it is the same work |
   | drop todo | remove only if the user agrees that work is gone |
-  | acceptance | add / edit / drop a **Scenario** (WHEN/THEN[/AND]) or **Requirement**; keep black-box contracts |
+  | acceptance | add / edit / drop a **Scenario** (WHEN/THEN[/AND]) or **Requirement**; keep black-box contracts. Adding or dropping one renumbers the items after it: update every `Scenario N` / `Requirement N` reference in any section of the plan: Todos, the **Plan quality** `Scenarios:` line, Out of scope (`Scenario N — asserted in {repo}`), and cross-references such as "as in Scenario 3" |
   | knowledge | add / drop a file under **Project knowledge** |
   | overview / body | rewrite sections, scope, open questions |
 

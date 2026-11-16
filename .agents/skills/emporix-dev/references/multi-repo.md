@@ -35,7 +35,7 @@ the same key.
 explore/draft (one plan, Repos + Merge plan) ──> approve (one Jira comment)
   ──> dev-plan ──> architect: Cross-repo layer ──> in-repo sketches ──> slices
   ──> per repo, Merge plan order: implement + build ──> review
-  ──> one PR question ──> per repo, Merge plan order: emporix-feature pr ──> Watch PR per PR
+  ──> one PR question ──> per repo, Merge plan order: emporix-feature pr ──> PR watch per PR
 ```
 
 ### Plan shape (draft and update, any playbook)
@@ -103,8 +103,8 @@ master). A slice is the dev-plan with:
 - **Design sketch**: `#### Cross-repo` plus only this repository's `#### Todo {id}` sketches and deviations.
 - **Project knowledge**: only this repository's files.
 
-A slice is an ordinary `emporix-feature` plan. That is why Review, Open a
-PR, and PR comments (and, outside `emporix-dev`, `/emporix-feature` and
+A slice is an ordinary `emporix-feature` plan. That is why Review, PR
+open, and PR comments (and, outside `emporix-dev`, `/emporix-feature` and
 `/emporix-pr`) work on each repository without knowing about the others. Do not hand-edit slices;
 change the dev-plan and re-slice. An accepted deviation from PR comments,
 a CI fix, an Auto resume, or `/emporix-pr apply` is appended to a slice's
@@ -133,7 +133,7 @@ one repository → its *fix by hand / waive / stop* question first; its
 dependents in the **Merge plan** do not ship until it passes; independent
 ones may.
 
-On yes: **Open a PR** step 3 **once per repository**, in **Merge plan**
+On yes: **PR open** step 3 **once per repository**, in **Merge plan**
 order, cwd = that repository's ticket checkout (`emporix-feature`
 `references/pr.md` on a first ship, `references/reship.md` on a
 re-ship; never Bugbot). Each run makes its own
@@ -147,7 +147,7 @@ Report, in **Merge plan** order:
 {n}. {repo id} — {PR URL} — review: PASS — merge {first | after {id}}
 ```
 
-The **Auto** playbook then runs **Watch PR** on each PR in the same order (`references/playbooks/auto.md` step 4).
+The **Auto** playbook then runs **PR watch** on each PR in the same order (`references/playbooks/auto.md` step 4).
 
 ### Rules
 

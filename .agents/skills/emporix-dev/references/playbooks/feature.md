@@ -10,6 +10,6 @@
 6. Architect: `references/architect.md`. Skip only for a trivial change (one function, obvious placement, no new type, public signature, or module), with `skip: trivial — {why}`.
 7. Implement: `emporix-feature` `references/implement.md` with `references/build.md` (scaffold, then fail-first tests, then bodies; the sketch is the contract), stopping at its report (step 8 reviews; never `emporix-feature` review).
 8. Run **Review** (`references/playbooks/review.md`).
-9. Run **Open a PR** (`references/playbooks/open-a-pr.md`).
+9. Run **PR open** (`references/playbooks/pr-open.md`).
 
-**Reply:** what was built, for whom, and what changes for them. The design candidates and the pick as a table, deviations with their diagnoses, the review verdict, the PR URL(s), and open decisions, and the principles that changed a decision.
+**Reply:** what was built, for whom, and what changes for them. The design candidates and the pick as a table, deviations with their diagnoses, the review verdict with its LOW findings (fixed, and each one left open with why), the PR URL(s), and open decisions, and the principles that changed a decision.

@@ -30,7 +30,9 @@ Propose, then ask. First turn: a short restatement of what changed for the user,
 
 - **Flows** — which of the proposed flows matter; is a flow missing; which empty / error / permission case is worth a step.
 - **Preconditions** — what must already exist in the tenant (a product, an order in a given state, a customer group, a feature flag) and whether it does. If the plan or the user cannot say, make it an open question; `run` must not create data the plan does not list.
-- **Tenant** — which profile alias (`--tenant`, else ask; `tenants.sh list` output read via the Read tool shows the aliases without secrets). Stage vs prod. The token is minted from the profile's API client at run time; a flow that needs scopes the client lacks is an open question, not a reason to ask for a token.
+- **Tenant** — which profile alias (`--tenant`, else ask; `tenants.sh list` output read via the Read tool shows the aliases and their `AUTH` kind without secrets). Stage vs prod. The kind must fit the app:
+  - **Management Dashboard** (`AUTH=md-token`, `serve:local-qa`) needs an **`employee-token`** profile: the gate calls `auth-adapter/users/me/tenants`, which refuses an API-client token. Offer only `employee-token` aliases. None → give the user the prefilled `tenants.sh setup …` command that `tenants.sh list` prints, in a `bash` block, to run in their own terminal; make it a blocking open question and end the turn. The user stores the token; never ask for it.
+  - **Cockpit templates** and plain API flows use a `client-credentials` profile; its token is minted from the API client at run time. A flow that needs scopes the client lacks is an open question, not a reason to ask for a token.
 - **Observable result** — for each step, what exactly on the page proves it: a label, a row, a badge, a toast, a disabled button, a redirect. "It works" is not an expected result.
 - **Out of scope** — flows the change touches but the user does not want tested now.
 

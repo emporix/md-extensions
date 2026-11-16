@@ -11,10 +11,13 @@ description: >-
   plan. approve: create the child ticket when needed, comment the plan via
   AI Buddy, register it. implement: ticket branch, todos, tests, project
   knowledge. review: self-review loop with a different-model subagent, up to
-  5 cycles, ledger under .ai/runs. pr: commit as the token owner, push, open
-  the PR with Jira context and a self-review summary comment, or re-ship
-  fixes onto an existing PR. Use for /emporix-feature, a single stage
-  ("emporix-feature review COP-123", "emporix-feature pr COP-123"), or the
+  5 cycles, ledger under .ai/runs. sonar-scan: Java only, a local SonarQube
+  in Docker with the Emporix Java profile, fixes findings on the changed
+  lines, up to 3 cycles, ledger under .ai/runs. pr: commit as the token
+  owner, push, open the PR with Jira context, a self-review summary comment,
+  and a Sonar summary comment, or re-ship fixes onto an existing PR. Use for
+  /emporix-feature, a single stage ("emporix-feature review COP-123",
+  "emporix-feature sonar-scan COP-123", "emporix-feature pr COP-123"), or the
   classic flow without playbooks.
 ---
 
@@ -23,12 +26,12 @@ description: >-
 One skill, one conversation, the whole ticket. Parse **stage** + args, then walk the stages through the gates below.
 
 ```text
-explore --> draft --> approve --> implement --> review --> pr
+explore --> draft --> approve --> implement --> review --> sonar-scan --> pr
               ^
             update
 ```
 
-Explore is a conversation. Draft and approve wait for the user. Approve, implement, and review run on without asking. The PR waits for a yes.
+Explore is a conversation. Draft and approve wait for the user. Approve, implement, review, and sonar-scan run on without asking. The PR waits for a yes.
 
 On Claude Code, explore, draft, and update run in **plan mode** (`references/plan-mode.md`): `EnterPlanMode` is the first action of those stages, the plan is written to the plan-mode file, and `ExitPlanMode` is the draft's hard stop — its approval **is** `approve`, rejection with feedback is `update`. The issue plan and Jira are written only after plan mode has ended. A note the user asked for during plan mode goes in `{RUN_FOLDER}` and does not approve the plan.
 
@@ -48,11 +51,12 @@ Examples:
 - `/emporix-feature approve COP-6968`
 - `/emporix-feature implement COP-6968 --worktree`
 - `/emporix-feature review COP-6968 --review-model gpt-5.4-medium`
+- `/emporix-feature sonar-scan COP-6968`
 - `/emporix-feature pr COP-6968 --draft-pr`
 
 ## Parse
 
-1. **Stage** — first token when it is one of `explore`, `draft`, `update`, `approve`, `implement`, `review`, `pr`. Otherwise `explore`.
+1. **Stage** — first token when it is one of `explore`, `draft`, `update`, `approve`, `implement`, `review`, `sonar-scan` (alias `sonar`), `pr`. Otherwise `explore`.
 2. **KEY** — first token matching `^[A-Z][A-Z0-9_]+-[0-9]+$`, else from the current branch name. Optional for `explore`; every later stage needs one (ask once) — except `pr` on a **re-ship** of an existing PR with no Jira ticket (`references/pr.md` § Rules): Jira steps are skipped.
 3. **Prompt** — the rest. With a parent-like ticket it is the brief for a **child** (mode below).
 4. **Flags** — `--worktree` (sibling worktree for this run, whatever the local worktree mode), `--review-model <slug>` (reviewer subagent model), `--draft-pr` (open the PR as a draft).
@@ -78,7 +82,8 @@ Every stage continues into the next through this table. Stop only where it says 
 | `draft` | **Hard stop.** Plan mode: plan written to the plan-mode file, then `ExitPlanMode` — approved → `approve`; rejected with feedback → `update`, publish, `ExitPlanMode` again; rejected without → stop, nothing goes to Jira. Without plan mode: chat shows plan path, open questions, *approve / change X / cancel* and the same three outcomes. |
 | `approve` | Jira writes done → `implement` starts in the same turn. No question. A plan whose **Source** is another skill → return to that skill instead (§ Callers). `Ready: no` (blocking open question) → stop. |
 | `implement` | Tests written and green, knowledge updated → `review` starts in the same turn. Gate red or a seam gone → stop with `Ready: no`. |
-| `review` | **PASS** → ask once: *open the PR now?* Name the QA options (`/emporix-qa-ui {KEY}` on `ui`/`fullstack`, `/emporix-qa-local-api {KEY}` on `backend` with `qa.postman`, `/emporix-qa-postman {KEY}` when an HTTP contract changed). Yes → `pr`. Not yet → stop; `/emporix-feature pr {KEY}` later. **FAIL** → report; ask *fix by hand / waive listed findings / stop*. Waive → record in the ledger, then the PR question. |
+| `review` | **PASS** → `sonar-scan` starts in the same turn. No question. **FAIL** → report; ask *fix by hand / waive listed findings / stop*. Waive → record in the ledger, then `sonar-scan`. |
+| `sonar-scan` | **PASS** or **SKIP** (not Java, Docker unavailable, turned off) → ask once: *open the PR now?* Name the QA options (`/emporix-qa-ui {KEY}` on `ui`/`fullstack`, `/emporix-qa-local-api {KEY}` on `backend` with `qa.postman`, `/emporix-qa-postman {KEY}` when an HTTP contract changed). Yes → `pr`. Not yet → stop; `/emporix-feature pr {KEY}` later. **FAIL** → report; ask *fix by hand / waive listed findings / stop*. Waive → record in the Sonar ledger, then the PR question. |
 | `pr` | Report. Docs: `/emporix-docs-update {KEY}` when `docs.targets` is set. |
 
 Invoking a later stage directly (for example `implement COP-123`) runs that stage and continues through the gates from there.
@@ -101,7 +106,7 @@ Invoking a later stage directly (for example `implement COP-123`) runs that stag
 
 ### `approve`
 
-`references/approve.md`. In plan mode this is the approval of `ExitPlanMode`: first write the approved plan-mode file to `{RUN_FOLDER}/{YYYY-MM-DD}-{KEY}-issue-plan.md` (`runs-layout.md`). Flip the plan to `**Status:** approved`. Parent + prompt → ask the user for the child's sprint and labels (always; never copied from the parent), **create-subticket** with both passed explicitly, then **comment-issue** the Approved plan on the child, rename the plan folder and file to the child key, **register-issue**. Existing ticket → when it is a child, ask the user for its sprint and labels (keep current, or set; parent values are only options) and **update-subticket** only what changed; a top-level ticket is left as is. Then **comment-issue**, **register-issue** if not registered. Preamble `🤖 emporix-feature`. Then `implement`.
+`references/approve.md`. In plan mode this is the approval of `ExitPlanMode`: first write the approved plan-mode file to `{RUN_FOLDER}/{YYYY-MM-DD}-{KEY}-issue-plan.md` (`runs-layout.md`). Flip the plan to `**Status:** approved`. Parent + prompt → ask the user for the child's sprint and labels (always; never copied from the parent) and, when Buddy has **assign-issue**, whether to assign it to them (company email from `scripts/resolve-user-email.sh`, confirmed or typed); assigned → ask whether to move it to In Progress. **create-subticket** with sprint and labels passed explicitly, **assign-issue** / **transition-issue** as answered, then **comment-issue** the Approved plan on the child, rename the plan folder and file to the child key, **register-issue**. Existing ticket → when it is a child, ask the user for its sprint and labels (keep current, or set; parent values are only options) and **update-subticket** only what changed; a top-level ticket is left as is. Then **comment-issue**, **register-issue** if not registered. Preamble `🤖 emporix-feature`. Then `implement`.
 
 ### `implement`
 
@@ -109,11 +114,15 @@ Invoking a later stage directly (for example `implement COP-123`) runs that stag
 
 ### `review`
 
-`references/review.md`. Self-review of the ticket diff against the approved plan, at most **5 cycles**. Each cycle: a reviewer **subagent on a different model** than this conversation (`--review-model`, else another model family) plus a Bugbot pass when available; the parent classifies **in-plan / beyond-plan** (code under the plan's **Accepted deviations** is planned), writes the cycle to the ledger `{RUN_FOLDER}/{KEY}-review-findings.md` **before** editing, fixes in-plan findings, re-runs the gate, repeats. One beyond-plan finding → no fixes that cycle, **FAIL**. A clean cycle runs the **PR-shape** suite before PASS, so `pr` cannot fail on a gate `review` never ran. Visibility lines in chat every cycle; a **Verdict** line at the end. Then Jira evidence (`🤖 emporix-feature — implement + review`) and the PR question.
+`references/review.md`. Self-review of the ticket diff against the approved plan, at most **5 cycles**. Each cycle: a reviewer **subagent on a different model** than this conversation (`--review-model`, else another model family) plus a Bugbot pass when available; the parent classifies **in-plan / beyond-plan** (code under the plan's **Accepted deviations** is planned), writes the cycle to the ledger `{RUN_FOLDER}/{KEY}-review-findings.md` **before** editing, fixes in-plan findings, re-runs the gate, repeats. One beyond-plan finding → no fixes that cycle, **FAIL**. A clean cycle runs the **PR-shape** suite before PASS, so `pr` cannot fail on a gate `review` never ran. Visibility lines in chat every cycle; a **Verdict** line at the end. Then Jira evidence (`🤖 emporix-feature — implement + review`) and `sonar-scan`.
+
+### `sonar-scan`
+
+`references/sonar-scan.md`. Java repositories only (`pom.xml` / `build.gradle` at the root; otherwise SKIP). `scripts/sonar-local.py scan` starts Docker when needed, runs the SonarQube Community Build pinned in `assets/sonar/versions.json` for the project's Java level (stopping any other SonarQube container), loads the Emporix Java profile (`assets/sonar/emporix-java-profile.xml`), analyses the tree with the project's own Maven or Gradle build, and returns the findings on **new code** (lines changed against `$BASE_BRANCH`). The parent confirms each one in the code: fix, false positive (marked on the local server with a reason), or beyond-plan. At most **3 cycles**, ledger `{RUN_FOLDER}/{KEY}-sonar-findings.md` written before edits, gate after every fix, pre-existing findings counted but never touched. Verdict line, then the PR question.
 
 ### `pr`
 
-`references/pr.md`. First ship: only on a review **PASS** (or user-waived leftovers) for the current tree. Re-ship onto an existing PR (from `emporix-pr apply`, or a hand edit): one Bugbot pass over the fix diff, no plan boundary (a clean result from `emporix-pr apply` on the unchanged tree is reused). Then format changed files, re-run the gate if anything changed, commit **as the GitHub token owner** (`scripts/git-commit-as-user.sh`), push (never force), **create-pr** or **update-pr** with the body from `references/pr-body.md` (Jira business + technical context, what changed, project knowledge, tests, pre-merge checks), then one **self-review summary comment** built from the ledger, then the Jira pointer (`🤖 emporix-feature — pr`). Report.
+`references/pr.md`. First ship: only on a review **PASS** (or user-waived leftovers) for the current tree. Re-ship onto an existing PR (from `emporix-pr apply`, or a hand edit): one Bugbot pass over the fix diff, no plan boundary (a clean result from `emporix-pr apply` on the unchanged tree is reused). Then format changed files, re-run the gate if anything changed, commit **as the GitHub token owner** (`scripts/git-commit-as-user.sh`), push (never force), **create-pr** or **update-pr** with the body from `references/pr-body.md` (Jira business + technical context, what changed, project knowledge, tests, pre-merge checks), then one **self-review summary comment** built from the ledger and one **Sonar summary comment** built from the Sonar ledger (found / fixed / false positive / open), then the Jira pointer (`🤖 emporix-feature — pr`). Report.
 
 ## Callers
 
@@ -137,6 +146,7 @@ What a caller may rely on (rename or remove only together with the caller):
 | Worktree mode decision per repository (`resolve-checkout.sh`, `--fallback`, the per-repository question) | `scripts/resolve-checkout.sh`, `references/worktree.md` § Choose |
 | Ticket worktree `{basename}-{KEY}` and its report line `Worktree: {absolute path}` | `scripts/ensure-worktree.sh`, `references/worktree.md` |
 | Review ledger `{RUN_FOLDER}/{KEY}-review-findings.md` and its Verdict line | `references/review.md`, `references/review-ledger.md` |
+| Sonar stage, its ledger `{RUN_FOLDER}/{KEY}-sonar-findings.md`, and its Verdict line (`sonar: PASS / FAIL / SKIP`) | `references/sonar-scan.md`, `scripts/sonar-local.py` |
 | The PR question (§ Gates `review` row) and the one commit, push, and PR | `references/pr.md` |
 
 ## Rules
@@ -144,11 +154,12 @@ What a caller may rely on (rename or remove only together with the caller):
 - One plan per ticket, in `{RUN_FOLDER}` = `.ai/runs/{TASK_BRANCH}/` (the ticket branch, starting with the key). Draft and update write the same file; approve flips its status. Resolve the folder with `emporix-setup/references/runs-layout.md` before reading or writing it. Any other markdown for this ticket (questions for a product owner, a Figma comparison, any note that is not a workflow file) goes in that same folder. Never write ticket markdown as a direct child of `.ai/runs`, at the repo root, or in a new directory. Never write to Jira before `approve`.
 - Explore and update do not edit product or test code. Draft writes only the plan file.
 - When `EnterPlanMode` exists, explore, draft, and update never run outside plan mode; a rejected switch stops the stage. Nothing is written to Jira while plan mode is on. The only `.ai/runs` write allowed then is a note the user asked for, in `{RUN_FOLDER}` (`references/plan-mode.md`, `runs-layout.md`). That note does not approve the plan.
-- Buddy MCP for every Jira operation. Never `acli` or Jira REST. Buddy cannot create top-level issues or transition status; do not invent either.
+- Buddy MCP for every Jira operation. Never `acli` or Jira REST. Buddy cannot create top-level issues; do not invent one. Its only status change is `jira_transition_ticket` to In Progress, used only in approve on a newly created child the user chose to assign and move (`references/approve.md`); never any other status or ticket.
 - Create one child in parent + prompt mode. Do not duplicate an existing child (**breakdown-context**). Do not comment on the parent. Its sprint and labels are what the user confirms in approve, passed explicitly; never the parent's by default. An existing child ticket gets the same question at its first approve.
 - A plan with no seam, no Scenario, and no todo is a failed draft; do not publish it. `Update after implementation: none` on a behaviour, data, contract, UI, or integration change is a failed gate.
 - Implement stays inside **Seams** / **Approach**; honours **Out of scope**; writes tests for every Scenario; runs the existing suite; updates `ai-project-knowledge/` for every statement the diff made wrong. No plan, no implementation.
 - Review: the scoped plan is the boundary. Beyond-plan findings are reported, never auto-fixed. The ledger is written before product edits. Do not exceed 5 cycles. The reviewer subagent never edits files.
-- Ship gate is hard: review PASS (or explicit waiver), formatted tree, full suite and `validation.commands` green on that tree. Commit as the token owner, never as an agent. **Never force-push.** One PR per branch and key. Do not merge.
-- Do not close, assign, or relabel Jira (setting the sprint and labels the user confirmed in approve, on a child ticket, is the one exception). Do not commit `.ai/`, secrets, or `.env*`.
+- Sonar (Java): only findings on new code are fixed; never silenced in code (`@SuppressWarnings`, `// NOSONAR`) — a false positive is marked on the local server with its reason. Pre-existing findings are counted, never touched. Other SonarQube containers are stopped, never removed.
+- Ship gate is hard: review PASS (or explicit waiver), Sonar PASS / SKIP for this tree on a Java repository, formatted tree, full suite and `validation.commands` green on that tree. Commit as the token owner, never as an agent. **Never force-push.** One PR per branch and key. Do not merge.
+- Do not close, assign, transition, or relabel Jira. The exceptions, all in approve and only with the user's answer: the sprint and labels of a child ticket, and the assignee and an In Progress move of a child approve just created. Do not commit `.ai/`, secrets, or `.env*`.
 - Repo-local `.ai/skills/emporix-feature/SKILL.md` may add specifics; it cannot relax any rule above.

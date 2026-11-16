@@ -8,9 +8,11 @@
 #
 # Credentials come only from ~/.emporix/tenants.json (emporix-setup/scripts/emporix-env.sh);
 # --tenant picks the profile alias (else the file's default / only profile). The file holds no
-# token: it is minted per run from the profile's clientId/clientSecret. Language: --language,
-# else the profile's `language`, else en. Never adds Bearer (the client already prefixes it).
-# Never prints the token.
+# token: client-credentials profiles mint one per run from clientId/clientSecret; employee-token
+# profiles (Management Dashboard local-qa) read it from the profile's token file and refuse an
+# expired one or one for another tenant. Language: --language, else the profile's `language`,
+# else en. Never adds Bearer (the client already prefixes it). Never prints the token, and drops
+# the browser's output for the token fill so an echoed value cannot reach the transcript.
 
 set -euo pipefail
 here=$(cd "$(dirname "$0")" && pwd)
@@ -30,7 +32,7 @@ while [ $# -gt 0 ]; do
     --save-ref) SAVE_REF="${2:-}"; shift 2 ;;
     --tenant) EMPORIX_PROFILE="${2:-}"; shift 2 ;;
     --language) LANGUAGE="${2:-}"; shift 2 ;;
-    -h|--help) sed -n '2,13p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,15p' "$0"; exit 0 ;;
     *) echo "Unknown argument: $1" >&2; exit 2 ;;
   esac
 done
@@ -45,10 +47,12 @@ emporix_require_env || die "Could not resolve tenant credentials. Run tenants.sh
 [ -n "$LANGUAGE" ] || LANGUAGE="${EMPORIX_LANGUAGE:-en}"
 
 # Refuse a malformed token; never rewrite it.
-emporix_token_check >/dev/null || die "The token minted for profile '$EMPORIX_PROFILE' is not a usable JWT — check apiUrl / clientId / clientSecret."
+emporix_token_check >/dev/null || die "The token of profile '$EMPORIX_PROFILE' is not a usable access token — check the profile (tenants.sh check $EMPORIX_PROFILE)."
 
 "$BROWSER" --session "$SESSION" fill "$TENANT_REF" "$EMPORIX_TENANT" --json
-"$BROWSER" --session "$SESSION" fill "$TOKEN_REF" "$EMPORIX_TOKEN" --json
+"$BROWSER" --session "$SESSION" fill "$TOKEN_REF" "$EMPORIX_TOKEN" --json >/dev/null 2>&1 \
+  || die "Filling the Token field ($TOKEN_REF) failed; re-snapshot and pass the Token field's ref."
+
 if [ -n "$LANG_REF" ]; then
   "$BROWSER" --session "$SESSION" fill "$LANG_REF" "$LANGUAGE" --json
 fi
@@ -56,4 +60,8 @@ if [ -n "$SAVE_REF" ]; then
   "$BROWSER" --session "$SESSION" click "$SAVE_REF" --json
 fi
 
-echo "filled tenant + token refs from profile $EMPORIX_PROFILE (token minted, not logged)"
+if [ "$EMPORIX_AUTH_KIND" = "employee-token" ]; then
+  echo "filled tenant + token refs from profile $EMPORIX_PROFILE (employee token, expires $EMPORIX_TOKEN_EXPIRES, not logged)"
+else
+  echo "filled tenant + token refs from profile $EMPORIX_PROFILE (token minted, not logged)"
+fi

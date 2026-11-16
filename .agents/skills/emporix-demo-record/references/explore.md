@@ -31,7 +31,7 @@ Propose first, then ask. First turn: the story in three or four sentences (who, 
 - **Audience and outcome** — sales, customer, release notes, internal review? What is the single thing they must understand when the video ends?
 - **Beats** — which of the proposed actions stay, which go; the demo is 3–10 actions and 30–120 seconds, one story. Where does it start (hydrated, authenticated page) and on which stable result does it end?
 - **Demo data** — what must exist before the take (a quote in state X, a product with a given attribute, a customer group). Does it exist in the tenant, or is it created for the run? `record` never improvises data; an unknown is an open question.
-- **Tenant** — which profile alias (`--tenant`, else ask; aliases from `tenants.sh list`, read via the Read tool, never secrets). Stage or prod data. The token is minted from the profile's API client at record time; never ask for one.
+- **Tenant** — which profile alias (`--tenant`, else ask; aliases and their `AUTH` kind from `tenants.sh list`, read via the Read tool, never secrets). Stage or prod data. Management Dashboard (`AUTH=md-token`) needs an **`employee-token`** profile (offer only those; none → give the user the prefilled `tenants.sh setup …` command that `tenants.sh list` prints, in a `bash` block for their own terminal; blocking open question, end the turn). Cockpits use a `client-credentials` profile, minted from the API client at record time. Never ask for a token.
 - **Pacing and look** — language, pointer overlay, pauses on the moments that need reading time, anything to hide (IDs, prices, names).
 - **Do not show** — credentials, tokens, customer or production data, debug panels, unrelated navigation.
 

@@ -72,7 +72,7 @@ Invoking `record` directly uses the newest approved `{DEMOS_DIR}/*-{slug or KEY}
 Execute the approved plan:
 
 1. **App and browser** — `references/agentic-setup.md` steps 3–4 (detection, pinned agent-browser **0.38.2**, `doctor`, `record --help`). Boot from the proven start command; MD → `serve:local-qa`, never Ory.
-2. **Tenant** — `references/cockpit-auth.md` when `GATE=1`: `check-cockpit-token.sh --tenant {alias}` before `open`, `fill-cockpit-gate.sh --tenant {alias}` after cache clear. 401 after a rendered dashboard → stop; do not dry-run or record.
+2. **Tenant** — `references/cockpit-auth.md` when `GATE=1`: `check-cockpit-token.sh --tenant {alias} --gate {AUTH}` before `open` (MD needs an `employee-token` profile), `fill-cockpit-gate.sh --tenant {alias}` after cache clear. 401 after a rendered dashboard → stop; do not dry-run or record.
 3. **Dry run, no recording** — drive the whole plan with fresh snapshot refs; verify every expected result; refine ambiguous steps in the plan file (say what changed). A failed dry run is a blocker report, not a misleading video.
 4. **Reset** — return the same authenticated session to the plan's start URL and state without touching shared or production data.
 5. **One clean take** — `references/recording.md`. `record start` with **no URL** on the dry-run session; drive only the rehearsed steps with the plan's pauses; `record stop` before `close`. Verify duration and sequential `ffmpeg -vf fps=1` frames; a gate or a secret on any frame → delete the take.
