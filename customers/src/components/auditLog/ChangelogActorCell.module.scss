@@ -1,0 +1,32 @@
+.actorBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.5rem;
+  border-radius: 10px;
+  border: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.5rem;
+  height: 1.5rem;
+  white-space: nowrap;
+}
+
+.badgeSystem {
+  background: var(--color-primary);
+  color: #f2f3f5;
+}
+
+.badgeExternal {
+  background: var(--gold, #ebb050);
+  color: #0a0c0f;
+}
+
+.badgeUnknown {
+  background: #828a99;
+  color: #f2f3f5;
+}
+
+.actorName {
+  font-weight: 700;
+}

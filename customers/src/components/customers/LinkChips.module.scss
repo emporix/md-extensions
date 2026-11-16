@@ -1,0 +1,22 @@
+// MD read-only `Chips` with link items.
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 34px;
+  align-items: center;
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+}
+
+.empty {
+  color: var(--color-text-secondary, #6c757d);
+}
