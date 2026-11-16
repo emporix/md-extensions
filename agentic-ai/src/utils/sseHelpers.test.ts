@@ -49,13 +49,13 @@ describe('sseHelpers', () => {
     const body = [
       'event:artifact',
       'data:{',
-      'data:  "artifact_id" : "asset-1",',
+      'data:  "artifactId" : "asset-1",',
       'data:  "kind" : "image",',
       'data:  "filename" : "download.png",',
-      'data:  "mime_type" : "image/png",',
+      'data:  "mimeType" : "image/png",',
       'data:  "size" : 1151106,',
       'data:  "status" : "ready",',
-      'data:  "generation_id" : "ig_123"',
+      'data:  "generationId" : "ig_123"',
       'data:}',
       '',
       '',
@@ -209,5 +209,63 @@ describe('sseHelpers', () => {
         data: '{"kind":"file","filename":"notes.pdf","mime_type":"application/pdf","size":0,"status":"pending","generation_id":"ig_forest"}',
       })
     ).toBeNull()
+  })
+
+  it('maps camelCase ready png and jpeg artifacts and drops base64', () => {
+    expect(
+      mapAgentChatStreamEvent({
+        event: 'artifact',
+        data: '{"artifactId":"asset-png","kind":"image","filename":"download.png","mimeType":"image/png","size":491801,"status":"ready","generationId":"ig_0291fec1e56f9c21006afb0b92","base64":"nope"}',
+      })
+    ).toEqual({
+      type: 'artifact',
+      artifactId: 'asset-png',
+      kind: 'image',
+      filename: 'download.png',
+      mimeType: 'image/png',
+      size: 491801,
+      status: 'ready',
+      errorCode: undefined,
+      generationId: 'ig_0291fec1e56f9c21006afb0b92',
+    })
+
+    expect(
+      mapAgentChatStreamEvent({
+        event: 'artifact',
+        data: '{"artifactId":"asset-jpg","kind":"image","filename":"image.jpg","mimeType":"image/jpeg","size":428125,"status":"ready","generationId":"01a1e4a3-1cff-7bf0-b688-6a6331d78da4"}',
+      })
+    ).toMatchObject({
+      type: 'artifact',
+      artifactId: 'asset-jpg',
+      mimeType: 'image/jpeg',
+      filename: 'image.jpg',
+      status: 'ready',
+      generationId: '01a1e4a3-1cff-7bf0-b688-6a6331d78da4',
+    })
+  })
+
+  it('maps a camelCase pending image and a camelCase error code', () => {
+    expect(
+      mapAgentChatStreamEvent({
+        event: 'artifact',
+        data: '{"kind":"image","filename":"image.png","mimeType":"image/png","size":0,"status":"pending","generationId":"01a1e4a3-1cff-7bf0-b688-6a6331d78da4"}',
+      })
+    ).toMatchObject({
+      type: 'artifact',
+      status: 'pending',
+      mimeType: 'image/png',
+      generationId: '01a1e4a3-1cff-7bf0-b688-6a6331d78da4',
+      artifactId: undefined,
+    })
+
+    expect(
+      mapAgentChatStreamEvent({
+        event: 'artifact',
+        data: '{"artifactId":"asset-1","kind":"image","filename":"image.png","mimeType":"image/png","size":12,"status":"failed","errorCode":"SIGNATURE_MISMATCH"}',
+      })
+    ).toMatchObject({
+      status: 'failed',
+      errorCode: 'SIGNATURE_MISMATCH',
+    })
   })
 })
