@@ -1,9 +1,9 @@
 # Integrations
 
 Last scanned: 05d8d1d (2026-11-06)
-Sources: `agentic-ai/src/services`, `agentic-ai/src/components/tool`, `algolia-synonyms/src`, `brands/src`, `brands/package.json`, `customer-groups/src`, `customer-groups/package.json`, `dashboard/src/dashboard/api`, `dashboard/src/dashboard/widgets/OrdersByCountryMapWidget/OrdersByCountryMapWidget.tsx`, `dashboard/src/vite-env.d.ts`, `labels/src`, `labels/package.json`, `companies/src`, `companies/package.json`, `status-codes/src`, `coupons/src`, `coupons/package.json`, `status-codes/package.json`, `orders/src`, `orders/package.json`, `products/src/api`, `products/src/hooks/api`, `products/src/context`, `products/src/helpers/hostUrls.ts`, `products/package.json`, `returns/src`, `returns/package.json`, `statistics/src/api.ts`, `users-and-groups/src`, `users-and-groups/package.json`, `.github/workflows`
+Sources: `agentic-ai/src/services`, `agentic-ai/src/components/tool`, `algolia-synonyms/src`, `brands/src`, `brands/package.json`, `customer-groups/src`, `customer-groups/package.json`, `dashboard/src/dashboard/api`, `dashboard/src/dashboard/widgets/OrdersByCountryMapWidget/OrdersByCountryMapWidget.tsx`, `dashboard/src/vite-env.d.ts`, `labels/src`, `labels/package.json`, `companies/src`, `companies/package.json`, `status-codes/src`, `catalogs/src`, `catalogs/package.json`, `coupons/src`, `coupons/package.json`, `status-codes/package.json`, `orders/src`, `orders/package.json`, `products/src/api`, `products/src/hooks/api`, `products/src/context`, `products/src/helpers/hostUrls.ts`, `products/package.json`, `returns/src`, `returns/package.json`, `statistics/src/api.ts`, `users-and-groups/src`, `users-and-groups/package.json`, `.github/workflows`
 
-Fourteen UI extensions call the Emporix HTTP API. Thirteen take the base URL from `VITE_API_URL`. `algolia-synonyms` takes it from the host callback field `emporixApiUrl`. No `.env*` file was opened. Env names below are names only. No literal API key, token, or tenant id was found in source; UI strings in `agentic-ai/src/translations/en/index.ts` label fields such as an API key and a client secret and are not values. HTTP paths inside `@emporix/api-calls` were not read (`node_modules` skipped), so those paths are unknown.
+Fifteen UI extensions call the Emporix HTTP API. Fourteen take the base URL from `VITE_API_URL`. `algolia-synonyms` takes it from the host callback field `emporixApiUrl`. No `.env*` file was opened. Env names below are names only. No literal API key, token, or tenant id was found in source; UI strings in `agentic-ai/src/translations/en/index.ts` label fields such as an API key and a client secret and are not values. HTTP paths inside `@emporix/api-calls` were not read (`node_modules` skipped), so those paths are unknown.
 
 Firebase Hosting deploy and preview workflows under `.github/workflows/*firebase*.yaml` are deployment only and are not a runtime API.
 
@@ -126,6 +126,14 @@ Shared api-calls client (`coupons/package.json` `@emporix/api-calls` 1.5.3 — b
 Shared api-calls client (`status-codes/package.json` `@emporix/api-calls` 1.5.1), plus sites, configuration, feature toggles, and the IAM permission reads.
 
 - Quote reasons (Quote Service): `getQuotesReasonsCall` (one page of 1000 with `X-Total-Count`), `getQuoteReasonByIdCall`, `createQuoteReasonCall` (returns the new id), `editQuoteReasonCall` (body carries `metadata.version`), `deleteQuoteReasonCall`, all bound to the host tenant in `status-codes/src/hooks/api/quoteReasons.ts`. Paths per api-calls: `/quote/{tenant}/quote-reasons[/{id}]`.
+- No media, no direct HTTP.
+
+## catalogs
+
+Shared api-calls client (`catalogs/package.json` `@emporix/api-calls` 1.5.3), plus sites (`getSitesCall` through `SitesProvider`), configuration (incl. `ext_catalogs` table configuration via `updateSingleConfiguration`), feature toggles, and the IAM permission reads.
+
+- Catalogs (Catalog Service): `fetchCatalogs` (sort, paging, and the filter fields `name.<lang>`, `publishedSite`, `visibilityFrom`, `visibilityTo`, `metadataUpdatedAt` as query params), `fetchCatalog`, `createNewCatalog` (returns the new id), `modifyCatalog` (`PUT` by the id in the body; deletes `status` from the object), `removeCatalog`, all bound to the host tenant in `catalogs/src/hooks/api/catalogs.ts`, which URL-encodes the id for get and delete (update sends it as is). Paths per api-calls: `catalog/{tenant}/catalogs[/{id}]`.
+- Categories selector: `getCategories` and `fetchCategory` (`catalogs/src/hooks/api/categories.ts`, copied from `coupons`).
 - No media, no direct HTTP.
 
 ## orders
