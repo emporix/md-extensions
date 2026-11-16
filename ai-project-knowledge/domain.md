@@ -104,6 +104,9 @@ A company is a legal entity of the Customer Management Service: type `COMPANY` o
 ## Customers
 
 A customer is a record of the Customer Service with contact data, preferred site and currency, an optional restriction, B2B legal-entity assignments, addresses and mixins (`customers/src/models/Customer.model.ts`). Restricted users (`customer.customer_*` scopes with a site suffix) only assign their own restrictions; when the tenant syncs restrictions with site codes, the preferred site is required and sets the restriction. Viewing needs Customers Viewer, changing needs Customers Manager. Rules: `ai-project-knowledge/modules/customers.md`.
+## Catalogs
+
+A catalog of the Catalog Service has an id (generated when not given), a localized name and description, the categories it exposes (`categoryIds`), the site codes it is published to, and a visibility window (`visible`, optional `from` and `to`); the service sets `status` (`visible` / `not_visible`) (`catalogs/src/models/Catalog.model.ts`). The id cannot change after create. Management Dashboard price lists pick catalogs and stay in the host. Viewing needs Catalogs Viewer, changing needs Catalogs Manager; the categories need Categories Viewer to show and Categories Manager to change. Rules: `ai-project-knowledge/modules/catalogs.md`.
 
 ## Units
 

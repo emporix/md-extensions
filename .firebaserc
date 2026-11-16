@@ -48,6 +48,9 @@
         "emporix-units": [
           "emporix-units"
         ],
+        "emporix-catalogs": [
+          "emporix-catalogs"
+        ],
         "emporix-customers": [
           "emporix-customers"
         ]
@@ -100,6 +103,9 @@
         "emporix-units-stage": [
           "emporix-units-stage"
         ],
+        "emporix-catalogs-stage": [
+          "emporix-catalogs-stage"
+        ],
         "emporix-customers-stage": [
           "emporix-customers-stage"
         ]
@@ -151,6 +157,9 @@
         ],
         "emporix-units-develop": [
           "emporix-units-develop"
+        ],
+        "emporix-catalogs-develop": [
+          "emporix-catalogs-develop"
         ],
         "emporix-customers-develop": [
           "emporix-customers-develop"
