@@ -53,7 +53,7 @@ jobs:
         uses: ./.github/actions/deploy-remote
         with:
           service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}
-          site: emporix-md-extensions-develop
+          site: frontend-extensions-develop
           remote: labels
           mode: dev
           channel: pr-${{ github.event.number }}-labels

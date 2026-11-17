@@ -60,6 +60,6 @@ jobs:
         uses: ./.deploy-tooling/.github/actions/deploy-remote
         with:
           service-account: ${{ secrets.MD_EXTS_FIREBASE_SA }}
-          site: emporix-md-extensions
+          site: frontend-extensions
           remote: labels
           mode: prod
