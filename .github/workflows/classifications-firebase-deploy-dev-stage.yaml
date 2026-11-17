@@ -1,0 +1,49 @@
+name: (classifications) Build and deploy (dev, stage) to Firebase
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'classifications/**'
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-26.04
+    defaults:
+      run:
+        working-directory: ./classifications
+
+    strategy:
+      matrix:
+        node: [20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+          cache-dependency-path: ./classifications/package-lock.json
+
+      - run: npm ci
+
+      # Type-check and CORS check; the deploy action builds again for the shared site.
+      - run: npm run build:dev
+
+      - name: Deploy classifications to the shared Hosting site (dev)
+        uses: ./.github/actions/deploy-remote
+        with:
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}
+          site: frontend-extensions-develop
+          remote: classifications
+          mode: dev
+
+      - name: Deploy classifications to the shared Hosting site (stage)
+        uses: ./.github/actions/deploy-remote
+        with:
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_STAGE }}
+          site: frontend-extensions-stage
+          remote: classifications
+          mode: stage

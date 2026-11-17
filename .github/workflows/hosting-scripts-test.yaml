@@ -1,0 +1,26 @@
+name: Hosting scripts test
+
+on:
+  pull_request:
+    paths:
+      - '.github/scripts/hosting/**'
+      - '.github/actions/deploy-remote/**'
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/scripts/hosting/**'
+      - '.github/actions/deploy-remote/**'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+      - run: node --test .github/scripts/hosting/*.test.mjs
