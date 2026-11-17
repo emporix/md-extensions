@@ -1,0 +1,15 @@
+// MD selected items `SectionBox className="mb-5"`.
+.selectedSection {
+  margin-bottom: 2rem;
+}
+
+// MD `flex gap-2` (Discard / Save).
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+// MD `EmptyContent className="h-14rem"`.
+.empty {
+  height: 14rem;
+}

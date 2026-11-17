@@ -43,7 +43,7 @@ Paths below are relative to a playbook-aligned remote (historically `users-and-g
 | Host context | `src/context/Dashboard.context.tsx` | `useDashboardContext()` |
 | AppState contract | `src/models/AppState.model.ts` | See playbook §3 |
 | Session user | `src/models/SessionUser.model.ts` | Optional Ory shape from host |
-| API bootstrap | `src/api/bootstrap.ts` | `setApiCredentials` / `useApiCredentials` |
+| API bootstrap | `src/api/bootstrap.ts` | `setApiCredentials` / `useApiCredentials`; with api-calls ≥ 1.6 take `quotes`' version (`createApiCredentials` from `./next`) |
 | Module shell pattern | `src/UsersAndGroups.module.tsx` | Rename; keep Outlet + RefreshValues |
 | Federation config | `vite.config.ts` | Change `name` only; keep `cssCodeSplit: false`, shared deps, CORS |
 
@@ -111,7 +111,7 @@ Follow the aligned remotes so diffs stay comparable: `pages/{Entity}.page.tsx` f
 |----------|------|-------|
 | `DashboardProvider` | `src/context/Dashboard.context.tsx` | Always |
 | `ConfigurationProvider` | `src/context/ConfigurationProvider.tsx` | Always (most modules need content language) |
-| `SitesProvider` | `src/context/SitesProvider.tsx` | Always unless proven unused |
+| `SitesProvider` | `src/context/SitesProvider.tsx` | Always unless proven unused. Take the `quotes` copy when the first request is site-scoped: it starts from MD's persisted sites (read-only) |
 | `UIBlockerProvider` | `src/context/UIBlcoker.tsx` | Always |
 | `RefreshValuesProvider` | `src/context/RefreshValuesProvider.tsx` | Always (list/detail refresh) |
 | `PermissionsProvider` | `src/context/PermissionsProvider.tsx` | Always **pattern**; slim implementation (Tier 2) |

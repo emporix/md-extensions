@@ -1,0 +1,35 @@
+@use '../../styles/palette' as *;
+
+// MD `sectionStyles` border colour (`var(--green)` / `var(--red)`) on a white
+// box. Nested under the root class so it wins over the library's box rule.
+.status .accepted {
+  border-color: $green;
+  background-color: white;
+}
+
+.status .declined {
+  border-color: $red;
+  background-color: white;
+}
+
+// MD `grid grid-nogutter text-sm` with three `col-4` columns.
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+}
+
+.col {
+  flex: 0 0 auto;
+  width: 33.3333%;
+}
+
+// MD `mb-1`.
+.label {
+  margin-bottom: 0.25rem;
+}
+
+// MD `font-bold`.
+.value {
+  font-weight: 700;
+}

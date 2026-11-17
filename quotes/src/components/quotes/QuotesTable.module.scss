@@ -1,0 +1,18 @@
+@use '../../styles/palette' as *;
+
+// MD `w-full flex justify-content-between mb-2`.
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+// MD `color={'var(--green)'}` / `color={'var(--red)'}` on the row icons.
+.approveIcon {
+  color: $green;
+}
+
+.declineIcon {
+  color: $red;
+}

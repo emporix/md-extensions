@@ -1,0 +1,47 @@
+@use '../../styles/palette' as *;
+
+// MD `.quotes-preview-table-wrapper .p-inputnumber-input { width: 60px }`.
+// The library stretches its input to the field, so the field is sized.
+.quantityInput {
+  display: inline-block;
+  width: 60px;
+}
+
+// MD `.net-price .p-inputnumber-input { width: 100px }`.
+.netPriceInput {
+  display: inline-block;
+  width: 100px;
+}
+
+// MD `table-subtotal flex justify-content-between p-4` (`.table-subtotal`).
+.subtotal {
+  display: flex;
+  justify-content: space-between;
+  padding: 1.5rem;
+  background-color: white;
+  border: 1px solid $grey-1;
+  border-top: none;
+}
+
+// MD shipping method `InputField className="mb-3"`.
+.shippingField {
+  margin-bottom: 1rem;
+}
+
+// MD `flex flex-column gap-2`.
+.totals {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+// MD `flex gap-2`.
+.totalRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+// MD `font-bold`.
+.total {
+  font-weight: 700;
+}

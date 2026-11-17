@@ -1,6 +1,6 @@
 # Management Dashboard Extensions
 
-Management Dashboard extensions, one Vite app per top-level folder, loaded by the host as module-federation remotes. Operators use them for brands, labels, orders, returns, products, customer groups, users and groups, status codes, coupons, companies, customers, units, catalogs, categories, statistics, the home dashboard, agentic AI, and Algolia synonyms. Source: `README.md`, `docs/MIGRATED_MODULES.md`.
+Management Dashboard extensions, one Vite app per top-level folder, loaded by the host as module-federation remotes. Operators use them for brands, labels, orders, returns, products, customer groups, users and groups, status codes, coupons, companies, customers, units, catalogs, categories, quotes, statistics, the home dashboard, agentic AI, and Algolia synonyms. Source: `README.md`, `docs/MIGRATED_MODULES.md`.
 
 Platform context (callers, deployment, cross-service conventions): ask Emporix
 AI Buddy `get_service_context` with `service: "Management Dashboard Extensions"`. This repository's own
@@ -29,6 +29,7 @@ knowledge is below; open only what the task needs.
 | `ai-project-knowledge/modules/customers.md` | Customers: lazy list with `ext_customers` columns and batch delete, add/edit with restriction and site sync, password, segments/companies/groups links, marketing information, assisted buying, addresses with mixins, customer mixins, audit log, permissions, host wiring | written with COP-7185 2026-11-12 |
 | `ai-project-knowledge/modules/catalogs.md` | Catalogs: lazy sortable list with date filters, `ext_catalogs` columns and parallel delete, add/edit tabs with categories, sites and visibility window, permissions, host wiring | COP-7180 2026-11-12 |
 | `ai-project-knowledge/modules/categories.md` | Categories: server-paged list with `ext_categories` columns via CL `TableExtensions`, tree view with quick edit, add above/below/child and drag-and-drop moves, add/edit with path, validity, media and mixins, root-tree rebuilds, permissions, host wiring | `c51b985` 2026-11-14 |
+| `ai-project-knowledge/modules/quotes.md` | Quotes: lazy list with `ext_quotes` columns, approve/decline and batch delete, editor tabs (B2B company or B2C customer, products with match-prices, preview with shipping and validity, approval PDF), mixins, audit log, permissions, host wiring | COP-7116 2026-11-16 |
 | `ai-project-knowledge/modules/statistics.md` | Tenant usage charts | `da99643` 2026-11-02 |
 | `ai-project-knowledge/modules/users-and-groups.md` | Employee users and their IAM groups | `05d8d1d` 2026-11-06 |
 

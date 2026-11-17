@@ -1,0 +1,138 @@
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import {
+  PrimaryButton,
+  SecondaryButton,
+  useToast,
+} from '@emporix/component-library'
+import { useUIBlocker } from '../../context/UIBlocker'
+import { usePermissions } from '../../context/PermissionsProvider'
+import { useQuoteData } from '../../context/Quote.provider'
+import { useQuotesApi } from '../../hooks/api/quotes'
+import useCustomNavigate from '../../hooks/useCustomNavigate'
+import { QuoteChangeStatusType } from '../../models/Quotes.model'
+import { EmployeeDomains } from '../../configs/accessControls'
+import { StylableProps } from '../../helpers/props'
+import { getQuoteApprovalActions } from '../../helpers/quoteStatus.helpers'
+import { buildQuoteSendPayload } from '../../helpers/quoteChangeStatus.helpers'
+import { quotesListPath } from '../../constants/paths'
+import QuotesChangeStatus from './QuotesChangeStatus'
+import styles from './QuotesTabApproval.module.scss'
+
+/**
+ * MD `QuotesTabApproval`: the quote PDF and, by status, "Create Quote"
+ * (send) or Decline / Approve.
+ */
+const QuotesTabApproval = (props: StylableProps) => {
+  const { className = '' } = props
+  const { t } = useTranslation()
+  const { blockPanel } = useUIBlocker()
+  const { getQuotePdf, changeQuoteStatus } = useQuotesApi()
+  const { navigate } = useCustomNavigate()
+  const { quote } = useQuoteData()
+  const toast = useToast()
+  const [quoteUpdateType, setQuoteUpdateType] =
+    useState<QuoteChangeStatusType>()
+  const [pdfData, setPdfData] = useState<string>()
+  const { hasPermission } = usePermissions()
+  const canManage = hasPermission(EmployeeDomains.QUOTES_MANAGER)
+
+  useEffect(() => {
+    if (!quote) return
+    ;(async () => {
+      await onInit()
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
+  }, [quote])
+
+  const onInit = async () => {
+    if (!quote) return
+    blockPanel(true)
+    try {
+      const data = await getQuotePdf(quote.id)
+      const file = new Blob([data], { type: 'application/pdf' })
+      const fileURL = URL.createObjectURL(file)
+      setPdfData(fileURL)
+    } catch (e) {
+      console.error(e)
+      toast.showToast(t('quotes.toasts.errorPdf'), '', 'error')
+    } finally {
+      blockPanel(false)
+    }
+  }
+
+  // MD quirk kept: the handler keeps the `quote` of its first render.
+  const onCreateSubmit = useCallback(async () => {
+    if (!quote) return
+    const payload = buildQuoteSendPayload()
+    try {
+      blockPanel(true)
+      await changeQuoteStatus(quote.id, payload)
+      toast.showToast(t('quotes.toasts.successCreate'), '', 'success')
+      navigate(quotesListPath(), { replace: true })
+    } catch (e) {
+      console.error(e)
+    } finally {
+      blockPanel(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- MD quirk: stale quote
+  }, [])
+
+  const quoteCanBeChange = useMemo(() => {
+    return getQuoteApprovalActions(quote?.status.value) !== undefined
+  }, [quote])
+
+  const getButtons = useCallback(() => {
+    const actions = getQuoteApprovalActions(quote?.status.value)
+    if (actions === 'create') {
+      return (
+        <PrimaryButton disabled={!canManage} onClick={onCreateSubmit}>
+          {t('quotes.tabs.approval.createBtn')}
+        </PrimaryButton>
+      )
+    } else if (actions === 'decide') {
+      return (
+        <>
+          <SecondaryButton
+            disabled={!canManage}
+            onClick={() => setQuoteUpdateType(QuoteChangeStatusType.decline)}
+          >
+            {t('quotes.tabs.approval.declineBtn')}
+          </SecondaryButton>
+          <PrimaryButton
+            disabled={!canManage}
+            onClick={() => setQuoteUpdateType(QuoteChangeStatusType.change)}
+          >
+            {t('quotes.tabs.approval.approveBtn')}
+          </PrimaryButton>
+        </>
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
+  }, [quote])
+
+  return (
+    <div className={className}>
+      {quoteCanBeChange && <div className={styles.buttons}>{getButtons()}</div>}
+      <div className={styles.pdf}>
+        <iframe
+          src={pdfData}
+          height="600px"
+          width="900px"
+          title={t('quotes.tabs.approval.title')}
+        />
+      </div>
+
+      {quote && quoteUpdateType && (
+        <QuotesChangeStatus
+          visible={!!quoteUpdateType}
+          changeType={quoteUpdateType}
+          quoteId={quote.id}
+          close={() => setQuoteUpdateType(undefined)}
+        />
+      )}
+    </div>
+  )
+}
+
+export default QuotesTabApproval

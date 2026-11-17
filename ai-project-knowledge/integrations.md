@@ -224,3 +224,12 @@ Shared api-calls client (`categories/package.json` `@emporix/api-calls` ^1.5.3),
 - Category trees, in `categories/src/hooks/api/categoryTree.ts`: `getCategoryTreesCall` (`type` filter depends on backend change COP-6124), `rebuildCategoryTreeCall` (per root category), `getCategoryParentsCall` with unpublished ancestors. `categoryTreeRebuild.ts` resolves the roots of changed categories (404 from `/parents` = root) and rebuilds them after every create, update, move and delete, ignoring roots that answer 404.
 - Media, in `categories/src/hooks/api/mediaAssets.ts`: `getAssetsForId`, `postFileAsset` (ref type `CATEGORY`), `delAsset`, `downloadAsset`, used by the media tab (`hooks/useCategoryMedia.ts`); `fetchAsset` and `putAsset` are wrapped too.
 - Host links: a media asset opens `/media-assets/<id>` with `window.location.assign` (`categories/src/helpers/hostUrls.ts`). No direct HTTP.
+
+## quotes
+
+Shared api-calls client (`quotes/package.json` `@emporix/api-calls` 1.5.4), plus sites, configuration (table config `ext_quotes`, `restrictions` values, `enableSyncBetweenRestrictionsAndSiteCodes`), feature toggles, schemas and mixins, the changelog (audit log), and the IAM permission reads.
+
+- Quote Service, bound to the host tenant in `quotes/src/hooks/api/quotes.ts`: `getQuotesCall` (paging, filters and the site as `siteCode`), `getQuoteByIdCall`, `createQuoteCall`, `editQuoteCall` (patch operations, also for status changes), `deleteQuoteCall`, `getQuotePdfCall` (the PDF shown on the Approval tab), `getQuotesReasonsCall`.
+- Price Service `matchPricesCall` (`quotes/src/hooks/api/prices.ts`), shipping zones `getZonesCall` (`shipping.ts`), tax calculation `calculateTaxCall` (`taxes.ts`).
+- Customer Management Service legal entities and contacts (`customerManagement.ts`) and Customer Service customers (`customers.ts`) for the B2B and B2C parties; products and categories (`products.ts`, `categories.ts`) for the CL `ProductsBrowser`.
+- No media, no direct HTTP.

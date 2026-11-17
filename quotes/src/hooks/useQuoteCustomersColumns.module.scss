@@ -1,0 +1,11 @@
+// MD `DropdownFilterTemplate` `style={{ minWidth: '180px' }}`.
+.statusFilter {
+  min-width: 180px;
+}
+
+// MD `DotIndicator className="mx-auto"`: the dot centred in its cell.
+.dot {
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
+}
