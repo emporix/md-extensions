@@ -43,6 +43,17 @@ const fakeApi = (lives, filesByVersion) => {
   }
 }
 const noSleep = async () => {}
+const runQuiet = async (...args) => {
+  const { error, log } = console
+  console.error = () => {}
+  console.log = () => {}
+  try {
+    return await run(...args)
+  } finally {
+    console.error = error
+    console.log = log
+  }
+}
 const recordingSleep = () => {
   const waits = []
   const sleep = async (ms) => {
@@ -183,7 +194,7 @@ test('cli fails without remoteEntry.js and makes no fetch call', async () => {
       return new Response('{}')
     }
     try {
-      const code = await run(['--site', 's', '--slug', 'labels', '--dir', dir], {
+      const code = await runQuiet(['--site', 's', '--slug', 'labels', '--dir', dir], {
         GOOGLE_OAUTH_ACCESS_TOKEN: 't',
       })
       assert.equal(code, 1)
@@ -228,7 +239,7 @@ test('cli deploys a valid dir and prints the remote url', async () => {
       return new Response('{}')
     }
     try {
-      const code = await run(['--site', 'mysite', '--slug', 'labels', '--dir', dir], {
+      const code = await runQuiet(['--site', 'mysite', '--slug', 'labels', '--dir', dir], {
         GOOGLE_OAUTH_ACCESS_TOKEN: 't',
         GITHUB_OUTPUT: out,
       }, undefined, { sleep: async () => {} })
@@ -303,4 +314,144 @@ test('verification: settleMs defaults to 10000 and is configurable', async () =>
     settleMs: 123,
   })
   assert.deepEqual(b.waits, [123])
+})
+
+test('listFiles rejects a path that does not start with a slash', async () => {
+  await withFetch(
+    () => json({ files: [{ path: 'labels/a.js', hash: 'h' }] }),
+    async () => {
+      await assert.rejects(
+        listFiles(ctx, 'sites/s/versions/v1'),
+        /labels\/a\.js.*Unexpected response shape|Unexpected response shape.*labels\/a\.js/
+      )
+    }
+  )
+})
+
+test('releaseWithRetry rejects without releasing when hosting requires an unknown hash', async () => {
+  const api = fakeApi(['v1', 'v1'], {})
+  let finalized = 0
+  api.populateFiles = async () => ({ uploadUrl: 'u', required: ['foreign'] })
+  api.finalizeVersion = async () => {
+    finalized++
+  }
+  await assert.rejects(
+    releaseWithRetry(api, ctx, { slug: 'labels', local, sleep: noSleep }),
+    /foreign/
+  )
+  assert.equal(api.calls.release.length, 0)
+  assert.equal(finalized, 0)
+})
+
+test('releaseWithRetry sends more than 1000 entries in batches and uploads every required hash', async () => {
+  const many = {}
+  for (let i = 0; i < 2300; i++) {
+    many[`/f${i}.js`] = { hash: `h${i}`, gzipped: Buffer.from(String(i)) }
+  }
+  const api = fakeApi(['v1', 'v1'], {})
+  api.populateFiles = async (_c, _v, files) => {
+    api.calls.populate.push(files)
+    return { uploadUrl: 'u', required: Object.values(files).slice(0, 2) }
+  }
+  await releaseWithRetry(api, ctx, { slug: 'labels', local: many, sleep: noSleep })
+  assert.deepEqual(api.calls.populate.map((b) => Object.keys(b).length), [1000, 1000, 300])
+  assert.equal(api.calls.uploads.length, 6)
+  assert.equal(new Set(api.calls.uploads).size, 6)
+  assert.equal(api.calls.release.length, 1)
+})
+
+test('verification: no live release at the check counts as not confirmed', async () => {
+  const api = fakeApi(['v1', 'v1'], {})
+  const reads = [null, null, null, 'v1']
+  let i = 0
+  let released = 0
+  api.getLiveVersion = async () => {
+    const next = reads[i++]
+    return next === undefined ? 'v1' : next
+  }
+  api.listFiles = async (_c, v) => {
+    assert.ok(v, 'listFiles must not be called with a null version')
+    return { '/labels/index.html': 'hl' }
+  }
+  const origRelease = api.release
+  api.release = async (...a) => {
+    released++
+    return origRelease(...a)
+  }
+  await releaseWithRetry(api, ctx, { slug: 'labels', local, attempts: 2, sleep: noSleep })
+  assert.equal(released, 2)
+})
+
+test('cli rejects an invalid slug before any api call', async () => {
+  await withTempDir(async (dir) => {
+    await mkdir(join(dir, 'assets'))
+    await writeFile(join(dir, 'assets', 'remoteEntry.js'), 'x')
+    const orig = globalThis.fetch
+    let called = 0
+    globalThis.fetch = async () => {
+      called++
+      return new Response('{}')
+    }
+    try {
+      const code = await runQuiet(['--site', 's', '--slug', '../Labels', '--dir', dir], {
+        GOOGLE_OAUTH_ACCESS_TOKEN: 't',
+      })
+      assert.equal(code, 1)
+      assert.equal(called, 0)
+    } finally {
+      globalThis.fetch = orig
+    }
+  })
+})
+
+test('cli mints a token from FIREBASE_SERVICE_ACCOUNT and uses it', async () => {
+  await withTempDir(async (dir) => {
+    await mkdir(join(dir, 'assets'))
+    await writeFile(join(dir, 'assets', 'remoteEntry.js'), 'x')
+    const seen = []
+    const minted = []
+    const api = fakeApi([null, null], {})
+    api.populateFiles = async () => ({ uploadUrl: 'u', required: [] })
+    for (const name of ['getLiveVersion', 'createVersion', 'populateFiles']) {
+      const fn = api[name]
+      api[name] = async (c, ...rest) => {
+        seen.push(c.token)
+        return fn(c, ...rest)
+      }
+    }
+    const code = await runQuiet(
+      ['--site', 's', '--slug', 'labels', '--dir', dir],
+      { FIREBASE_SERVICE_ACCOUNT: '{"k":1}' },
+      api,
+      { sleep: noSleep, settleMs: 0 },
+      async (json) => {
+        minted.push(json)
+        return 'minted-token'
+      }
+    )
+    assert.equal(code, 0)
+    assert.deepEqual(minted, ['{"k":1}'])
+    assert.ok(seen.length > 0)
+    assert.ok(seen.every((t) => t === 'minted-token'))
+  })
+})
+
+test('cli with neither token nor service account fails without fetch', async () => {
+  await withTempDir(async (dir) => {
+    await mkdir(join(dir, 'assets'))
+    await writeFile(join(dir, 'assets', 'remoteEntry.js'), 'x')
+    const orig = globalThis.fetch
+    let called = 0
+    globalThis.fetch = async () => {
+      called++
+      return new Response('{}')
+    }
+    try {
+      const code = await runQuiet(['--site', 's', '--slug', 'labels', '--dir', dir], {})
+      assert.equal(code, 1)
+      assert.equal(called, 0)
+    } finally {
+      globalThis.fetch = orig
+    }
+  })
 })

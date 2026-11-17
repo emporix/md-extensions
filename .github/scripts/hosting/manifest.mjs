@@ -6,10 +6,12 @@ import { gzipSync } from 'node:zlib'
 const walk = async (root, rel = '') => {
   const entries = await readdir(join(root, rel), { withFileTypes: true })
   const nested = await Promise.all(
-    entries.map((e) => {
-      const next = `${rel}/${e.name}`
-      return e.isDirectory() ? walk(root, next) : [next]
-    })
+    entries
+      .filter((e) => !e.name.startsWith('.'))
+      .map((e) => {
+        const next = `${rel}/${e.name}`
+        return e.isDirectory() ? walk(root, next) : [next]
+      })
   )
   return nested.flat()
 }

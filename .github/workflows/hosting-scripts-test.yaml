@@ -4,9 +4,16 @@ on:
   pull_request:
     paths:
       - '.github/scripts/hosting/**'
+      - '.github/actions/deploy-remote/**'
   push:
+    branches:
+      - master
     paths:
       - '.github/scripts/hosting/**'
+      - '.github/actions/deploy-remote/**'
+
+permissions:
+  contents: read
 
 jobs:
   test:

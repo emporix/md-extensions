@@ -28,27 +28,19 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Authenticate to Google Cloud
-      id: auth
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ inputs.service-account }}
-        token_format: access_token
-        access_token_scopes: https://www.googleapis.com/auth/cloud-platform
-
     - name: Deploy remote folder
       id: deploy
       shell: bash
       working-directory: ${{ github.workspace }}
       env:
-        GOOGLE_OAUTH_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+        FIREBASE_SERVICE_ACCOUNT: ${{ inputs.service-account }}
         SITE: ${{ inputs.site }}
         REMOTE: ${{ inputs.remote }}
         CHANNEL: ${{ inputs.channel }}
         TTL: ${{ inputs.ttl }}
       run: |
-        args=(--site "$SITE" --slug "$REMOTE" --dir "$REMOTE/dist")
+        args=(--site "$SITE" --slug "$REMOTE" --dir "$GITHUB_WORKSPACE/$REMOTE/dist")
         if [ -n "$CHANNEL" ]; then
           args+=(--channel "$CHANNEL" --ttl "$TTL")
         fi
-        node .github/scripts/hosting/deploy-remote.mjs "${args[@]}"
+        node "$GITHUB_ACTION_PATH/../../scripts/hosting/deploy-remote.mjs" "${args[@]}"

@@ -3,6 +3,7 @@ import { access, appendFile, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as hostingApi from './hosting-api.mjs'
+import { mintAccessToken } from './auth.mjs'
 import {
   hashDir,
   mergeManifest,
@@ -65,7 +66,8 @@ export const releaseWithRetry = async (
       await sleep(settleMs)
       const after = await api.getLiveVersion(ctx, 'live')
       if (after === version) return version
-      if (isDeployed(await api.listFiles(ctx, after), slug, local)) return version
+      // No live release at all means our release is not confirmed, try again.
+      if (after && isDeployed(await api.listFiles(ctx, after), slug, local)) return version
       overwritten = true
     } else {
       overwritten = false
@@ -87,7 +89,13 @@ const validateDir = async (dir) => {
   })
 }
 
-export const run = async (argv, env = process.env, api = hostingApi, options = {}) => {
+export const run = async (
+  argv,
+  env = process.env,
+  api = hostingApi,
+  options = {},
+  mint = mintAccessToken
+) => {
   try {
     const { values } = parseArgs({
       args: argv,
@@ -101,10 +109,17 @@ export const run = async (argv, env = process.env, api = hostingApi, options = {
     })
     const { site, slug, dir, channel, ttl } = values
     if (!site || !slug || !dir) throw new Error('--site, --slug and --dir are required')
-    if (!env.GOOGLE_OAUTH_ACCESS_TOKEN) throw new Error('GOOGLE_OAUTH_ACCESS_TOKEN is not set')
+    if (!/^[a-z0-9-]+$/.test(slug)) {
+      throw new Error(`--slug ${slug} must match ^[a-z0-9-]+$`)
+    }
+    if (!env.GOOGLE_OAUTH_ACCESS_TOKEN && !env.FIREBASE_SERVICE_ACCOUNT) {
+      throw new Error('Set GOOGLE_OAUTH_ACCESS_TOKEN or FIREBASE_SERVICE_ACCOUNT')
+    }
     await validateDir(dir)
 
-    const ctx = { token: env.GOOGLE_OAUTH_ACCESS_TOKEN, site }
+    const token =
+      env.GOOGLE_OAUTH_ACCESS_TOKEN || (await mint(env.FIREBASE_SERVICE_ACCOUNT))
+    const ctx = { token, site }
     const local = await hashDir(dir)
     let baseUrl = `https://${site}.web.app`
     if (channel) baseUrl = (await api.ensureChannel(ctx, channel, ttl)).replace(/\/$/, '')

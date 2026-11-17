@@ -43,7 +43,14 @@ export const listFiles = async (ctx, version) => {
     const params = new URLSearchParams({ pageSize: '1000' })
     if (pageToken) params.set('pageToken', pageToken)
     const data = await request(ctx, `${API}/${version}/files?${params}`)
-    for (const f of data.files ?? []) files[f.path] = f.hash
+    for (const f of data.files ?? []) {
+      if (typeof f.path !== 'string' || !f.path.startsWith('/')) {
+        throw new Error(
+          `Unexpected response shape for files of ${version}: path ${JSON.stringify(f.path)} does not start with /`
+        )
+      }
+      files[f.path] = f.hash
+    }
     pageToken = data.nextPageToken
   } while (pageToken)
   return files

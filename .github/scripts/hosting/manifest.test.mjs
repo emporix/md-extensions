@@ -78,3 +78,18 @@ test('hashDir hashes the gzipped content', async () => {
     await rm(dir, { recursive: true, force: true })
   }
 })
+
+test('hashDir skips dotfiles and dot directories', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'hash-dot-'))
+  try {
+    await mkdir(join(dir, '.git'))
+    await mkdir(join(dir, 'assets'))
+    await writeFile(join(dir, '.git', 'config'), 'x')
+    await writeFile(join(dir, '.DS_Store'), 'x')
+    await writeFile(join(dir, 'assets', '.hidden'), 'x')
+    await writeFile(join(dir, 'assets', 'a.js'), 'x')
+    assert.deepEqual(Object.keys(await hashDir(dir)), ['/assets/a.js'])
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+})

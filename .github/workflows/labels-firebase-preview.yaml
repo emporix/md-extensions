@@ -62,6 +62,8 @@ jobs:
 
       - name: Comment the shared preview URL
         run: |
-          gh pr comment ${{ github.event.number }} --body "labels preview: ${{ steps.shared-preview.outputs.url }}"
+          gh pr comment "$PR_NUMBER" --body "labels preview: $PREVIEW_URL"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+          PREVIEW_URL: ${{ steps.shared-preview.outputs.url }}
