@@ -20,7 +20,9 @@ describe('columnFiltersKeepingValues', () => {
       firstName: { value: 'Ann', matchMode: FilterMatchMode.CONTAINS },
     }
 
-    expect(columnFiltersKeepingValues([siteColumn, nameColumn], current)).toEqual({
+    expect(
+      columnFiltersKeepingValues([siteColumn, nameColumn], current)
+    ).toEqual({
       siteCode: { value: 'main', matchMode: FilterMatchMode.EQUALS },
       firstName: { value: 'Ann', matchMode: FilterMatchMode.CONTAINS },
     })
@@ -28,14 +30,8 @@ describe('columnFiltersKeepingValues', () => {
   })
 
   it('keeps a date range together with an active site filter', () => {
-    const createdAt = [
-      '2026-10-01T00:00:00.000Z',
-      '2026-10-22T00:00:00.000Z',
-    ]
-    const expiryDate = [
-      '2026-11-01T00:00:00.000Z',
-      '2026-11-19T00:00:00.000Z',
-    ]
+    const createdAt = ['2026-10-01T00:00:00.000Z', '2026-10-22T00:00:00.000Z']
+    const expiryDate = ['2026-11-01T00:00:00.000Z', '2026-11-19T00:00:00.000Z']
     const current = {
       siteCode: { value: 'TST', matchMode: FilterMatchMode.EQUALS },
       'metadata.createdAt': {
