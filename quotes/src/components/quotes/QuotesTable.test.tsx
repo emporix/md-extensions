@@ -266,4 +266,18 @@ describe('QuotesTable', () => {
     expect(quotesApi.deleteQuote).toHaveBeenCalledWith('tenant-a', 'Q1')
     expect(screen.getByText(/of 2$/)).toBeTruthy()
   })
+
+  it('gives the approve and decline actions of each row their own test id', async () => {
+    quotesApi.getQuotes.mockResolvedValue({
+      data: [quote('Q1', 'Acme'), quote('Q2', 'Beta')],
+      totalRecords: 2,
+    })
+    renderTable()
+    await waitFor(() => expect(screen.getByText(/of 2$/)).toBeTruthy())
+
+    for (const id of ['Q1', 'Q2']) {
+      expect(screen.getAllByTestId(`quote-approve-${id}`)).toHaveLength(1)
+      expect(screen.getAllByTestId(`quote-decline-${id}`)).toHaveLength(1)
+    }
+  })
 })

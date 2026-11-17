@@ -261,7 +261,7 @@ const QuotesTable = (props: StylableProps) => {
               }),
             disabled: !canChangeQuoteStatus(rowData.status.value, canManage),
             tooltip: t('quotes.tooltip.approve'),
-            dataTestId: 'quote-approve',
+            dataTestId: `quote-approve-${rowData.id}`,
           },
           {
             icon: <BsFileXFill className={styles.declineIcon} size={18} />,
@@ -272,7 +272,7 @@ const QuotesTable = (props: StylableProps) => {
               }),
             disabled: !canChangeQuoteStatus(rowData.status.value, canManage),
             tooltip: t('quotes.tooltip.decline'),
-            dataTestId: 'quote-decline',
+            dataTestId: `quote-decline-${rowData.id}`,
           },
         ]}
       />
