@@ -313,6 +313,20 @@ describe('Quotes routes', () => {
       expect(mixins.loadMixins).toHaveBeenCalledWith({}, {})
     })
 
+    // COP-7116: the heading names the status of a completed quote.
+    it('names the status of a completed quote next to its id', async () => {
+      api.getQuoteById.mockImplementation((id: string) =>
+        later(() => ({
+          ...quote(id),
+          status: { value: 'DECLINED_BY_MERCHANT' },
+        }))
+      )
+      await renderAt('/Q1')
+
+      expect(screen.getByText('DECLINED BY MERCHANT')).toBeTruthy()
+      expect(screen.queryByText('DECLINED_BY_MERCHANT')).toBeNull()
+    })
+
     it('opens the Preview tab of #/{id}?tab=preview', async () => {
       await renderAt('/Q1?tab=preview')
 

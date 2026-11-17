@@ -267,6 +267,60 @@ describe('QuotesTable', () => {
     expect(screen.getByText(/of 2$/)).toBeTruthy()
   })
 
+  // COP-7116: status names instead of the API codes; the filter still sends
+  // the code.
+  it('names the statuses in the column and the filter, and filters by the API code', async () => {
+    quotesApi.getQuotes.mockResolvedValue({
+      data: [
+        { ...quote('Q1', 'Acme'), status: { value: 'IN_PROGRESS' } },
+        { ...quote('Q2', 'Beta'), status: { value: 'DECLINED_BY_MERCHANT' } },
+      ],
+      totalRecords: 2,
+    })
+    renderTable()
+    await waitFor(() => expect(screen.getByText(/of 2$/)).toBeTruthy())
+
+    expect(rows().some((row) => row.includes('PENDING'))).toBe(true)
+    expect(rows().some((row) => row.includes('DECLINED BY MERCHANT'))).toBe(
+      true
+    )
+    expect(rows().some((row) => row.includes('_'))).toBe(false)
+
+    fireEvent.click(screen.getByTestId('quotes-status-filter-control'))
+    const options = within(
+      screen.getByTestId('quotes-status-filter-panel')
+    ).getAllByRole('option')
+    expect(options.map((option) => option.textContent)).toEqual([
+      'OPEN',
+      'PENDING',
+      'ACCEPTED',
+      'DECLINED',
+      'DECLINED BY MERCHANT',
+      'EXPIRED',
+      'AWAITING',
+      'CREATING',
+    ])
+    // CL Dropdown selects an option on mouse down.
+    fireEvent.mouseDown(options[1])
+
+    await waitFor(() =>
+      expect(
+        screen.getByTestId('quotes-status-filter-control').textContent
+      ).toBe('PENDING')
+    )
+    await waitFor(() =>
+      expect(quotesApi.getQuotes).toHaveBeenLastCalledWith(
+        'tenant-a',
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            'status.value': expect.objectContaining({ value: 'IN_PROGRESS' }),
+          }),
+        }),
+        'main'
+      )
+    )
+  })
+
   it('gives the approve and decline actions of each row their own test id', async () => {
     quotesApi.getQuotes.mockResolvedValue({
       data: [quote('Q1', 'Acme'), quote('Q2', 'Beta')],

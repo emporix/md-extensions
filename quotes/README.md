@@ -25,7 +25,7 @@ Links that leave the remote for the host (`window.location.assign`):
 | Company  | `/apps/management/companies#/{id}` |
 | Order    | `/apps/management/orders#/{id}`    |
 | Cart     | `/apps/management/carts/{id}`      |
-| Customer | `/apps/management/customers/{id}`  |
+| Customer | `/apps/management/customers#/{id}` |
 
 A host tenant switch sends every page back to the list, and responses for the previous tenant or quote are dropped.
 

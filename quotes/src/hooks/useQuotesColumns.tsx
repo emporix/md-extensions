@@ -5,14 +5,14 @@ import {
   Dropdown,
   FilterMatchMode,
   MoneyValue,
-  StatusBadge,
   type DataTableColumnFilterElementOptions,
   type DataTableColumnProps,
 } from '@emporix/component-library'
-import { Quote, QuoteStatus, QuoteStatusColor } from '../models/Quotes.model'
+import { Quote, QuoteStatus } from '../models/Quotes.model'
 import { numericColumn } from '../components/shared/NumericColumn'
 import NumberFilterTemplate from '../components/shared/NumberFilterTemplate'
 import { DateFilterTemplate } from '../components/shared/DateFilterTemplate'
+import QuoteStatusBadge from '../components/quotes/QuoteStatusBadge'
 import styles from './useQuotesColumns.module.scss'
 
 export const TABLE_NAME = 'quotes.table'
@@ -20,9 +20,7 @@ export const TABLE_NAME = 'quotes.table'
 type StatusOption = { label: string; value: QuoteStatus }
 
 const statusTemplate = (option: StatusOption | null) =>
-  option ? (
-    <StatusBadge status={option.value} color={QuoteStatusColor[option.value]} />
-  ) : null
+  option ? <QuoteStatusBadge status={option.value} /> : null
 
 /** Base columns of the quotes list, before visibility and mixin columns. */
 const useQuotesColumns = () => {
@@ -110,20 +108,21 @@ const useQuotesColumns = () => {
         showFilterMenu: false,
         showClearButton: false,
         body: (rowData: Quote) => {
-          return (
-            <StatusBadge
-              status={rowData.status.value}
-              color={QuoteStatusColor[rowData.status.value]}
-            />
-          )
+          return <QuoteStatusBadge status={rowData.status.value} />
         },
         filterElement: (options: DataTableColumnFilterElementOptions) => {
           return (
             <Dropdown<StatusOption>
               className={`${styles.statusFilter} p-column-filter`}
               value={options.value}
+              // Named options; the filter still sends the API status code.
               options={Object.values(QuoteStatus).map((status) => {
-                return { label: status, value: status }
+                return {
+                  label: t(`quotes.status.${status}`, {
+                    defaultValue: status,
+                  }),
+                  value: status,
+                }
               })}
               valueTemplate={statusTemplate}
               onChange={(e) => options.filterApplyCallback(e.value)}

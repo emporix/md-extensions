@@ -210,7 +210,7 @@ describe('QuotesTabGeneral', () => {
       )
       fireEvent.click(screen.getByRole('button', { name: 'Add new address' }))
 
-      expect(assign).toHaveBeenCalledWith('/apps/management/customers/CU1')
+      expect(assign).toHaveBeenCalledWith('/apps/management/customers#/CU1')
     })
 
     it('opens the order of an accepted quote in the orders remote', async () => {

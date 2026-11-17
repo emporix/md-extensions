@@ -31,6 +31,16 @@ export default {
     unitPrice: 'Unit Price',
     grossPrice: 'Gross Price',
   },
+  status: {
+    CREATING: 'Creating',
+    AWAITING: 'Awaiting',
+    OPEN: 'Open',
+    IN_PROGRESS: 'Pending',
+    ACCEPTED: 'Accepted',
+    DECLINED: 'Declined',
+    DECLINED_BY_MERCHANT: 'Declined by Merchant',
+    EXPIRED: 'Expired',
+  },
   dialog: {
     addCustomer: 'Add Customer',
     status: {

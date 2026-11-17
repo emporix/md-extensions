@@ -167,7 +167,8 @@ describe('QuotesTabPreview', () => {
     renderPreview()
 
     const table = await screen.findByTestId('quote-preview-table')
-    expect(within(table).getByText('Chair')).toBeTruthy()
+    // The lines come from the form, which is filled after the table mounts.
+    expect(await within(table).findByText('Chair')).toBeTruthy()
     expect(within(table).getByText('19%')).toBeTruthy()
     expect(within(table).getByText('€309.40')).toBeTruthy()
     expect(

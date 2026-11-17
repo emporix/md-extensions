@@ -1,18 +1,14 @@
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useSearchParams } from 'react-router'
-import {
-  StatusBadge,
-  Tabs,
-  useToast,
-  type TabItem,
-} from '@emporix/component-library'
+import { Tabs, useToast, type TabItem } from '@emporix/component-library'
 import HeaderSection from '../components/shared/HeaderSection'
 import SitesSelect from '../components/shared/SitesSelect'
 import QuotesTabGeneral from '../components/quotes/QuotesTabGeneral'
 import QuotesTabProducts from '../components/quotes/QuotesTabProducts'
 import QuotesTabPreview from '../components/quotes/QuotesTabPreview'
 import QuotesTabApproval from '../components/quotes/QuotesTabApproval'
+import QuoteStatusBadge from '../components/quotes/QuoteStatusBadge'
 import EntityChangelogTab from '../components/auditLog/EntityChangelogTab'
 import useMixinsForm, {
   MIXINS_LOADING_TAB_ID,
@@ -24,11 +20,7 @@ import { useQuoteData } from '../context/Quote.provider'
 import { useSites } from '../context/SitesProvider'
 import { useUIBlocker } from '../context/UIBlocker'
 import { usePermissions } from '../context/PermissionsProvider'
-import {
-  QuoteEditOp,
-  QuoteStatusColor,
-  QuoteUpdateRequest,
-} from '../models/Quotes.model'
+import { QuoteEditOp, QuoteUpdateRequest } from '../models/Quotes.model'
 import { SchemaType } from '../models/Schema.model'
 import type { Mixins } from '../models/Mixins.model'
 import { EmployeeDomains } from '../configs/accessControls'
@@ -83,10 +75,9 @@ const QuotesAddEditPage = () => {
       return (
         <div className={styles.subtitle}>
           {quoteId}
-          <StatusBadge
+          <QuoteStatusBadge
             className={styles.statusBadge}
             status={quote.status.value}
-            color={QuoteStatusColor[quote.status.value]}
           />
         </div>
       )

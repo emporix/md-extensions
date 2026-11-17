@@ -152,7 +152,8 @@ describe('QuotesTabApproval', () => {
     expect(quotesApi.getQuotesReasons).not.toHaveBeenCalled()
   })
 
-  it('declines without a reason (the reason is optional, MD quirk)', async () => {
+  // COP-7116: a decline needs a reason (MD let it be empty).
+  it('declines only with a reason of the decline type', async () => {
     quotesApi.getQuoteById.mockResolvedValue(quote('IN_PROGRESS'))
     quotesApi.getQuotesReasons.mockResolvedValue({
       data: [
@@ -161,6 +162,10 @@ describe('QuotesTabApproval', () => {
       ],
     })
     renderApproval()
+    const submit = () =>
+      screen.getAllByRole('button', {
+        name: 'Decline quote',
+      })[0] as HTMLButtonElement
 
     fireEvent.click(
       await screen.findByRole('button', { name: 'Decline Quote' })
@@ -171,22 +176,19 @@ describe('QuotesTabApproval', () => {
     // Only reasons of the decline type are offered.
     expect(await screen.findByText('TOO_LATE')).toBeTruthy()
     expect(screen.queryByText('CHANGED')).toBeNull()
+    // Without a reason the decline cannot be submitted.
+    expect(submit().disabled).toBe(true)
 
-    await waitFor(() =>
-      expect(
-        (
-          screen.getAllByRole('button', {
-            name: 'Decline quote',
-          })[0] as HTMLButtonElement
-        ).disabled
-      ).toBe(false)
-    )
-    fireEvent.click(screen.getAllByRole('button', { name: 'Decline quote' })[0])
+    // CL Dropdown selects an option on mouse down.
+    fireEvent.mouseDown(screen.getByText('TOO_LATE'))
+    await waitFor(() => expect(submit().disabled).toBe(false))
+    fireEvent.click(submit())
     fireEvent.click(await screen.findByRole('button', { name: 'Yes' }))
 
     await waitFor(() =>
       expect(quotesApi.changeQuoteStatus).toHaveBeenCalledWith('Q1', {
         value: 'DECLINED_BY_MERCHANT',
+        quoteReasonId: 'R1',
       })
     )
   })

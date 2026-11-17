@@ -34,8 +34,8 @@ interface QuotesChangeStatusDetailsForm {
 type ErrorWithResponse = { response: { data: { message: string } } }
 
 /**
- * Reason (decline only, optional — MD quirk) and comment of an approve or
- * decline; submitting goes to the confirm step.
+ * Reason (decline only, required — COP-7116; MD let it be empty) and comment
+ * of an approve or decline; submitting goes to the confirm step.
  */
 const QuotesChangeStatusDetails = (props: QuotesChangeStatusDetailsProps) => {
   const { className = '', changeType, onCancel, onSubmit } = props
@@ -106,10 +106,12 @@ const QuotesChangeStatusDetails = (props: QuotesChangeStatusDetailsProps) => {
         <InputField
           label={t('quotes.dialog.status.form.reason')}
           className={styles.reasonField}
+          required
         >
           <Controller
             name="reason"
             control={control}
+            rules={{ required: true }}
             render={({ field }) => (
               <Dropdown
                 placeholder=""

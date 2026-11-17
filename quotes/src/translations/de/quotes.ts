@@ -31,6 +31,16 @@ export default {
     unitPrice: 'Stückpreis',
     grossPrice: 'Bruttopreis',
   },
+  status: {
+    CREATING: 'In Erstellung',
+    AWAITING: 'Wartend',
+    OPEN: 'Offen',
+    IN_PROGRESS: 'Ausstehend',
+    ACCEPTED: 'Angenommen',
+    DECLINED: 'Abgelehnt',
+    DECLINED_BY_MERCHANT: 'Vom Händler abgelehnt',
+    EXPIRED: 'Abgelaufen',
+  },
   dialog: {
     status: {
       titleUpdate: 'Angebotsstatus ändern',
