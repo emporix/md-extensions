@@ -13,8 +13,8 @@ import {
 
 const POPULATE_BATCH = 1000
 
-const randomPause = () =>
-  new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 4000))
+const pause = (ms = 1000 + Math.random() * 4000) =>
+  new Promise((resolve) => setTimeout(resolve, ms))
 
 const buildVersion = async (api, ctx, liveVersion, slug, local) => {
   const liveFiles = liveVersion ? await api.listFiles(ctx, liveVersion) : {}
@@ -42,11 +42,16 @@ const buildVersion = async (api, ctx, liveVersion, slug, local) => {
   return version
 }
 
+// Every local file of this slug is live with the same hash.
+const isDeployed = (liveFiles, slug, local) =>
+  Object.entries(local).every(([path, f]) => liveFiles[`/${slug}${path}`] === f.hash)
+
 export const releaseWithRetry = async (
   api,
   ctx,
-  { slug, local, channel, attempts = 5, sleep = randomPause }
+  { slug, local, channel, attempts = 5, sleep = pause, settleMs = 10000 }
 ) => {
+  let overwritten = false
   for (let attempt = 1; attempt <= attempts; attempt++) {
     const before = await api.getLiveVersion(ctx, 'live')
     const version = await buildVersion(api, ctx, before, slug, local)
@@ -54,11 +59,24 @@ export const releaseWithRetry = async (
     const raced = !channel && (await api.getLiveVersion(ctx, 'live')) !== before
     if (!raced) {
       await api.release(ctx, channel ?? 'live', version)
-      return version
+      if (channel) return version
+      // The re-check above leaves a gap before the release, so a concurrent deploy
+      // can still win. Verify that our files survived once the dust settles.
+      await sleep(settleMs)
+      const after = await api.getLiveVersion(ctx, 'live')
+      if (after === version) return version
+      if (isDeployed(await api.listFiles(ctx, after), slug, local)) return version
+      overwritten = true
+    } else {
+      overwritten = false
     }
     if (attempt < attempts) await sleep()
   }
-  throw new Error(`The live version kept changing, gave up after ${attempts} attempts`)
+  throw new Error(
+    overwritten
+      ? `${slug} was overwritten by a concurrent deploy after ${attempts} attempts, re-run the workflow`
+      : `The live version kept changing, gave up after ${attempts} attempts`
+  )
 }
 
 const validateDir = async (dir) => {
@@ -69,7 +87,7 @@ const validateDir = async (dir) => {
   })
 }
 
-export const run = async (argv, env = process.env, api = hostingApi) => {
+export const run = async (argv, env = process.env, api = hostingApi, options = {}) => {
   try {
     const { values } = parseArgs({
       args: argv,
@@ -90,7 +108,7 @@ export const run = async (argv, env = process.env, api = hostingApi) => {
     const local = await hashDir(dir)
     let baseUrl = `https://${site}.web.app`
     if (channel) baseUrl = (await api.ensureChannel(ctx, channel, ttl)).replace(/\/$/, '')
-    await releaseWithRetry(api, ctx, { slug, local, channel })
+    await releaseWithRetry(api, ctx, { slug, local, channel, ...options })
 
     const url = `${baseUrl}/${slug}/`
     console.log(`Deployed ${slug} to ${url}`)

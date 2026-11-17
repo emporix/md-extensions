@@ -12,13 +12,20 @@ const ctx = { token: 't', site: 's' }
 const local = { '/index.html': { hash: 'hl', gzipped: Buffer.from('l') } }
 
 const fakeApi = (lives, filesByVersion) => {
-  const calls = { createVersion: [], release: [], uploads: [], populate: [] }
+  const calls = { createVersion: [], release: [], uploads: [], populate: [], listed: [], live: 0 }
+  let released = null
   let n = 0
   const queue = [...lives]
   return {
     calls,
-    getLiveVersion: async () => queue.shift() ?? null,
-    listFiles: async (_c, v) => filesByVersion[v] ?? {},
+    getLiveVersion: async () => {
+      calls.live++
+      return queue.shift() ?? released
+    },
+    listFiles: async (_c, v) => {
+      calls.listed.push(v)
+      return filesByVersion[v] ?? {}
+    },
     createVersion: async (_c, config) => {
       calls.createVersion.push(config)
       return `sites/s/versions/new${++n}`
@@ -29,10 +36,20 @@ const fakeApi = (lives, filesByVersion) => {
     },
     uploadFile: async (_c, _u, hash) => calls.uploads.push(hash),
     finalizeVersion: async () => {},
-    release: async (_c, channel, v) => calls.release.push([channel, v]),
+    release: async (_c, channel, v) => {
+      released = v
+      calls.release.push([channel, v])
+    },
   }
 }
 const noSleep = async () => {}
+const recordingSleep = () => {
+  const waits = []
+  const sleep = async (ms) => {
+    waits.push(ms)
+  }
+  return { waits, sleep }
+}
 
 test('listFiles follows nextPageToken', async () => {
   const urls = []
@@ -197,7 +214,14 @@ test('cli deploys a valid dir and prints the remote url', async () => {
     globalThis.fetch = async (url, init = {}) => {
       const u = String(url)
       calls.push(`${init.method ?? 'GET'} ${u}`)
-      if (u.endsWith('/channels/live')) return new Response('{}')
+      if (u.endsWith('/channels/live'))
+        return new Response(
+          JSON.stringify(
+            calls.some((c) => c.includes('/releases?'))
+              ? { release: { version: { name: 'sites/s/versions/n1' } } }
+              : {}
+          )
+        )
       if (u.endsWith('/versions') ) return new Response(JSON.stringify({ name: 'sites/s/versions/n1' }))
       if (u.includes(':populateFiles'))
         return new Response(JSON.stringify({ uploadUrl: 'https://up/x', uploadRequiredHashes: [] }))
@@ -207,7 +231,7 @@ test('cli deploys a valid dir and prints the remote url', async () => {
       const code = await run(['--site', 'mysite', '--slug', 'labels', '--dir', dir], {
         GOOGLE_OAUTH_ACCESS_TOKEN: 't',
         GITHUB_OUTPUT: out,
-      })
+      }, undefined, { sleep: async () => {} })
       assert.equal(code, 0)
       const { readFile } = await import('node:fs/promises')
       assert.match(await readFile(out, 'utf8'), /^url=https:\/\/mysite\.web\.app\/labels\/\n$/)
@@ -216,4 +240,67 @@ test('cli deploys a valid dir and prints the remote url', async () => {
       globalThis.fetch = orig
     }
   })
+})
+
+test('verification: live overwritten by a version without our files triggers a second attempt', async () => {
+  const api = fakeApi(['v1', 'v1', 'other', 'other', 'other'], {
+    v1: { '/orders/a.js': 'h1' },
+    other: { '/orders/a.js': 'h1', '/units/a.js': 'h2' },
+  })
+  await releaseWithRetry(api, ctx, { slug: 'labels', local, sleep: noSleep })
+  assert.equal(api.calls.createVersion.length, 2)
+  assert.equal(api.calls.release.length, 2)
+  assert.deepEqual(Object.keys(api.calls.populate[1]).sort(), [
+    '/labels/index.html',
+    '/orders/a.js',
+    '/units/a.js',
+  ])
+})
+
+test('verification: another live version that still has our files needs no second attempt', async () => {
+  const api = fakeApi(['v1', 'v1', 'other'], {
+    v1: {},
+    other: { '/labels/index.html': 'hl', '/units/a.js': 'h2' },
+  })
+  await releaseWithRetry(api, ctx, { slug: 'labels', local, sleep: noSleep })
+  assert.equal(api.calls.createVersion.length, 1)
+  assert.equal(api.calls.release.length, 1)
+})
+
+test('verification: our own version live needs no second attempt and no listing', async () => {
+  const api = fakeApi(['v1', 'v1'], { v1: {} })
+  await releaseWithRetry(api, ctx, { slug: 'labels', local, sleep: noSleep })
+  assert.equal(api.calls.release.length, 1)
+  assert.deepEqual(api.calls.listed, ['v1'])
+})
+
+test('verification: overwritten on every attempt rejects with the overwritten message', async () => {
+  const api = fakeApi(['v1', 'v1', 'o1', 'o1', 'o1', 'o2'], { v1: {}, o1: {}, o2: {} })
+  await assert.rejects(
+    releaseWithRetry(api, ctx, { slug: 'labels', local, attempts: 2, sleep: noSleep }),
+    /labels was overwritten by a concurrent deploy.*re-run the workflow/
+  )
+  assert.equal(api.calls.release.length, 2)
+})
+
+test('verification: a preview channel has no settle pause and no verification read', async () => {
+  const api = fakeApi(['v1'], {})
+  const { waits, sleep } = recordingSleep()
+  await releaseWithRetry(api, ctx, { slug: 'labels', local, channel: 'pr-1', sleep })
+  assert.deepEqual(waits, [])
+  assert.equal(api.calls.live, 1)
+})
+
+test('verification: settleMs defaults to 10000 and is configurable', async () => {
+  const a = recordingSleep()
+  await releaseWithRetry(fakeApi(['v1', 'v1'], {}), ctx, { slug: 'labels', local, sleep: a.sleep })
+  assert.deepEqual(a.waits, [10000])
+  const b = recordingSleep()
+  await releaseWithRetry(fakeApi(['v1', 'v1'], {}), ctx, {
+    slug: 'labels',
+    local,
+    sleep: b.sleep,
+    settleMs: 123,
+  })
+  assert.deepEqual(b.waits, [123])
 })
