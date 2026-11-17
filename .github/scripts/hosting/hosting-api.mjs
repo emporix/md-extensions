@@ -21,11 +21,18 @@ const request = async (ctx, url, { method = 'GET', body, contentType, allow404 }
 }
 
 // GET sites/SITE/channels/CHANNEL -> Channel.release.version.name
+// Returns null only for a channel that exists but never had a release. Anything
+// else that is unreadable throws, so a deploy never starts from a wrongly empty site.
 export const getLiveVersion = async (ctx, channel = 'live') => {
-  const data = await request(ctx, `${API}/sites/${ctx.site}/channels/${channel}`, {
-    allow404: true,
-  })
-  return data?.release?.version?.name ?? null
+  const data = await request(ctx, `${API}/sites/${ctx.site}/channels/${channel}`)
+  if (data.release === undefined || data.release === null) return null
+  const name = data.release.version?.name
+  if (typeof name !== 'string' || name === '') {
+    throw new Error(
+      `Unexpected response shape for channel ${channel} of site ${ctx.site}: release has no version name`
+    )
+  }
+  return name
 }
 
 // GET {version}/files?pageSize&pageToken -> files[{path,hash}], nextPageToken

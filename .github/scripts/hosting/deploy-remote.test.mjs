@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
-import { listFiles } from './hosting-api.mjs'
+import { listFiles, getLiveVersion } from './hosting-api.mjs'
 import { releaseWithRetry, run } from './deploy-remote.mjs'
 
 const ctx = { token: 't', site: 's' }
@@ -55,6 +55,52 @@ test('listFiles follows nextPageToken', async () => {
   } finally {
     globalThis.fetch = orig
   }
+})
+
+const withFetch = async (respond, fn) => {
+  const orig = globalThis.fetch
+  globalThis.fetch = async () => respond()
+  try {
+    return await fn()
+  } finally {
+    globalThis.fetch = orig
+  }
+}
+const json = (body, status = 200) => new Response(JSON.stringify(body), { status })
+
+test('getLiveVersion returns null for a channel without release', async () => {
+  await withFetch(() => json({ name: 'sites/s/channels/live' }), async () => {
+    assert.equal(await getLiveVersion(ctx), null)
+  })
+})
+
+test('getLiveVersion rejects on 404 naming the site', async () => {
+  await withFetch(() => json({}, 404), async () => {
+    await assert.rejects(getLiveVersion({ token: 't', site: 'wrong-site' }), /wrong-site/)
+  })
+})
+
+test('getLiveVersion rejects when the release has no readable version name', async () => {
+  await withFetch(() => json({ release: { name: 'r' } }), async () => {
+    await assert.rejects(getLiveVersion(ctx), /Unexpected response shape for channel live/)
+  })
+})
+
+test('getLiveVersion returns the version name', async () => {
+  await withFetch(
+    () => json({ release: { version: { name: 'sites/s/versions/v9' } } }),
+    async () => assert.equal(await getLiveVersion(ctx), 'sites/s/versions/v9')
+  )
+})
+
+test('releaseWithRetry propagates a failing getLiveVersion without side effects', async () => {
+  const api = fakeApi([], {})
+  api.getLiveVersion = async () => {
+    throw new Error('boom')
+  }
+  await assert.rejects(releaseWithRetry(api, ctx, { slug: 'labels', local, sleep: noSleep }), /boom/)
+  assert.equal(api.calls.createVersion.length, 0)
+  assert.equal(api.calls.release.length, 0)
 })
 
 test('releaseWithRetry rebuilds when live changed', async () => {
