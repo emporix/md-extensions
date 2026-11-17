@@ -142,6 +142,23 @@ describe('QuotesTabProducts', () => {
     expect((save() as HTMLButtonElement).disabled).toBe(true)
   })
 
+  // COP-7116: MD only logged a failed save.
+  it('shows an error toast when the save fails', async () => {
+    quotesApi.updateQuote.mockRejectedValue(new Error('Network Error'))
+    renderProducts()
+
+    fireEvent.click(await screen.findByTestId('quote-remove-product-P1'))
+    fireEvent.click(save())
+
+    await waitFor(() =>
+      expect(toast.showToast).toHaveBeenCalledWith(
+        'Error while updating quote',
+        '',
+        'error'
+      )
+    )
+  })
+
   it('removes a dropped line without pricing anything', async () => {
     renderProducts()
 

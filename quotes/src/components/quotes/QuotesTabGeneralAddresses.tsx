@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Control, Controller } from 'react-hook-form'
 import { RadioButton } from '@emporix/component-library'
 import { Location } from '../../models/LegalEntity.model'
@@ -16,6 +17,7 @@ interface QuotesTabGeneralAddressesProps extends StylableProps {
 /** A required pick of one of the addresses (shipping or billing). */
 const QuotesTabGeneralAddresses = (props: QuotesTabGeneralAddressesProps) => {
   const { className = '', addresses, control, name, disabled = false } = props
+  const { t } = useTranslation()
 
   return (
     <Controller
@@ -53,7 +55,9 @@ const QuotesTabGeneralAddresses = (props: QuotesTabGeneralAddressesProps) => {
                     <div className={styles.name}>{address.name}</div>
                   </div>
                   <div className={styles.addressCol}>
-                    <div className={styles.addressTitle}>Address</div>
+                    <div className={styles.addressTitle}>
+                      {t('quotes.tabs.general.address')}
+                    </div>
                     <div className={styles.address}>
                       {formatAddress(address.contactDetails)}
                     </div>

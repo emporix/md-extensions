@@ -327,6 +327,16 @@ describe('Quotes routes', () => {
       expect(screen.queryByText('DECLINED_BY_MERCHANT')).toBeNull()
     })
 
+    // COP-7116: MD reloaded the mixins (schema and reference requests) on
+    // every render of the quote provider, so also on every tab switch.
+    it('loads the mixins once for the loaded quote', async () => {
+      await renderAt('/Q1')
+      await click(tab('products'))
+      await click(tab('general'))
+
+      expect(mixins.loadMixins).toHaveBeenCalledTimes(1)
+    })
+
     it('opens the Preview tab of #/{id}?tab=preview', async () => {
       await renderAt('/Q1?tab=preview')
 

@@ -50,3 +50,27 @@ describe('quotes namespace (MD `quotes`)', () => {
     expect(keyPaths(de.quotes).sort()).toEqual(enKeys.sort())
   })
 })
+
+// COP-7116: texts corrected after the A–Z run (MD typos and wrong words).
+describe('corrected texts', () => {
+  it('fixes the MD typos', () => {
+    expect(en.quotes.tabs.general.noLocations).toBe(
+      'No shipping location for the selected company'
+    )
+    expect(en.quotes.tabs.general.noAddresses).toBe(
+      'No shipping address for the selected customer'
+    )
+    expect(de.quotes.toasts.errorChangeStatus).toBe(
+      'Status kann nicht geändert werden'
+    )
+    expect(de.quotes.tabs.general.additionalMessage).toBe(
+      'Zusätzliche Nachricht'
+    )
+    expect(de.segments.tables.customers.columns.email).toBe('Benutzer-E-Mail')
+  })
+
+  // An approval opens the quote; "angenommen" is the customer's acceptance.
+  it('says "freigegeben" after an approval in German', () => {
+    expect(de.quotes.toasts.successApprove).toBe('Angebot freigegeben')
+  })
+})

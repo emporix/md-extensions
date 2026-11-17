@@ -68,8 +68,8 @@ const quote = (status: string) => ({
 const ApprovalOnceLoaded = () =>
   useQuoteData().quote ? <QuotesTabApproval /> : null
 
-const renderApproval = ({ openAfterLoad = false } = {}) =>
-  render(
+const renderApproval = ({ openAfterLoad = false } = {}) => {
+  const tree = () => (
     <DashboardProvider appState={appState}>
       <MemoryRouter initialEntries={['/Q1']}>
         <Routes>
@@ -86,6 +86,10 @@ const renderApproval = ({ openAfterLoad = false } = {}) =>
       </MemoryRouter>
     </DashboardProvider>
   )
+  const result = render(tree())
+  /** Renders the same tree again, as when the permissions provider updates. */
+  return { ...result, rerenderTree: () => result.rerender(tree()) }
+}
 
 const button = (name: string) =>
   screen.getByRole('button', { name }) as HTMLButtonElement
@@ -212,15 +216,144 @@ describe('QuotesTabApproval', () => {
     expect(await screen.findByTestId('list')).toBeTruthy()
   })
 
-  it('keeps the quote of its first render for Create (MD quirk)', async () => {
+  // COP-7116: MD kept the quote of the first render, so Create did nothing
+  // when the tab opened before the quote loaded (a `?tab=approval` link).
+  it('sends the loaded quote when the tab opened before it loaded', async () => {
     quotesApi.getQuoteById.mockResolvedValue(quote('CREATING'))
-    // Opened before the quote loaded (e.g. a `?tab=approval` link).
     renderApproval()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Create Quote' }))
-    await new Promise((resolve) => setTimeout(resolve, 0))
 
-    expect(quotesApi.changeQuoteStatus).not.toHaveBeenCalled()
+    await waitFor(() =>
+      expect(quotesApi.changeQuoteStatus).toHaveBeenCalledWith('Q1', {
+        value: 'OPEN',
+      })
+    )
+  })
+
+  // COP-7116: MD only logged a failed send.
+  it('shows an error toast and stays on the quote when sending fails', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(quote('CREATING'))
+    quotesApi.changeQuoteStatus.mockRejectedValue(new Error('Network Error'))
+    renderApproval({ openAfterLoad: true })
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Create Quote' }))
+
+    await waitFor(() =>
+      expect(toast.showToast).toHaveBeenCalledWith(
+        'Status cannot be changed',
+        '',
+        'error'
+      )
+    )
+    expect(screen.queryByTestId('list')).toBeNull()
+  })
+
+  // COP-7116: MD read `e.response.data.message`, which throws in the catch
+  // block when the request failed without a response.
+  it('shows an error toast when an approval fails without a response', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(quote('AWAITING'))
+    quotesApi.changeQuoteStatus.mockRejectedValue(new Error('Network Error'))
+    renderApproval()
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Approve Quote' })
+    )
+    await waitFor(() => expect(button('Update status').disabled).toBe(false))
+    fireEvent.click(button('Update status'))
+    fireEvent.click(await screen.findByRole('button', { name: 'Yes' }))
+
+    await waitFor(() =>
+      expect(toast.showToast).toHaveBeenCalledWith(
+        'Status cannot be changed',
+        '',
+        'error'
+      )
+    )
+  })
+
+  it('shows the message of the API when a decline fails', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(quote('IN_PROGRESS'))
+    quotesApi.getQuotesReasons.mockResolvedValue({
+      data: [{ id: 'R1', code: 'TOO_LATE', type: 'DECLINE' }],
+    })
+    quotesApi.changeQuoteStatus.mockRejectedValue({
+      response: { data: { message: 'Quote is locked' } },
+    })
+    renderApproval()
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Decline Quote' })
+    )
+    fireEvent.click(screen.getByTestId('quote-status-reason-control'))
+    fireEvent.mouseDown(await screen.findByText('TOO_LATE'))
+    const submit = () =>
+      screen.getAllByRole('button', {
+        name: 'Decline quote',
+      })[0] as HTMLButtonElement
+    await waitFor(() => expect(submit().disabled).toBe(false))
+    fireEvent.click(submit())
+    fireEvent.click(await screen.findByRole('button', { name: 'Yes' }))
+
+    await waitFor(() =>
+      expect(toast.showToast).toHaveBeenCalledWith(
+        'Quote is locked',
+        '',
+        'error'
+      )
+    )
+  })
+
+  // COP-7116: MD read `e.response.data.message` here too.
+  it('shows an error toast when the decline reasons cannot be loaded', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(quote('IN_PROGRESS'))
+    quotesApi.getQuotesReasons.mockRejectedValue(new Error('Network Error'))
+    renderApproval()
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Decline Quote' })
+    )
+
+    await waitFor(() =>
+      expect(toast.showToast).toHaveBeenCalledWith(
+        'Error while loading the reasons',
+        '',
+        'error'
+      )
+    )
+  })
+
+  // COP-7116: MD's German decline dialog said "Angebot löschen" (delete) and
+  // asked "dass Sie quote: Q1 decline wollen?".
+  it('asks in German before declining', async () => {
+    await i18n.changeLanguage('de')
+    quotesApi.getQuoteById.mockResolvedValue(quote('IN_PROGRESS'))
+    quotesApi.getQuotesReasons.mockResolvedValue({
+      data: [{ id: 'R1', code: 'TOO_LATE', type: 'DECLINE' }],
+    })
+    renderApproval()
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Angebot ablehnen' })
+    )
+    fireEvent.click(screen.getByTestId('quote-status-reason-control'))
+    fireEvent.mouseDown(await screen.findByText('TOO_LATE'))
+    // The tab's button and the dialog's submit share the name.
+    const submit = () => {
+      const buttons = screen.getAllByRole('button', {
+        name: 'Angebot ablehnen',
+      })
+      return buttons[buttons.length - 1] as HTMLButtonElement
+    }
+    await waitFor(() => expect(submit().disabled).toBe(false))
+    expect(screen.queryByText(/löschen/)).toBeNull()
+    fireEvent.click(submit())
+
+    expect(
+      await screen.findByText(
+        'Sind Sie sicher, dass Sie das Angebot Q1 ablehnen möchten?'
+      )
+    ).toBeTruthy()
   })
 
   it('disables the actions without Quotes Manager', async () => {
@@ -236,5 +369,20 @@ describe('QuotesTabApproval', () => {
       ).disabled
     ).toBe(true)
     expect(button('Decline Quote').disabled).toBe(true)
+  })
+
+  // COP-7116: MD memoized the buttons on the quote alone, so permissions that
+  // arrived after the quote (a deep link) left them disabled.
+  it('enables the actions when the permissions arrive after the quote', async () => {
+    permissions.granted = []
+    quotesApi.getQuoteById.mockResolvedValue(quote('AWAITING'))
+    const { rerenderTree } = renderApproval()
+    await waitFor(() => expect(button('Approve Quote').disabled).toBe(true))
+
+    permissions.granted = [EmployeeDomains.QUOTES_MANAGER]
+    rerenderTree()
+
+    expect(button('Approve Quote').disabled).toBe(false)
+    expect(button('Decline Quote').disabled).toBe(false)
   })
 })

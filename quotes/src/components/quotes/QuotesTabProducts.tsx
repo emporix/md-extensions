@@ -36,6 +36,7 @@ import {
   buildQuoteItemsOperations,
   diffQuoteItems,
 } from '../../helpers/quoteItems.helpers'
+import { getApiErrorMessage } from '../../helpers/api'
 import styles from './QuotesTabProducts.module.scss'
 
 /** MD `PRODUCT_PICKER_COLUMNS`. */
@@ -126,6 +127,11 @@ const QuotesTabProducts = (props: StylableProps) => {
         refreshData()
       } catch (e) {
         console.error(e)
+        toast.showToast(
+          getApiErrorMessage(e) ?? t('quotes.toasts.errorUpdate'),
+          '',
+          'error'
+        )
       } finally {
         blockPanel(false)
       }

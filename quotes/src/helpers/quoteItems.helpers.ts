@@ -59,3 +59,12 @@ export const buildQuoteItemsOperations = (
   }
   return operations
 }
+
+/**
+ * The unit price that gives a line its net value. A line without a quantity
+ * has none (MD divided by the zero quantity and got Infinity or NaN).
+ */
+export const getUnitPriceForNetValue = (
+  totalNetValue: number,
+  quantity: number | undefined
+): number | undefined => (quantity ? totalNetValue / quantity : undefined)

@@ -13,7 +13,7 @@ export default {
       columns: {
         firstName: 'Vorname',
         lastName: 'Nachname',
-        email: 'Benutzer E-Maill',
+        email: 'Benutzer-E-Mail',
         status: 'Status',
       },
     },

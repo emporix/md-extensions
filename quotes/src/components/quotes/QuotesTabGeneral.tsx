@@ -469,6 +469,10 @@ const QuotesTabGeneral = (props: StylableProps) => {
                 disabled={
                   !formState.isValid ||
                   !formState.isDirty ||
+                  // The address pickers only exist when there are addresses;
+                  // the Quote Service needs both ids (MD saved without them).
+                  !watch('shippingAddressId') ||
+                  !watch('billingAddressId') ||
                   isQuoteCompleted ||
                   !canManage
                 }

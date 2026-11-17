@@ -52,13 +52,14 @@ const QuotesAddEditPage = () => {
   const canManage = hasPermission(EmployeeDomains.QUOTES_MANAGER)
   const canViewAuditLog = hasPermission(EmployeeDomains.AUDIT_LOG_VIEWER)
 
-  // MD reloads the mixin forms whenever the quote provider renders
-  // (`refreshData` is new on every render).
+  // The mixin forms load for each loaded quote, also after a save refreshed
+  // it. MD keyed this on `refreshData`, which is new on every render, so it
+  // requested the schemas and references again on every render.
   useEffect(() => {
     if (!quote) return
     loadMixins(quote.metadata.mixins as Record<string, string>, quote.mixins)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
-  }, [refreshData])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `loadMixins` is new on every render
+  }, [quote])
 
   // Opening a quote switches the selected site to the quote's site.
   useEffect(() => {

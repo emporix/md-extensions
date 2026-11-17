@@ -175,9 +175,7 @@ describe('QuotesTabGeneral', () => {
       renderGeneral()
 
       expect(
-        await screen.findByText(
-          'No shippping location for the selected company'
-        )
+        await screen.findByText('No shipping location for the selected company')
       ).toBeTruthy()
       fireEvent.click(screen.getByRole('button', { name: 'Add new location' }))
 
@@ -265,7 +263,9 @@ describe('QuotesTabGeneral', () => {
     ).toBe(true)
   })
 
-  it('enables Save for a B2C customer without a shipping address (MD quirk)', async () => {
+  // COP-7116: MD enabled Save without an address; the Quote Service needs a
+  // shipping and a billing address.
+  it('keeps Save disabled for a B2C customer without an address', async () => {
     quotesApi.getQuoteById.mockResolvedValue({
       ...b2bQuote,
       businessModel: 'B2C',
@@ -282,11 +282,45 @@ describe('QuotesTabGeneral', () => {
     renderGeneral()
 
     await screen.findByRole('button', { name: 'Add new address' })
+    // The synced customer makes the form dirty.
     await waitFor(() =>
       expect(
-        (screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement)
+        (screen.getByRole('button', { name: 'Discard' }) as HTMLButtonElement)
           .disabled
       ).toBe(false)
     )
+    expect(
+      (screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement)
+        .disabled
+    ).toBe(true)
+  })
+
+  // COP-7116: MD showed the label "Address" untranslated.
+  it('labels the location addresses in the user language', async () => {
+    await i18n.changeLanguage('de')
+    quotesApi.getQuoteById.mockResolvedValue({
+      ...b2bQuote,
+      shippingAddress: { id: 'L1' },
+      billingAddress: { id: 'L1' },
+    })
+    companiesApi.getLegalEntity.mockResolvedValue(
+      company([
+        {
+          id: 'L1',
+          name: 'HQ',
+          contactDetails: {
+            addressLine1: 'Main 1',
+            city: 'Berlin',
+            countryCode: 'DE',
+            tags: ['shipping', 'billing'],
+          },
+        },
+      ])
+    )
+    renderGeneral()
+
+    expect(await screen.findByText('HQ')).toBeTruthy()
+    expect(screen.getByText('Adresse')).toBeTruthy()
+    expect(screen.queryByText('Address')).toBeNull()
   })
 })

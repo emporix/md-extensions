@@ -12,6 +12,7 @@ import InputField from '../shared/InputField'
 import { QuoteChangeStatusType, QuoteReason } from '../../models/Quotes.model'
 import { useQuotesApi } from '../../hooks/api/quotes'
 import { StylableProps } from '../../helpers/props'
+import { getApiErrorMessage } from '../../helpers/api'
 import {
   filterQuoteReasonsByType,
   QuoteChangeStatusFormData,
@@ -29,9 +30,6 @@ interface QuotesChangeStatusDetailsForm {
   reason: QuoteReason | undefined
   comment: string
 }
-
-/** MD reads the message straight from the error response. */
-type ErrorWithResponse = { response: { data: { message: string } } }
 
 /**
  * Reason (decline only, required — COP-7116; MD let it be empty) and comment
@@ -66,7 +64,7 @@ const QuotesChangeStatusDetails = (props: QuotesChangeStatusDetailsProps) => {
     } catch (e: unknown) {
       console.error(e)
       toast.showToast(
-        (e as ErrorWithResponse).response.data.message,
+        getApiErrorMessage(e) ?? t('quotes.toasts.errorFetchReasons'),
         '',
         'error'
       )

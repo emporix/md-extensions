@@ -5,6 +5,7 @@ import { deepClone } from './utils'
 import {
   buildQuoteItemsOperations,
   diffQuoteItems,
+  getUnitPriceForNetValue,
   mapProductRowToQuoteItem,
 } from './quoteItems.helpers'
 
@@ -94,5 +95,18 @@ describe('buildQuoteItemsOperations', () => {
 
   it('sends nothing when no line changed', () => {
     expect(buildQuoteItemsOperations([], [])).toEqual([])
+  })
+})
+
+describe('getUnitPriceForNetValue', () => {
+  it('divides the net value by the quantity', () => {
+    expect(getUnitPriceForNetValue(100, 4)).toBe(25)
+    expect(getUnitPriceForNetValue(7.5, 2.5)).toBe(3)
+  })
+
+  // COP-7116: MD divided by a zero quantity (Infinity or NaN unit price).
+  it('has no unit price for a line without a quantity', () => {
+    expect(getUnitPriceForNetValue(100, 0)).toBeUndefined()
+    expect(getUnitPriceForNetValue(0, 0)).toBeUndefined()
   })
 })

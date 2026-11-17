@@ -15,6 +15,7 @@ import { EmployeeDomains } from '../../configs/accessControls'
 import { StylableProps } from '../../helpers/props'
 import { getQuoteApprovalActions } from '../../helpers/quoteStatus.helpers'
 import { buildQuoteSendPayload } from '../../helpers/quoteChangeStatus.helpers'
+import { getApiErrorMessage } from '../../helpers/api'
 import { quotesListPath } from '../../constants/paths'
 import QuotesChangeStatus from './QuotesChangeStatus'
 import styles from './QuotesTabApproval.module.scss'
@@ -61,7 +62,8 @@ const QuotesTabApproval = (props: StylableProps) => {
     }
   }
 
-  // MD quirk kept: the handler keeps the `quote` of its first render.
+  // Sends the quote shown now (MD kept the one of the first render, so Create
+  // did nothing when the tab opened before the quote loaded).
   const onCreateSubmit = useCallback(async () => {
     if (!quote) return
     const payload = buildQuoteSendPayload()
@@ -72,11 +74,16 @@ const QuotesTabApproval = (props: StylableProps) => {
       navigate(quotesListPath(), { replace: true })
     } catch (e) {
       console.error(e)
+      toast.showToast(
+        getApiErrorMessage(e) ?? t('quotes.toasts.errorChangeStatus'),
+        '',
+        'error'
+      )
     } finally {
       blockPanel(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- MD quirk: stale quote
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the hooks' functions are stable
+  }, [quote])
 
   const quoteCanBeChange = useMemo(() => {
     return getQuoteApprovalActions(quote?.status.value) !== undefined
@@ -108,8 +115,10 @@ const QuotesTabApproval = (props: StylableProps) => {
         </>
       )
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
-  }, [quote])
+    // Permissions may arrive after the quote (a deep link); MD memoized on
+    // the quote alone and kept the buttons disabled.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `t` follows i18n.language
+  }, [quote, canManage, onCreateSubmit])
 
   return (
     <div className={className}>

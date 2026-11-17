@@ -34,6 +34,7 @@ import {
   getZoneShippingMethods,
   selectShippingFee,
 } from '../../helpers/quoteShipping.helpers'
+import { getUnitPriceForNetValue } from '../../helpers/quoteItems.helpers'
 import styles from './QuotesTabPreviewTable.module.scss'
 
 interface QuotesTabProductsProps extends StylableProps {
@@ -176,9 +177,15 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
     setCalcSubtotal(new Date().getTime())
   }
 
-  const onTotalNetValueChange = (totalNetValue: number, index: number) => {
+  /** Applies a typed net value and returns the net value the line keeps. */
+  const onTotalNetValueChange = (
+    totalNetValue: number,
+    index: number
+  ): number => {
     const quantity = getValues(`items.${index}.quantity.quantity`)
-    const newUnitPrice = totalNetValue / quantity
+    const newUnitPrice = getUnitPriceForNetValue(totalNetValue, quantity)
+    // Without a quantity there is no unit price, so the net value stays 0.
+    if (newUnitPrice === undefined) return 0
     const discount = calculateDiscount(
       getValues(`items.${index}.price.unitPrice`),
       newUnitPrice
@@ -190,6 +197,7 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
       shouldDirty: true,
     })
     setCalcSubtotal(new Date().getTime())
+    return totalNetValue
   }
 
   const onDiscountChange = (discount: number, index: number) => {
@@ -299,8 +307,7 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
                   minFractionDigits={2}
                   onChange={(e) => {
                     if (e.value === undefined || e.value === null) return
-                    onTotalNetValueChange(e.value, o.rowIndex)
-                    field.onChange(e.value)
+                    field.onChange(onTotalNetValueChange(e.value, o.rowIndex))
                   }}
                   data-testid={`quote-item-net-price-${o.rowIndex}`}
                 />

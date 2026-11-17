@@ -202,6 +202,33 @@ describe('QuotesTabPreview', () => {
     expect(options).toEqual(['DHL'])
   })
 
+  // COP-7116: MD only logged a failed save.
+  it('shows an error toast when the save fails', async () => {
+    quotesApi.updateQuote.mockRejectedValue(new Error('Network Error'))
+    renderPreview()
+    await waitFor(() => expect(shippingApi.getZones).toHaveBeenCalled())
+
+    // Save needs a shipping method, as in the save test below.
+    fireEvent.click(await screen.findByTestId('quote-shipping-method-control'))
+    fireEvent.mouseDown(await screen.findByRole('option', { name: 'DHL' }))
+    await waitFor(() =>
+      expect(taxesApi.calculateTax).toHaveBeenCalledWith(5, 'DE', 'STD')
+    )
+    fireEvent.change(screen.getByTestId('quote-customer-reference-input'), {
+      target: { value: 'REF-2' },
+    })
+    await waitFor(() => expect(save().disabled).toBe(false))
+    fireEvent.click(save())
+
+    await waitFor(() =>
+      expect(toast.showToast).toHaveBeenCalledWith(
+        'Error while updating quote',
+        '',
+        'error'
+      )
+    )
+  })
+
   it('saves the chosen shipping and the changed reference only', async () => {
     renderPreview()
     await waitFor(() => expect(shippingApi.getZones).toHaveBeenCalled())

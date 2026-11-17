@@ -196,8 +196,8 @@ const QuotesTable = (props: StylableProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
   }, [currentSite?.code, tenant, paginationParams, isSiteRestricted])
 
-  // MD quirk kept: a refresh (after a delete) reloads the rows only, so the
-  // paginator total stays stale.
+  // A refresh (after a delete) reloads the rows and the total (MD reloaded the
+  // rows only, so the paginator total stayed stale).
   useEffect(() => {
     ;(async () => {
       if (refresh) {
@@ -206,8 +206,14 @@ const QuotesTable = (props: StylableProps) => {
         }
         const isLatest = trackRequest()
         try {
-          const { data } = await getQuotes(paginationParams, currentSite?.code)
-          if (isLatest()) setTableData(data)
+          const { data, totalRecords } = await getQuotes(
+            paginationParams,
+            currentSite?.code
+          )
+          if (isLatest()) {
+            setTableData(data)
+            setTotalCount(totalRecords)
+          }
         } finally {
           // It may have replaced a list load that was still running.
           if (isLatest()) setIsSyncing(false)

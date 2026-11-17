@@ -127,7 +127,8 @@ const useQuotesColumns = () => {
               valueTemplate={statusTemplate}
               onChange={(e) => options.filterApplyCallback(e.value)}
               itemTemplate={statusTemplate}
-              placeholder="Select One"
+              // No placeholder: with a value template CL renders that (empty)
+              // when nothing is selected, so MD's "Select One" never showed.
               showClear
               clearAriaLabel={t('global.clear')}
               data-testid="quotes-status-filter"

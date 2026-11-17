@@ -234,7 +234,8 @@ describe('QuotesTable', () => {
     )
   })
 
-  it('reloads the rows after a delete but keeps the total (MD quirk)', async () => {
+  // COP-7116: MD reloaded the rows only, so the paginator total stayed stale.
+  it('reloads the rows and the total after a delete', async () => {
     quotesApi.getQuotes.mockResolvedValueOnce({
       data: [quote('Q1', 'Acme'), quote('Q2', 'Beta')],
       totalRecords: 2,
@@ -264,7 +265,8 @@ describe('QuotesTable', () => {
       expect(rows().some((row) => row.includes('Q1'))).toBe(false)
     )
     expect(quotesApi.deleteQuote).toHaveBeenCalledWith('tenant-a', 'Q1')
-    expect(screen.getByText(/of 2$/)).toBeTruthy()
+    await waitFor(() => expect(screen.getByText(/of 1$/)).toBeTruthy())
+    expect(screen.queryByText(/of 2$/)).toBeNull()
   })
 
   // COP-7116: status names instead of the API codes; the filter still sends
@@ -285,7 +287,6 @@ describe('QuotesTable', () => {
       true
     )
     expect(rows().some((row) => row.includes('_'))).toBe(false)
-
     fireEvent.click(screen.getByTestId('quotes-status-filter-control'))
     const options = within(
       screen.getByTestId('quotes-status-filter-panel')

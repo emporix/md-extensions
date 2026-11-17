@@ -21,6 +21,7 @@ import { Item, QuoteEditOp, Shipping } from '../../models/Quotes.model'
 import { compareObjects } from '../mixins/mixins.utils'
 import { EmployeeDomains } from '../../configs/accessControls'
 import { StylableProps } from '../../helpers/props'
+import { getApiErrorMessage } from '../../helpers/api'
 import styles from './QuotesTabPreview.module.scss'
 
 export interface QuotePreviewForm {
@@ -129,6 +130,11 @@ const QuotesTabPreview = (props: StylableProps) => {
         refreshData()
       } catch (e) {
         console.error(e)
+        toast.showToast(
+          getApiErrorMessage(e) ?? t('quotes.toasts.errorUpdate'),
+          '',
+          'error'
+        )
       } finally {
         blockPanel(false)
       }

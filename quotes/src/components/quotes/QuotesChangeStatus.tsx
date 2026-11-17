@@ -19,6 +19,7 @@ import {
   buildQuoteChangeStatusPayload,
   QuoteChangeStatusFormData,
 } from '../../helpers/quoteChangeStatus.helpers'
+import { getApiErrorMessage } from '../../helpers/api'
 import styles from './QuotesChangeStatus.module.scss'
 
 interface QuotesChangeStatusProps {
@@ -27,9 +28,6 @@ interface QuotesChangeStatusProps {
   close: () => void
   visible: boolean
 }
-
-/** MD reads the message straight from the error response. */
-type ErrorWithResponse = { response: { data: { message: string } } }
 
 /** Approve or decline dialog: the details form, then a yes / no confirm. */
 const QuotesChangeStatus = (props: QuotesChangeStatusProps) => {
@@ -66,7 +64,7 @@ const QuotesChangeStatus = (props: QuotesChangeStatusProps) => {
     } catch (e: unknown) {
       console.error(e)
       toast.showToast(
-        (e as ErrorWithResponse).response.data.message,
+        getApiErrorMessage(e) ?? t('quotes.toasts.errorChangeStatus'),
         '',
         'error'
       )
@@ -91,7 +89,7 @@ const QuotesChangeStatus = (props: QuotesChangeStatusProps) => {
     } catch (e: unknown) {
       console.error(e)
       toast.showToast(
-        (e as ErrorWithResponse).response.data.message,
+        getApiErrorMessage(e) ?? t('quotes.toasts.errorChangeStatus'),
         '',
         'error'
       )
@@ -136,7 +134,9 @@ const QuotesChangeStatus = (props: QuotesChangeStatusProps) => {
             <p className={styles.message}>
               {t('quotes.dialog.status.msg', {
                 quoteId,
-                type: changeType.toLowerCase(),
+                type: t(
+                  `quotes.dialog.status.types.${changeType.toLowerCase()}`
+                ),
               })}
             </p>
             <div className={styles.buttons}>
