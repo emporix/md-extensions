@@ -49,18 +49,13 @@ jobs:
           channelId: live
           target: emporix-labels-stage
 
-      - name: Build labels for the shared Hosting site (dev)
-        run: npm run build:dev -- --base=/labels/
-
       - name: Deploy labels to the shared Hosting site (dev)
         uses: ./.github/actions/deploy-remote
         with:
           service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}
           site: emporix-md-extensions-develop
           remote: labels
-
-      - name: Build labels for the shared Hosting site (stage)
-        run: npm run build:stage -- --base=/labels/
+          mode: dev
 
       - name: Deploy labels to the shared Hosting site (stage)
         uses: ./.github/actions/deploy-remote
@@ -68,3 +63,4 @@ jobs:
           service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_STAGE }}
           site: emporix-md-extensions-stage
           remote: labels
+          mode: stage

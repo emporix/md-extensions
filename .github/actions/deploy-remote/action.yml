@@ -1,5 +1,5 @@
 name: Deploy remote to shared Hosting site
-description: Publish a built remote into its folder of the shared Firebase Hosting site.
+description: Build a remote for the shared Firebase Hosting site and publish it into its folder.
 
 inputs:
   service-account:
@@ -10,6 +10,9 @@ inputs:
     required: true
   remote:
     description: Remote folder name, also the folder slug on the site
+    required: true
+  mode:
+    description: Vite mode of the build (dev, stage or prod)
     required: true
   channel:
     description: Preview channel id; leave empty to deploy to the live channel
@@ -28,6 +31,16 @@ outputs:
 runs:
   using: composite
   steps:
+    # Flat build with base /<remote>/. It replaces dist, so run this action after
+    # any step that needs the remote's regular build.
+    - name: Build remote for the shared site
+      shell: bash
+      working-directory: ${{ github.workspace }}/${{ inputs.remote }}
+      env:
+        REMOTE: ${{ inputs.remote }}
+        MODE: ${{ inputs.mode }}
+      run: node --input-type=module - < "$GITHUB_ACTION_PATH/../../scripts/hosting/build-remote.mjs"
+
     - name: Deploy remote folder
       id: deploy
       shell: bash

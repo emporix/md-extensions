@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises'
+import { mkdtemp, writeFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -217,8 +217,7 @@ test('cli process exits 1 for a missing dir', () => {
 
 test('cli deploys a valid dir and prints the remote url', async () => {
   await withTempDir(async (dir) => {
-    await mkdir(join(dir, 'assets'))
-    await writeFile(join(dir, 'assets', 'remoteEntry.js'), 'x')
+    await writeFile(join(dir, 'remoteEntry.js'), 'x')
     const out = join(dir, 'gh-output')
     const calls = []
     const orig = globalThis.fetch
@@ -384,8 +383,7 @@ test('verification: no live release at the check counts as not confirmed', async
 
 test('cli rejects an invalid slug before any api call', async () => {
   await withTempDir(async (dir) => {
-    await mkdir(join(dir, 'assets'))
-    await writeFile(join(dir, 'assets', 'remoteEntry.js'), 'x')
+    await writeFile(join(dir, 'remoteEntry.js'), 'x')
     const orig = globalThis.fetch
     let called = 0
     globalThis.fetch = async () => {
@@ -406,8 +404,7 @@ test('cli rejects an invalid slug before any api call', async () => {
 
 test('cli mints a token from FIREBASE_SERVICE_ACCOUNT and uses it', async () => {
   await withTempDir(async (dir) => {
-    await mkdir(join(dir, 'assets'))
-    await writeFile(join(dir, 'assets', 'remoteEntry.js'), 'x')
+    await writeFile(join(dir, 'remoteEntry.js'), 'x')
     const seen = []
     const minted = []
     const api = fakeApi([null, null], {})
@@ -438,8 +435,7 @@ test('cli mints a token from FIREBASE_SERVICE_ACCOUNT and uses it', async () => 
 
 test('cli with neither token nor service account fails without fetch', async () => {
   await withTempDir(async (dir) => {
-    await mkdir(join(dir, 'assets'))
-    await writeFile(join(dir, 'assets', 'remoteEntry.js'), 'x')
+    await writeFile(join(dir, 'remoteEntry.js'), 'x')
     const orig = globalThis.fetch
     let called = 0
     globalThis.fetch = async () => {

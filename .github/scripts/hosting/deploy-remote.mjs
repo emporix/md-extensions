@@ -84,8 +84,9 @@ export const releaseWithRetry = async (
 const validateDir = async (dir) => {
   const info = await stat(dir).catch(() => null)
   if (!info?.isDirectory()) throw new Error(`Directory ${dir} does not exist`)
-  await access(join(dir, 'assets', 'remoteEntry.js')).catch(() => {
-    throw new Error(`${dir} has no assets/remoteEntry.js, was the remote built?`)
+  // The shared-site build is flat (build-remote.mjs), so remoteEntry.js sits at the root.
+  await access(join(dir, 'remoteEntry.js')).catch(() => {
+    throw new Error(`${dir} has no remoteEntry.js, was the remote built with build-remote.mjs?`)
   })
 }
 
