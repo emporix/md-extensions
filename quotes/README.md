@@ -93,4 +93,4 @@ Firebase Hosting targets `emporix-quotes-develop`, `emporix-quotes-stage` and `e
 
 ## UI
 
-No PrimeReact, PrimeFlex or PrimeIcons dependency. UI comes from `@emporix/component-library` (≥ 2.29.0 for `Calendar` `hideOnDateTimeSelect`), whose stylesheet is imported once in `RemoteComponent.tsx`; feature styles are SCSS Modules. MD's icon glyphs are kept (`pi pi-*` classes from the CL stylesheet, react-icons `Bs*`). See `docs/CL_WIDGET_STATUS.md` for the component-library equivalent of each PrimeReact widget.
+No PrimeReact, PrimeFlex or PrimeIcons dependency. UI comes from `@emporix/component-library` (≥ 2.29.1: `Calendar` `hideOnDateTimeSelect` since 2.29.0, MD's 0.75rem `StatusBadge` text since 2.29.1), whose stylesheet is imported once in `RemoteComponent.tsx`; feature styles are SCSS Modules. MD's icon glyphs are kept (`pi pi-*` classes from the CL stylesheet, react-icons `Bs*`). See `docs/CL_WIDGET_STATUS.md` for the component-library equivalent of each PrimeReact widget.
