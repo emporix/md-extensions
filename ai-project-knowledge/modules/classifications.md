@@ -113,7 +113,7 @@ Pinned by `helpers/classificationSchema.helpers.test.ts` and the `schema tiles` 
 | Host route `key` → path | `classifications` → `/apps/management/classifications/*`; MD `ClassificationsPathRedirect` moves former pathname links (`/apps/management/classifications/<id>`, `/add`) into the hash (`management-dashboard` `src/router/module-routes.tsx`, `src/helpers/classificationsUrl.helpers.ts`; COP-7182 host PR) |
 | Host env var | `VITE_CLASSIFICATIONS_URL` (`management-dashboard` `.env.*`, eight files) |
 | Local port | `5187`, `strictPort` |
-| Hosting | Firebase targets `emporix-classifications`, `-stage`, `-develop`; `.github/workflows/classifications-firebase-*.yaml` |
+| Hosting | Shared Firebase Hosting site per environment (pilot of COP-7348), no site or `firebase.json` target of its own: `https://frontend-extensions-develop.web.app/classifications/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod). Deployed by `.github/actions/deploy-remote` from `.github/workflows/classifications-firebase-*.yaml` |
 | Local deviations | none |
 
 ## Differences from MD

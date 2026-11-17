@@ -91,7 +91,7 @@ The dev shell asks for tenant, token and language.
 
 ### Deploying
 
-Firebase Hosting targets `emporix-classifications-develop`, `emporix-classifications-stage` and `emporix-classifications` (root `firebase.json`, `.firebaserc`). Workflows: `.github/workflows/classifications-firebase-*.yaml` — a preview per PR, dev and stage on merge to `master`, prod on a `classifications-*` tag. The Firebase Hosting sites must exist before the first deploy.
+Classifications has no Firebase Hosting site of its own. It is published into the `classifications/` folder of the shared site of each environment (COP-7348): `https://frontend-extensions-develop.web.app/classifications/remoteEntry.js`, `https://frontend-extensions-stage.web.app/classifications/remoteEntry.js` and `https://frontend-extensions.web.app/classifications/remoteEntry.js` (prod). Workflows: `.github/workflows/classifications-firebase-*.yaml` — a preview per PR, dev and stage on merge to `master`, prod on a `classifications-*` tag. Each calls `.github/actions/deploy-remote`, which builds the remote flat with base `/classifications/` (`.github/scripts/hosting/build-remote.mjs`) and replaces only this folder on the site. Local `npm run build:*` and `preview` are unchanged and still serve `/assets/remoteEntry.js`.
 
 ## UI
 
