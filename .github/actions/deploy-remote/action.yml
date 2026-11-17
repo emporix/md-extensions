@@ -1,0 +1,59 @@
+name: Deploy remote to shared Hosting site
+description: Build a remote for the shared Firebase Hosting site and publish it into its folder.
+
+inputs:
+  service-account:
+    description: Google service account key JSON
+    required: true
+  site:
+    description: Firebase Hosting site id
+    required: true
+  remote:
+    description: Remote folder name, also the folder slug on the site
+    required: true
+  mode:
+    description: Vite mode of the build (dev, stage or prod)
+    required: true
+  channel:
+    description: Preview channel id; leave empty to deploy to the live channel
+    required: false
+    default: ''
+  ttl:
+    description: Preview channel time to live, used only with channel
+    required: false
+    default: 432000s
+
+outputs:
+  url:
+    description: URL of the deployed remote folder
+    value: ${{ steps.deploy.outputs.url }}
+
+runs:
+  using: composite
+  steps:
+    # Flat build with base /<remote>/. It replaces dist, so run this action after
+    # any step that needs the remote's regular build.
+    - name: Build remote for the shared site
+      shell: bash
+      working-directory: ${{ github.workspace }}/${{ inputs.remote }}
+      env:
+        REMOTE: ${{ inputs.remote }}
+        MODE: ${{ inputs.mode }}
+      run: node --input-type=module - < "$GITHUB_ACTION_PATH/../../scripts/hosting/build-remote.mjs"
+
+    - name: Deploy remote folder
+      id: deploy
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        FIREBASE_SERVICE_ACCOUNT: ${{ inputs.service-account }}
+        SITE: ${{ inputs.site }}
+        REMOTE: ${{ inputs.remote }}
+        CHANNEL: ${{ inputs.channel }}
+        TTL: ${{ inputs.ttl }}
+      run: |
+        args=(--site "$SITE" --slug "$REMOTE" --dir "$GITHUB_WORKSPACE/$REMOTE/dist")
+        if [ -n "$CHANNEL" ]; then
+          args+=(--channel "$CHANNEL" --ttl "$TTL")
+        fi
+        node "$GITHUB_ACTION_PATH/../../scripts/hosting/deploy-remote.mjs" "${args[@]}"
