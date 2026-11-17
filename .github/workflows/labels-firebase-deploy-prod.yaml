@@ -29,15 +29,6 @@ jobs:
           # workflow_dispatch supplies inputs.tag; tag pushes use github.ref
           ref: ${{ github.event.inputs.tag || github.ref }}
 
-      # workflow_dispatch can deploy an older tag that has no deploy action or script,
-      # so take the tooling from the ref this workflow runs from. It sits outside
-      # labels/, which is the only folder the deploy reads.
-      - name: Checkout deploy tooling
-        uses: actions/checkout@v4
-        with:
-          path: .deploy-tooling
-          sparse-checkout: .github
-
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
@@ -55,11 +46,3 @@ jobs:
           projectId: frontend-extensions
           channelId: live
           target: emporix-labels
-
-      - name: Deploy labels to the shared Hosting site
-        uses: ./.deploy-tooling/.github/actions/deploy-remote
-        with:
-          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA }}
-          site: frontend-extensions
-          remote: labels
-          mode: prod

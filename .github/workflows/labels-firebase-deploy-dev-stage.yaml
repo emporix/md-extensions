@@ -48,19 +48,3 @@ jobs:
           projectId: frontend-extensions-stage
           channelId: live
           target: emporix-labels-stage
-
-      - name: Deploy labels to the shared Hosting site (dev)
-        uses: ./.github/actions/deploy-remote
-        with:
-          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}
-          site: frontend-extensions-develop
-          remote: labels
-          mode: dev
-
-      - name: Deploy labels to the shared Hosting site (stage)
-        uses: ./.github/actions/deploy-remote
-        with:
-          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_STAGE }}
-          site: frontend-extensions-stage
-          remote: labels
-          mode: stage
