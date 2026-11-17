@@ -1,0 +1,6 @@
+// MD drew status badges with PrimeReact `Badge` (lara theme: 0.75rem); CL
+// `StatusBadge` uses `--font-size-sm` (0.875rem). The doubled class outranks
+// the CL module rule whatever the stylesheet order.
+.badge.badge {
+  font-size: 0.75rem;
+}

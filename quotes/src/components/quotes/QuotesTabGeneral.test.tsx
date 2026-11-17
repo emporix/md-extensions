@@ -295,6 +295,50 @@ describe('QuotesTabGeneral', () => {
     ).toBe(true)
   })
 
+  // COP-7116: Save needs both addresses; with "Same as shipping" the billing
+  // address follows the picked shipping address, so Save turns on.
+  it('enables Save once a shipping address is picked and billing follows it', async () => {
+    quotesApi.getQuoteById.mockResolvedValue({
+      ...b2bQuote,
+      shippingAddress: { id: 'L1' },
+      billingAddress: { id: 'L1' },
+    })
+    companiesApi.getLegalEntity.mockResolvedValue(
+      company([
+        {
+          id: 'L1',
+          name: 'HQ',
+          contactDetails: {
+            addressLine1: 'Main 1',
+            city: 'Berlin',
+            countryCode: 'DE',
+            tags: ['shipping', 'billing'],
+          },
+        },
+        {
+          id: 'L2',
+          name: 'Warehouse',
+          contactDetails: {
+            addressLine1: 'Dock 2',
+            city: 'Hamburg',
+            countryCode: 'DE',
+            tags: ['shipping', 'billing'],
+          },
+        },
+      ])
+    )
+    renderGeneral()
+
+    fireEvent.click(await screen.findByTestId('shippingAddressId-L2-input'))
+
+    await waitFor(() =>
+      expect(
+        (screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement)
+          .disabled
+      ).toBe(false)
+    )
+  })
+
   // COP-7116: MD showed the label "Address" untranslated.
   it('labels the location addresses in the user language', async () => {
     await i18n.changeLanguage('de')
