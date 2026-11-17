@@ -39,6 +39,13 @@ jobs:
           channelId: live
           target: emporix-labels-develop
 
+      - name: Deploy labels to the shared Hosting site
+        uses: ./.github/actions/deploy-remote
+        with:
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}
+          site: emporix-md-extensions-develop
+          remote: labels
+
       - run: npm run build:stage
       - uses: FirebaseExtended/action-hosting-deploy@v0
         id: firebase-hosting-deploy-stage
@@ -48,3 +55,10 @@ jobs:
           projectId: frontend-extensions-stage
           channelId: live
           target: emporix-labels-stage
+
+      - name: Deploy labels to the shared Hosting site
+        uses: ./.github/actions/deploy-remote
+        with:
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_STAGE }}
+          site: emporix-md-extensions-stage
+          remote: labels

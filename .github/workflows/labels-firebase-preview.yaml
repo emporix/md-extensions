@@ -13,6 +13,10 @@ on:
 jobs:
   build_and_deploy_preview:
     runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
     defaults:
       run:
         working-directory: ./labels
@@ -43,3 +47,18 @@ jobs:
           target: emporix-labels-develop
           expires: 5d
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Deploy labels preview to the shared Hosting site
+        id: shared-preview
+        uses: ./.github/actions/deploy-remote
+        with:
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}
+          site: emporix-md-extensions-develop
+          remote: labels
+          channel: pr-${{ github.event.number }}-labels
+
+      - name: Comment the shared preview URL
+        run: |
+          gh pr comment ${{ github.event.number }} --body "labels preview: ${{ steps.shared-preview.outputs.url }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
