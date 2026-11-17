@@ -48,6 +48,9 @@ jobs:
           expires: 5d
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
 
+      - name: Build labels for the shared Hosting site (dev)
+        run: npm run build:dev -- --base=/labels/
+
       - name: Deploy labels preview to the shared Hosting site
         id: shared-preview
         uses: ./.github/actions/deploy-remote

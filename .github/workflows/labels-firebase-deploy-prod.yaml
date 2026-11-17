@@ -47,6 +47,9 @@ jobs:
           channelId: live
           target: emporix-labels
 
+      - name: Build labels for the shared Hosting site (prod)
+        run: npm run build:prod -- --base=/labels/
+
       - name: Deploy labels to the shared Hosting site
         uses: ./.github/actions/deploy-remote
         with:

@@ -39,6 +39,9 @@ jobs:
           channelId: live
           target: emporix-labels-develop
 
+      - name: Build labels for the shared Hosting site (dev)
+        run: npm run build:dev -- --base=/labels/
+
       - name: Deploy labels to the shared Hosting site
         uses: ./.github/actions/deploy-remote
         with:
@@ -55,6 +58,9 @@ jobs:
           projectId: frontend-extensions-stage
           channelId: live
           target: emporix-labels-stage
+
+      - name: Build labels for the shared Hosting site (stage)
+        run: npm run build:stage -- --base=/labels/
 
       - name: Deploy labels to the shared Hosting site
         uses: ./.github/actions/deploy-remote
