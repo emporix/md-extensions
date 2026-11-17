@@ -32,7 +32,7 @@ This is a monorepo of independent Management Dashboard remotes, one Vite app per
 | `labels` | playbook-aligned | `labels` | `labels` → `/apps/management/labels/*` | `VITE_LABELS_URL` | `5179` | yes / yes | `2.18.0` / `1.2.14` |
 | `orders` | playbook-aligned | `orders` | `orders` → `apps/management/orders/*` | `VITE_ORDERS_URL` | `5177` | yes / yes | `2.18.0` / `1.5.1` |
 | `products` | playbook-aligned | `products` | `products` → `apps/management/products/*` | `VITE_PRODUCTS_URL` | `5178` | yes / yes | `2.18.1` / `1.5.4` |
-| `returns` | playbook-aligned | `returns` | `returns` → `/apps/management/returns/*` | `VITE_RETURNS_URL` | `5176` | yes / yes | `2.18.0` / `1.5.1` |
+| `returns` | playbook-aligned | `returns` | `returns` → `/apps/management/returns/*` | `VITE_RETURNS_URL` | `5176` | yes / yes | `2.29.1` / `1.5.1` |
 | `status-codes` | playbook-aligned | `statusCodes` | `statusCodes` → `/apps/management/status-codes/*` | `VITE_STATUS_CODES_URL` | `5180` | yes / yes | `2.25.0` / `1.5.1` |
 | `coupons` | playbook-aligned | `coupons` | `coupons` → `/apps/management/coupons/*` | `VITE_COUPONS_URL` | `5181` | yes / yes | `2.22.0` / `1.5.3` |
 | `companies` | playbook-aligned | `companies` | `companies` → `/apps/management/companies/*` | `VITE_COMPANIES_URL` | `5183` | yes / yes | `2.25.0` / `1.5.2` |
