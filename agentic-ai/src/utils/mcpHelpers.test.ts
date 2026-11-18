@@ -157,6 +157,58 @@ describe('buildMcpServerUpsertPayload', () => {
 
     expect((payload.tools as Array<{ enabled: boolean }>)[0].enabled).toBe(true)
   })
+
+  it('sends stored mixins and schema refs on update', () => {
+    const payload = buildMcpServerUpsertPayload({
+      id: 'mcp-dynamic',
+      name: 'Dynamic MCP',
+      type: 'dynamic',
+      transport: CustomMcpServerTransportType.STREAMABLE_HTTP,
+      enabled: true,
+      tools: [],
+      mixins: { provenance: { entries: [{ generationId: 'gen-1' }] } },
+      metadata: {
+        version: 3,
+        mixins: { provenance: 'https://schema' },
+      },
+    })
+
+    expect(payload.mixins).toEqual({
+      provenance: { entries: [{ generationId: 'gen-1' }] },
+    })
+    expect(payload.metadata).toEqual({
+      version: 3,
+      mixins: { provenance: 'https://schema' },
+    })
+  })
+
+  it('omits the session provenance key from tool payloads', () => {
+    const payload = buildMcpServerUpsertPayload({
+      id: 'mcp-dynamic',
+      name: 'Dynamic MCP',
+      type: 'dynamic',
+      transport: CustomMcpServerTransportType.STREAMABLE_HTTP,
+      enabled: true,
+      tools: [
+        {
+          name: 'createReturn',
+          prompt: 'Create a return',
+          enabled: true,
+          provenanceKey: 'session-key',
+          config: {
+            inputSchema: '{"type":"object"}',
+            invocation: {
+              functionId: 'fn-create-return',
+              method: McpToolInvocationMethod.POST,
+            },
+          },
+        } as never,
+      ],
+    })
+
+    expect(JSON.stringify(payload)).not.toContain('provenanceKey')
+    expect(JSON.stringify(payload)).not.toContain('session-key')
+  })
 })
 
 describe('getMcpTransportLabel', () => {

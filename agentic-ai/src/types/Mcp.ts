@@ -63,6 +63,11 @@ export interface McpServer {
   config?: McpConfig
   tools?: McpTool[]
   enabled?: boolean
+  mixins?: Record<string, unknown>
+  metadata?: {
+    version?: number
+    mixins?: Record<string, unknown>
+  }
 }
 
 export interface McpCardProps {

@@ -153,6 +153,48 @@ describe('buildRollbackAgent', () => {
     expect(payload?.metadata.modifiedBy).toBeUndefined()
   })
 
+  it('restores the snapshot mixins and schema instead of the live ones', () => {
+    const agent = liveAgent()
+    agent.mixins = { provenance: [{ generationId: 'live' }] }
+    agent.metadata.mixins = { provenance: 'https://live' }
+    const stored = agent.versions?.[0]
+    if (!stored) {
+      return
+    }
+    stored.mixins = { provenance: { entries: [{ generationId: 'old' }] } }
+    stored.metadata = {
+      ...stored.metadata,
+      mixins: { provenance: 'https://old' },
+    }
+    const historical = buildAgentVersionRows(agent).find(
+      (row) => row.version === 2 && !row.isCurrent
+    )
+
+    const payload = historical
+      ? buildRollbackAgent(agent, historical, 'Rolled back to version 2')
+      : null
+
+    expect(payload?.mixins).toEqual({
+      provenance: { entries: [{ generationId: 'old' }] },
+    })
+    expect(payload?.metadata.mixins).toEqual({ provenance: 'https://old' })
+    expect(payload?.metadata.version).toBe(3)
+  })
+
+  it('clears mixins when the snapshot has none', () => {
+    const agent = liveAgent()
+    agent.mixins = { provenance: [{ generationId: 'live' }] }
+    agent.metadata.mixins = { provenance: 'https://live' }
+    const historical = buildAgentVersionRows(agent)[1]
+
+    const payload = historical
+      ? buildRollbackAgent(agent, historical, 'Rolled back to version 2')
+      : null
+
+    expect(payload?.mixins).toEqual({})
+    expect(payload?.metadata.mixins).toEqual({})
+  })
+
   it('returns null when the snapshot has no model config', () => {
     const agent = liveAgent()
     const incomplete = buildAgentVersionRows(agent)[2]

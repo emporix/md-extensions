@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   AutoComplete,
   Dropdown,
@@ -14,6 +14,13 @@ import LocalizedInput from '../shared/LocalizedInput'
 import { useTranslation } from 'react-i18next'
 import { fetchBrands, fetchLabels } from '@emporix/api-calls'
 import { deepClone, removeEmptyValues } from '../../helpers/utils'
+import {
+  pendingProvenanceAfterDiscard,
+  pendingProvenanceForProduct,
+  productFormKeepsDirtyValues,
+  productProvenanceForSave,
+  type ProvenanceEnvelope,
+} from '../../helpers/aiProvenance'
 import { trimCloudinaryImage } from '../../helpers/images'
 import { useProductData } from '../../context/ProductDataProvider'
 import { useActiveNode } from '../../context/ActiveNodeProvider'
@@ -139,6 +146,32 @@ export const ProductDetailsForm = () => {
   const { hasPermission } = usePermissions()
 
   const [isAssistantBoxOpened, setIsAssistantBoxOpened] = useState(false)
+  const productId = product?.id ?? undefined
+  const pendingProvenanceRef = useRef<ProvenanceEnvelope[]>([])
+  const productScopeRef = useRef(productId)
+  const fullResetRef = useRef(false)
+  const keepDirtyValuesRef = useRef(false)
+  if (productScopeRef.current !== productId) {
+    keepDirtyValuesRef.current = productFormKeepsDirtyValues(
+      productScopeRef.current,
+      productId,
+      false
+    )
+    pendingProvenanceRef.current = [
+      ...pendingProvenanceForProduct(
+        pendingProvenanceRef.current,
+        productScopeRef.current,
+        productId
+      ),
+    ]
+    productScopeRef.current = productId
+  } else {
+    keepDirtyValuesRef.current = productFormKeepsDirtyValues(
+      productId,
+      productId,
+      fullResetRef.current
+    )
+  }
   const [isAssistantEnabled, setIsAssistantEnabled] = useState(false)
   const [vendors, setVendors] = useState<VendorSuggestion[]>([])
   const [vendorQuery, setVendorQuery] = useState('')
@@ -168,7 +201,9 @@ export const ProductDetailsForm = () => {
   const description = watch('description')
 
   const initializeForm = useCallback(() => {
-    reset(product)
+    const keepDirtyValues = keepDirtyValuesRef.current
+    fullResetRef.current = false
+    reset(product, keepDirtyValues ? { keepDirtyValues: true } : undefined)
     clearOverridden()
     if (product?.productType !== ProductType.dynamicVariant) {
       return
@@ -208,6 +243,13 @@ export const ProductDetailsForm = () => {
     setInheritedValues,
     markOverridden,
   ])
+
+  const discardChanges = useCallback(() => {
+    pendingProvenanceRef.current = pendingProvenanceAfterDiscard()
+    fullResetRef.current = true
+    keepDirtyValuesRef.current = false
+    initializeForm()
+  }, [initializeForm])
 
   useEffect(() => {
     initializeForm()
@@ -309,7 +351,14 @@ export const ProductDetailsForm = () => {
             payload = stripInheritedFields(data, overriddenFields, isChildFlow)
           }
         }
+        payload = productProvenanceForSave(
+          payload,
+          product,
+          pendingProvenanceRef.current,
+          'create'
+        )
         const { id } = await createProduct(payload)
+        pendingProvenanceRef.current = []
         navigate(productDetailPath(id))
       } catch (error: unknown) {
         console.error(error)
@@ -329,6 +378,7 @@ export const ProductDetailsForm = () => {
     },
     [
       overriddenFields,
+      product,
       siblingIdParam,
       blockPanel,
       createProduct,
@@ -369,8 +419,15 @@ export const ProductDetailsForm = () => {
         }
         delete data?.metadata?.createdAt
         delete data?.metadata?.modifiedAt
-        const payload = removeEmptyValues(data)
+        const payload = productProvenanceForSave(
+          removeEmptyValues(data),
+          product,
+          pendingProvenanceRef.current,
+          'update'
+        )
         await updateProduct(payload)
+        pendingProvenanceRef.current = []
+        fullResetRef.current = true
         toast.showToast(t('products.edit.toast.update.success'), '', 'success')
         refreshData()
       } catch (error: unknown) {
@@ -392,7 +449,7 @@ export const ProductDetailsForm = () => {
     [
       formState,
       overriddenFields,
-      product?.productType,
+      product,
       refreshData,
       blockPanel,
       t,
@@ -414,7 +471,7 @@ export const ProductDetailsForm = () => {
         name={t('products.edit.tab.general.information')}
         actions={
           <div className={styles.actions}>
-            <SecondaryButton disabled={!canManage} onClick={initializeForm}>
+            <SecondaryButton disabled={!canManage} onClick={discardChanges}>
               {t('global.discard')}
             </SecondaryButton>
             {isAssistantEnabled &&
@@ -736,8 +793,11 @@ export const ProductDetailsForm = () => {
           onReject={() => {
             setIsAssistantBoxOpened(false)
           }}
-          onAccept={(description: Localized | undefined) => {
+          onAccept={(description: Localized | undefined, provenance) => {
             setValue('description', description, { shouldDirty: true })
+            if (provenance?.length) {
+              pendingProvenanceRef.current.push(...provenance)
+            }
             setIsAssistantBoxOpened(false)
           }}
         />

@@ -57,6 +57,15 @@ Here is the tool:
     )
 
     expect(result.appliedFieldCount).toBe(7)
+    expect(result.appliedFields).toEqual([
+      'tools.name',
+      'tools.description',
+      'tools.prompt',
+      'tools.config.invocation.method',
+      'tools.config.invocation.argsLocation',
+      'tools.config.inputSchema',
+      'tools.config.requiredScopes',
+    ])
     expect(result.tool.name).toBe('get_product')
     expect(result.tool.config?.requiredScopes).toEqual(['product.product_read'])
     expect(result.tool.config?.invocation?.functionId).toBe('fn-123')
@@ -191,6 +200,7 @@ Here is the tool:
     )
 
     expect(result.appliedFieldCount).toBe(1)
+    expect(result.appliedFields).toEqual(['tools.prompt'])
     expect(result.tool.name).toBe('')
     expect(result.tool.prompt).toBe('valid prompt')
   })

@@ -9,6 +9,8 @@ import {
   createMcpToolFromFunctionAssistantAgent,
 } from '../services/agentService'
 import { formatApiError } from '../utils/errorHelpers'
+import { useAppliedGeneration } from '../contexts/AppliedGenerationContext'
+import { readToolProvenanceKey } from '../utils/mcpToolProvenance'
 import {
   MCP_TOOL_FROM_FUNCTION_ASSISTANT_I18N_KEYS,
   MCP_TOOL_FROM_FUNCTION_ASSISTANT_I18N_MESSAGES,
@@ -44,7 +46,7 @@ export interface UseMcpToolFromFunctionAssistantParams {
   tool: McpTool
   context: McpToolFromFunctionAssistantContext
   availableScopeIds?: readonly string[] | undefined
-  onApplyGeneratedTool: (tool: McpTool) => void
+  onApplyGeneratedTool: (tool: McpTool & { provenanceKey?: string }) => void
   onClose: () => void
 }
 
@@ -63,6 +65,7 @@ export const useMcpToolFromFunctionAssistant = ({
   const appState = useAppState()
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
+  const { recordAppliedGeneration } = useAppliedGeneration()
 
   const [assistantError, setAssistantError] = useState<string | null>(null)
   const [assistantWorking, setAssistantWorking] = useState(false)
@@ -160,7 +163,7 @@ export const useMcpToolFromFunctionAssistant = ({
         return
       }
 
-      const draft = extractMcpToolDraftFromAgentMessage(reply)
+      const draft = extractMcpToolDraftFromAgentMessage(reply.text)
       if (!draft) {
         setAssistantError(
           t(MCP_TOOL_FROM_FUNCTION_ASSISTANT_I18N_KEYS.extractFailed)
@@ -168,19 +171,25 @@ export const useMcpToolFromFunctionAssistant = ({
         return
       }
 
-      const { tool: nextTool, appliedFieldCount } = applyMcpToolDraftToTool(
+      const { tool: nextTool, appliedFields } = applyMcpToolDraftToTool(
         tool,
         draft,
         { availableScopeIds }
       )
-      if (appliedFieldCount === 0) {
+      if (appliedFields.length === 0) {
         setAssistantError(
           t(MCP_TOOL_FROM_FUNCTION_ASSISTANT_I18N_KEYS.applyFailed)
         )
         return
       }
 
-      onApplyGeneratedTool(nextTool)
+      const toolProvenanceKey = readToolProvenanceKey(nextTool)
+      onApplyGeneratedTool(
+        toolProvenanceKey
+          ? { ...nextTool, provenanceKey: toolProvenanceKey }
+          : nextTool
+      )
+      recordAppliedGeneration(reply.provenance, toolProvenanceKey)
       showSuccess(t('mcp_tool_from_function_applied'))
       onClose()
     } catch (err) {
@@ -211,6 +220,7 @@ export const useMcpToolFromFunctionAssistant = ({
     context.functionId,
     onApplyGeneratedTool,
     onClose,
+    recordAppliedGeneration,
     resolveAssistantErrorMessage,
     showError,
     showSuccess,

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from 'primereact/button'
@@ -28,8 +28,9 @@ import { McpConnectionSection } from './McpConnectionSection'
 import { McpDetailSection } from './McpDetailSection'
 import { McpToolsEditor } from './McpToolsEditor'
 import { DetailStatusDot } from '../shared/DetailStatusDot'
+import { AppliedGenerationProvider } from '../../contexts/AppliedGenerationContext'
 
-const McpDetailPage = () => {
+const McpDetailContent = () => {
   const appState = useAppState()
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -38,6 +39,8 @@ const McpDetailPage = () => {
   const isCreating = location.pathname.endsWith('/add')
 
   const [mcpServer, setMcpServer] = useState<McpServer | null>(null)
+  const mcpServerRef = useRef(mcpServer)
+  mcpServerRef.current = mcpServer
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -87,7 +90,7 @@ const McpDetailPage = () => {
 
         setMcpServer(fetchedServer)
       } catch (err) {
-        if (!cancelled) {
+        if (!cancelled && mcpServerRef.current?.id !== mcpServerId) {
           setError(
             getEntityLoadErrorMessage(
               err,
@@ -147,7 +150,14 @@ const McpDetailPage = () => {
   const dynamicConfig = useDynamicMcpConfig({
     mcpServer: isDynamic ? mcpServer : null,
     isCreating,
-    onSave: handleSaveSuccess,
+    onSave: (savedId, savedServer) => {
+      if (savedServer) {
+        setMcpServer(savedServer)
+      }
+      if (isCreating) {
+        void handleSaveSuccess(savedId)
+      }
+    },
   })
 
   const handleMcpTypeChange = useCallback(
@@ -374,6 +384,15 @@ const McpDetailPage = () => {
           ))}
       </div>
     </div>
+  )
+}
+
+const McpDetailPage = () => {
+  const { mcpServerId } = useParams<{ mcpServerId: string }>()
+  return (
+    <AppliedGenerationProvider scopeId={mcpServerId ?? 'new'}>
+      <McpDetailContent />
+    </AppliedGenerationProvider>
   )
 }
 

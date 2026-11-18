@@ -12,7 +12,7 @@ interface GenerateMcpToolFromFunctionDialogProps {
   context: McpToolFromFunctionAssistantContext
   availableScopeIds?: readonly string[] | undefined
   onHide: () => void
-  onApply: (tool: McpTool) => void
+  onApply: (tool: McpTool & { provenanceKey?: string }) => void
 }
 
 export const GenerateMcpToolFromFunctionDialog: React.FC<

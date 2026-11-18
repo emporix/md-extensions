@@ -13,6 +13,8 @@ import { JSON_SCHEMA_ASSISTANT_I18N_KEYS } from '../utils/jsonSchemaAssistantHel
 import { MCP_TOOL_FROM_FUNCTION_ASSISTANT_I18N_KEYS } from '../utils/mcpToolFromFunctionAssistantHelpers'
 import { LOG_ANALYSIS_ASSISTANT_I18N_KEYS } from '../utils/logAnalysisAssistantHelpers'
 import { CHAT_UPLOAD_FAILED_KEY } from '../utils/chatImageUpload'
+import { readProvenanceEnvelope } from '../utils/aiProvenance'
+import type { ProvenanceEnvelope } from '../utils/aiProvenance'
 import {
   COMMERCE_FILTER_DSL_AGENT_ID,
   COMMERCE_FILTER_DSL_AGENT_TEMPLATE_ID,
@@ -103,12 +105,17 @@ const chatRequestBody = (
   ...(attachments && attachments.length > 0 ? { attachments } : {}),
 })
 
+export type AgentChatResult = {
+  text: string
+  provenance: ProvenanceEnvelope | null
+}
+
 export const chatWithAgent = async (
   appState: AppState,
   agentId: string,
   message: string,
   options: ChatWithAgentOptions = {}
-): Promise<string> => {
+): Promise<AgentChatResult> => {
   const emptyResponseKey =
     options.emptyResponseKey ??
     COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse
@@ -130,6 +137,7 @@ export const chatWithAgent = async (
   let text = ''
   let sawArtifact = false
   let streamError: Error | null = null
+  let provenance: ProvenanceEnvelope | null = null
   for await (const event of stream) {
     if (streamError && event.type !== 'done') {
       continue
@@ -178,6 +186,7 @@ export const chatWithAgent = async (
     }
 
     if (event.type === 'done') {
+      provenance = readProvenanceEnvelope(event)
       if (event.sessionId) {
         options.onSessionId?.(event.sessionId)
       }
@@ -193,7 +202,7 @@ export const chatWithAgent = async (
   if (!trimmed && !sawArtifact) {
     throw new Error(emptyResponseKey)
   }
-  return trimmed
+  return { text: trimmed, provenance }
 }
 
 const readChatEntry = (payload: unknown): Record<string, unknown> | null => {
@@ -224,7 +233,7 @@ export const chatWithAgentOnce = async (
     ChatWithAgentOptions,
     'emptyResponseKey' | 'signal' | 'sessionId' | 'onSessionId' | 'attachments'
   > = {}
-): Promise<string> => {
+): Promise<AgentChatResult> => {
   const api = getApiClient(appState)
   const requestInit: RequestInit = {}
   if (options.sessionId) {
@@ -249,7 +258,7 @@ export const chatWithAgentOnce = async (
         COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse
     )
   }
-  return text
+  return { text, provenance: readProvenanceEnvelope(readChatEntry(payload)) }
 }
 
 const readUploadedAttachment = (
@@ -518,6 +527,7 @@ export const upsertCustomAgent = async (
     icon: agent.icon || '',
     tags: agent.tags || [],
     requiredScopes: agent.requiredScopes || [],
+    ...(agent.mixins ? { mixins: agent.mixins } : {}),
   }
 
   return await api.put<CustomAgent>(

@@ -14,6 +14,8 @@ import {
 } from '../services/agentService'
 import { formatApiError } from '../utils/errorHelpers'
 import { useHelperAgentProvisioning } from './useHelperAgentProvisioning'
+import { useAppliedGeneration } from '../contexts/AppliedGenerationContext'
+import { withAiGeneratedFields } from '../utils/aiProvenance'
 
 type EditorTab = 'form' | 'json' | 'assistant'
 
@@ -44,6 +46,7 @@ export const useCommerceFilterDslAssistant = ({
   const appState = useAppState()
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
+  const { recordAppliedGeneration } = useAppliedGeneration()
 
   const [assistantPrompt, setAssistantPrompt] = useState('')
   const [assistantError, setAssistantError] = useState<string | null>(null)
@@ -93,7 +96,7 @@ export const useCommerceFilterDslAssistant = ({
           onToolActivity: setAssistantToolName,
         }
       )
-      const extracted = extractFilterDslJsonFromAgentMessage(reply)
+      const extracted = extractFilterDslJsonFromAgentMessage(reply.text)
       if (!extracted) {
         setAssistantError(t('commerce_filter_assistant_extract_failed'))
         return
@@ -103,6 +106,9 @@ export const useCommerceFilterDslAssistant = ({
       )
       if (dsl) {
         onApplyGeneratedDsl(dsl)
+        recordAppliedGeneration(
+          withAiGeneratedFields(reply.provenance, ['triggers.config.filter'])
+        )
         showSuccess(t('commerce_filter_assistant_applied'))
       }
     } catch (err) {
@@ -120,6 +126,7 @@ export const useCommerceFilterDslAssistant = ({
     appState,
     assistantPrompt,
     onApplyGeneratedDsl,
+    recordAppliedGeneration,
     resolveAssistantErrorMessage,
     showError,
     showSuccess,

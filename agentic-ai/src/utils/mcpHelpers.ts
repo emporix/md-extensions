@@ -138,9 +138,28 @@ export const buildMcpServerUpsertPayload = (
     enabled: mcpServer.enabled ?? true,
   }
 
+  const persistedMixins = {
+    ...(mcpServer.mixins ? { mixins: mcpServer.mixins } : {}),
+    ...(mcpServer.metadata &&
+    (typeof mcpServer.metadata.version === 'number' ||
+      mcpServer.metadata.mixins)
+      ? {
+          metadata: {
+            ...(typeof mcpServer.metadata.version === 'number'
+              ? { version: mcpServer.metadata.version }
+              : {}),
+            ...(mcpServer.metadata.mixins
+              ? { mixins: mcpServer.metadata.mixins }
+              : {}),
+          },
+        }
+      : {}),
+  }
+
   if (isDynamicMcpServer(mcpServer)) {
     return {
       ...base,
+      ...persistedMixins,
       type: 'dynamic',
       transport:
         mcpServer.transport ?? CustomMcpServerTransportType.STREAMABLE_HTTP,
@@ -151,6 +170,7 @@ export const buildMcpServerUpsertPayload = (
   const config = mcpServer.config
   return {
     ...base,
+    ...persistedMixins,
     type: 'custom',
     transport: mcpServer.transport,
     config: {

@@ -4,6 +4,7 @@ import { Button } from 'primereact/button'
 import { McpTool, ProjectCloudFunction } from '../../types/Mcp'
 import { IamScope } from '../../services/iamScopesService'
 import { McpToolCard } from './McpToolCard'
+import { readToolProvenanceKey } from '../../utils/mcpToolProvenance'
 
 interface McpToolsEditorProps {
   tools: McpTool[]
@@ -105,7 +106,7 @@ export const McpToolsEditor = ({
     <div className="mcp-detail-tools-editor">
       {tools.map((tool, index) => (
         <McpToolCard
-          key={`mcp-tool-${index}`}
+          key={readToolProvenanceKey(tool) ?? `mcp-tool-${index}`}
           tool={tool}
           index={index}
           expanded={expandedIndex === index}

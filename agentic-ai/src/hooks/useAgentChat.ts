@@ -195,7 +195,7 @@ export const useAgentChat = () => {
       let result: AgentChatSendResult = 'ok'
       let sawStreamOutput = false
       try {
-        let reply: string
+        let reply: Awaited<ReturnType<typeof chatWithAgent>>
         try {
           reply = await chatWithAgent(appState, agentId, trimmed, {
             emptyResponseKey: EMPTY_RESPONSE_KEY,
@@ -251,7 +251,7 @@ export const useAgentChat = () => {
             onSessionId: setSessionId,
           })
         }
-        replaceAssistant({ role: 'assistant', text: reply })
+        replaceAssistant({ role: 'assistant', text: reply.text })
       } catch (err) {
         if (isAbortError(err)) {
           result = 'aborted'

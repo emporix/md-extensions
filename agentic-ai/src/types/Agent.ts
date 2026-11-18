@@ -127,6 +127,7 @@ export interface AgentVersionMetadata {
   modifiedAt?: string
   modifiedBy?: ModifiedBy
   changeNote?: string
+  mixins?: Record<string, string>
 }
 
 export interface Metadata {
@@ -155,6 +156,7 @@ export interface CustomAgent {
   enableMemory: boolean
   enabled: boolean
   metadata: Metadata
+  mixins?: Record<string, unknown>
   icon?: string
   tags?: string[]
   type: string
@@ -178,6 +180,7 @@ export interface AgentVersion {
   icon?: string
   tags?: string[]
   outputFormat?: string
+  mixins?: Record<string, unknown>
   metadata: AgentVersionMetadata
 }
 

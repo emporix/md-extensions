@@ -111,7 +111,7 @@ export const useChatRecommendations = (
       }
       setState({
         targetId,
-        recommendations: parseChatRecommendations(reply),
+        recommendations: parseChatRecommendations(reply.text),
       })
     }
 
