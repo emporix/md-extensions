@@ -20,6 +20,7 @@ export const fetchAllRecords = async <T>(
   const allRecords: T[] = []
   let currentPagination = { ...initialPagination }
   let totalRecords = 0
+  let firstPageLength: number | undefined
   let retryCount = 0
 
   while (allRecords.length < totalRecords || totalRecords === 0) {
@@ -33,6 +34,7 @@ export const fetchAllRecords = async <T>(
 
       // Add new records to our collection
       allRecords.push(...response.values)
+      firstPageLength ??= response.values.length
 
       // Call progress callback if provided
       if (onProgress) {
@@ -45,12 +47,13 @@ export const fetchAllRecords = async <T>(
       }
 
       // X-Total-Count can be higher than the number of records the API
-      // returns (IAM users: 35 counted, 34 listed). The API pages by that
-      // count and answers 404 for a page that starts past it, so the pages
-      // requested so far already cover the whole count: stop here.
+      // returns (IAM users: 35 counted, 34 listed), and the API answers 404
+      // for a page that starts past the count. Stop once the pages fetched
+      // so far cover it. The page size is the one the API actually used (the
+      // length of the first page), never the requested `rows`: an API that
+      // caps the page size would otherwise get its list cut short.
       const currentPage = currentPagination.currentPage || 1
-      const pageSize = currentPagination.rows
-      if (pageSize && currentPage * pageSize >= totalRecords) {
+      if (currentPage * firstPageLength >= totalRecords) {
         break
       }
 

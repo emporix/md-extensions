@@ -66,23 +66,26 @@ describe('fetchAllRecords', () => {
     expect(fetchFunction).toHaveBeenCalledTimes(3)
   })
 
-  it('does not request a page past X-Total-Count when the API lists fewer records than it counts', async () => {
-    // IAM users on stage: X-Total-Count 35, 34 records, page 2 answers 404
+  it('keeps the records when the API lists fewer of them than it counts', async () => {
+    // IAM users on stage: X-Total-Count 35, 34 records, page 2 answers 404.
+    // One short page cannot tell an inflated count from a capped page size,
+    // so page 2 is asked for once and its 404 ends the list.
     const fetchFunction = vi
       .fn()
       .mockResolvedValueOnce({ values: records(34), totalRecords: 35 })
       .mockRejectedValue(httpError(404))
 
-    const result = await fetchAllRecords(fetchFunction, {
-      currentPage: 1,
-      rows: 500,
-    })
+    const result = await fetchAllRecords(
+      fetchFunction,
+      { currentPage: 1, rows: 500 },
+      { maxRetries: 3, retryDelay: 0 }
+    )
 
     expect(result).toHaveLength(34)
-    expect(fetchFunction).toHaveBeenCalledTimes(1)
+    expect(fetchFunction).toHaveBeenCalledTimes(2)
   })
 
-  it('requests the next page while X-Total-Count exceeds the requested pages', async () => {
+  it('does not request a page past X-Total-Count once the page size is known', async () => {
     const fetchFunction = vi
       .fn()
       .mockResolvedValueOnce({ values: records(500), totalRecords: 620 })
@@ -100,6 +103,48 @@ describe('fetchAllRecords', () => {
       currentPage: 2,
       rows: 500,
     })
+  })
+
+  it('fetches every page when the API caps the page size below the requested one', async () => {
+    // 500 requested, 100 returned per page, 620 records
+    const fetchFunction = vi.fn(
+      async ({ currentPage = 1 }: { currentPage?: number }) => {
+        const from = (currentPage - 1) * 100 + 1
+        const count = Math.max(0, Math.min(100, 620 - from + 1))
+        return { values: records(count, from), totalRecords: 620 }
+      }
+    )
+
+    const result = await fetchAllRecords(fetchFunction, {
+      currentPage: 1,
+      rows: 500,
+    })
+
+    expect(result).toHaveLength(620)
+    expect(result.at(-1)).toEqual({ id: '620' })
+    expect(fetchFunction).toHaveBeenCalledTimes(7)
+  })
+
+  it('stops at the last counted page of a capped API with an inflated count', async () => {
+    // 100 returned per page, 620 records, X-Total-Count 621
+    const fetchFunction = vi.fn(
+      async ({ currentPage = 1 }: { currentPage?: number }) => {
+        if (currentPage > 7) {
+          throw httpError(404)
+        }
+        const from = (currentPage - 1) * 100 + 1
+        const count = Math.min(100, 620 - from + 1)
+        return { values: records(count, from), totalRecords: 621 }
+      }
+    )
+
+    const result = await fetchAllRecords(fetchFunction, {
+      currentPage: 1,
+      rows: 500,
+    })
+
+    expect(result).toHaveLength(620)
+    expect(fetchFunction).toHaveBeenCalledTimes(7)
   })
 
   it('keeps the fetched records when a page past the last one answers 404', async () => {
