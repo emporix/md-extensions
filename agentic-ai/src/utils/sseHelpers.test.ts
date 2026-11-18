@@ -117,6 +117,24 @@ describe('sseHelpers', () => {
     })
   })
 
+  it('keeps provenance mixins on the done event', () => {
+    expect(
+      mapAgentChatStreamEvent({
+        event: 'done',
+        data: '{"agent_id":"agent-1","agent_type":"generic","session_id":"sess-1","tools_used":[],"mixins":{"provenance":[]},"metadata":{"mixins":{"provenance":"https://schema"}}}',
+      })
+    ).toEqual({
+      type: 'done',
+      agentId: 'agent-1',
+      agentType: 'generic',
+      sessionId: 'sess-1',
+      toolsUsed: [],
+      ttftMs: undefined,
+      mixins: { provenance: [] },
+      metadata: { mixins: { provenance: 'https://schema' } },
+    })
+  })
+
   it('handles CRLF line endings', () => {
     const result = parseSseFrames(
       'event: token\r\ndata: {"content":"Hi"}\r\n\r\n'

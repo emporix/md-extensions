@@ -14,6 +14,7 @@ import {
   AgentCollaboration,
 } from '../../types/Agent'
 import { useAppState } from '../../contexts/AppStateContext'
+import { useAppliedGeneration } from '../../contexts/AppliedGenerationContext'
 import { AiGeneratedNotice } from '../shared/AiGeneratedNotice'
 import { ConfirmDialog } from '../shared/ConfirmDialog'
 import { AgentBasicInfo } from './agent-config/AgentBasicInfo'
@@ -38,6 +39,7 @@ import {
   getLocalizedValue,
 } from '../../utils/agentHelpers'
 import { getCustomAgent, getCustomAgents } from '../../services/agentService'
+import { AppliedGenerationProvider } from '../../contexts/AppliedGenerationContext'
 import { CHAT_AGENT_QUERY_PARAM } from '../../utils/agentChatHelpers'
 import { getEntityLoadErrorMessage } from '../../utils/errorHelpers'
 import { hasConversations } from '../../services/conversationsService'
@@ -56,12 +58,13 @@ type AgentDetailTab =
   | 'versions'
   | 'conversations'
 
-const AgentDetailPage: React.FC = () => {
+const AgentDetailContent: React.FC = () => {
   const appState = useAppState()
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const { agentId } = useParams<{ agentId: string }>()
+  const { clearAppliedGenerations } = useAppliedGeneration()
   const isCreating = location.pathname.endsWith('/add')
 
   const [agent, setAgent] = useState<CustomAgent | null>(null)
@@ -250,6 +253,7 @@ const AgentDetailPage: React.FC = () => {
   )
 
   const handleVersionRolledBack = useCallback(async () => {
+    clearAppliedGenerations()
     if (!appState || !agentId?.trim()) {
       return
     }
@@ -270,7 +274,7 @@ const AgentDetailPage: React.FC = () => {
         )
       )
     }
-  }, [appState, agentId, t])
+  }, [appState, agentId, clearAppliedGenerations, t])
 
   const {
     state,
@@ -611,6 +615,15 @@ const AgentDetailPage: React.FC = () => {
         severity="warning"
       />
     </div>
+  )
+}
+
+const AgentDetailPage: React.FC = () => {
+  const { agentId } = useParams<{ agentId: string }>()
+  return (
+    <AppliedGenerationProvider scopeId={agentId ?? 'new'}>
+      <AgentDetailContent />
+    </AppliedGenerationProvider>
   )
 }
 

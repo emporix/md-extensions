@@ -60,13 +60,74 @@ describe('chatWithAgent', () => {
 
     await expect(
       chatWithAgent(appState, 'agent-1', 'build filter')
-    ).resolves.toBe('{"filter":"value"}')
+    ).resolves.toEqual({ text: '{"filter":"value"}', provenance: null })
 
     expect(mockPostSse).toHaveBeenCalledWith(
       '/ai-service/testtenant/agentic/chat-stream',
       { agentId: 'agent-1', message: 'build filter' },
       undefined
     )
+  })
+
+  it('returns provenance from the stream done event', async () => {
+    mockPostSse.mockReturnValue(
+      createStream(
+        { type: 'token', content: 'schema' },
+        {
+          type: 'done',
+          agentId: 'agent-1',
+          agentType: 'generic',
+          sessionId: 'sess-1',
+          toolsUsed: [],
+          mixins: {
+            provenance: [
+              {
+                origin: 'ai_generated',
+                contentVersion: 1,
+                generationId: 'gen-stream',
+                generatedAt: '2026-11-13T10:00:00Z',
+                generator: 'agent-chat',
+                model: 'gpt-4o-mini',
+                reviewStatus: 'not_reviewed',
+              },
+            ],
+          },
+          metadata: {
+            mixins: {
+              provenance:
+                'https://res.cloudinary.com/saas-ag/raw/upload/provenance_lswyqe.json',
+            },
+          },
+        }
+      )
+    )
+
+    await expect(
+      chatWithAgent(appState, 'agent-1', 'build filter')
+    ).resolves.toEqual({
+      text: 'schema',
+      provenance: {
+        mixins: {
+          provenance: [
+            {
+              origin: 'ai_generated',
+              contentVersion: 1,
+              generationId: 'gen-stream',
+              generatedAt: '2026-11-13T10:00:00Z',
+              generator: 'agent-chat',
+              model: 'gpt-4o-mini',
+              reviewStatus: 'not_reviewed',
+            },
+          ],
+        },
+        metadata: {
+          mixins: {
+            provenance:
+              'https://res.cloudinary.com/saas-ag/raw/upload/provenance_lswyqe.json',
+          },
+        },
+      },
+    })
   })
 
   it('throws empty response key when stream completes without tokens', async () => {
@@ -109,7 +170,7 @@ describe('chatWithAgent', () => {
         onToken,
         onToolActivity,
       })
-    ).resolves.toBe('Hello world')
+    ).resolves.toEqual({ text: 'Hello world', provenance: null })
 
     expect(onToken).toHaveBeenCalledWith('Hello')
     expect(onToken).toHaveBeenLastCalledWith('Hello world')
@@ -147,7 +208,7 @@ describe('chatWithAgent', () => {
         onToken,
         onArtifact,
       })
-    ).resolves.toBe('Here is the forest.')
+    ).resolves.toEqual({ text: 'Here is the forest.', provenance: null })
 
     expect(onToken).toHaveBeenCalledWith('Here is the forest.')
     expect(onArtifact).toHaveBeenCalledWith({
@@ -188,7 +249,7 @@ describe('chatWithAgent', () => {
       chatWithAgent(appState, 'agent-1', 'draw a forest', {
         emptyResponseKey: COMMERCE_FILTER_ASSISTANT_I18N_KEYS.emptyResponse,
       })
-    ).resolves.toBe('')
+    ).resolves.toEqual({ text: '', provenance: null })
   })
 
   it('passes session-id header and onSessionId callback when provided', async () => {
@@ -211,7 +272,7 @@ describe('chatWithAgent', () => {
         sessionId: 'sess-existing',
         onSessionId,
       })
-    ).resolves.toBe('Analysis complete')
+    ).resolves.toEqual({ text: 'Analysis complete', provenance: null })
 
     expect(mockPostSse).toHaveBeenCalledWith(
       '/ai-service/testtenant/agentic/chat-stream',
@@ -239,7 +300,7 @@ describe('chatWithAgent', () => {
 
     await expect(
       chatWithAgent(appState, 'agent-1', 'build filter', { onThinking })
-    ).resolves.toBe('Done')
+    ).resolves.toEqual({ text: 'Done', provenance: null })
 
     expect(onThinking).toHaveBeenNthCalledWith(1, 'Checking stock')
     expect(onThinking).toHaveBeenNthCalledWith(2, null)
@@ -329,7 +390,10 @@ describe('chatWithAgentOnce', () => {
         'chat-recommended-prompts-assistant',
         'suggest'
       )
-    ).resolves.toBe('{"hasRecommendations":true}')
+    ).resolves.toEqual({
+      text: '{"hasRecommendations":true}',
+      provenance: null,
+    })
 
     expect(mockPost).toHaveBeenCalledWith(
       '/ai-service/testtenant/agentic/chat',
@@ -342,6 +406,48 @@ describe('chatWithAgentOnce', () => {
     expect(mockPostSse).not.toHaveBeenCalled()
   })
 
+  it('returns provenance from the sync chat body', async () => {
+    mockPost.mockResolvedValue({
+      message: 'generated',
+      mixins: {
+        provenance: [
+          {
+            origin: 'ai_generated',
+            contentVersion: 1,
+            generationId: 'gen-1',
+            generatedAt: '2026-11-13T10:00:00Z',
+            generator: 'agent',
+            model: 'gpt-4o-mini',
+            reviewStatus: 'not_reviewed',
+          },
+        ],
+      },
+      metadata: { mixins: { provenance: 'https://schema' } },
+    })
+
+    await expect(
+      chatWithAgentOnce(appState, 'agent-1', 'suggest')
+    ).resolves.toEqual({
+      text: 'generated',
+      provenance: {
+        mixins: {
+          provenance: [
+            {
+              origin: 'ai_generated',
+              contentVersion: 1,
+              generationId: 'gen-1',
+              generatedAt: '2026-11-13T10:00:00Z',
+              generator: 'agent',
+              model: 'gpt-4o-mini',
+              reviewStatus: 'not_reviewed',
+            },
+          ],
+        },
+        metadata: { mixins: { provenance: 'https://schema' } },
+      },
+    })
+  })
+
   it('reads the message when the response is an array', async () => {
     mockPost.mockResolvedValue([
       { message: '  {"hasRecommendations":false}  ' },
@@ -349,7 +455,10 @@ describe('chatWithAgentOnce', () => {
 
     await expect(
       chatWithAgentOnce(appState, 'agent-1', 'suggest')
-    ).resolves.toBe('{"hasRecommendations":false}')
+    ).resolves.toEqual({
+      text: '{"hasRecommendations":false}',
+      provenance: null,
+    })
   })
 
   it('throws when the sync response has no message', async () => {
@@ -374,7 +483,7 @@ describe('chatWithAgentOnce', () => {
         sessionId: 'sess-existing',
         onSessionId,
       })
-    ).resolves.toBe('continued')
+    ).resolves.toEqual({ text: 'continued', provenance: null })
 
     expect(mockPost).toHaveBeenCalledWith(
       '/ai-service/testtenant/agentic/chat',

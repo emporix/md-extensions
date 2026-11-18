@@ -35,6 +35,8 @@ export type AgentChatStreamEvent =
       readonly sessionId: string
       readonly toolsUsed: readonly string[]
       readonly ttftMs?: number
+      readonly mixins?: unknown
+      readonly metadata?: unknown
     }
 
 const GENERATION_ID = /^[A-Za-z0-9._:-]{1,128}$/
@@ -261,9 +263,9 @@ export const mapAgentChatStreamEvent = (
         generationId,
       }
     }
-    case 'done':
-      return {
-        type: 'done',
+    case 'done': {
+      const done = {
+        type: 'done' as const,
         agentId: String(payload.agent_id ?? ''),
         agentType: String(payload.agent_type ?? ''),
         sessionId: String(payload.session_id ?? ''),
@@ -273,6 +275,15 @@ export const mapAgentChatStreamEvent = (
         ttftMs:
           typeof payload.ttft_ms === 'number' ? payload.ttft_ms : undefined,
       }
+      if (payload.mixins === undefined && payload.metadata === undefined) {
+        return done
+      }
+      return {
+        ...done,
+        mixins: payload.mixins,
+        metadata: payload.metadata,
+      }
+    }
     default:
       return null
   }

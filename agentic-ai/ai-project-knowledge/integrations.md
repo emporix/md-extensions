@@ -22,8 +22,8 @@ Backend prefix `/ai-service/{tenant}/agentic`.
 
 | Call | Method and path | Notes |
 |---|---|---|
-| Stream chat | POST `/chat-stream` | SSE (`Accept: text/event-stream`). Body `{ agentId, message }`. Optional header `session-id`. Events: `token`, `thinking`, `tool_start`, `tool_end`, `artifact`, `error`, `done`. `done` may carry a session id. Empty text and no artifact throws. Stream `error` throws. Abort signal is forwarded. |
-| One-shot chat | POST `/chat` | Same body and optional session header. Reads `message` and `sessionId` from an object or a one-element array. Empty message throws. |
+| Stream chat | POST `/chat-stream` | SSE (`Accept: text/event-stream`). Body `{ agentId, message }`. Optional header `session-id`. Events: `token`, `thinking`, `tool_start`, `tool_end`, `artifact`, `error`, `done`. `done` may carry a session id and `mixins`/`metadata`. The call returns `{ text, provenance }`. Empty text and no artifact throws. Stream `error` throws. Abort signal is forwarded. |
+| One-shot chat | POST `/chat` | Same body and optional session header. Reads `message` and `sessionId` from an object or a one-element array and provenance from `mixins`. Returns `{ text, provenance }`. Empty message throws. |
 | Templates | GET `/templates` | |
 | Agents | GET `/agents`, GET `/agents/{id}`, PUT `/agents/{id}` | PUT is create and update. |
 | Versions | GET `/agents/{id}?allVersions=true` | |

@@ -11,6 +11,8 @@ import {
   parseBaseProvider,
 } from '../types/Agent'
 import { upsertCustomAgent } from '../services/agentService'
+import { useAppliedGeneration } from '../contexts/AppliedGenerationContext'
+import { agentSaveMixins, appendAppliedProvenance } from '../utils/aiProvenance'
 import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
 import { ApiClientError } from '../services/apiClient'
@@ -109,6 +111,8 @@ export const useAgentConfig = ({
   const appState = useAppState()
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
+  const { readAppliedGenerations, clearAppliedGenerations } =
+    useAppliedGeneration()
   const [showDisableConfirm, setShowDisableConfirm] = useState(false)
   const [disableConfirmMessage, setDisableConfirmMessage] = useState('')
   const [pendingAgent, setPendingAgent] = useState<CustomAgent | null>(null)
@@ -385,6 +389,7 @@ export const useAgentConfig = ({
         icon: state.selectedIcon,
         tags: state.tags || [],
         requiredScopes: state.requiredScopes || [],
+        ...agentSaveMixins(agent.mixins),
       } as CustomAgent
     },
     [agent, state, availableTools]
@@ -401,11 +406,18 @@ export const useAgentConfig = ({
         setSaving(false)
         return
       }
+      let persistedAgent: CustomAgent | undefined
 
       try {
-        await upsertCustomAgent(appState, updatedAgent)
+        persistedAgent = appendAppliedProvenance(
+          updatedAgent,
+          readAppliedGenerations(),
+          agent.id ? 'update' : 'create'
+        )
+        await upsertCustomAgent(appState, persistedAgent)
 
         setSaving(false)
+        clearAppliedGenerations()
         const isUpdate = !!agent.id
         showSuccess(
           isUpdate
@@ -413,15 +425,19 @@ export const useAgentConfig = ({
             : t('agent_created_successfully')
         )
         setBaseline(toFormSnapshot(state))
-        onSave(updatedAgent)
+        onSave(persistedAgent)
 
         setPendingAgent(null)
         setShowDisableConfirm(false)
       } catch (error) {
         setSaving(false)
 
-        if (error instanceof ApiClientError && error.disableable) {
-          setPendingAgent(updatedAgent)
+        if (
+          persistedAgent &&
+          error instanceof ApiClientError &&
+          error.disableable
+        ) {
+          setPendingAgent(persistedAgent)
           setDisableConfirmMessage(error.message)
           setShowDisableConfirm(true)
           return
@@ -440,7 +456,9 @@ export const useAgentConfig = ({
       agent,
       appState,
       buildAgentFromState,
+      clearAppliedGenerations,
       onSave,
+      readAppliedGenerations,
       showSuccess,
       showError,
       state,
@@ -463,6 +481,7 @@ export const useAgentConfig = ({
       await upsertCustomAgent(appState, disabledAgent)
 
       setSaving(false)
+      clearAppliedGenerations()
       const isUpdate = !!pendingAgent.id
       showSuccess(
         isUpdate
@@ -479,7 +498,16 @@ export const useAgentConfig = ({
       showError(t('error_saving_agent', { message: errorMessage }))
       setPendingAgent(null)
     }
-  }, [pendingAgent, appState, onSave, showSuccess, showError, state, t])
+  }, [
+    pendingAgent,
+    appState,
+    clearAppliedGenerations,
+    onSave,
+    showSuccess,
+    showError,
+    state,
+    t,
+  ])
 
   const handleCancelDisable = useCallback(() => {
     setShowDisableConfirm(false)

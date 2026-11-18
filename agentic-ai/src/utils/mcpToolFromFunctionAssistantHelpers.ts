@@ -146,6 +146,7 @@ export const extractMcpToolDraftFromAgentMessage = (
 export type ApplyMcpToolDraftResult = {
   tool: McpTool
   appliedFieldCount: number
+  appliedFields: string[]
 }
 
 export type ApplyMcpToolDraftOptions = {
@@ -158,7 +159,7 @@ export const applyMcpToolDraftToTool = (
   draft: McpToolFromFunctionDraft,
   options?: ApplyMcpToolDraftOptions
 ): ApplyMcpToolDraftResult => {
-  let appliedFieldCount = 0
+  const appliedFields: string[] = []
   const nextTool: McpTool = { ...tool }
   const nextConfig = {
     requiredScopes: tool.config?.requiredScopes ?? [],
@@ -173,37 +174,37 @@ export const applyMcpToolDraftToTool = (
   const toolName = draft.toolName?.trim()
   if (toolName && MCP_TOOL_NAME_PATTERN.test(toolName)) {
     nextTool.name = toolName
-    appliedFieldCount += 1
+    appliedFields.push('tools.name')
   }
 
   const description = draft.description?.trim()
   if (description) {
     nextTool.description = description
-    appliedFieldCount += 1
+    appliedFields.push('tools.description')
   }
 
   const prompt = draft.prompt?.trim()
   if (prompt) {
     nextTool.prompt = prompt
-    appliedFieldCount += 1
+    appliedFields.push('tools.prompt')
   }
 
   const method = draft.method?.trim().toUpperCase()
   if (method && INVOCATION_METHODS.has(method)) {
     nextConfig.invocation.method = method
-    appliedFieldCount += 1
+    appliedFields.push('tools.config.invocation.method')
   }
 
   const argsLocation = draft.argsLocation?.trim().toLowerCase()
   if (argsLocation && ARGS_LOCATIONS.has(argsLocation)) {
     nextConfig.invocation.argsLocation = argsLocation
-    appliedFieldCount += 1
+    appliedFields.push('tools.config.invocation.argsLocation')
   }
 
   const inputSchema = normalizeInputSchema(draft.inputSchema)
   if (inputSchema) {
     nextConfig.inputSchema = inputSchema
-    appliedFieldCount += 1
+    appliedFields.push('tools.config.inputSchema')
   }
 
   const draftScopeIds = readDraftScopeIds(draft.requiredScopes)
@@ -215,13 +216,14 @@ export const applyMcpToolDraftToTool = (
       draftScopeIds,
       catalogIds
     )
-    appliedFieldCount += 1
+    appliedFields.push('tools.config.requiredScopes')
   }
 
   nextTool.config = nextConfig
 
   return {
     tool: nextTool,
-    appliedFieldCount,
+    appliedFieldCount: appliedFields.length,
+    appliedFields,
   }
 }

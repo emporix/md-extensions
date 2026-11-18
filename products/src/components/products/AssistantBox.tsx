@@ -15,7 +15,13 @@ import {
 import { useConfiguration } from '../../context/ConfigurationProvider'
 import InputField from '../shared/InputField'
 import { useAiApi } from '../../hooks/api/ai'
-import type { AiTextResponse } from '../../models/Ai.model'
+import type { AiTextResponse } from '@emporix/api-calls'
+import {
+  provenanceForSelectedRows,
+  readProvenanceEnvelope,
+  withAiGeneratedFields,
+  type ProvenanceEnvelope,
+} from '../../helpers/aiProvenance'
 import type Localized from '../../models/Localized.model'
 import styles from './AssistantBox.module.scss'
 
@@ -23,7 +29,10 @@ interface AssistantBoxProps {
   readonly productName: Localized
   readonly productDescription?: Localized
   readonly visible: boolean
-  readonly onAccept: (description: Localized | undefined) => void
+  readonly onAccept: (
+    description: Localized | undefined,
+    provenance?: readonly ProvenanceEnvelope[]
+  ) => void
   readonly onReject: () => void
   readonly loading?: boolean
   readonly buttonClassName?: string
@@ -40,6 +49,7 @@ interface DescriptionRow {
   originalDescription: string
   aiSuggestion: string
   aiSuggestionSelected: boolean
+  provenance?: ProvenanceEnvelope | null
 }
 
 const AiAssistantBoxRow = ({ language, row }: AiAssistantBoxRowProps) => {
@@ -213,7 +223,13 @@ const AssistantBox = ({
         await Promise.all(promptsRequests)
       generatedDescriptions.forEach((generatedDescription) => {
         const prompt = prompts.get(generatedDescription.id)
-        if (prompt) prompt.aiSuggestion = generatedDescription.result
+        if (prompt) {
+          prompt.aiSuggestion = generatedDescription.result
+          prompt.provenance = withAiGeneratedFields(
+            readProvenanceEnvelope(generatedDescription),
+            [`description.${generatedDescription.id}`]
+          )
+        }
       })
       setAiExecuted(true)
     } catch (error: unknown) {
@@ -227,12 +243,21 @@ const AssistantBox = ({
 
   const applyAiSuggestions = () => {
     const description: Localized = { ...productDescription }
+    const rows = Array.from(prompts.values())
     Array.from(prompts.entries()).forEach(([lang, row]) => {
       description[lang] = row.aiSuggestionSelected
         ? row.aiSuggestion
         : row.originalDescription
     })
-    onAccept(description)
+    onAccept(
+      description,
+      provenanceForSelectedRows(
+        rows.map((row) => ({
+          selected: row.aiSuggestionSelected,
+          provenance: row.provenance,
+        }))
+      )
+    )
     initialize()
   }
 

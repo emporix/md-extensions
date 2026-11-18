@@ -19,6 +19,7 @@ import {
 } from '../../utils/mcpHelpers'
 import { useMcpConfig } from '../../hooks/useMcpConfig'
 import { useDynamicMcpConfig } from '../../hooks/useDynamicMcpConfig'
+import { useAppliedGeneration } from '../../contexts/AppliedGenerationContext'
 import { useAgentTokensCatalog } from '../../hooks/useAgentTokensCatalog'
 import { useProjectFunctions } from '../../hooks/useProjectFunctions'
 import { useIamScopes } from '../../hooks/useIamScopes'
@@ -28,8 +29,9 @@ import { McpConnectionSection } from './McpConnectionSection'
 import { McpDetailSection } from './McpDetailSection'
 import { McpToolsEditor } from './McpToolsEditor'
 import { DetailStatusDot } from '../shared/DetailStatusDot'
+import { AppliedGenerationProvider } from '../../contexts/AppliedGenerationContext'
 
-const McpDetailPage = () => {
+const McpDetailContent = () => {
   const appState = useAppState()
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -60,6 +62,7 @@ const McpDetailPage = () => {
     loading: scopesLoading,
     error: scopesLoadError,
   } = useIamScopes(isDynamic)
+  const { clearAppliedGenerations } = useAppliedGeneration()
 
   useEffect(() => {
     if (isCreating) {
@@ -117,10 +120,14 @@ const McpDetailPage = () => {
   }, [navigate])
 
   const handleSaveSuccess = useCallback(
-    async (savedId: string) => {
+    async (savedId: string, savedServer?: McpServer) => {
       const id = savedId.trim()
       if (!id) {
         return
+      }
+
+      if (savedServer) {
+        setMcpServer(savedServer)
       }
 
       if (isCreating) {
@@ -156,6 +163,7 @@ const McpDetailPage = () => {
         return
       }
 
+      clearAppliedGenerations()
       setMcpServer(
         switchMcpServerType(type, {
           id: isDynamic
@@ -173,6 +181,7 @@ const McpDetailPage = () => {
       customConfig.state.mcpServerName,
       dynamicConfig.state.mcpServerId,
       dynamicConfig.state.mcpServerName,
+      clearAppliedGenerations,
       isCreating,
       isDynamic,
       mcpServer,
@@ -374,6 +383,15 @@ const McpDetailPage = () => {
           ))}
       </div>
     </div>
+  )
+}
+
+const McpDetailPage = () => {
+  const { mcpServerId } = useParams<{ mcpServerId: string }>()
+  return (
+    <AppliedGenerationProvider scopeId={mcpServerId ?? 'new'}>
+      <McpDetailContent />
+    </AppliedGenerationProvider>
   )
 }
 

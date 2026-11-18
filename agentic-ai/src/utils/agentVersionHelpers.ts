@@ -40,6 +40,8 @@ export type AgentVersionRow = {
   readonly changeNote?: string
   readonly isCurrent: boolean
   readonly config: VersionedAgentConfig
+  readonly mixins?: Record<string, unknown>
+  readonly metadataMixins?: Record<string, string>
 }
 
 export type TextDiffPart = {
@@ -180,6 +182,19 @@ export const pickVersionedFields = (
   return config
 }
 
+const schemaMixins = (
+  mixins: Record<string, unknown> | undefined
+): Record<string, string> | undefined => {
+  if (!mixins) {
+    return undefined
+  }
+  return Object.fromEntries(
+    Object.entries(mixins).flatMap(([key, value]) =>
+      typeof value === 'string' ? [[key, value]] : []
+    )
+  )
+}
+
 const hasLocalizedValue = (
   value: LocalizedString | undefined
 ): value is LocalizedString =>
@@ -230,13 +245,14 @@ export const buildRollbackAgent = (
       createdAt: metadata.createdAt,
       modifiedAt: metadata.modifiedAt,
       schema: metadata.schema,
-      mixins: metadata.mixins ?? {},
+      mixins: row.metadataMixins ?? {},
       changeNote,
     },
     icon: config.icon,
     tags: config.tags ?? [],
     type: live.type,
     requiredScopes: config.requiredScopes ?? [],
+    mixins: row.mixins ?? {},
   }
 }
 
@@ -252,6 +268,8 @@ export const buildAgentVersionRows = (
     changeNote: agent.metadata?.changeNote,
     isCurrent: true,
     config: pickVersionedFields(agent),
+    mixins: agent.mixins,
+    metadataMixins: schemaMixins(agent.metadata?.mixins),
   }
 
   const historical = (agent.versions ?? []).map((snapshot, index) => {
@@ -264,6 +282,8 @@ export const buildAgentVersionRows = (
       changeNote: snapshot.metadata?.changeNote,
       isCurrent: false,
       config: pickVersionedFields(snapshot),
+      mixins: snapshot.mixins,
+      metadataMixins: snapshot.metadata?.mixins,
     }
   })
 

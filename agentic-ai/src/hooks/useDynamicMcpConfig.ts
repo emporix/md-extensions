@@ -1,12 +1,20 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CustomMcpServerTransportType, McpServer, McpTool } from '../types/Mcp'
 import { useAppState } from '../contexts/AppStateContext'
 import { useToast } from '../contexts/ToastContext'
 import { upsertMcpServer as upsertMcpServerApi } from '../services/mcpService'
+import { useAppliedGeneration } from '../contexts/AppliedGenerationContext'
+import { appendAppliedProvenance } from '../utils/aiProvenance'
 import { formatApiError } from '../utils/errorHelpers'
 import { isFormDirty, toFormSnapshot } from '../utils/formDirty'
 import { createEmptyMcpTool, MCP_TOOL_NAME_PATTERN } from '../utils/mcpHelpers'
+import {
+  readToolProvenanceKey,
+  rebaseStoredToolProvenance,
+  stampToolProvenance,
+  withToolProvenanceKey,
+} from '../utils/mcpToolProvenance'
 import { isValidAgentOutputJsonSchema } from '../utils/validateJsonSchema'
 import { sanitizeIdInput } from '../utils/validation'
 import { validateMcpServer } from '../utils/mcpValidationHelpers'
@@ -14,14 +22,21 @@ import { validateMcpServer } from '../utils/mcpValidationHelpers'
 interface UseDynamicMcpConfigProps {
   mcpServer: McpServer | null
   isCreating: boolean
-  onSave: (savedId: string) => void
+  onSave: (savedId: string, savedServer?: McpServer) => void
 }
+
+type FormMcpTool = McpTool & { provenanceKey: string }
 
 interface DynamicMcpConfigState {
   mcpServerId: string
   mcpServerName: string
-  tools: McpTool[]
+  tools: FormMcpTool[]
 }
+
+const formTool = (tool: McpTool): FormMcpTool => withToolProvenanceKey(tool)
+
+const formTools = (tools: readonly McpTool[]): FormMcpTool[] =>
+  tools.map((tool) => formTool(tool))
 
 export type DynamicMcpConfigField = 'mcpServerId' | 'mcpServerName'
 
@@ -33,10 +48,19 @@ export const useDynamicMcpConfig = ({
   const appState = useAppState()
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
+  const {
+    readAppliedGenerations,
+    readAppliedToolProvenanceKeys,
+    clearAppliedGenerations,
+  } = useAppliedGeneration()
+  const initialTools = [formTool(createEmptyMcpTool())]
+  const loadedToolKeysRef = useRef(
+    initialTools.map((tool) => tool.provenanceKey)
+  )
   const [state, setState] = useState<DynamicMcpConfigState>({
     mcpServerId: '',
     mcpServerName: '',
-    tools: [createEmptyMcpTool()],
+    tools: initialTools,
   })
   const [saving, setSaving] = useState(false)
   const [baseline, setBaseline] = useState<string | null>(null)
@@ -46,7 +70,7 @@ export const useDynamicMcpConfig = ({
       const nextState: DynamicMcpConfigState = {
         mcpServerId: mcpServer.id ?? '',
         mcpServerName: mcpServer.name ?? '',
-        tools:
+        tools: formTools(
           mcpServer.tools && mcpServer.tools.length > 0
             ? mcpServer.tools.map((tool) => ({
                 ...tool,
@@ -62,8 +86,12 @@ export const useDynamicMcpConfig = ({
                   },
                 },
               }))
-            : [createEmptyMcpTool()],
+            : [createEmptyMcpTool()]
+        ),
       }
+      loadedToolKeysRef.current = nextState.tools.map(
+        (tool) => tool.provenanceKey
+      )
       setState(nextState)
       setBaseline(toFormSnapshot(nextState))
     }
@@ -82,16 +110,21 @@ export const useDynamicMcpConfig = ({
   const updateTool = useCallback((index: number, tool: McpTool) => {
     setState((prev) => ({
       ...prev,
-      tools: prev.tools.map((existing, idx) =>
-        idx === index ? tool : existing
-      ),
+      tools: prev.tools.map((existing, idx) => {
+        if (idx !== index) {
+          return existing
+        }
+        const provenanceKey =
+          readToolProvenanceKey(tool) ?? existing.provenanceKey
+        return { ...tool, provenanceKey }
+      }),
     }))
   }, [])
 
   const addTool = useCallback(() => {
     setState((prev) => ({
       ...prev,
-      tools: [...prev.tools, createEmptyMcpTool()],
+      tools: [...prev.tools, formTool(createEmptyMcpTool())],
     }))
   }, [])
 
@@ -154,28 +187,49 @@ export const useDynamicMcpConfig = ({
       return
     }
 
-    const updatedMcpServer: McpServer = {
-      ...mcpServer,
-      type: 'dynamic',
-      id: state.mcpServerId,
-      name: state.mcpServerName,
-      transport: CustomMcpServerTransportType.STREAMABLE_HTTP,
-      enabled: mcpServer.enabled ?? true,
-      tools: state.tools,
-      config: undefined,
-    }
-
     try {
+      const currentKeys = state.tools.map((tool) => tool.provenanceKey)
+      const generations = readAppliedGenerations()
+      const generationKeys = readAppliedToolProvenanceKeys()
+      const updatedMcpServer: McpServer = appendAppliedProvenance(
+        {
+          ...mcpServer,
+          type: 'dynamic',
+          id: state.mcpServerId,
+          name: state.mcpServerName,
+          transport: CustomMcpServerTransportType.STREAMABLE_HTTP,
+          enabled: mcpServer.enabled ?? true,
+          tools: state.tools,
+          config: undefined,
+          mixins: rebaseStoredToolProvenance(
+            mcpServer.mixins,
+            loadedToolKeysRef.current,
+            currentKeys
+          ),
+        },
+        generations.map((envelope, index) =>
+          stampToolProvenance(envelope, generationKeys[index], currentKeys)
+        ),
+        isCreating ? 'create' : 'update'
+      )
       validateMcpServer(updatedMcpServer, t)
       setSaving(true)
-      await upsertMcpServerApi(appState, updatedMcpServer)
+      const saved = await upsertMcpServerApi(appState, updatedMcpServer)
+      const persisted: McpServer = {
+        ...updatedMcpServer,
+        ...saved,
+        id: saved.id ?? state.mcpServerId,
+        mixins: saved.mixins ?? updatedMcpServer.mixins,
+        metadata: saved.metadata ?? updatedMcpServer.metadata,
+      }
+      clearAppliedGenerations()
       showSuccess(
         isCreating
           ? t('mcp_server_created_successfully')
           : t('mcp_server_updated_successfully')
       )
       setBaseline(toFormSnapshot(state))
-      onSave(state.mcpServerId)
+      onSave(persisted.id ?? state.mcpServerId, persisted)
     } catch (err) {
       const errorMessage = formatApiError(err, t('error_saving_mcp_server'))
       showError(`${t('error_saving_mcp_server')}: ${errorMessage}`)
@@ -184,10 +238,13 @@ export const useDynamicMcpConfig = ({
     }
   }, [
     appState,
+    clearAppliedGenerations,
     isCreating,
     isFormValid,
     mcpServer,
     onSave,
+    readAppliedGenerations,
+    readAppliedToolProvenanceKeys,
     showError,
     showSuccess,
     state,

@@ -130,7 +130,9 @@ export const McpToolForm = ({
     }
   }
 
-  const handleAutopopulateApply = (generatedTool: McpTool) => {
+  const handleAutopopulateApply = (
+    generatedTool: McpTool & { provenanceKey?: string }
+  ) => {
     onChange(generatedTool)
     setAutopopulateDialogVisible(false)
   }

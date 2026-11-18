@@ -119,7 +119,7 @@ export const useLogAnalysisAssistant = ({
           {
             id: createChatMessageId(),
             role: 'assistant',
-            content: extractLogAnalysisDisplayText(reply),
+            content: extractLogAnalysisDisplayText(reply.text),
           },
         ])
       } catch (err) {

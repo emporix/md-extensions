@@ -18,6 +18,8 @@ import {
 } from '../services/agentService'
 import { formatApiError } from '../utils/errorHelpers'
 import { useHelperAgentProvisioning } from './useHelperAgentProvisioning'
+import { useAppliedGeneration } from '../contexts/AppliedGenerationContext'
+import { withAiGeneratedFields } from '../utils/aiProvenance'
 
 const isAssistantServiceI18nMessage = (message: string): boolean =>
   JSON_SCHEMA_ASSISTANT_I18N_MESSAGES.includes(message)
@@ -43,6 +45,7 @@ export const useJsonSchemaAssistant = ({
   const appState = useAppState()
   const { t } = useTranslation()
   const { showSuccess, showError } = useToast()
+  const { recordAppliedGeneration } = useAppliedGeneration()
 
   const [assistantPrompt, setAssistantPrompt] = useState('')
   const [assistantError, setAssistantError] = useState<string | null>(null)
@@ -96,7 +99,7 @@ export const useJsonSchemaAssistant = ({
           onToolActivity: setAssistantToolName,
         }
       )
-      const extracted = extractJsonSchemaFromAgentMessage(reply)
+      const extracted = extractJsonSchemaFromAgentMessage(reply.text)
       if (!extracted) {
         setAssistantError(t('json_schema_assistant_extract_failed'))
         return
@@ -109,6 +112,9 @@ export const useJsonSchemaAssistant = ({
       }
 
       onApplyGeneratedSchema(extracted)
+      recordAppliedGeneration(
+        withAiGeneratedFields(reply.provenance, ['outputFormat'])
+      )
       showSuccess(t('json_schema_assistant_applied'))
       setAssistantPrompt('')
       onClose()
@@ -125,6 +131,7 @@ export const useJsonSchemaAssistant = ({
     assistantPrompt,
     onApplyGeneratedSchema,
     onClose,
+    recordAppliedGeneration,
     resolveAssistantErrorMessage,
     showError,
     showSuccess,
