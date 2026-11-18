@@ -207,13 +207,15 @@ const Address = ({
         />
         <div className={styles.span4}>
           <FieldLabel>{t('customers.address.isDefault')}</FieldLabel>
-          <SelectButton
-            data-testid={fieldId('isDefault')}
-            disabled={!canManage}
-            options={booleanOptions}
-            value={String(Boolean(editAddress.isDefault))}
-            onChange={(e) => updateAddress('isDefault', e.value === 'true')}
-          />
+          <div className={styles.control}>
+            <SelectButton
+              data-testid={fieldId('isDefault')}
+              disabled={!canManage}
+              options={booleanOptions}
+              value={String(Boolean(editAddress.isDefault))}
+              onChange={(e) => updateAddress('isDefault', e.value === 'true')}
+            />
+          </div>
         </div>
       </div>
     </>
