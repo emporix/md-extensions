@@ -69,31 +69,41 @@ export const rebaseStoredToolProvenance = (
     return mixins
   }
   let changed = false
-  const entries = provenance.entries.map((entry) => {
+  const nextEntries: unknown[] = []
+  for (const entry of provenance.entries) {
     if (!isRecord(entry) || !Array.isArray(entry.aiGeneratedFields)) {
-      return entry
+      changed = true
+      continue
     }
     const fields = entry.aiGeneratedFields.filter(
       (field): field is string => typeof field === 'string'
     )
+    if (fields.length === 0) {
+      changed = true
+      continue
+    }
     const rewritten = rewriteToolFields(fields, loadedKeys, currentKeys)
-    if (!rewritten.changed) {
-      return entry
-    }
-    changed = true
     if (rewritten.fields.length === 0) {
-      return Object.fromEntries(
-        Object.entries(entry).filter(([key]) => key !== 'aiGeneratedFields')
-      )
+      changed = true
+      continue
     }
-    return { ...entry, aiGeneratedFields: rewritten.fields }
-  })
+    if (rewritten.changed) {
+      changed = true
+      nextEntries.push({ ...entry, aiGeneratedFields: rewritten.fields })
+    } else {
+      nextEntries.push(entry)
+    }
+  }
   if (!changed) {
     return mixins
   }
+  if (nextEntries.length === 0) {
+    const { provenance: _removed, ...rest } = mixins
+    return Object.keys(rest).length === 0 ? undefined : rest
+  }
   return {
     ...mixins,
-    provenance: { ...provenance, entries },
+    provenance: { ...provenance, entries: nextEntries },
   }
 }
 

@@ -81,8 +81,24 @@ describe('mcp tool provenance index', () => {
         ['a'],
         []
       )
+    ).toBeUndefined()
+  })
+
+  it('drops entries without aiGeneratedFields and keeps surviving tool entries', () => {
+    const mixins = {
+      provenance: {
+        entries: [
+          entry('gen-8'),
+          entry('gen-9'),
+          entry('gen-10', ['tools[0]']),
+        ],
+      },
+    }
+
+    expect(
+      rebaseStoredToolProvenance(mixins, ['tool-a'], ['tool-a'])
     ).toEqual({
-      provenance: { entries: [entry('gen-1')] },
+      provenance: { entries: [entry('gen-10', ['tools[0]'])] },
     })
   })
 
