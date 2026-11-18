@@ -77,7 +77,7 @@ Living list of Management Dashboard modules extracted into `md-extensions` under
 
 ### Deltas worth reusing from `quotes` (COP-7116)
 
-- **CL 2.29.1 draws `StatusBadge` text at 0.75rem**, the size of MD's PrimeReact `Badge` (it was 0.875rem); quotes uses it as it is, and `orders` and `returns` get it with their next CL bump.
+- **CL 2.29.1 draws `StatusBadge` text at 0.75rem**, the size of MD's PrimeReact `Badge` (it was 0.875rem); quotes, `orders` and `returns` (bumped in #160 and #161) use it as it is.
 - **CL 2.29.0 adds `Calendar` `hideOnDateTimeSelect`.** With `showTime` and single selection the panel closes once a date is picked, as MD's Prime calendars in quotes, classifications, delivery times and vendors do. Pin ≥ 2.29.0 when porting those screens.
 - **`SitesProvider` starts from MD's persisted sites.** It reads `localStorage` `tenant`, `sites` and `currentSite` (MD `persistentStore`) only when `tenant` matches the host tenant, so the first list request already carries `siteCode`; it never writes back, so a site change inside the remote stays local (accepted, as in the other remotes).
 - **`components/shared/CompaniesSelector.tsx`** is MD's `CompaniesSelector` API (`singleSelection`, `filters`, `canView`, `resolveSelected`) on CL `PaginatedSelector`, next to the `coupons` selectors. CL `PaginatedSelector` searches on mount (MD searched when the dropdown opened).

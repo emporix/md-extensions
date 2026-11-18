@@ -37,7 +37,10 @@ export const columnFiltersKeepingValues = (
   columns
     .filter((column) => column.filter)
     .forEach((column) => {
-      if (typeof column.columnKey !== 'string' || column.columnKey.length === 0) {
+      if (
+        typeof column.columnKey !== 'string' ||
+        column.columnKey.length === 0
+      ) {
         return
       }
       filters[column.columnKey] = {
