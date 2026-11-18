@@ -168,12 +168,24 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
   }
 
   const onQuantityChange = async (quantity: number, index: number) => {
-    const itemsWithNewPrice = await getPriceForQuoteItems(quote as Quote, [
-      getValues(`items.${index}`),
-    ])
+    let matchedUnitPrice: number | undefined
+    try {
+      const itemsWithNewPrice = await getPriceForQuoteItems(quote as Quote, [
+        getValues(`items.${index}`),
+      ])
+      matchedUnitPrice = itemsWithNewPrice[0].price?.unitPrice
+    } catch (e) {
+      // MD left this rejection unhandled: no message, and the line kept its
+      // old totals. The line is recomputed with its current price instead.
+      console.error(e)
+      toast.showToast(
+        getApiErrorMessage(e) ?? t('quotes.toasts.errorFetchPrices'),
+        '',
+        'error'
+      )
+    }
     const unitPrice =
-      itemsWithNewPrice[0].price?.unitPrice ||
-      getValues(`items.${index}.price.unitPrice`)
+      matchedUnitPrice || getValues(`items.${index}.price.unitPrice`)
     const totalNetValue = watch(`items.${index}.price.newUnitPrice`) * quantity
     const discount = calculateDiscount(
       unitPrice,

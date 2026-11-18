@@ -357,6 +357,80 @@ describe('QuotesTabGeneral', () => {
     )
   })
 
+  // COP-7116 (Copilot on #158): MD enabled Save on create before a site was
+  // selected, so a draft could go out without `siteCode`.
+  it('keeps Save disabled on create until a site is selected', async () => {
+    const withSite = sites.value
+    sites.value = { ...withSite, currentSite: undefined as never }
+    customersApi.syncCustomers.mockResolvedValue({
+      values: [
+        { id: 'CU1', firstName: 'Elle', lastName: 'J', contactEmail: 'e@x.io' },
+      ],
+      totalRecords: 1,
+    })
+    customersApi.syncCustomer.mockResolvedValue({
+      id: 'CU1',
+      firstName: 'Elle',
+      lastName: 'J',
+      contactEmail: 'e@x.io',
+      addresses: [
+        {
+          id: 'AD1',
+          street: 'Main',
+          streetNumber: '1',
+          city: 'Berlin',
+          country: 'DE',
+          tags: ['shipping', 'billing'],
+        },
+      ],
+    })
+    const tree = () => (
+      <DashboardProvider appState={appState}>
+        <MemoryRouter initialEntries={['/add']}>
+          <Routes>
+            <Route
+              path="/add"
+              element={
+                <QuoteDataProvider>
+                  <QuotesTabGeneral />
+                </QuoteDataProvider>
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      </DashboardProvider>
+    )
+    const { rerender } = render(tree())
+    const save = () =>
+      screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement
+
+    try {
+      fireEvent.click(screen.getByLabelText('B2C'))
+      fireEvent.click(
+        await screen.findByRole('button', { name: 'Choose Customer' })
+      )
+      fireEvent.click(await screen.findByText('Elle'))
+      fireEvent.click(screen.getByRole('button', { name: 'Add Customer' }))
+      fireEvent.click(await screen.findByTestId('shippingAddressId-AD1-input'))
+
+      // Customer and addresses are set, but no site yet.
+      await waitFor(() =>
+        expect(
+          (screen.getByRole('button', { name: 'Discard' }) as HTMLButtonElement)
+            .disabled
+        ).toBe(false)
+      )
+      expect(save().disabled).toBe(true)
+
+      // The site arrives.
+      sites.value = withSite
+      rerender(tree())
+      await waitFor(() => expect(save().disabled).toBe(false))
+    } finally {
+      sites.value = withSite
+    }
+  })
+
   // COP-7116: MD showed the label "Address" untranslated.
   it('labels the location addresses in the user language', async () => {
     await i18n.changeLanguage('de')

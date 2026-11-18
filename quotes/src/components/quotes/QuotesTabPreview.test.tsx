@@ -25,6 +25,7 @@ const quotesApi = vi.hoisted(() => ({
 }))
 const shippingApi = vi.hoisted(() => ({ getZones: vi.fn() }))
 const taxesApi = vi.hoisted(() => ({ calculateTax: vi.fn() }))
+const pricesApi = vi.hoisted(() => ({ matchPrices: vi.fn() }))
 const toast = vi.hoisted(() => ({
   showToast: vi.fn(),
   showError: vi.fn(),
@@ -38,7 +39,7 @@ vi.mock('../../hooks/api/shipping', () => ({
 }))
 vi.mock('../../hooks/api/taxes', () => ({ useTaxesApi: () => taxesApi }))
 vi.mock('../../hooks/api/prices', () => ({
-  usePricesApi: () => ({ matchPrices: vi.fn() }),
+  usePricesApi: () => pricesApi,
 }))
 vi.mock('../../context/PermissionsProvider', () => ({
   usePermissions: () => ({
@@ -242,6 +243,34 @@ describe('QuotesTabPreview', () => {
         'error'
       )
     )
+  })
+
+  // COP-7116 (Copilot on #158): MD left a failed re-pricing unhandled when a
+  // line quantity changed, so the line kept its old totals without a message.
+  it('shows an error toast and keeps the price when re-pricing a quantity fails', async () => {
+    pricesApi.matchPrices.mockRejectedValue(new Error('Network Error'))
+    renderPreview()
+    const table = await screen.findByTestId('quote-preview-table')
+    await within(table).findByText('Chair')
+
+    const quantity = within(table).getByTestId('quote-item-quantity-0')
+    const input = (quantity.querySelector('input') ?? quantity) as HTMLElement
+    fireEvent.keyDown(input, {
+      key: 'ArrowUp',
+      code: 'ArrowUp',
+      keyCode: 38,
+      which: 38,
+    })
+
+    await waitFor(() =>
+      expect(toast.showToast).toHaveBeenCalledWith(
+        'Error while loading the prices',
+        '',
+        'error'
+      )
+    )
+    // Three chairs at the current €130: €390 net, €464.10 gross.
+    await waitFor(() => expect(within(table).getByText('€464.10')).toBeTruthy())
   })
 
   it('saves the chosen shipping and the changed reference only', async () => {

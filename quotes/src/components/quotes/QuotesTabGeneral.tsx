@@ -473,6 +473,9 @@ const QuotesTabGeneral = (props: StylableProps) => {
                   // the Quote Service needs both ids (MD saved without them).
                   !watch('shippingAddressId') ||
                   !watch('billingAddressId') ||
+                  // A new quote takes its site and currency from the selected
+                  // site (MD let a draft go out before one was selected).
+                  (!quote && !currentSite?.code) ||
                   isQuoteCompleted ||
                   !canManage
                 }

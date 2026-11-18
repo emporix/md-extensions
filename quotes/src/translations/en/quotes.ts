@@ -70,6 +70,7 @@ export default {
     errorChangeStatus: 'Status cannot be changed',
     errorFetchReasons: 'Error while loading the reasons',
     errorFetchShippingMethods: 'Error while loading the shipping methods',
+    errorFetchPrices: 'Error while loading the prices',
     errorPdf: 'Error while displaying PDF, try later',
     successDraftCreate: 'Quote draft created successfully',
     successCreate: 'Quote created!',
