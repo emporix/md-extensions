@@ -148,6 +148,103 @@ describe('appendAppliedProvenance', () => {
     })
   })
 
+  it('keeps only the latest generation when the same field is generated twice', () => {
+    const saved: ProvenanceCarrier = appendAppliedProvenance(
+      { metadata: { version: 7 } },
+      [
+        {
+          mixins: {
+            provenance: [
+              { ...entry('gen-old'), aiGeneratedFields: ['tools[1]'] },
+            ],
+          },
+        },
+        {
+          mixins: {
+            provenance: [
+              { ...entry('gen-new'), aiGeneratedFields: ['tools[1]'] },
+            ],
+          },
+        },
+      ],
+      'update'
+    )
+
+    expect(saved.mixins?.provenance).toEqual({
+      entries: [
+        accepted({
+          ...entry('gen-new', 8),
+          aiGeneratedFields: ['tools[1]'],
+        }),
+      ],
+    })
+  })
+
+  it('drops only the regenerated field from an earlier generation in the same save', () => {
+    const saved: ProvenanceCarrier = appendAppliedProvenance(
+      { metadata: { version: 7 } },
+      [
+        {
+          mixins: {
+            provenance: [
+              {
+                ...entry('gen-old'),
+                aiGeneratedFields: ['tools[0]', 'tools[1]'],
+              },
+            ],
+          },
+        },
+        {
+          mixins: {
+            provenance: [
+              { ...entry('gen-new'), aiGeneratedFields: ['tools[1]'] },
+            ],
+          },
+        },
+      ],
+      'update'
+    )
+
+    expect(saved.mixins?.provenance).toEqual({
+      entries: [
+        accepted({
+          ...entry('gen-old', 8),
+          aiGeneratedFields: ['tools[0]'],
+        }),
+        accepted({
+          ...entry('gen-new', 8),
+          aiGeneratedFields: ['tools[1]'],
+        }),
+      ],
+    })
+  })
+
+  it('keeps the later stored entry when the same field was saved twice', () => {
+    const older = {
+      ...entry('gen-old', 8),
+      reviewStatus: 'reviewed',
+      aiGeneratedFields: ['tools[1]'],
+    }
+    const newer = {
+      ...entry('gen-new', 8),
+      reviewStatus: 'reviewed',
+      generatedAt: '2026-11-18T20:19:09.961Z',
+      aiGeneratedFields: ['tools[1]'],
+    }
+    const saved: ProvenanceCarrier = appendAppliedProvenance(
+      {
+        mixins: { provenance: { entries: [older, newer] } },
+        metadata: { version: 8 },
+      },
+      [null],
+      'update'
+    )
+
+    expect(saved.mixins?.provenance).toEqual({
+      entries: [newer],
+    })
+  })
+
   it('appends the same generation id again on a later save', () => {
     const saved: ProvenanceCarrier = appendAppliedProvenance(
       {

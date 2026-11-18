@@ -10,7 +10,7 @@ import {
 } from '../services/agentService'
 import { formatApiError } from '../utils/errorHelpers'
 import { useAppliedGeneration } from '../contexts/AppliedGenerationContext'
-import { readToolProvenanceKey } from '../utils/mcpToolProvenance'
+import { withToolProvenanceKey } from '../utils/mcpToolProvenance'
 import {
   MCP_TOOL_FROM_FUNCTION_ASSISTANT_I18N_KEYS,
   MCP_TOOL_FROM_FUNCTION_ASSISTANT_I18N_MESSAGES,
@@ -183,13 +183,9 @@ export const useMcpToolFromFunctionAssistant = ({
         return
       }
 
-      const toolProvenanceKey = readToolProvenanceKey(nextTool)
-      onApplyGeneratedTool(
-        toolProvenanceKey
-          ? { ...nextTool, provenanceKey: toolProvenanceKey }
-          : nextTool
-      )
-      recordAppliedGeneration(reply.provenance, toolProvenanceKey)
+      const keyedTool = withToolProvenanceKey(nextTool)
+      onApplyGeneratedTool(keyedTool)
+      recordAppliedGeneration(reply.provenance, keyedTool.provenanceKey)
       showSuccess(t('mcp_tool_from_function_applied'))
       onClose()
     } catch (err) {

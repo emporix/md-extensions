@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from 'primereact/button'
@@ -40,8 +40,6 @@ const McpDetailContent = () => {
   const isCreating = location.pathname.endsWith('/add')
 
   const [mcpServer, setMcpServer] = useState<McpServer | null>(null)
-  const mcpServerRef = useRef(mcpServer)
-  mcpServerRef.current = mcpServer
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -92,7 +90,7 @@ const McpDetailContent = () => {
 
         setMcpServer(fetchedServer)
       } catch (err) {
-        if (!cancelled && mcpServerRef.current?.id !== mcpServerId) {
+        if (!cancelled) {
           setError(
             getEntityLoadErrorMessage(
               err,
@@ -122,10 +120,14 @@ const McpDetailContent = () => {
   }, [navigate])
 
   const handleSaveSuccess = useCallback(
-    async (savedId: string) => {
+    async (savedId: string, savedServer?: McpServer) => {
       const id = savedId.trim()
       if (!id) {
         return
+      }
+
+      if (savedServer) {
+        setMcpServer(savedServer)
       }
 
       if (isCreating) {
@@ -152,14 +154,7 @@ const McpDetailContent = () => {
   const dynamicConfig = useDynamicMcpConfig({
     mcpServer: isDynamic ? mcpServer : null,
     isCreating,
-    onSave: (savedId, savedServer) => {
-      if (savedServer) {
-        setMcpServer(savedServer)
-      }
-      if (isCreating) {
-        void handleSaveSuccess(savedId)
-      }
-    },
+    onSave: handleSaveSuccess,
   })
 
   const handleMcpTypeChange = useCallback(

@@ -103,11 +103,11 @@ export const stampToolProvenance = (
   currentKeys: readonly string[]
 ): ProvenanceEnvelope | null => {
   if (!envelope || !toolProvenanceKey) {
-    return envelope
+    return null
   }
   const index = currentKeys.indexOf(toolProvenanceKey)
   if (index < 0) {
-    return envelope
+    return null
   }
   return withAiGeneratedFields(envelope, [toolProvenanceField(index)])
 }

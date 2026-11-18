@@ -215,6 +215,13 @@ export const useDynamicMcpConfig = ({
       validateMcpServer(updatedMcpServer, t)
       setSaving(true)
       const saved = await upsertMcpServerApi(appState, updatedMcpServer)
+      const persisted: McpServer = {
+        ...updatedMcpServer,
+        ...saved,
+        id: saved.id ?? state.mcpServerId,
+        mixins: saved.mixins ?? updatedMcpServer.mixins,
+        metadata: saved.metadata ?? updatedMcpServer.metadata,
+      }
       clearAppliedGenerations()
       showSuccess(
         isCreating
@@ -222,12 +229,7 @@ export const useDynamicMcpConfig = ({
           : t('mcp_server_updated_successfully')
       )
       setBaseline(toFormSnapshot(state))
-      onSave(saved.id ?? state.mcpServerId, {
-        ...updatedMcpServer,
-        ...saved,
-        mixins: saved.mixins ?? updatedMcpServer.mixins,
-        metadata: saved.metadata ?? updatedMcpServer.metadata,
-      })
+      onSave(persisted.id ?? state.mcpServerId, persisted)
     } catch (err) {
       const errorMessage = formatApiError(err, t('error_saving_mcp_server'))
       showError(`${t('error_saving_mcp_server')}: ${errorMessage}`)

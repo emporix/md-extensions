@@ -138,6 +138,105 @@ export const withAiGeneratedFields = (
   }
 }
 
+const provenanceEntriesOf = (
+  item: ProvenanceApplied | null | undefined
+): unknown[] => {
+  const provenance = item?.mixins?.provenance
+  if (Array.isArray(provenance)) {
+    return provenance
+  }
+  if (isRecord(provenance) && Array.isArray(provenance.entries)) {
+    return provenance.entries
+  }
+  return []
+}
+
+const generatedFieldNames = (entry: unknown): string[] => {
+  if (!isRecord(entry) || !Array.isArray(entry.aiGeneratedFields)) {
+    return []
+  }
+  return entry.aiGeneratedFields.filter(
+    (field): field is string => typeof field === 'string' && field.length > 0
+  )
+}
+
+const replaceProvenanceEntries = (
+  item: ProvenanceApplied,
+  entries: unknown[]
+): ProvenanceApplied => {
+  const provenance = item.mixins?.provenance
+  if (Array.isArray(provenance)) {
+    return {
+      ...item,
+      mixins: {
+        ...item.mixins,
+        provenance: entries as ProvenanceEntry[],
+      },
+    }
+  }
+  if (isRecord(provenance)) {
+    return {
+      ...item,
+      mixins: {
+        ...item.mixins,
+        provenance: { ...provenance, entries: entries as ProvenanceEntry[] },
+      },
+    }
+  }
+  return item
+}
+
+const withoutSupersededAppliedFields = (
+  applied: readonly (ProvenanceApplied | null | undefined)[]
+): readonly (ProvenanceApplied | null | undefined)[] => {
+  const claimed = new Set<string>()
+  const next = [...applied]
+  let changed = false
+
+  for (let index = next.length - 1; index >= 0; index -= 1) {
+    const item = next[index]
+    const entries = provenanceEntriesOf(item)
+    if (!item || entries.length === 0) {
+      continue
+    }
+    const kept: unknown[] = []
+    let itemChanged = false
+    for (
+      let entryIndex = entries.length - 1;
+      entryIndex >= 0;
+      entryIndex -= 1
+    ) {
+      const entry = entries[entryIndex]
+      const fields = generatedFieldNames(entry)
+      if (fields.length === 0) {
+        kept.push(entry)
+        continue
+      }
+      const remaining = fields.filter((field) => !claimed.has(field))
+      for (const field of fields) {
+        claimed.add(field)
+      }
+      if (remaining.length === fields.length) {
+        kept.push(entry)
+        continue
+      }
+      itemChanged = true
+      if (remaining.length > 0 && isRecord(entry)) {
+        kept.push({ ...entry, aiGeneratedFields: remaining })
+      }
+    }
+    if (!itemChanged) {
+      continue
+    }
+    changed = true
+    kept.reverse()
+    next[index] =
+      kept.length === 0 ? undefined : replaceProvenanceEntries(item, kept)
+  }
+
+  return changed ? next : applied
+}
+
 const appliedFieldNames = (
   applied: readonly (ProvenanceApplied | null | undefined)[]
 ): Set<string> => {
@@ -163,6 +262,36 @@ const appliedFieldNames = (
   return names
 }
 
+const collapseGeneratedEntries = (
+  entries: readonly unknown[],
+  claimed: Set<string>
+): { entries: unknown[]; changed: boolean } => {
+  const kept: unknown[] = []
+  let changed = false
+  for (let index = entries.length - 1; index >= 0; index -= 1) {
+    const entry = entries[index]
+    const fields = generatedFieldNames(entry)
+    if (fields.length === 0) {
+      kept.push(entry)
+      continue
+    }
+    const remaining = fields.filter((field) => !claimed.has(field))
+    for (const field of fields) {
+      claimed.add(field)
+    }
+    if (remaining.length === fields.length) {
+      kept.push(entry)
+      continue
+    }
+    changed = true
+    if (remaining.length > 0 && isRecord(entry)) {
+      kept.push({ ...entry, aiGeneratedFields: remaining })
+    }
+  }
+  kept.reverse()
+  return { entries: kept, changed }
+}
+
 const withoutSupersededFields = <T extends ProvenanceCarrier>(
   entity: T,
   applied: readonly (ProvenanceApplied | null | undefined)[],
@@ -171,44 +300,22 @@ const withoutSupersededFields = <T extends ProvenanceCarrier>(
   if (mode !== 'update') {
     return entity
   }
-  const superseded = appliedFieldNames(applied)
   const provenance = entity.mixins?.provenance
-  if (
-    superseded.size === 0 ||
-    !isRecord(provenance) ||
-    !Array.isArray(provenance.entries)
-  ) {
+  if (!isRecord(provenance) || !Array.isArray(provenance.entries)) {
     return entity
   }
-  let changed = false
-  const entries: unknown[] = []
-  for (const entry of provenance.entries) {
-    if (!isRecord(entry) || !Array.isArray(entry.aiGeneratedFields)) {
-      entries.push(entry)
-      continue
-    }
-    const fields = entry.aiGeneratedFields.filter(
-      (field): field is string => typeof field === 'string'
-    )
-    if (!fields.some((field) => superseded.has(field))) {
-      entries.push(entry)
-      continue
-    }
-    changed = true
-    const remaining = fields.filter((field) => !superseded.has(field))
-    if (remaining.length === 0) {
-      continue
-    }
-    entries.push({ ...entry, aiGeneratedFields: remaining })
-  }
-  if (!changed) {
+  const collapsed = collapseGeneratedEntries(
+    provenance.entries,
+    appliedFieldNames(applied)
+  )
+  if (!collapsed.changed) {
     return entity
   }
   return {
     ...entity,
     mixins: {
       ...entity.mixins,
-      provenance: { ...provenance, entries },
+      provenance: { ...provenance, entries: collapsed.entries },
     },
   }
 }
@@ -218,8 +325,8 @@ export const appendAppliedProvenance = <T extends ProvenanceCarrier>(
   applied: readonly (ProvenanceApplied | null | undefined)[],
   mode: 'create' | 'update'
 ): T => {
-  const normalized = applied.map((item) =>
-    item ? normalizeApplied(item) : item
+  const normalized = withoutSupersededAppliedFields(
+    applied.map((item) => (item ? normalizeApplied(item) : item))
   )
   return appendProvenance(
     withoutSupersededFields(normalizeCarrier(entity), normalized, mode),

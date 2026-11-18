@@ -24,7 +24,7 @@ const envelope = (generationId: string) => ({
 })
 
 describe('mcp tool provenance index', () => {
-  it('stamps the tool index at save and leaves a deleted tool unmarked', () => {
+  it('stamps the tool index at save and drops a generation whose tool is gone', () => {
     const generated = envelope('gen-1')
 
     expect(
@@ -35,10 +35,9 @@ describe('mcp tool provenance index', () => {
         provenance: [{ ...entry('gen-1'), aiGeneratedFields: ['tools[1]'] }],
       },
     })
-    expect(stampToolProvenance(generated, 'tool-b', ['tool-a'])).toBe(generated)
-    expect(stampToolProvenance(generated, undefined, ['tool-a'])).toBe(
-      generated
-    )
+    expect(stampToolProvenance(generated, 'tool-b', ['tool-a'])).toBeNull()
+    expect(stampToolProvenance(generated, undefined, ['tool-a'])).toBeNull()
+    expect(stampToolProvenance(null, 'tool-b', ['tool-b'])).toBeNull()
   })
 
   it('keeps the same tool when an earlier tool is removed', () => {

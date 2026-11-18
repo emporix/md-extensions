@@ -146,6 +146,102 @@ describe('appendAppliedProvenance', () => {
     })
   })
 
+  it('keeps only the latest generation when the same field is generated twice', () => {
+    const saved: ProvenanceCarrier = appendAppliedProvenance(
+      { metadata: { version: 7 } },
+      [
+        {
+          mixins: {
+            provenance: [
+              { ...entry('gen-old'), aiGeneratedFields: ['description.en'] },
+            ],
+          },
+        },
+        {
+          mixins: {
+            provenance: [
+              { ...entry('gen-new'), aiGeneratedFields: ['description.en'] },
+            ],
+          },
+        },
+      ],
+      'update'
+    )
+
+    expect(saved.mixins?.provenance).toEqual({
+      entries: [
+        accepted({
+          ...entry('gen-new', 8),
+          aiGeneratedFields: ['description.en'],
+        }),
+      ],
+    })
+  })
+
+  it('drops only the regenerated field from an earlier generation in the same save', () => {
+    const saved: ProvenanceCarrier = appendAppliedProvenance(
+      { metadata: { version: 7 } },
+      [
+        {
+          mixins: {
+            provenance: [
+              {
+                ...entry('gen-old'),
+                aiGeneratedFields: ['description.de', 'description.en'],
+              },
+            ],
+          },
+        },
+        {
+          mixins: {
+            provenance: [
+              { ...entry('gen-new'), aiGeneratedFields: ['description.en'] },
+            ],
+          },
+        },
+      ],
+      'update'
+    )
+
+    expect(saved.mixins?.provenance).toEqual({
+      entries: [
+        accepted({
+          ...entry('gen-old', 8),
+          aiGeneratedFields: ['description.de'],
+        }),
+        accepted({
+          ...entry('gen-new', 8),
+          aiGeneratedFields: ['description.en'],
+        }),
+      ],
+    })
+  })
+
+  it('keeps the later stored entry when the same field was saved twice', () => {
+    const older = {
+      ...entry('gen-old', 8),
+      reviewStatus: 'reviewed',
+      aiGeneratedFields: ['description.en'],
+    }
+    const newer = {
+      ...entry('gen-new', 8),
+      reviewStatus: 'reviewed',
+      aiGeneratedFields: ['description.en'],
+    }
+    const saved: ProvenanceCarrier = appendAppliedProvenance(
+      {
+        mixins: { provenance: { entries: [older, newer] } },
+        metadata: { version: 8 },
+      },
+      [null],
+      'update'
+    )
+
+    expect(saved.mixins?.provenance).toEqual({
+      entries: [newer],
+    })
+  })
+
   it('appends the same generation id again on a later save', () => {
     const saved: ProvenanceCarrier = appendAppliedProvenance(
       {
@@ -318,6 +414,63 @@ describe('productProvenanceForSave', () => {
     expect(saved.mixins?.provenance).toEqual({
       entries: [accepted(entry('gen-1', 1))],
     })
+  })
+
+  it('drops provenance copied from a sibling and keeps the other mixins', () => {
+    const saved: ProvenanceCarrier = productProvenanceForSave(
+      {
+        name: 'Sibling',
+        mixins: {
+          color: { value: 'red' },
+          provenance: { entries: [entry('copied', 8)] },
+        },
+        metadata: {
+          version: 8,
+          mixins: {
+            color: 'https://schema',
+            provenance: PROVENANCE_SCHEMA_URL,
+          },
+        },
+      },
+      {
+        mixins: { provenance: { entries: [entry('copied', 8)] } },
+        metadata: { version: 8 },
+      },
+      [envelope('gen-new')],
+      'create'
+    )
+
+    expect(saved.mixins?.color).toEqual({ value: 'red' })
+    expect(saved.mixins?.provenance).toEqual({
+      entries: [accepted(entry('gen-new', 1))],
+    })
+    expect(saved.metadata?.mixins).toEqual({
+      color: 'https://schema',
+      provenance: PROVENANCE_SCHEMA_URL,
+    })
+  })
+
+  it('omits copied provenance on create when nothing was generated', () => {
+    const saved: ProvenanceCarrier = productProvenanceForSave(
+      {
+        mixins: {
+          color: { value: 'red' },
+          provenance: { entries: [entry('copied', 8)] },
+        },
+        metadata: {
+          mixins: {
+            color: 'https://schema',
+            provenance: PROVENANCE_SCHEMA_URL,
+          },
+        },
+      },
+      undefined,
+      [],
+      'create'
+    )
+
+    expect(saved.mixins).toEqual({ color: { value: 'red' } })
+    expect(saved.metadata?.mixins).toEqual({ color: 'https://schema' })
   })
 })
 
