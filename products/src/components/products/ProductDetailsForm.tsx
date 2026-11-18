@@ -127,6 +127,7 @@ export const ProductDetailsForm = () => {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
   const siblingIdParam = searchParams.get('siblingId')
+  const parentVariantIdParam = searchParams.get('parentVariantId')
   const toast = useToast()
   const methods = useForm<Product>()
   const {
@@ -147,28 +148,30 @@ export const ProductDetailsForm = () => {
 
   const [isAssistantBoxOpened, setIsAssistantBoxOpened] = useState(false)
   const productId = product?.id ?? undefined
+  const productScope =
+    productId ?? `new:${parentVariantIdParam ?? ''}:${siblingIdParam ?? ''}`
   const pendingProvenanceRef = useRef<ProvenanceEnvelope[]>([])
-  const productScopeRef = useRef(productId)
+  const productScopeRef = useRef(productScope)
   const fullResetRef = useRef(false)
   const keepDirtyValuesRef = useRef(false)
-  if (productScopeRef.current !== productId) {
+  if (productScopeRef.current !== productScope) {
     keepDirtyValuesRef.current = productFormKeepsDirtyValues(
       productScopeRef.current,
-      productId,
+      productScope,
       false
     )
     pendingProvenanceRef.current = [
       ...pendingProvenanceForProduct(
         pendingProvenanceRef.current,
         productScopeRef.current,
-        productId
+        productScope
       ),
     ]
-    productScopeRef.current = productId
+    productScopeRef.current = productScope
   } else {
     keepDirtyValuesRef.current = productFormKeepsDirtyValues(
-      productId,
-      productId,
+      productScope,
+      productScope,
       fullResetRef.current
     )
   }

@@ -103,6 +103,51 @@ describe('appendAppliedProvenance', () => {
     })
   })
 
+  it('drops an older entry when a later run generates the same field', () => {
+    const older = {
+      ...entry('gen-old', 21),
+      reviewStatus: 'reviewed',
+      aiGeneratedFields: ['outputFormat'],
+    }
+    const kept = {
+      ...entry('gen-other', 21),
+      reviewStatus: 'reviewed',
+      aiGeneratedFields: ['triggers.config.filter'],
+    }
+    const shared = {
+      ...entry('gen-shared', 21),
+      reviewStatus: 'reviewed',
+      aiGeneratedFields: ['outputFormat', 'description.en'],
+    }
+    const saved: ProvenanceCarrier = appendAppliedProvenance(
+      {
+        mixins: { provenance: { entries: [older, kept, shared] } },
+        metadata: { version: 21 },
+      },
+      [
+        {
+          mixins: {
+            provenance: [
+              { ...entry('gen-new'), aiGeneratedFields: ['outputFormat'] },
+            ],
+          },
+        },
+      ],
+      'update'
+    )
+
+    expect(saved.mixins?.provenance).toEqual({
+      entries: [
+        kept,
+        { ...shared, aiGeneratedFields: ['description.en'] },
+        accepted({
+          ...entry('gen-new', 22),
+          aiGeneratedFields: ['outputFormat'],
+        }),
+      ],
+    })
+  })
+
   it('appends the same generation id again on a later save', () => {
     const saved: ProvenanceCarrier = appendAppliedProvenance(
       {

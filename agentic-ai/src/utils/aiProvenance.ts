@@ -138,16 +138,95 @@ export const withAiGeneratedFields = (
   }
 }
 
+const appliedFieldNames = (
+  applied: readonly (ProvenanceApplied | null | undefined)[]
+): Set<string> => {
+  const names = new Set<string>()
+  for (const item of applied) {
+    const provenance = item?.mixins?.provenance
+    const entries = Array.isArray(provenance)
+      ? provenance
+      : isRecord(provenance) && Array.isArray(provenance.entries)
+        ? provenance.entries
+        : []
+    for (const entry of entries) {
+      if (!isRecord(entry) || !Array.isArray(entry.aiGeneratedFields)) {
+        continue
+      }
+      for (const field of entry.aiGeneratedFields) {
+        if (typeof field === 'string' && field.length > 0) {
+          names.add(field)
+        }
+      }
+    }
+  }
+  return names
+}
+
+const withoutSupersededFields = <T extends ProvenanceCarrier>(
+  entity: T,
+  applied: readonly (ProvenanceApplied | null | undefined)[],
+  mode: 'create' | 'update'
+): T => {
+  if (mode !== 'update') {
+    return entity
+  }
+  const superseded = appliedFieldNames(applied)
+  const provenance = entity.mixins?.provenance
+  if (
+    superseded.size === 0 ||
+    !isRecord(provenance) ||
+    !Array.isArray(provenance.entries)
+  ) {
+    return entity
+  }
+  let changed = false
+  const entries: unknown[] = []
+  for (const entry of provenance.entries) {
+    if (!isRecord(entry) || !Array.isArray(entry.aiGeneratedFields)) {
+      entries.push(entry)
+      continue
+    }
+    const fields = entry.aiGeneratedFields.filter(
+      (field): field is string => typeof field === 'string'
+    )
+    if (!fields.some((field) => superseded.has(field))) {
+      entries.push(entry)
+      continue
+    }
+    changed = true
+    const remaining = fields.filter((field) => !superseded.has(field))
+    if (remaining.length === 0) {
+      continue
+    }
+    entries.push({ ...entry, aiGeneratedFields: remaining })
+  }
+  if (!changed) {
+    return entity
+  }
+  return {
+    ...entity,
+    mixins: {
+      ...entity.mixins,
+      provenance: { ...provenance, entries },
+    },
+  }
+}
+
 export const appendAppliedProvenance = <T extends ProvenanceCarrier>(
   entity: T,
   applied: readonly (ProvenanceApplied | null | undefined)[],
   mode: 'create' | 'update'
-): T =>
-  appendProvenance(
-    normalizeCarrier(entity),
-    applied.map((item) => (item ? normalizeApplied(item) : item)),
+): T => {
+  const normalized = applied.map((item) =>
+    item ? normalizeApplied(item) : item
+  )
+  return appendProvenance(
+    withoutSupersededFields(normalizeCarrier(entity), normalized, mode),
+    normalized,
     mode
   )
+}
 
 export const pendingAfterScopeChange = <T>(
   pending: readonly T[],

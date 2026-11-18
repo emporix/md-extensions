@@ -19,6 +19,7 @@ import {
 } from '../../utils/mcpHelpers'
 import { useMcpConfig } from '../../hooks/useMcpConfig'
 import { useDynamicMcpConfig } from '../../hooks/useDynamicMcpConfig'
+import { useAppliedGeneration } from '../../contexts/AppliedGenerationContext'
 import { useAgentTokensCatalog } from '../../hooks/useAgentTokensCatalog'
 import { useProjectFunctions } from '../../hooks/useProjectFunctions'
 import { useIamScopes } from '../../hooks/useIamScopes'
@@ -63,6 +64,7 @@ const McpDetailContent = () => {
     loading: scopesLoading,
     error: scopesLoadError,
   } = useIamScopes(isDynamic)
+  const { clearAppliedGenerations } = useAppliedGeneration()
 
   useEffect(() => {
     if (isCreating) {
@@ -166,6 +168,7 @@ const McpDetailContent = () => {
         return
       }
 
+      clearAppliedGenerations()
       setMcpServer(
         switchMcpServerType(type, {
           id: isDynamic
@@ -183,6 +186,7 @@ const McpDetailContent = () => {
       customConfig.state.mcpServerName,
       dynamicConfig.state.mcpServerId,
       dynamicConfig.state.mcpServerName,
+      clearAppliedGenerations,
       isCreating,
       isDynamic,
       mcpServer,
