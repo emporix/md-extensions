@@ -128,6 +128,8 @@ export const ProductDetailsForm = () => {
   const [searchParams] = useSearchParams()
   const siblingIdParam = searchParams.get('siblingId')
   const parentVariantIdParam = searchParams.get('parentVariantId')
+  const typeParam = searchParams.get('type')
+  const subscriptionParam = searchParams.get('subscription')
   const toast = useToast()
   const methods = useForm<Product>()
   const {
@@ -149,7 +151,8 @@ export const ProductDetailsForm = () => {
   const [isAssistantBoxOpened, setIsAssistantBoxOpened] = useState(false)
   const productId = product?.id ?? undefined
   const productScope =
-    productId ?? `new:${parentVariantIdParam ?? ''}:${siblingIdParam ?? ''}`
+    productId ??
+    `new:${typeParam ?? ''}:${subscriptionParam ?? ''}:${parentVariantIdParam ?? ''}:${siblingIdParam ?? ''}`
   const pendingProvenanceRef = useRef<ProvenanceEnvelope[]>([])
   const productScopeRef = useRef(productScope)
   const fullResetRef = useRef(false)
