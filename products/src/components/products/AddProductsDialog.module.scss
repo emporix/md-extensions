@@ -7,9 +7,6 @@
     }
 
     .p-dialog-content {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
       padding: 0 1.5rem 1rem;
     }
   }
@@ -42,42 +39,6 @@
 .chipsPlaceholder {
   flex-shrink: 0;
   padding: 1rem;
-}
-
-.table {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-
-  :global {
-    .p-datatable {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .p-datatable-wrapper {
-      flex: 1;
-      overflow: auto;
-    }
-
-    .p-datatable-table {
-      border-collapse: separate;
-      border-spacing: 0;
-    }
-
-    .p-datatable-thead {
-      position: sticky;
-      top: 0;
-      z-index: 1;
-
-      tr:first-child th {
-        border-bottom-width: 2px;
-      }
-    }
-  }
 }
 
 .rowAlreadySelected {

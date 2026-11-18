@@ -169,6 +169,8 @@ export function AddProductsDialog(props: AddProductsDialogProps) {
       visible={visible}
       style={{ width: '90vw', maxHeight: '90vh' }}
       className={styles.dialog}
+      // Only the rows of the table scroll; the dialog keeps its height.
+      fixedHeight
       onHide={handleClose}
       header={t('products.dialogs.addProducts.title')}
       footer={
@@ -204,7 +206,7 @@ export function AddProductsDialog(props: AddProductsDialogProps) {
         <div className={styles.chipsPlaceholder} />
       )}
       <DataTable
-        className={styles.table}
+        fillHeight
         value={products}
         dataKey="id"
         columns={columns}
