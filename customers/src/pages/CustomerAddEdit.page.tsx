@@ -600,13 +600,15 @@ const CustomerAddEdit = () => {
             render={({ field }) => (
               <div className={`${styles.span3} ${styles.rowStart}`}>
                 <FieldLabel>{t('customers.details.title')}</FieldLabel>
-                <SelectButton
-                  data-testid="customer-title"
-                  disabled={!canManage}
-                  options={TITLE_OPTIONS}
-                  value={field.value}
-                  onChange={(e) => field.onChange(e.value)}
-                />
+                <div className={styles.control}>
+                  <SelectButton
+                    data-testid="customer-title"
+                    disabled={!canManage}
+                    options={TITLE_OPTIONS}
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.value)}
+                  />
+                </div>
               </div>
             )}
           />
@@ -714,12 +716,14 @@ const CustomerAddEdit = () => {
               >
                 {t('customers.details.autogenerate')}
               </FieldLabel>
-              <InputSwitch
-                inputId="customer-autogenerate"
-                disabled={!canManage}
-                checked={isAutogeneratePassword}
-                onChange={(e) => handleAutogenerateChange(e.value)}
-              />
+              <div className={styles.control}>
+                <InputSwitch
+                  inputId="customer-autogenerate"
+                  disabled={!canManage}
+                  checked={isAutogeneratePassword}
+                  onChange={(e) => handleAutogenerateChange(e.value)}
+                />
+              </div>
             </div>
           )}
 
@@ -808,13 +812,15 @@ const CustomerAddEdit = () => {
                 render={({ field }) => (
                   <div className={`${styles.span2} ${styles.rowStart}`}>
                     <FieldLabel>{t('customers.details.onHold')}</FieldLabel>
-                    <SelectButton
-                      data-testid="customer-on-hold"
-                      disabled={!canManage}
-                      options={booleanOptions}
-                      value={String(Boolean(field.value))}
-                      onChange={(e) => field.onChange(e.value === 'true')}
-                    />
+                    <div className={styles.control}>
+                      <SelectButton
+                        data-testid="customer-on-hold"
+                        disabled={!canManage}
+                        options={booleanOptions}
+                        value={String(Boolean(field.value))}
+                        onChange={(e) => field.onChange(e.value === 'true')}
+                      />
+                    </div>
                   </div>
                 )}
               />
@@ -824,13 +830,15 @@ const CustomerAddEdit = () => {
                 render={({ field }) => (
                   <div className={styles.span2}>
                     <FieldLabel>{t('customers.details.active')}</FieldLabel>
-                    <SelectButton
-                      data-testid="customer-active"
-                      disabled={!canManage}
-                      options={booleanOptions}
-                      value={String(Boolean(field.value))}
-                      onChange={(e) => field.onChange(e.value === 'true')}
-                    />
+                    <div className={styles.control}>
+                      <SelectButton
+                        data-testid="customer-active"
+                        disabled={!canManage}
+                        options={booleanOptions}
+                        value={String(Boolean(field.value))}
+                        onChange={(e) => field.onChange(e.value === 'true')}
+                      />
+                    </div>
                   </div>
                 )}
               />

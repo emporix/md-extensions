@@ -24,6 +24,13 @@
     margin-bottom: 1rem;
   }
 
+  // Library inputs set `min-width: 200px` on their root, wider than a
+  // two-column cell. The class is doubled so this wins over that single class
+  // whatever the order of the bundled styles.
+  &#{&} > * {
+    min-width: 0;
+  }
+
   @media (max-width: 768px) {
     grid-template-columns: minmax(0, 1fr);
 
@@ -33,28 +40,37 @@
   }
 }
 
+// Spans set only the end line. The `grid-column` shorthand would also set the
+// start, and `.rowStart` replacing that start drops the span (one column).
 .span2 {
-  grid-column: span 2;
+  grid-column-end: span 2;
 }
 
 .span3 {
-  grid-column: span 3;
+  grid-column-end: span 3;
 }
 
 .span4 {
-  grid-column: span 4;
+  grid-column-end: span 4;
 }
 
 .span6 {
-  grid-column: span 6;
+  grid-column-end: span 6;
 }
 
 .span12 {
-  grid-column: span 12;
+  grid-column-end: span 12;
 }
 
 .rowStart {
   grid-column-start: 1;
+}
+
+// `FieldLabel` and the library toggles (`SelectButton`, `InputSwitch`) are
+// inline; a box of its own puts the control under the label, as the library
+// inputs render their own label.
+.control {
+  display: flex;
 }
 
 .address {

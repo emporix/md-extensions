@@ -19,6 +19,13 @@
     margin-bottom: 1rem;
   }
 
+  // Library inputs set `min-width: 200px` on their root, wider than a
+  // two-column cell. The class is doubled so this wins over that single class
+  // whatever the order of the bundled styles.
+  &#{&} > * {
+    min-width: 0;
+  }
+
   @media (max-width: 768px) {
     grid-template-columns: minmax(0, 1fr);
 
@@ -38,4 +45,10 @@
 
 .span8 {
   grid-column: span 8;
+}
+
+// `FieldLabel` and `SelectButton` are inline; a box of its own puts the control
+// under the label, as the library inputs render their own label.
+.control {
+  display: flex;
 }

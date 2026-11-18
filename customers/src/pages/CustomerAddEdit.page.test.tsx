@@ -251,6 +251,11 @@ const customerLoaded = () =>
   waitFor(() => expect(input('customer-first-name').value).toBe('Ann'))
 const lastPayload = (mock: ReturnType<typeof vi.fn>) =>
   mock.mock.calls[mock.mock.calls.length - 1][0]
+/** The label right above the box a toggle sits in, if that is what is there. */
+const labelAbove = (toggle: Element | null) => {
+  const above = toggle?.parentElement?.previousElementSibling
+  return above?.tagName === 'LABEL' ? above : undefined
+}
 
 describe('Customer add / edit', () => {
   beforeEach(async () => {
@@ -302,6 +307,19 @@ describe('Customer add / edit', () => {
 
   // Scenario 5
   describe('create', () => {
+    it('shows the title and autogenerate toggles under their labels', () => {
+      renderPage('/add')
+
+      expect(
+        labelAbove(screen.getByTestId('customer-title'))?.textContent
+      ).toBe(i18n.t('customers.details.title'))
+      expect(
+        labelAbove(input('customer-autogenerate').parentElement)?.getAttribute(
+          'for'
+        )
+      ).toBe('customer-autogenerate')
+    })
+
     it('creates a customer and opens it', async () => {
       renderPage('/add')
       // Addresses only exist on a saved customer.
@@ -406,6 +424,18 @@ describe('Customer add / edit', () => {
 
   // Scenario 6
   describe('edit', () => {
+    it('shows the on hold and active toggles under their labels', async () => {
+      renderPage('/C1')
+      await customerLoaded()
+
+      expect(
+        labelAbove(screen.getByTestId('customer-on-hold'))?.textContent
+      ).toBe(i18n.t('customers.details.onHold'))
+      expect(
+        labelAbove(screen.getByTestId('customer-active'))?.textContent
+      ).toBe(i18n.t('customers.details.active'))
+    })
+
     it('updates the customer, then reloads it', async () => {
       renderPage('/C1')
       await customerLoaded()
@@ -619,6 +649,16 @@ describe('Customer add / edit', () => {
   describe('addresses', () => {
     const addressCard = (idx: number) =>
       screen.getByTestId(`customer-address-${idx}`)
+
+    it('shows the default-address toggle under its label', async () => {
+      renderPage('/C1')
+      await customerLoaded()
+      openTab('addresses')
+
+      expect(
+        labelAbove(screen.getByTestId('address-0-isDefault'))?.textContent
+      ).toBe(i18n.t('customers.address.isDefault'))
+    })
 
     it('saves an edited address on its own', async () => {
       renderPage('/C1')
