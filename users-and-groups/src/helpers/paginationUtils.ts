@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios'
 import { PaginationProps } from '../hooks/usePagination'
 import { type PaginatedResponse } from '@emporix/api-calls'
 
@@ -43,15 +44,37 @@ export const fetchAllRecords = async <T>(
         break
       }
 
+      // X-Total-Count can be higher than the number of records the API
+      // returns (IAM users: 35 counted, 34 listed). The API pages by that
+      // count and answers 404 for a page that starts past it, so the pages
+      // requested so far already cover the whole count: stop here.
+      const currentPage = currentPagination.currentPage || 1
+      const pageSize = currentPagination.rows
+      if (pageSize && currentPage * pageSize >= totalRecords) {
+        break
+      }
+
       // Move to next page
       currentPagination = {
         ...currentPagination,
-        currentPage: (currentPagination.currentPage || 1) + 1,
+        currentPage: currentPage + 1,
       }
 
       // Reset retry count on successful request
       retryCount = 0
     } catch (error) {
+      // A 404 past the first page means "no such page", not a failure: keep
+      // the records fetched so far (same guard as in Management Dashboard).
+      const currentPage = currentPagination.currentPage ?? 1
+      if (
+        currentPage > 1 &&
+        allRecords.length > 0 &&
+        isAxiosError(error) &&
+        error.response?.status === 404
+      ) {
+        break
+      }
+
       retryCount++
 
       if (retryCount >= maxRetries) {
