@@ -34,6 +34,8 @@ const mixins = vi.hoisted(() => ({
   isLoading: false,
   version: 0,
   listeners: new Set<() => void>(),
+  /** The options of the page's last `useMixinsForm` call. */
+  lastOptions: undefined as { managerPermissions?: boolean } | undefined,
 }))
 const setMixinsState = (
   isLoading: boolean,
@@ -63,7 +65,8 @@ vi.mock('./context/SitesProvider', () => ({ useSites: () => sites.value }))
 // The mixins subsystem is tested on its own; the page hands it the quote.
 vi.mock('./components/mixins/useMixinsForm', async () => {
   const { useSyncExternalStore } = await import('react')
-  const useMixinsFormStub = () => {
+  const useMixinsFormStub = (options: { managerPermissions?: boolean }) => {
+    mixins.lastOptions = options
     useSyncExternalStore(
       (listener: () => void) => {
         mixins.listeners.add(listener)
@@ -325,6 +328,25 @@ describe('Quotes routes', () => {
 
       expect(screen.getByText('DECLINED BY MERCHANT')).toBeTruthy()
       expect(screen.queryByText('DECLINED_BY_MERCHANT')).toBeNull()
+    })
+
+    // COP-7116 (Copilot on #158): MD left the mixin tabs editable on a
+    // completed quote, whose other tabs are read-only.
+    it('makes the mixin tabs read-only on a completed quote', async () => {
+      permissions.granted = [EmployeeDomains.QUOTES_MANAGER]
+      api.getQuoteById.mockImplementation((id: string) =>
+        later(() => ({ ...quote(id), status: { value: 'ACCEPTED' } }))
+      )
+      await renderAt('/Q1')
+
+      expect(mixins.lastOptions?.managerPermissions).toBe(false)
+    })
+
+    it('lets a Quotes Manager edit the mixin tabs of an open quote', async () => {
+      permissions.granted = [EmployeeDomains.QUOTES_MANAGER]
+      await renderAt('/Q1')
+
+      expect(mixins.lastOptions?.managerPermissions).toBe(true)
     })
 
     // COP-7116: MD reloaded the mixins (schema and reference requests) on

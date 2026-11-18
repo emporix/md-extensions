@@ -13,6 +13,7 @@ import {
   Dropdown,
   InputNumber,
   MoneyValue,
+  useToast,
   type DataTableColumnProps,
 } from '@emporix/component-library'
 import { Item, Quote } from '../../models/Quotes.model'
@@ -35,6 +36,7 @@ import {
   selectShippingFee,
 } from '../../helpers/quoteShipping.helpers'
 import { getUnitPriceForNetValue } from '../../helpers/quoteItems.helpers'
+import { getApiErrorMessage } from '../../helpers/api'
 import styles from './QuotesTabPreviewTable.module.scss'
 
 interface QuotesTabProductsProps extends StylableProps {
@@ -68,6 +70,7 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
   const { getContentLangValue } = useLocalizedValue()
   const { calculateTax } = useTaxesApi()
   const { getZones } = useShippingApi()
+  const toast = useToast()
   const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>()
   const [filteredShippingMethods, setFilteredShippingMethods] =
     useState<ShippingMethod[]>()
@@ -80,10 +83,21 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
   useEffect(() => {
     if (!quote) return
     ;(async () => {
-      const zones = await getZones(quote.siteCode)
-      setShippingMethods(
-        getZoneShippingMethods(zones, quote?.shippingAddress?.countryCode)
-      )
+      // MD left a failed request unhandled: the required method list stayed
+      // empty with no message.
+      try {
+        const zones = await getZones(quote.siteCode)
+        setShippingMethods(
+          getZoneShippingMethods(zones, quote?.shippingAddress?.countryCode)
+        )
+      } catch (e) {
+        console.error(e)
+        toast.showToast(
+          getApiErrorMessage(e) ?? t('quotes.toasts.errorFetchShippingMethods'),
+          '',
+          'error'
+        )
+      }
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity: on mount
   }, [])

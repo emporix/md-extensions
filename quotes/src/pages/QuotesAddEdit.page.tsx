@@ -124,7 +124,9 @@ const QuotesAddEditPage = () => {
   const { loadMixins, mixinsTabs, isMixinsLoading } = useMixinsForm({
     type: SchemaType.QUOTE,
     onEdit: saveMixin,
-    managerPermissions: canManage,
+    // A completed quote is read-only on every tab (MD left the mixins
+    // editable).
+    managerPermissions: canManage && !isQuoteCompleted,
   })
 
   // Keyed on the ids: the mixin tabs are rebuilt on every render (MD passes a

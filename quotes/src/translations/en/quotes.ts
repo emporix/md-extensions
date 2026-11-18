@@ -69,6 +69,7 @@ export default {
     errorUpdate: 'Error while updating quote',
     errorChangeStatus: 'Status cannot be changed',
     errorFetchReasons: 'Error while loading the reasons',
+    errorFetchShippingMethods: 'Error while loading the shipping methods',
     errorPdf: 'Error while displaying PDF, try later',
     successDraftCreate: 'Quote draft created successfully',
     successCreate: 'Quote created!',

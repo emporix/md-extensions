@@ -68,6 +68,12 @@ const quote = (status: string) => ({
 const ApprovalOnceLoaded = () =>
   useQuoteData().quote ? <QuotesTabApproval /> : null
 
+/** Reloads the quote, as a save on another tab does. */
+const RefreshOnClick = () => {
+  const { refreshData } = useQuoteData()
+  return <button data-testid="refresh-quote" onClick={() => refreshData()} />
+}
+
 const renderApproval = ({ openAfterLoad = false } = {}) => {
   const tree = () => (
     <DashboardProvider appState={appState}>
@@ -101,11 +107,51 @@ describe('QuotesTabApproval', () => {
     quotesApi.getQuotePdf.mockResolvedValue('%PDF')
     quotesApi.changeQuoteStatus.mockResolvedValue({})
     URL.createObjectURL = vi.fn(() => 'blob:quote-pdf')
+    URL.revokeObjectURL = vi.fn()
   })
 
   afterEach(() => {
     cleanup()
     vi.clearAllMocks()
+  })
+
+  // COP-7116 (Copilot on #158): MD never revoked the PDF URLs, so every quote
+  // shown on the tab kept its PDF in memory.
+  it('frees the PDF URL when a new PDF replaces it and when the tab closes', async () => {
+    // A new object per load, as the API returns.
+    quotesApi.getQuoteById.mockImplementation(async () => quote('OPEN'))
+    URL.createObjectURL = vi
+      .fn()
+      .mockReturnValueOnce('blob:quote-pdf-1')
+      .mockReturnValueOnce('blob:quote-pdf-2')
+    const { container, unmount } = render(
+      <DashboardProvider appState={appState}>
+        <MemoryRouter initialEntries={['/Q1']}>
+          <Routes>
+            <Route
+              path="/:quoteId"
+              element={
+                <QuoteDataProvider>
+                  <RefreshOnClick />
+                  <QuotesTabApproval />
+                </QuoteDataProvider>
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      </DashboardProvider>
+    )
+    const src = () => container.querySelector('iframe')?.getAttribute('src')
+    await waitFor(() => expect(src()).toBe('blob:quote-pdf-1'))
+    expect(URL.revokeObjectURL).not.toHaveBeenCalled()
+
+    // A reloaded quote brings a new PDF.
+    fireEvent.click(screen.getByTestId('refresh-quote'))
+    await waitFor(() => expect(src()).toBe('blob:quote-pdf-2'))
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:quote-pdf-1')
+
+    unmount()
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:quote-pdf-2')
   })
 
   it('shows the PDF of the quote', async () => {

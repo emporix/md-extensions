@@ -229,6 +229,21 @@ describe('QuotesTabPreview', () => {
     )
   })
 
+  // COP-7116 (Copilot on #158): MD left a failed zones request unhandled, so
+  // the required shipping dropdown stayed empty without a message.
+  it('shows an error toast when the shipping methods cannot be loaded', async () => {
+    shippingApi.getZones.mockRejectedValue(new Error('Network Error'))
+    renderPreview()
+
+    await waitFor(() =>
+      expect(toast.showToast).toHaveBeenCalledWith(
+        'Error while loading the shipping methods',
+        '',
+        'error'
+      )
+    )
+  })
+
   it('saves the chosen shipping and the changed reference only', async () => {
     renderPreview()
     await waitFor(() => expect(shippingApi.getZones).toHaveBeenCalled())

@@ -70,6 +70,7 @@ export default {
     errorUpdate: 'Fehler beim Aktualisieren des Angebots',
     errorChangeStatus: 'Status kann nicht geändert werden',
     errorFetchReasons: 'Fehler beim Laden der Gründe',
+    errorFetchShippingMethods: 'Fehler beim Laden der Versandarten',
     errorPdf:
       'Fehler beim Anzeigen des PDFs, bitte versuchen Sie es später noch einmal',
     successDraftCreate: 'Angebotsentwurf erfolgreich angelegt',

@@ -212,6 +212,7 @@ describe('QuotesTabGeneral', () => {
     })
 
     it('opens the order of an accepted quote in the orders remote', async () => {
+      permissions.granted.push(EmployeeDomains.ORDERS_VIEWER)
       quotesApi.getQuoteById.mockResolvedValue({
         ...b2bQuote,
         orderId: 'EON4365',
@@ -223,6 +224,23 @@ describe('QuotesTabGeneral', () => {
       fireEvent.click(await screen.findByText('EON4365'))
 
       expect(assign).toHaveBeenCalledWith('/apps/management/orders#/EON4365')
+    })
+
+    // COP-7116 (Copilot on #158): MD linked the order for everyone, also
+    // without Orders Viewer.
+    it('shows the order number without a link without Orders Viewer', async () => {
+      quotesApi.getQuoteById.mockResolvedValue({
+        ...b2bQuote,
+        orderId: 'EON4365',
+        status: { value: 'ACCEPTED' },
+      })
+      companiesApi.getLegalEntity.mockResolvedValue(company([]))
+      renderGeneral()
+
+      const orderNumber = await screen.findByText('EON4365')
+      expect(orderNumber.closest('a')).toBeNull()
+      fireEvent.click(orderNumber)
+      expect(assign).not.toHaveBeenCalled()
     })
   })
 

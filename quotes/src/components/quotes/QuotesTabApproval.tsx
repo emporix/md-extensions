@@ -46,6 +46,13 @@ const QuotesTabApproval = (props: StylableProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
   }, [quote])
 
+  // Frees a PDF URL once a newer PDF replaces it and when the tab unmounts
+  // (MD never revoked them, so each shown quote kept its PDF in memory).
+  useEffect(() => {
+    if (!pdfData) return
+    return () => URL.revokeObjectURL(pdfData)
+  }, [pdfData])
+
   const onInit = async () => {
     if (!quote) return
     blockPanel(true)

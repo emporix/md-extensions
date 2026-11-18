@@ -159,6 +159,30 @@ describe('QuotesTabProducts', () => {
     )
   })
 
+  // COP-7116 (Copilot on #158): match-prices ran before the `try`, so a
+  // failed pricing call skipped the error toast.
+  it('shows an error toast when pricing the new lines fails', async () => {
+    pricesApi.matchPrices.mockRejectedValue(new Error('Network Error'))
+    renderProducts()
+    const browser = await screen.findByTestId('quote-products-browser')
+    await waitFor(() => expect(within(browser).getByText('Table')).toBeTruthy())
+
+    const tableRow = within(browser)
+      .getByText('Table')
+      .closest('tr') as HTMLElement
+    fireEvent.click(tableRow.querySelector('.p-checkbox-box') as HTMLElement)
+    fireEvent.click(save())
+
+    await waitFor(() =>
+      expect(toast.showToast).toHaveBeenCalledWith(
+        'Error while updating quote',
+        '',
+        'error'
+      )
+    )
+    expect(quotesApi.updateQuote).not.toHaveBeenCalled()
+  })
+
   it('removes a dropped line without pricing anything', async () => {
     renderProducts()
 

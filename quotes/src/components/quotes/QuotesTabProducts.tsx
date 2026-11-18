@@ -111,17 +111,19 @@ const QuotesTabProducts = (props: StylableProps) => {
         data.products
       )
 
-      const newItemsWithPrices = newItems.length
-        ? await getPriceForQuoteItems(quote, newItems)
-        : []
-
-      const updateOperations = buildQuoteItemsOperations(
-        newItemsWithPrices,
-        deletedItems
-      )
-
       blockPanel(true)
       try {
+        // Inside the `try`: a failed match-prices call gets the same error
+        // toast as a failed update (MD priced before it, unhandled).
+        const newItemsWithPrices = newItems.length
+          ? await getPriceForQuoteItems(quote, newItems)
+          : []
+
+        const updateOperations = buildQuoteItemsOperations(
+          newItemsWithPrices,
+          deletedItems
+        )
+
         await updateQuote(quote.id, updateOperations)
         toast.showToast(t('quotes.toasts.successUpdate'), '', 'success')
         refreshData()

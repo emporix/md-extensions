@@ -3,6 +3,8 @@ import { SectionBox } from '@emporix/component-library'
 import { Quote, QuoteStatus } from '../../models/Quotes.model'
 import { assignHostLocation, orderDetailUrl } from '../../helpers/hostUrls'
 import { StylableProps } from '../../helpers/props'
+import { usePermissions } from '../../context/PermissionsProvider'
+import { EmployeeDomains } from '../../configs/accessControls'
 import styles from './QuotesTabGeneralStatus.module.scss'
 
 interface QuotesTabGeneralStatusProps extends StylableProps {
@@ -13,6 +15,9 @@ interface QuotesTabGeneralStatusProps extends StylableProps {
 const QuotesTabGeneralStatus = (props: QuotesTabGeneralStatusProps) => {
   const { className = '', quote } = props
   const { t } = useTranslation()
+  const { hasPermission } = usePermissions()
+  // MD linked the order for everyone; without Orders Viewer the id is text.
+  const canViewOrders = hasPermission(EmployeeDomains.ORDERS_VIEWER)
 
   return (
     <SectionBox
@@ -29,7 +34,7 @@ const QuotesTabGeneralStatus = (props: QuotesTabGeneralStatusProps) => {
           <div className={styles.label}>
             {t('quotes.tabs.general.orderNumber')}
           </div>
-          {quote.orderId ? (
+          {quote.orderId && canViewOrders ? (
             // Orders is a federated remote of the host (hash route); a
             // `backTo` cannot cross into it, so back returns to its list.
             <a
@@ -41,6 +46,8 @@ const QuotesTabGeneralStatus = (props: QuotesTabGeneralStatusProps) => {
             >
               <span className={styles.value}>{quote.orderId}</span>
             </a>
+          ) : quote.orderId ? (
+            <span className={styles.value}>{quote.orderId}</span>
           ) : (
             <span className={styles.value}>--</span>
           )}
