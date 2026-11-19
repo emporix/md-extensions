@@ -113,6 +113,8 @@ export default {
       title: 'Products',
       selectedItems: 'Selected items',
       selectedItemsEmpty: 'Please add product',
+      selectProducts: 'Select products',
+      applySelection: 'Apply selection',
     },
     preview: {
       title: 'Preview',

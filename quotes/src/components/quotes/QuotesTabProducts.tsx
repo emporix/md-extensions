@@ -1,28 +1,20 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Controller, useForm } from 'react-hook-form'
-import { ProductRow, withCategoryScope } from '@emporix/api-calls'
+import { useForm } from 'react-hook-form'
+import { ProductRow } from '@emporix/api-calls'
 import {
   PrimaryButton,
-  ProductsBrowser,
   SecondaryButton,
   SectionBox,
-  toProductsBrowserCategoryNodes,
   useToast,
-  type ProductsBrowserColumnKey,
-  type ProductsBrowserLabels,
-  type ProductsBrowserQuery,
-  type ProductsBrowserView,
 } from '@emporix/component-library'
 import EmptyContent from '../shared/EmptyContent'
 import QuotesTabProductsSelected from './QuotesTabProductsSelected'
+import QuotesSelectProductsDialog from './QuotesSelectProductsDialog'
 import { useQuoteData } from '../../context/Quote.provider'
 import { useUIBlocker } from '../../context/UIBlocker'
 import { usePermissions } from '../../context/PermissionsProvider'
-import { useDashboardContext } from '../../context/Dashboard.context'
 import { useQuotesApi } from '../../hooks/api/quotes'
-import { useProductsApi } from '../../hooks/api/products'
-import { useCategoriesApi } from '../../hooks/api/categories'
 import { useQuotesMatchPrices } from '../../hooks/useQuotesMatchPrices'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import { Item } from '../../models/Quotes.model'
@@ -30,8 +22,6 @@ import { ProductType } from '../../models/Category.model'
 import { EmployeeDomains } from '../../configs/accessControls'
 import { StylableProps } from '../../helpers/props'
 import { deepClone } from '../../helpers/utils'
-import { apiPagination } from '../../helpers/apiPagination'
-import { toQuoteProductRow } from '../../helpers/productsBrowser.helpers'
 import {
   buildQuoteItemsOperations,
   diffQuoteItems,
@@ -39,18 +29,14 @@ import {
 import { getApiErrorMessage } from '../../helpers/api'
 import styles from './QuotesTabProducts.module.scss'
 
-/** MD `PRODUCT_PICKER_COLUMNS`. */
-const PICKER_COLUMNS: ProductsBrowserColumnKey[] = ['name', 'id', 'code']
-const PICKER_VIEWS: ProductsBrowserView[] = ['list', 'tree']
-
 export interface QuoteProductsForm {
   products: ProductRow[]
 }
 
 /**
- * MD `QuotesTabProducts`: the picked products and a products picker (list or
- * category tree, the tree only with Categories Viewer). Save adds the new
- * lines priced by match-prices and removes the dropped ones.
+ * The picked products, which fill the tab, and a button that opens the
+ * products picker in a dialog (MD showed the picker under the list). Save adds
+ * the new lines priced by match-prices and removes the dropped ones.
  */
 const QuotesTabProducts = (props: StylableProps) => {
   const { className = '' } = props
@@ -62,21 +48,11 @@ const QuotesTabProducts = (props: StylableProps) => {
   const { blockPanel } = useUIBlocker()
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.QUOTES_MANAGER)
-  // Like MD, the tree is not requested without access to categories.
-  const canViewCategories = hasPermission(EmployeeDomains.CATEGORIES_VIEWER)
-  const { getContentLangValue, contentLanguage } = useLocalizedValue()
-  const { tenant } = useDashboardContext()
-  const { syncPaginatedProducts } = useProductsApi()
-  const { getCategoryTrees } = useCategoriesApi()
-  const {
-    reset,
-    control,
-    formState,
-    handleSubmit,
-    getValues,
-    watch,
-    setValue,
-  } = useForm<QuoteProductsForm>({ defaultValues: { products: [] } })
+  const canPickProducts = canManage && !isQuoteCompleted
+  const { getContentLangValue } = useLocalizedValue()
+  const [isSelectDialogOpen, setIsSelectDialogOpen] = useState(false)
+  const { reset, formState, handleSubmit, getValues, watch, setValue } =
+    useForm<QuoteProductsForm>({ defaultValues: { products: [] } })
 
   useEffect(() => {
     if (!quote) return
@@ -150,72 +126,16 @@ const QuotesTabProducts = (props: StylableProps) => {
     setValue('products', filteredProducts, { shouldDirty: true })
   }
 
-  // MD `syncPaginatedProductsRows` without prices (no price column).
-  const loadProducts = useCallback(
-    async (query: ProductsBrowserQuery) => {
-      const { data, totalCount } = await syncPaginatedProducts(
-        apiPagination({
-          ...query,
-          filters: withCategoryScope(query.filters, query.categoryIds),
-        })
-      )
-      if (data.length === 0) {
-        return { values: [], totalRecords: 0 }
-      }
-      return {
-        values: data.map((product) =>
-          toQuoteProductRow(product, getContentLangValue)
-        ),
-        totalRecords: totalCount,
-      }
-    },
-    [syncPaginatedProducts, getContentLangValue]
-  )
+  const applySelection = (products: ProductRow[]) => {
+    if (isQuoteCompleted) return
+    setValue('products', products, { shouldDirty: true })
+  }
 
-  const loadCategoryTree = useCallback(
-    async () =>
-      toProductsBrowserCategoryNodes(await getCategoryTrees(), contentLanguage),
-    [getCategoryTrees, contentLanguage]
-  )
-
-  // MD: the products table toasts its load error, the category tree titles
-  // its error with the categories title.
-  const handleLoadError = useCallback(
-    (error: unknown, source: 'products' | 'categories') => {
-      console.error(error)
-      if (source === 'categories') {
-        toast.showError(t('categories.title'), '')
-        return
-      }
-      toast.showToast(t('products.table.loadError'), '', 'error')
-    },
-    [toast, t]
-  )
-
-  const labels: Partial<ProductsBrowserLabels> = useMemo(
-    () => ({
-      name: t('products.table.name'),
-      id: t('products.table.id'),
-      code: t('products.table.code'),
-      listView: t('products.browser.listView'),
-      treeView: t('products.browser.treeView'),
-      selectCategory: t('products.table.selectCategory'),
-      noProducts: t('global.noDataFound'),
-      noCategories: canViewCategories
-        ? t('products.browser.noCategories')
-        : t('global.noPermissions'),
-      published: t('products.browser.published'),
-      unpublished: t('products.browser.unpublished'),
-      pageReport: t('global.pagination'),
-      anyProductType: t('global.all'),
-    }),
-    [t, canViewCategories]
-  )
+  const products = watch('products') ?? []
 
   return (
     <div className={className}>
       <SectionBox
-        className={styles.selectedSection}
         name={t('quotes.tabs.products.selectedItems')}
         actions={
           <div className={styles.actions}>
@@ -236,47 +156,37 @@ const QuotesTabProducts = (props: StylableProps) => {
             >
               {t('global.save')}
             </PrimaryButton>
+            {canPickProducts && (
+              <PrimaryButton
+                onClick={() => setIsSelectDialogOpen(true)}
+                data-testid="quote-select-products"
+              >
+                {t('quotes.tabs.products.selectProducts')}
+              </PrimaryButton>
+            )}
           </div>
         }
       >
-        {watch('products')?.length > 0 ? (
-          <QuotesTabProductsSelected
-            products={getValues('products')}
-            removeProduct={removeProduct}
-          />
-        ) : (
-          <EmptyContent
-            className={styles.empty}
-            text={t('quotes.tabs.products.selectedItemsEmpty')}
-          />
-        )}
-      </SectionBox>
-      {!isQuoteCompleted && canManage && (
-        <Controller
-          name="products"
-          control={control}
-          render={({ field }) => (
-            <ProductsBrowser<ProductRow>
-              loadProducts={loadProducts}
-              loadCategoryTree={
-                canViewCategories ? loadCategoryTree : undefined
-              }
-              columns={PICKER_COLUMNS}
-              views={PICKER_VIEWS}
-              labels={labels}
-              selection={field.value}
-              onSelectionChange={(value) => {
-                if (isQuoteCompleted) return
-                field.onChange(value)
-              }}
-              scopeKey={tenant}
-              // Names come localized from the loader, so a new content
-              // language reloads the page.
-              refreshKey={contentLanguage}
-              onLoadError={handleLoadError}
-              data-testid="quote-products-browser"
+        <div className={styles.selected}>
+          {products.length > 0 ? (
+            <QuotesTabProductsSelected
+              products={products}
+              removeProduct={removeProduct}
+            />
+          ) : (
+            <EmptyContent
+              className={styles.empty}
+              text={t('quotes.tabs.products.selectedItemsEmpty')}
             />
           )}
+        </div>
+      </SectionBox>
+      {canPickProducts && (
+        <QuotesSelectProductsDialog
+          visible={isSelectDialogOpen}
+          selection={products}
+          onApply={applySelection}
+          onHide={() => setIsSelectDialogOpen(false)}
         />
       )}
     </div>

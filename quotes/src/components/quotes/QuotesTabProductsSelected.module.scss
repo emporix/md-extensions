@@ -1,10 +1,10 @@
 @use '../../styles/palette' as *;
 
-// MD `grid-nogutter w-full h-14rem px-2 selected-items` (`.selected-items`
-// in `Quotes.scss`).
+// MD `grid-nogutter w-full px-2 selected-items` (`.selected-items` in
+// `Quotes.scss`); the height comes from the tab, which the list fills.
 .selectedItems {
   width: 100%;
-  height: 14rem;
+  height: 100%;
   padding: 0 0.5rem;
   overflow: auto;
   font-size: 0.875rem;

@@ -24,3 +24,16 @@ export const toQuoteProductRow = (
     name: getName(product.name),
   }
 }
+
+/** True when both lists hold the same ids, whatever their order. */
+export const hasSameIds = (
+  first: readonly { id: string }[],
+  second: readonly { id: string }[]
+): boolean => {
+  const firstIds = new Set(first.map((item) => item.id))
+  const secondIds = new Set(second.map((item) => item.id))
+  return (
+    firstIds.size === secondIds.size &&
+    [...firstIds].every((id) => secondIds.has(id))
+  )
+}

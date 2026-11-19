@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { toQuoteProductRow } from './productsBrowser.helpers'
+import { hasSameIds, toQuoteProductRow } from './productsBrowser.helpers'
 import type { Product } from '../models/Product.model'
 import type Localized from '../models/Localized.model'
 
@@ -33,5 +33,34 @@ describe('toQuoteProductRow', () => {
     expect(() =>
       toQuoteProductRow({ name: 'x' } as Product, inContentLanguage)
     ).toThrow('no product id')
+  })
+})
+
+describe('hasSameIds', () => {
+  it('is true for the same ids in another order', () => {
+    expect(
+      hasSameIds([{ id: 'a' }, { id: 'b' }], [{ id: 'b' }, { id: 'a' }])
+    ).toBe(true)
+  })
+
+  it('is true for two empty lists', () => {
+    expect(hasSameIds([], [])).toBe(true)
+  })
+
+  it('is false when an id was added or removed', () => {
+    expect(hasSameIds([{ id: 'a' }], [{ id: 'a' }, { id: 'b' }])).toBe(false)
+    expect(hasSameIds([{ id: 'a' }, { id: 'b' }], [{ id: 'a' }])).toBe(false)
+  })
+
+  it('is false when one id was swapped for another', () => {
+    expect(
+      hasSameIds([{ id: 'a' }, { id: 'b' }], [{ id: 'a' }, { id: 'c' }])
+    ).toBe(false)
+  })
+
+  it('does not mutate its input', () => {
+    const first = [{ id: 'b' }, { id: 'a' }]
+    hasSameIds(first, [{ id: 'a' }])
+    expect(first).toEqual([{ id: 'b' }, { id: 'a' }])
   })
 })

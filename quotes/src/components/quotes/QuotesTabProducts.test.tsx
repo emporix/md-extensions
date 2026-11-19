@@ -103,6 +103,22 @@ const renderProducts = () =>
 
 const save = () => screen.getByRole('button', { name: 'Save' })
 
+/** Opens the picker dialog and waits for its products. */
+const openPicker = async () => {
+  fireEvent.click(await screen.findByTestId('quote-select-products'))
+  const browser = await screen.findByTestId('quote-products-browser')
+  await waitFor(() => expect(within(browser).getByText('Table')).toBeTruthy())
+  return browser
+}
+
+const checkProduct = (browser: HTMLElement, name: string) => {
+  const row = within(browser).getByText(name).closest('tr') as HTMLElement
+  fireEvent.click(row.querySelector('.p-checkbox-box') as HTMLElement)
+}
+
+const apply = () =>
+  screen.getByTestId('quote-apply-products') as HTMLButtonElement
+
 describe('QuotesTabProducts', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('en')
@@ -123,22 +139,45 @@ describe('QuotesTabProducts', () => {
     vi.clearAllMocks()
   })
 
-  it('lists the quote lines and the products picker', async () => {
+  it('lists the quote lines and loads no products before the picker opens', async () => {
     renderProducts()
 
     const selected = await screen.findByTestId('quote-selected-items')
     expect(within(selected).getByText('Chair')).toBeTruthy()
     expect(within(selected).getByText('P1')).toBeTruthy()
-    await waitFor(() =>
-      expect(
-        within(screen.getByTestId('quote-products-browser')).getByText('Table')
-      ).toBeTruthy()
-    )
+    expect(screen.queryByTestId('quote-products-browser')).toBeNull()
+    expect(productsApi.syncPaginatedProducts).not.toHaveBeenCalled()
+    expect((save() as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('opens the products picker in a dialog', async () => {
+    renderProducts()
+    const browser = await openPicker()
+
     expect(productsApi.syncPaginatedProducts).toHaveBeenCalledWith(
       expect.objectContaining({ currentPage: 1, rows: 10 })
     )
     // Without Categories Viewer the tree is never requested.
     expect(categoriesApi.getCategoryTrees).not.toHaveBeenCalled()
+    // The products of the quote come checked, and nothing changed yet.
+    const chairRow = within(browser).getByText('Chair').closest('tr')
+    expect(chairRow?.querySelector('.p-checkbox-box.p-highlight')).toBeTruthy()
+    expect(apply().disabled).toBe(true)
+  })
+
+  it('keeps the quote lines when the dialog closes without applying', async () => {
+    renderProducts()
+    const browser = await openPicker()
+
+    checkProduct(browser, 'Table')
+    expect(apply().disabled).toBe(false)
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+    await waitFor(() =>
+      expect(screen.queryByTestId('quote-products-browser')).toBeNull()
+    )
+    const selected = screen.getByTestId('quote-selected-items')
+    expect(within(selected).queryByText('Table')).toBeNull()
     expect((save() as HTMLButtonElement).disabled).toBe(true)
   })
 
@@ -164,13 +203,10 @@ describe('QuotesTabProducts', () => {
   it('shows an error toast when pricing the new lines fails', async () => {
     pricesApi.matchPrices.mockRejectedValue(new Error('Network Error'))
     renderProducts()
-    const browser = await screen.findByTestId('quote-products-browser')
-    await waitFor(() => expect(within(browser).getByText('Table')).toBeTruthy())
+    const browser = await openPicker()
 
-    const tableRow = within(browser)
-      .getByText('Table')
-      .closest('tr') as HTMLElement
-    fireEvent.click(tableRow.querySelector('.p-checkbox-box') as HTMLElement)
+    checkProduct(browser, 'Table')
+    fireEvent.click(apply())
     fireEvent.click(save())
 
     await waitFor(() =>
@@ -210,13 +246,10 @@ describe('QuotesTabProducts', () => {
       },
     ])
     renderProducts()
-    const browser = await screen.findByTestId('quote-products-browser')
-    await waitFor(() => expect(within(browser).getByText('Table')).toBeTruthy())
+    const browser = await openPicker()
 
-    const tableRow = within(browser)
-      .getByText('Table')
-      .closest('tr') as HTMLElement
-    fireEvent.click(tableRow.querySelector('.p-checkbox-box') as HTMLElement)
+    checkProduct(browser, 'Table')
+    fireEvent.click(apply())
     expect(
       within(screen.getByTestId('quote-selected-items')).getByText('Table')
     ).toBeTruthy()
@@ -262,6 +295,7 @@ describe('QuotesTabProducts', () => {
     renderProducts()
 
     await screen.findByTestId('quote-selected-items')
+    expect(screen.queryByTestId('quote-select-products')).toBeNull()
     expect(screen.queryByTestId('quote-products-browser')).toBeNull()
     expect(productsApi.syncPaginatedProducts).not.toHaveBeenCalled()
   })

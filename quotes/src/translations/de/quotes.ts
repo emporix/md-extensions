@@ -115,6 +115,8 @@ export default {
       title: 'Produkte',
       selectedItems: 'Selektierte Produkte',
       selectedItemsEmpty: 'Produkt bitte hinzufügen',
+      selectProducts: 'Produkte auswählen',
+      applySelection: 'Auswahl übernehmen',
     },
     preview: {
       title: 'Vorschau',

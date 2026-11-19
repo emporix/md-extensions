@@ -32,7 +32,7 @@ const QuotesTabProductsSelected = (props: QuotesTabProductsSelectedProps) => {
           <div className={styles.col1}>
             <IconButton
               disabled={!canManage}
-              icon={<BsXCircleFill size={18} />}
+              icon={<BsXCircleFill size={16} />}
               ariaLabel={t('global.remove')}
               // MD's button had no tooltip.
               tooltip=""
