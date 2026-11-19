@@ -43,7 +43,7 @@ This is a monorepo of independent Management Dashboard remotes, one Vite app per
 | `classifications` | playbook-aligned | `classifications` | `classifications` → `/apps/management/classifications/*` | `VITE_CLASSIFICATIONS_URL` | `5187` | yes / yes | `2.29.0` / `1.5.3` |
 | `quotes` | playbook-aligned | `quotes` | `quotes` → `/apps/management/quotes/*` | `VITE_QUOTES_URL` | `5188` | yes / yes | `2.29.1` / `1.6.0` |
 | `statistics` | legacy (PrimeReact) | `extension` | `statistics` → `/apps/administration/statistics` | `VITE_STATISTICS_URL` | not pinned | no / no | — / — |
-| `users-and-groups` | playbook-aligned | `usersAndGroups` | `usersAndGroups` → `/administration/users-and-groups/*` | `VITE_USERS_AND_GROUPS_URL` | not pinned (`5173` in docs) | yes / yes | `2.4.1` / `1.2.1` |
+| `users-and-groups` | playbook-aligned | `usersAndGroups` | `usersAndGroups` → `/administration/users-and-groups/*` | `VITE_USERS_AND_GROUPS_URL` | not pinned (`5173` in docs) | yes / yes | `2.29.1` / `1.7.1` |
 
 Local deviations:
 

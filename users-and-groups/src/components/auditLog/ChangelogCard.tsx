@@ -14,14 +14,12 @@ import styles from './ChangelogCard.module.scss'
 
 type ChangelogCardProps = {
   readonly item: ChangelogItem
-  readonly iterationNumber: number
   readonly currentEntity: string
   readonly currentEntityId: string
 }
 
 const ChangelogCard = ({
   item,
-  iterationNumber,
   currentEntity,
   currentEntityId,
 }: ChangelogCardProps) => {
@@ -56,13 +54,11 @@ const ChangelogCard = ({
     <article className={styles.card}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.iteration}>#{iterationNumber}</span>
           <ChangelogActorCell actor={item.actor ?? ''} />
           <DateValue
             className={styles.timestamp}
             date={item.at}
             showTime={true}
-            timeZone="UTC"
             hour12={false}
             nullText="--"
           />
