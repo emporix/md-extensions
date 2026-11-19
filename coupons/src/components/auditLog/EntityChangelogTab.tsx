@@ -1,16 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ProgressSpinner } from '@emporix/component-library'
-import { useChangelogApi } from '../../hooks/api/changelog'
-import { useDashboardContext } from '../../context/Dashboard.context'
-import { makeCall } from '../../helpers/api'
-import usePagination, {
-  DEFAULT_PAGINATION_PROPS,
-} from '../../hooks/usePagination'
-import type { ChangelogItem } from '../../models/Changelog.model'
+import { ProgressSpinner, SecondaryButton } from '@emporix/component-library'
+import {
+  defaultChangelogWindow,
+  type ChangelogScope,
+} from '../../helpers/auditLog/changelogWindow.helpers'
+import useChangelogCursorPage from '../../hooks/useChangelogCursorPage'
+import { DEFAULT_PAGINATION_PROPS } from '../../hooks/usePagination'
 import EmptyContent from '../shared/EmptyContent'
 import ChangelogCard from './ChangelogCard'
 import ChangelogPaginator from './ChangelogPaginator'
+import ChangelogWindowPicker from './ChangelogWindowPicker'
 import styles from './EntityChangelogTab.module.scss'
 
 type EntityChangelogTabProps = {
@@ -20,112 +20,98 @@ type EntityChangelogTabProps = {
   readonly className?: string
 }
 
+const DEFAULT_ROWS = 10
+const ROWS_PER_PAGE_OPTIONS = DEFAULT_PAGINATION_PROPS.rowsPerPageOptions
+
 const EntityChangelogTab = ({
   entity,
   entityId,
   isActive = false,
   className = '',
-}: EntityChangelogTabProps) => {
+}: EntityChangelogTabProps): JSX.Element => {
   const { t } = useTranslation()
-  const { tenant } = useDashboardContext()
-  const { getEntityChangelog } = useChangelogApi()
-  const initialPaginationRef = useRef({ ...DEFAULT_PAGINATION_PROPS })
-  const { paginationParams, onPageCallback, resetPagination } = usePagination(
-    initialPaginationRef.current,
-    true,
-    'audit'
+  const [rows, setRows] = useState(DEFAULT_ROWS)
+  const [changelogWindow, setChangelogWindow] = useState(() =>
+    defaultChangelogWindow(new Date())
   )
-  const [items, setItems] = useState<ChangelogItem[]>([])
-  const [totalElements, setTotalElements] = useState(0)
-  const [isLoading, setIsLoading] = useState(false)
-  const entityKey = `${entity}:${entityId}`
-  const prevEntityKeyRef = useRef(entityKey)
-  const currentPage = paginationParams.currentPage ?? 1
-  const rows = paginationParams.rows ?? 10
-
-  useEffect(() => {
-    if (!isActive || !entityId || !tenant) {
-      return
-    }
-
-    if (prevEntityKeyRef.current !== entityKey) {
-      prevEntityKeyRef.current = entityKey
-      setItems([])
-      setTotalElements(0)
-      resetPagination()
-      return
-    }
-
-    void (async () => {
-      try {
-        const data = await makeCall(
-          () =>
-            getEntityChangelog(entity, entityId, {
-              pagination: paginationParams,
-            }),
-          setIsLoading
-        )
-        setItems(data?.items ?? [])
-        setTotalElements(data?.totalElements ?? 0)
-      } catch (error) {
-        console.error(error)
-        setItems([])
-        setTotalElements(0)
-      }
-    })()
-    // resetPagination is not memoized in usePagination — do not add it here
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isActive,
-    entity,
-    entityId,
-    entityKey,
-    tenant,
-    getEntityChangelog,
-    currentPage,
-    rows,
-  ])
+  const scope = useMemo<ChangelogScope>(
+    () => ({ entity, entityId }),
+    [entity, entityId]
+  )
+  const page = useChangelogCursorPage(scope, changelogWindow, rows, {
+    enabled: isActive && entityId !== '',
+  })
+  const isLoading = page.status === 'loading'
+  const tabClassName = `${styles.tab} ${className}`.trim()
 
   if (!isActive) {
-    return <div className={`${styles.tab} ${className}`.trim()} />
+    return <div className={tabClassName} />
   }
 
-  if (isLoading && totalElements === 0) {
+  const renderBody = () => {
+    if (page.items.length === 0 && isLoading) {
+      return (
+        <div className={styles.loading}>
+          <ProgressSpinner />
+        </div>
+      )
+    }
+    if (page.items.length === 0 && page.status === 'error') {
+      return (
+        <EmptyContent
+          text={t('auditLog.loadError')}
+          buttonLabel={t('auditLog.retry')}
+          action={page.retry}
+        />
+      )
+    }
+    if (page.items.length === 0) {
+      return <EmptyContent text={t('auditLog.entityChangelog.empty')} />
+    }
     return (
-      <div className={`${styles.tab} ${styles.loading} ${className}`.trim()}>
-        <ProgressSpinner />
-      </div>
-    )
-  }
-
-  if (totalElements === 0) {
-    return (
-      <div className={`${styles.tab} ${className}`.trim()}>
-        <EmptyContent text={t('auditLog.entityChangelog.empty')} />
-      </div>
+      <>
+        {page.items.map((item, index) => (
+          <ChangelogCard
+            // Identical records can share a page (rows not yet compacted), so the index keeps keys unique
+            key={`${item.at}-${item.type}-${item.entity}-${item.entityId}-${
+              item.actor ?? ''
+            }-${index}`}
+            item={item}
+            currentEntity={entity}
+            currentEntityId={entityId}
+          />
+        ))}
+        {page.status === 'error' && (
+          <div className={styles.window}>
+            <span>{t('auditLog.loadError')}</span>
+            <SecondaryButton size="small" onClick={page.retry}>
+              {t('auditLog.retry')}
+            </SecondaryButton>
+          </div>
+        )}
+        <ChangelogPaginator
+          nextCursor={page.nextCursor}
+          prevCursor={page.prevCursor}
+          rows={rows}
+          rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS ?? [DEFAULT_ROWS]}
+          isLoading={isLoading}
+          onNext={page.goNext}
+          onPrevious={page.goPrev}
+          onRowsChange={setRows}
+        />
+      </>
     )
   }
 
   return (
-    <div className={`${styles.tab} ${className}`.trim()}>
-      {items.map((item, index) => (
-        <ChangelogCard
-          key={`${item.at}-${item.type}-${item.entity}-${item.entityId}-${
-            item.actor ?? ''
-          }`}
-          item={item}
-          currentEntity={entity}
-          currentEntityId={entityId}
-          iterationNumber={
-            totalElements - (paginationParams.first ?? 0) - index
-          }
+    <div className={tabClassName}>
+      <div className={styles.window}>
+        <ChangelogWindowPicker
+          value={changelogWindow}
+          onChange={setChangelogWindow}
         />
-      ))}
-      <ChangelogPaginator
-        paginationParams={paginationParams}
-        totalRecords={totalElements}
-        onPageChange={onPageCallback}
-      />
+      </div>
+      {renderBody()}
     </div>
   )
 }

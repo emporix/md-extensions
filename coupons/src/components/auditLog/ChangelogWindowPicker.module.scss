@@ -1,0 +1,10 @@
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.hint {
+  color: #828a99;
+  font-size: 0.75rem;
+}
