@@ -210,8 +210,9 @@ Shared api-calls client (`companies/package.json` `@emporix/api-calls` 1.5.2), p
 
 ## customers
 
-Shared api-calls client (`customers/package.json` `@emporix/api-calls` 1.5.2), plus sites, configuration (table config `ext_customers`, `restrictions`, `enableSyncBetweenRestrictionsAndSiteCodes`), feature toggles, schemas and mixins, the changelog (audit log), and the IAM permission reads.
+Shared api-calls client (`customers/package.json` `@emporix/api-calls` 1.7.1), plus sites, configuration (table config `ext_customers`, `restrictions`, `enableSyncBetweenRestrictionsAndSiteCodes`), feature toggles, schemas and mixins, the changelog (audit log), and the IAM permission reads.
 
+- Audit Logs (Changelog) Service, in `customers/src/hooks/api/changelog.ts`: `getChangelogCursorPage` calls `listChangelogsWithCursorCall` from `@emporix/api-calls/next` (`GET /changelog/{tenant}/changelogs?pagination=cursor`, `next`/`prev` from the `x-next-cursor`/`x-prev-cursor` headers, no totals). `q` always carries the tab's date window as UTC instants (`changelogWindowQ` in `helpers/auditLog/changelogWindow.helpers.ts`, `buildChangelogQ` with an `occurredAt` range).
 - Customer Service, in `customers/src/hooks/api/customers.ts`: `getCustomers`, `getCustomer`, `addCustomer`, `updateCustomer`, `patchCustomerCall`, `removeCustomer`, `addCustomerAddress`, `updateCustomerAddress`, `patchCustomerAddress`, `removeCustomerAddress`, `getAssistedBuyingLoginCall` (its tokens go into the assisted-buying storefront URL).
 - Coupon Service: `fetchCoupons` for the referral coupon (`customers/src/hooks/api/coupons.ts`). IAM: `getAllGroupsForUserCall`. Customer Segments: `getSegmentsCall` with `customerId`. Legal entities (`customers/src/hooks/api/customerManagement.ts`) only for company mixin reference fields.
 - No media, no direct HTTP.

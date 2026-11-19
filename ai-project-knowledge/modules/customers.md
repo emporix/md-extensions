@@ -34,7 +34,7 @@ Customers Viewer views; Customers Manager is needed to create, edit, delete, sav
 
 ## Editor
 
-`pages/CustomerAddEdit.page.tsx`, a react-hook-form form. Tabs: details, addresses (disabled until the customer exists), customer mixin tabs, audit log (`entity="customer"`). Save is enabled when the form is dirty, valid and the user is a manager.
+`pages/CustomerAddEdit.page.tsx`, a react-hook-form form. Tabs: details, addresses (disabled until the customer exists), customer mixin tabs, audit log (`entity="customer"`; `components/auditLog/EntityChangelogTab.tsx`: a Period range picker prefilled with the last 3 full UTC days and capped at 7 days with a hint, the changes in that period newest first with Previous/Next and a rows-per-page choice, no totals; times in the browser's local time; empty, loading and error states with Try again). Save is enabled when the form is dirty, valid and the user is a manager.
 
 - Required: contact email and preferred currency (defaults to the host currency); the preferred site when restrictions are synced to site codes and the user is restricted. A typed password must have at least 6 characters; "Autogenerate" fills and locks a random 12-character one. The password is masked with a show/hide eye (CL `InputText` `type="password"`).
 - Restriction: the configured values, filtered to the user's restrictions; clearable only with full access; locked when the user is restricted and sync is on. With sync on, picking a site sets the restriction to that site code.
