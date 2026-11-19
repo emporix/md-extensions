@@ -13,7 +13,7 @@ Firebase Hosting deploy and preview workflows under `.github/workflows/*firebase
 
 ### `@emporix/api-calls` (axios)
 
-`quotes` 1.6.0 (its own calls on `./next`, see **quotes** below), `coupons`, `categories`, and `classifications` 1.5.3, `companies` 1.5.2, `products` 1.5.4, `orders`, `returns`, and `status-codes` 1.5.1, `labels` 1.2.14, `customer-groups` 1.2.9, `brands` and `users-and-groups` 1.2.1 (`*/package.json`). Each `src/api/bootstrap.ts` calls `createApiClient` with `baseURL` `VITE_API_URL` and throws `VITE_API_URL is not configured` when that value is missing. The access token and tenant come from the host via `setApiCredentials` / `useApiCredentials`. Retry and the concrete URL paths live in the package and are unknown here.
+`quotes` 1.6.0 (its own calls on `./next`, see **quotes** below), `coupons`, `categories`, and `classifications` 1.5.3, `companies` 1.5.2, `products` 1.7.1 (its audit log on `./next`), `orders`, `returns`, and `status-codes` 1.5.1, `labels` 1.2.14, `customer-groups` 1.2.9, `brands` and `users-and-groups` 1.2.1 (`*/package.json`). Each `src/api/bootstrap.ts` calls `createApiClient` with `baseURL` `VITE_API_URL` and throws `VITE_API_URL is not configured` when that value is missing. The access token and tenant come from the host via `setApiCredentials` / `useApiCredentials`. Retry and the concrete URL paths live in the package and are unknown here.
 
 Screens that only check permissions call `getAccessControlsTemplates` and `getScopesForUser` (`*/src/context/PermissionsProvider.tsx` in orders, returns, brands, labels, status-codes, coupons, companies, categories, classifications, and quotes). `products/src/context/PermissionsProvider.tsx` also loads tenant access controls and templates, and renders its children only after the load. `hooks/api/iam.ts` in those ten also imports user, group, scope, and access-control mutators. No file outside that hook imports `useIamApi` except `PermissionsProvider`, so those mutators have no caller outside the hook.
 
@@ -157,14 +157,14 @@ Callers outside the hook files:
 
 ## products
 
-Shared api-calls client (`products/package.json` `@emporix/api-calls` 1.5.4, `products/src/api/bootstrap.ts`), plus sites, configuration, feature toggles, and IAM permission reads. The legacy axios modules under `products/src/api/` were replaced when COP-6993 re-scaffolded the remote; only `bootstrap.ts` and `sites.ts` remain there.
+Shared api-calls client (`products/package.json` `@emporix/api-calls` 1.7.1, `products/src/api/bootstrap.ts`), plus sites, configuration, feature toggles, and IAM permission reads. The legacy axios modules under `products/src/api/` were replaced when COP-6993 re-scaffolded the remote; only `bootstrap.ts` and `sites.ts` remain there.
 
 Calls used by the screens (`products/src/hooks/api/*.ts`):
 
 - Products and templates: `fetchPaginatedProduct`, `fetchProductCall` (plain read; with `{ rawValue: true }` before a variant save, for the variant's own `metadata.overridden`), `deleteProductWithForceCall` (force for dynamic variants), `triggerDynamicVariantRecalculationCall`, `fetchProductTemplatesCall` (`products.ts`).
 - Catalog: `getCategoryTreesCall` (`categoryTree.ts`; its `type` filter depends on backend change COP-6124), `assignProductToCategoryCall`, `deleteAssignmentToCategoryCall` (`categories.ts`), `fetchBrands`, `fetchLabels`.
 - Pricing and stock: `searchPricesCall`, `createPriceV2Call` (`prices_v2.ts`), `searchAvailabilitiesCall` (`availability.ts`).
-- Platform: `fetchBasicConfiguration`, `updateSingleConfiguration` (`configuration.ts`), `getFeatureToggleValuesCall` (`featureToggles.ts`), IAM access controls and scopes (`iam.ts`), `getVendors` (`vendors.ts`), `generateTextRequest` (`ai.ts`), `getEntityChangelog` (`changelog.ts`), `getSitesCall` (`products/src/api/sites.ts`).
+- Platform: `fetchBasicConfiguration`, `updateSingleConfiguration` (`configuration.ts`), `getFeatureToggleValuesCall` (`featureToggles.ts`), IAM access controls and scopes (`iam.ts`), `getVendors` (`vendors.ts`), `generateTextRequest` (`ai.ts`), `getChangelogCursorPage` (`changelog.ts`: `listChangelogsWithCursorCall` from `./next`, cursor paging inside the tab's UTC date window), `getSitesCall` (`products/src/api/sites.ts`).
 - Mixin reference fields: the same reference-option clients as orders (`context/ReferenceOptionsProvider.tsx`).
 
 Host links use `window.location.assign` with paths from `products/src/helpers/hostUrls.ts`. Other `hooks/api/*` clients (carts, orders, customers, segments, units, currencies, countries, schema, custom instances) were not traced to a caller; see `ai-project-knowledge/modules/products.md`.
