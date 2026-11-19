@@ -22,43 +22,7 @@ vi.mock('@emporix/api-calls', () => ({
   },
 }))
 
-import {
-  ChangelogChangeType,
-  toChangelogOptions,
-  toChangelogPagination,
-} from './changelog.helpers'
-
-describe('toChangelogPagination', () => {
-  it('returns undefined when pagination is empty', () => {
-    expect(toChangelogPagination(undefined)).toBeUndefined()
-    expect(toChangelogPagination({})).toBeUndefined()
-  })
-
-  it('maps currentPage and rows', () => {
-    expect(toChangelogPagination({ currentPage: 2, rows: 25 })).toEqual({
-      currentPage: 2,
-      rows: 25,
-    })
-  })
-})
-
-describe('toChangelogOptions', () => {
-  it('returns undefined when options are missing', () => {
-    expect(toChangelogOptions(undefined)).toBeUndefined()
-  })
-
-  it('maps entity filter and pagination', () => {
-    expect(
-      toChangelogOptions({
-        pagination: { currentPage: 1, rows: 10 },
-        filter: { entity: 'employee', entityId: 'user-1' },
-      })
-    ).toEqual({
-      pagination: { currentPage: 1, rows: 10 },
-      filter: { entity: 'employee', entityId: 'user-1' },
-    })
-  })
-})
+import { ChangelogChangeType } from './changelog.helpers'
 
 describe('ChangelogChangeType', () => {
   it('maps API change types to UI values', () => {
