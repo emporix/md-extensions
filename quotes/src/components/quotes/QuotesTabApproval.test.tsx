@@ -17,6 +17,8 @@ import { DashboardProvider } from '../../context/Dashboard.context'
 import { QuoteDataProvider, useQuoteData } from '../../context/Quote.provider'
 import type { AppState } from '../../models/AppState.model'
 import { DEFAULT_APP_CURRENCY } from '../../constants/currency'
+import { QuoteStatus } from '../../models/Quotes.model'
+import { unpricedQuote } from '../../test/quoteNullFixtures'
 import QuotesTabApproval from './QuotesTabApproval'
 
 const quotesApi = vi.hoisted(() => ({
@@ -195,9 +197,13 @@ describe('QuotesTabApproval', () => {
       renderApproval()
       const dialog = await openNegotiation()
 
-      fireEvent.click(
-        within(dialog).getByRole('button', { name: 'Start negotiation' })
-      )
+      // Neither field is required.
+      expect(dialog.textContent).not.toMatch(/Comment\*|Reason\*/)
+      const submit = within(dialog).getByRole('button', {
+        name: 'Start negotiation',
+      }) as HTMLButtonElement
+      expect(submit.disabled).toBe(false)
+      fireEvent.click(submit)
 
       await waitFor(() =>
         expect(quotesApi.changeQuoteStatus).toHaveBeenCalledWith('Q1', {
@@ -270,7 +276,89 @@ describe('QuotesTabApproval', () => {
         '',
         'success'
       )
+      // No reload after a failed change.
+      expect(quotesApi.getQuoteById).toHaveBeenCalledTimes(1)
     })
+
+    // COP-7125: the other negotiation cases of MD quotesNullSafe.test.tsx
+    // (emporix/management-dashboard#1707), with MD's titles.
+    it('a failing reasons load toasts with a proper title', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
+      quotesApi.getQuotesReasons.mockRejectedValue(new Error('boom'))
+      renderApproval()
+      await openNegotiation()
+
+      await waitFor(() =>
+        expect(toast.showToast).toHaveBeenCalledWith(
+          'Error while loading the reasons',
+          '',
+          'error'
+        )
+      )
+    })
+
+    it('offers to start a negotiation for an OPEN quote', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
+      renderApproval()
+      const dialog = await openNegotiation()
+
+      fireEvent.change(
+        within(dialog).getByTestId('quote-negotiation-comment-input'),
+        { target: { value: 'Let us talk' } }
+      )
+      fireEvent.click(
+        within(dialog).getByRole('button', { name: 'Start negotiation' })
+      )
+
+      await waitFor(() =>
+        expect(quotesApi.changeQuoteStatus).toHaveBeenCalledWith('Q1', {
+          value: 'IN_PROGRESS',
+          comment: 'Let us talk',
+        })
+      )
+      expect(quotesApi.getQuotesReasons).toHaveBeenCalled()
+    })
+
+    it('a chosen reason alone sends no comment key', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
+      renderApproval()
+      const dialog = await openNegotiation()
+
+      fireEvent.click(
+        within(dialog).getByTestId('quote-negotiation-reason-control')
+      )
+      fireEvent.mouseDown(
+        await screen.findByRole('option', { name: 'PROVIDED_PRICE_TO_HIGH' })
+      )
+      fireEvent.click(
+        within(dialog).getByRole('button', { name: 'Start negotiation' })
+      )
+
+      await waitFor(() =>
+        expect(quotesApi.changeQuoteStatus).toHaveBeenCalled()
+      )
+      const [, payload] = quotesApi.changeQuoteStatus.mock.calls[0]
+      expect(payload).toEqual({ value: 'IN_PROGRESS', quoteReasonId: 'C1' })
+      expect('comment' in payload).toBe(false)
+    })
+
+    it.each(['IN_PROGRESS', 'ACCEPTED', 'AWAITING', 'CREATING'])(
+      'does not offer it for %s',
+      async (status) => {
+        quotesApi.getQuoteById.mockResolvedValue(quote(status))
+        const { container } = renderApproval()
+
+        // The PDF follows the loaded quote, so its actions are rendered.
+        await waitFor(() =>
+          expect(container.querySelector('iframe')?.getAttribute('src')).toBe(
+            'blob:quote-pdf'
+          )
+        )
+        expect(
+          screen.queryByRole('button', { name: 'Start negotiation' })
+        ).toBeNull()
+      }
+    )
 
     it('keeps the button disabled without Quotes Manager', async () => {
       permissions.granted = []
@@ -412,6 +500,37 @@ describe('QuotesTabApproval', () => {
       )
     )
     expect(screen.queryByTestId('list')).toBeNull()
+  })
+
+  // COP-7125 (MD quotesNullSafe.test.tsx): the quote service refuses to send
+  // a quote with unpriced items and says why.
+  it('shows the backend message when creating an incomplete quote', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(
+      unpricedQuote(QuoteStatus.CREATING)
+    )
+    quotesApi.changeQuoteStatus.mockRejectedValue({
+      response: { data: { message: 'Items without price' } },
+    })
+    renderApproval({ openAfterLoad: true })
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Create Quote' }))
+
+    await waitFor(() =>
+      expect(toast.showToast).toHaveBeenCalledWith(
+        'Items without price',
+        '',
+        'error'
+      )
+    )
+  })
+
+  // COP-7125 (MD quotesNullSafe.test.tsx, "approval tab").
+  it('renders an open quote without prices or addresses', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(unpricedQuote(QuoteStatus.OPEN))
+    const { container } = renderApproval()
+
+    await screen.findByRole('button', { name: 'Start negotiation' })
+    expect(container.textContent).not.toMatch(/NaN|undefined|null/)
   })
 
   // COP-7116: MD read `e.response.data.message`, which throws in the catch

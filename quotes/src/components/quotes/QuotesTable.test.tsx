@@ -18,7 +18,9 @@ import { DashboardProvider } from '../../context/Dashboard.context'
 import { RefreshValuesProvider } from '../../context/RefreshValuesProvider'
 import type { AppState } from '../../models/AppState.model'
 import { DEFAULT_APP_CURRENCY } from '../../constants/currency'
+import { unpricedQuote } from '../../test/quoteNullFixtures'
 import QuotesTable from './QuotesTable'
+import QuotesTableExpansion from './QuotesTableExpansion'
 
 /** Requests by tenant, so a test can tell the previous tenant's apart. */
 const quotesApi = vi.hoisted(() => ({
@@ -385,6 +387,35 @@ describe('QuotesTable', () => {
       fireEvent.click(screen.getByRole('button', { name: /expand/i }))
 
       expect(await screen.findByText('PRICE ON REQUEST')).toBeTruthy()
+    })
+
+    // The list cases of MD quotesNullSafe.test.tsx (emporix/
+    // management-dashboard#1707), with MD's titles.
+    it('expansion row', async () => {
+      // One item with `price: null`, one without a `price` key.
+      const { container } = render(
+        <DashboardProvider appState={appStateFor('tenant-a')}>
+          <QuotesTableExpansion items={unpricedQuote().items} />
+        </DashboardProvider>
+      )
+
+      expect(await screen.findByText('Unpriced product')).toBeTruthy()
+      expect(screen.getAllByText('PRICE ON REQUEST')).toHaveLength(2)
+      expect(container.textContent).not.toMatch(/NaN|undefined|null/)
+    })
+
+    it('list', async () => {
+      quotesApi.getQuotes.mockResolvedValue({
+        data: [unpricedQuote()],
+        totalRecords: 1,
+      })
+      renderTable()
+      await waitFor(() => expect(screen.getByText(/of 1$/)).toBeTruthy())
+
+      const row = rows().find((text) => text.includes('q1')) ?? ''
+      expect(row).toContain('ACME')
+      expect(row).toContain('€10.00(net)')
+      expect(rows().join(' ')).not.toMatch(/NaN|undefined|null/)
     })
   })
 })

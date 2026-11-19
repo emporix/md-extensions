@@ -245,7 +245,10 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
       setValue('shipping', picked)
       return
     }
-    setValue('shipping', picked, { shouldDirty: true })
+    // Validated, so a cleared method disables Save again (it is required with
+    // an address). react-hook-form 7.91 keeps `isValid` as it was after a
+    // plain `setValue`, which left Save enabled; MD (7.54) disables it.
+    setValue('shipping', picked, { shouldDirty: true, shouldValidate: true })
     const key = JSON.stringify(picked ?? null)
     if (notifiedShipping.current === key) return
     notifiedShipping.current = key

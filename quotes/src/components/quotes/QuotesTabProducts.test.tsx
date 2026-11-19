@@ -17,6 +17,7 @@ import { DashboardProvider } from '../../context/Dashboard.context'
 import { QuoteDataProvider } from '../../context/Quote.provider'
 import type { AppState } from '../../models/AppState.model'
 import { DEFAULT_APP_CURRENCY } from '../../constants/currency'
+import { unpricedQuote } from '../../test/quoteNullFixtures'
 import QuotesTabProducts from './QuotesTabProducts'
 
 const quotesApi = vi.hoisted(() => ({
@@ -384,6 +385,170 @@ describe('QuotesTabProducts', () => {
       expect(pricesApi.matchPrices).not.toHaveBeenCalled()
       expect(quotesApi.updateQuote).not.toHaveBeenCalled()
       sites.value = [{ code: 'main', shipToCountries: ['AT'] }]
+    })
+  })
+
+  // COP-7125: the other cases of MD quotesNullSafe.test.tsx (emporix/
+  // management-dashboard#1707) for this tab, with MD's titles. The remote's
+  // error toasts carry the API message as the title (COP-7116).
+  describe('MD quotesNullSafe cases', () => {
+    const noAddress = { ...quote, shippingAddress: null }
+    const addTable = async () => {
+      const browser = await openPicker()
+      checkProduct(browser, 'Table')
+      fireEvent.click(apply())
+      fireEvent.click(save())
+    }
+
+    it('products tab keeps the original layout for fully priced quotes', async () => {
+      renderProducts()
+
+      const selected = await screen.findByTestId('quote-selected-items')
+      await within(selected).findByText('Chair')
+      expect(within(selected).queryByText('PRICE ON REQUEST')).toBeNull()
+      // Name, id and remove: no badge column.
+      expect(selected.firstElementChild?.children).toHaveLength(3)
+    })
+
+    it('products tab marks unpriced products as price on request', async () => {
+      // One item with `price: null`, one without a `price` key.
+      quotesApi.getQuoteById.mockResolvedValue(unpricedQuote())
+      renderProducts()
+
+      const selected = await screen.findByTestId('quote-selected-items')
+      expect(await within(selected).findByText('Unpriced product')).toBeTruthy()
+      await waitFor(() =>
+        expect(within(selected).getAllByText('PRICE ON REQUEST')).toHaveLength(
+          2
+        )
+      )
+      expect(document.body.textContent).not.toMatch(/NaN|undefined|null/)
+    })
+
+    describe('products tab price matching without a shipping address', () => {
+      it('toasts the backend message when price matching fails', async () => {
+        quotesApi.getQuoteById.mockResolvedValue(noAddress)
+        pricesApi.matchPrices.mockRejectedValue({
+          response: { data: { message: 'Bad country' } },
+        })
+        renderProducts()
+
+        await addTable()
+
+        await waitFor(() =>
+          expect(toast.showToast).toHaveBeenCalledWith(
+            'Bad country',
+            '',
+            'error'
+          )
+        )
+        expect(quotesApi.updateQuote).not.toHaveBeenCalled()
+      })
+
+      it('toasts the backend message when the quote update fails', async () => {
+        quotesApi.getQuoteById.mockResolvedValue(noAddress)
+        pricesApi.matchPrices.mockResolvedValue([])
+        quotesApi.updateQuote.mockRejectedValue({
+          response: { data: { message: 'Update refused' } },
+        })
+        renderProducts()
+
+        await addTable()
+
+        await waitFor(() =>
+          expect(toast.showToast).toHaveBeenCalledWith(
+            'Update refused',
+            '',
+            'error'
+          )
+        )
+      })
+    })
+
+    describe('products tab: priced products on a quote without a shipping address', () => {
+      const match = (tax?: { taxClass: string; taxRate: number }) => [
+        {
+          priceId: 'PR2',
+          itemId: { itemType: 'PRODUCT', id: 'P2' },
+          originalValue: 12,
+          quantity: { unitCode: 'pcs' },
+          ...(tax ? { tax } : {}),
+        },
+      ]
+      const addTableAndLamp = async () => {
+        productsApi.syncPaginatedProducts.mockResolvedValue({
+          data: [
+            { id: 'P1', code: 'CH', name: { en: 'Chair' } },
+            { id: 'P2', code: 'TB', name: { en: 'Table' } },
+            { id: 'P3', code: 'LA', name: { en: 'Lamp' } },
+          ],
+          totalCount: 3,
+        })
+        quotesApi.getQuoteById.mockResolvedValue(noAddress)
+        renderProducts()
+        const browser = await openPicker()
+        checkProduct(browser, 'Table')
+        checkProduct(browser, 'Lamp')
+        fireEvent.click(apply())
+        fireEvent.click(save())
+        await waitFor(() => expect(quotesApi.updateQuote).toHaveBeenCalled())
+        const [quoteId, operations] = quotesApi.updateQuote.mock.calls[0]
+        return { quoteId, operations }
+      }
+      type AddedItem = {
+        product: { productId: string }
+        quantity: unknown
+        price?: Record<string, unknown>
+      }
+      const added = (operations: { value: AddedItem[] }[], id: string) =>
+        operations[0].value.find(
+          (item) => item.product.productId === id
+        ) as AddedItem
+
+      it('sends the tax class without the rate, and the unmatched item without a price', async () => {
+        pricesApi.matchPrices.mockResolvedValue(
+          match({ taxClass: 'STD', taxRate: 19 })
+        )
+
+        const { quoteId, operations } = await addTableAndLamp()
+
+        expect(quoteId).toBe('Q1')
+        expect(operations).toHaveLength(1)
+        expect(operations[0].op).toBe('ADD')
+        expect(operations[0].path).toBe('/items')
+        const table = added(operations, 'P2')
+        expect(table.price).toEqual({
+          priceId: 'PR2',
+          unitPrice: 12,
+          newUnitPrice: 12,
+          totalNetValue: 12,
+          tax: { taxClass: 'STD' },
+          discount: 0,
+        })
+        expect(table.quantity).toEqual({ quantity: 1, unitCode: 'pcs' })
+        const lamp = added(operations, 'P3')
+        expect('price' in lamp).toBe(false)
+        // The quote service requires quantity.unitCode (not null).
+        expect(lamp.quantity).toEqual({ quantity: 1, unitCode: '' })
+      })
+
+      it('without tax in the match no tax is sent and the backend message is shown', async () => {
+        pricesApi.matchPrices.mockResolvedValue(match())
+        quotesApi.updateQuote.mockRejectedValue({
+          response: { data: { message: 'Tax is required' } },
+        })
+
+        const { operations } = await addTableAndLamp()
+
+        expect('tax' in (added(operations, 'P2').price ?? {})).toBe(false)
+        await waitFor(() =>
+          expect(toast.showToast).toHaveBeenCalledWith(
+            'Tax is required',
+            '',
+            'error'
+          )
+        )
+      })
     })
   })
 })
