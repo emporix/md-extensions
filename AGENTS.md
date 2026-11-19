@@ -27,7 +27,7 @@ This is a monorepo of independent Management Dashboard remotes, one Vite app per
 | `agentic-ai` | legacy (PrimeReact + component library) | `extension` | `aiAgents` → `/apps/administration/ai-agents` | `VITE_AI_AGENTS_URL` | not pinned | no / yes | `2.10.4` / — |
 | `algolia-synonyms` | legacy (PrimeReact) | no federation (`md-ext` client) | not a host route | — | not pinned | no / no | — / — |
 | `brands` | playbook-aligned | `brands` | `brands` → `/apps/management/brands/*` | `VITE_BRANDS_URL` | `5175` | yes / yes | `2.6.0` / `1.2.1` |
-| `customer-groups` | playbook-aligned | `customerGroups` | `customerGroups` → `administration/customer-groups/*` | `VITE_CUSTOMER_GROUPS_URL` | `5174` | yes / yes | `2.10.2` / `1.2.9` |
+| `customer-groups` | playbook-aligned | `customerGroups` | `customerGroups` → `administration/customer-groups/*` | `VITE_CUSTOMER_GROUPS_URL` | `5174` | yes / yes | `2.10.2` / `1.7.1` |
 | `dashboard` | legacy (PrimeReact) | `extension` | `dashboardIndex` → `''` and `dashboard` → `dashboard` | `VITE_DASHBOARD_EXTENSION_URL` | not pinned | no / yes | — / — |
 | `labels` | playbook-aligned | `labels` | `labels` → `/apps/management/labels/*` | `VITE_LABELS_URL` | `5179` | yes / yes | `2.18.0` / `1.2.14` |
 | `orders` | playbook-aligned | `orders` | `orders` → `apps/management/orders/*` | `VITE_ORDERS_URL` | `5177` | yes / yes | `2.29.1` / `1.5.1` |

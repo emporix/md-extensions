@@ -1,6 +1,5 @@
 export type {
-  ChangelogItem,
-  ChangelogPathChange,
-  ChangelogPaginatedResponse,
-  ChangelogRelatedItem,
-} from '@emporix/api-calls'
+  ChangelogEntry as ChangelogItem,
+  ChangelogEntryPathChange as ChangelogPathChange,
+  ChangelogEntryRelatedItem as ChangelogRelatedItem,
+} from '@emporix/api-calls/next'

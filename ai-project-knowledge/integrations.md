@@ -13,7 +13,7 @@ Firebase Hosting deploy and preview workflows under `.github/workflows/*firebase
 
 ### `@emporix/api-calls` (axios)
 
-`quotes` 1.6.0 (its own calls on `./next`, see **quotes** below), `coupons`, `categories`, and `classifications` 1.5.3, `companies` 1.5.2, `products` 1.5.4, `orders`, `returns`, and `status-codes` 1.5.1, `labels` 1.2.14, `customer-groups` 1.2.9, `brands` and `users-and-groups` 1.2.1 (`*/package.json`). Each `src/api/bootstrap.ts` calls `createApiClient` with `baseURL` `VITE_API_URL` and throws `VITE_API_URL is not configured` when that value is missing. The access token and tenant come from the host via `setApiCredentials` / `useApiCredentials`. Retry and the concrete URL paths live in the package and are unknown here.
+`quotes` 1.6.0 (its own calls on `./next`, see **quotes** below), `coupons`, `categories`, and `classifications` 1.5.3, `companies` 1.5.2, `products` 1.5.4, `orders`, `returns`, and `status-codes` 1.5.1, `labels` 1.2.14, `customer-groups` 1.7.1 (its audit log on `./next`), `brands` and `users-and-groups` 1.2.1 (`*/package.json`). Each `src/api/bootstrap.ts` calls `createApiClient` with `baseURL` `VITE_API_URL` and throws `VITE_API_URL is not configured` when that value is missing. The access token and tenant come from the host via `setApiCredentials` / `useApiCredentials`. Retry and the concrete URL paths live in the package and are unknown here.
 
 Screens that only check permissions call `getAccessControlsTemplates` and `getScopesForUser` (`*/src/context/PermissionsProvider.tsx` in orders, returns, brands, labels, status-codes, coupons, companies, categories, classifications, and quotes). `products/src/context/PermissionsProvider.tsx` also loads tenant access controls and templates, and renders its children only after the load. `hooks/api/iam.ts` in those ten also imports user, group, scope, and access-control mutators. No file outside that hook imports `useIamApi` except `PermissionsProvider`, so those mutators have no caller outside the hook.
 
@@ -73,13 +73,13 @@ Paths for those symbols are inside `@emporix/api-calls` and are unknown. No dire
 
 ## customer-groups
 
-Shared api-calls client (`@emporix/api-calls` 1.2.9). IAM group and user screens call the IAM wrappers described above.
+Shared api-calls client (`@emporix/api-calls` 1.7.1). IAM group and user screens call the IAM wrappers described above.
 
 Also:
 
 - Vendors: `GroupDetailsGeneralFormRolesVendor.tsx` calls `getVendors`. `hooks/api/vendors.ts` also wraps `getVendor`, `postVendor`, `putVendor`, `deleteVendor`, and location calls. No caller of those other wrappers was found outside that file.
 - Legal entities: `CompanySelector.tsx` calls `getLegalEntities` and `getLegalEntity` (`fetchLegalEntitiesCall`, `fetchLegalEntityCall` in `hooks/api/customerManagement.ts`).
-- Changelog: `EntityChangelogTab.tsx` calls `getEntityChangelog` (`getChangelogs`).
+- Audit Logs (Changelog) Service, in `customer-groups/src/hooks/api/changelog.ts`: `getChangelogCursorPage` calls `listChangelogsWithCursorCall` from `@emporix/api-calls/next` (`GET /changelog/{tenant}/changelogs?pagination=cursor`, `next`/`prev` from the `x-next-cursor`/`x-prev-cursor` headers, no totals). `q` always carries the tab's date window as UTC instants (`changelogWindowQ` in `helpers/auditLog/changelogWindow.helpers.ts`, `buildChangelogQ` with an `occurredAt` range).
 - Configuration restrictions: `GroupDetailsGeneralForm.tsx` calls `getRestrictions` and `getSyncBetweenRestrictionsAndSiteCodes`.
 
 ## dashboard
