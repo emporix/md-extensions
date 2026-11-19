@@ -1,37 +1,44 @@
 import { useCallback } from 'react'
 import {
-  getChangelogs,
-  type ChangelogItem,
-  type ChangelogPaginatedResponse,
-  type ChangelogQueryOptions,
-} from '@emporix/api-calls'
-import { toChangelogPagination } from '../../helpers/auditLog/changelog.helpers'
+  listChangelogsWithCursorCall,
+  type CursorPaginatedResponse,
+  type ListChangelogsWithCursorParams,
+} from '@emporix/api-calls/next'
 import { useDashboardContext } from '../../context/Dashboard.context'
-import type { PaginationProps } from '../usePagination'
+import type { ChangelogItem } from '../../models/Changelog.model'
 
-export type PaginatedResponse<T> = ChangelogPaginatedResponse<T>
+export type ChangelogCursor = Pick<
+  ListChangelogsWithCursorParams,
+  'next' | 'prev'
+>
 
-export const useChangelogApi = () => {
+type ChangelogApi = {
+  readonly getChangelogCursorPage: (
+    q: string,
+    rows: number,
+    cursor: ChangelogCursor
+  ) => Promise<CursorPaginatedResponse<ChangelogItem>>
+}
+
+export const useChangelogApi = (): ChangelogApi => {
   const { tenant } = useDashboardContext()
 
-  const getEntityChangelog = useCallback(
+  const getChangelogCursorPage = useCallback(
     async (
-      entity: string,
-      entityId: string,
-      options?: { pagination?: Partial<PaginationProps> }
-    ): Promise<ChangelogPaginatedResponse<ChangelogItem>> => {
+      q: string,
+      rows: number,
+      cursor: ChangelogCursor
+    ): Promise<CursorPaginatedResponse<ChangelogItem>> => {
       if (tenant) {
-        return getChangelogs(tenant, {
-          pagination: toChangelogPagination(options?.pagination),
-          filter: { entity, entityId },
-        })
+        return listChangelogsWithCursorCall(
+          { pageSize: rows, q, ...cursor },
+          { tenant }
+        )
       }
       return Promise.reject(new Error('No tenant'))
     },
     [tenant]
   )
 
-  return { getEntityChangelog }
+  return { getChangelogCursorPage }
 }
-
-export type { ChangelogQueryOptions }

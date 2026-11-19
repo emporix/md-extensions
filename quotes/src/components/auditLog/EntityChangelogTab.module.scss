@@ -13,3 +13,14 @@
   width: 100%;
   padding: 2rem 0;
 }
+
+.window {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hint {
+  color: #828a99;
+  font-size: 0.75rem;
+}
