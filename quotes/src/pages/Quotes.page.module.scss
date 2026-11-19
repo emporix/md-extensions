@@ -1,0 +1,27 @@
+// MD `HeaderSection siteSelect`: the site select in a `mt-2 mb-1` row below
+// the title (the header adds the top margin to its content).
+.siteSelect {
+  margin-bottom: 0.25rem;
+}
+
+// MD `QuotesTable className="w-full"`.
+.fullWidth {
+  width: 100%;
+}
+
+// MD `flex align-items-center` subtitle of a completed quote.
+.subtitle {
+  display: flex;
+  align-items: center;
+}
+
+// MD `StatusBadge className="ml-2"`.
+.statusBadge {
+  margin-left: 0.5rem;
+}
+
+// MD `col-12` around the TabView.
+.tabs {
+  width: 100%;
+  padding: 0.5rem;
+}

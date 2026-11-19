@@ -1,0 +1,28 @@
+// MD `.quotes-change-status-wrapper`.
+.wrapper {
+  min-width: 500px;
+}
+
+// MD `mb-6 text-center`.
+.message {
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+// MD `flex justify-content-center` with `ml-3` on the second button.
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+// MD `InputField className="mb-3"` (decline reason).
+.reasonField {
+  margin-bottom: 1rem;
+}
+
+// MD `InputField className="mb-6 w-full"` (comment).
+.commentField {
+  width: 100%;
+  margin-bottom: 3rem;
+}

@@ -1,0 +1,18 @@
+// MD `flex gap-2` (Discard / Save), plus the button that opens the picker.
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+// The list or its empty state fills the tab down to the bottom of the window:
+// 23rem is what sits above it inside the dashboard (its top bar, the page
+// header with the site selector, the tabs and the section title) plus the
+// padding below.
+.selected {
+  height: calc(100vh - 23rem);
+  min-height: 14rem;
+}
+
+.empty {
+  height: 100%;
+}

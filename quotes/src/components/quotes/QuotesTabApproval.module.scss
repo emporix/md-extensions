@@ -1,0 +1,13 @@
+// MD `flex justify-content-end mb-6` with `ml-3` on the second button.
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+// MD `flex justify-content-center`.
+.pdf {
+  display: flex;
+  justify-content: center;
+}

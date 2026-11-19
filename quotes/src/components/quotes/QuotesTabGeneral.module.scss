@@ -1,0 +1,111 @@
+// MD `QuotesTabGeneralStatus className="mb-5"`.
+.statusBox {
+  margin-bottom: 2rem;
+}
+
+// MD details `SectionBox className="mb-5"`.
+.detailsSection {
+  margin-bottom: 2rem;
+}
+
+// MD `flex gap-2` (Discard / Save).
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+// MD `flex justify-content-between gap-7`.
+.details {
+  display: flex;
+  justify-content: space-between;
+  gap: 4rem;
+}
+
+// MD `w-full` (the fields column).
+.fields {
+  width: 100%;
+}
+
+// MD `InputField className="mb-3"`.
+.field {
+  margin-bottom: 1rem;
+}
+
+// MD `mb-2` (B2B radio).
+.radioRow {
+  margin-bottom: 0.5rem;
+}
+
+// MD `flex gap-4` (company + contact person).
+.companyRow {
+  display: flex;
+  gap: 1.5rem;
+}
+
+// MD `w-full`.
+.fullWidth {
+  width: 100%;
+}
+
+// MD `flex align-items-center`.
+.contactRow {
+  display: flex;
+  align-items: center;
+}
+
+// MD `w-full flex-shrink-0`.
+.contactDropdown {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+// MD `ml-3`.
+.contactEmail {
+  margin-left: 1rem;
+}
+
+// MD `w-full mb-3` (customer name and "Choose customer").
+.customerInput,
+.customerButton {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+// MD `flex flex-column gap-4` (right column).
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+// MD `flex-shrink-0 w-auto` > `flex flex-column gap-2`.
+.cart {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 0.5rem;
+  width: auto;
+}
+
+// MD `text-sm font-medium`.
+.cartLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+// MD shipping `InputField className="mb-4 w-full"`.
+.shippingField {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+}
+
+// MD `ml-2 cursor-pointer`.
+.checkboxLabel {
+  margin-left: 0.5rem;
+  cursor: pointer;
+}
