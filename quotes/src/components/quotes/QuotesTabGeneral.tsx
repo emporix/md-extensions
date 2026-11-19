@@ -51,6 +51,7 @@ import CompaniesSelector from '../shared/CompaniesSelector'
 import QuotesTabGeneralAddresses from './QuotesTabGeneralAddresses'
 import QuoteChooseCustomerDialog from './QuoteChooseCustomerDialog'
 import QuotesTabGeneralStatus from './QuotesTabGeneralStatus'
+import { hasSameAddresses } from '../../helpers/quotePricing.helpers'
 import styles from './QuotesTabGeneral.module.scss'
 
 /** MD reads the message straight from the error response. */
@@ -297,7 +298,12 @@ const QuotesTabGeneral = (props: StylableProps) => {
       ),
       billingAddressId: quote.billingAddress?.id,
       shippingAddressId: quote.shippingAddress?.id,
-      sameAddresses: quote.billingAddress?.id === quote.shippingAddress?.id,
+      // Ticked only when both addresses exist and are the same (COP-7125: a
+      // quote may have none).
+      sameAddresses: hasSameAddresses(
+        quote.shippingAddress,
+        quote.billingAddress
+      ),
       customer: customer as unknown as QuoteCustomer | undefined,
       businessModel: quote.businessModel,
       restriction: quote.restriction ?? null,
@@ -313,7 +319,7 @@ const QuotesTabGeneral = (props: StylableProps) => {
       if (watch('businessModel') === 'B2B') {
         return (
           watch('company')?.entitiesAddresses?.filter((address) =>
-            address.contactDetails.tags?.find(
+            address.contactDetails?.tags?.find(
               (tag) => tag.toLowerCase() === type
             )
           ) ?? []
@@ -409,10 +415,19 @@ const QuotesTabGeneral = (props: StylableProps) => {
     [formState]
   )
 
+  // COP-7125: a company without any location can get a quote; its addresses
+  // are added later, before the customer can accept.
+  const hasNoLocations = !watch('company')?.entitiesAddresses?.length
+  const addressesRequired = !(isB2B && hasNoLocations)
+
   // Companies is a federated remote of the host: leave for its hash route.
   const NoCompanyAddresses = ({ companyId }: { companyId: string }) => (
     <EmptyContent
-      text={t('quotes.tabs.general.noLocations')}
+      text={t(
+        hasNoLocations
+          ? 'quotes.tabs.general.noLocationsYet'
+          : 'quotes.tabs.general.noLocations'
+      )}
       buttonLabel={t('quotes.tabs.general.noLocationsButton')}
       action={() => assignHostLocation(HOST_COMPANY_PATH(companyId))}
     />
@@ -470,9 +485,11 @@ const QuotesTabGeneral = (props: StylableProps) => {
                   !formState.isValid ||
                   !formState.isDirty ||
                   // The address pickers only exist when there are addresses;
-                  // the Quote Service needs both ids (MD saved without them).
-                  !watch('shippingAddressId') ||
-                  !watch('billingAddressId') ||
+                  // the Quote Service needs both ids (MD saved without them),
+                  // except for a company without locations (COP-7125).
+                  (addressesRequired &&
+                    (!watch('shippingAddressId') ||
+                      !watch('billingAddressId'))) ||
                   // A new quote takes its site and currency from the selected
                   // site (MD let a draft go out before one was selected).
                   (!quote && !currentSite?.code) ||

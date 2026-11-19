@@ -174,8 +174,11 @@ describe('QuotesTabGeneral', () => {
       companiesApi.getLegalEntity.mockResolvedValue(company([]))
       renderGeneral()
 
+      // COP-7125: a company without any location gets the new hint.
       expect(
-        await screen.findByText('No shipping location for the selected company')
+        await screen.findByText(
+          'No locations yet - add them before the customer can accept'
+        )
       ).toBeTruthy()
       fireEvent.click(screen.getByRole('button', { name: 'Add new location' }))
 
@@ -429,6 +432,105 @@ describe('QuotesTabGeneral', () => {
     } finally {
       sites.value = withSite
     }
+  })
+
+  // COP-7125 (ported from MD quotesNullSafe.test.tsx, emporix/
+  // management-dashboard#1707): a company without locations.
+  describe('company without locations', () => {
+    const twoContacts = (locations: unknown[]) => ({
+      ...company(locations),
+      contacts: [
+        ...company([]).contacts,
+        {
+          id: 'A2',
+          customer: { id: 'CU8', name: 'Bob', surname: 'Ray', email: 'b@x.io' },
+        },
+      ],
+    })
+
+    it('saves without addresses and sends no address operation', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(b2bQuote)
+      quotesApi.updateQuote.mockResolvedValue({})
+      companiesApi.getLegalEntity.mockResolvedValue(twoContacts([]))
+      renderGeneral()
+      await screen.findByText(
+        'No locations yet - add them before the customer can accept'
+      )
+
+      fireEvent.click(screen.getByTestId('quote-contact-person-control'))
+      fireEvent.mouseDown(
+        await screen.findByRole('option', { name: 'Bob Ray' })
+      )
+      const save = screen.getByRole('button', {
+        name: 'Save',
+      }) as HTMLButtonElement
+      await waitFor(() => expect(save.disabled).toBe(false))
+      fireEvent.click(save)
+
+      await waitFor(() =>
+        expect(quotesApi.updateQuote).toHaveBeenCalledWith('Q1', [
+          { op: 'REPLACE', path: '/customerId', value: 'CU8' },
+        ])
+      )
+    })
+
+    it('keeps the old hint and the address rule for locations without a shipping tag', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(b2bQuote)
+      companiesApi.getLegalEntity.mockResolvedValue(
+        twoContacts([
+          {
+            id: 'L9',
+            name: 'Office',
+            contactDetails: { addressLine1: 'Side 9', tags: ['billing'] },
+          },
+        ])
+      )
+      renderGeneral()
+
+      expect(
+        await screen.findByText('No shipping location for the selected company')
+      ).toBeTruthy()
+      fireEvent.click(screen.getByTestId('quote-contact-person-control'))
+      fireEvent.mouseDown(
+        await screen.findByRole('option', { name: 'Bob Ray' })
+      )
+      await waitFor(() =>
+        expect(
+          (
+            screen.getByRole('button', {
+              name: 'Discard',
+            }) as HTMLButtonElement
+          ).disabled
+        ).toBe(false)
+      )
+      expect(
+        (screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement)
+          .disabled
+      ).toBe(true)
+    })
+
+    it('does not tick "Same as shipping" for a quote without addresses', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(b2bQuote)
+      companiesApi.getLegalEntity.mockResolvedValue(
+        company([
+          {
+            id: 'L1',
+            name: 'HQ',
+            contactDetails: {
+              addressLine1: 'Main 1',
+              tags: ['shipping', 'billing'],
+            },
+          },
+        ])
+      )
+      renderGeneral()
+
+      // Unticked, so the billing list shows next to the shipping list.
+      expect(await screen.findAllByText('HQ')).toHaveLength(2)
+      expect(
+        (document.getElementById('sameAddresses') as HTMLInputElement).checked
+      ).toBe(false)
+    })
   })
 
   // COP-7116: MD showed the label "Address" untranslated.

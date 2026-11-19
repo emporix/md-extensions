@@ -41,6 +41,12 @@ vi.mock('../../hooks/api/categories', () => ({
   useCategoriesApi: () => categoriesApi,
 }))
 vi.mock('../../hooks/api/prices', () => ({ usePricesApi: () => pricesApi }))
+const sites = vi.hoisted(() => ({
+  value: [{ code: 'main', shipToCountries: ['AT'] }] as unknown[],
+}))
+vi.mock('../../context/SitesProvider', () => ({
+  useSites: () => ({ sites: sites.value }),
+}))
 vi.mock('../../context/PermissionsProvider', () => ({
   usePermissions: () => ({
     hasPermission: (domain: string) => permissions.granted.includes(domain),
@@ -298,5 +304,86 @@ describe('QuotesTabProducts', () => {
     expect(screen.queryByTestId('quote-select-products')).toBeNull()
     expect(screen.queryByTestId('quote-products-browser')).toBeNull()
     expect(productsApi.syncPaginatedProducts).not.toHaveBeenCalled()
+  })
+
+  // COP-7125 (ported from MD quotesNullSafe.test.tsx, emporix/
+  // management-dashboard#1707): products without a price and quotes without a
+  // shipping address.
+  describe('products without a price', () => {
+    const noAddress = { ...quote, shippingAddress: null }
+
+    it('marks a saved item without a price as "Price on request"', async () => {
+      quotesApi.getQuoteById.mockResolvedValue({
+        ...quote,
+        items: [
+          chairLine,
+          {
+            itemId: 'I2',
+            product: { productId: 'P2', name: { en: 'Table' } },
+            quantity: { quantity: 1, unitCode: '' },
+            price: null,
+          },
+        ],
+      })
+      renderProducts()
+
+      const selected = await screen.findByTestId('quote-selected-items')
+      await waitFor(() =>
+        expect(within(selected).getAllByText('PRICE ON REQUEST')).toHaveLength(
+          1
+        )
+      )
+    })
+
+    it("prices on the quote site's first ship-to country without a shipping address and adds an unmatched product without a price", async () => {
+      quotesApi.getQuoteById.mockResolvedValue(noAddress)
+      pricesApi.matchPrices.mockResolvedValue([])
+      renderProducts()
+      const browser = await openPicker()
+
+      checkProduct(browser, 'Table')
+      fireEvent.click(apply())
+      fireEvent.click(save())
+
+      await waitFor(() =>
+        expect(quotesApi.updateQuote).toHaveBeenCalledWith('Q1', [
+          {
+            op: 'ADD',
+            path: '/items',
+            value: [
+              {
+                product: { productId: 'P2', name: { en: 'Table' } },
+                quantity: { quantity: 1, unitCode: '' },
+              },
+            ],
+          },
+        ])
+      )
+      expect(pricesApi.matchPrices.mock.calls[0][0].targetLocation).toEqual({
+        countryCode: 'AT',
+      })
+    })
+
+    it('tells the employee to set ship-to countries and sends nothing without one', async () => {
+      sites.value = [{ code: 'main', shipToCountries: [] }]
+      quotesApi.getQuoteById.mockResolvedValue(noAddress)
+      renderProducts()
+      const browser = await openPicker()
+
+      checkProduct(browser, 'Table')
+      fireEvent.click(apply())
+      fireEvent.click(save())
+
+      await waitFor(() =>
+        expect(toast.showToast).toHaveBeenCalledWith(
+          'No ship-to countries are set for the site of this quote. Set them in the site settings and try again.',
+          '',
+          'error'
+        )
+      )
+      expect(pricesApi.matchPrices).not.toHaveBeenCalled()
+      expect(quotesApi.updateQuote).not.toHaveBeenCalled()
+      sites.value = [{ code: 'main', shipToCountries: ['AT'] }]
+    })
   })
 })

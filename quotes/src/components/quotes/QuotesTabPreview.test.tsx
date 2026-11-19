@@ -18,13 +18,15 @@ import { QuoteDataProvider } from '../../context/Quote.provider'
 import type { AppState } from '../../models/AppState.model'
 import { DEFAULT_APP_CURRENCY } from '../../constants/currency'
 import QuotesTabPreview from './QuotesTabPreview'
+import { unpricedQuote } from '../../test/quoteNullFixtures'
+import { Quote } from '../../models/Quotes.model'
 
 const quotesApi = vi.hoisted(() => ({
   getQuoteById: vi.fn(),
   updateQuote: vi.fn(),
 }))
 const shippingApi = vi.hoisted(() => ({ getZones: vi.fn() }))
-const taxesApi = vi.hoisted(() => ({ calculateTax: vi.fn() }))
+const taxesApi = vi.hoisted(() => ({ calculateTax: vi.fn(), getTax: vi.fn() }))
 const pricesApi = vi.hoisted(() => ({ matchPrices: vi.fn() }))
 const toast = vi.hoisted(() => ({
   showToast: vi.fn(),
@@ -323,5 +325,147 @@ describe('QuotesTabPreview', () => {
         .readOnly
     ).toBe(true)
     expect(save().disabled).toBe(true)
+  })
+
+  // COP-7125 (ported from MD quotesNullSafe.test.tsx, emporix/
+  // management-dashboard#1707): items without a price and quotes without an
+  // address.
+  describe('unpriced items and quotes without an address', () => {
+    const tableText = async () =>
+      (await screen.findByTestId('quote-preview-table')).textContent ?? ''
+    const totals = () => document.body.textContent ?? ''
+    const spinUp = (testId: string) => {
+      const field = screen.getByTestId(testId)
+      fireEvent.keyDown(field.querySelector('input') ?? field, {
+        key: 'ArrowUp',
+        code: 'ArrowUp',
+        keyCode: 38,
+        which: 38,
+      })
+    }
+    const withOneUnpriced = (overrides: Partial<Quote> = {}): Quote => {
+      const base = unpricedQuote()
+      return {
+        ...base,
+        items: [base.items[0]],
+        ...overrides,
+      } as Quote
+    }
+
+    it('warns about unpriced items in the singular and the plural', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(withOneUnpriced())
+      renderPreview()
+      expect(
+        await screen.findByText('Totals exclude 1 unpriced item')
+      ).toBeTruthy()
+
+      cleanup()
+      quotesApi.getQuoteById.mockResolvedValue(unpricedQuote())
+      renderPreview()
+      expect(
+        await screen.findByText('Totals exclude 2 unpriced items')
+      ).toBeTruthy()
+    })
+
+    it('has no warning once the quote is fully priced', async () => {
+      renderPreview()
+      await screen.findByTestId('quote-preview-table')
+      expect(screen.queryByTestId('quote-unpriced-warning')).toBeNull()
+    })
+
+    it('shows unpriced rows as "Price on request" without NaN or undefined', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(unpricedQuote())
+      renderPreview()
+
+      await waitFor(async () =>
+        expect((await tableText()).match(/PRICE ON REQUEST/g)).toHaveLength(2)
+      )
+      expect(totals()).not.toMatch(/NaN|undefined/)
+    })
+
+    it('saves an entered net price as the whole item with an EXTERNAL price and no tax', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(withOneUnpriced())
+      renderPreview()
+      await screen.findByTestId('quote-item-entered-net-price-0')
+
+      spinUp('quote-item-entered-net-price-0')
+      // No shipping address: no method can be chosen and none is required.
+      await waitFor(() => expect(save().disabled).toBe(false))
+      fireEvent.click(save())
+
+      await waitFor(() =>
+        expect(quotesApi.updateQuote).toHaveBeenCalledWith('q1', [
+          {
+            op: 'REPLACE',
+            path: '/items/i1',
+            value: {
+              itemId: 'i1',
+              quantity: { quantity: 2, unitCode: 'pcs' },
+              priceStatus: 'MISSING',
+              product: { productId: 'p1', name: { en: 'Unpriced product' } },
+              price: { type: 'EXTERNAL', totalNetValue: 1 },
+            },
+          },
+        ])
+      )
+      expect(taxesApi.getTax).not.toHaveBeenCalled()
+    })
+
+    it('offers the tax classes of the address country and sends the chosen class', async () => {
+      taxesApi.getTax.mockResolvedValue({
+        taxClasses: [{ code: 'STD', name: { en: 'Standard' }, rate: 19 }],
+      })
+      quotesApi.getQuoteById.mockResolvedValue(
+        withOneUnpriced({
+          shippingAddress: { id: 'A1', countryCode: 'DE' },
+        } as Partial<Quote>)
+      )
+      renderPreview()
+
+      fireEvent.click(
+        await screen.findByTestId('quote-item-tax-class-0-control')
+      )
+      fireEvent.mouseDown(
+        await screen.findByRole('option', { name: 'Standard' })
+      )
+      spinUp('quote-item-entered-net-price-0')
+      // With an address the shipping method is required again.
+      expect(save().disabled).toBe(true)
+      fireEvent.click(screen.getByTestId('quote-shipping-method-control'))
+      fireEvent.mouseDown(await screen.findByRole('option', { name: 'DHL' }))
+      await waitFor(() => expect(save().disabled).toBe(false))
+      fireEvent.click(save())
+
+      await waitFor(() => expect(quotesApi.updateQuote).toHaveBeenCalled())
+      const [, operations] = quotesApi.updateQuote.mock.calls[0]
+      expect(operations[0]).toEqual({
+        op: 'REPLACE',
+        path: '/items/i1',
+        value: expect.objectContaining({
+          price: {
+            type: 'EXTERNAL',
+            totalNetValue: 1,
+            tax: { taxClass: 'STD' },
+          },
+        }),
+      })
+      expect(operations[1].path).toBe('/shipping')
+      expect(taxesApi.getTax).toHaveBeenCalledWith('DE')
+    })
+
+    it('shows no tax and no gross without a shipping address; totals are net', async () => {
+      quotesApi.getQuoteById.mockResolvedValue({
+        ...quote,
+        shippingAddress: null,
+      })
+      renderPreview()
+
+      const table = await screen.findByTestId('quote-preview-table')
+      await within(table).findByText('Chair')
+      expect(table.textContent).not.toContain('19%')
+      expect(table.textContent).not.toContain('€309.40')
+      // Subtotal is the net €260.
+      await waitFor(() => expect(totals()).toContain('€260.00'))
+    })
   })
 })

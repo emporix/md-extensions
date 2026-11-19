@@ -2,3 +2,11 @@
 .statusFilter {
   min-width: 12rem;
 }
+
+// MD `flex gap-1 justify-content-end` around the total and its " (net)"
+// suffix (COP-7125).
+.totalPrice {
+  display: inline-flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}

@@ -75,9 +75,13 @@ describe('getQuoteApprovalActions', () => {
     expect(getQuoteApprovalActions(QuoteStatus.IN_PROGRESS)).toBe('decide')
   })
 
+  // COP-7125: the employee can start a negotiation round on an open quote.
+  it('offers to start a negotiation for an open quote', () => {
+    expect(getQuoteApprovalActions(QuoteStatus.OPEN)).toBe('negotiate')
+  })
+
   it('offers no action for the other statuses', () => {
     for (const status of [
-      QuoteStatus.OPEN,
       QuoteStatus.ACCEPTED,
       QuoteStatus.DECLINED,
       QuoteStatus.DECLINED_BY_MERCHANT,

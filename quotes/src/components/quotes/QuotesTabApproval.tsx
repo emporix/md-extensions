@@ -18,6 +18,7 @@ import { buildQuoteSendPayload } from '../../helpers/quoteChangeStatus.helpers'
 import { getApiErrorMessage } from '../../helpers/api'
 import { quotesListPath } from '../../constants/paths'
 import QuotesChangeStatus from './QuotesChangeStatus'
+import QuotesStartNegotiation from './QuotesStartNegotiation'
 import styles from './QuotesTabApproval.module.scss'
 
 /**
@@ -35,6 +36,7 @@ const QuotesTabApproval = (props: StylableProps) => {
   const [quoteUpdateType, setQuoteUpdateType] =
     useState<QuoteChangeStatusType>()
   const [pdfData, setPdfData] = useState<string>()
+  const [negotiationVisible, setNegotiationVisible] = useState(false)
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.QUOTES_MANAGER)
 
@@ -104,6 +106,16 @@ const QuotesTabApproval = (props: StylableProps) => {
           {t('quotes.tabs.approval.createBtn')}
         </PrimaryButton>
       )
+    } else if (actions === 'negotiate') {
+      // COP-7125: the employee opens a negotiation round (OPEN → IN_PROGRESS).
+      return (
+        <PrimaryButton
+          disabled={!canManage}
+          onClick={() => setNegotiationVisible(true)}
+        >
+          {t('quotes.tabs.approval.startNegotiationBtn')}
+        </PrimaryButton>
+      )
     } else if (actions === 'decide') {
       return (
         <>
@@ -139,6 +151,13 @@ const QuotesTabApproval = (props: StylableProps) => {
         />
       </div>
 
+      {quote && negotiationVisible && (
+        <QuotesStartNegotiation
+          visible={negotiationVisible}
+          quoteId={quote.id}
+          close={() => setNegotiationVisible(false)}
+        />
+      )}
       {quote && quoteUpdateType && (
         <QuotesChangeStatus
           visible={!!quoteUpdateType}

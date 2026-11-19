@@ -49,3 +49,11 @@
   width: 8.3333%;
   text-align: right;
 }
+
+// MD `col-1` for the "Price on request" tag (COP-7125); the CL badge needs
+// its own width.
+.badgeCol {
+  flex: 0 0 auto;
+  padding: 0.5rem;
+  white-space: nowrap;
+}

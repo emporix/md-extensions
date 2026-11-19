@@ -8,6 +8,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import i18n from '../../translations/i18n'
@@ -164,8 +165,126 @@ describe('QuotesTabApproval', () => {
       )
     )
     expect(quotesApi.getQuotePdf).toHaveBeenCalledWith('Q1')
-    // An open quote offers no action.
-    expect(screen.queryByRole('button')).toBeNull()
+    // COP-7125: an open quote offers only to start a negotiation.
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual([
+      'Start negotiation',
+    ])
+  })
+
+  // COP-7125 (ported from MD quotesNullSafe.test.tsx, emporix/
+  // management-dashboard#1707): the employee opens a negotiation round.
+  describe('start negotiation', () => {
+    const openNegotiation = async () => {
+      fireEvent.click(
+        await screen.findByRole('button', { name: 'Start negotiation' })
+      )
+      return screen.findByTestId('quote-negotiation-dialog')
+    }
+
+    beforeEach(() => {
+      quotesApi.getQuotesReasons.mockResolvedValue({
+        data: [
+          { id: 'C1', code: 'PROVIDED_PRICE_TO_HIGH', type: 'CHANGE' },
+          { id: 'D1', code: 'TOO_LATE', type: 'DECLINE' },
+        ],
+      })
+    })
+
+    it('starts a negotiation without a reason or comment', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
+      renderApproval()
+      const dialog = await openNegotiation()
+
+      fireEvent.click(
+        within(dialog).getByRole('button', { name: 'Start negotiation' })
+      )
+
+      await waitFor(() =>
+        expect(quotesApi.changeQuoteStatus).toHaveBeenCalledWith('Q1', {
+          value: 'IN_PROGRESS',
+        })
+      )
+      expect(toast.showToast).toHaveBeenCalledWith(
+        'Negotiation started',
+        '',
+        'success'
+      )
+      // The quote is reloaded, so the header shows the new status.
+      await waitFor(() =>
+        expect(quotesApi.getQuoteById).toHaveBeenCalledTimes(2)
+      )
+    })
+
+    it('offers only CHANGE reasons and sends the reason and the comment', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
+      renderApproval()
+      const dialog = await openNegotiation()
+
+      fireEvent.click(
+        within(dialog).getByTestId('quote-negotiation-reason-control')
+      )
+      const options = await screen.findAllByRole('option')
+      expect(options.map((o) => o.textContent)).toEqual([
+        'PROVIDED_PRICE_TO_HIGH',
+      ])
+      fireEvent.mouseDown(options[0])
+      fireEvent.change(
+        within(dialog).getByTestId('quote-negotiation-comment-input'),
+        { target: { value: 'Volume discount offered' } }
+      )
+      fireEvent.click(
+        within(dialog).getByRole('button', { name: 'Start negotiation' })
+      )
+
+      await waitFor(() =>
+        expect(quotesApi.changeQuoteStatus).toHaveBeenCalledWith('Q1', {
+          value: 'IN_PROGRESS',
+          quoteReasonId: 'C1',
+          comment: 'Volume discount offered',
+        })
+      )
+    })
+
+    it('shows the API message when the status change fails', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
+      quotesApi.changeQuoteStatus.mockRejectedValue({
+        isAxiosError: true,
+        response: { data: { message: 'Transition not allowed' } },
+      })
+      renderApproval()
+      const dialog = await openNegotiation()
+
+      fireEvent.click(
+        within(dialog).getByRole('button', { name: 'Start negotiation' })
+      )
+
+      await waitFor(() =>
+        expect(toast.showToast).toHaveBeenCalledWith(
+          'Transition not allowed',
+          '',
+          'error'
+        )
+      )
+      expect(toast.showToast).not.toHaveBeenCalledWith(
+        'Negotiation started',
+        '',
+        'success'
+      )
+    })
+
+    it('keeps the button disabled without Quotes Manager', async () => {
+      permissions.granted = []
+      quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
+      renderApproval()
+
+      expect(
+        (
+          (await screen.findByRole('button', {
+            name: 'Start negotiation',
+          })) as HTMLButtonElement
+        ).disabled
+      ).toBe(true)
+    })
   })
 
   it('approves an awaiting quote after the confirm step', async () => {

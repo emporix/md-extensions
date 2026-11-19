@@ -1,20 +1,108 @@
 import { usePricesApi } from './api/prices'
 import { Item, Quote } from '../models/Quotes.model'
 import { PriceMatchRequest } from '../models/Price.model'
+import { Site } from '../models/Site.model'
+import { useSites } from '../context/SitesProvider'
 
-/** MD `useQuotesMatchPrices`: prices quote lines through match-prices. */
+/*
+ * MD `useQuotesMatchPrices`: prices quote lines through match-prices. Quotes
+ * without a shipping address and products without a price follow COP-7125
+ * (emporix/management-dashboard#1707).
+ */
+
+/**
+ * Thrown when no country can be determined for the price match: the quote has
+ * no shipping address and the quote's site has no ship-to countries.
+ */
+export class NoShipToCountryError extends Error {
+  constructor() {
+    super('No ship-to country for the quote')
+    this.name = 'NoShipToCountryError'
+  }
+}
+
+/** The parts of a price-v2 match that a quote item uses. */
+interface MatchedPrice {
+  readonly priceId: string
+  readonly originalValue: number
+  readonly tax?: { readonly taxClass?: string; readonly taxRate?: number }
+}
+
+const buildQuantity = (item: Partial<Item>, matchedUnitCode?: string) => ({
+  quantity: item.quantity?.quantity || 1,
+  // The quote service requires `unitCode` (not null), so send '' when unknown.
+  unitCode: item.quantity?.unitCode || matchedUnitCode || '',
+})
+
+const buildTax = (price: MatchedPrice, includeTaxRate: boolean) => {
+  if (includeTaxRate) {
+    return price.tax
+      ? { tax: { taxClass: price.tax.taxClass, taxRate: price.tax.taxRate } }
+      : {}
+  }
+  return price.tax?.taxClass ? { tax: { taxClass: price.tax.taxClass } } : {}
+}
+
+/**
+ * Price of a new quote item built from a price-v2 match.
+ *
+ * The quote service requires `tax.taxClass` for a catalog price (one with a
+ * `priceId`), so the tax class is always sent when the match has one.
+ *
+ * @param includeTaxRate false when the quote has no shipping address. price-v2
+ * needs a country to match a catalog price, so such a quote is matched with a
+ * fallback country (see `resolveMatchCountry`) and the rate returned belongs
+ * to that country, not to the customer. It must not enter the quote, so only
+ * the class is sent; it is just a label. The quote service calculates rate
+ * and gross itself once a shipping address is set, so until then the quote
+ * holds net values only. A match without tax (or with a blank class) sends no
+ * `tax`; the service then answers 400 and the employee sees its message.
+ */
+const buildPrice = (
+  item: Partial<Item>,
+  price: MatchedPrice,
+  includeTaxRate: boolean
+) => ({
+  priceId: price.priceId,
+  unitPrice: price.originalValue,
+  newUnitPrice: price.originalValue,
+  totalNetValue: item.price?.totalNetValue || price.originalValue,
+  ...buildTax(price, includeTaxRate),
+  discount: item.price?.discount || 0,
+})
+
+/**
+ * Country used for the price match, in this order: the country of the
+ * quote's shipping address, then the first ship-to country of the quote's own
+ * site (found by `quote.siteCode`, not the currently selected site, which may
+ * differ). price-v2 rejects an empty or blank country with HTTP 400.
+ *
+ * @returns the country code, or undefined when none exists; the caller must
+ * then not call price-v2 and tell the employee to set ship-to countries.
+ */
+export const resolveMatchCountry = (
+  quote: Quote,
+  sites: readonly Site[] | null | undefined
+): string | undefined =>
+  quote.shippingAddress?.countryCode ||
+  sites?.find((site) => site.code === quote.siteCode)?.shipToCountries?.[0]
+
 export const useQuotesMatchPrices = () => {
   const { matchPrices } = usePricesApi()
+  const { sites } = useSites()
 
   const getPriceForQuoteItems = async (
     quote: Quote,
     itemList: Partial<Item>[]
   ) => {
+    const countryCode = resolveMatchCountry(quote, sites)
+    if (!countryCode) throw new NoShipToCountryError()
+
     const matchPricesRequestBody: PriceMatchRequest = {
       targetCurrency: quote.currency,
       siteCode: quote.siteCode,
       targetLocation: {
-        countryCode: quote.shippingAddress?.countryCode || '',
+        countryCode,
       },
       items: itemList.map((item) => {
         return {
@@ -41,23 +129,20 @@ export const useQuotesMatchPrices = () => {
         )
       }
 
+      // A product without a price list entry stays unpriced ("Price on
+      // request"): no placeholder price is built.
       return {
         ...item,
-        quantity: {
-          quantity: item.quantity?.quantity || 1,
-          unitCode: item.quantity?.unitCode || price?.quantity?.unitCode || '',
-        },
-        price: {
-          priceId: price?.priceId || '',
-          unitPrice: price?.originalValue || 0,
-          newUnitPrice: price?.originalValue || 0,
-          totalNetValue: item.price?.totalNetValue || price?.originalValue || 0,
-          tax: {
-            taxClass: price?.tax?.taxClass || '',
-            taxRate: price?.tax?.taxRate || 0,
-          },
-          discount: item.price?.discount || 0,
-        },
+        quantity: buildQuantity(item, price?.quantity?.unitCode),
+        ...(price
+          ? {
+              price: buildPrice(
+                item,
+                price,
+                !!quote.shippingAddress?.countryCode
+              ),
+            }
+          : {}),
       }
     })
 
