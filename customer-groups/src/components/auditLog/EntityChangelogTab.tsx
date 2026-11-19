@@ -1,17 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
-import { ProgressSpinner } from '@emporix/component-library'
-import { useChangelogApi } from '../../hooks/api/changelog'
+import { Link } from 'react-router'
+import {
+  EntityChangelog,
+  type EntityChangelogLabels,
+  type EntityChangelogLinks,
+} from '@emporix/md-audit-log'
+import { getEntityDetailPath } from '../../configs/entityLinkConfig'
 import { useDashboardContext } from '../../context/Dashboard.context'
-import { makeCall } from '../../helpers/api'
-import usePagination, {
-  DEFAULT_PAGINATION_PROPS,
-} from '../../hooks/usePagination'
-import type { ChangelogItem } from '../../models/Changelog.model'
-import EmptyContent from '../shared/EmptyContent'
-import ChangelogCard from './ChangelogCard'
-import ChangelogPaginator from './ChangelogPaginator'
-import styles from './EntityChangelogTab.module.scss'
+import { useChangelogApi } from '../../hooks/api/changelog'
 
 type EntityChangelogTabProps = {
   readonly entity: string
@@ -20,113 +17,55 @@ type EntityChangelogTabProps = {
   readonly className?: string
 }
 
+const ENTITY_LINKS: EntityChangelogLinks = {
+  pathOf: getEntityDetailPath,
+  render: ({ to, className, title, children }) => (
+    <Link to={to} className={className} title={title}>
+      {children}
+    </Link>
+  ),
+}
+
+const changelogLabels = (t: TFunction): EntityChangelogLabels => ({
+  empty: t('auditLog.entityChangelog.empty'),
+  loadError: t('auditLog.loadError'),
+  retry: t('auditLog.retry'),
+  notSet: t('auditLog.entityChangelog.notSet'),
+  fieldColumn: t('auditLog.entityChangelog.table.field'),
+  previousValueColumn: t('auditLog.entityChangelog.table.previousValue'),
+  updatedValueColumn: t('auditLog.entityChangelog.table.updatedValue'),
+  windowLabel: t('auditLog.window.label'),
+  windowLimitHint: t('auditLog.window.limitHint'),
+  previousPage: t('global.previousPage'),
+  nextPage: t('global.nextPage'),
+  changeType: (key) => t(`auditLog.changeTypes.${key}`),
+  entity: (entity) =>
+    t(`auditLog.entities.${entity}`, { defaultValue: entity }),
+})
+
 const EntityChangelogTab = ({
   entity,
   entityId,
   isActive = false,
   className = '',
-}: EntityChangelogTabProps) => {
-  const { t } = useTranslation()
+}: EntityChangelogTabProps): JSX.Element => {
+  const { t, i18n } = useTranslation()
   const { tenant } = useDashboardContext()
-  const { getEntityChangelog } = useChangelogApi()
-  const initialPaginationRef = useRef({ ...DEFAULT_PAGINATION_PROPS })
-  const { paginationParams, onPageCallback, resetPagination } = usePagination(
-    initialPaginationRef.current,
-    true,
-    'audit'
-  )
-  const [items, setItems] = useState<ChangelogItem[]>([])
-  const [totalElements, setTotalElements] = useState(0)
-  const [isLoading, setIsLoading] = useState(false)
-  const entityKey = `${entity}:${entityId}`
-  const prevEntityKeyRef = useRef(entityKey)
-  const currentPage = paginationParams.currentPage ?? 1
-  const rows = paginationParams.rows ?? 10
-
-  useEffect(() => {
-    if (!isActive || !entityId || !tenant) {
-      return
-    }
-
-    if (prevEntityKeyRef.current !== entityKey) {
-      prevEntityKeyRef.current = entityKey
-      setItems([])
-      setTotalElements(0)
-      resetPagination()
-      return
-    }
-
-    void (async () => {
-      try {
-        const data = await makeCall(
-          () =>
-            getEntityChangelog(entity, entityId, {
-              pagination: paginationParams,
-            }),
-          setIsLoading
-        )
-        setItems(data?.items ?? [])
-        setTotalElements(data?.totalElements ?? 0)
-      } catch (error) {
-        console.error(error)
-        setItems([])
-        setTotalElements(0)
-      }
-    })()
-    // resetPagination is not memoized in usePagination — do not add it here
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isActive,
-    entity,
-    entityId,
-    entityKey,
-    tenant,
-    getEntityChangelog,
-    currentPage,
-    rows,
-  ])
-
-  if (!isActive) {
-    return <div className={`${styles.tab} ${className}`.trim()} />
-  }
-
-  if (isLoading && totalElements === 0) {
-    return (
-      <div className={`${styles.tab} ${styles.loading} ${className}`.trim()}>
-        <ProgressSpinner />
-      </div>
-    )
-  }
-
-  if (totalElements === 0) {
-    return (
-      <div className={`${styles.tab} ${className}`.trim()}>
-        <EmptyContent text={t('auditLog.entityChangelog.empty')} />
-      </div>
-    )
-  }
+  const { getChangelogCursorPage } = useChangelogApi()
 
   return (
-    <div className={`${styles.tab} ${className}`.trim()}>
-      {items.map((item, index) => (
-        <ChangelogCard
-          key={`${item.at}-${item.type}-${item.entity}-${item.entityId}-${
-            item.actor ?? ''
-          }`}
-          item={item}
-          currentEntity={entity}
-          currentEntityId={entityId}
-          iterationNumber={
-            totalElements - (paginationParams.first ?? 0) - index
-          }
-        />
-      ))}
-      <ChangelogPaginator
-        paginationParams={paginationParams}
-        totalRecords={totalElements}
-        onPageChange={onPageCallback}
-      />
-    </div>
+    <EntityChangelog
+      entity={entity}
+      entityId={entityId}
+      enabled={isActive}
+      className={className}
+      tenant={tenant ?? ''}
+      fetchPage={getChangelogCursorPage}
+      labels={changelogLabels(t)}
+      locale={i18n.language}
+      dateFormat={t('global.dateFormat')}
+      entityLinks={ENTITY_LINKS}
+    />
   )
 }
 

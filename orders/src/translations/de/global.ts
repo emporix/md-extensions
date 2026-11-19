@@ -82,6 +82,8 @@ export default {
     },
   },
   pagination: 'Zeigt {first} bis {last} von {totalRecords}',
+  previousPage: 'Zurück',
+  nextPage: 'Weiter',
   dateFormat: 'dd.mm.yy',
   dateFormatPlaceholder: 'dd.MM.yyyy',
   deleteConfirm: {

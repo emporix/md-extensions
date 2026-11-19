@@ -20,8 +20,23 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@emporix/md-audit-log": ["../audit-log/src/index.ts"],
+      "react": ["./node_modules/@types/react"],
+      "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"],
+      "@emporix/component-library": ["./node_modules/@emporix/component-library"],
+      "@emporix/api-calls/next": ["./node_modules/@emporix/api-calls/dist/next/index.d.ts"]
+    }
   },
-  "include": ["src"],
-  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
+  "include": ["src", "../audit-log/src"],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "../audit-log/src/**/*.test.ts",
+    "../audit-log/src/**/*.test.tsx",
+    "../audit-log/src/test"
+  ]
 }

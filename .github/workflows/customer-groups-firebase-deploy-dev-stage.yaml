@@ -5,6 +5,7 @@ on:
       - master
     paths:
       - 'customer-groups/**'
+      - 'audit-log/**'
 
 jobs:
   build_and_deploy:

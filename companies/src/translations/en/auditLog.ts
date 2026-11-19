@@ -11,12 +11,18 @@ export default {
   },
   entityChangelog: {
     tab: 'Audit Log',
-    empty: 'No audit log entries found',
+    empty: 'No audit log entries in the selected period',
     notSet: 'Not set',
     table: {
       field: 'Field',
       previousValue: 'Previous Value',
       updatedValue: 'Updated Value',
     },
+  },
+  loadError: 'The audit log could not be loaded.',
+  retry: 'Try again',
+  window: {
+    label: 'Period',
+    limitHint: 'The period is limited to 7 days.',
   },
 }

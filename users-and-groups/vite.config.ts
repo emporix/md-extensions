@@ -23,7 +23,17 @@ export default defineConfig({
       context: '/src/context',
       models: '/src/models',
       configs: '/src/configs',
+      '@emporix/md-audit-log': decodeURIComponent(
+        new URL('../audit-log/src/index.ts', import.meta.url).pathname
+      ),
     },
+    // The shared audit-log source sits outside this remote; resolve its imports from this remote's node_modules
+    dedupe: [
+      'react',
+      'react-dom',
+      '@emporix/component-library',
+      '@emporix/api-calls',
+    ],
   },
   build: {
     modulePreload: false,
@@ -32,6 +42,7 @@ export default defineConfig({
     cssCodeSplit: false,
   },
   server: {
+    fs: { allow: ['..'] },
     cors: {
       origin: [
         'https://admin.emporix.io',
