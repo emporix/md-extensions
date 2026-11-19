@@ -63,6 +63,7 @@ import {
 } from '../../utils/agentChatHelpers'
 import { formatApiError } from '../../utils/errorHelpers'
 import {
+  CHAT_ATTACHMENT_ACCEPT,
   newChatAttachmentKey,
   safeImageName,
   selectChatImages,
@@ -788,7 +789,7 @@ const AgentChatPage = () => {
               ref={fileInputRef}
               className="agent-chat-file-input"
               type="file"
-              accept="image/png,image/jpeg,application/pdf,text/csv,text/plain,.jpg,.jpeg,.png,.pdf,.csv,.txt,.text"
+              accept={CHAT_ATTACHMENT_ACCEPT}
               multiple
               onChange={(event) => {
                 acceptPickedFiles(Array.from(event.target.files ?? []))

@@ -38,38 +38,96 @@ const extensionOf = (name: string): string => {
   return extension.toLowerCase()
 }
 
-const MIME_BY_EXTENSION: Record<string, string> = {
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  png: 'image/png',
-  pdf: 'application/pdf',
-  csv: 'text/csv',
-  txt: 'text/plain',
-  text: 'text/plain',
+const XLSX_TYPE =
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+/** One kind of file the chat accepts: its extensions, the type sent to the
+ * service, and the other types browsers report for it. */
+type ChatAttachmentKind = {
+  readonly extensions: readonly string[]
+  readonly canonicalType: string
+  readonly alsoReportedAs: readonly string[]
 }
 
-const ACCEPTED_TYPES_BY_EXTENSION: Record<string, readonly string[]> = {
-  jpg: ['image/jpeg', ''],
-  jpeg: ['image/jpeg', ''],
-  png: ['image/png', ''],
-  pdf: ['application/pdf', ''],
-  csv: ['text/csv', 'application/vnd.ms-excel', 'text/plain', ''],
-  txt: ['text/plain', ''],
-  text: ['text/plain', ''],
+const CHAT_ATTACHMENT_KINDS: readonly ChatAttachmentKind[] = [
+  {
+    extensions: ['jpg', 'jpeg'],
+    canonicalType: 'image/jpeg',
+    alsoReportedAs: [''],
+  },
+  { extensions: ['png'], canonicalType: 'image/png', alsoReportedAs: [''] },
+  {
+    extensions: ['pdf'],
+    canonicalType: 'application/pdf',
+    alsoReportedAs: [''],
+  },
+  {
+    extensions: ['csv'],
+    canonicalType: 'text/csv',
+    alsoReportedAs: ['application/vnd.ms-excel', 'text/plain', ''],
+  },
+  {
+    extensions: ['txt', 'text'],
+    canonicalType: 'text/plain',
+    alsoReportedAs: [''],
+  },
+  {
+    extensions: ['json'],
+    canonicalType: 'application/json',
+    alsoReportedAs: [''],
+  },
+  {
+    extensions: ['xml'],
+    canonicalType: 'application/xml',
+    alsoReportedAs: ['text/xml', ''],
+  },
+  {
+    extensions: ['html', 'htm'],
+    canonicalType: 'text/html',
+    alsoReportedAs: [''],
+  },
+  { extensions: ['xlsx'], canonicalType: XLSX_TYPE, alsoReportedAs: [''] },
+]
+
+const indexByExtension = (
+  kinds: readonly ChatAttachmentKind[]
+): ReadonlyMap<string, ChatAttachmentKind> =>
+  new Map(
+    kinds.flatMap((kind) => kind.extensions.map((ext) => [ext, kind] as const))
+  )
+
+const buildAcceptAttribute = (kinds: readonly ChatAttachmentKind[]): string => {
+  const types = new Set(kinds.map((kind) => kind.canonicalType))
+  const extensions = kinds.flatMap((kind) =>
+    kind.extensions.map((ext) => `.${ext}`)
+  )
+  return [...types, ...extensions].join(',')
 }
+
+const KIND_BY_EXTENSION = indexByExtension(CHAT_ATTACHMENT_KINDS)
+
+/** The file picker's accept attribute, derived from the same table. */
+export const CHAT_ATTACHMENT_ACCEPT: string = buildAcceptAttribute(
+  CHAT_ATTACHMENT_KINDS
+)
 
 export const isChatAttachmentFile = (file: ChatImageCandidate): boolean => {
-  const accepted = ACCEPTED_TYPES_BY_EXTENSION[extensionOf(file.name)]
-  return accepted?.includes(file.type) ?? false
+  const kind = KIND_BY_EXTENSION.get(extensionOf(file.name))
+  if (!kind) {
+    return false
+  }
+  return (
+    file.type === kind.canonicalType || kind.alsoReportedAs.includes(file.type)
+  )
 }
 
 export const withChatAttachmentType = (file: File): File => {
-  const mime = MIME_BY_EXTENSION[extensionOf(file.name)]
-  if (!mime || file.type === mime) {
+  const kind = KIND_BY_EXTENSION.get(extensionOf(file.name))
+  if (!kind || file.type === kind.canonicalType) {
     return file
   }
   return new File([file], file.name, {
-    type: mime,
+    type: kind.canonicalType,
     lastModified: file.lastModified,
   })
 }

@@ -1164,7 +1164,7 @@ const TRANSLATIONS_EN = {
   chat_image_limit: 'You can attach up to 5 files.',
   chat_image_size: 'Each file must be 8 MB or smaller.',
   chat_image_type:
-    'Only PNG, JPEG, PDF, CSV, and plain text files can be attached.',
+    'Only PNG, JPEG, PDF, CSV, plain text, JSON, XML, HTML, and XLSX files can be attached.',
   chat_image_upload_failed: 'The file could not be uploaded.',
   chat_prompt_label: 'Prompt',
   chat_placeholder:

@@ -1180,7 +1180,7 @@ const TRANSLATIONS_DE = {
   chat_image_limit: 'Es können höchstens 5 Dateien angehängt werden.',
   chat_image_size: 'Jede Datei darf höchstens 8 MB groß sein.',
   chat_image_type:
-    'Nur PNG, JPEG, PDF, CSV und reine Textdateien können angehängt werden.',
+    'Nur PNG-, JPEG-, PDF-, CSV-, JSON-, XML-, HTML-, XLSX- und reine Textdateien können angehängt werden.',
   chat_image_upload_failed: 'Die Datei konnte nicht hochgeladen werden.',
   chat_prompt_label: 'Eingabe',
   chat_placeholder:
