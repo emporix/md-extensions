@@ -8,7 +8,10 @@ type ChangelogPaginatorProps = {
   readonly rows: number
   readonly rowsPerPageOptions: number[]
   readonly isLoading: boolean
-  readonly labels: Pick<EntityChangelogLabels, 'previousPage' | 'nextPage'>
+  readonly labels: Pick<
+    EntityChangelogLabels,
+    'previousPage' | 'nextPage' | 'rowsPerPage'
+  >
   readonly onNext: () => void
   readonly onPrevious: () => void
   readonly onRowsChange: (rows: number) => void
@@ -48,6 +51,7 @@ const ChangelogPaginator = ({
     </div>
     <Dropdown
       className={styles.rowsDropdown}
+      label={labels.rowsPerPage}
       options={rowsPerPageOptions.map((value) => ({
         label: String(value),
         value,

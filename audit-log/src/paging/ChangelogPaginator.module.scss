@@ -1,5 +1,6 @@
 .paginator {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
   border: 1px solid var(--grey-4, #c7cad1);
@@ -38,8 +39,21 @@
   }
 }
 
-.rowsDropdown {
+// The component-library label names the combobox; keep it beside the control, not above it.
+// Nested under .paginator so it outranks the library's own root display rule whatever the stylesheet order
+.paginator .rowsDropdown {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin-left: auto;
   height: 2rem;
+
+  > label {
+    margin: 0;
+    font-weight: normal;
+    color: var(--grey-6, #3e4759);
+    white-space: nowrap;
+  }
+
   width: min-content;
 }

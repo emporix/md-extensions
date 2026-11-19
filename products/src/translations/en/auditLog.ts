@@ -22,6 +22,7 @@ export default {
   },
   loadError: 'The audit log could not be loaded.',
   retry: 'Try again',
+  rowsPerPage: 'Rows per page',
   window: {
     label: 'Period',
     limitHint: 'The period is limited to 7 days.',

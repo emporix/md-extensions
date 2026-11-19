@@ -38,6 +38,7 @@ const changelogLabels = (t: TFunction): EntityChangelogLabels => ({
   windowLimitHint: t('auditLog.window.limitHint'),
   previousPage: t('global.previousPage'),
   nextPage: t('global.nextPage'),
+  rowsPerPage: t('auditLog.rowsPerPage'),
   changeType: (key) => t(`auditLog.changeTypes.${key}`),
   entity: (entity) =>
     t(`auditLog.entities.${entity}`, { defaultValue: entity }),

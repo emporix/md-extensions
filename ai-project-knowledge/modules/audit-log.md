@@ -27,4 +27,4 @@ Wiring per consumer: `vite.config.ts` aliases `@emporix/md-audit-log` to `../aud
 
 ## Tests and delivery
 
-`audit-log` runs its own `npm run typecheck`, `lint`, `test:run` (7 files) and `build:dev` (a typecheck) against component library 2.10.2, the lowest version a consumer pins. The repository validation loop runs it, and every consumer, when `audit-log/` changes. Each consumer's preview and dev/stage workflows include `audit-log/**`; a production release of a shared change needs a `{remote}-*` tag for each consumer.
+`audit-log` runs its own `npm run typecheck`, `lint`, `test:run` (8 files) and `build:dev` (a typecheck) against component library 2.10.2, the lowest version a consumer pins. The repository validation loop runs it, and every consumer, when `audit-log/` changes. Each consumer's preview and dev/stage workflows include `audit-log/**`; a production release of a shared change needs a `{remote}-*` tag for each consumer.

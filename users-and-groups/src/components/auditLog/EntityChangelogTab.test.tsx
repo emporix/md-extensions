@@ -93,6 +93,12 @@ describe('EntityChangelogTab', () => {
       mount(entity)
 
       const link = await screen.findByRole('link')
+
+      // The rows-per-page control is named from this remote's translations
+
+      expect(
+        screen.getByRole('combobox', { name: 'Rows per page' })
+      ).toBeTruthy()
       expect(link.getAttribute('href')).toBe(href)
     }
   )

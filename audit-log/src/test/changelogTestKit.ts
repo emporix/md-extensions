@@ -29,6 +29,7 @@ export const TEST_LABELS: EntityChangelogLabels = {
   windowLimitHint: 'The period is limited to 7 days.',
   previousPage: 'Previous',
   nextPage: 'Next',
+  rowsPerPage: 'Rows per page',
   changeType: (key) =>
     ({ created: 'Created', updated: 'Updated', deleted: 'Deleted' })[key],
   entity: (entity) => ENTITY_LABELS[entity] ?? entity,
