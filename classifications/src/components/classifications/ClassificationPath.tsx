@@ -43,14 +43,19 @@ const ClassificationPath = () => {
             )}
           />
         </InputField>
-        <div className={styles.position}>
+        {/* Same label wrapper as Parent: the CL InputNumber label sits on a
+            text line and would start 2.5px lower than the Parent label. */}
+        <InputField
+          className={styles.position}
+          label={t('classifications.forms.path.fields.position')}
+          name="position"
+        >
           <Controller
             name="position"
             control={control}
             render={({ field }) => (
               <InputNumber
                 inputId="position"
-                label={t('classifications.forms.path.fields.position')}
                 className={columns.fullWidth}
                 readOnly={!canManage}
                 value={field.value}
@@ -61,7 +66,7 @@ const ClassificationPath = () => {
               />
             )}
           />
-        </div>
+        </InputField>
       </FormGridRow>
     </SectionBox>
   )
