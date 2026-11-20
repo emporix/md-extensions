@@ -204,6 +204,7 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
 
   return (
     <Dialog
+      className={styles.dialog}
       visible={visible}
       style={{ width: '90vw', maxHeight: '90vh' }}
       // Only the rows of the browser scroll; the dialog keeps its height.

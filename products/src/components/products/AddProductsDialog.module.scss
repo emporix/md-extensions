@@ -6,7 +6,13 @@
       padding: 1rem 1.5rem 0.5rem;
     }
 
+    // The Dialog's `fixedHeight` makes the body a column that does not
+    // scroll, but not in a window lower than 720px: there these keep the
+    // rows scrolling inside the dialog instead of the whole body.
     .p-dialog-content {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
       padding: 0 1.5rem 1rem;
     }
   }

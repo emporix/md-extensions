@@ -1,10 +1,17 @@
+// The body is a column, so the browser gets the height the chips leave. The
+// Dialog's `fixedHeight` sets this itself, but not in a window lower than
+// 720px: there this rule keeps the rows scrolling inside the dialog instead of
+// the whole body.
+.dialog :global(.p-dialog-content) {
+  display: flex;
+  flex-direction: column;
+}
+
 .footer {
   display: flex;
   justify-content: center;
 }
 
-// The dialog body is a column (`fixedHeight`): the chips keep their height and
-// the browser gets the rest.
 .chips {
   display: flex;
   flex: none;
