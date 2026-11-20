@@ -9,6 +9,7 @@ on:
       - synchronize
     paths:
       - 'users-and-groups/**'
+      - 'audit-log/**'
 
 jobs:
   build_and_deploy_preview:

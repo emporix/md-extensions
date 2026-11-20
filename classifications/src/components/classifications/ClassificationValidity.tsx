@@ -90,8 +90,8 @@ const ClassificationValidity = () => {
           />
         </InputField>
       </FormGridRow>
-      <FormGridRow>
-        <div className={columns.col4}>
+      <FormGridRow className={columns.stackRow}>
+        <div className={columns.col4Stack}>
           <Dropdown
             inputId="validityType"
             label={t('classifications.forms.validity.fields.type')}
@@ -104,7 +104,7 @@ const ClassificationValidity = () => {
             data-testid="classification-validity-type"
           />
         </div>
-        <div className={columns.col4}>
+        <div className={columns.col4Stack}>
           <Controller
             name="validityFrom"
             control={control}
@@ -122,7 +122,7 @@ const ClassificationValidity = () => {
             )}
           />
         </div>
-        <div className={columns.col4}>
+        <div className={columns.col4Stack}>
           <Controller
             name="validityTo"
             control={control}

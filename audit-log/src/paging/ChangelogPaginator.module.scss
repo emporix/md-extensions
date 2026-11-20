@@ -1,0 +1,59 @@
+.paginator {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--grey-4, #c7cad1);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.pageButton {
+  height: 2rem;
+  min-width: 2rem;
+  padding: 0 0.5rem;
+  white-space: nowrap;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--grey-6, #3e4759);
+  font-size: 0.875rem;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  &:not(:disabled):hover {
+    background: #f4f5f6;
+  }
+}
+
+// The component-library label names the combobox; keep it beside the control, not above it.
+// Nested under .paginator so it outranks the library's own root display rule whatever the stylesheet order
+.paginator .rowsDropdown {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  height: 2rem;
+
+  > label {
+    margin: 0;
+    font-weight: normal;
+    color: var(--grey-6, #3e4759);
+    white-space: nowrap;
+  }
+
+  width: min-content;
+}

@@ -157,12 +157,12 @@ const QuotesTabProducts = (props: StylableProps) => {
               {t('global.discard')}
             </SecondaryButton>
             <PrimaryButton
-              disabled={
-                !formState.isValid ||
-                !formState.isDirty ||
-                isQuoteCompleted ||
-                !canManage
-              }
+              // No rule validates the picked products (MD's Controller had
+              // none either), so Save does not wait for `isValid`. With no
+              // registered field, react-hook-form 7.91 left it false when the
+              // tab opened with the quote loaded: `reset()` dropped the mount
+              // validation and nothing validated again.
+              disabled={!formState.isDirty || isQuoteCompleted || !canManage}
               onClick={handleSubmit(onSubmit)}
             >
               {t('global.save')}

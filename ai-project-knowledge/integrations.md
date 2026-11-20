@@ -13,7 +13,7 @@ Firebase Hosting deploy and preview workflows under `.github/workflows/*firebase
 
 ### `@emporix/api-calls` (axios)
 
-`quotes` 1.6.0 (its own calls on `./next`, see **quotes** below), `coupons`, `categories`, and `classifications` 1.5.3, `companies` 1.5.2, `products` 1.5.4, `orders`, `returns`, and `status-codes` 1.5.1, `labels` 1.2.14, `customer-groups` 1.2.9, `brands` and `users-and-groups` 1.2.1 (`*/package.json`). Each `src/api/bootstrap.ts` calls `createApiClient` with `baseURL` `VITE_API_URL` and throws `VITE_API_URL is not configured` when that value is missing. The access token and tenant come from the host via `setApiCredentials` / `useApiCredentials`. Retry and the concrete URL paths live in the package and are unknown here.
+`quotes` 1.7.1 (its own calls on `./next`, see **quotes** below), `categories` and `classifications` 1.5.3, `coupons` 1.7.1 (its audit log on `./next`), `companies` 1.7.1 (its audit log on `./next`, see **companies** below), `customers` 1.7.1 (its audit log on `./next`), `products` 1.7.1 (its audit log on `./next`), `returns` and `status-codes` 1.5.1, `orders` 1.7.1 (its audit log on `./next`), `labels` 1.2.14, `customer-groups` 1.7.1 (its audit log on `./next`), `brands` 1.2.1, `users-and-groups` 1.7.1 (its audit log on `./next`) (`*/package.json`). Each `src/api/bootstrap.ts` calls `createApiClient` with `baseURL` `VITE_API_URL` and throws `VITE_API_URL is not configured` when that value is missing. The access token and tenant come from the host via `setApiCredentials` / `useApiCredentials`. Retry and the concrete URL paths live in the package and are unknown here.
 
 Screens that only check permissions call `getAccessControlsTemplates` and `getScopesForUser` (`*/src/context/PermissionsProvider.tsx` in orders, returns, brands, labels, status-codes, coupons, companies, categories, classifications, and quotes). `products/src/context/PermissionsProvider.tsx` also loads tenant access controls and templates, and renders its children only after the load. `hooks/api/iam.ts` in those ten also imports user, group, scope, and access-control mutators. No file outside that hook imports `useIamApi` except `PermissionsProvider`, so those mutators have no caller outside the hook.
 
@@ -73,13 +73,13 @@ Paths for those symbols are inside `@emporix/api-calls` and are unknown. No dire
 
 ## customer-groups
 
-Shared api-calls client (`@emporix/api-calls` 1.2.9). IAM group and user screens call the IAM wrappers described above.
+Shared api-calls client (`@emporix/api-calls` 1.7.1). IAM group and user screens call the IAM wrappers described above.
 
 Also:
 
 - Vendors: `GroupDetailsGeneralFormRolesVendor.tsx` calls `getVendors`. `hooks/api/vendors.ts` also wraps `getVendor`, `postVendor`, `putVendor`, `deleteVendor`, and location calls. No caller of those other wrappers was found outside that file.
 - Legal entities: `CompanySelector.tsx` calls `getLegalEntities` and `getLegalEntity` (`fetchLegalEntitiesCall`, `fetchLegalEntityCall` in `hooks/api/customerManagement.ts`).
-- Changelog: `EntityChangelogTab.tsx` calls `getEntityChangelog` (`getChangelogs`).
+- Audit Logs (Changelog) Service, in `customer-groups/src/hooks/api/changelog.ts`: `getChangelogCursorPage` calls `listChangelogsWithCursorCall` from `@emporix/api-calls/next` (`GET /changelog/{tenant}/changelogs?pagination=cursor`, `next`/`prev` from the `x-next-cursor`/`x-prev-cursor` headers, no totals). `q` always carries the tab's date window as UTC instants (`changelogWindowQ` in the shared `audit-log/src/window/changelogWindow.ts`, `buildChangelogQ` with an `occurredAt` range); the tab is the shared `EntityChangelog` from `audit-log/` (`ai-project-knowledge/modules/audit-log.md`).
 - Configuration restrictions: `GroupDetailsGeneralForm.tsx` calls `getRestrictions` and `getSyncBetweenRestrictionsAndSiteCodes`.
 
 ## dashboard
@@ -115,8 +115,9 @@ Shared api-calls client (`labels/package.json` `@emporix/api-calls` 1.2.14), plu
 
 ## coupons
 
-Shared api-calls client (`coupons/package.json` `@emporix/api-calls` 1.5.3 — boolean `equals` filters such as `categoryRestricted` are sent unquoted), plus sites, configuration (incl. `ext_coupons` table configuration via `updateSingleConfiguration`), feature toggles, schemas and mixins (copied from `orders`), the audit log changelog, and the IAM permission reads.
+Shared api-calls client (`coupons/package.json` `@emporix/api-calls` 1.7.1 — boolean `equals` filters such as `categoryRestricted` are sent unquoted), plus sites, configuration (incl. `ext_coupons` table configuration via `updateSingleConfiguration`), feature toggles, schemas and mixins (copied from `orders`), the audit log changelog, and the IAM permission reads.
 
+- Audit Logs (Changelog) Service, in `coupons/src/hooks/api/changelog.ts`: `getChangelogCursorPage` calls `listChangelogsWithCursorCall` from `@emporix/api-calls/next` (`GET /changelog/{tenant}/changelogs?pagination=cursor`, `next`/`prev` from the `x-next-cursor`/`x-prev-cursor` headers, no totals). `q` always carries the tab's date window as UTC instants (`changelogWindowQ` in the shared `audit-log/src/window/changelogWindow.ts`, `buildChangelogQ` with an `occurredAt` range); the tab is the shared `EntityChangelog` from `audit-log/` (`ai-project-knowledge/modules/audit-log.md`).
 - Coupons (Coupon Service): `fetchCoupons` (server-side page, sort and `q` filters), `fetchCoupon`, `createNewCoupon` (returns the code), `modifyCoupon` (`PUT` by the original code, whole coupon), `patchCouponCall` (mixins and `metadata.mixins` only), `removeCoupon`, all bound to the host tenant in `coupons/src/hooks/api/coupons.ts`. Paths per api-calls: `/coupon/{tenant}/coupons[/{code}]`.
 - Restriction selectors: `getCustomers` (only with Customers Viewer, `coupons/src/hooks/api/customers.ts`), `getSegmentsCall` (`segments.ts`), `getCategories` (`categories.ts`), `getVendorsCall` (`vendors.ts`); currencies: `fetchCurrencies` (`currencies.ts`).
 - Media: `coupons/src/hooks/api/mediaAssets.ts` (copied from `orders`) wraps the api-calls asset calls; only the mixin reference selector reads assets through it (`useReferenceSelectorConfig.tsx`). No upload from the coupon screens, no direct HTTP.
@@ -138,7 +139,7 @@ Shared api-calls client (`catalogs/package.json` `@emporix/api-calls` 1.5.3), pl
 
 ## orders
 
-Shared api-calls client (`@emporix/api-calls` 1.5.1), plus sites, configuration, feature toggles, and the two IAM permission reads.
+Shared api-calls client (`@emporix/api-calls` 1.7.1), plus sites, configuration, feature toggles, and the two IAM permission reads.
 
 Callers outside the hook files:
 
@@ -147,7 +148,7 @@ Callers outside the hook files:
 - Customers: `getCustomers`, `getCustomer` (`hooks/api/customers.ts`), used by `OrderDetailsCustomer.tsx`.
 - Payment gateway: `getPaymentMethodsCall` (orders table), `fetchTransactionCall` and `refundCall` (`OrderPaymentInfo.tsx`).
 - Invoice job: `sendInvoiceJobCall` from `OrderDocumentActions.tsx` when the `PAYMENT_GATEWAY` toggle is on. `getInvoiceJobStatusCall` is wrapped in `hooks/api/invoice.ts` and has no caller outside that file.
-- Changelog: `getChangelogs` from `EntityChangelogTab.tsx`.
+- Audit Logs (Changelog) Service, in `orders/src/hooks/api/changelog.ts`: `getChangelogCursorPage` calls `listChangelogsWithCursorCall` from `@emporix/api-calls/next` (`GET /changelog/{tenant}/changelogs?pagination=cursor`, `next`/`prev` from the `x-next-cursor`/`x-prev-cursor` headers, no totals). `q` always carries the tab's date window as UTC instants (`changelogWindowQ` in the shared `audit-log/src/window/changelogWindow.ts`, `buildChangelogQ` with an `occurredAt` range); the tab is the shared `EntityChangelog` from `audit-log/` (`ai-project-knowledge/modules/audit-log.md`).
 - Schema: `getSchemasCall`, `getSchemaCall`, `getReferencesCall`, `getReferenceCall` (`hooks/api/schema.ts`). Mixin JSON is `getMixinsSchemaCall(url)` with an absolute URL from schema metadata (`components/mixins/useMixinsForm.tsx`). The host is that URL. `components/mixins/helpers.ts` matches Cloudinary `res.cloudinary.com/saas-ag/raw/upload/schemata2/...` URLs; it does not itself send HTTP.
 - Configuration sync flag: `OrdersTable.tsx` calls `getSyncBetweenRestrictionsAndSiteCodes`.
 - Mixin reference fields (`components/mixins/useReferenceSelectorConfig.tsx`, `context/ReferenceOptionsProvider.tsx`): carts (`getCartByIdCall`, `searchCartsCall`), segments, custom entities and instances, legal entities, media assets, category trees, and orders (`getAllOrders`) through `hooks/api/*.ts`.
@@ -157,14 +158,14 @@ Callers outside the hook files:
 
 ## products
 
-Shared api-calls client (`products/package.json` `@emporix/api-calls` 1.5.4, `products/src/api/bootstrap.ts`), plus sites, configuration, feature toggles, and IAM permission reads. The legacy axios modules under `products/src/api/` were replaced when COP-6993 re-scaffolded the remote; only `bootstrap.ts` and `sites.ts` remain there.
+Shared api-calls client (`products/package.json` `@emporix/api-calls` 1.7.1, `products/src/api/bootstrap.ts`), plus sites, configuration, feature toggles, and IAM permission reads. The legacy axios modules under `products/src/api/` were replaced when COP-6993 re-scaffolded the remote; only `bootstrap.ts` and `sites.ts` remain there.
 
 Calls used by the screens (`products/src/hooks/api/*.ts`):
 
 - Products and templates: `fetchPaginatedProduct`, `fetchProductCall` (plain read; with `{ rawValue: true }` before a variant save, for the variant's own `metadata.overridden`), `deleteProductWithForceCall` (force for dynamic variants), `triggerDynamicVariantRecalculationCall`, `fetchProductTemplatesCall` (`products.ts`).
 - Catalog: `getCategoryTreesCall` (`categoryTree.ts`; its `type` filter depends on backend change COP-6124), `assignProductToCategoryCall`, `deleteAssignmentToCategoryCall` (`categories.ts`), `fetchBrands`, `fetchLabels`.
 - Pricing and stock: `searchPricesCall`, `createPriceV2Call` (`prices_v2.ts`), `searchAvailabilitiesCall` (`availability.ts`).
-- Platform: `fetchBasicConfiguration`, `updateSingleConfiguration` (`configuration.ts`), `getFeatureToggleValuesCall` (`featureToggles.ts`), IAM access controls and scopes (`iam.ts`), `getVendors` (`vendors.ts`), `generateTextRequest` (`ai.ts`), `getEntityChangelog` (`changelog.ts`), `getSitesCall` (`products/src/api/sites.ts`).
+- Platform: `fetchBasicConfiguration`, `updateSingleConfiguration` (`configuration.ts`), `getFeatureToggleValuesCall` (`featureToggles.ts`), IAM access controls and scopes (`iam.ts`), `getVendors` (`vendors.ts`), `generateTextRequest` (`ai.ts`), `getChangelogCursorPage` (`changelog.ts`: `listChangelogsWithCursorCall` from `./next`, cursor paging inside the tab's date window, sent as UTC instants), `getSitesCall` (`products/src/api/sites.ts`).
 - Mixin reference fields: the same reference-option clients as orders (`context/ReferenceOptionsProvider.tsx`).
 
 Host links use `window.location.assign` with paths from `products/src/helpers/hostUrls.ts`. Other `hooks/api/*` clients (carts, orders, customers, segments, units, currencies, countries, schema, custom instances) were not traced to a caller; see `ai-project-knowledge/modules/products.md`.
@@ -198,11 +199,15 @@ Those usage paths read Emporix statistics. This extension does not call Make, Mo
 
 ## users-and-groups
 
-Shared api-calls client (`@emporix/api-calls` 1.2.1). Same IAM screen usage as customer-groups (groups, users, membership, scopes, access controls). Same vendor note: only `getVendors` is called from `GroupDetailsGeneralFormRolesVendor.tsx`; other wrappers in `hooks/api/vendors.ts` have no caller outside that file. Changelog and configuration-restriction calls match customer-groups (`EntityChangelogTab.tsx`, `GroupDetailsGeneralForm.tsx`). No legal-entity client was found under `users-and-groups/src`.
+Shared api-calls client (`@emporix/api-calls` 1.7.1). Same IAM screen usage as customer-groups (groups, users, membership, scopes, access controls). Same vendor note: only `getVendors` is called from `GroupDetailsGeneralFormRolesVendor.tsx`; other wrappers in `hooks/api/vendors.ts` have no caller outside that file. Configuration-restriction calls match customer-groups (`GroupDetailsGeneralForm.tsx`).
+
+- Audit Logs (Changelog) Service, in `users-and-groups/src/hooks/api/changelog.ts`: `getChangelogCursorPage` calls `listChangelogsWithCursorCall` from `@emporix/api-calls/next` (`GET /changelog/{tenant}/changelogs?pagination=cursor`, `next`/`prev` from the `x-next-cursor`/`x-prev-cursor` headers, no totals). `q` always carries the tab's date window as UTC instants (`changelogWindowQ` in the shared `audit-log/src/window/changelogWindow.ts`, `buildChangelogQ` with an `occurredAt` range); the tab is the shared `EntityChangelog` from `audit-log/` (`ai-project-knowledge/modules/audit-log.md`). No legal-entity client was found under `users-and-groups/src`.
 
 ## companies
 
-Shared api-calls client (`companies/package.json` `@emporix/api-calls` 1.5.2), plus sites, configuration (table config `ext_companies`, `restrictions` values), feature toggles, schemas and mixins, the changelog (audit log), and the IAM permission reads.
+Shared api-calls client (`companies/package.json` `@emporix/api-calls` 1.7.1), plus sites, configuration (table config `ext_companies`, `restrictions` values), feature toggles, schemas and mixins, the changelog (audit log), and the IAM permission reads.
+
+- Audit Logs (Changelog) Service, in `companies/src/hooks/api/changelog.ts`: `getChangelogCursorPage` calls `listChangelogsWithCursorCall` from `@emporix/api-calls/next` (`GET /changelog/{tenant}/changelogs?pagination=cursor`, `next`/`prev` from the `x-next-cursor`/`x-prev-cursor` headers, no totals). `q` always carries the tab's date window as UTC instants (`changelogWindowQ` in the shared `audit-log/src/window/changelogWindow.ts`, `buildChangelogQ` with an `occurredAt` range); the tab is the shared `EntityChangelog` from `audit-log/` (`ai-project-knowledge/modules/audit-log.md`). The entry type is the `./next` `ChangelogEntry`.
 
 - Customer Management Service, bound to the host tenant in `companies/src/hooks/api/customerManagement.ts`: legal entities (`fetchLegalEntitiesCall`, `fetchLegalEntityCall`, `createLegalEntityCall`, `updateLegalEntityCall` — also used for the approval group and mixins, `deleteLegalEntityCall`), locations (`fetchLocationCall`, `createLocationCall` — POST then PUT of the legal entity, `updateLocationCall`, `deleteLocationCall`), contact assignments (`fetchContactsForEntityCall`, `fetchContactAssignmentCall`, `createContactFlow`, `updateContactFlow`, `deleteContactAssignmentCall`). Paths per api-calls: `/customer-management/{tenant}/legal-entities`, `/locations`, `/contact-assignments`.
 - Customer Service, in `companies/src/hooks/api/customers.ts`: `getCustomers`, `getCustomer`, `addCustomer`, `updateCustomer`, `patchCustomerCall`, `removeCustomer`, `addCustomerAddress`, `updateCustomerAddress`.
@@ -210,8 +215,9 @@ Shared api-calls client (`companies/package.json` `@emporix/api-calls` 1.5.2), p
 
 ## customers
 
-Shared api-calls client (`customers/package.json` `@emporix/api-calls` 1.5.2), plus sites, configuration (table config `ext_customers`, `restrictions`, `enableSyncBetweenRestrictionsAndSiteCodes`), feature toggles, schemas and mixins, the changelog (audit log), and the IAM permission reads.
+Shared api-calls client (`customers/package.json` `@emporix/api-calls` 1.7.1), plus sites, configuration (table config `ext_customers`, `restrictions`, `enableSyncBetweenRestrictionsAndSiteCodes`), feature toggles, schemas and mixins, the changelog (audit log), and the IAM permission reads.
 
+- Audit Logs (Changelog) Service, in `customers/src/hooks/api/changelog.ts`: `getChangelogCursorPage` calls `listChangelogsWithCursorCall` from `@emporix/api-calls/next` (`GET /changelog/{tenant}/changelogs?pagination=cursor`, `next`/`prev` from the `x-next-cursor`/`x-prev-cursor` headers, no totals). `q` always carries the tab's date window as UTC instants (`changelogWindowQ` in the shared `audit-log/src/window/changelogWindow.ts`, `buildChangelogQ` with an `occurredAt` range); the tab is the shared `EntityChangelog` from `audit-log/` (`ai-project-knowledge/modules/audit-log.md`).
 - Customer Service, in `customers/src/hooks/api/customers.ts`: `getCustomers`, `getCustomer`, `addCustomer`, `updateCustomer`, `patchCustomerCall`, `removeCustomer`, `addCustomerAddress`, `updateCustomerAddress`, `patchCustomerAddress`, `removeCustomerAddress`, `getAssistedBuyingLoginCall` (its tokens go into the assisted-buying storefront URL).
 - Coupon Service: `fetchCoupons` for the referral coupon (`customers/src/hooks/api/coupons.ts`). IAM: `getAllGroupsForUserCall`. Customer Segments: `getSegmentsCall` with `customerId`. Legal entities (`customers/src/hooks/api/customerManagement.ts`) only for company mixin reference fields.
 - No media, no direct HTTP.
@@ -237,7 +243,7 @@ Shared api-calls client (`classifications/package.json` `@emporix/api-calls` ^1.
 
 ## quotes
 
-Own api-calls client (`quotes/package.json` `@emporix/api-calls` 1.6.0; `quotes/src/api/bootstrap.ts` creates it with `createApiCredentials` and `createApiClient` from `./next`). The remote's own calls use the `./next` entry with the host tenant as `options.tenant`; the shared Tier 1 hooks stay on the package root. Also used: sites, configuration (table config `ext_quotes`, `restrictions` values, `enableSyncBetweenRestrictionsAndSiteCodes`), feature toggles, schemas and mixins, the changelog (audit log), and the IAM permission reads.
+Own api-calls client (`quotes/package.json` `@emporix/api-calls` 1.7.1; `quotes/src/api/bootstrap.ts` creates it with `createApiCredentials` and `createApiClient` from `./next`). The remote's own calls use the `./next` entry with the host tenant as `options.tenant`; the shared Tier 1 hooks stay on the package root, except the audit log, which pages by cursor on `./next` (`quotes/src/hooks/api/changelog.ts`: `listChangelogsWithCursorCall`, `q` with the tab's date window as UTC instants). Also used: sites, configuration (table config `ext_quotes`, `restrictions` values, `enableSyncBetweenRestrictionsAndSiteCodes`), feature toggles, schemas and mixins, the changelog (audit log), and the IAM permission reads.
 
 - Quote Service on `./next`, bound to the host tenant in `quotes/src/hooks/api/quotes.ts`: `listQuotesCall` (paging and filters from `fromDataTableState` of `./primereact`, the site as an `eq` filter on `siteCode`), `getQuoteCall`, `createQuoteCall` (returns the new id), `patchQuoteCall` (patch operations, also for status changes), `deleteQuoteCall`, `generateQuotePdfCall` (the PDF shown on the Approval tab), `listQuoteReasonsCall` (one page of 1000). The hooks return MD's shapes (`{ data, totalRecords }`).
 - Price Service `matchPricesCall` on `./next` (`quotes/src/hooks/api/prices.ts`, `X-Version: v2`), shipping zones `listShippingZonesCall` on `./next` with `expand: 'methods,fees'` (`shipping.ts`; zone and method names are mapped to the English translation, as MD read them with `Accept-Language: en`), tax calculation `calculateTaxCall` on the root (`taxes.ts`).

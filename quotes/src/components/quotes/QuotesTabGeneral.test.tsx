@@ -270,6 +270,52 @@ describe('QuotesTabGeneral', () => {
     })
   })
 
+  // COP-7116 (found on dev): a B2C address never showed its contact name (MD
+  // set it only in `contactDetails`), and an address without a name left a
+  // blank line.
+  it('shows the contact name of a B2C address, and "--" for one without', async () => {
+    quotesApi.getQuoteById.mockResolvedValue({
+      ...b2bQuote,
+      businessModel: 'B2C',
+      legalEntityId: undefined,
+      cartId: undefined,
+      customer: { customerId: 'CU1', firstName: 'Elle', lastName: 'J' },
+    })
+    customersApi.syncCustomer.mockResolvedValue({
+      id: 'CU1',
+      firstName: 'Elle',
+      lastName: 'J',
+      contactEmail: 'e@x.io',
+      addresses: [
+        {
+          id: 'AD1',
+          contactName: 'Elle Jones',
+          street: 'Main',
+          streetNumber: '1',
+          city: 'Berlin',
+          country: 'DE',
+          tags: ['shipping'],
+        },
+        {
+          id: 'AD2',
+          contactName: ' ',
+          street: 'Side',
+          streetNumber: '2',
+          city: 'Hamburg',
+          country: 'DE',
+          tags: ['shipping'],
+        },
+      ],
+    })
+    renderGeneral()
+    const card = (id: string) =>
+      document.querySelector(`label[for="shippingAddressId${id}"]`)
+        ?.textContent ?? ''
+
+    await waitFor(() => expect(card('AD1')).toContain('Elle Jones'))
+    expect(card('AD2').startsWith('--')).toBe(true)
+  })
+
   it('shows the company, its contact and the shipping locations of a B2B quote', async () => {
     quotesApi.getQuoteById.mockResolvedValue({
       ...b2bQuote,

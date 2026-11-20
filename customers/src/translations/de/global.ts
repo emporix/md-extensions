@@ -83,7 +83,8 @@ export default {
       error: 'Fehler beim Abrufen der Mandanten Zugriffssteuerung',
     },
   },
-  pagination: 'Zeigt {first} bis {last} von {totalRecords}',
+  previousPage: 'Zurück',
+  nextPage: 'Weiter',
   dateFormat: 'dd.mm.yy',
   dateFormatPlaceholder: 'dd.MM.yyyy',
   deleteConfirm: {

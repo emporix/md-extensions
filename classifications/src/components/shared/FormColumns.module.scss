@@ -37,3 +37,49 @@
 .fullWidth {
   width: 100%;
 }
+
+// Rows of component-library controls. CL `InputText` and `Dropdown` keep a
+// `min-width` of 200px, so a fixed half or third of a narrow form spills out of
+// the form. Put `stackRow` on the `FormGridRow` and use `col6Stack` /
+// `col4Stack` for its columns: they keep MD's widths while every control
+// fits, and take a full line each once the row is narrower than that. The
+// query measures the row, not the window, because the host's side menu takes
+// part of the window.
+$control-min-width: 200px;
+$col-padding: 16px; // 0.5rem on each side of a column
+
+.stackRow {
+  container-type: inline-size;
+}
+
+// A full line can still be narrower than 200px (a schema tile is a box inside
+// a box): let the control shrink to its column there.
+.stackRow .col6Stack > *,
+.stackRow .col4Stack > * {
+  min-width: 0;
+}
+
+.col6Stack {
+  @extend .col6;
+
+  // Two columns of control + padding, less the row's -0.5rem margins.
+  @container (width < #{2 * ($control-min-width + $col-padding) - $col-padding}) {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+.col4Stack {
+  @extend .col4;
+
+  @container (width < #{3 * ($control-min-width + $col-padding) - $col-padding}) {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+// Wide content (a table) scrolls inside its column instead of widening it.
+.scrollX {
+  min-width: 0;
+  overflow-x: auto;
+}

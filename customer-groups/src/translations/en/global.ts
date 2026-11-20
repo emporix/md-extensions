@@ -62,7 +62,8 @@ export default {
       error: "Error while fetching tenant's access controls",
     },
   },
-  pagination: 'Showing {first} to {last} of {totalRecords}',
+  previousPage: 'Previous',
+  nextPage: 'Next',
   dateFormat: 'mm/dd/yy',
   dateFormatPlaceholder: 'MM/dd/yyyy',
   deleteConfirm: {

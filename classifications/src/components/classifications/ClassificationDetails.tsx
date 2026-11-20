@@ -20,8 +20,8 @@ const ClassificationDetails = () => {
 
   return (
     <SectionBox name={t('classifications.titles.general')}>
-      <FormGridRow>
-        <div className={columns.col6}>
+      <FormGridRow className={columns.stackRow}>
+        <div className={columns.col6Stack}>
           <Controller
             name="name"
             control={control}
@@ -40,7 +40,7 @@ const ClassificationDetails = () => {
             )}
           />
         </div>
-        <div className={columns.col6}>
+        <div className={columns.col6Stack}>
           <Controller
             name="code"
             control={control}

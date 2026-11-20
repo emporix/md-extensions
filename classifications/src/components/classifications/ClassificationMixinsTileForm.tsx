@@ -327,9 +327,9 @@ const ClassificationMixinsTileForm = ({
           </div>
         </FormGridRow>
       )}
-      <FormGridRow>
+      <FormGridRow className={columnStyles.stackRow}>
         {schemaSource === SchemaSource.EMPORIX && (
-          <div className={columnStyles.col4}>
+          <div className={columnStyles.col4Stack}>
             <Dropdown
               inputId={`schema-${tileId}`}
               label={t('classifications.forms.classification.fields.schema')}
@@ -344,7 +344,7 @@ const ClassificationMixinsTileForm = ({
             />
           </div>
         )}
-        <div className={columnStyles.col4}>
+        <div className={columnStyles.col4Stack}>
           <Controller
             name={nameField}
             control={control}
@@ -372,7 +372,7 @@ const ClassificationMixinsTileForm = ({
             )}
           />
         </div>
-        <div className={columnStyles.col4}>
+        <div className={columnStyles.col4Stack}>
           <Controller
             name={urlField}
             control={control}
@@ -401,7 +401,7 @@ const ClassificationMixinsTileForm = ({
         </div>
       </FormGridRow>
       <FormGridRow>
-        <div className={columnStyles.col12}>
+        <div className={`${columnStyles.col12} ${columnStyles.scrollX}`}>
           <DataTable
             showFilter={false}
             paginator={false}

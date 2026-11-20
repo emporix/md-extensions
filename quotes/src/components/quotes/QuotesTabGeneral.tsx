@@ -334,6 +334,9 @@ const QuotesTabGeneral = (props: StylableProps) => {
               (address) =>
                 ({
                   id: address.id,
+                  // The address card shows `name`; MD set only
+                  // `contactDetails.name`, so B2C addresses showed no name.
+                  name: address.contactName,
                   contactDetails: {
                     id: address.id,
                     name: address.contactName,

@@ -1,6 +1,6 @@
 # Management Dashboard Extensions
 
-Management Dashboard extensions, one Vite app per top-level folder, loaded by the host as module-federation remotes. Operators use them for brands, labels, orders, returns, products, customer groups, users and groups, status codes, coupons, companies, customers, units, catalogs, categories, classifications, quotes, statistics, the home dashboard, agentic AI, and Algolia synonyms. Source: `README.md`, `docs/MIGRATED_MODULES.md`.
+Management Dashboard extensions, one Vite app per top-level folder, loaded by the host as module-federation remotes, plus `audit-log/`, a shared entity-history source package (not an app) that eight of them render (`ai-project-knowledge/modules/audit-log.md`). Operators use them for brands, labels, orders, returns, products, customer groups, users and groups, status codes, coupons, companies, customers, units, catalogs, categories, classifications, quotes, statistics, the home dashboard, agentic AI, and Algolia synonyms. Source: `README.md`, `docs/MIGRATED_MODULES.md`.
 
 Platform context (callers, deployment, cross-service conventions): ask Emporix
 AI Buddy `get_service_context` with `service: "Management Dashboard Extensions"`. This repository's own
@@ -32,6 +32,7 @@ knowledge is below; open only what the task needs.
 | `ai-project-knowledge/modules/classifications.md` | Classifications (categories of type `CLASSIFICATION`): server-paged list with `ext_classifications` columns via CL `TableExtensions`, tree view with quick edit, add panel and drag-and-drop moves, add/edit with details, own schema tiles and the schema version rule, path and validity, root-tree rebuilds, permissions, host wiring | COP-7182 2026-11-16 |
 | `ai-project-knowledge/modules/quotes.md` | Quotes: lazy list with `ext_quotes` columns, approve/decline and batch delete, editor tabs (B2B company or B2C customer, products with match-prices, preview with shipping and validity, approval PDF), mixins, audit log, permissions, host wiring | COP-7116 2026-11-16 |
 | `ai-project-knowledge/modules/statistics.md` | Tenant usage charts | `da99643` 2026-11-02 |
+| `ai-project-knowledge/modules/audit-log.md` | Shared entity-history package `audit-log/` (`@emporix/md-audit-log`): public API, date window and cursor paging, cards, consumer wiring, tests and delivery | written 2026-11-19 (COP-5978) |
 | `ai-project-knowledge/modules/users-and-groups.md` | Employee users and their IAM groups | `05d8d1d` 2026-11-06 |
 
 Modules still at `da99643` had no source changes since that scan.
