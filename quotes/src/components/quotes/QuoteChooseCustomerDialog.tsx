@@ -93,9 +93,12 @@ const QuoteChooseCustomerDialog = (props: Props) => {
       onHide={onHide}
       // Prime's default in MD: a click on the mask does not close it.
       dismissableMask={false}
+      // Only the rows of the table scroll; the dialog keeps its height.
+      fixedHeight
       data-testid="quote-choose-customer-dialog"
     >
       <DataTable
+        fillHeight
         dataKey="id"
         value={customers}
         columns={columns}

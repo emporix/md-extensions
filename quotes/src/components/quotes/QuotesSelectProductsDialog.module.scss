@@ -1,10 +1,6 @@
-// The dialog keeps one size whatever the category or the page shows, and its
-// body is a column that does not scroll: the products browser takes the height
-// that is left, and only its rows scroll. This is what the component library's
-// `fixedHeight` (Dialog) and `fillHeight` (ProductsBrowser) will do once they
-// are released; until then the rules live here. In a window lower than 720px
-// the fixed parts would leave no room for the rows, so the dialog keeps its
-// own height there and its body scrolls as a whole.
+// The Dialog's `fixedHeight` and the ProductsBrowser's `fillHeight` keep the
+// dialog at one height whatever the category or the page shows, with only the
+// rows scrolling.
 .dialog {
   &:global(.p-dialog) {
     width: 90vw;
@@ -24,53 +20,4 @@
 .footer {
   display: flex;
   justify-content: center;
-}
-
-@media (min-height: 720px) {
-  .dialog {
-    &:global(.p-dialog) {
-      height: 90vh;
-    }
-
-    :global(.p-dialog-content) {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-  }
-
-  .browser {
-    flex: 1;
-    // The dialog sets the height of the tree view, not the window.
-    --products-browser-max-height: none;
-
-    // The list or the tree with its table, under the toolbar.
-    > :last-child {
-      flex: 1;
-    }
-
-    :global {
-      .p-datatable,
-      .p-datatable-wrapper {
-        flex: 1;
-      }
-
-      // Separate borders travel with the sticky header cells.
-      .p-datatable-table {
-        border-collapse: separate;
-        border-spacing: 0;
-      }
-
-      .p-datatable-thead {
-        position: sticky;
-        top: 0;
-        z-index: 2;
-
-        // The border of a row is not drawn when borders are separate.
-        > tr:first-of-type > th {
-          border-bottom: 2px solid var(--color-table-border) !important;
-        }
-      }
-    }
-  }
 }
