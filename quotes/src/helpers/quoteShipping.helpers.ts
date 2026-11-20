@@ -47,10 +47,14 @@ export const selectShippingFee = (
     .filter((fee) => subtotal >= fee.minOrderValue.amount)
     .sort((a, b) => a.cost.amount - b.cost.amount)[0] || method.fees[0]
 
-/** Gross subtotal of the quote lines: each net value plus its tax rate. */
+/**
+ * Gross subtotal of the quote lines: each net value plus its tax rate. A
+ * price without `tax` counts as net (MD read `price.tax.taxRate` unchecked
+ * and threw).
+ */
 export const calculateQuoteItemsSubtotal = (items: readonly Item[]): number =>
   items.reduce((acc, item) => {
     const netValue = item.price?.totalNetValue || 0
-    const taxRate = item.price?.tax.taxRate || 0
+    const taxRate = item.price?.tax?.taxRate || 0
     return acc + netValue * (1 + taxRate / 100)
   }, 0)

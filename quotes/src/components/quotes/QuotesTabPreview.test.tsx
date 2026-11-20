@@ -324,4 +324,128 @@ describe('QuotesTabPreview', () => {
     ).toBe(true)
     expect(save().disabled).toBe(true)
   })
+
+  // COP-7116 QA (Maryna, 2026-11-20).
+  describe('QA findings', () => {
+    const chairAt = (
+      newUnitPrice: number,
+      discount: number,
+      tax: unknown = { taxClass: 'STANDARD', taxRate: 19 }
+    ) => ({
+      ...quote,
+      items: [
+        {
+          ...quote.items[0],
+          price: {
+            unitPrice: 130,
+            newUnitPrice,
+            totalNetValue: newUnitPrice * 2,
+            discount,
+            ...(tax ? { tax } : {}),
+          },
+        },
+      ],
+    })
+    /** match-prices for a quantity in a cheaper tier: 100 instead of 130. */
+    const cheaperTier = () =>
+      pricesApi.matchPrices.mockResolvedValue([
+        {
+          priceId: 'PR1',
+          itemId: { itemType: 'PRODUCT', id: 'P1' },
+          originalValue: 100,
+          quantity: { quantity: 3, unitCode: 'pcs' },
+          tax: { taxClass: 'STANDARD', taxRate: 19 },
+        },
+      ])
+    const spinQuantityUp = (table: HTMLElement) => {
+      const quantity = within(table).getByTestId('quote-item-quantity-0')
+      fireEvent.keyDown(quantity.querySelector('input') ?? quantity, {
+        key: 'ArrowUp',
+        code: 'ArrowUp',
+        keyCode: 38,
+        which: 38,
+      })
+    }
+    const discountText = () =>
+      (
+        (screen.getByTestId('quote-item-discount-0').querySelector('input') ??
+          screen.getByTestId('quote-item-discount-0')) as HTMLInputElement
+      ).value
+
+    it('keeps the discount when a new quantity reaches a cheaper price tier', async () => {
+      // 10% off the list price of 130: 117 a piece.
+      quotesApi.getQuoteById.mockResolvedValue(chairAt(117, 10))
+      cheaperTier()
+      renderPreview()
+      const table = await screen.findByTestId('quote-preview-table')
+      await within(table).findByText('Chair')
+
+      spinQuantityUp(table)
+
+      // Three chairs at 10% off 100: €270 net, €321.30 gross.
+      await waitFor(() =>
+        expect(within(table).getByText('€321.30')).toBeTruthy()
+      )
+      expect(discountText()).toBe('10%')
+    })
+
+    it('does not turn the discount negative without one', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(chairAt(130, 0))
+      cheaperTier()
+      renderPreview()
+      const table = await screen.findByTestId('quote-preview-table')
+      await within(table).findByText('Chair')
+
+      spinQuantityUp(table)
+
+      // Three chairs at the tier price of 100: €300 net, €357 gross. MD kept
+      // 130 a piece: €390 net and a discount of -30%.
+      await waitFor(() =>
+        expect(within(table).getByText('€357.00')).toBeTruthy()
+      )
+      expect(discountText()).toBe('0%')
+    })
+
+    it('shows a line whose price has no tax instead of failing', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(chairAt(130, 0, null))
+      renderPreview()
+
+      const table = await screen.findByTestId('quote-preview-table')
+      expect(await within(table).findByText('Chair')).toBeTruthy()
+      expect(table.textContent).not.toContain('undefined')
+      expect(table.textContent).not.toContain('NaN')
+      // No rate, so no gross; the subtotal counts the net €260.
+      await waitFor(() =>
+        expect(screen.getByText('Subtotal:').parentElement?.textContent).toBe(
+          'Subtotal:€260.00'
+        )
+      )
+    })
+
+    it('shows the chosen number of rows per page', async () => {
+      quotesApi.getQuoteById.mockResolvedValue({
+        ...quote,
+        items: Array.from({ length: 7 }, (_, index) => ({
+          ...quote.items[0],
+          itemId: `I${index}`,
+          product: { productId: `P${index}`, name: { en: `Chair ${index}` } },
+        })),
+      })
+      renderPreview()
+      const table = await screen.findByTestId('quote-preview-table')
+      await within(table).findByText('Chair 0')
+      expect(within(table).queryByText('Chair 6')).toBeNull()
+
+      // The paginator's rows-per-page dropdown (Prime) offers 5, 10 and 15.
+      fireEvent.click(
+        table.querySelector('.p-paginator .p-dropdown') as HTMLElement
+      )
+      const ten = Array.from(
+        document.querySelectorAll('li.p-dropdown-item')
+      ).find((option) => option.textContent === '10') as HTMLElement
+      fireEvent.click(ten)
+
+      expect(await within(table).findByText('Chair 6')).toBeTruthy()
+    })
+  })
 })

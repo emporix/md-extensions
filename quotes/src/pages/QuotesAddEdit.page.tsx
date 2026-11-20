@@ -9,6 +9,8 @@ import QuotesTabProducts from '../components/quotes/QuotesTabProducts'
 import QuotesTabPreview from '../components/quotes/QuotesTabPreview'
 import QuotesTabApproval from '../components/quotes/QuotesTabApproval'
 import QuoteStatusBadge from '../components/quotes/QuoteStatusBadge'
+import QuotesTabGeneralStatus from '../components/quotes/QuotesTabGeneralStatus'
+import { hasQuoteStatusDetails } from '../helpers/quoteStatus.helpers'
 import EntityChangelogTab from '../components/auditLog/EntityChangelogTab'
 import useMixinsForm, {
   MIXINS_LOADING_TAB_ID,
@@ -218,6 +220,11 @@ const QuotesAddEditPage = () => {
         </div>
       </HeaderSection>
       <div className={styles.tabs}>
+        {quote && hasQuoteStatusDetails(quote.status) && (
+          // Above the tabs, so the status message shows on every tab (MD had
+          // it on the General tab only; COP-7116 QA).
+          <QuotesTabGeneralStatus className={styles.statusBox} quote={quote} />
+        )}
         <Tabs
           data-testid="quote-tabs"
           scrollable

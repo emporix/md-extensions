@@ -30,13 +30,18 @@
   margin-bottom: 2rem;
 }
 
-// MD `InputField className="mb-3"`.
+// MD `InputField className="mb-3"`, which let the date and the customer
+// reference span the whole box. Sized like a half-width field of the other
+// remotes' forms (`FormGrid`: 50rem, two fields per row), as company and
+// contact on the General tab.
 .field {
+  max-width: calc(25rem - 0.75rem);
   margin-bottom: 1rem;
 }
 
-// MD `InputField className="w-full quotes-editor"` (`.quotes-editor`).
+// MD `InputField className="w-full quotes-editor"` (600px). The full width of
+// the other remotes' forms (50rem), as the restriction on the General tab.
 .editor {
   width: 100%;
-  max-width: 600px;
+  max-width: 50rem;
 }
