@@ -469,6 +469,74 @@ describe('QuotesTabApproval', () => {
     expect(await screen.findByTestId('list')).toBeTruthy()
   })
 
+  // COP-7125: an incomplete quote is sent as pending (IN_PROGRESS) instead of OPEN.
+  it('sends a quote that is being created as pending and returns to the list', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(quote('CREATING'))
+    renderApproval({ openAfterLoad: true })
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Send as Pending Quote' })
+    )
+
+    await waitFor(() =>
+      expect(quotesApi.changeQuoteStatus).toHaveBeenCalledWith('Q1', {
+        value: 'IN_PROGRESS',
+      })
+    )
+    expect(toast.showToast).toHaveBeenCalledWith(
+      'Quote saved as pending!',
+      '',
+      'success'
+    )
+    expect(await screen.findByTestId('list')).toBeTruthy()
+  })
+
+  it('offers both Create Quote and Send as Pending Quote for a quote being created', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(quote('CREATING'))
+    renderApproval({ openAfterLoad: true })
+
+    await screen.findByRole('button', { name: 'Create Quote' })
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual([
+      'Send as Pending Quote',
+      'Create Quote',
+    ])
+  })
+
+  it('keeps Send as Pending Quote disabled without Quotes Manager', async () => {
+    permissions.granted = []
+    quotesApi.getQuoteById.mockResolvedValue(quote('CREATING'))
+    renderApproval({ openAfterLoad: true })
+
+    expect(
+      (
+        (await screen.findByRole('button', {
+          name: 'Send as Pending Quote',
+        })) as HTMLButtonElement
+      ).disabled
+    ).toBe(true)
+  })
+
+  it('shows the backend message when sending as pending fails', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(quote('CREATING'))
+    quotesApi.changeQuoteStatus.mockRejectedValue({
+      response: { data: { message: 'Cannot be pending' } },
+    })
+    renderApproval({ openAfterLoad: true })
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Send as Pending Quote' })
+    )
+
+    await waitFor(() =>
+      expect(toast.showToast).toHaveBeenCalledWith(
+        'Cannot be pending',
+        '',
+        'error'
+      )
+    )
+    expect(screen.queryByTestId('list')).toBeNull()
+  })
+
   // COP-7116: MD kept the quote of the first render, so Create did nothing
   // when the tab opened before the quote loaded (a `?tab=approval` link).
   it('sends the loaded quote when the tab opened before it loaded', async () => {

@@ -85,6 +85,7 @@ export default {
     errorPdf: 'Error while displaying PDF, try later',
     successDraftCreate: 'Quote draft created successfully',
     successCreate: 'Quote created!',
+    successPending: 'Quote saved as pending!',
     errorCreate: 'Error while creating quote',
     errorLegalEntities: 'Cannot load companies',
     errorFetchCustomers:
@@ -168,6 +169,7 @@ export default {
       title: 'Approval',
       startNegotiationBtn: 'Start negotiation',
       createBtn: 'Create Quote',
+      pendingBtn: 'Send as Pending Quote',
       approveBtn: 'Approve Quote',
       declineBtn: 'Decline Quote',
     },

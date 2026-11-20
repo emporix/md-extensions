@@ -88,6 +88,7 @@ export default {
       'Fehler beim Anzeigen des PDFs, bitte versuchen Sie es später noch einmal',
     successDraftCreate: 'Angebotsentwurf erfolgreich angelegt',
     successCreate: 'Angebot erstellt!',
+    successPending: 'Angebot als ausstehend gesendet!',
     errorCreate: 'Fehler beim Erstellen des Angebots',
     errorLegalEntities: 'Unternehmen können nicht geladen werden',
     errorFetchCustomers:
@@ -172,6 +173,7 @@ export default {
       title: 'Freigabe',
       startNegotiationBtn: 'Verhandlung starten',
       createBtn: 'Angebot erstellen',
+      pendingBtn: 'Als ausstehendes Angebot senden',
       approveBtn: 'Angebot freigeben',
       declineBtn: 'Angebot ablehnen',
     },
