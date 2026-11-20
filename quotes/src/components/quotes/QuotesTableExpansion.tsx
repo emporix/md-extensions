@@ -7,6 +7,7 @@ import {
 } from '@emporix/component-library'
 import { Item } from '../../models/Quotes.model'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
+import PriceOnRequestBadge from './PriceOnRequestBadge'
 import styles from './QuotesTableExpansion.module.scss'
 
 interface QuotesTableExpansionProps {
@@ -49,6 +50,8 @@ const QuotesTableExpansion = (props: QuotesTableExpansionProps) => {
         header: t(`${TABLE_NAME}.unitPrice`),
         align: 'right',
         body: (rowData: Item) => {
+          // COP-7125: an item without a price.
+          if (!rowData.price) return <PriceOnRequestBadge />
           return (
             <MoneyValue
               currency={rowData.price?.currency}

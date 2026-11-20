@@ -14,17 +14,19 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import i18n from '../../translations/i18n'
 import { EmployeeDomains } from '../../configs/accessControls'
 import { DashboardProvider } from '../../context/Dashboard.context'
-import { QuoteDataProvider } from '../../context/Quote.provider'
+import { QuoteDataProvider, useQuoteData } from '../../context/Quote.provider'
 import type { AppState } from '../../models/AppState.model'
 import { DEFAULT_APP_CURRENCY } from '../../constants/currency'
 import QuotesTabPreview from './QuotesTabPreview'
+import { unpricedQuote } from '../../test/quoteNullFixtures'
+import { Quote } from '../../models/Quotes.model'
 
 const quotesApi = vi.hoisted(() => ({
   getQuoteById: vi.fn(),
   updateQuote: vi.fn(),
 }))
 const shippingApi = vi.hoisted(() => ({ getZones: vi.fn() }))
-const taxesApi = vi.hoisted(() => ({ calculateTax: vi.fn() }))
+const taxesApi = vi.hoisted(() => ({ calculateTax: vi.fn(), getTax: vi.fn() }))
 const pricesApi = vi.hoisted(() => ({ matchPrices: vi.fn() }))
 const toast = vi.hoisted(() => ({
   showToast: vi.fn(),
@@ -32,7 +34,24 @@ const toast = vi.hoisted(() => ({
   showSuccess: vi.fn(),
 }))
 const permissions = vi.hoisted(() => ({ granted: [] as string[] }))
+/** Lets a test make the items builder return no operation (MD R9-3). */
+const pricing = vi.hoisted(() => ({ noItemOperations: false, builds: 0 }))
 
+vi.mock('../../helpers/quotePricing.helpers', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('../../helpers/quotePricing.helpers')>()
+  return {
+    ...actual,
+    buildItemsUpdateOperations: (
+      ...args: Parameters<typeof actual.buildItemsUpdateOperations>
+    ) => {
+      pricing.builds += 1
+      return pricing.noItemOperations
+        ? []
+        : actual.buildItemsUpdateOperations(...args)
+    },
+  }
+})
 vi.mock('../../hooks/api/quotes', () => ({ useQuotesApi: () => quotesApi }))
 vi.mock('../../hooks/api/shipping', () => ({
   useShippingApi: () => shippingApi,
@@ -128,7 +147,13 @@ const zones = [
   },
 ]
 
-const renderPreview = () =>
+/** Reloads the quote, as a save on another tab does. */
+const RefreshOnClick = () => {
+  const { refreshData } = useQuoteData()
+  return <button data-testid="refresh-quote" onClick={() => refreshData()} />
+}
+
+const renderPreview = ({ withRefresh = false } = {}) =>
   render(
     <DashboardProvider appState={appState}>
       <MemoryRouter initialEntries={['/Q1']}>
@@ -137,6 +162,7 @@ const renderPreview = () =>
             path="/:quoteId"
             element={
               <QuoteDataProvider>
+                {withRefresh && <RefreshOnClick />}
                 <QuotesTabPreview />
               </QuoteDataProvider>
             }
@@ -148,11 +174,37 @@ const renderPreview = () =>
 
 const save = () =>
   screen.getAllByRole('button', { name: 'Save' })[0] as HTMLButtonElement
+const discard = () =>
+  screen.getAllByRole('button', { name: 'Discard' })[0] as HTMLButtonElement
+
+/**
+ * Types into a CL InputNumber key by key, as a user does: CL reports a change
+ * on each key press (a value written to the element is only read on blur,
+ * which CL does not report). The current text is selected first, so it is
+ * replaced.
+ */
+const typeNumber = (testId: string, text: string) => {
+  const field = screen.getByTestId(testId)
+  const input = (field.querySelector('input') ?? field) as HTMLInputElement
+  input.focus()
+  input.setSelectionRange(0, input.value.length)
+  for (const char of text) {
+    fireEvent.keyPress(input, { key: char, charCode: char.charCodeAt(0) })
+  }
+}
+
+const taxClassControls = () =>
+  screen.queryAllByTestId(/^quote-item-tax-class-\d+-control$/)
+const totalsRow = (label: 'Subtotal' | 'Shipping Cost' | 'Total') =>
+  screen.getByText(`${label}:`).parentElement?.textContent
+const pageText = () => document.body.textContent ?? ''
 
 describe('QuotesTabPreview', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('en')
     permissions.granted = [EmployeeDomains.QUOTES_MANAGER]
+    pricing.noItemOperations = false
+    pricing.builds = 0
     quotesApi.getQuoteById.mockResolvedValue(quote)
     quotesApi.updateQuote.mockResolvedValue({})
     shippingApi.getZones.mockResolvedValue(zones)
@@ -323,6 +375,1019 @@ describe('QuotesTabPreview', () => {
         .readOnly
     ).toBe(true)
     expect(save().disabled).toBe(true)
+  })
+
+  // COP-7125 (ported from MD quotesNullSafe.test.tsx, emporix/
+  // management-dashboard#1707): items without a price and quotes without an
+  // address.
+  describe('unpriced items and quotes without an address', () => {
+    const tableText = async () =>
+      (await screen.findByTestId('quote-preview-table')).textContent ?? ''
+    const totals = () => document.body.textContent ?? ''
+    const spinUp = (testId: string) => {
+      const field = screen.getByTestId(testId)
+      fireEvent.keyDown(field.querySelector('input') ?? field, {
+        key: 'ArrowUp',
+        code: 'ArrowUp',
+        keyCode: 38,
+        which: 38,
+      })
+    }
+    const withOneUnpriced = (overrides: Partial<Quote> = {}): Quote => {
+      const base = unpricedQuote()
+      return {
+        ...base,
+        items: [base.items[0]],
+        ...overrides,
+      } as Quote
+    }
+
+    it('warns about unpriced items in the singular and the plural', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(withOneUnpriced())
+      renderPreview()
+      expect(
+        await screen.findByText('Totals exclude 1 unpriced item')
+      ).toBeTruthy()
+
+      cleanup()
+      quotesApi.getQuoteById.mockResolvedValue(unpricedQuote())
+      renderPreview()
+      expect(
+        await screen.findByText('Totals exclude 2 unpriced items')
+      ).toBeTruthy()
+    })
+
+    it('has no warning once the quote is fully priced', async () => {
+      renderPreview()
+      await screen.findByTestId('quote-preview-table')
+      expect(screen.queryByTestId('quote-unpriced-warning')).toBeNull()
+    })
+
+    it('shows unpriced rows as "Price on request" without NaN, undefined or null', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(unpricedQuote())
+      renderPreview()
+
+      await waitFor(async () =>
+        expect((await tableText()).match(/PRICE ON REQUEST/g)).toHaveLength(2)
+      )
+      expect(await tableText()).toContain('Unpriced product')
+      expect(totals()).not.toMatch(/NaN|undefined|null/)
+    })
+
+    it('saves an entered net price as the whole item with an EXTERNAL price and no tax', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(withOneUnpriced())
+      renderPreview()
+      await screen.findByTestId('quote-item-entered-net-price-0')
+      // Before an address there is no tax class to choose.
+      expect(taxClassControls()).toHaveLength(0)
+
+      spinUp('quote-item-entered-net-price-0')
+      // No shipping address: no method can be chosen and none is required.
+      await waitFor(() => expect(save().disabled).toBe(false))
+      fireEvent.click(save())
+
+      await waitFor(() =>
+        expect(quotesApi.updateQuote).toHaveBeenCalledWith('q1', [
+          {
+            op: 'REPLACE',
+            path: '/items/i1',
+            value: {
+              itemId: 'i1',
+              quantity: { quantity: 2, unitCode: 'pcs' },
+              priceStatus: 'MISSING',
+              product: { productId: 'p1', name: { en: 'Unpriced product' } },
+              price: { type: 'EXTERNAL', totalNetValue: 1 },
+            },
+          },
+        ])
+      )
+      expect(taxesApi.getTax).not.toHaveBeenCalled()
+    })
+
+    it('offers the tax classes of the address country and sends the chosen class', async () => {
+      taxesApi.getTax.mockResolvedValue({
+        taxClasses: [{ code: 'STD', name: { en: 'Standard' }, rate: 19 }],
+      })
+      quotesApi.getQuoteById.mockResolvedValue(
+        withOneUnpriced({
+          shippingAddress: { id: 'A1', countryCode: 'DE' },
+        } as Partial<Quote>)
+      )
+      renderPreview()
+
+      fireEvent.click(
+        await screen.findByTestId('quote-item-tax-class-0-control')
+      )
+      fireEvent.mouseDown(
+        await screen.findByRole('option', { name: 'Standard' })
+      )
+      spinUp('quote-item-entered-net-price-0')
+      // With an address the shipping method is required again.
+      expect(save().disabled).toBe(true)
+      fireEvent.click(screen.getByTestId('quote-shipping-method-control'))
+      fireEvent.mouseDown(await screen.findByRole('option', { name: 'DHL' }))
+      await waitFor(() => expect(save().disabled).toBe(false))
+      fireEvent.click(save())
+
+      await waitFor(() => expect(quotesApi.updateQuote).toHaveBeenCalled())
+      const [, operations] = quotesApi.updateQuote.mock.calls[0]
+      expect(operations[0]).toEqual({
+        op: 'REPLACE',
+        path: '/items/i1',
+        value: expect.objectContaining({
+          price: {
+            type: 'EXTERNAL',
+            totalNetValue: 1,
+            tax: { taxClass: 'STD' },
+          },
+        }),
+      })
+      expect(operations[1].path).toBe('/shipping')
+      expect(taxesApi.getTax).toHaveBeenCalledWith('DE')
+    })
+
+    it('shows no tax and no gross without a shipping address; totals are net', async () => {
+      quotesApi.getQuoteById.mockResolvedValue({
+        ...quote,
+        shippingAddress: null,
+      })
+      renderPreview()
+
+      const table = await screen.findByTestId('quote-preview-table')
+      await within(table).findByText('Chair')
+      expect(table.textContent).not.toContain('19%')
+      expect(table.textContent).not.toContain('€309.40')
+      // Subtotal and total are the net €260.
+      await waitFor(() =>
+        expect(totalsRow('Subtotal')).toBe('Subtotal:€260.00')
+      )
+      expect(totalsRow('Total')).toBe('Total:€260.00')
+    })
+  })
+
+  // COP-7125: the other cases of MD quotesNullSafe.test.tsx (emporix/
+  // management-dashboard#1707) on this harness. MD's titles are kept, so a
+  // case can be traced back. The remote's error toasts carry the API message
+  // as the title (COP-7116), where MD put it in the detail.
+  describe('MD quotesNullSafe cases', () => {
+    const shippingOf = (overrides: Record<string, unknown> = {}) => ({
+      methodName: { en: 'DHL' },
+      value: 5,
+      methodId: 'm',
+      zoneId: 'z',
+      shippingTaxCode: 'T',
+      grossValue: 6,
+      ...overrides,
+    })
+    const feeFrom = (minOrderValue: number, amount: number) => ({
+      minOrderValue: { amount: minOrderValue, currency: 'EUR' },
+      cost: { amount, currency: 'EUR' },
+    })
+    /** MD's single zone: DE with one taxed method `m`. */
+    const zonesWith = ({
+      fees = [feeFrom(0, 5)],
+      maxOrderValue,
+    }: {
+      fees?: ReturnType<typeof feeFrom>[]
+      maxOrderValue?: { amount: number; currency: string }
+    } = {}) => [
+      {
+        id: 'z',
+        shipTo: [{ country: 'DE' }],
+        methods: [
+          {
+            id: 'm',
+            name: { en: 'DHL' },
+            shippingTaxCode: 'T',
+            fees,
+            ...(maxOrderValue ? { maxOrderValue } : {}),
+          },
+        ],
+      },
+    ]
+    const taxClassesOf = (country: string) => ({
+      location: { countryCode: country },
+      locationCode: country,
+      taxClasses: [
+        { code: 'REDUCED', name: { en: 'Reduced' }, order: 2, rate: 7 },
+        { code: 'STANDARD', name: { en: 'Standard' }, order: 1, rate: 19 },
+        { code: 'ZERO', name: { en: 'Zero' }, order: 3, rate: 0 },
+      ],
+    })
+    /** The gross the tax service returns for a non-zero shipping fee. */
+    let shippingGross = 6
+
+    const load = (value: Quote) =>
+      quotesApi.getQuoteById.mockResolvedValue(value)
+    const pricedQuoteWithOneItem = (): Quote =>
+      ({
+        ...unpricedQuote(),
+        incompletePricing: false,
+        items: [
+          {
+            itemId: 'i1',
+            quantity: { quantity: 2, unitCode: 'pcs' },
+            priceStatus: 'PRICED',
+            product: { productId: 'p1', name: { en: 'Priced product' } },
+            price: {
+              priceId: 'pr',
+              unitPrice: 50,
+              newUnitPrice: 50,
+              totalNetValue: 100,
+              tax: { taxClass: 'STD', taxRate: 20 },
+              discount: 0,
+              currency: 'EUR',
+            },
+          },
+        ],
+      }) as Quote
+    const withAddress = (country = 'DE', overrides: Partial<Quote> = {}) =>
+      ({
+        ...unpricedQuote(),
+        shippingAddress: { countryCode: country },
+        shipping: shippingOf(),
+        ...overrides,
+      }) as Quote
+    const updateOperations = (call = 0): { path: string; value: never }[] =>
+      quotesApi.updateQuote.mock.calls[call][1]
+    const updatePaths = (call = 0) =>
+      updateOperations(call).map((operation) => operation.path)
+    const saved = async () => {
+      await waitFor(() => expect(save().disabled).toBe(false))
+      fireEvent.click(save())
+      await waitFor(() => expect(quotesApi.updateQuote).toHaveBeenCalled())
+    }
+    const chooseOption = async (control: HTMLElement, label: string) => {
+      fireEvent.click(control)
+      fireEvent.mouseDown(await screen.findByRole('option', { name: label }))
+    }
+    const taxClassesShown = async (count: number) => {
+      await waitFor(() => expect(taxClassControls()).toHaveLength(count))
+      return taxClassControls()
+    }
+    const columnHeaders = () =>
+      Array.from(document.querySelectorAll('th')).map((th) => th.textContent)
+
+    beforeEach(() => {
+      shippingGross = 6
+      shippingApi.getZones.mockResolvedValue(zonesWith())
+      taxesApi.calculateTax.mockImplementation(async (value: number) =>
+        value === 0 ? 0 : shippingGross
+      )
+      taxesApi.getTax.mockImplementation(async (country: string) =>
+        taxClassesOf(country)
+      )
+      pricesApi.matchPrices.mockResolvedValue([])
+    })
+
+    describe('preview tab pricing of unpriced items', () => {
+      it('saves an entered net price as REPLACE /items/{id} with an EXTERNAL price and no tax when no class is picked', async () => {
+        const withShipping = withAddress()
+        load(withShipping)
+        renderPreview()
+        await taxClassesShown(2)
+
+        typeNumber('quote-item-entered-net-price-0', '42.5')
+        await saved()
+
+        expect(quotesApi.updateQuote).toHaveBeenCalledWith('q1', [
+          {
+            op: 'REPLACE',
+            path: '/items/i1',
+            value: {
+              ...withShipping.items[0],
+              price: { type: 'EXTERNAL', totalNetValue: 42.5 },
+            },
+          },
+        ])
+      })
+
+      it('a priced quote sends only REPLACE /items for a changed discount', async () => {
+        load({
+          ...pricedQuoteWithOneItem(),
+          shippingAddress: { countryCode: 'DE' },
+          shipping: shippingOf(),
+        } as Quote)
+        renderPreview()
+        await waitFor(() =>
+          expect(totalsRow('Subtotal')).toBe('Subtotal:€120.00')
+        )
+
+        typeNumber('quote-item-discount-0', '10')
+        await saved()
+
+        expect(updatePaths()).toEqual(['/items'])
+        const echoed = (
+          updateOperations()[0].value as { price: Record<string, number> }[]
+        )[0].price
+        expect(echoed.discount).toBe(10)
+        expect(echoed.totalNetValue).toBe(90)
+        expect(echoed.newUnitPrice).toBe(45)
+      })
+
+      describe('shipping method is optional without a shipping address', () => {
+        it('a net price can be saved: valid form, only the price operation', async () => {
+          load(unpricedQuote())
+          renderPreview()
+          await screen.findByTestId('quote-item-entered-net-price-0')
+          expect(pageText()).not.toMatch(/Shipping Method\*/)
+
+          typeNumber('quote-item-entered-net-price-0', '42.5')
+          await saved()
+
+          expect(updatePaths()).toEqual(['/items/i1'])
+        })
+
+        it('a changed comment can be saved without a shipping operation', async () => {
+          load(unpricedQuote())
+          renderPreview()
+
+          fireEvent.change(await screen.findByTestId('quote-comment-input'), {
+            target: { value: 'Hello' },
+          })
+          await saved()
+
+          expect(updatePaths()).toEqual(['/comment'])
+        })
+
+        it('an existing shipping is not cleared when there is no address', async () => {
+          load({ ...unpricedQuote(), shipping: shippingOf() } as Quote)
+          renderPreview()
+          await screen.findByTestId('quote-item-entered-net-price-0')
+
+          typeNumber('quote-item-entered-net-price-0', '5')
+          await saved()
+
+          expect(updatePaths()).toEqual(['/items/i1'])
+        })
+      })
+
+      describe('shipping method stays required with a shipping address', () => {
+        const withAddressNoMethod = () =>
+          ({
+            ...unpricedQuote(),
+            shippingAddress: { countryCode: 'DE' },
+          }) as Quote
+
+        it('Save stays disabled until a method is chosen', async () => {
+          load(withAddressNoMethod())
+          renderPreview()
+          await screen.findByTestId('quote-item-entered-net-price-0')
+          expect(pageText()).toMatch(/Shipping Method\*/)
+
+          typeNumber('quote-item-entered-net-price-0', '42.5')
+
+          // The price makes the form dirty; only the missing method blocks it.
+          await waitFor(() => expect(discard().disabled).toBe(false))
+          expect(save().disabled).toBe(true)
+        })
+
+        it('a chosen method is sent as /shipping', async () => {
+          load(withAddressNoMethod())
+          renderPreview()
+          await waitFor(() => expect(shippingApi.getZones).toHaveBeenCalled())
+
+          await chooseOption(
+            await screen.findByTestId('quote-shipping-method-control'),
+            'DHL'
+          )
+          await saved()
+
+          expect(updatePaths()).toEqual(['/shipping'])
+        })
+      })
+
+      it('shows the backend message when saving fails', async () => {
+        load(withAddress())
+        quotesApi.updateQuote.mockRejectedValue({
+          response: { data: { message: 'Missing scope' } },
+        })
+        renderPreview()
+        await screen.findByTestId('quote-item-entered-net-price-0')
+
+        typeNumber('quote-item-entered-net-price-0', '10')
+        await saved()
+
+        await waitFor(() =>
+          expect(toast.showToast).toHaveBeenCalledWith(
+            'Missing scope',
+            '',
+            'error'
+          )
+        )
+      })
+    })
+
+    describe('preview: several rows in one save and German plural', () => {
+      const unpriced = (itemId: string, name: string) => ({
+        itemId,
+        quantity: { quantity: 1, unitCode: 'pcs' },
+        priceStatus: 'MISSING',
+        product: { productId: itemId, name: { en: name } },
+      })
+      /** A priced row (€100 net, 20 %) and two unpriced rows, with address. */
+      const mixedQuote = (): Quote => {
+        const priced = pricedQuoteWithOneItem()
+        return {
+          ...priced,
+          incompletePricing: true,
+          shippingAddress: { countryCode: 'DE' },
+          shipping: shippingOf(),
+          items: [
+            ...priced.items,
+            unpriced('i2', 'Second'),
+            unpriced('i3', 'Third'),
+          ],
+        } as Quote
+      }
+      /** `quote` after the second row got €50 net (EXTERNAL, 20 %). */
+      const withSecondRowPriced = (
+        value: Quote,
+        totalNetValue = 50
+      ): Quote => ({
+        ...value,
+        incompletePricing: false,
+        items: [
+          value.items[0],
+          {
+            ...value.items[1],
+            priceStatus: 'PRICED',
+            price: {
+              priceId: null,
+              type: 'EXTERNAL',
+              unitPrice: totalNetValue,
+              newUnitPrice: totalNetValue,
+              totalNetValue,
+              tax: { taxClass: 'STD', taxRate: 20 },
+              discount: 0,
+              currency: 'EUR',
+            },
+          } as Quote['items'][number],
+        ],
+      })
+
+      it('echo first, then one item operation per entered row', async () => {
+        load(mixedQuote())
+        renderPreview()
+        await taxClassesShown(2)
+        // Only the unpriced rows get a tax class.
+        expect(
+          screen.queryByTestId('quote-item-tax-class-0-control')
+        ).toBeNull()
+
+        typeNumber('quote-item-discount-0', '10')
+        typeNumber('quote-item-entered-net-price-1', '7')
+        typeNumber('quote-item-entered-net-price-2', '9')
+        await saved()
+
+        const operations = updateOperations() as {
+          path: string
+          value: {
+            price?: Record<string, unknown> | null
+            product?: { productId: string }
+          } & { price?: Record<string, unknown> | null }[]
+        }[]
+        expect(operations.map((operation) => operation.path)).toEqual([
+          '/items',
+          '/items/i2',
+          '/items/i3',
+        ])
+        expect(operations[1].value.price).toEqual({
+          totalNetValue: 7,
+          type: 'EXTERNAL',
+        })
+        expect(operations[2].value.price).toEqual({
+          totalNetValue: 9,
+          type: 'EXTERNAL',
+        })
+        expect(operations[1].value.product?.productId).toBe('i2')
+        const echo = operations[0].value
+        expect(echo[0].price?.discount).toBe(10)
+        expect(echo[1].price).toBeNull()
+        expect(echo[2].price).toBeNull()
+      })
+
+      it('subtotal and total include a newly priced row after save and refresh', async () => {
+        const twoRows = mixedQuote()
+        twoRows.items = twoRows.items.slice(0, 2)
+        load(twoRows)
+        renderPreview()
+        await waitFor(() =>
+          expect(totalsRow('Subtotal')).toBe('Subtotal:€120.00')
+        )
+        expect(screen.getByText('Totals exclude 1 unpriced item')).toBeTruthy()
+
+        typeNumber('quote-item-entered-net-price-1', '50')
+        // The save reloads the quote, now with the second row priced.
+        await waitFor(() => expect(save().disabled).toBe(false))
+        load(withSecondRowPriced(twoRows))
+        fireEvent.click(save())
+
+        await waitFor(() => expect(quotesApi.updateQuote).toHaveBeenCalled())
+        expect(updatePaths()[0]).toBe('/items/i2')
+        await waitFor(() =>
+          expect(totalsRow('Subtotal')).toBe('Subtotal:€180.00')
+        )
+        expect(screen.queryByText(/Totals exclude/)).toBeNull()
+        expect(totalsRow('Total')).toBe('Total:€186.00')
+      })
+
+      describe('shipping re-picked after the totals changed', () => {
+        const shippingToast =
+          'Shipping cost was updated because the totals changed'
+        const shippingToasts = () =>
+          toast.showToast.mock.calls.filter((call) => call[0] === shippingToast)
+        /** Prices the second row, saves and waits for the reloaded quote. */
+        const priceRowAndRefresh = async () => {
+          const twoRows = mixedQuote()
+          twoRows.items = twoRows.items.slice(0, 2)
+          load(twoRows)
+          renderPreview({ withRefresh: true })
+          await waitFor(() =>
+            expect(totalsRow('Subtotal')).toBe('Subtotal:€120.00')
+          )
+          typeNumber('quote-item-entered-net-price-1', '50')
+          await waitFor(() => expect(save().disabled).toBe(false))
+          const refreshed = withSecondRowPriced(twoRows)
+          load(refreshed)
+          fireEvent.click(save())
+          await waitFor(() =>
+            expect(totalsRow('Subtotal')).toBe('Subtotal:€180.00')
+          )
+          quotesApi.updateQuote.mockClear()
+          return refreshed
+        }
+
+        it('an unchanged shipping keeps the form clean and silent', async () => {
+          load(mixedQuote())
+          renderPreview()
+          await waitFor(() =>
+            expect(taxesApi.calculateTax).toHaveBeenCalledWith(5, 'DE', 'T')
+          )
+
+          expect(save().disabled).toBe(true)
+          expect(shippingToasts()).toHaveLength(0)
+        })
+
+        it('a fee that changes with the totals enables Save, toasts once and is sent as /shipping', async () => {
+          shippingApi.getZones.mockResolvedValue(
+            zonesWith({ fees: [feeFrom(0, 5), feeFrom(150, 0)] })
+          )
+          await priceRowAndRefresh()
+
+          await waitFor(() =>
+            expect(shippingToasts()).toEqual([[shippingToast, '', 'info']])
+          )
+          await saved()
+          expect(updatePaths()).toEqual(['/shipping'])
+          const shipping = updateOperations()[0].value as {
+            value: number
+            grossValue: number
+          }
+          expect(shipping.value).toBe(0)
+          expect(shipping.grossValue).toBe(0)
+        })
+
+        it('a method that is no longer allowed is cleared, with one toast', async () => {
+          shippingApi.getZones.mockResolvedValue(
+            zonesWith({ maxOrderValue: { amount: 150, currency: 'EUR' } })
+          )
+          await priceRowAndRefresh()
+
+          await waitFor(() => expect(shippingToasts()).toHaveLength(1))
+          expect(save().disabled).toBe(true)
+        })
+
+        it('a stored gross rounded to cents is the same shipping: clean and silent on open and remount', async () => {
+          shippingGross = 5.9381
+          load({
+            ...mixedQuote(),
+            shipping: shippingOf({ value: 5, grossValue: 5.94 }),
+          } as Quote)
+          const opened = renderPreview()
+          await waitFor(() => expect(taxesApi.calculateTax).toHaveBeenCalled())
+          expect(save().disabled).toBe(true)
+
+          const picksBefore = taxesApi.calculateTax.mock.calls.length
+          opened.unmount()
+          renderPreview()
+          await waitFor(() =>
+            expect(taxesApi.calculateTax.mock.calls.length).toBeGreaterThan(
+              picksBefore
+            )
+          )
+          expect(save().disabled).toBe(true)
+          expect(shippingToasts()).toHaveLength(0)
+        })
+
+        describe.each([
+          ['a completed quote', { status: { value: 'ACCEPTED' } }, () => {}],
+          [
+            'a user who cannot manage quotes',
+            {},
+            () => {
+              permissions.granted = []
+            },
+          ],
+        ])('%s', (_name, overrides, setup) => {
+          it('shows drifted shipping without dirty form or toast', async () => {
+            setup()
+            load({
+              ...mixedQuote(),
+              ...overrides,
+              shipping: shippingOf({ value: 9, grossValue: 11 }),
+            } as Quote)
+            renderPreview()
+            await waitFor(() =>
+              expect(taxesApi.calculateTax).toHaveBeenCalled()
+            )
+
+            expect(shippingToasts()).toHaveLength(0)
+            expect(save().disabled).toBe(true)
+            expect(discard().disabled).toBe(true)
+          })
+        })
+
+        it('a second refresh with the same picked shipping does not toast twice', async () => {
+          shippingApi.getZones.mockResolvedValue(
+            zonesWith({ fees: [feeFrom(0, 5), feeFrom(150, 0)] })
+          )
+          const refreshed = await priceRowAndRefresh()
+          await waitFor(() => expect(shippingToasts()).toHaveLength(1))
+
+          // Another reload: new totals in the same fee tier, old shipping.
+          load(withSecondRowPriced(refreshed, 60))
+          fireEvent.click(screen.getByTestId('refresh-quote'))
+          await waitFor(() =>
+            expect(totalsRow('Subtotal')).toBe('Subtotal:€192.00')
+          )
+
+          expect(shippingToasts()).toHaveLength(1)
+        })
+      })
+
+      describe('German plural of the unpriced warning', () => {
+        it.each([
+          [1, 'Die Summen enthalten 1 Position ohne Preis nicht'],
+          [2, 'Die Summen enthalten 2 Positionen ohne Preis nicht'],
+        ])('%i unpriced item(s)', async (count, expected) => {
+          await i18n.changeLanguage('de')
+          const value = unpricedQuote()
+          value.items = value.items.slice(0, count)
+          load(value)
+          renderPreview()
+
+          expect(await screen.findByText(expected)).toBeTruthy()
+        })
+      })
+    })
+
+    describe('preview: tax class of hand-entered (EXTERNAL) prices', () => {
+      const externalQuote = (withClass: boolean): Quote =>
+        withAddress('DE', {
+          incompletePricing: false,
+          items: [
+            {
+              itemId: 'i1',
+              quantity: { quantity: 2, unitCode: 'pcs' },
+              priceStatus: 'PRICED',
+              product: { productId: 'p1', name: { en: 'Hand priced' } },
+              price: {
+                priceId: null,
+                type: 'EXTERNAL',
+                unitPrice: 50,
+                newUnitPrice: 50,
+                totalNetValue: 100,
+                ...(withClass
+                  ? { tax: { taxClass: 'REDUCED', taxRate: 7 } }
+                  : {}),
+                discount: 0,
+                currency: 'EUR',
+              },
+            },
+          ],
+        } as Partial<Quote>)
+      const catalogPricedWithAddress = () =>
+        ({
+          ...pricedQuoteWithOneItem(),
+          shippingAddress: { countryCode: 'DE' },
+        }) as Quote
+
+      it('loads the classes of the country of the shipping address', async () => {
+        load(withAddress('AT'))
+        renderPreview()
+
+        await taxClassesShown(2)
+        expect(taxesApi.getTax).toHaveBeenCalledWith('AT')
+      })
+
+      it('the dropdown starts empty and an untouched dropdown sends no tax', async () => {
+        load(withAddress())
+        renderPreview()
+        const [first] = await taxClassesShown(2)
+        expect(first.textContent).toContain('Select tax class')
+        expect(first.textContent).not.toContain('Standard')
+
+        typeNumber('quote-item-entered-net-price-0', '12')
+        await saved()
+
+        expect(
+          (updateOperations()[0].value as { price: unknown }).price
+        ).toEqual({ type: 'EXTERNAL', totalNetValue: 12 })
+      })
+
+      it('a class with the rate 0 is a class and is sent', async () => {
+        load(withAddress())
+        renderPreview()
+        const [first] = await taxClassesShown(2)
+
+        typeNumber('quote-item-entered-net-price-0', '0')
+        await chooseOption(first, 'Zero')
+        await saved()
+
+        const { price } = updateOperations()[0].value as {
+          price: { totalNetValue: number; tax: unknown }
+        }
+        expect(price.totalNetValue).toBe(0)
+        expect(price.tax).toEqual({ taxClass: 'ZERO' })
+      })
+
+      it('a catalog price row has no dropdown', async () => {
+        load(catalogPricedWithAddress())
+        renderPreview()
+        await screen.findByTestId('quote-item-discount-0')
+        await waitFor(() => expect(shippingApi.getZones).toHaveBeenCalled())
+
+        expect(taxClassControls()).toHaveLength(0)
+      })
+
+      it('an EXTERNAL row shows its class and a changed class is sent in the echo as the class only', async () => {
+        load(externalQuote(true))
+        renderPreview()
+        const [first] = await taxClassesShown(1)
+        await waitFor(() => expect(first.textContent).toContain('Reduced'))
+
+        await chooseOption(first, 'Standard')
+        await saved()
+
+        expect(updatePaths()).toEqual(['/items'])
+        const [echoed] = updateOperations()[0].value as {
+          price: { tax: unknown; priceId: unknown }
+        }[]
+        expect(echoed.price.tax).toEqual({ taxClass: 'STANDARD' })
+        expect(echoed.price.priceId).toBeNull()
+      })
+
+      it('an EXTERNAL row without a class asks for one and shows no tax and no gross', async () => {
+        load(externalQuote(false))
+        renderPreview()
+        const [first] = await taxClassesShown(1)
+        expect(first.textContent).toContain('Select tax class')
+        await waitFor(() =>
+          expect(totalsRow('Subtotal')).toBe('Subtotal:€100.00')
+        )
+        expect(
+          screen.getByTestId('quote-preview-table').textContent
+        ).not.toContain('7%')
+        expect(pageText()).not.toMatch(/NaN|undefined|null/)
+
+        await chooseOption(first, 'Reduced')
+        await saved()
+
+        const [echoed] = updateOperations()[0].value as {
+          price: { tax: unknown }
+        }[]
+        expect(echoed.price.tax).toEqual({ taxClass: 'REDUCED' })
+      })
+
+      it('tax and gross appear when the backend returns the rate', async () => {
+        load(externalQuote(true))
+        renderPreview()
+
+        await waitFor(() =>
+          expect(totalsRow('Subtotal')).toBe('Subtotal:€107.00')
+        )
+        const table = screen.getByTestId('quote-preview-table')
+        expect(table.textContent).toContain('7%')
+        expect(table.textContent).toContain('€107.00')
+      })
+
+      it('an untouched EXTERNAL row without a class sends nothing and Save stays disabled', async () => {
+        load(externalQuote(false))
+        renderPreview()
+        await taxClassesShown(1)
+
+        expect(save().disabled).toBe(true)
+      })
+
+      it('classes that cannot be loaded show a message, do not crash, and the net price is still sent', async () => {
+        taxesApi.getTax.mockRejectedValue({ response: { status: 403 } })
+        load(withAddress())
+        renderPreview()
+
+        expect(
+          await screen.findByText(/Tax classes could not be loaded/)
+        ).toBeTruthy()
+        expect(pageText()).toContain('catalog tax class')
+        expect(pageText()).not.toContain('saved without a tax class')
+        expect(taxClassControls()).toHaveLength(0)
+
+        typeNumber('quote-item-entered-net-price-0', '12')
+        await saved()
+
+        expect(
+          'tax' in (updateOperations()[0].value as { price: object }).price
+        ).toBe(false)
+      })
+
+      it('a country without tax classes shows a message', async () => {
+        taxesApi.getTax.mockResolvedValue({
+          ...taxClassesOf('DE'),
+          taxClasses: [],
+        })
+        load(withAddress())
+        renderPreview()
+
+        expect(
+          await screen.findByText(
+            'No tax classes for the country of the shipping address.'
+          )
+        ).toBeTruthy()
+      })
+
+      it('no message is shown when no row needs a class', async () => {
+        taxesApi.getTax.mockRejectedValue(new Error('x'))
+        load(catalogPricedWithAddress())
+        renderPreview()
+        await screen.findByTestId('quote-item-discount-0')
+        await waitFor(() => expect(shippingApi.getZones).toHaveBeenCalled())
+
+        expect(screen.queryByText(/Tax classes could not be loaded/)).toBeNull()
+      })
+
+      it.each([
+        [
+          '403 (missing scope)',
+          'Missing scope cart.cart_manage_external_prices',
+        ],
+        [
+          '400 (EXTERNAL item without a class)',
+          'Tax class is missing for item i1',
+        ],
+      ])('shows the backend message for %s', async (_name, message) => {
+        load(withAddress())
+        quotesApi.updateQuote.mockRejectedValue({
+          response: { data: { message } },
+        })
+        renderPreview()
+        await screen.findByTestId('quote-item-entered-net-price-0')
+
+        typeNumber('quote-item-entered-net-price-0', '10')
+        await saved()
+
+        await waitFor(() =>
+          expect(toast.showToast).toHaveBeenCalledWith(message, '', 'error')
+        )
+      })
+
+      it.each([
+        [
+          'a user who cannot manage quotes',
+          {},
+          () => {
+            permissions.granted = []
+          },
+        ],
+        ['a completed quote', { status: { value: 'ACCEPTED' } }, () => {}],
+      ])(
+        'R10-4: %s neither loads the classes nor sees the class messages',
+        async (_name, overrides, setup) => {
+          setup()
+          taxesApi.getTax.mockRejectedValue({ response: { status: 403 } })
+          load(withAddress('DE', overrides as Partial<Quote>))
+          renderPreview()
+          await screen.findByTestId('quote-item-entered-net-price-0')
+          await waitFor(() => expect(shippingApi.getZones).toHaveBeenCalled())
+
+          expect(taxesApi.getTax).not.toHaveBeenCalled()
+          expect(
+            screen.queryByText(/Tax classes could not be loaded/)
+          ).toBeNull()
+          expect(taxClassControls()).toHaveLength(0)
+        }
+      )
+
+      it('R10-4: a user who cannot manage quotes sees no empty-classes message', async () => {
+        permissions.granted = []
+        taxesApi.getTax.mockResolvedValue({
+          ...taxClassesOf('DE'),
+          taxClasses: [],
+        })
+        load(withAddress())
+        renderPreview()
+        await screen.findByTestId('quote-item-entered-net-price-0')
+        await waitFor(() => expect(shippingApi.getZones).toHaveBeenCalled())
+
+        expect(screen.queryByText(/No tax classes for the country/)).toBeNull()
+      })
+
+      it('a class picked on an unpriced row without a net price does not enable Save and sends nothing', async () => {
+        load(withAddress())
+        renderPreview()
+        const [first] = await taxClassesShown(2)
+
+        await chooseOption(first, 'Reduced')
+        await waitFor(() => expect(first.textContent).toContain('Reduced'))
+
+        expect(save().disabled).toBe(true)
+        fireEvent.click(save())
+        expect(quotesApi.updateQuote).not.toHaveBeenCalled()
+      })
+
+      it('without calculated tax the Total adds the net shipping to the net subtotal', async () => {
+        load(externalQuote(false))
+        renderPreview()
+
+        await waitFor(() =>
+          expect(totalsRow('Shipping Cost')).toBe('Shipping Cost:€5.00')
+        )
+        // The subtotal follows the shipping cost by one render.
+        await waitFor(() => {
+          expect(totalsRow('Subtotal')).toBe('Subtotal:€100.00')
+          expect(totalsRow('Total')).toBe('Total:€105.00')
+        })
+        expect(pageText()).not.toContain('106.00')
+      })
+
+      it('after a class change the old rate and gross are hidden until the save', async () => {
+        load(externalQuote(true))
+        renderPreview()
+        await waitFor(() =>
+          expect(totalsRow('Subtotal')).toBe('Subtotal:€107.00')
+        )
+        const table = screen.getByTestId('quote-preview-table')
+        expect(table.textContent).toContain('7%')
+
+        await chooseOption((await taxClassesShown(1))[0], 'Standard')
+
+        await waitFor(() =>
+          expect(totalsRow('Subtotal')).toBe('Subtotal:€100.00')
+        )
+        expect(table.textContent).not.toContain('7%')
+        expect(pageText()).not.toContain('107.00')
+        expect(totalsRow('Total')).toBe('Total:€105.00')
+      })
+
+      it('R9-2: classes of the old country are not offered while the new country loads', async () => {
+        load(withAddress('DE'))
+        renderPreview({ withRefresh: true })
+        await taxClassesShown(2)
+
+        taxesApi.getTax.mockImplementation(() => new Promise(() => undefined))
+        load(withAddress('AT'))
+        fireEvent.click(screen.getByTestId('refresh-quote'))
+
+        await waitFor(() => expect(taxesApi.getTax).toHaveBeenCalledWith('AT'))
+        expect(taxClassControls()).toHaveLength(0)
+      })
+
+      it('R9-3: Save with nothing to send resets the form instead of staying dirty', async () => {
+        pricing.noItemOperations = true
+        load(pricedQuoteWithOneItem())
+        renderPreview()
+        await screen.findByTestId('quote-item-discount-0')
+
+        typeNumber('quote-item-discount-0', '10')
+        await waitFor(() => expect(save().disabled).toBe(false))
+        fireEvent.click(save())
+
+        await waitFor(() => expect(save().disabled).toBe(true))
+        expect(pricing.builds).toBeGreaterThan(0)
+        expect(quotesApi.updateQuote).not.toHaveBeenCalled()
+      })
+
+      it('R9-4: the tax service is not called when no row needs a class', async () => {
+        load(catalogPricedWithAddress())
+        renderPreview()
+        await screen.findByTestId('quote-item-discount-0')
+        await waitFor(() => expect(shippingApi.getZones).toHaveBeenCalled())
+
+        expect(taxesApi.getTax).not.toHaveBeenCalled()
+      })
+
+      it('R9-6: no tax class column header when there is no dropdown', async () => {
+        load(catalogPricedWithAddress())
+        const catalogOnly = renderPreview()
+        await screen.findByTestId('quote-item-discount-0')
+        expect(columnHeaders()).not.toContain('Tax class')
+
+        catalogOnly.unmount()
+        load(withAddress())
+        renderPreview()
+        await taxClassesShown(2)
+        expect(columnHeaders()).toContain('Tax class')
+      })
+    })
   })
 
   // COP-7116 QA (Maryna, 2026-11-20).

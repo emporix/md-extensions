@@ -8,6 +8,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import i18n from '../../translations/i18n'
@@ -16,6 +17,8 @@ import { DashboardProvider } from '../../context/Dashboard.context'
 import { QuoteDataProvider, useQuoteData } from '../../context/Quote.provider'
 import type { AppState } from '../../models/AppState.model'
 import { DEFAULT_APP_CURRENCY } from '../../constants/currency'
+import { QuoteStatus } from '../../models/Quotes.model'
+import { unpricedQuote } from '../../test/quoteNullFixtures'
 import QuotesTabApproval from './QuotesTabApproval'
 
 const quotesApi = vi.hoisted(() => ({
@@ -164,8 +167,212 @@ describe('QuotesTabApproval', () => {
       )
     )
     expect(quotesApi.getQuotePdf).toHaveBeenCalledWith('Q1')
-    // An open quote offers no action.
-    expect(screen.queryByRole('button')).toBeNull()
+    // COP-7125: an open quote offers only to start a negotiation.
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual([
+      'Start negotiation',
+    ])
+  })
+
+  // COP-7125 (ported from MD quotesNullSafe.test.tsx, emporix/
+  // management-dashboard#1707): the employee opens a negotiation round.
+  describe('start negotiation', () => {
+    const openNegotiation = async () => {
+      fireEvent.click(
+        await screen.findByRole('button', { name: 'Start negotiation' })
+      )
+      return screen.findByTestId('quote-negotiation-dialog')
+    }
+
+    beforeEach(() => {
+      quotesApi.getQuotesReasons.mockResolvedValue({
+        data: [
+          { id: 'C1', code: 'PROVIDED_PRICE_TO_HIGH', type: 'CHANGE' },
+          { id: 'D1', code: 'TOO_LATE', type: 'DECLINE' },
+        ],
+      })
+    })
+
+    it('starts a negotiation without a reason or comment', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
+      renderApproval()
+      const dialog = await openNegotiation()
+
+      // Neither field is required.
+      expect(dialog.textContent).not.toMatch(/Comment\*|Reason\*/)
+      const submit = within(dialog).getByRole('button', {
+        name: 'Start negotiation',
+      }) as HTMLButtonElement
+      expect(submit.disabled).toBe(false)
+      fireEvent.click(submit)
+
+      await waitFor(() =>
+        expect(quotesApi.changeQuoteStatus).toHaveBeenCalledWith('Q1', {
+          value: 'IN_PROGRESS',
+        })
+      )
+      expect(toast.showToast).toHaveBeenCalledWith(
+        'Negotiation started',
+        '',
+        'success'
+      )
+      // The quote is reloaded, so the header shows the new status.
+      await waitFor(() =>
+        expect(quotesApi.getQuoteById).toHaveBeenCalledTimes(2)
+      )
+    })
+
+    it('offers only CHANGE reasons and sends the reason and the comment', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
+      renderApproval()
+      const dialog = await openNegotiation()
+
+      fireEvent.click(
+        within(dialog).getByTestId('quote-negotiation-reason-control')
+      )
+      const options = await screen.findAllByRole('option')
+      expect(options.map((o) => o.textContent)).toEqual([
+        'PROVIDED_PRICE_TO_HIGH',
+      ])
+      fireEvent.mouseDown(options[0])
+      fireEvent.change(
+        within(dialog).getByTestId('quote-negotiation-comment-input'),
+        { target: { value: 'Volume discount offered' } }
+      )
+      fireEvent.click(
+        within(dialog).getByRole('button', { name: 'Start negotiation' })
+      )
+
+      await waitFor(() =>
+        expect(quotesApi.changeQuoteStatus).toHaveBeenCalledWith('Q1', {
+          value: 'IN_PROGRESS',
+          quoteReasonId: 'C1',
+          comment: 'Volume discount offered',
+        })
+      )
+    })
+
+    it('shows the API message when the status change fails', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
+      quotesApi.changeQuoteStatus.mockRejectedValue({
+        isAxiosError: true,
+        response: { data: { message: 'Transition not allowed' } },
+      })
+      renderApproval()
+      const dialog = await openNegotiation()
+
+      fireEvent.click(
+        within(dialog).getByRole('button', { name: 'Start negotiation' })
+      )
+
+      await waitFor(() =>
+        expect(toast.showToast).toHaveBeenCalledWith(
+          'Transition not allowed',
+          '',
+          'error'
+        )
+      )
+      expect(toast.showToast).not.toHaveBeenCalledWith(
+        'Negotiation started',
+        '',
+        'success'
+      )
+      // No reload after a failed change.
+      expect(quotesApi.getQuoteById).toHaveBeenCalledTimes(1)
+    })
+
+    // COP-7125: the other negotiation cases of MD quotesNullSafe.test.tsx
+    // (emporix/management-dashboard#1707), with MD's titles.
+    it('a failing reasons load toasts with a proper title', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
+      quotesApi.getQuotesReasons.mockRejectedValue(new Error('boom'))
+      renderApproval()
+      await openNegotiation()
+
+      await waitFor(() =>
+        expect(toast.showToast).toHaveBeenCalledWith(
+          'Error while loading the reasons',
+          '',
+          'error'
+        )
+      )
+    })
+
+    it('offers to start a negotiation for an OPEN quote', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
+      renderApproval()
+      const dialog = await openNegotiation()
+
+      fireEvent.change(
+        within(dialog).getByTestId('quote-negotiation-comment-input'),
+        { target: { value: 'Let us talk' } }
+      )
+      fireEvent.click(
+        within(dialog).getByRole('button', { name: 'Start negotiation' })
+      )
+
+      await waitFor(() =>
+        expect(quotesApi.changeQuoteStatus).toHaveBeenCalledWith('Q1', {
+          value: 'IN_PROGRESS',
+          comment: 'Let us talk',
+        })
+      )
+      expect(quotesApi.getQuotesReasons).toHaveBeenCalled()
+    })
+
+    it('a chosen reason alone sends no comment key', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
+      renderApproval()
+      const dialog = await openNegotiation()
+
+      fireEvent.click(
+        within(dialog).getByTestId('quote-negotiation-reason-control')
+      )
+      fireEvent.mouseDown(
+        await screen.findByRole('option', { name: 'PROVIDED_PRICE_TO_HIGH' })
+      )
+      fireEvent.click(
+        within(dialog).getByRole('button', { name: 'Start negotiation' })
+      )
+
+      await waitFor(() =>
+        expect(quotesApi.changeQuoteStatus).toHaveBeenCalled()
+      )
+      const [, payload] = quotesApi.changeQuoteStatus.mock.calls[0]
+      expect(payload).toEqual({ value: 'IN_PROGRESS', quoteReasonId: 'C1' })
+      expect('comment' in payload).toBe(false)
+    })
+
+    it.each(['IN_PROGRESS', 'ACCEPTED', 'AWAITING', 'CREATING'])(
+      'does not offer it for %s',
+      async (status) => {
+        quotesApi.getQuoteById.mockResolvedValue(quote(status))
+        const { container } = renderApproval()
+
+        // The PDF follows the loaded quote, so its actions are rendered.
+        await waitFor(() =>
+          expect(container.querySelector('iframe')?.getAttribute('src')).toBe(
+            'blob:quote-pdf'
+          )
+        )
+        expect(
+          screen.queryByRole('button', { name: 'Start negotiation' })
+        ).toBeNull()
+      }
+    )
+
+    it('keeps the button disabled without Quotes Manager', async () => {
+      permissions.granted = []
+      quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
+      renderApproval()
+
+      expect(
+        (
+          (await screen.findByRole('button', {
+            name: 'Start negotiation',
+          })) as HTMLButtonElement
+        ).disabled
+      ).toBe(true)
+    })
   })
 
   it('approves an awaiting quote after the confirm step', async () => {
@@ -262,6 +469,74 @@ describe('QuotesTabApproval', () => {
     expect(await screen.findByTestId('list')).toBeTruthy()
   })
 
+  // COP-7125: an incomplete quote is sent as pending (IN_PROGRESS) instead of OPEN.
+  it('sends a quote that is being created as pending and returns to the list', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(quote('CREATING'))
+    renderApproval({ openAfterLoad: true })
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Send as Pending Quote' })
+    )
+
+    await waitFor(() =>
+      expect(quotesApi.changeQuoteStatus).toHaveBeenCalledWith('Q1', {
+        value: 'IN_PROGRESS',
+      })
+    )
+    expect(toast.showToast).toHaveBeenCalledWith(
+      'Quote saved as pending!',
+      '',
+      'success'
+    )
+    expect(await screen.findByTestId('list')).toBeTruthy()
+  })
+
+  it('offers both Create Quote and Send as Pending Quote for a quote being created', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(quote('CREATING'))
+    renderApproval({ openAfterLoad: true })
+
+    await screen.findByRole('button', { name: 'Create Quote' })
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual([
+      'Send as Pending Quote',
+      'Create Quote',
+    ])
+  })
+
+  it('keeps Send as Pending Quote disabled without Quotes Manager', async () => {
+    permissions.granted = []
+    quotesApi.getQuoteById.mockResolvedValue(quote('CREATING'))
+    renderApproval({ openAfterLoad: true })
+
+    expect(
+      (
+        (await screen.findByRole('button', {
+          name: 'Send as Pending Quote',
+        })) as HTMLButtonElement
+      ).disabled
+    ).toBe(true)
+  })
+
+  it('shows the backend message when sending as pending fails', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(quote('CREATING'))
+    quotesApi.changeQuoteStatus.mockRejectedValue({
+      response: { data: { message: 'Cannot be pending' } },
+    })
+    renderApproval({ openAfterLoad: true })
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Send as Pending Quote' })
+    )
+
+    await waitFor(() =>
+      expect(toast.showToast).toHaveBeenCalledWith(
+        'Cannot be pending',
+        '',
+        'error'
+      )
+    )
+    expect(screen.queryByTestId('list')).toBeNull()
+  })
+
   // COP-7116: MD kept the quote of the first render, so Create did nothing
   // when the tab opened before the quote loaded (a `?tab=approval` link).
   it('sends the loaded quote when the tab opened before it loaded', async () => {
@@ -293,6 +568,37 @@ describe('QuotesTabApproval', () => {
       )
     )
     expect(screen.queryByTestId('list')).toBeNull()
+  })
+
+  // COP-7125 (MD quotesNullSafe.test.tsx): the quote service refuses to send
+  // a quote with unpriced items and says why.
+  it('shows the backend message when creating an incomplete quote', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(
+      unpricedQuote(QuoteStatus.CREATING)
+    )
+    quotesApi.changeQuoteStatus.mockRejectedValue({
+      response: { data: { message: 'Items without price' } },
+    })
+    renderApproval({ openAfterLoad: true })
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Create Quote' }))
+
+    await waitFor(() =>
+      expect(toast.showToast).toHaveBeenCalledWith(
+        'Items without price',
+        '',
+        'error'
+      )
+    )
+  })
+
+  // COP-7125 (MD quotesNullSafe.test.tsx, "approval tab").
+  it('renders an open quote without prices or addresses', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(unpricedQuote(QuoteStatus.OPEN))
+    const { container } = renderApproval()
+
+    await screen.findByRole('button', { name: 'Start negotiation' })
+    expect(container.textContent).not.toMatch(/NaN|undefined|null/)
   })
 
   // COP-7116: MD read `e.response.data.message`, which throws in the catch

@@ -27,6 +27,8 @@ export interface QuoteDraftContext {
 /**
  * Create request of the General tab. Site and currency come from the selected
  * site; the customer is the B2B contact's customer or the chosen B2C customer.
+ * Address ids are omitted, never sent as "", when none is chosen: a quote can
+ * be created for a party without addresses (COP-7125).
  */
 export const buildQuoteCreateRequest = (
   data: QuoteGeneralForm,
@@ -38,8 +40,10 @@ export const buildQuoteCreateRequest = (
     ? data.contactPerson?.customer.id
     : data?.customer?.customerId,
   legalEntityId: isB2B ? data.company?.id : undefined,
-  shippingAddressId: data.shippingAddressId,
-  billingAddressId: data.billingAddressId,
+  ...(data.shippingAddressId
+    ? { shippingAddressId: data.shippingAddressId }
+    : {}),
+  ...(data.billingAddressId ? { billingAddressId: data.billingAddressId } : {}),
   restriction: data.restriction ? data.restriction : null,
 })
 
@@ -89,14 +93,15 @@ export const buildQuoteGeneralEditOperations = (
       value: data?.customer?.customerId,
     })
   }
-  if ('billingAddressId' in dirtyFields) {
+  // Only a chosen id is sent (COP-7125: a party may have no addresses).
+  if ('billingAddressId' in dirtyFields && data.billingAddressId) {
     operations.push({
       op: QuoteEditOp.replace,
       path: '/billingAddressId',
       value: data.billingAddressId,
     })
   }
-  if ('shippingAddressId' in dirtyFields) {
+  if ('shippingAddressId' in dirtyFields && data.shippingAddressId) {
     operations.push({
       op: QuoteEditOp.replace,
       path: '/shippingAddressId',

@@ -63,7 +63,7 @@ const QuotesTabGeneralAddresses = (props: QuotesTabGeneralAddressesProps) => {
                       {t('quotes.tabs.general.address')}
                     </div>
                     <div className={styles.address}>
-                      {formatAddress(address.contactDetails)}
+                      {formatAddress(address.contactDetails ?? {})}
                     </div>
                   </div>
                 </label>

@@ -11,6 +11,7 @@ export default {
     company: 'Company',
     quoteNumber: 'Quote number',
     totalPrice: 'Total price',
+    netSuffix: 'net',
     status: 'Status',
     versionNumber: 'Version Number',
     creationDate: 'Creation date',
@@ -43,6 +44,12 @@ export default {
   },
   dialog: {
     addCustomer: 'Add Customer',
+    negotiation: {
+      title: 'Start negotiation',
+      reason: 'Reason (optional)',
+      comment: 'Comment',
+      submit: 'Start negotiation',
+    },
     status: {
       titleUpdate: 'Change quote status',
       titleDecline: 'Decline quote',
@@ -65,6 +72,10 @@ export default {
     errorDelete: 'Error while deleting quote {{quoteId}} ',
     successApprove: 'Quote approved',
     successDecline: 'Quote declined',
+    errorNoShipToCountry:
+      'No ship-to countries are set for the site of this quote. Set them in the site settings and try again.',
+    shippingUpdated: 'Shipping cost was updated because the totals changed',
+    successNegotiation: 'Negotiation started',
     successUpdate: 'Quote updated',
     errorUpdate: 'Error while updating quote',
     errorChangeStatus: 'Status cannot be changed',
@@ -74,6 +85,7 @@ export default {
     errorPdf: 'Error while displaying PDF, try later',
     successDraftCreate: 'Quote draft created successfully',
     successCreate: 'Quote created!',
+    successPending: 'Quote saved as pending!',
     errorCreate: 'Error while creating quote',
     errorLegalEntities: 'Cannot load companies',
     errorFetchCustomers:
@@ -81,6 +93,7 @@ export default {
     siteRestrictionError:
       'You do not have permission to access Quotes for site {{siteCode}}. Please contact your administrator for further assistance.',
   },
+  priceOnRequest: 'Price on request',
   tabs: {
     general: {
       title: 'General',
@@ -97,6 +110,8 @@ export default {
       billingAddress: 'Billing Address',
       sameAddresses: 'Same as shipping',
       noLocations: 'No shipping location for the selected company',
+      noLocationsYet:
+        'No locations yet - add them before the customer can accept',
       noLocationsButton: 'Add new location',
       noAddresses: 'No shipping address for the selected customer',
       noAddressesButton: 'Add new address',
@@ -127,6 +142,13 @@ export default {
       validity: 'Validity',
       comment: 'Comment',
       subtotal: 'Subtotal',
+      unpricedWarning_one: 'Totals exclude {{count}} unpriced item',
+      unpricedWarning_other: 'Totals exclude {{count}} unpriced items',
+      taxClassPlaceholder: 'Select tax class',
+      taxClassesLoadError:
+        'Tax classes could not be loaded, so a class cannot be chosen. The catalog tax class of the product is used if there is one.',
+      taxClassesEmpty:
+        'No tax classes for the country of the shipping address.',
       shippingCost: 'Shipping Cost',
       total: 'Total',
       shippingMethod: 'Shipping Method',
@@ -140,11 +162,14 @@ export default {
         tax: 'Tax',
         discount: 'Discount',
         grossPrice: 'Gross Price',
+        taxClass: 'Tax class',
       },
     },
     approval: {
       title: 'Approval',
+      startNegotiationBtn: 'Start negotiation',
       createBtn: 'Create Quote',
+      pendingBtn: 'Send as Pending Quote',
       approveBtn: 'Approve Quote',
       declineBtn: 'Decline Quote',
     },

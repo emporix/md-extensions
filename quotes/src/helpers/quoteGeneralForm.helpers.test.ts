@@ -61,6 +61,24 @@ describe('buildQuoteCreateRequest', () => {
     })
   })
 
+  // COP-7125: a quote can be created for a party without addresses; the ids
+  // are omitted then, never sent as "".
+  it('omits the address ids when none is chosen', () => {
+    const request = buildQuoteCreateRequest(
+      b2bForm({ shippingAddressId: '', billingAddressId: '' }),
+      { isB2B: true, ...site }
+    )
+    expect('shippingAddressId' in request).toBe(false)
+    expect('billingAddressId' in request).toBe(false)
+    expect(request).toEqual({
+      siteCode: 'main',
+      currency: 'EUR',
+      customerId: 'contact-1',
+      legalEntityId: 'company-1',
+      restriction: 'SITE1',
+    })
+  })
+
   it('sends an empty restriction as null', () => {
     expect(
       buildQuoteCreateRequest(b2bForm({ restriction: '' }), {
@@ -102,6 +120,17 @@ describe('buildQuoteGeneralEditOperations', () => {
       { op: 'REPLACE', path: '/billingAddressId', value: 'bill-1' },
       { op: 'REPLACE', path: '/shippingAddressId', value: 'ship-1' },
     ])
+  })
+
+  // COP-7125: an address operation only carries a chosen id.
+  it('sends no address operation without a chosen id', () => {
+    expect(
+      buildQuoteGeneralEditOperations(
+        b2bForm({ shippingAddressId: '', billingAddressId: '' }),
+        { company: {}, billingAddressId: '', shippingAddressId: '' },
+        b2b
+      )
+    ).toEqual([{ op: 'REPLACE', path: '/legalEntityId', value: 'company-1' }])
   })
 
   it('does not replace the company when none is selected', () => {

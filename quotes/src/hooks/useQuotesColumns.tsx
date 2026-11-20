@@ -88,12 +88,23 @@ const useQuotesColumns = () => {
           <NumberFilterTemplate filterOptions={options} decimalPlaces={2} />
         ),
         body: (rowData: Quote) => {
+          // COP-7125: the gross is null while the tax is unknown (no address,
+          // unpriced items); the net total is shown with a " (net)" suffix.
+          // Sorting and filtering still use the gross.
+          const isNetFallback =
+            rowData.totalPrice?.grossValue === null ||
+            rowData.totalPrice?.grossValue === undefined
           return (
-            <MoneyValue
-              currency={rowData.totalPrice.currency}
-              value={rowData.totalPrice.grossValue}
-              locale={i18n.language}
-            />
+            <span className={styles.totalPrice}>
+              <MoneyValue
+                currency={rowData.totalPrice?.currency}
+                value={
+                  rowData.totalPrice?.grossValue ?? rowData.totalPrice?.netValue
+                }
+                locale={i18n.language}
+              />
+              {isNetFallback && <span>({t(`${TABLE_NAME}.netSuffix`)})</span>}
+            </span>
           )
         },
       },

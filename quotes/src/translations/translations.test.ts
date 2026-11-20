@@ -74,3 +74,32 @@ describe('corrected texts', () => {
     expect(de.quotes.toasts.successApprove).toBe('Angebot freigegeben')
   })
 })
+
+// COP-7125 (MD `src/translations/quotesNewKeys.test.ts` of
+// emporix/management-dashboard#1707): the agreed texts of the ticket.
+describe('quote improvement texts (COP-7125)', () => {
+  it('uses the agreed hint for a company without locations', () => {
+    expect(en.quotes.tabs.general.noLocationsYet).toBe(
+      'No locations yet - add them before the customer can accept'
+    )
+  })
+
+  it('uses the agreed tax class texts', () => {
+    expect(en.quotes.tabs.preview.taxClassesLoadError).toBe(
+      'Tax classes could not be loaded, so a class cannot be chosen. The catalog tax class of the product is used if there is one.'
+    )
+    expect(en.quotes.tabs.preview.taxClassesEmpty).toBe(
+      'No tax classes for the country of the shipping address.'
+    )
+  })
+
+  it('names unpriced items in the singular and the plural', () => {
+    expect(en.quotes.tabs.preview.unpricedWarning_one).toBe(
+      'Totals exclude {{count}} unpriced item'
+    )
+    expect(en.quotes.tabs.preview.unpricedWarning_other).toBe(
+      'Totals exclude {{count}} unpriced items'
+    )
+    expect(en.quotes.priceOnRequest).toBe('Price on request')
+  })
+})

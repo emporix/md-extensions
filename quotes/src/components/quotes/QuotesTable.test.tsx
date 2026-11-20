@@ -18,7 +18,9 @@ import { DashboardProvider } from '../../context/Dashboard.context'
 import { RefreshValuesProvider } from '../../context/RefreshValuesProvider'
 import type { AppState } from '../../models/AppState.model'
 import { DEFAULT_APP_CURRENCY } from '../../constants/currency'
+import { unpricedQuote } from '../../test/quoteNullFixtures'
 import QuotesTable from './QuotesTable'
+import QuotesTableExpansion from './QuotesTableExpansion'
 
 /** Requests by tenant, so a test can tell the previous tenant's apart. */
 const quotesApi = vi.hoisted(() => ({
@@ -334,6 +336,87 @@ describe('QuotesTable', () => {
       expect(screen.getAllByTestId(`quote-approve-${id}`)).toHaveLength(1)
       expect(screen.getAllByTestId(`quote-decline-${id}`)).toHaveLength(1)
     }
+  })
+
+  // COP-7125 (ported from MD quotesNullSafe.test.tsx, emporix/
+  // management-dashboard#1707): totals while the tax is unknown and items
+  // without a price.
+  describe('quotes without tax or prices', () => {
+    it('shows the net total with a "(net)" suffix while the gross is unknown', async () => {
+      quotesApi.getQuotes.mockResolvedValue({
+        data: [
+          {
+            ...quote('Q1', 'Acme'),
+            totalPrice: { currency: 'EUR', netValue: 8, grossValue: null },
+          },
+          quote('Q2', 'Beta'),
+        ],
+        totalRecords: 2,
+      })
+      renderTable()
+      await waitFor(() => expect(screen.getByText(/of 2$/)).toBeTruthy())
+
+      const acme = rows().find((row) => row.includes('Q1')) ?? ''
+      const beta = rows().find((row) => row.includes('Q2')) ?? ''
+      expect(acme).toContain('€8.00(net)')
+      expect(beta).toContain('€10.00')
+      expect(beta).not.toContain('(net)')
+      expect(rows().join(' ')).not.toMatch(/NaN|undefined/)
+    })
+
+    it('marks an item without a price in the expanded row', async () => {
+      quotesApi.getQuotes.mockResolvedValue({
+        data: [
+          {
+            ...quote('Q1', 'Acme'),
+            items: [
+              {
+                itemId: 'I1',
+                product: { productId: 'P1', name: { en: 'Chair' } },
+                quantity: { quantity: 1, unitCode: 'pcs' },
+                price: null,
+              },
+            ],
+          },
+        ],
+        totalRecords: 1,
+      })
+      renderTable()
+      await waitFor(() => expect(screen.getByText(/of 1$/)).toBeTruthy())
+
+      fireEvent.click(screen.getByRole('button', { name: /expand/i }))
+
+      expect(await screen.findByText('PRICE ON REQUEST')).toBeTruthy()
+    })
+
+    // The list cases of MD quotesNullSafe.test.tsx (emporix/
+    // management-dashboard#1707), with MD's titles.
+    it('expansion row', async () => {
+      // One item with `price: null`, one without a `price` key.
+      const { container } = render(
+        <DashboardProvider appState={appStateFor('tenant-a')}>
+          <QuotesTableExpansion items={unpricedQuote().items} />
+        </DashboardProvider>
+      )
+
+      expect(await screen.findByText('Unpriced product')).toBeTruthy()
+      expect(screen.getAllByText('PRICE ON REQUEST')).toHaveLength(2)
+      expect(container.textContent).not.toMatch(/NaN|undefined|null/)
+    })
+
+    it('list', async () => {
+      quotesApi.getQuotes.mockResolvedValue({
+        data: [unpricedQuote()],
+        totalRecords: 1,
+      })
+      renderTable()
+      await waitFor(() => expect(screen.getByText(/of 1$/)).toBeTruthy())
+
+      const row = rows().find((text) => text.includes('q1')) ?? ''
+      expect(row).toContain('ACME')
+      expect(row).toContain('€10.00(net)')
+      expect(rows().join(' ')).not.toMatch(/NaN|undefined|null/)
+    })
   })
 
   // COP-7116 QA: MD read `price.tax.prices` unchecked, so a line whose price

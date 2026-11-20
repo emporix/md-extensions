@@ -34,16 +34,18 @@ export const canChangeQuoteStatus = (
   canManage: boolean
 ): boolean => canManage && isQuoteAwaitingDecision(status)
 
-export type QuoteApprovalActions = 'create' | 'decide'
+export type QuoteApprovalActions = 'create' | 'decide' | 'negotiate'
 
 /**
  * Buttons of the Approval tab: `create` sends a quote that is still being
- * created, `decide` offers decline and approve.
+ * created, `decide` offers decline and approve, `negotiate` starts a
+ * negotiation round on an open quote (COP-7125).
  */
 export const getQuoteApprovalActions = (
   status: QuoteStatus | undefined
 ): QuoteApprovalActions | undefined => {
   if (status === QuoteStatus.CREATING) return 'create'
   if (isQuoteAwaitingDecision(status)) return 'decide'
+  if (status === QuoteStatus.OPEN) return 'negotiate'
   return undefined
 }

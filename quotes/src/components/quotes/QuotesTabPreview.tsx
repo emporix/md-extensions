@@ -13,15 +13,23 @@ import {
 import EmptyContent from '../shared/EmptyContent'
 import InputField from '../shared/InputField'
 import QuotesTabPreviewTable from './QuotesTabPreviewTable'
+import UnpricedItemsWarning from './UnpricedItemsWarning'
 import { useQuoteData } from '../../context/Quote.provider'
 import { useUIBlocker } from '../../context/UIBlocker'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { useQuotesApi } from '../../hooks/api/quotes'
+import { useQuoteTaxClasses } from '../../hooks/useQuoteTaxClasses'
 import { Item, QuoteEditOp, Shipping } from '../../models/Quotes.model'
 import { compareObjects } from '../mixins/mixins.utils'
 import { EmployeeDomains } from '../../configs/accessControls'
 import { StylableProps } from '../../helpers/props'
 import { getApiErrorMessage } from '../../helpers/api'
+import {
+  buildItemsUpdateOperations,
+  countUnpricedItems,
+  isExternalPrice,
+  withEditableTax,
+} from '../../helpers/quotePricing.helpers'
 import styles from './QuotesTabPreview.module.scss'
 
 export interface QuotePreviewForm {
@@ -30,12 +38,18 @@ export interface QuotePreviewForm {
   customerReference: string
   customerComment: string
   items: Item[]
+  /** Net prices typed for rows without a price (COP-7125). */
+  enteredNetValues: (number | null)[]
+  /** Tax classes chosen for rows without a price (COP-7125). */
+  enteredTaxClasses: (string | null)[]
   shipping: Shipping | undefined
 }
 
 /**
  * MD `QuotesTabPreview`: the priced lines with shipping (Preview table), the
- * validity and comment, and the customer's reference and comment.
+ * validity and comment, and the customer's reference and comment. Items
+ * without a price get a typed net price and an optional tax class (COP-7125,
+ * emporix/management-dashboard#1707).
  */
 const QuotesTabPreview = (props: StylableProps) => {
   const { className = '' } = props
@@ -46,6 +60,14 @@ const QuotesTabPreview = (props: StylableProps) => {
   const { updateQuote } = useQuotesApi()
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.QUOTES_MANAGER)
+  const { taxClasses, loadFailed, loaded } = useQuoteTaxClasses(
+    quote?.shippingAddress?.countryCode,
+    canManage &&
+      !isQuoteCompleted &&
+      (quote?.items ?? []).some(
+        (item) => !item.price || isExternalPrice(item.price)
+      )
+  )
   const {
     reset,
     control,
@@ -61,6 +83,8 @@ const QuotesTabPreview = (props: StylableProps) => {
       customerReference: '',
       customerComment: '',
       items: [],
+      enteredNetValues: [],
+      enteredTaxClasses: [],
       shipping: undefined,
     },
   })
@@ -72,7 +96,9 @@ const QuotesTabPreview = (props: StylableProps) => {
       comment: quote.comment?.employeeComment,
       customerReference: quote.customerReference ?? '',
       customerComment: quote.customerComment ?? '',
-      items: quote.items || [],
+      items: withEditableTax(quote.items || []),
+      enteredNetValues: (quote.items || []).map(() => null),
+      enteredTaxClasses: (quote.items || []).map(() => null),
       shipping: quote.shipping,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
@@ -108,12 +134,15 @@ const QuotesTabPreview = (props: StylableProps) => {
           value: data.customerReference || '',
         })
       }
-      if ('items' in dirtyFields) {
-        updateOperations.push({
-          op: QuoteEditOp.replace,
-          path: '/items',
-          value: data.items,
-        })
+      if ('items' in dirtyFields || 'enteredNetValues' in dirtyFields) {
+        updateOperations.push(
+          ...buildItemsUpdateOperations(
+            quote.items,
+            data.items,
+            data.enteredNetValues,
+            data.enteredTaxClasses
+          )
+        )
       }
       if ('shipping' in dirtyFields) {
         updateOperations.push({
@@ -121,6 +150,13 @@ const QuotesTabPreview = (props: StylableProps) => {
           path: '/shipping',
           value: data.shipping,
         })
+      }
+
+      if (updateOperations.length === 0) {
+        // Nothing to send (for example a rounding-only difference): drop the
+        // edit so the form is clean and Save is not left enabled.
+        reset()
+        return
       }
 
       blockPanel(true)
@@ -140,7 +176,13 @@ const QuotesTabPreview = (props: StylableProps) => {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
-    [formState]
+    [formState, quote, reset]
+  )
+
+  // A class picked for a row without a net price changes nothing on the
+  // service: it alone does not make the form saveable.
+  const hasSavableChange = Object.keys(formState.dirtyFields).some(
+    (key) => key !== 'enteredTaxClasses'
   )
 
   const formActions = (
@@ -155,6 +197,7 @@ const QuotesTabPreview = (props: StylableProps) => {
         disabled={
           !formState.isValid ||
           !formState.isDirty ||
+          !hasSavableChange ||
           isQuoteCompleted ||
           !canManage
         }
@@ -174,12 +217,21 @@ const QuotesTabPreview = (props: StylableProps) => {
             name={t('quotes.tabs.preview.selectedProducts')}
             actions={formActions}
           />
+          {quote.incompletePricing && (
+            <UnpricedItemsWarning
+              className={styles.warning}
+              count={countUnpricedItems(quote.items)}
+            />
+          )}
           <QuotesTabPreviewTable
             className={styles.table}
             control={control}
             getValues={getValues}
             watch={watch}
             setValue={setValue}
+            taxClasses={taxClasses}
+            taxClassesLoadFailed={loadFailed}
+            taxClassesLoaded={loaded}
           />
         </>
       ) : (

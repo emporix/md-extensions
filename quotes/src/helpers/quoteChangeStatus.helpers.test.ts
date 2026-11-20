@@ -7,6 +7,7 @@ import {
 import { deepClone } from './utils'
 import {
   buildQuoteChangeStatusPayload,
+  buildQuotePendingPayload,
   buildQuoteSendPayload,
   filterQuoteReasonsByType,
   getQuoteChangeStatusTarget,
@@ -96,5 +97,11 @@ describe('buildQuoteChangeStatusPayload', () => {
 describe('buildQuoteSendPayload', () => {
   it('"create" on the Approval tab sends the quote as OPEN', () => {
     expect(buildQuoteSendPayload()).toEqual({ value: 'OPEN' })
+  })
+})
+
+describe('buildQuotePendingPayload', () => {
+  it('"send as pending" on the Approval tab sends the quote as IN_PROGRESS', () => {
+    expect(buildQuotePendingPayload()).toEqual({ value: 'IN_PROGRESS' })
   })
 })

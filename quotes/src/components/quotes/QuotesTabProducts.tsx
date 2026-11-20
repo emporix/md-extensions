@@ -15,7 +15,10 @@ import { useQuoteData } from '../../context/Quote.provider'
 import { useUIBlocker } from '../../context/UIBlocker'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { useQuotesApi } from '../../hooks/api/quotes'
-import { useQuotesMatchPrices } from '../../hooks/useQuotesMatchPrices'
+import {
+  NoShipToCountryError,
+  useQuotesMatchPrices,
+} from '../../hooks/useQuotesMatchPrices'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import { Item } from '../../models/Quotes.model'
 import { ProductType } from '../../models/Category.model'
@@ -105,8 +108,12 @@ const QuotesTabProducts = (props: StylableProps) => {
         refreshData()
       } catch (e) {
         console.error(e)
+        // COP-7125: without a shipping address the match uses the first
+        // ship-to country of the quote's site; with none, nothing is added.
         toast.showToast(
-          getApiErrorMessage(e) ?? t('quotes.toasts.errorUpdate'),
+          e instanceof NoShipToCountryError
+            ? t('quotes.toasts.errorNoShipToCountry')
+            : (getApiErrorMessage(e) ?? t('quotes.toasts.errorUpdate')),
           '',
           'error'
         )
@@ -132,6 +139,10 @@ const QuotesTabProducts = (props: StylableProps) => {
   }
 
   const products = watch('products') ?? []
+  // COP-7125: saved items without a price are marked "Price on request".
+  const unpricedProductIds = (quote?.items ?? [])
+    .filter((item) => !item.price)
+    .map((item) => item.product.productId)
 
   return (
     <div className={className}>
@@ -172,6 +183,7 @@ const QuotesTabProducts = (props: StylableProps) => {
             <QuotesTabProductsSelected
               products={products}
               removeProduct={removeProduct}
+              unpricedProductIds={unpricedProductIds}
             />
           ) : (
             <EmptyContent

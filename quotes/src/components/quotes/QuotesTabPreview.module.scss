@@ -45,3 +45,8 @@
   width: 100%;
   max-width: 50rem;
 }
+
+// MD `UnpricedItemsWarning className="mb-3"` (COP-7125).
+.warning {
+  margin-bottom: 1rem;
+}

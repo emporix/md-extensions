@@ -6,16 +6,23 @@ import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { StylableProps } from '../../helpers/props'
 import { EmployeeDomains } from '../../configs/accessControls'
+import PriceOnRequestBadge from './PriceOnRequestBadge'
 import styles from './QuotesTabProductsSelected.module.scss'
 
 interface QuotesTabProductsSelectedProps extends StylableProps {
   products: ProductRow[]
   removeProduct: (idToRemove: string) => void
+  /** Saved items without a price (COP-7125). */
+  unpricedProductIds?: string[]
 }
 
-/** The picked products: name, id and a remove button. */
+/**
+ * The picked products: name, id, a "Price on request" badge for saved items
+ * without a price (COP-7125) and a remove button.
+ */
 const QuotesTabProductsSelected = (props: QuotesTabProductsSelectedProps) => {
-  const { products, removeProduct } = props
+  const { products, removeProduct, unpricedProductIds = [] } = props
+  const showBadgeColumn = unpricedProductIds.length > 0
   const { t } = useTranslation()
   const { getContentLangValue } = useLocalizedValue()
   const { hasPermission } = usePermissions()
@@ -28,7 +35,20 @@ const QuotesTabProductsSelected = (props: QuotesTabProductsSelectedProps) => {
           <div className={`${styles.col5} ${styles.itemCol}`}>
             {getContentLangValue(product.ref.localizedName)}
           </div>
-          <div className={`${styles.col6} ${styles.itemCol}`}>{product.id}</div>
+          <div
+            className={`${
+              showBadgeColumn ? styles.col5 : styles.col6
+            } ${styles.itemCol}`}
+          >
+            {product.id}
+          </div>
+          {showBadgeColumn && (
+            <div className={styles.badgeCol}>
+              {unpricedProductIds.includes(product.id) && (
+                <PriceOnRequestBadge />
+              )}
+            </div>
+          )}
           <div className={styles.col1}>
             <IconButton
               disabled={!canManage}
