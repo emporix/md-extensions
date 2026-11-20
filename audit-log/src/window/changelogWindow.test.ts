@@ -33,19 +33,28 @@ describe('test time zone', () => {
 })
 
 describe('defaultChangelogWindow', () => {
-  it('covers the last 3 full UTC days, ending with today in UTC', () => {
+  it('covers the last 3 full local days, ending with today', () => {
+    // 15:00 in Berlin: 16 Nov 00:00 to 18 Nov 23:59:59.999 local time
     const window = defaultChangelogWindow(new Date('2026-11-18T14:00:00Z'))
 
-    expect(window.from.toISOString()).toBe('2026-11-16T00:00:00.000Z')
-    expect(window.to.toISOString()).toBe('2026-11-18T23:59:59.999Z')
+    expect(window.from.toISOString()).toBe('2026-11-15T23:00:00.000Z')
+    expect(window.to.toISOString()).toBe('2026-11-18T22:59:59.999Z')
   })
 
-  it('uses the UTC day, not the local one, shortly after local midnight', () => {
-    // 00:30 in Berlin is still the previous day in UTC
+  it('uses the local day, not the UTC one, shortly after local midnight', () => {
+    // 00:30 on 18 Nov in Berlin is still 17 Nov in UTC
     const window = defaultChangelogWindow(new Date('2026-11-17T23:30:00Z'))
 
-    expect(window.from.toISOString()).toBe('2026-11-15T00:00:00.000Z')
-    expect(window.to.toISOString()).toBe('2026-11-17T23:59:59.999Z')
+    expect(window.from.toISOString()).toBe('2026-11-15T23:00:00.000Z')
+    expect(window.to.toISOString()).toBe('2026-11-18T22:59:59.999Z')
+  })
+
+  it('starts and ends on local midnight across the autumn DST change', () => {
+    // 24 Oct is summer time (UTC+2), 26 Oct winter time (UTC+1)
+    const window = defaultChangelogWindow(new Date('2026-10-26T12:00:00Z'))
+
+    expect(window.from.toISOString()).toBe('2026-10-23T22:00:00.000Z')
+    expect(window.to.toISOString()).toBe('2026-10-26T22:59:59.999Z')
   })
 
   it('does not share its dates between calls', () => {
@@ -55,7 +64,7 @@ describe('defaultChangelogWindow', () => {
     first.from.setFullYear(2000)
 
     expect(defaultChangelogWindow(now).from.toISOString()).toBe(
-      '2026-11-16T00:00:00.000Z'
+      '2026-11-15T23:00:00.000Z'
     )
   })
 })
@@ -150,7 +159,7 @@ describe('changelogWindowQ', () => {
     const window = defaultChangelogWindow(new Date('2026-11-18T14:00:00Z'))
 
     expect(changelogWindowQ({}, window)).toBe(
-      'occurredAt:(>="2026-11-16T00:00:00.000Z"+AND+<="2026-11-18T23:59:59.999Z")'
+      'occurredAt:(>="2026-11-15T23:00:00.000Z"+AND+<="2026-11-18T22:59:59.999Z")'
     )
   })
 })

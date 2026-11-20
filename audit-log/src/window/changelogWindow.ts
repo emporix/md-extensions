@@ -30,14 +30,14 @@ const toWindow = (from: Date, to: Date): ChangelogWindow =>
     to: new Date(to.getTime()),
   }) as ChangelogWindow
 
-/** The last 3 full UTC days, today included: 3 day partitions of the changelog table. */
+/** The last 3 full local days, today included: local midnight two days ago to the end of today. */
 export const defaultChangelogWindow = (now: Date): ChangelogWindow => {
-  const year = now.getUTCFullYear()
-  const month = now.getUTCMonth()
-  const day = now.getUTCDate()
+  const year = now.getFullYear()
+  const month = now.getMonth()
+  const day = now.getDate()
   return toWindow(
-    new Date(Date.UTC(year, month, day - (DEFAULT_WINDOW_DAYS - 1))),
-    new Date(Date.UTC(year, month, day, 23, 59, 59, 999))
+    new Date(year, month, day - (DEFAULT_WINDOW_DAYS - 1)),
+    new Date(year, month, day, 23, 59, 59, 999)
   )
 }
 

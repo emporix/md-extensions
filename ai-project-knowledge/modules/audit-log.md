@@ -12,7 +12,7 @@ Sources: `audit-log/package.json`, `audit-log/src/index.ts`, `audit-log/src/Enti
 
 ## Behaviour
 
-- A Period range picker (`window/ChangelogWindowPicker.tsx`) prefilled with the last 3 full UTC days (`window/changelogWindow.ts` `defaultChangelogWindow`), shown in the browser's local time; a range longer than 7 days is cut at 7 local days from its start, less 1 ms (`limitChangelogWindow`), with the limit hint; a one-ended pick is a draft and requests nothing.
+- A Period range picker (`window/ChangelogWindowPicker.tsx`) prefilled with the last 3 full local days, local midnight two days ago to the end of today (`window/changelogWindow.ts` `defaultChangelogWindow`), shown in the browser's local time; a range longer than 7 days is cut at 7 local days from its start, less 1 ms (`limitChangelogWindow`), with the limit hint; a one-ended pick is a draft and requests nothing.
 - Every request's `q` holds the entity, the entity id and the window as UTC instants (`changelogWindowQ` → `buildChangelogQ` with an `occurredAt` range).
 - `paging/useChangelogCursorPage.ts`: one reducer; a change of tenant, rows or `q` restarts at the newest page; a response for an old key is dropped; an empty page reached by cursor restarts at the first page; an error keeps the rows shown; retry re-sends the same cursor; `fetchPage` is kept in a ref, so a new function identity alone requests nothing.
 - `EntityChangelog.tsx`: the picker header, then a spinner, the load error with Try again, the empty text, or the cards with Previous / Next and rows per page (10 of 10, 25, 50, 100; `paging/ChangelogPaginator.tsx`); no totals, page numbers or countdown.

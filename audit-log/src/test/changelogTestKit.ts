@@ -7,7 +7,7 @@ import type { EntityChangelogLinks } from '../EntityChangelog'
 import type { EntityChangelogLabels } from '../labels'
 import { defaultChangelogWindow } from '../window/changelogWindow'
 
-/** Today in the audit-log tests: its default window is 2026-11-16T00:00Z to 2026-11-18T23:59:59.999Z. */
+/** Today in the audit-log tests: its default window is 16 Nov 00:00 to 18 Nov 23:59:59.999 local time. */
 export const TEST_NOW = new Date('2026-11-18T12:00:00Z')
 export const TEST_WINDOW = defaultChangelogWindow(TEST_NOW)
 
