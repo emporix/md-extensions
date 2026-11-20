@@ -138,6 +138,8 @@ const QuotesSelectProductsDialog = ({
       visible={visible}
       onHide={onHide}
       className={styles.dialog}
+      // Only the rows of the browser scroll; the dialog keeps its height.
+      fixedHeight
       header={t('quotes.tabs.products.selectProducts')}
       footer={
         <div className={styles.footer}>
@@ -153,7 +155,7 @@ const QuotesSelectProductsDialog = ({
       data-testid="quote-select-products-dialog"
     >
       <ProductsBrowser<ProductRow>
-        className={styles.browser}
+        fillHeight
         loadProducts={loadProducts}
         loadCategoryTree={canViewCategories ? loadCategoryTree : undefined}
         columns={PICKER_COLUMNS}

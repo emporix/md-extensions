@@ -87,6 +87,18 @@ describe('QuoteChooseCustomerDialog', () => {
     expect(addCustomer().disabled).toBe(true)
   })
 
+  it('keeps its height and scrolls only the customer rows', async () => {
+    renderDialog()
+    await screen.findByText('elle@x.io')
+
+    expect(screen.getByRole('dialog').className).toMatch(/fixedHeight/)
+    expect(
+      screen
+        .getByTestId('quote-choose-customer-dialog')
+        .querySelector('[class*="fillHeight"]')
+    ).not.toBeNull()
+  })
+
   it('selects one customer, and a second click on it clears it', async () => {
     renderDialog()
 

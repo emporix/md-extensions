@@ -6,6 +6,9 @@
       padding: 1rem 1.5rem 0.5rem;
     }
 
+    // The Dialog's `fixedHeight` makes the body a column that does not
+    // scroll, but not in a window lower than 720px: there these keep the
+    // rows scrolling inside the dialog instead of the whole body.
     .p-dialog-content {
       display: flex;
       flex-direction: column;
@@ -42,42 +45,6 @@
 .chipsPlaceholder {
   flex-shrink: 0;
   padding: 1rem;
-}
-
-.table {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-
-  :global {
-    .p-datatable {
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .p-datatable-wrapper {
-      flex: 1;
-      overflow: auto;
-    }
-
-    .p-datatable-table {
-      border-collapse: separate;
-      border-spacing: 0;
-    }
-
-    .p-datatable-thead {
-      position: sticky;
-      top: 0;
-      z-index: 1;
-
-      tr:first-child th {
-        border-bottom-width: 2px;
-      }
-    }
-  }
 }
 
 .rowAlreadySelected {

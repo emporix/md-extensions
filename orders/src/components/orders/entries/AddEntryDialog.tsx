@@ -207,6 +207,8 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
       className={styles.dialog}
       visible={visible}
       style={{ width: '90vw', maxHeight: '90vh' }}
+      // Only the rows of the browser scroll; the dialog keeps its height.
+      fixedHeight
       onHide={handleHide}
       closable={!isSaving}
       header={t('orders.entry.actions.addProduct.dialog.title')}
@@ -248,6 +250,7 @@ const AddEntryDialog = ({ onClose, visible }: AddEntryDialogProps) => {
       </div>
       <ProductsBrowser<AddEntryProductRow>
         className={styles.browser}
+        fillHeight
         loadProducts={loadProducts}
         loadCategoryTree={canViewCategories ? loadCategoryTree : undefined}
         columns={COLUMNS}
