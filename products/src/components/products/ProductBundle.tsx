@@ -49,9 +49,13 @@ const ProductBundle = (props: ProductBundleProps) => {
   const { showSuccess, showError } = useToast()
   const { hasPermission } = usePermissions()
 
-  const productCache = useRef<Map<string, Product>>(new Map())
+  // Ids already requested, so an id the API does not return is not refetched.
+  const requestedIds = useRef<Set<string>>(new Set())
+  const [productsById, setProductsById] = useState<
+    ReadonlyMap<string, Product>
+  >(new Map())
+  const [pendingRequests, setPendingRequests] = useState(0)
   const [addDialogOpened, setAddDialogOpened] = useState<boolean>(false)
-  const [items, setItems] = useState<TableBundledItem[]>([])
   const [selected, setSelected] = useState<TableBundledItem[]>([])
   const [bundledProducts, setBundledProducts] = useState<BundledProduct[]>(
     props.bundledItems || []
@@ -157,35 +161,49 @@ const ProductBundle = (props: ProductBundleProps) => {
     setSelected([])
   }, [selected, bundledProducts])
 
-  const loadItems = useCallback(async () => {
-    const missingIds = bundledProducts
-      .map((b) => b.productId)
-      .filter((id) => !productCache.current.has(id))
+  const loadMissingProducts = useCallback(async () => {
+    const missingIds = [
+      ...new Set(bundledProducts.map((b) => b.productId)),
+    ].filter((id) => !requestedIds.current.has(id))
+    if (missingIds.length === 0) return
 
-    if (missingIds.length > 0) {
-      try {
-        const fetched = await getAllProducts({
-          filters: { id: { value: missingIds, matchMode: FilterMatchMode.IN } },
-        })
+    missingIds.forEach((id) => requestedIds.current.add(id))
+    setPendingRequests((count) => count + 1)
+    try {
+      const fetched = await getAllProducts({
+        filters: { id: { value: missingIds, matchMode: FilterMatchMode.IN } },
+      })
+      setProductsById((current) => {
+        const next = new Map(current)
         fetched.forEach((p) => {
-          if (p.id) productCache.current.set(p.id, p)
+          if (p.id) next.set(p.id, p)
         })
-      } catch (e) {
-        console.error('Failed to load bundled products', e)
-      }
+        return next
+      })
+    } catch (e) {
+      // Let the next run retry these ids.
+      missingIds.forEach((id) => requestedIds.current.delete(id))
+      console.error('Failed to load bundled products', e)
+    } finally {
+      setPendingRequests((count) => count - 1)
     }
-
-    const tableItems = bundledProducts.map((bundledItem) => {
-      const product = productCache.current.get(bundledItem.productId)
-      return {
-        name: product?.name ?? ({ en: '', de: '' } as Localized),
-        productId: bundledItem.productId,
-        imageUrl: getFirstImageMediaUrl(product?.media) ?? '',
-        amount: bundledItem.amount,
-      }
-    })
-    setItems(tableItems)
   }, [bundledProducts, getAllProducts])
+
+  // Rows come straight from `bundledProducts`, so the table never shows
+  // "No data found" for a filled bundle while names and images still load.
+  const items = useMemo<TableBundledItem[]>(
+    () =>
+      bundledProducts.map((bundledItem) => {
+        const product = productsById.get(bundledItem.productId)
+        return {
+          name: product?.name ?? ({ en: '', de: '' } as Localized),
+          productId: bundledItem.productId,
+          imageUrl: getFirstImageMediaUrl(product?.media) ?? '',
+          amount: bundledItem.amount,
+        }
+      }),
+    [bundledProducts, productsById]
+  )
 
   const reset = useCallback(() => {
     setBundledProducts(props.bundledItems || [])
@@ -213,8 +231,8 @@ const ProductBundle = (props: ProductBundleProps) => {
   }, [i18n.language, bundledProducts, props.editedId])
 
   useEffect(() => {
-    void loadItems()
-  }, [loadItems])
+    void loadMissingProducts()
+  }, [loadMissingProducts])
 
   useEffect(() => {
     setBundledProducts(props.bundledItems || [])
@@ -268,6 +286,7 @@ const ProductBundle = (props: ProductBundleProps) => {
             value={items}
             dataKey="productId"
             columns={columns}
+            loading={pendingRequests > 0}
             showFilter
             selection={selected}
             onSelectionChange={(selection) =>
