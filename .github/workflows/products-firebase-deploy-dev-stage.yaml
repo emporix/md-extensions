@@ -5,6 +5,7 @@ on:
       - master
     paths:
       - 'products/**'
+      - 'audit-log/**'
 
 jobs:
   build_and_deploy:

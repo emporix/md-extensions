@@ -13,7 +13,7 @@
   },
   "validation": {
     "commands": [
-      "base=$(git merge-base HEAD origin/master) && changed=$(git diff --name-only \"$base\") && untracked=$(git ls-files --others --exclude-standard) || exit 1; for m in $(printf \"%s\\n%s\\n\" \"$changed\" \"$untracked\" | cut -d/ -f1 | sort -u); do [ -f \"$m/package.json\" ] || continue; echo \"== $m\"; (cd \"$m\" && { [ -d node_modules ] || npm ci; } && npm run --if-present typecheck && npx eslint . && npm run --if-present test:run && npm run build:dev) || exit 1; done"
+      "base=$(git merge-base HEAD origin/master) && changed=$(git diff --name-only \"$base\") && untracked=$(git ls-files --others --exclude-standard) || exit 1; mods=$(printf \"%s\\n%s\\n\" \"$changed\" \"$untracked\" | cut -d/ -f1 | sort -u); if printf \"%s\\n\" \"$mods\" | grep -qx audit-log; then mods=$(printf \"%s\\n%s\\n\" \"$mods\" \"$(grep -l md-audit-log */vite.config.ts 2>/dev/null | cut -d/ -f1)\" | sort -u); fi; for m in $mods; do [ -f \"$m/package.json\" ] || continue; echo \"== $m\"; (cd \"$m\" && { [ -d node_modules ] || npm ci; } && npm run --if-present typecheck && npx eslint . && npm run --if-present test:run && npm run build:dev) || exit 1; done"
     ]
   },
   "app": {
