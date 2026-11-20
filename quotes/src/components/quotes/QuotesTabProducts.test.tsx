@@ -14,7 +14,7 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import i18n from '../../translations/i18n'
 import { EmployeeDomains } from '../../configs/accessControls'
 import { DashboardProvider } from '../../context/Dashboard.context'
-import { QuoteDataProvider } from '../../context/Quote.provider'
+import { QuoteDataProvider, useQuoteData } from '../../context/Quote.provider'
 import type { AppState } from '../../models/AppState.model'
 import { DEFAULT_APP_CURRENCY } from '../../constants/currency'
 import QuotesTabProducts from './QuotesTabProducts'
@@ -83,7 +83,11 @@ const quote = {
   metadata: { mixins: {} },
 }
 
-const renderProducts = () =>
+/** The tab opened once the quote is loaded, as when a user switches to it. */
+const ProductsOnceLoaded = () =>
+  useQuoteData().quote ? <QuotesTabProducts /> : null
+
+const renderProducts = ({ openAfterLoad = false } = {}) =>
   render(
     <DashboardProvider appState={appState}>
       <MemoryRouter initialEntries={['/Q1']}>
@@ -92,7 +96,7 @@ const renderProducts = () =>
             path="/:quoteId"
             element={
               <QuoteDataProvider>
-                <QuotesTabProducts />
+                {openAfterLoad ? <ProductsOnceLoaded /> : <QuotesTabProducts />}
               </QuoteDataProvider>
             }
           />
@@ -196,6 +200,40 @@ describe('QuotesTabProducts', () => {
         'error'
       )
     )
+  })
+
+  // COP-7116 (found on dev, Q1004052): the picked products are no registered
+  // field, so Save hung on `isValid`. When the tab opens with the quote
+  // already loaded, its `reset()` drops react-hook-form 7.91's mount
+  // validation and nothing validates again, so `isValid` stayed false and
+  // Save disabled after picking.
+  it('enables Save after picking a product on a tab opened after the quote loaded', async () => {
+    quotesApi.getQuoteById.mockResolvedValue({ ...quote, items: [] })
+    pricesApi.matchPrices.mockResolvedValue([
+      {
+        priceId: 'PR2',
+        itemId: { itemType: 'PRODUCT', id: 'P2' },
+        originalValue: 99,
+        quantity: { quantity: 1, unitCode: 'pcs' },
+        tax: { taxClass: 'STANDARD', taxRate: 19 },
+      },
+    ])
+    renderProducts({ openAfterLoad: true })
+    const browser = await openPicker()
+
+    checkProduct(browser, 'Table')
+    fireEvent.click(apply())
+
+    await waitFor(() =>
+      expect((save() as HTMLButtonElement).disabled).toBe(false)
+    )
+    fireEvent.click(save())
+    await waitFor(() => expect(quotesApi.updateQuote).toHaveBeenCalled())
+    const [quoteId, operations] = quotesApi.updateQuote.mock.calls[0]
+    expect(quoteId).toBe('Q1')
+    expect(operations).toHaveLength(1)
+    expect(operations[0].op).toBe('ADD')
+    expect(operations[0].value[0].product.productId).toBe('P2')
   })
 
   // COP-7116 (Copilot on #158): match-prices ran before the `try`, so a

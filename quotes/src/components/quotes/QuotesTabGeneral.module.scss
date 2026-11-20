@@ -36,10 +36,17 @@
   margin-bottom: 0.5rem;
 }
 
-// MD `flex gap-4` (company + contact person).
+// MD `flex gap-4` (company + contact person). The two fields share the row:
+// the CL company selector has no width of its own (MD's had one), so the
+// company field shrank to a few characters.
 .companyRow {
   display: flex;
   gap: 1.5rem;
+
+  > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
 }
 
 // MD `w-full`.
@@ -47,27 +54,33 @@
   width: 100%;
 }
 
-// MD `flex align-items-center`.
+// MD `flex align-items-center` put the e-mail right of the full-width
+// dropdown, where it ran out of the box; it now sits under the dropdown.
 .contactRow {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 // MD `w-full flex-shrink-0`.
 .contactDropdown {
-  flex-shrink: 0;
   width: 100%;
 }
 
 // MD `ml-3`.
 .contactEmail {
-  margin-left: 1rem;
+  overflow-wrap: anywhere;
 }
 
-// MD `w-full mb-3` (customer name and "Choose customer").
-.customerInput,
-.customerButton {
+// MD `w-full mb-3` (customer name and "Choose customer"). The name spans the
+// column; the button keeps its own width (a full-width button looked out of
+// place next to the other fields).
+.customerInput {
   width: 100%;
+  margin-bottom: 1rem;
+}
+
+.customerButton {
   margin-bottom: 1rem;
 }
 
