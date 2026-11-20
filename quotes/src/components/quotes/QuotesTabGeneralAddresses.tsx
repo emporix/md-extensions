@@ -52,7 +52,11 @@ const QuotesTabGeneralAddresses = (props: QuotesTabGeneralAddressesProps) => {
                 <label htmlFor={name + address.id} className={styles.label}>
                   <div className={styles.nameCol}>
                     <i className="pi pi-home" />
-                    <div className={styles.name}>{address.name}</div>
+                    {/* "--" for an address without a name, as for other
+                        empty values here (MD left the line blank). */}
+                    <div className={styles.name}>
+                      {address.name?.trim() || '--'}
+                    </div>
                   </div>
                   <div className={styles.addressCol}>
                     <div className={styles.addressTitle}>
