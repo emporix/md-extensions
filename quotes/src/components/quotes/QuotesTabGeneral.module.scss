@@ -21,9 +21,13 @@
   gap: 4rem;
 }
 
-// MD `w-full` (the fields column).
+// MD `w-full` (the fields column), capped at 50rem like the forms of the
+// other remotes (`components/shared/FormGrid`, MD `FormGrid` 800px): the
+// company and contact fields fill their row, so without a cap the form
+// spread over the whole window.
 .fields {
   width: 100%;
+  max-width: 50rem;
 }
 
 // MD `InputField className="mb-3"`.
