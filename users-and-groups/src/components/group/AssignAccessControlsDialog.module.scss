@@ -1,3 +1,12 @@
+// MD sets this through the Dialog's `contentStyle`: the body is a column
+// that does not scroll, so the search field stays in place and only the list
+// of domains scrolls.
+.dialog :global(.p-dialog-content) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .footerActions {
   display: flex;
   justify-content: flex-end;

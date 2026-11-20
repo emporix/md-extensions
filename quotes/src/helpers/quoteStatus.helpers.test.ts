@@ -3,9 +3,38 @@ import { QuoteStatus, QuoteStatusColor } from '../models/Quotes.model'
 import {
   canChangeQuoteStatus,
   getQuoteApprovalActions,
+  hasQuoteStatusDetails,
   isQuoteAwaitingDecision,
   isQuoteCompleted,
 } from './quoteStatus.helpers'
+
+// COP-7116 QA: the status box shows above the tabs.
+describe('hasQuoteStatusDetails', () => {
+  it('is true for every completed quote, with or without a message', () => {
+    expect(hasQuoteStatusDetails({ value: QuoteStatus.ACCEPTED })).toBe(true)
+    expect(hasQuoteStatusDetails({ value: QuoteStatus.EXPIRED })).toBe(true)
+  })
+
+  it('is true for an open quote with a message or a reason', () => {
+    expect(
+      hasQuoteStatusDetails({ value: QuoteStatus.OPEN, comment: 'Looks good' })
+    ).toBe(true)
+    expect(
+      hasQuoteStatusDetails({
+        value: QuoteStatus.IN_PROGRESS,
+        quoteReason: { id: 'R1', code: 'PRICE' } as never,
+      })
+    ).toBe(true)
+  })
+
+  it('is false for an open quote without either, and without a status', () => {
+    expect(hasQuoteStatusDetails({ value: QuoteStatus.OPEN })).toBe(false)
+    expect(
+      hasQuoteStatusDetails({ value: QuoteStatus.AWAITING, comment: '  ' })
+    ).toBe(false)
+    expect(hasQuoteStatusDetails(undefined)).toBe(false)
+  })
+})
 
 const ALL_STATUSES = Object.values(QuoteStatus)
 

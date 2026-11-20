@@ -83,6 +83,15 @@ describe('sumGrossValues', () => {
   test('is zero for no priced rows', () => {
     expect(sumGrossValues([unpricedItem()])).toBe(0)
   })
+  // COP-7116 QA (md-extensions#184, kept through the merge): a price can come
+  // back without `tax`; MD read `price.tax.taxRate` unchecked and threw.
+  test('counts a price without tax as net', () => {
+    const noTax = {
+      ...pricedItem(),
+      price: { ...pricedItem().price, tax: undefined },
+    } as unknown as Item
+    expect(sumGrossValues([pricedItem(), noTax])).toBeCloseTo(220)
+  })
 })
 
 describe('hasSameAddresses', () => {

@@ -538,4 +538,47 @@ describe('Quotes routes', () => {
       expect(toast.showToast).not.toHaveBeenCalled()
     })
   })
+
+  // COP-7116 QA (Maryna): the status message was missing on the other tabs.
+  // MD showed the status box on the General tab of a completed quote only.
+  describe('status box above the tabs', () => {
+    const withStatus = (status: Record<string, unknown>, extra = {}) =>
+      api.getQuoteById.mockImplementation((id: string) =>
+        later(() => ({ ...quote(id), status, ...extra }))
+      )
+    const box = () => byTestId('quote-status-box')
+
+    it('shows a completed quote with its order and message on the Preview tab', async () => {
+      withStatus(
+        { value: 'ACCEPTED', comment: 'Thanks for the order' },
+        { orderId: 'EON1' }
+      )
+      await renderAt('/Q1?tab=preview')
+
+      expect(byTestId('preview-tab')).toBeTruthy()
+      expect(box()?.textContent).toContain('Thanks for the order')
+      expect(box()?.textContent).toContain('EON1')
+    })
+
+    it('shows the message of an open quote on every tab, without an order', async () => {
+      withStatus({ value: 'OPEN', comment: 'Approved with a 5% discount' })
+      await renderAt('/Q1?tab=products')
+
+      expect(byTestId('products-tab')).toBeTruthy()
+      expect(box()?.textContent).toContain('Approved with a 5% discount')
+      expect(box()?.textContent).not.toContain('Order number')
+
+      await click(tab('general'))
+      expect(byTestId('general-tab')).toBeTruthy()
+      expect(box()?.textContent).toContain('Approved with a 5% discount')
+    })
+
+    it('shows no box for an open quote without a message or reason', async () => {
+      withStatus({ value: 'OPEN' })
+      await renderAt('/Q1?tab=preview')
+
+      expect(byTestId('preview-tab')).toBeTruthy()
+      expect(box()).toBeNull()
+    })
+  })
 })

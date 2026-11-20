@@ -418,4 +418,33 @@ describe('QuotesTable', () => {
       expect(rows().join(' ')).not.toMatch(/NaN|undefined|null/)
     })
   })
+
+  // COP-7116 QA: MD read `price.tax.prices` unchecked, so a line whose price
+  // came back without `tax` broke the expanded row.
+  it('expands a quote whose line has a price without tax', async () => {
+    quotesApi.getQuotes.mockResolvedValue({
+      data: [
+        {
+          ...quote('Q1', 'Acme'),
+          items: [
+            {
+              itemId: 'I1',
+              product: { productId: 'P1', name: { en: 'Chair' } },
+              quantity: { quantity: 1, unitCode: 'pcs' },
+              price: { currency: 'EUR', unitPrice: 10, totalNetValue: 10 },
+            },
+          ],
+        },
+      ],
+      totalRecords: 1,
+    })
+    renderTable()
+    await waitFor(() => expect(screen.getByText(/of 1$/)).toBeTruthy())
+
+    fireEvent.click(screen.getByRole('button', { name: /expand/i }))
+
+    const expansion = await screen.findByTestId('quotes-table-expansion')
+    expect(within(expansion).getByText('Chair')).toBeTruthy()
+    expect(expansion.textContent).not.toMatch(/NaN|undefined/)
+  })
 })

@@ -69,6 +69,7 @@ const QuotesTableExpansion = (props: QuotesTableExpansionProps) => {
           return (
             <MoneyValue
               currency={rowData?.price?.currency}
+              // A price can come back without `tax` (MD threw here).
               value={rowData?.price?.tax?.prices?.grossValue}
               locale={i18n.language}
             />

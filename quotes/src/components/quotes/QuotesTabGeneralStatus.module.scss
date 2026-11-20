@@ -12,6 +12,11 @@
   background-color: white;
 }
 
+// An open quote with a status reason or message: the library's border.
+.status .open {
+  background-color: white;
+}
+
 // MD `grid grid-nogutter text-sm` with three `col-4` columns.
 .grid {
   display: flex;
