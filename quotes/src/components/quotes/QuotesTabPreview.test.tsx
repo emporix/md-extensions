@@ -1311,8 +1311,11 @@ describe('QuotesTabPreview', () => {
         await waitFor(() =>
           expect(totalsRow('Shipping Cost')).toBe('Shipping Cost:€5.00')
         )
-        expect(totalsRow('Subtotal')).toBe('Subtotal:€100.00')
-        expect(totalsRow('Total')).toBe('Total:€105.00')
+        // The subtotal follows the shipping cost by one render.
+        await waitFor(() => {
+          expect(totalsRow('Subtotal')).toBe('Subtotal:€100.00')
+          expect(totalsRow('Total')).toBe('Total:€105.00')
+        })
         expect(pageText()).not.toContain('106.00')
       })
 
