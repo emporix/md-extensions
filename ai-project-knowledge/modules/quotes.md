@@ -60,6 +60,8 @@ Hash routes (`src/Quotes.routes.tsx`, paths in `src/constants/paths.ts`, ids URL
 
 The MD host route `quotes` (`apps/management/quotes/*`) loads this remote from `VITE_QUOTES_URL` (Mode A); `QuotesPathRedirect` moves old pathname deep links (`/apps/management/quotes/{id}?tab=…`, `/add`) into the hash. Links that leave the remote use `window.location.assign`: company `/apps/management/companies#/{id}`, order `/apps/management/orders#/{id}`, cart `/apps/management/carts/{id}` (no `backTo`, it cannot cross the boundary), customer `/apps/management/customers#/{id}` (MD's `customerDetailUrl` since COP-7185; the other remotes still link the old pathname, which MD's `CustomersPathRedirect` rewrites). `SitesProvider` starts from the site MD persisted (`localStorage` `tenant` / `sites` / `currentSite`, only for the host tenant) and never writes back, so a site change inside quotes does not change the host's site.
 
+Hosting: the shared Firebase Hosting site per environment (COP-7348, moved there under COP-7182 like `classifications`), no site or `firebase.json` target of its own: `https://frontend-extensions-develop.web.app/quotes/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod). Deployed by `.github/actions/deploy-remote` from `.github/workflows/quotes-firebase-*.yaml`; local builds keep `/assets/remoteEntry.js` (`quotes/README.md`).
+
 ## Not yet scanned
 
 - Behaviour inside the running host (browser QA of the remote through MD local-dev, COP-7116).
