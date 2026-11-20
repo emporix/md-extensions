@@ -50,7 +50,6 @@ import LinkWithIcon from '../shared/LinkWithIcon'
 import CompaniesSelector from '../shared/CompaniesSelector'
 import QuotesTabGeneralAddresses from './QuotesTabGeneralAddresses'
 import QuoteChooseCustomerDialog from './QuoteChooseCustomerDialog'
-import QuotesTabGeneralStatus from './QuotesTabGeneralStatus'
 import styles from './QuotesTabGeneral.module.scss'
 
 /** MD reads the message straight from the error response. */
@@ -453,10 +452,8 @@ const QuotesTabGeneral = (props: StylableProps) => {
   return (
     <>
       <div className={className}>
-        {quote && isQuoteCompleted && (
-          <QuotesTabGeneralStatus className={styles.statusBox} quote={quote} />
-        )}
-
+        {/* The status box (MD showed it here) is above the tabs now, see
+            `QuotesAddEdit.page.tsx`. */}
         <SectionBox
           className={styles.detailsSection}
           name={t('quotes.tabs.general.details')}

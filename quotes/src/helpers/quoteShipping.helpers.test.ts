@@ -142,6 +142,16 @@ describe('calculateQuoteItemsSubtotal', () => {
     expect(calculateQuoteItemsSubtotal(items)).toBeCloseTo(169)
   })
 
+  // COP-7116 QA: MD read `price.tax.taxRate` unchecked and threw.
+  it('counts a price without tax as net', () => {
+    const items = [
+      { price: { totalNetValue: 100, tax: { taxRate: 19 } } },
+      { price: { totalNetValue: 50 } },
+      { price: { totalNetValue: 10, tax: null } },
+    ] as unknown as Item[]
+    expect(calculateQuoteItemsSubtotal(items)).toBeCloseTo(179)
+  })
+
   it('counts lines without a price as zero', () => {
     const items = [{}, { price: { tax: {} } }] as unknown as Item[]
     expect(calculateQuoteItemsSubtotal(items)).toBe(0)

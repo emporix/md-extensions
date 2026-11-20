@@ -51,8 +51,8 @@ interface RowOption {
 }
 
 /**
- * MD's table shows five lines per page; its rows-per-page choice only goes
- * back to the first page (the rows stay 5), which is kept.
+ * Five lines per page by default. MD's rows-per-page choice only went back to
+ * the first page (the rows stayed 5); the choice now applies (COP-7116 QA).
  */
 const PREVIEW_ROWS = 5
 const PREVIEW_ROWS_PER_PAGE_OPTIONS = [5, 10, 15]
@@ -77,6 +77,7 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
   const [subtotal, setSubtotal] = useState<number>(0)
   const [calcSubtotal, setCalcSubtotal] = useState<number>(0)
   const [first, setFirst] = useState(0)
+  const [rows, setRows] = useState(PREVIEW_ROWS)
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.QUOTES_MANAGER)
 
@@ -184,17 +185,29 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
         'error'
       )
     }
-    const unitPrice =
-      matchedUnitPrice || getValues(`items.${index}.price.unitPrice`)
-    const totalNetValue = watch(`items.${index}.price.newUnitPrice`) * quantity
-    const discount = calculateDiscount(
-      unitPrice,
-      getValues(`items.${index}.price.newUnitPrice`)
-    )
+    const currentUnitPrice = getValues(`items.${index}.price.unitPrice`)
+    const unitPrice = matchedUnitPrice || currentUnitPrice
+    const currentNewUnitPrice =
+      getValues(`items.${index}.price.newUnitPrice`) ?? 0
+    // A new quantity can reach another price tier. MD kept the line's unit
+    // price and recomputed the discount against the new list price, so a
+    // cheaper tier gave a negative discount and a higher total (COP-7116 QA).
+    // The line keeps its discount instead, and its unit price follows the
+    // list price.
+    const newUnitPrice =
+      unitPrice === currentUnitPrice
+        ? currentNewUnitPrice
+        : unitPrice *
+          (1 - (getValues(`items.${index}.price.discount`) ?? 0) / 100)
+    const totalNetValue = newUnitPrice * quantity
+    const discount = calculateDiscount(unitPrice, newUnitPrice)
     setValue(`items.${index}.price.totalNetValue`, totalNetValue, {
       shouldDirty: true,
     })
     setValue(`items.${index}.price.unitPrice`, unitPrice, {
+      shouldDirty: true,
+    })
+    setValue(`items.${index}.price.newUnitPrice`, newUnitPrice, {
       shouldDirty: true,
     })
     setValue(`items.${index}.price.discount`, discount, {
@@ -347,7 +360,11 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
       {
         columnKey: 'tax',
         header: t(`${TABLE_NAME}.tax`),
-        body: (rowData: Item) => `${rowData.price?.tax?.taxRate}%`,
+        // A price can come back without `tax` (MD showed "undefined%").
+        body: (rowData: Item) =>
+          typeof rowData.price?.tax?.taxRate === 'number'
+            ? `${rowData.price.tax.taxRate}%`
+            : '',
         ...numericColumn,
         bodyStyle: { paddingRight: '14px' },
       },
@@ -384,10 +401,14 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
         columnKey: 'grossPrice',
         header: t(`${TABLE_NAME}.grossPrice`),
         body: (rowData: Item, o: RowOption) => {
-          if (!rowData.price) return
+          // Without a tax rate the gross is unknown. MD read
+          // `price.tax.taxRate` unchecked, so a line without `tax` crashed the
+          // page (COP-7116 QA).
+          const taxRate = rowData.price?.tax?.taxRate
+          if (typeof taxRate !== 'number') return null
           const value =
             watch(`items.${o.rowIndex}.price.totalNetValue`) *
-            (1 + rowData.price.tax.taxRate / 100)
+            (1 + taxRate / 100)
           return (
             <MoneyValue
               currency={currency}
@@ -414,10 +435,13 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
         showFilter={false}
         pagination={{
           first,
-          rows: PREVIEW_ROWS,
+          rows,
           rowsPerPageOptions: PREVIEW_ROWS_PER_PAGE_OPTIONS,
         }}
-        onPage={(event) => setFirst(event.first)}
+        onPage={(event) => {
+          setFirst(event.first)
+          setRows(event.rows)
+        }}
         currentPageReportTemplate={t('global.pagination')}
         emptyMessage={t('global.noDataFound')}
         data-testid="quote-preview-table"

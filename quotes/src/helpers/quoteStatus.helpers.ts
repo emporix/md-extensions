@@ -1,4 +1,4 @@
-import { QuoteStatus } from '../models/Quotes.model'
+import { QuoteStatus, Status } from '../models/Quotes.model'
 
 const COMPLETED_STATUSES: readonly QuoteStatus[] = [
   QuoteStatus.ACCEPTED,
@@ -10,6 +10,17 @@ const COMPLETED_STATUSES: readonly QuoteStatus[] = [
 /** A completed quote is read-only in every tab. */
 export const isQuoteCompleted = (status: QuoteStatus | undefined): boolean =>
   status !== undefined && COMPLETED_STATUSES.includes(status)
+
+/**
+ * Whether the status box shows above the quote's tabs: always for a completed
+ * quote (MD showed it on the General tab only), and for an open quote when its
+ * status carries a reason or a message (COP-7116 QA).
+ */
+export const hasQuoteStatusDetails = (status: Status | undefined): boolean =>
+  !!status &&
+  (isQuoteCompleted(status.value) ||
+    !!status.comment?.trim() ||
+    !!status.quoteReason?.code)
 
 /** The merchant still has to approve or decline the quote. */
 export const isQuoteAwaitingDecision = (

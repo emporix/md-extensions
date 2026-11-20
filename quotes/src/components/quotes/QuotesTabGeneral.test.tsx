@@ -211,37 +211,8 @@ describe('QuotesTabGeneral', () => {
       expect(assign).toHaveBeenCalledWith('/apps/management/customers#/CU1')
     })
 
-    it('opens the order of an accepted quote in the orders remote', async () => {
-      permissions.granted.push(EmployeeDomains.ORDERS_VIEWER)
-      quotesApi.getQuoteById.mockResolvedValue({
-        ...b2bQuote,
-        orderId: 'EON4365',
-        status: { value: 'ACCEPTED' },
-      })
-      companiesApi.getLegalEntity.mockResolvedValue(company([]))
-      renderGeneral()
-
-      fireEvent.click(await screen.findByText('EON4365'))
-
-      expect(assign).toHaveBeenCalledWith('/apps/management/orders#/EON4365')
-    })
-
-    // COP-7116 (Copilot on #158): MD linked the order for everyone, also
-    // without Orders Viewer.
-    it('shows the order number without a link without Orders Viewer', async () => {
-      quotesApi.getQuoteById.mockResolvedValue({
-        ...b2bQuote,
-        orderId: 'EON4365',
-        status: { value: 'ACCEPTED' },
-      })
-      companiesApi.getLegalEntity.mockResolvedValue(company([]))
-      renderGeneral()
-
-      const orderNumber = await screen.findByText('EON4365')
-      expect(orderNumber.closest('a')).toBeNull()
-      fireEvent.click(orderNumber)
-      expect(assign).not.toHaveBeenCalled()
-    })
+    // The order link of an accepted quote is in the status box above the
+    // tabs since COP-7116 QA: see `QuotesTabGeneralStatus.test.tsx`.
   })
 
   // COP-7116 (found on dev): a B2C address never showed its contact name (MD
