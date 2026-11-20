@@ -126,6 +126,8 @@ Names only (vitest, beside the source):
 
 No page, table, or provider specs.
 
+A host tenant switch does not remount the remote. `FeatureTogglesProvider` applies toggles, errors and the end of loading only for the tenant that is still current, and `SitesProvider` clears `sites` and `currentSite` on a tenant or token change and ignores a late response for the previous tenant, so no other tenant's site code reaches a form (`labels/src/context/tenantSwitch.test.tsx`).
+
 ## Host wiring
 
 | Fact | Value |

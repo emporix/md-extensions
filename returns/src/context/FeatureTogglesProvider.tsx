@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -37,8 +38,12 @@ const FeatureTogglesProvider = ({ children }: FeatureTogglesProviderProps) => {
   const { getAllFeatureToggleValues } = useFeatureTogglesApi()
   const [toggles, setToggles] = useState<FeatureToggleValue[]>()
   const [togglesLoading, setTogglesLoading] = useState(true)
+  // A response for a previous tenant must not overwrite the current toggles.
+  const tenantRef = useRef(tenant)
+  tenantRef.current = tenant
 
   const syncToggles = useCallback(async () => {
+    const requestTenant = tenant
     if (!tenant) {
       setToggles(undefined)
       setTogglesLoading(false)
@@ -49,11 +54,13 @@ const FeatureTogglesProvider = ({ children }: FeatureTogglesProviderProps) => {
     setToggles(undefined)
     try {
       const values = await getAllFeatureToggleValues()
+      if (requestTenant !== tenantRef.current) return
       setToggles(values)
     } catch (error) {
+      if (requestTenant !== tenantRef.current) return
       console.error('Error syncing feature toggles:', error)
     } finally {
-      setTogglesLoading(false)
+      if (requestTenant === tenantRef.current) setTogglesLoading(false)
     }
   }, [getAllFeatureToggleValues, tenant])
 

@@ -125,6 +125,8 @@ With `Audit Log Viewer`, the third tab loads changelogs for entity `group` and t
 
 `accessControlsSaveDirty.test.tsx` builds a `CUSTOMER` group and expects Save to enable when only `accessControls` changes. `mapAccessControlsToTemplates` is covered by `customer-groups/src/helpers/groups/accessControls.helpers.test.ts`. `getEntityDetailPath` is covered by `customer-groups/src/configs/entityLinkConfig.test.ts`. IAM and platform error parsing, including conflict toasts, is covered by `customer-groups/src/helpers/api.test.ts`. The audit-log tab's wiring (request with the tenant, the related `group` link, nothing requested while inactive) is covered by `customer-groups/src/components/auditLog/EntityChangelogTab.test.tsx`; the audit-log behaviour itself by the shared package's tests (`audit-log/src/**/*.test.ts(x)`). List delete for code `CUSTOMER` is covered by `customer-groups/src/components/customerGroups/GroupsTable.delete.test.tsx`. No page test covers list loading, create, members, or the predefined-group rules.
 
+A host tenant switch does not remount the remote. `FeatureTogglesProvider` applies toggles, errors and the end of loading only for the tenant that is still current, and `SitesProvider` clears `sites` and `currentSite` on a tenant or token change and ignores a late response for the previous tenant, so no other tenant's site code reaches a form (`customer-groups/src/context/tenantSwitch.test.tsx`).
+
 ## Host wiring
 
 | Fact | Value |
