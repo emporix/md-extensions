@@ -146,7 +146,7 @@ export const useQuotesMatchPrices = () => {
               price: buildPrice(
                 item,
                 price,
-                !!quote.shippingAddress?.countryCode
+                !!quote.shippingAddress?.countryCode?.trim()
               ),
             }
           : {}),

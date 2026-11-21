@@ -93,9 +93,9 @@ export const buildQuoteGeneralEditOperations = (
       value: data?.customer?.customerId,
     })
   }
-  // Only a chosen id is sent (COP-7125: a party may have no addresses). The
-  // quote service cannot clear an address: REMOVE is not allowed on these
-  // paths and REPLACE with a blank or null id answers 400.
+  // Only a chosen id is sent (COP-7125: a party may have no addresses). No
+  // clear operation is needed: the quote service drops both addresses itself
+  // when `REPLACE /legalEntityId` targets a company without locations.
   if ('billingAddressId' in dirtyFields && data.billingAddressId) {
     operations.push({
       op: QuoteEditOp.replace,

@@ -158,6 +158,16 @@ describe('useQuotesMatchPrices', () => {
       })
     })
 
+    it('sends only the tax class when a whitespace shipping country falls back to the site country', async () => {
+      mocks.matchPrices.mockResolvedValue(match)
+      const quote = {
+        ...unpricedQuote(),
+        shippingAddress: { countryCode: '   ' },
+      } as Quote
+      const [item] = await getMatcher()(quote, [newItem('p1')])
+      expect(item.price?.tax).toEqual({ taxClass: 'STD' })
+    })
+
     it('trims the country code sent to price-v2', async () => {
       mocks.matchPrices.mockResolvedValue(match)
       const quote = {
