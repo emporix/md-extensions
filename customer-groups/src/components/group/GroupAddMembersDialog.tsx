@@ -114,8 +114,11 @@ const GroupAddMembersDialog = (props: Props) => {
       header={t('usersAndGroups.groups.titles.addMembers')}
       visible={visible}
       onHide={onHide}
+      // Only the rows of the table scroll; the dialog keeps its height.
+      fixedHeight
     >
       <DataTable
+        fillHeight
         dataKey="id"
         value={users}
         columns={

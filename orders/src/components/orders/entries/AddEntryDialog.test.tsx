@@ -166,6 +166,15 @@ describe('AddEntryDialog', () => {
     expect(row.textContent).toBe('1x Running shoe')
   })
 
+  it('keeps its height and scrolls only the product rows', async () => {
+    await renderDialog()
+
+    expect(screen.getByRole('dialog').className).toMatch(/fixedHeight/)
+    expect(screen.getByTestId('add-entry-products-browser').className).toMatch(
+      /fillHeight/
+    )
+  })
+
   it('pins the quantity column to the right edge of the table', async () => {
     await renderDialog()
 

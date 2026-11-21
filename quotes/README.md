@@ -89,7 +89,7 @@ The dev shell asks for tenant, token and language.
 
 ### Deploying
 
-Firebase Hosting targets `emporix-quotes-develop`, `emporix-quotes-stage` and `emporix-quotes` (root `firebase.json`, `.firebaserc`). Workflows: `.github/workflows/quotes-firebase-*.yaml` — a preview per PR, dev and stage on merge to `master`, prod on a `quotes-*` tag. The Firebase Hosting sites must exist before the first deploy.
+Quotes has no Firebase Hosting site of its own. It is published into the `quotes/` folder of the shared site of each environment (COP-7348, as Classifications): `https://frontend-extensions-develop.web.app/quotes/remoteEntry.js`, `https://frontend-extensions-stage.web.app/quotes/remoteEntry.js` and `https://frontend-extensions.web.app/quotes/remoteEntry.js` (prod). Workflows: `.github/workflows/quotes-firebase-*.yaml` — a preview per PR, dev and stage on merge to `master`, prod on a `quotes-*` tag. Each calls `.github/actions/deploy-remote`, which builds the remote flat with base `/quotes/` (`.github/scripts/hosting/build-remote.mjs`) and replaces only this folder on the site. Local `npm run build:*` and `preview` are unchanged and still serve `/assets/remoteEntry.js`.
 
 ## UI
 
