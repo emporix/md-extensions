@@ -1,10 +1,12 @@
 @use '../../styles/palette' as *;
 
-// MD `.quotes-preview-table-wrapper .p-inputnumber-input { width: 60px }`.
-// The library stretches its input to the field, so the field is sized.
+// Quantity and discount. MD's `.quotes-preview-table-wrapper
+// .p-inputnumber-input { width: 60px }` left about four characters, so larger
+// values ("1,250", "12.5%") were cut off. The library stretches its input to
+// the field, so the field is sized.
 .quantityInput {
   display: inline-block;
-  width: 60px;
+  width: 80px;
 }
 
 // MD `.net-price .p-inputnumber-input { width: 100px }`.
@@ -14,12 +16,14 @@
 }
 
 // MD `table-subtotal flex justify-content-between p-4` (`.table-subtotal`).
+// It continues the table box, so it takes the table's border colour (CL
+// `--color-table-border`); MD's `$grey-1` was barely visible next to it.
 .subtotal {
   display: flex;
   justify-content: space-between;
   padding: 1.5rem;
   background-color: white;
-  border: 1px solid $grey-1;
+  border: 1px solid var(--color-table-border);
   border-top: none;
 }
 
