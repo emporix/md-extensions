@@ -14,6 +14,7 @@ const PriceOnRequestBadge = () => {
     <StatusBadge
       status={t('quotes.priceOnRequest')}
       color={PRICE_ON_REQUEST_COLOR}
+      data-testid="quote-price-on-request"
     />
   )
 }

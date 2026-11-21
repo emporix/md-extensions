@@ -340,8 +340,9 @@ describe('QuotesTabGeneral', () => {
 
     expect(await screen.findByText('Ann Lee')).toBeTruthy()
     expect(screen.getByText('a@x.io')).toBeTruthy()
-    expect(screen.getByText('HQ')).toBeTruthy()
-    expect(screen.getByText('Main 1, Berlin, DE')).toBeTruthy()
+    // The locations load separately from the customer.
+    expect(await screen.findByText('HQ')).toBeTruthy()
+    expect(await screen.findByText('Main 1, Berlin, DE')).toBeTruthy()
     expect(
       (screen.getByTestId('shippingAddressId-L1-input') as HTMLInputElement)
         .checked

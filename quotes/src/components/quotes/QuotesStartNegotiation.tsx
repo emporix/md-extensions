@@ -128,10 +128,16 @@ const QuotesStartNegotiation = ({
           />
         </InputField>
         <div className={styles.buttons}>
-          <SecondaryButton onClick={close}>
+          <SecondaryButton
+            onClick={close}
+            data-testid="quote-negotiation-discard"
+          >
             {t('global.discard')}
           </SecondaryButton>
-          <PrimaryButton onClick={onSubmit}>
+          <PrimaryButton
+            onClick={onSubmit}
+            data-testid="quote-negotiation-submit"
+          >
             {t('quotes.dialog.negotiation.submit')}
           </PrimaryButton>
         </div>

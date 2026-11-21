@@ -23,7 +23,7 @@ import type { QuotePreviewForm } from './QuotesTabPreview'
 import { useQuoteData } from '../../context/Quote.provider'
 import { usePermissions } from '../../context/PermissionsProvider'
 import {
-  NoShipToCountryError,
+  isNoShipToCountryError,
   useQuotesMatchPrices,
 } from '../../hooks/useQuotesMatchPrices'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
@@ -135,7 +135,7 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
   const chosenClasses = (watch('items') ?? [])
     .map((item) => item.price?.tax?.taxClass ?? '')
     .join('|')
-  const notifiedShipping = useRef<string>(undefined)
+  const notifiedShipping = useRef<string | undefined>(undefined)
 
   useEffect(() => {
     if (!quote) return
@@ -240,7 +240,7 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
     if (
       isQuoteCompleted ||
       !canManage ||
-      isSameShipping(picked, quote?.shipping)
+      isSameShipping(picked, quote?.shipping ?? undefined)
     ) {
       setValue('shipping', picked)
       return
@@ -272,7 +272,7 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
       // old totals. The line is recomputed with its current price instead.
       console.error(e)
       toast.showToast(
-        e instanceof NoShipToCountryError
+        isNoShipToCountryError(e)
           ? t('quotes.toasts.errorNoShipToCountry')
           : (getApiErrorMessage(e) ?? t('quotes.toasts.errorFetchPrices')),
         '',

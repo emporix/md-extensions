@@ -99,7 +99,7 @@ const QuotesTabPreview = (props: StylableProps) => {
       items: withEditableTax(quote.items || []),
       enteredNetValues: (quote.items || []).map(() => null),
       enteredTaxClasses: (quote.items || []).map(() => null),
-      shipping: quote.shipping,
+      shipping: quote.shipping ?? undefined,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
   }, [quote])

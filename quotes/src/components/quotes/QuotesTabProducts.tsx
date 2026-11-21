@@ -16,7 +16,7 @@ import { useUIBlocker } from '../../context/UIBlocker'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { useQuotesApi } from '../../hooks/api/quotes'
 import {
-  NoShipToCountryError,
+  isNoShipToCountryError,
   useQuotesMatchPrices,
 } from '../../hooks/useQuotesMatchPrices'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
@@ -111,7 +111,7 @@ const QuotesTabProducts = (props: StylableProps) => {
         // COP-7125: without a shipping address the match uses the first
         // ship-to country of the quote's site; with none, nothing is added.
         toast.showToast(
-          e instanceof NoShipToCountryError
+          isNoShipToCountryError(e)
             ? t('quotes.toasts.errorNoShipToCountry')
             : (getApiErrorMessage(e) ?? t('quotes.toasts.errorUpdate')),
           '',

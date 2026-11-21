@@ -9,7 +9,7 @@ import { cleanup, renderHook } from '@testing-library/react'
 import { Item, Quote } from '../models/Quotes.model'
 import { unpricedQuote } from '../test/quoteNullFixtures'
 import {
-  NoShipToCountryError,
+  isNoShipToCountryError,
   useQuotesMatchPrices,
 } from './useQuotesMatchPrices'
 
@@ -138,6 +138,47 @@ describe('useQuotesMatchPrices', () => {
       expect(item.price?.tax).toEqual({ taxClass: 'STD', taxRate: 19 })
     })
 
+    it('sends no tax with an address when the match has a blank tax class', async () => {
+      mocks.matchPrices.mockResolvedValue([
+        { ...match[0], tax: { taxClass: '', taxRate: 19 } },
+      ])
+      const [item] = await getMatcher()(withAddress(), [newItem('p1')])
+      expect(item.price && 'tax' in item.price).toBe(false)
+    })
+
+    it('skips a whitespace shipping country for the first ship-to country', async () => {
+      mocks.matchPrices.mockResolvedValue(match)
+      const quote = {
+        ...unpricedQuote(),
+        shippingAddress: { countryCode: '  ' },
+      } as Quote
+      await getMatcher()(quote, [newItem('p1')])
+      expect(mocks.matchPrices.mock.calls[0][0].targetLocation).toEqual({
+        countryCode: 'DE',
+      })
+    })
+
+    it('trims the country code sent to price-v2', async () => {
+      mocks.matchPrices.mockResolvedValue(match)
+      const quote = {
+        ...unpricedQuote(),
+        shippingAddress: { countryCode: ' PL ' },
+      } as Quote
+      await getMatcher()(quote, [newItem('p1')])
+      expect(mocks.matchPrices.mock.calls[0][0].targetLocation).toEqual({
+        countryCode: 'PL',
+      })
+    })
+
+    it('fails when the first ship-to country is whitespace', async () => {
+      mocks.sites = [siteWith(['  '])]
+      const error = await getMatcher()(unpricedQuote(), [newItem('p1')]).catch(
+        (e) => e
+      )
+      expect(isNoShipToCountryError(error)).toBe(true)
+      expect(mocks.matchPrices).not.toHaveBeenCalled()
+    })
+
     it.each([
       ['a site without ship-to countries', [siteWith([])]],
       ['a site without the field', [siteWith(undefined)]],
@@ -145,9 +186,10 @@ describe('useQuotesMatchPrices', () => {
       ['no sites loaded', null],
     ])('fails without calling price-v2 for %s', async (_name, sites) => {
       mocks.sites = sites as unknown[] | null
-      await expect(
-        getMatcher()(unpricedQuote(), [newItem('p1')])
-      ).rejects.toBeInstanceOf(NoShipToCountryError)
+      const error = await getMatcher()(unpricedQuote(), [newItem('p1')]).catch(
+        (e) => e
+      )
+      expect(isNoShipToCountryError(error)).toBe(true)
       expect(mocks.matchPrices).not.toHaveBeenCalled()
     })
   })

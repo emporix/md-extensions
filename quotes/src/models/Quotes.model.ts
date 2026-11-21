@@ -102,7 +102,7 @@ export interface Quote {
   company: { name: string }
   legalEntityId?: string
   comment: Comment
-  shipping: Shipping
+  shipping?: Shipping | null
   businessModel: CustomerBusinessModel
   restriction?: string
   customerReference?: string

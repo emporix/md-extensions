@@ -10,16 +10,20 @@ import { useSites } from '../context/SitesProvider'
  * (emporix/management-dashboard#1707).
  */
 
+const NO_SHIP_TO_COUNTRY = 'NoShipToCountryError'
+
 /**
  * Thrown when no country can be determined for the price match: the quote has
  * no shipping address and the quote's site has no ship-to countries.
  */
-export class NoShipToCountryError extends Error {
-  constructor() {
-    super('No ship-to country for the quote')
-    this.name = 'NoShipToCountryError'
-  }
+export const createNoShipToCountryError = (): Error => {
+  const error = new Error('No ship-to country for the quote')
+  error.name = NO_SHIP_TO_COUNTRY
+  return error
 }
+
+export const isNoShipToCountryError = (e: unknown): boolean =>
+  e instanceof Error && e.name === NO_SHIP_TO_COUNTRY
 
 /** The parts of a price-v2 match that a quote item uses. */
 interface MatchedPrice {
@@ -35,12 +39,10 @@ const buildQuantity = (item: Partial<Item>, matchedUnitCode?: string) => ({
 })
 
 const buildTax = (price: MatchedPrice, includeTaxRate: boolean) => {
-  if (includeTaxRate) {
-    return price.tax
-      ? { tax: { taxClass: price.tax.taxClass, taxRate: price.tax.taxRate } }
-      : {}
-  }
-  return price.tax?.taxClass ? { tax: { taxClass: price.tax.taxClass } } : {}
+  if (!price.tax?.taxClass) return {}
+  return includeTaxRate
+    ? { tax: { taxClass: price.tax.taxClass, taxRate: price.tax.taxRate } }
+    : { tax: { taxClass: price.tax.taxClass } }
 }
 
 /**
@@ -75,7 +77,8 @@ const buildPrice = (
  * Country used for the price match, in this order: the country of the
  * quote's shipping address, then the first ship-to country of the quote's own
  * site (found by `quote.siteCode`, not the currently selected site, which may
- * differ). price-v2 rejects an empty or blank country with HTTP 400.
+ * differ). price-v2 rejects an empty or blank country with HTTP 400, so a blank
+ * candidate is skipped.
  *
  * @returns the country code, or undefined when none exists; the caller must
  * then not call price-v2 and tell the employee to set ship-to countries.
@@ -84,8 +87,12 @@ export const resolveMatchCountry = (
   quote: Quote,
   sites: readonly Site[] | null | undefined
 ): string | undefined =>
-  quote.shippingAddress?.countryCode ||
-  sites?.find((site) => site.code === quote.siteCode)?.shipToCountries?.[0]
+  [
+    quote.shippingAddress?.countryCode,
+    sites?.find((site) => site.code === quote.siteCode)?.shipToCountries?.[0],
+  ]
+    .map((code) => code?.trim())
+    .find(Boolean)
 
 export const useQuotesMatchPrices = () => {
   const { matchPrices } = usePricesApi()
@@ -96,7 +103,7 @@ export const useQuotesMatchPrices = () => {
     itemList: Partial<Item>[]
   ) => {
     const countryCode = resolveMatchCountry(quote, sites)
-    if (!countryCode) throw new NoShipToCountryError()
+    if (!countryCode) throw createNoShipToCountryError()
 
     const matchPricesRequestBody: PriceMatchRequest = {
       targetCurrency: quote.currency,
