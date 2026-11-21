@@ -31,17 +31,16 @@ const QuotesTabProductsSelected = (props: QuotesTabProductsSelectedProps) => {
   return (
     <div className={styles.selectedItems} data-testid="quote-selected-items">
       {products.map((product) => (
-        <div key={product.id} className={styles.selectedItem}>
-          <div className={`${styles.col5} ${styles.itemCol}`}>
+        <div
+          key={product.id}
+          className={`${styles.selectedItem} ${
+            showBadgeColumn ? styles.selectedItemWithBadge : ''
+          }`}
+        >
+          <div className={styles.itemCol}>
             {getContentLangValue(product.ref.localizedName)}
           </div>
-          <div
-            className={`${
-              showBadgeColumn ? styles.col5 : styles.col6
-            } ${styles.itemCol}`}
-          >
-            {product.id}
-          </div>
+          <div className={styles.itemCol}>{product.id}</div>
           {showBadgeColumn && (
             <div className={styles.badgeCol}>
               {unpricedProductIds.includes(product.id) && (
@@ -49,7 +48,7 @@ const QuotesTabProductsSelected = (props: QuotesTabProductsSelectedProps) => {
               )}
             </div>
           )}
-          <div className={styles.col1}>
+          <div className={styles.removeCol}>
             <IconButton
               disabled={!canManage}
               icon={<BsXCircleFill size={16} />}
