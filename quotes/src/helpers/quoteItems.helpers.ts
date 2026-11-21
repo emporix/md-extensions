@@ -68,3 +68,14 @@ export const getUnitPriceForNetValue = (
   totalNetValue: number,
   quantity: number | undefined
 ): number | undefined => (quantity ? totalNetValue / quantity : undefined)
+
+/** The range of a line discount a user can type, in percent. */
+export const MIN_ITEM_DISCOUNT = 0
+export const MAX_ITEM_DISCOUNT = 100
+
+/**
+ * Keeps a typed line discount between 0 and 100%. MD took any number, so a
+ * discount above 100% gave negative prices.
+ */
+export const limitItemDiscount = (discount: number): number =>
+  Math.min(MAX_ITEM_DISCOUNT, Math.max(MIN_ITEM_DISCOUNT, discount))
