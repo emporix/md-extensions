@@ -10,7 +10,7 @@ Management Dashboard "Orders" module, extracted into an `md-extensions` federate
 | Exposes | `./RemoteComponent` → `src/RemoteComponent.tsx` (named **and** default export) |
 | Local dev port | `5177` (`strictPort`) |
 | Host env var | `VITE_ORDERS_URL` → `.../assets/remoteEntry.js` |
-| Component library | `@emporix/component-library` `2.29.1` |
+| Component library | `@emporix/component-library` `2.30.1` |
 | MD wiring mode | A — permanent remote (`url:` on the route) |
 
 ## Screens
