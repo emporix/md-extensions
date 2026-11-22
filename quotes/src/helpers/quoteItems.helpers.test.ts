@@ -6,6 +6,7 @@ import {
   buildQuoteItemsOperations,
   diffQuoteItems,
   getUnitPriceForNetValue,
+  limitItemDiscount,
   mapProductRowToQuoteItem,
 } from './quoteItems.helpers'
 
@@ -108,5 +109,19 @@ describe('getUnitPriceForNetValue', () => {
   it('has no unit price for a line without a quantity', () => {
     expect(getUnitPriceForNetValue(100, 0)).toBeUndefined()
     expect(getUnitPriceForNetValue(0, 0)).toBeUndefined()
+  })
+})
+
+// MD took any discount, so one above 100% gave negative prices.
+describe('limitItemDiscount', () => {
+  it('keeps a discount between 0 and 100%', () => {
+    expect(limitItemDiscount(12.5)).toBe(12.5)
+    expect(limitItemDiscount(0)).toBe(0)
+    expect(limitItemDiscount(100)).toBe(100)
+  })
+
+  it('caps a discount above 100% and raises a negative one to 0', () => {
+    expect(limitItemDiscount(125)).toBe(100)
+    expect(limitItemDiscount(-5)).toBe(0)
   })
 })
