@@ -15,7 +15,7 @@ Fields present on every opened `AppState`: `tenant`, `language`, `token`.
 
 | Remote | `AppState` | `RemoteComponent` |
 |---|---|---|
-| `returns`, `orders`, `categories`, `classifications` | `tenant`, `language`, `token`, optional `currency`, `contentLanguage`, optional `user`, `onError`. No permissions field. | `appState` required. |
+| `returns`, `orders`, `categories`, `classifications`, `units`, `taxes` | `tenant`, `language`, `token`, optional `currency`, `contentLanguage`, optional `user`, `onError`. No permissions field. | `appState` required. |
 | `products` | Same shape, with `currency` required. No permissions field. | `appState` required. |
 | `brands`, `users-and-groups`, `customer-groups`, `labels`, `status-codes`, `coupons`, `companies`, `quotes` | Same shape as returns/orders. | `appState` optional; fallback tenant/token `'default'`, language and content language `'en'`. |
 | `dashboard` | `tenant`, `language`, `token`, required `currency` and `user`, optional `permissions`. No `onError`. | Optional. Missing tenant or token renders “Missing required configuration”. Omitted language and content language become `'en'`. Omitted currency becomes `id`/`label` `EUR`, `default: true`. |
@@ -112,6 +112,10 @@ A catalog of the Catalog Service has an id (generated when not given), a localiz
 ## Units
 
 A unit of the Unit Handling Service has a code, a localized name, an optional symbol, a type (free text such as `mass`; the tenant's existing types are suggested), a base-unit flag and a conversion factor (`units/src/models/Unit.model.ts`). The code cannot change after create; updates carry the loaded `metadata.version`. Management Dashboard price models use units for their measurement unit and stay in the host. Viewing needs Units Viewer, changing needs Units Manager. Rules: `ai-project-knowledge/modules/units.md`.
+
+## Taxes
+
+The Tax Service keeps one **country tax record** per country (`locationCode` = country code, `location.countryCode`), and each record holds the **tax classes** of that country: a code unique within the record, a localized name and description, a rate in percent, and `order` / `isDefault` (`taxes/src/models/Tax.model.ts`). Adding a class to a country that has no record creates the record; deleting the last class deletes it. A country that is not active in the Country Service still keeps its record and shows as `<code> - Inactive`. Management Dashboard quotes, delivery zones and the country screens still read taxes through MD's own hook. Rules: `ai-project-knowledge/modules/taxes.md`.
 
 ## Categories
 
