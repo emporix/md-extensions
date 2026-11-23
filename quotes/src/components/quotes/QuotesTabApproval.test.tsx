@@ -194,6 +194,20 @@ describe('QuotesTabApproval', () => {
       })
     })
 
+    // The labels are tied to their controls (screen readers, click on label).
+    it('ties the Reason and Comment labels to their fields', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
+      renderApproval()
+      const dialog = await openNegotiation()
+
+      expect(
+        within(dialog).getByRole('group', { name: /reason/i })
+      ).toBeTruthy()
+      const comment = within(dialog).getByLabelText(/comment/i)
+      expect(comment.id).toBe('quote-negotiation-comment-input')
+      expect(comment.tagName).toBe('TEXTAREA')
+    })
+
     it('starts a negotiation without a reason or comment', async () => {
       quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
       renderApproval()
@@ -430,6 +444,10 @@ describe('QuotesTabApproval', () => {
       await screen.findByRole('button', { name: 'Decline Quote' })
     )
     expect(screen.getByText('Reason')).toBeTruthy()
+    expect(screen.getByRole('group', { name: /reason/i })).toBeTruthy()
+    expect(screen.getByLabelText(/comment/i).id).toBe(
+      'quote-status-comment-input'
+    )
     await waitFor(() => expect(quotesApi.getQuotesReasons).toHaveBeenCalled())
     fireEvent.click(screen.getByTestId('quote-status-reason-control'))
     // Only reasons of the decline type are offered.

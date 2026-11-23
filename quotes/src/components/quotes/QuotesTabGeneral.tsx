@@ -645,6 +645,7 @@ const QuotesTabGeneral = (props: StylableProps) => {
               ) : (
                 <InputField
                   label={t('quotes.tabs.general.customer')}
+                  name="quote-customer-name-input"
                   className={styles.field}
                   required={true}
                 >
@@ -655,6 +656,7 @@ const QuotesTabGeneral = (props: StylableProps) => {
                     render={({ field }) => (
                       <div>
                         <InputText
+                          inputId="quote-customer-name-input"
                           readOnly={true}
                           className={styles.customerInput}
                           value={

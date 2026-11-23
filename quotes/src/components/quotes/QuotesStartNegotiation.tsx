@@ -117,9 +117,11 @@ const QuotesStartNegotiation = ({
         </InputField>
         <InputField
           label={t('quotes.dialog.negotiation.comment')}
+          name="quote-negotiation-comment-input"
           className={styles.commentField}
         >
           <InputText
+            inputId="quote-negotiation-comment-input"
             textarea
             rows={6}
             value={comment}

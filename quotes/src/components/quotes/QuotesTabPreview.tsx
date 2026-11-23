@@ -256,6 +256,7 @@ const QuotesTabPreview = (props: StylableProps) => {
         <InputField
           className={styles.field}
           label={t('quotes.tabs.preview.validity')}
+          name="quote-valid-to-input"
           required={true}
         >
           <Controller
@@ -264,6 +265,7 @@ const QuotesTabPreview = (props: StylableProps) => {
             rules={{ required: true }}
             render={({ field }) => (
               <Calendar
+                inputId="quote-valid-to-input"
                 showTime
                 disabled={isQuoteCompleted || !canManage}
                 hideOnDateTimeSelect
@@ -282,12 +284,14 @@ const QuotesTabPreview = (props: StylableProps) => {
         <InputField
           className={styles.editor}
           label={t('quotes.tabs.preview.comment')}
+          name="quote-comment-input"
         >
           <Controller
             name="comment"
             control={control}
             render={({ field }) => (
               <InputText
+                inputId="quote-comment-input"
                 textarea
                 rows={6}
                 value={field.value ?? ''}
@@ -307,12 +311,14 @@ const QuotesTabPreview = (props: StylableProps) => {
         <InputField
           className={styles.field}
           label={t('quotes.tabs.preview.customerReference')}
+          name="quote-customer-reference-input"
         >
           <Controller
             name="customerReference"
             control={control}
             render={({ field }) => (
               <InputText
+                inputId="quote-customer-reference-input"
                 value={field.value}
                 readOnly={isQuoteCompleted || !canManage}
                 onChange={(ev) => field.onChange(ev.target.value || '')}
@@ -324,12 +330,14 @@ const QuotesTabPreview = (props: StylableProps) => {
         <InputField
           className={styles.editor}
           label={t('quotes.tabs.preview.customerComment')}
+          name="quote-customer-comment-input"
         >
           <Controller
             name="customerComment"
             control={control}
             render={({ field }) => (
               <InputText
+                inputId="quote-customer-comment-input"
                 textarea
                 rows={4}
                 value={field.value}

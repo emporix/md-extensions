@@ -222,6 +222,20 @@ describe('QuotesTabPreview', () => {
     vi.clearAllMocks()
   })
 
+  // The labels are tied to their fields (screen readers, click on the label).
+  it('ties the labels of the text fields to their fields', async () => {
+    renderPreview()
+    await screen.findByTestId('quote-preview-table')
+
+    const field = (label: RegExp) => screen.getByLabelText(label)
+    expect(field(/^validity/i).tagName).toBe('INPUT')
+    expect(field(/^comment$/i).tagName).toBe('TEXTAREA')
+    expect(field(/customer reference/i).tagName).toBe('INPUT')
+    expect(field(/customer comment/i).tagName).toBe('TEXTAREA')
+    // Shipping method is a dropdown: its label names the group around it.
+    expect(screen.getByRole('group', { name: /shipping method/i })).toBeTruthy()
+  })
+
   it('shows the priced lines, the texts and the subtotal', async () => {
     renderPreview()
 

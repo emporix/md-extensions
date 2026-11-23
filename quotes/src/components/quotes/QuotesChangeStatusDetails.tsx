@@ -128,6 +128,7 @@ const QuotesChangeStatusDetails = (props: QuotesChangeStatusDetailsProps) => {
       )}
       <InputField
         label={t('quotes.dialog.status.form.comment')}
+        name="quote-status-comment-input"
         className={styles.commentField}
       >
         <Controller
@@ -135,6 +136,7 @@ const QuotesChangeStatusDetails = (props: QuotesChangeStatusDetailsProps) => {
           control={control}
           render={({ field }) => (
             <InputText
+              inputId="quote-status-comment-input"
               textarea
               rows={6}
               value={field.value ?? ''}

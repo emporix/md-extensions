@@ -225,6 +225,11 @@ describe('QuotesTabGeneral', () => {
       })
       renderGeneral()
 
+      // The label of the customer name is tied to its field.
+      expect(
+        await screen.findByLabelText(/customer/i, { selector: 'input' })
+      ).toBe(screen.getByTestId('quote-customer-name-input'))
+
       // The synced customer is the last update of the form.
       await waitFor(() =>
         expect(
