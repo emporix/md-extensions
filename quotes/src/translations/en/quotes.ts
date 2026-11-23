@@ -142,6 +142,8 @@ export default {
       validity: 'Validity',
       comment: 'Comment',
       subtotal: 'Subtotal',
+      fallbackCountryNotice:
+        'The quote has no address, so prices were matched for {{country}}. Products without a price may be priced for other countries.',
       unpricedWarning_one: 'Totals exclude {{count}} unpriced item',
       unpricedWarning_other: 'Totals exclude {{count}} unpriced items',
       taxClassPlaceholder: 'Select tax class',

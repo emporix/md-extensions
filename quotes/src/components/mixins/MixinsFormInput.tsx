@@ -428,7 +428,7 @@ const MixinsFormInput = (props: SchemaFormInputProps) => {
       default: {
         return (
           <div>
-            <i>Field not available</i>
+            <i>{t('mixins.labels.fieldNotAvailable')}</i>
           </div>
         )
       }

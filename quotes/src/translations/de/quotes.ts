@@ -145,6 +145,8 @@ export default {
       validity: 'Gültigkeit',
       comment: 'Kommentar',
       subtotal: 'Zwischensumme',
+      fallbackCountryNotice:
+        'Das Angebot hat keine Adresse, daher wurden die Preise für {{country}} abgeglichen. Produkte ohne Preis haben möglicherweise Preise für andere Länder.',
       unpricedWarning_one:
         'Die Summen enthalten {{count}} Position ohne Preis nicht',
       unpricedWarning_other:

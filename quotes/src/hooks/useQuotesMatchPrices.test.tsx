@@ -180,6 +180,50 @@ describe('useQuotesMatchPrices', () => {
       })
     })
 
+    describe('home base of the quote site', () => {
+      const homeBaseSite = (country: string | undefined, shipTo: string[]) => ({
+        code: 'main',
+        shipToCountries: shipTo,
+        homeBase: { address: { country } },
+      })
+      const countryOf = async (quote: Quote) => {
+        mocks.matchPrices.mockResolvedValue(match)
+        await getMatcher()(quote, [newItem('p1')])
+        return mocks.matchPrices.mock.calls[0][0].targetLocation.countryCode
+      }
+
+      it('prefers the home base country over the first ship-to country when the site ships to it', async () => {
+        mocks.sites = [homeBaseSite('AT', ['DE', 'AT'])]
+        expect(await countryOf(unpricedQuote())).toBe('AT')
+      })
+
+      it('matches the home base country ignoring case and spaces', async () => {
+        mocks.sites = [homeBaseSite(' at ', ['DE', 'AT'])]
+        expect(await countryOf(unpricedQuote())).toBe('AT')
+      })
+
+      it('ignores a home base country the site does not ship to', async () => {
+        mocks.sites = [homeBaseSite('US', ['DE', 'AT'])]
+        expect(await countryOf(unpricedQuote())).toBe('DE')
+      })
+
+      it.each([
+        ['blank', ' '],
+        ['missing', undefined],
+      ])(
+        'falls back to the first ship-to country for a %s home base country',
+        async (_name, country) => {
+          mocks.sites = [homeBaseSite(country, ['DE', 'AT'])]
+          expect(await countryOf(unpricedQuote())).toBe('DE')
+        }
+      )
+
+      it('keeps the shipping address country before the home base', async () => {
+        mocks.sites = [homeBaseSite('AT', ['DE', 'AT'])]
+        expect(await countryOf(withAddress())).toBe('PL')
+      })
+    })
+
     it('fails when the first ship-to country is whitespace', async () => {
       mocks.sites = [siteWith(['  '])]
       const error = await getMatcher()(unpricedQuote(), [newItem('p1')]).catch(

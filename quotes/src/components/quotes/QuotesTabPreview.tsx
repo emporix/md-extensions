@@ -13,6 +13,7 @@ import {
 import EmptyContent from '../shared/EmptyContent'
 import InputField from '../shared/InputField'
 import QuotesTabPreviewTable from './QuotesTabPreviewTable'
+import FallbackCountryNotice from './FallbackCountryNotice'
 import UnpricedItemsWarning from './UnpricedItemsWarning'
 import { useQuoteData } from '../../context/Quote.provider'
 import { useUIBlocker } from '../../context/UIBlocker'
@@ -223,6 +224,7 @@ const QuotesTabPreview = (props: StylableProps) => {
               count={countUnpricedItems(quote.items)}
             />
           )}
+          <FallbackCountryNotice quote={quote} className={styles.warning} />
           <QuotesTabPreviewTable
             className={styles.table}
             control={control}

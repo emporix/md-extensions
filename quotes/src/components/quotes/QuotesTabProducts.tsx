@@ -9,6 +9,7 @@ import {
   useToast,
 } from '@emporix/component-library'
 import EmptyContent from '../shared/EmptyContent'
+import FallbackCountryNotice from './FallbackCountryNotice'
 import QuotesTabProductsSelected from './QuotesTabProductsSelected'
 import QuotesSelectProductsDialog from './QuotesSelectProductsDialog'
 import { useQuoteData } from '../../context/Quote.provider'
@@ -108,7 +109,7 @@ const QuotesTabProducts = (props: StylableProps) => {
         refreshData()
       } catch (e) {
         console.error(e)
-        // COP-7125: without a shipping address the match uses the first
+        // COP-7125: without a shipping address the match uses the home base or the first
         // ship-to country of the quote's site; with none, nothing is added.
         toast.showToast(
           isNoShipToCountryError(e)
@@ -146,6 +147,7 @@ const QuotesTabProducts = (props: StylableProps) => {
 
   return (
     <div className={className}>
+      <FallbackCountryNotice quote={quote} className={styles.notice} />
       <SectionBox
         name={t('quotes.tabs.products.selectedItems')}
         actions={

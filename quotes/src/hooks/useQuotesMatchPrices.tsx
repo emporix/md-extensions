@@ -75,10 +75,11 @@ const buildPrice = (
 
 /**
  * Country used for the price match, in this order: the country of the
- * quote's shipping address, then the first ship-to country of the quote's own
- * site (found by `quote.siteCode`, not the currently selected site, which may
- * differ). price-v2 rejects an empty or blank country with HTTP 400, so a blank
- * candidate is skipped.
+ * quote's shipping address; then the country of the home base of the quote's
+ * own site (found by `quote.siteCode`, not the currently selected site, which
+ * may differ), when the site ships to it; then the first ship-to country of
+ * that site. price-v2 rejects an empty or blank country with HTTP 400, so a
+ * blank candidate is skipped.
  *
  * @returns the country code, or undefined when none exists; the caller must
  * then not call price-v2 and tell the employee to set ship-to countries.
@@ -86,13 +87,24 @@ const buildPrice = (
 export const resolveMatchCountry = (
   quote: Quote,
   sites: readonly Site[] | null | undefined
-): string | undefined =>
-  [
-    quote.shippingAddress?.countryCode,
-    sites?.find((site) => site.code === quote.siteCode)?.shipToCountries?.[0],
-  ]
-    .map((code) => code?.trim())
-    .find(Boolean)
+): string | undefined => {
+  const site = sites?.find((candidate) => candidate.code === quote.siteCode)
+  const shipTo = (site?.shipToCountries ?? []).map((code) => code?.trim())
+  const homeBase = site?.homeBase?.address?.country?.trim()
+  // The ship-to entry is returned, so price-v2 gets the code as the site spells it.
+  const homeBaseShipped = homeBase
+    ? shipTo.find((code) => code?.toUpperCase() === homeBase.toUpperCase())
+    : undefined
+  return [
+    quote.shippingAddress?.countryCode?.trim(),
+    homeBaseShipped,
+    shipTo[0],
+  ].find(Boolean)
+}
+
+/** Whether the match falls back to a country of the site (no shipping country). */
+export const usesFallbackMatchCountry = (quote: Quote): boolean =>
+  !quote.shippingAddress?.countryCode?.trim()
 
 export const useQuotesMatchPrices = () => {
   const { matchPrices } = usePricesApi()
