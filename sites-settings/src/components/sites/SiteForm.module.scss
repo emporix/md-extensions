@@ -23,10 +23,6 @@ $gap: 16px;
   }
 }
 
-.span2 {
-  grid-column: span 2;
-}
-
 .span4 {
   grid-column: span 4;
 }
@@ -44,10 +40,14 @@ $gap: 16px;
   .span8 {
     grid-column: span 12;
   }
+}
 
-  .span2 {
-    grid-column: span 6;
-  }
+// MD's Active / Default checkboxes (two `col-2`): side by side, left-aligned,
+// at every width.
+.checkboxRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
 }
 
 .checkboxField {

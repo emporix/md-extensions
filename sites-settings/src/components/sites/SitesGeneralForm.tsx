@@ -133,8 +133,8 @@ const SitesGeneralForm = () => {
 
   return (
     <div className={styles.grid}>
-      <div className={styles.row}>
-        <div className={`${styles.span2} ${styles.checkboxField}`}>
+      <div className={styles.checkboxRow}>
+        <div className={styles.checkboxField}>
           <FieldLabel htmlFor="site-active">
             {t('sites.form.active')}
           </FieldLabel>
@@ -152,7 +152,7 @@ const SitesGeneralForm = () => {
             )}
           />
         </div>
-        <div className={`${styles.span2} ${styles.checkboxField}`}>
+        <div className={styles.checkboxField}>
           <FieldLabel htmlFor="site-default">
             {t('sites.form.default')}
           </FieldLabel>

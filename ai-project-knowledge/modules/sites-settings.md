@@ -41,7 +41,7 @@ Hash routes (`sites-settings/src/constants/paths.ts`): `/` list, `/add`, `/:site
 - Timezone: every IANA zone with its current UTC offset; a saved zone the browser does not know is listed first (`timezone.helpers.ts`).
 - Tax determination options are fixed EN/DE names shown in the content language.
 - Create → success toast, the host is told, the page replaces itself with `/:newCode`. Edit → PUT, toast, host told, reload. Mixin save → PATCH `{ mixins: { ...site.mixins, [key]: data }, metadata: { mixins: { [key]: url } } }`, toast, host told, reload.
-- Rows of the form are 12-column grids that stack one field per line when the row is narrower than three 200px controls (container query).
+- Rows of the form are 12-column grids that stack one field per line when the row is narrower than three 200px controls (container query); Active and Default stay side by side, left-aligned, at every width.
 
 ## Host callback
 
