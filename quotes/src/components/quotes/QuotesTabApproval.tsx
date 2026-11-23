@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import {
   PrimaryButton,
   SecondaryButton,
+  Tooltip,
   useToast,
 } from '@emporix/component-library'
 import { useUIBlocker } from '../../context/UIBlocker'
@@ -21,6 +22,7 @@ import {
   buildQuotePendingPayload,
   buildQuoteSendPayload,
 } from '../../helpers/quoteChangeStatus.helpers'
+import { getQuoteOpenBlockers } from '../../helpers/quotePricing.helpers'
 import { getApiErrorMessage } from '../../helpers/api'
 import { quotesListPath } from '../../constants/paths'
 import QuotesChangeStatus from './QuotesChangeStatus'
@@ -117,6 +119,20 @@ const QuotesTabApproval = (props: StylableProps) => {
     [sendQuote]
   )
 
+  // Why Create and Approve are disabled, resolved from the quote shown now.
+  const incompleteReason = useMemo(() => {
+    if (!quote) return undefined
+    const { unpricedItems, addressMissing } = getQuoteOpenBlockers(quote)
+    const reasons = [
+      ...(unpricedItems > 0
+        ? [t('quotes.tabs.approval.missingPrice', { count: unpricedItems })]
+        : []),
+      ...(addressMissing ? [t('quotes.tabs.approval.missingAddress')] : []),
+    ]
+    if (reasons.length === 0) return undefined
+    return `${t('quotes.tabs.approval.incompleteIntro')} ${reasons.join(', ')}.`
+  }, [quote, t])
+
   const quoteCanBeChange = useMemo(() => {
     return getQuoteApprovalActions(quote?.status.value) !== undefined
   }, [quote])
@@ -129,9 +145,20 @@ const QuotesTabApproval = (props: StylableProps) => {
           <SecondaryButton disabled={!canManage} onClick={onPendingSubmit}>
             {t('quotes.tabs.approval.pendingBtn')}
           </SecondaryButton>
-          <PrimaryButton disabled={!canManage} onClick={onCreateSubmit}>
-            {t('quotes.tabs.approval.createBtn')}
-          </PrimaryButton>
+          <Tooltip
+            content={incompleteReason}
+            disabled={!incompleteReason}
+            position="top"
+          >
+            <span data-testid="quote-create-wrapper">
+              <PrimaryButton
+                disabled={!canManage || !!incompleteReason}
+                onClick={onCreateSubmit}
+              >
+                {t('quotes.tabs.approval.createBtn')}
+              </PrimaryButton>
+            </span>
+          </Tooltip>
         </>
       )
     } else if (actions === 'negotiate') {
@@ -153,19 +180,27 @@ const QuotesTabApproval = (props: StylableProps) => {
           >
             {t('quotes.tabs.approval.declineBtn')}
           </SecondaryButton>
-          <PrimaryButton
-            disabled={!canManage}
-            onClick={() => setQuoteUpdateType(QuoteChangeStatusType.change)}
+          <Tooltip
+            content={incompleteReason}
+            disabled={!incompleteReason}
+            position="top"
           >
-            {t('quotes.tabs.approval.approveBtn')}
-          </PrimaryButton>
+            <span data-testid="quote-approve-wrapper">
+              <PrimaryButton
+                disabled={!canManage || !!incompleteReason}
+                onClick={() => setQuoteUpdateType(QuoteChangeStatusType.change)}
+              >
+                {t('quotes.tabs.approval.approveBtn')}
+              </PrimaryButton>
+            </span>
+          </Tooltip>
         </>
       )
     }
     // Permissions may arrive after the quote (a deep link); MD memoized on
     // the quote alone and kept the buttons disabled.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `t` follows i18n.language
-  }, [quote, canManage, onCreateSubmit, onPendingSubmit])
+  }, [quote, canManage, onCreateSubmit, onPendingSubmit, incompleteReason])
 
   return (
     <div className={className}>

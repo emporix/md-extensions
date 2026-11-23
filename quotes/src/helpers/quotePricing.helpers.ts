@@ -1,6 +1,7 @@
 import {
   Item,
   Price,
+  Quote,
   QuoteEditOp,
   QuoteStatus,
   QuoteUpdateRequest,
@@ -18,6 +19,22 @@ const isUnpriced = (item: Item) => !item.price
 
 export const countUnpricedItems = (items: readonly Item[]): number =>
   items.filter(isUnpriced).length
+
+export interface QuoteOpenBlockers {
+  readonly unpricedItems: number
+  readonly addressMissing: boolean
+}
+
+/**
+ * What keeps a quote from being OPEN: the quote service rejects it while an
+ * item has no price or the billing or the shipping address is missing.
+ */
+export const getQuoteOpenBlockers = (
+  quote: Pick<Quote, 'items' | 'billingAddress' | 'shippingAddress'>
+): QuoteOpenBlockers => ({
+  unpricedItems: countUnpricedItems(quote.items ?? []),
+  addressMissing: !quote.billingAddress || !quote.shippingAddress,
+})
 
 /** The row's tax rate as `19%`, blank while the backend has not set one. */
 export const formatTaxRate = (item: Item): string => {

@@ -64,6 +64,8 @@ const quote = (status: string) => ({
   status: { value: status },
   businessModel: 'B2B',
   items: [],
+  billingAddress: { id: 'a1' },
+  shippingAddress: { id: 'a1' },
   metadata: { mixins: {} },
 })
 
@@ -475,7 +477,7 @@ describe('QuotesTabApproval', () => {
     renderApproval({ openAfterLoad: true })
 
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Send as Pending Quote' })
+      await screen.findByRole('button', { name: 'Save as Pending Quote' })
     )
 
     await waitFor(() =>
@@ -491,18 +493,18 @@ describe('QuotesTabApproval', () => {
     expect(await screen.findByTestId('list')).toBeTruthy()
   })
 
-  it('offers both Create Quote and Send as Pending Quote for a quote being created', async () => {
+  it('offers both Create Quote and Save as Pending Quote for a quote being created', async () => {
     quotesApi.getQuoteById.mockResolvedValue(quote('CREATING'))
     renderApproval({ openAfterLoad: true })
 
     await screen.findByRole('button', { name: 'Create Quote' })
     expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual([
-      'Send as Pending Quote',
+      'Save as Pending Quote',
       'Create Quote',
     ])
   })
 
-  it('keeps Send as Pending Quote disabled without Quotes Manager', async () => {
+  it('keeps Save as Pending Quote disabled without Quotes Manager', async () => {
     permissions.granted = []
     quotesApi.getQuoteById.mockResolvedValue(quote('CREATING'))
     renderApproval({ openAfterLoad: true })
@@ -510,7 +512,7 @@ describe('QuotesTabApproval', () => {
     expect(
       (
         (await screen.findByRole('button', {
-          name: 'Send as Pending Quote',
+          name: 'Save as Pending Quote',
         })) as HTMLButtonElement
       ).disabled
     ).toBe(true)
@@ -524,7 +526,7 @@ describe('QuotesTabApproval', () => {
     renderApproval({ openAfterLoad: true })
 
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Send as Pending Quote' })
+      await screen.findByRole('button', { name: 'Save as Pending Quote' })
     )
 
     await waitFor(() =>
@@ -570,26 +572,121 @@ describe('QuotesTabApproval', () => {
     expect(screen.queryByTestId('list')).toBeNull()
   })
 
-  // COP-7125 (MD quotesNullSafe.test.tsx): the quote service refuses to send
-  // a quote with unpriced items and says why.
-  it('shows the backend message when creating an incomplete quote', async () => {
-    quotesApi.getQuoteById.mockResolvedValue(
-      unpricedQuote(QuoteStatus.CREATING)
-    )
-    quotesApi.changeQuoteStatus.mockRejectedValue({
-      response: { data: { message: 'Items without price' } },
+  // COP-7125: Create stays disabled while the quote service would refuse the
+  // quote, and the tooltip says why.
+  describe('Create Quote of an incomplete quote', () => {
+    const createWrapper = async () => {
+      await screen.findByRole('button', { name: 'Create Quote' })
+      return screen.getByTestId('quote-create-wrapper')
+    }
+
+    it('is disabled and names the missing prices and address', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(
+        unpricedQuote(QuoteStatus.CREATING)
+      )
+      renderApproval({ openAfterLoad: true })
+      await createWrapper()
+
+      expect(button('Create Quote').disabled).toBe(true)
+      fireEvent.mouseEnter(screen.getByTestId('quote-create-wrapper'))
+      expect(
+        await screen.findByText(
+          'The quote cannot be created yet: 2 products have no price, the billing or shipping address is missing.'
+        )
+      ).toBeTruthy()
     })
+
+    it('is disabled for one unpriced product when the addresses exist', async () => {
+      quotesApi.getQuoteById.mockResolvedValue({
+        ...unpricedQuote(QuoteStatus.CREATING),
+        shippingAddress: { id: 'a1' },
+        billingAddress: { id: 'a1' },
+      })
+      renderApproval({ openAfterLoad: true })
+      await createWrapper()
+
+      expect(button('Create Quote').disabled).toBe(true)
+      fireEvent.mouseEnter(screen.getByTestId('quote-create-wrapper'))
+      expect(
+        await screen.findByText(
+          'The quote cannot be created yet: 2 products have no price.'
+        )
+      ).toBeTruthy()
+    })
+
+    it('is disabled for a missing address when every product has a price', async () => {
+      quotesApi.getQuoteById.mockResolvedValue({
+        ...quote('CREATING'),
+        shippingAddress: null,
+      })
+      renderApproval({ openAfterLoad: true })
+      await createWrapper()
+
+      expect(button('Create Quote').disabled).toBe(true)
+      fireEvent.mouseEnter(screen.getByTestId('quote-create-wrapper'))
+      expect(
+        await screen.findByText(
+          'The quote cannot be created yet: the billing or shipping address is missing.'
+        )
+      ).toBeTruthy()
+    })
+
+    it('stays enabled for a complete quote', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('CREATING'))
+      renderApproval({ openAfterLoad: true })
+      await createWrapper()
+
+      expect(button('Create Quote').disabled).toBe(false)
+    })
+
+    it('still lets the incomplete quote be saved as pending', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(
+        unpricedQuote(QuoteStatus.CREATING)
+      )
+      renderApproval({ openAfterLoad: true })
+      await createWrapper()
+
+      expect(button('Save as Pending Quote').disabled).toBe(false)
+    })
+  })
+
+  // COP-7125: a pending quote offers only Decline and Approve.
+  it('offers Decline and Approve for a pending quote', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(quote('IN_PROGRESS'))
     renderApproval({ openAfterLoad: true })
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Create Quote' }))
+    await screen.findByRole('button', { name: 'Approve Quote' })
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual([
+      'Decline Quote',
+      'Approve Quote',
+    ])
+  })
 
-    await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
-        'Items without price',
-        '',
-        'error'
-      )
+  // COP-7125: Approve needs the same data as Create, with the same tooltip.
+  it('disables Approve of an incomplete pending quote and names what is missing', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(
+      unpricedQuote(QuoteStatus.IN_PROGRESS)
     )
+    renderApproval({ openAfterLoad: true })
+    await screen.findByRole('button', { name: 'Approve Quote' })
+
+    expect(button('Approve Quote').disabled).toBe(true)
+    // Decline stays available.
+    expect(button('Decline Quote').disabled).toBe(false)
+    fireEvent.mouseEnter(screen.getByTestId('quote-approve-wrapper'))
+    expect(
+      await screen.findByText(
+        'The quote cannot be created yet: 2 products have no price, the billing or shipping address is missing.'
+      )
+    ).toBeTruthy()
+  })
+
+  it('keeps Approve enabled for a complete pending quote', async () => {
+    quotesApi.getQuoteById.mockResolvedValue(quote('IN_PROGRESS'))
+    renderApproval({ openAfterLoad: true })
+    await screen.findByRole('button', { name: 'Approve Quote' })
+
+    expect(button('Approve Quote').disabled).toBe(false)
   })
 
   // COP-7125 (MD quotesNullSafe.test.tsx, "approval tab").
