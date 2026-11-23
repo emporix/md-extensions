@@ -1,0 +1,40 @@
+.headerSection {
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.headerRow {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+}
+
+.moduleTitle {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 34px;
+  color: #1b2029;
+}
+
+.highlightText {
+  margin: 0 0 0 0.5rem;
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 34px;
+  color: #2665b7;
+}
+
+.actions {
+  margin-left: auto;
+}
+
+.content {
+  margin-top: 0.5rem;
+}

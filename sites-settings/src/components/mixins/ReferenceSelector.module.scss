@@ -1,0 +1,129 @@
+// Ported from MD `ReferenceSelector.scss` (+ Prime MultiSelect chip look).
+.wrapper {
+  position: relative;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+}
+
+// Stand-in for the Prime MultiSelect (display="chip") input box.
+.chipsBox {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  min-height: 2.5rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #c7cad1;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  overflow: hidden;
+
+  &:focus-visible {
+    outline: 2px solid #3b73bb;
+    outline-offset: 1px;
+  }
+}
+
+.chipsBoxDisabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.chip {
+  max-width: 100%;
+}
+
+.placeholder {
+  color: #828a99;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdownIcon {
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+  color: #828a99;
+}
+
+// MD `p-button-text` icon buttons next to the selector.
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #3b73bb;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: rgba(59, 115, 187, 0.04);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+}
+
+.goToButton {
+  margin-left: 0.25rem;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1);
+  min-width: 100%;
+  width: max-content;
+  background: white;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  border: 1px solid #c7cad1;
+  border-bottom: 0;
+  background: white;
+  font-size: 12px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.5rem;
+  border: none;
+  box-shadow: none;
+  font-size: 1rem;
+
+  &:focus {
+    outline: none;
+    box-shadow: none;
+    border: none;
+  }
+}
+
+.table {
+  border: 0;
+}
+
+.selectColumn {
+  width: 2rem;
+}
