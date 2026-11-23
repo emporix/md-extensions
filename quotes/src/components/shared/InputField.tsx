@@ -50,7 +50,7 @@ const InputField = ({
         .join(' ')}
     >
       <div className={styles.labelRow}>
-        <span id={labelId} style={{ display: 'contents' }}>
+        <span id={labelId} className={styles.labelWrap}>
           <FieldLabel htmlFor={name} required={required} tooltip={tooltip}>
             {typeof label === 'string' ? textToTitleCase(label) : label}
           </FieldLabel>
