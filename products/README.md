@@ -10,7 +10,7 @@ Management Dashboard "Products" module (list, create, edit), extracted into an `
 | Exposes | `./RemoteComponent` → `src/RemoteComponent.tsx` (named **and** default export) |
 | Local dev port | `5178` (`strictPort`) |
 | Host env var | `VITE_PRODUCTS_URL` → `.../assets/remoteEntry.js` |
-| Component library | `@emporix/component-library` `2.18.0` |
+| Component library | `@emporix/component-library` `2.30.1` |
 | MD wiring mode | A — permanent remote (`url:` on the route) |
 
 ## Screens

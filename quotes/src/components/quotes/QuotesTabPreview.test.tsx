@@ -199,6 +199,12 @@ const totalsRow = (label: 'Subtotal' | 'Shipping Cost' | 'Total') =>
   screen.getByText(`${label}:`).parentElement?.textContent
 const pageText = () => document.body.textContent ?? ''
 
+const discountText = () =>
+  (
+    (screen.getByTestId('quote-item-discount-0').querySelector('input') ??
+      screen.getByTestId('quote-item-discount-0')) as HTMLInputElement
+  ).value
+
 describe('QuotesTabPreview', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('en')
@@ -1431,11 +1437,6 @@ describe('QuotesTabPreview', () => {
         which: 38,
       })
     }
-    const discountText = () =>
-      (
-        (screen.getByTestId('quote-item-discount-0').querySelector('input') ??
-          screen.getByTestId('quote-item-discount-0')) as HTMLInputElement
-      ).value
 
     it('keeps the discount when a new quantity reaches a cheaper price tier', async () => {
       // 10% off the list price of 130: 117 a piece.
@@ -1511,6 +1512,84 @@ describe('QuotesTabPreview', () => {
       fireEvent.click(ten)
 
       expect(await within(table).findByText('Chair 6')).toBeTruthy()
+    })
+  })
+
+  // A typed discount stays between 0 and 100%. MD took any number, so a
+  // discount of 125% gave negative prices.
+  describe('discount limit', () => {
+    // Two chairs at the list price of 130.
+    const openChair = async () => {
+      renderPreview()
+      const table = await screen.findByTestId('quote-preview-table')
+      await within(table).findByText('Chair')
+      await waitFor(() => expect(shippingApi.getZones).toHaveBeenCalled())
+      return table
+    }
+
+    it('caps a typed discount at 100% and saves the capped line', async () => {
+      const table = await openChair()
+
+      typeNumber('quote-item-discount-0', '150')
+
+      await waitFor(() => expect(discountText()).toBe('100%'))
+      // 150% gave a unit price of -€65.00.
+      expect(within(table).getAllByText('€0.00').length).toBeGreaterThan(0)
+      expect(table.textContent).not.toContain('-€')
+      // Save needs a shipping method.
+      fireEvent.click(screen.getByTestId('quote-shipping-method-control'))
+      fireEvent.mouseDown(await screen.findByRole('option', { name: 'DHL' }))
+      await waitFor(() => expect(save().disabled).toBe(false))
+      fireEvent.click(save())
+      await waitFor(() =>
+        expect(quotesApi.updateQuote).toHaveBeenCalledWith(
+          'Q1',
+          expect.arrayContaining([
+            {
+              op: 'REPLACE',
+              path: '/items',
+              value: [
+                expect.objectContaining({
+                  price: expect.objectContaining({
+                    discount: 100,
+                    newUnitPrice: 0,
+                    totalNetValue: 0,
+                  }),
+                }),
+              ],
+            },
+          ])
+        )
+      )
+    })
+
+    it('ignores a minus sign typed into the discount', async () => {
+      const table = await openChair()
+
+      typeNumber('quote-item-discount-0', '-5')
+
+      // 5% off 130.
+      await waitFor(() => expect(discountText()).toBe('5%'))
+      expect(within(table).getByText('€123.50')).toBeTruthy()
+    })
+
+    it('takes a decimal discount typed with a dot', async () => {
+      const table = await openChair()
+
+      typeNumber('quote-item-discount-0', '12.5')
+
+      // 12.5% off 130.
+      await waitFor(() => expect(discountText()).toBe('12.5%'))
+      expect(within(table).getByText('€113.75')).toBeTruthy()
+    })
+
+    it('shows the negative discount of a line whose net price is above the list price', async () => {
+      await openChair()
+
+      // €312 for two chairs: 156 a piece, 20% above the list price.
+      typeNumber('quote-item-net-price-0', '312')
+
+      await waitFor(() => expect(discountText()).toBe('-20%'))
     })
   })
 })

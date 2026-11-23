@@ -39,7 +39,12 @@ import {
   getZoneShippingMethods,
   selectShippingFee,
 } from '../../helpers/quoteShipping.helpers'
-import { getUnitPriceForNetValue } from '../../helpers/quoteItems.helpers'
+import {
+  MAX_ITEM_DISCOUNT,
+  MIN_ITEM_DISCOUNT,
+  getUnitPriceForNetValue,
+  limitItemDiscount,
+} from '../../helpers/quoteItems.helpers'
 import {
   calculateDiscount,
   formatTaxRate,
@@ -557,11 +562,23 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
                   locale={i18n.language}
                   maxFractionDigits={1}
                   suffix={'%'}
+                  // A discount is typed as 0-100% (MD took any number, so
+                  // 125% gave negative prices); a minimum of 0 also blocks
+                  // the minus sign. A net price above the list price gives a
+                  // negative discount, which is the minimum then: PrimeReact
+                  // shows a value under the minimum as the minimum.
+                  min={Math.min(MIN_ITEM_DISCOUNT, field.value ?? 0)}
+                  max={MAX_ITEM_DISCOUNT}
                   value={field.value}
                   onChange={(e) => {
-                    if (e.value === undefined || e.value === null) return
-                    onDiscountChange(e.value, o.rowIndex)
-                    field.onChange(e.value)
+                    // PrimeReact reports the typed number before its limits
+                    // (it applies them on blur, which the library does not
+                    // report) and a lone minus sign as '-', so the form gets
+                    // the limited number only.
+                    if (typeof e.value !== 'number') return
+                    const discount = limitItemDiscount(e.value)
+                    onDiscountChange(discount, o.rowIndex)
+                    field.onChange(discount)
                   }}
                   data-testid={`quote-item-discount-${o.rowIndex}`}
                 />

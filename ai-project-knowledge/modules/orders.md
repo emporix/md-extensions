@@ -69,7 +69,7 @@ Delivery time (`orders/src/components/orders/DeliveryTimeForm.tsx`) is editable 
 
 Calculated entries (`orders/src/components/orders/entries/OrderEntries.tsx`): when status is not `COMPLETED` and authorized amount is below `calculatedPrice.finalPrice.grossValue`, a warning is shown. Add entry is hidden when status is `COMPLETED` or the list is read-only, and disabled without manager (`orders/src/components/orders/entries/OrderEntriesList.tsx`). A quantity change posts the full deduplicated entry list immediately via `addEntries` (`orders/src/hooks/orders/useEntriesColumns.tsx`). Quantity `0` is a legal value on that call.
 
-Add-entry dialog (`orders/src/components/orders/entries/AddEntryDialog.tsx`, tests in `AddEntryDialog.test.tsx`), built on the component-library `ProductsBrowser` (CL 2.29.1, `orders/package.json`):
+Add-entry dialog (`orders/src/components/orders/entries/AddEntryDialog.tsx`, tests in `AddEntryDialog.test.tsx`), built on the component-library `ProductsBrowser` (CL 2.30.1, `orders/package.json`):
 
 - Two views, list and tree. Columns: image, name, id, code, product type. The image is the first media item that is an image (or has no content type), resized to a 32x32 thumbnail (`orders/src/helpers/productsBrowser.helpers.ts`).
 - Products load through `syncPaginatedProducts`. A selected category loads the products of its whole branch, via `withCategoryScope` from `@emporix/api-calls` (test `loads the products of the whole branch of a selected category`).
@@ -104,7 +104,7 @@ The payment tab renders only when `PAYMENT_GATEWAY` is enabled. It uses `payment
 
 Status colours (`orders/src/components/orders/payment/paymentStatus.ts`, `paymentStatus.test.ts`): `PENDING` info; `AUTHORIZATION_FAILURE`, `CAPTURE_FAILURE`, `CANCELLATION_FAILURE`, `FAILURE` danger; `AUTHORIZATION_SUCCESS`, `CAPTURE_SUCCESS`, `SUCCESS`, `CANCELLATION_SUCCESS` success; any other status warning. Transaction type: `AUTHORIZATION`, `AUTHORIZATION_START`, `AUTHORIZATION_CALLBACK` info; `CANCEL` danger; `CAPTURE` success; other types (including `REFUND`) warning.
 
-Refund is shown only when payment status is `CAPTURE_SUCCESS`. Max amount is `order.totalPrice` minus the sum of transaction entries whose type is `REFUND`. Submit calls `refundCall` with the entered amount and `order.currency`, then reloads the transaction. The input is read-only and the button disabled without manager, or when the amount is `0` or null.
+Refund is shown only when payment status is `CAPTURE_SUCCESS`. Max amount is `order.totalPrice` minus the sum of transaction entries whose type is `REFUND`. An amount typed or pasted above the max is shown and kept as the max, so a refund never sends more than the max (CL ≥ 2.30.1 `InputNumber` reports the limited value; on 2.30.0 the field showed the max while the typed amount was sent; test `OrderPaymentInfo.test.tsx`, COP-7116). Submit calls `refundCall` with the entered amount and `order.currency`, then reloads the transaction. The input is read-only and the button disabled without manager, or when the amount is `0` or null.
 
 ## Mixins
 
