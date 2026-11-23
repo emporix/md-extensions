@@ -17,6 +17,18 @@
   border: 0;
   border-radius: 999px;
   cursor: pointer;
+  transition: color 0.2s ease;
+
+  // Same hover and focus as the component library IconButton (MD p-button-text).
+  &:hover:not(:disabled),
+  &:focus-visible {
+    color: var(--color-primary);
+  }
+
+  &:focus-visible {
+    outline: 0;
+    box-shadow: var(--focus-ring-box-shadow);
+  }
 
   &:disabled {
     opacity: 0.5;
