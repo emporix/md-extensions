@@ -127,7 +127,7 @@ No page-level test was found for Entra restriction, force delete, or the custome
 | Host env var | `VITE_USERS_AND_GROUPS_URL` (`management-dashboard` `.env.*`) |
 | Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7439), no site or `firebase.json` target of its own: `https://frontend-extensions-develop.web.app/users-and-groups/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod). Deployed by `.github/actions/deploy-remote` from `.github/workflows/users-and-groups-firebase-*.yaml` (`users-and-groups/README.md`) |
 | Local port | not pinned; `docs/MIGRATED_MODULES.md` lists `5173` (Vite's default) |
-| Local deviations | `npm run dev` is plain `vite`, so `.env.dev` is not loaded by mode |
+| Local deviations | none for `npm run dev`: it runs `vite --mode dev` and loads `VITE_API_URL` from `.env.dev` like the other remotes (plain `vite` loaded no env file and the standalone shell crashed with `VITE_API_URL is not configured`, fixed in COP-7439) |
 
 ## Not yet scanned
 

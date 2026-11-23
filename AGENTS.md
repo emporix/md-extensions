@@ -54,7 +54,7 @@ Local deviations:
 - `dashboard`: own `fetch` client (`src/dashboard/api/base.api.ts`), no router, CI on Node `24.x`.
 - `statistics`: own `fetch` in `src/api.ts`, no router (PrimeReact `TabView`).
 - `labels`: the list call is local (`src/api/labels.ts`) because the api-calls `fetchLabels` filter params are ignored by the service.
-- `users-and-groups`: `dev` runs plain `vite` and the port is not pinned.
+- `users-and-groups`: the port is not pinned.
 
 Sources: `*/vite.config.*`, `*/package.json`, `docs/MIGRATED_MODULES.md` (playbook-aligned remotes, next free port `5191`), and in `management-dashboard` `src/router/module-routes.tsx` and `.env.*` (host route keys and env vars). Per-remote detail: `ai-project-knowledge/modules/<remote>.md` → **Host wiring**.
 
@@ -65,7 +65,7 @@ Run inside the remote folder (`cd <remote>`), never at the repository root.
 | Purpose | Command | Evidence |
 |---|---|---|
 | Install | `npm ci` | `.github/workflows/*-firebase-preview.yaml` |
-| Start / dev | `npm run dev` (standalone shell; `vite --mode dev`, plain `vite` in `algolia-synonyms`, `dashboard`, `statistics`, `users-and-groups`) | `*/package.json` |
+| Start / dev | `npm run dev` (standalone shell; `vite --mode dev`, plain `vite` in `algolia-synonyms`, `dashboard`, `statistics`) | `*/package.json` |
 | Build | `npm run build:dev` / `build:stage` / `build:prod` (`tsc -b` first, except `algolia-synonyms`). `brands`, `catalogs`, `categories`, `classifications`, `companies`, `coupons`, `customers`, `labels`, `orders`, `products`, `quotes`, `returns`, `sites-settings`, `status-codes`, `taxes`, `units` first run `scripts/ensure-cors-origin.mjs`, which fails without a terminal when the dashboard origin is not in the `vite.config.ts` CORS list | `*/package.json`, `labels/scripts/ensure-cors-origin.mjs` |
 | Generate (API clients, schemas) | none | `*/package.json` |
 | Format | no `format` script; Prettier `3.5.0` with `<remote>/.prettierrc` (all but `algolia-synonyms`) | `*/package.json`, `*/.prettierrc` |
