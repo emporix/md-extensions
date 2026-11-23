@@ -13,7 +13,7 @@ This is a monorepo of independent Management Dashboard remotes, one Vite app per
 | Concern | Technology / version | Evidence |
 |---|---|---|
 | Language / runtime | TypeScript `~5.6.2` (`strict`) in twenty-one remotes, JavaScript (JSX) in `algolia-synonyms`. CI Node `20.x`, `24.x` for `dashboard`. No `.nvmrc`. | `*/package.json`, `*/tsconfig.app.json`, `.github/workflows/*-firebase-*.yaml` |
-| Package / build tool | npm with one `package-lock.json` per remote. Vite `^8.2.2` (`catalogs`, `categories`, `classifications`, `companies`, `coupons`, `customers`, `labels`, `orders`, `products`, `quotes`, `returns`, `sites-settings`, `status-codes`, `taxes`, `units`), `^7.3.1` (`algolia-synonyms`), `^6.0.5` (the rest) | `*/package.json` |
+| Package / build tool | npm with one `package-lock.json` per remote. Vite `^8.2.2` (`catalogs`, `categories`, `classifications`, `companies`, `coupons`, `customers`, `labels`, `orders`, `products`, `quotes`, `returns`, `sites-settings`, `status-codes`, `taxes`, `units`, `users-and-groups`), `^7.3.1` (`algolia-synonyms`), `^6.0.5` (the rest) | `*/package.json` |
 | Primary framework | React `^18.3.1`; `@originjs/vite-plugin-federation` (all but `algolia-synonyms`); `react-router` v7 and `react-i18next` (all but `algolia-synonyms` and `dashboard`); `@emporix/component-library` and `@emporix/api-calls` (see **Remotes**); PrimeReact only in `agentic-ai`, `dashboard`, `statistics` (8.x) and `algolia-synonyms` (10.x) | `*/package.json`, `*/vite.config.*` |
 | Persistence | none (standalone dev shells keep tenant and token in browser storage) | `*/src/helpers/settings.helpers.ts` |
 | Messaging / events | none | `*/package.json` |
@@ -45,7 +45,7 @@ This is a monorepo of independent Management Dashboard remotes, one Vite app per
 | `taxes` | playbook-aligned | `taxes` | `taxes` → `/apps/management/taxes/*` | `VITE_TAXES_URL` | `5189` | yes / yes | `2.29.2` / `1.7.1` |
 | `sites-settings` | playbook-aligned | `sitesSettings` | `sitesSettings` → `/apps/management/sites-settings/*` | `VITE_SITES_SETTINGS_URL` | `5190` | yes / yes | `2.30.1` / `1.7.1` |
 | `statistics` | legacy (PrimeReact) | `extension` | `statistics` → `/apps/administration/statistics` | `VITE_STATISTICS_URL` | not pinned | no / no | — / — |
-| `users-and-groups` | playbook-aligned | `usersAndGroups` | `usersAndGroups` → `/administration/users-and-groups/*` | `VITE_USERS_AND_GROUPS_URL` | not pinned (`5173` in docs) | yes / yes | `2.29.1` / `1.7.1` |
+| `users-and-groups` | playbook-aligned | `usersAndGroups` | `usersAndGroups` → `/administration/users-and-groups/*` | `VITE_USERS_AND_GROUPS_URL` | not pinned (`5173` in docs) | yes / yes | `2.30.1` / `1.7.1` |
 
 Local deviations:
 

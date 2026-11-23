@@ -82,9 +82,7 @@ export const getApiErrorMessage = (error: unknown): string | undefined => {
 }
 
 /** `details` field only — does not fall back to `message`. */
-export const getApiErrorDetailsField = (
-  error: unknown
-): string | undefined => {
+export const getApiErrorDetailsField = (error: unknown): string | undefined => {
   return formatApiErrorField(getApiErrorBody(error)?.details)
 }
 
@@ -97,9 +95,7 @@ export const getApiErrorDetails = (error: unknown): string | undefined => {
   if (!data) {
     return undefined
   }
-  return (
-    formatApiErrorField(data.details) ?? formatApiErrorField(data.message)
-  )
+  return formatApiErrorField(data.details) ?? formatApiErrorField(data.message)
 }
 
 export const getApiErrorResourceId = (error: unknown): string | undefined => {

@@ -125,6 +125,7 @@ No page-level test was found for Entra restriction, force delete, or the custome
 | Federation `name` | `usersAndGroups` (`users-and-groups/vite.config.ts`) |
 | Host route `key` → path | `usersAndGroups` → `/administration/users-and-groups/*` (inline `ExternalModule moduleName="usersAndGroups"`) (`management-dashboard` `src/router/module-routes.tsx`) |
 | Host env var | `VITE_USERS_AND_GROUPS_URL` (`management-dashboard` `.env.*`) |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7439), no site or `firebase.json` target of its own: `https://frontend-extensions-develop.web.app/users-and-groups/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod). Deployed by `.github/actions/deploy-remote` from `.github/workflows/users-and-groups-firebase-*.yaml` (`users-and-groups/README.md`) |
 | Local port | not pinned; `docs/MIGRATED_MODULES.md` lists `5173` (Vite's default) |
 | Local deviations | `npm run dev` is plain `vite`, so `.env.dev` is not loaded by mode |
 
