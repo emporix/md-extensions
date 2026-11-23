@@ -1,0 +1,36 @@
+.toolbar {
+  display: flex;
+  margin-bottom: 0.5rem;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tag {
+  // MD PrimeReact `Tag` (w-2rem): a small white-on-colour pill.
+  display: inline-flex;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 0.25rem 0.4rem;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.languageTag {
+  background: #ebb050; // MD --gold
+}
+
+.countryTag {
+  background: #79a3da; // MD --blue-3
+}
+
+.activeColumn {
+  width: 125px;
+}

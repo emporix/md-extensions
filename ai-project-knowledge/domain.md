@@ -16,6 +16,7 @@ Fields present on every opened `AppState`: `tenant`, `language`, `token`.
 | Remote | `AppState` | `RemoteComponent` |
 |---|---|---|
 | `returns`, `orders`, `categories`, `classifications`, `units`, `taxes` | `tenant`, `language`, `token`, optional `currency`, `contentLanguage`, optional `user`, `onError`. No permissions field. | `appState` required. |
+| `sites-settings` | Same shape plus optional `onSitesChanged` (host reloads its site switcher). No permissions field. | `appState` required. |
 | `products` | Same shape, with `currency` required. No permissions field. | `appState` required. |
 | `brands`, `users-and-groups`, `customer-groups`, `labels`, `status-codes`, `coupons`, `companies`, `quotes` | Same shape as returns/orders. | `appState` optional; fallback tenant/token `'default'`, language and content language `'en'`. |
 | `dashboard` | `tenant`, `language`, `token`, required `currency` and `user`, optional `permissions`. No `onError`. | Optional. Missing tenant or token renders “Missing required configuration”. Omitted language and content language become `'en'`. Omitted currency becomes `id`/`label` `EUR`, `default: true`. |
@@ -116,6 +117,10 @@ A unit of the Unit Handling Service has a code, a localized name, an optional sy
 ## Taxes
 
 The Tax Service keeps one **country tax record** per country (`locationCode` = country code, `location.countryCode`), and each record holds the **tax classes** of that country: a code unique within the record, a localized name and description, a rate in percent, and `order` / `isDefault` (`taxes/src/models/Tax.model.ts`). Adding a class to a country that has no record creates the record; deleting the last class deletes it. A country that is not active in the Country Service still keeps its record and shows as `<code> - Inactive`. Management Dashboard quotes, delivery zones and the country screens still read taxes through MD's own hook. Rules: `ai-project-knowledge/modules/taxes.md`.
+
+## Sites
+
+A site of the Site Service is one shop: a unique code, a name, active and default flags, languages with a default language, a currency plus available currencies, ship-to countries (active countries only), payment methods, how tax is determined (billing or shipping address), cart decimal digits (integer ≥ 0, default 2), a home base address with timezone and coordinates, an assisted-buying storefront URL, and site mixins (`sites-settings/src/helpers/sites.helpers.ts`, `@emporix/api-calls/next` `Site`). The default site cannot be deleted. Viewing needs Sites Viewer (inactive sites are listed for Sites Manager only), changing needs Sites Manager. The Management Dashboard keeps its own site list for the site switcher and reloads it when the remote reports a change. Rules: `ai-project-knowledge/modules/sites-settings.md`.
 
 ## Categories
 
