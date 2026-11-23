@@ -14,6 +14,11 @@ concurrency:
   group: agentic-ai-preview-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+
 jobs:
   extension_preview:
     name: Deploy agentic-ai extension preview
@@ -43,7 +48,7 @@ jobs:
       - run: npm ci
 
       - run: npm run build:dev
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a # v0.11.0
         id: firebase-preview
         with:
           firebaseToolsVersion: "12.9.1"
@@ -103,7 +108,7 @@ jobs:
           mv md/dist agentic-ai/dist
 
       - name: Deploy management-dashboard preview
-        uses: FirebaseExtended/action-hosting-deploy@v0
+        uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a # v0.11.0
         with:
           firebaseToolsVersion: "12.9.1"
           firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}"

@@ -30,7 +30,7 @@ jobs:
       - run: npm ci
 
       - run: npm run build:dev
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a # v0.11.0
         id: firebase-hosting-deploy-dev
         with:
           firebaseToolsVersion: "12.9.1"
@@ -40,7 +40,7 @@ jobs:
           target: emporix-agentic-ai-develop
 
       - run: npm run build:stage
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a # v0.11.0
         id: firebase-hosting-deploy-stage
         with:
           firebaseToolsVersion: "12.9.1"
