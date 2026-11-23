@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   DataTable,
-  FilterMatchMode,
   useToast,
   type DataTableColumnProps,
 } from '@emporix/component-library'
@@ -25,16 +24,7 @@ type TaxClassesTableProps = {
   readonly onChanged: () => void
 }
 
-const textColumn = (field: string): Partial<DataTableColumnProps> => ({
-  filter: true,
-  filterField: field,
-  filterMatchMode: FilterMatchMode.CONTAINS,
-  sortable: true,
-  showFilterMenu: false,
-  showClearButton: false,
-})
-
-/** The tax classes of one country; filters and sorts on the client, as MD. */
+/** The tax classes of one country; sorted on the client, without filters. */
 const TaxClassesTable = ({ tax, onChanged }: TaxClassesTableProps) => {
   const { t, i18n } = useTranslation()
   const { showSuccess, showError } = useToast()
@@ -67,7 +57,7 @@ const TaxClassesTable = ({ tax, onChanged }: TaxClassesTableProps) => {
         columnKey: 'code',
         header: t('taxes.label.taxCode'),
         field: 'code',
-        ...textColumn('code'),
+        sortable: true,
       },
       {
         columnKey: 'name',
@@ -75,14 +65,14 @@ const TaxClassesTable = ({ tax, onChanged }: TaxClassesTableProps) => {
         field: 'name',
         body: (taxClass: TaxClass) => getContentLangValue(taxClass.name),
         sortField: `name.${contentLanguage}`,
-        ...textColumn(`name.${contentLanguage}`),
+        sortable: true,
       },
       {
         columnKey: 'rate',
         header: t('taxes.label.taxRate'),
         field: 'rate',
         body: (taxClass: TaxClass) => `${taxClass.rate} %`,
-        ...textColumn('rate'),
+        sortable: true,
         align: 'right',
         headerStyle: { width: '150px', paddingRight: '12px' },
         bodyStyle: { paddingRight: '12px' },
@@ -99,6 +89,7 @@ const TaxClassesTable = ({ tax, onChanged }: TaxClassesTableProps) => {
         value={tax.taxClasses}
         columns={columns}
         paginator={false}
+        showFilter={false}
         rowActions={(taxClass: TaxClass) => (
           <TableActions
             managerPermission={canManage}

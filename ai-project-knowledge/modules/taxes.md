@@ -43,7 +43,7 @@ Hash routes (`taxes/src/constants/paths.ts`, `taxes/src/RemoteComponent.tsx`): `
 `TaxesTable` (`taxes/src/components/taxes/TaxesTable.tsx`) is lazy: every page, filter, sort, tenant change or refresh loads one page of country records.
 
 - Columns: expander, Country code (dropdown filter of the active countries, sortable), Country name (content language; `<code> - Inactive` when the country is not active). Selection checkboxes and row actions (delete) come from the shared `TableActions` and `BatchDeleteButton`.
-- A row expands to `TaxClassesTable`: Code, Name (content language), Rate (`N %`), filtered and sorted on the client, with edit (opens `/:countryCode/:taxClassCode`) and delete per class.
+- A row expands to `TaxClassesTable`: Code, Name (content language), Rate (`N %`), sorted on the client (no filter row), with edit (opens `/:countryCode/:taxClassCode`) and delete per class.
 - Delete (country row or batch) asks for confirmation, then deletes in parallel: a success toast "Tax was deleted" per record, an error toast "Error while deleting <code>" per failure. The selection clears and the list is read again from the server (MD filtered the stale rows after a batch delete).
 - Deleting a class shows "Tax was deleted" and reloads the list; deleting the last class deletes the country record (as in MD).
 - A failed load shows "Error while loading taxes. Please try again later" and an empty table; a failed country load shows its own toast.

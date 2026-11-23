@@ -216,6 +216,17 @@ describe('Taxes list', () => {
       expect(within(classes).getByText('7 %')).toBeTruthy()
     })
 
+    it('shows no filter row in the tax classes table', async () => {
+      renderList()
+      await screen.findByText('Germany')
+
+      expand('Germany')
+
+      const classes = await screen.findByTestId('tax-classes-DE')
+      expect(within(classes).queryAllByRole('textbox')).toHaveLength(0)
+      expect(classes.querySelector('.p-filter-column')).toBeNull()
+    })
+
     it('opens a class for editing from its edit action', async () => {
       renderList()
       await screen.findByText('Germany')
