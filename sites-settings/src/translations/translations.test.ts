@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import en from './en'
 import de from './de'
 
@@ -27,6 +29,45 @@ describe('translations', () => {
       )
     )
     expect(values.filter((value) => value === '')).toEqual([])
+  })
+})
+
+const SRC = fileURLToPath(new URL('..', import.meta.url))
+
+const sourceFiles = (dir: string): string[] =>
+  readdirSync(dir).flatMap((name) => {
+    const path = join(dir, name)
+    if (statSync(path).isDirectory()) return sourceFiles(path)
+    return /\.tsx?$/.test(name) && !/\.test\.tsx?$/.test(name) ? [path] : []
+  })
+
+/** Every literal `t('a.b.c')` key in the remote's source. */
+const usedKeys = [
+  ...new Set(
+    sourceFiles(SRC).flatMap((file) =>
+      [...readFileSync(file, 'utf8').matchAll(/\bt\(\s*'([\w.]+)'/g)].map(
+        (match) => match[1]
+      )
+    )
+  ),
+].sort()
+
+describe('keys used in the source', () => {
+  it('finds the keys of the ported screens', () => {
+    expect(usedKeys).toContain('sites.toasts.successDeleteSite')
+    expect(usedKeys).toContain('global.previousPage')
+  })
+
+  it.each(usedKeys)('has a text for %s in English and German', (key) => {
+    for (const bundle of [en, de]) {
+      const value = key
+        .split('.')
+        .reduce<unknown>(
+          (node, part) => (node as Record<string, unknown> | undefined)?.[part],
+          bundle
+        )
+      expect(typeof value).toBe('string')
+    }
   })
 })
 

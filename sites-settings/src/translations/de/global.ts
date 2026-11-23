@@ -83,4 +83,10 @@ export default {
       description: 'Sind Sie sicher, dass Sie fortfahren wollen?',
     },
   },
+  action: 'Aktion',
+  copied: 'Kopiert',
+  more: 'Mehr',
+  nextPage: 'Weiter',
+  previousPage: 'Zurück',
+  remove: 'Entfernen',
 }

@@ -82,4 +82,10 @@ export default {
       description: 'Are you sure you want to proceed?',
     },
   },
+  action: 'Action',
+  copied: 'Copied',
+  more: 'More',
+  nextPage: 'Next',
+  previousPage: 'Previous',
+  remove: 'Remove',
 }

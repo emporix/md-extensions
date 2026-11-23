@@ -56,7 +56,7 @@ Hash routes (`sites-settings/src/constants/paths.ts`): `/` list, `/add`, `/:site
 
 ## Translations
 
-`sites` (MD `modules/sites/translations`, without `select`, which stays in MD for the switcher) plus `global`, `auditLog`, `confirmBox`, `errors`, `mixins`. `translations.test.ts` checks EN/DE key parity and the MD `sites` keys.
+`sites` (MD `modules/sites/translations`, without `select`, which stays in MD for the switcher) plus `global`, `auditLog`, `confirmBox`, `errors`, `mixins`, `navigation` (the keys the copied mixins and audit-log code use, from `customers`). `translations.test.ts` checks EN/DE key parity, the MD `sites` keys, and that every literal `t('…')` key in the source has an EN and a DE text.
 
 ## Host wiring
 
