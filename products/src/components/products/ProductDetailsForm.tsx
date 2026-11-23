@@ -141,6 +141,12 @@ export const ProductDetailsForm = () => {
     setValue,
     resetField: formResetField,
   } = methods
+  // formState is a proxy that only tracks what a render reads, so both are
+  // read on every render. Save follows the fields that differ from the loaded
+  // product: RHF's form-wide `isDirty` also counts fields the product has no
+  // value for, and stays true after Discard.
+  const { isValid, dirtyFields } = formState
+  const hasChanges = Object.keys(dirtyFields).length > 0
   const { blockPanel } = useUIBlocker()
   const { navigate } = useCustomNavigate()
   const { getSingleConfiguration } = useConfigurationApi()
@@ -155,7 +161,10 @@ export const ProductDetailsForm = () => {
     `new:${typeParam ?? ''}:${subscriptionParam ?? ''}:${parentVariantIdParam ?? ''}:${siblingIdParam ?? ''}`
   const pendingProvenanceRef = useRef<ProvenanceEnvelope[]>([])
   const productScopeRef = useRef(productScope)
-  const fullResetRef = useRef(false)
+  // A newly mounted form has nothing to keep: its first reset is a full one.
+  // A `keepDirtyValues` reset keeps the field registrations, so the form's
+  // mount validation would never run and `isValid` would stay false.
+  const fullResetRef = useRef(true)
   const keepDirtyValuesRef = useRef(false)
   if (productScopeRef.current !== productScope) {
     keepDirtyValuesRef.current = productFormKeepsDirtyValues(
@@ -499,18 +508,14 @@ export const ProductDetailsForm = () => {
               )}
             {id ? (
               <PrimaryButton
-                disabled={
-                  !formState.isValid || !formState.isDirty || !canManage
-                }
+                disabled={!isValid || !hasChanges || !canManage}
                 onClick={handleSubmit(updateProductCall)}
               >
                 {t('global.save')}
               </PrimaryButton>
             ) : (
               <PrimaryButton
-                disabled={
-                  !formState.isValid || !formState.isDirty || !canManage
-                }
+                disabled={!isValid || !hasChanges || !canManage}
                 onClick={handleSubmit(createProductCall)}
               >
                 {t('global.create')}
