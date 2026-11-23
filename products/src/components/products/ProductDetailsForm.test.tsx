@@ -11,6 +11,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import i18n from '../../translations/i18n'
 import { ProductDetailsForm } from './ProductDetailsForm'
 import { Product, ProductType } from '../../models/Category.model'
+import { productDetailPath } from '../../constants/paths'
 
 const vendor1 = { id: 'v1', name: 'Vendor 1' }
 const vendor2 = { id: 'v2', name: 'Vendor 2' }
@@ -27,6 +28,24 @@ const product = {
   metadata: { mixins: {}, version: 3 },
 } as unknown as Product
 
+// A new product as `ProductDataProvider` serves it: its defaults on the first
+// render, then the draft it builds after the form has mounted.
+const newProductDefaults = {
+  name: { en: '' },
+  published: false,
+  productType: ProductType.basic,
+  media: [],
+} as unknown as Product
+const newProductDraft = {
+  productType: ProductType.basic,
+  name: { en: '' },
+  mixins: {},
+  metadata: { mixins: {} },
+} as unknown as Product
+
+const english = { id: 'en', label: 'English', default: true, required: true }
+
+const createProduct = vi.fn(async () => ({ id: 'p-new' }))
 const updateProduct = vi.fn(async () => undefined)
 const refreshData = vi.fn(async () => undefined)
 
@@ -49,7 +68,7 @@ const activeNode = {
   isAddFlow: false,
 }
 const productsApi = {
-  createProduct: vi.fn(),
+  createProduct,
   updateProduct,
   getOwnOverriddenPaths: vi.fn(),
 }
@@ -57,6 +76,13 @@ const vendorsApi = {
   getVendors: async () => ({ values: [vendor1, vendor2] }),
 }
 const configurationApi = { getSingleConfiguration: async () => undefined }
+// No content languages unless a test sets them (the context default), so the
+// localized inputs render no field.
+const configuration = {
+  languages: [] as (typeof english)[],
+  contentLanguage: 'en',
+}
+const routeParams: { id?: string } = { id: 'p1' }
 const searchParams = [new URLSearchParams()]
 const uiBlocker = { blockPanel: vi.fn() }
 const customNavigate = { navigate: vi.fn() }
@@ -79,8 +105,11 @@ vi.mock('../../hooks/api/vendors', () => ({
 vi.mock('../../hooks/api/configuration', () => ({
   useConfigurationApi: () => configurationApi,
 }))
+vi.mock('../../context/ConfigurationProvider', () => ({
+  useConfiguration: () => configuration,
+}))
 vi.mock('react-router', () => ({
-  useParams: () => ({ id: 'p1' }),
+  useParams: () => routeParams,
   useSearchParams: () => searchParams,
 }))
 vi.mock('../../context/UIBlocker', () => ({
@@ -117,6 +146,13 @@ vi.mock('./AssistantBox', () => ({ default: () => null }))
 
 const saveButton = () => screen.getByRole('button', { name: 'Save' })
 
+const createButton = () => screen.getByRole('button', { name: 'Create' })
+
+const codeInput = () =>
+  screen.getByRole('textbox', { name: /^Code/ }) as HTMLInputElement
+
+const nameInput = () => screen.getByRole('textbox', { name: /^Name/ })
+
 const vendorInput = () =>
   screen.getByRole('combobox', { name: 'Vendor' }) as HTMLInputElement
 
@@ -139,6 +175,20 @@ const renderOpenedProduct = async () => {
   await waitFor(() => expect(vendorInput().value).toBe('Vendor 1'))
 }
 
+/** Create mode: no product id in the route, the provider's defaults first. */
+const renderNewProduct = () => {
+  routeParams.id = undefined
+  configuration.languages = [english]
+  productData.product = newProductDefaults
+  const { rerender } = render(<ProductDetailsForm />)
+  return {
+    deliverDraft: () => {
+      productData.product = newProductDraft
+      rerender(<ProductDetailsForm />)
+    },
+  }
+}
+
 beforeAll(async () => {
   await i18n.changeLanguage('en')
 })
@@ -146,6 +196,8 @@ beforeAll(async () => {
 afterEach(() => {
   cleanup()
   vi.clearAllMocks()
+  routeParams.id = 'p1'
+  configuration.languages = []
   productData.product = product
 })
 
@@ -200,5 +252,59 @@ describe('ProductDetailsForm Save button', () => {
 
     await waitFor(() => expect(vendorInput().value).toBe('Vendor 1'))
     expect(saveButton()).toHaveProperty('disabled', true)
+  })
+})
+
+describe('ProductDetailsForm Create button', () => {
+  it('becomes active on a new product once Code and Name are entered and creates it from the draft', async () => {
+    const { deliverDraft } = renderNewProduct()
+    deliverDraft()
+
+    expect(createButton()).toHaveProperty('disabled', true)
+
+    fireEvent.change(codeInput(), { target: { value: 'NEW-1' } })
+    fireEvent.change(nameInput(), { target: { value: 'New product' } })
+
+    await waitFor(() =>
+      expect(createButton()).toHaveProperty('disabled', false)
+    )
+    fireEvent.click(createButton())
+    await waitFor(() => expect(createProduct).toHaveBeenCalledTimes(1))
+    expect(createProduct).toHaveBeenCalledWith(
+      expect.objectContaining({
+        productType: ProductType.basic,
+        code: 'NEW-1',
+        name: { en: 'New product' },
+        mixins: {},
+        metadata: { mixins: {} },
+      })
+    )
+    await waitFor(() =>
+      expect(customNavigate.navigate).toHaveBeenCalledWith(
+        productDetailPath('p-new')
+      )
+    )
+  })
+
+  it('keeps a Code entered before the draft arrives and creates the product with it', async () => {
+    const { deliverDraft } = renderNewProduct()
+    fireEvent.change(codeInput(), { target: { value: 'NEW-1' } })
+
+    deliverDraft()
+
+    await waitFor(() => expect(codeInput().value).toBe('NEW-1'))
+    fireEvent.change(nameInput(), { target: { value: 'New product' } })
+    await waitFor(() =>
+      expect(createButton()).toHaveProperty('disabled', false)
+    )
+    fireEvent.click(createButton())
+    await waitFor(() => expect(createProduct).toHaveBeenCalledTimes(1))
+    expect(createProduct).toHaveBeenCalledWith(
+      expect.objectContaining({
+        code: 'NEW-1',
+        name: { en: 'New product' },
+        mixins: {},
+      })
+    )
   })
 })
