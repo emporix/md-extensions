@@ -118,6 +118,8 @@ On the routes this remote mounts, `groupType` stays `EMPLOYEE`, so those locks d
 
 No page-level test was found for Entra restriction, force delete, or the customer-group lock.
 
+A host tenant switch does not remount the remote. `FeatureTogglesProvider` applies toggles, errors and the end of loading only for the tenant that is still current, and `SitesProvider` clears `sites` and `currentSite` on a tenant or token change and ignores a late response for the previous tenant, so no other tenant's site code reaches a form (`users-and-groups/src/context/tenantSwitch.test.tsx`).
+
 ## Host wiring
 
 | Fact | Value |

@@ -26,24 +26,37 @@ const SiteContext = createContext<SitesContextType>({
 export const useSites = () => useContext(SiteContext)
 
 export const SitesProvider = ({ children }: PropsWithChildren) => {
-  const { token } = useDashboardContext()
+  const { token, tenant } = useDashboardContext()
   const { getSites } = useSitesApi()
   const [sites, setSites] = useState<Site[]>([])
   const [currentSite, setCurrentSite] = useState<Site>()
 
   useEffect(() => {
-    if (!token) return
+    // Drop the previous tenant's sites; a late response for it is ignored.
+    setSites([])
+    setCurrentSite(undefined)
+    if (!token || !tenant) return
+    let cancelled = false
     ;(async () => {
-      const newSites: Site[] = await getSites()
-      const defaultSite = newSites.find((site) => site.default)
-      if (defaultSite) {
-        setCurrentSite(defaultSite)
-      } else if (newSites[0]) {
-        setCurrentSite(newSites[0])
+      try {
+        const newSites: Site[] = await getSites()
+        if (cancelled) return
+        const defaultSite = newSites.find((site) => site.default)
+        if (defaultSite) {
+          setCurrentSite(defaultSite)
+        } else if (newSites[0]) {
+          setCurrentSite(newSites[0])
+        }
+        setSites(newSites)
+      } catch (error) {
+        if (cancelled) return
+        console.error('Error fetching sites:', error)
       }
-      setSites(newSites)
     })()
-  }, [token, getSites])
+    return () => {
+      cancelled = true
+    }
+  }, [token, tenant, getSites])
 
   const updateCurrentSite = (site?: Site) => {
     setCurrentSite(site)
