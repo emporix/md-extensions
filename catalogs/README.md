@@ -78,7 +78,7 @@ The dev shell asks for tenant, token and language.
 
 ### Deploying
 
-Firebase Hosting targets `emporix-catalogs-develop`, `emporix-catalogs-stage` and `emporix-catalogs` (root `firebase.json`, `.firebaserc`). Workflows: `.github/workflows/catalogs-firebase-*.yaml` — a preview per PR, dev and stage on merge to `master`, prod on a `catalogs-*` tag. The Firebase Hosting sites must exist before the first deploy.
+Catalogs has no Firebase Hosting site of its own. It is published into the `catalogs/` folder of the shared site of each environment (COP-7348, COP-7451): `https://frontend-extensions-develop.web.app/catalogs/remoteEntry.js`, `https://frontend-extensions-stage.web.app/catalogs/remoteEntry.js` and `https://frontend-extensions.web.app/catalogs/remoteEntry.js` (prod). Workflows: `.github/workflows/catalogs-firebase-*.yaml` — a preview per PR, dev and stage on merge to `master`, prod on a `catalogs-*` tag (roll back by redeploying the previous tag). Each calls `.github/actions/deploy-remote`, which builds the remote flat with base `/catalogs/` (`.github/scripts/hosting/build-remote.mjs`) and replaces only this folder on the site. Local `npm run build:*` and `preview` are unchanged and still serve `/assets/remoteEntry.js`. Until the host `VITE_CATALOGS_URL` points at the shared site, it keeps loading the last build from the former `emporix-catalogs*` sites, which no longer receive deploys.
 
 ## UI
 
