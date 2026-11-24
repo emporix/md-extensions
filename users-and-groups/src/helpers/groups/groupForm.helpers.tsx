@@ -50,6 +50,15 @@ export const createGroupForm = (): GroupFormFields => {
   }
 }
 
+/** The role type a group opens with; a new group starts as standard. */
+export const getGroupRoleType = (
+  group: Pick<Group, 'templates' | 'vendorId'> | undefined
+): RoleType => {
+  if (group?.templates?.length) return RoleType.TEMPLATES
+  if (group?.vendorId) return RoleType.VENDOR
+  return RoleType.STANDARD
+}
+
 export const mapGroupToGroupForm = (group: Group): GroupFormFields => {
   return {
     id: group.id || '',

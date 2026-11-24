@@ -48,14 +48,7 @@ const GroupPage = () => {
 
   // Keep details mounted across GroupPage re-renders (form dirty updates,
   // i18n). Remounting GroupDetails would reset() and clear isDirty.
-  const detailsContent = useMemo(
-    () => (
-      <GroupRoleProvider>
-        <GroupDetails />
-      </GroupRoleProvider>
-    ),
-    []
-  )
+  const detailsContent = useMemo(() => <GroupDetails />, [])
 
   const membersContent = useMemo(() => <GroupMembers />, [])
 
@@ -108,25 +101,28 @@ const GroupPage = () => {
 
   return (
     <FormProvider {...methods}>
-      <HeaderSection
-        title={t('usersAndGroups.groups.plurals.groups.singular')}
-        subtitle={groupId ? getContentLangValue(group?.name) : undefined}
-        backTo={() => navigate(listPath('groups'))}
-        moduleActions={
-          activeTab !== 'audit-log' ? (
-            <GroupPageActions
-              activeTab={activeTab}
-              managerPermissions={canManage}
-            />
-          ) : undefined
-        }
-      />
-      <EntraIdSyncBanner />
-      <Tabs
-        tabs={visibleTabs}
-        activeTabId={activeTab ?? 'details'}
-        onTabChange={onTabChange}
-      />
+      {/* Around the header too: Discard puts the role type back (COP-7405). */}
+      <GroupRoleProvider>
+        <HeaderSection
+          title={t('usersAndGroups.groups.plurals.groups.singular')}
+          subtitle={groupId ? getContentLangValue(group?.name) : undefined}
+          backTo={() => navigate(listPath('groups'))}
+          moduleActions={
+            activeTab !== 'audit-log' ? (
+              <GroupPageActions
+                activeTab={activeTab}
+                managerPermissions={canManage}
+              />
+            ) : undefined
+          }
+        />
+        <EntraIdSyncBanner />
+        <Tabs
+          tabs={visibleTabs}
+          activeTabId={activeTab ?? 'details'}
+          onTabChange={onTabChange}
+        />
+      </GroupRoleProvider>
     </FormProvider>
   )
 }
