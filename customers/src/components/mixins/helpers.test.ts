@@ -50,11 +50,20 @@ describe('createForm', () => {
     expect(form.size).toBeUndefined()
   })
 
-  it('keeps empty defaults for text, time, and boolean-off', () => {
+  it('leaves text and time fields without data unset', () => {
+    const form = createForm([
+      item({ key: 'text', type: MixinsFormItemType.text, isRequired: true }),
+      item({ key: 'time', type: MixinsFormItemType.time }),
+    ])
+
+    expect(form.text).toBeUndefined()
+    expect(form.time).toBeUndefined()
+  })
+
+  it('keeps empty defaults for localized and boolean-off', () => {
     const form = createForm([
       item({ key: 'advertisement', type: MixinsFormItemType.localized }),
       item({ key: 'boolean', type: MixinsFormItemType.boolean }),
-      item({ key: 'time', type: MixinsFormItemType.time, isRequired: true }),
       item({
         key: 'number',
         type: MixinsFormItemType.integer,
@@ -63,7 +72,6 @@ describe('createForm', () => {
     ])
 
     expect(form.boolean).toBe(false)
-    expect(form.time).toBe('')
     expect(form.number).toBe(0)
   })
 })
@@ -90,5 +98,37 @@ describe('enum defaults', () => {
     })
 
     expect(defaultValueForMixinItem(arrayItem, true)).toBe('S')
+  })
+})
+
+describe('text defaults', () => {
+  const textItem = item({ key: 'text', type: MixinsFormItemType.text })
+  const timeItem = item({ key: 'time', type: MixinsFormItemType.time })
+
+  it('leaves empty text and time fields out of the save payload', () => {
+    const payload = applyDefaultsOnEmptyFields(
+      { text: '', time: undefined, nested: { text: '' } },
+      [
+        textItem,
+        timeItem,
+        item({
+          key: 'nested',
+          type: MixinsFormItemType.object,
+          items: [item({ key: 'nested.text', type: MixinsFormItemType.text })],
+        }),
+      ]
+    )
+
+    expect(payload).toEqual({ nested: {} })
+  })
+
+  it('starts a newly added text array entry with an empty string', () => {
+    const arrayItem = item({
+      key: 'texts',
+      type: MixinsFormItemType.array,
+      arrayType: MixinsFormItemType.text,
+    })
+
+    expect(defaultValueForMixinItem(arrayItem, true)).toBe('')
   })
 })

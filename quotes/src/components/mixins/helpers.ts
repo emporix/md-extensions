@@ -435,7 +435,8 @@ export const defaultValueForMixinItem = (
   const type = isArrayElement && item.arrayType ? item.arrayType : item.type
   switch (type) {
     case MixinsFormItemType.text:
-      return ''
+      // Only a new array entry starts empty; a field without data stays unset.
+      return isArrayElement ? '' : undefined
     case MixinsFormItemType.integer:
       return 0
     case MixinsFormItemType.decimal:
@@ -451,7 +452,7 @@ export const defaultValueForMixinItem = (
     case MixinsFormItemType.dateTime:
       return new Date().toISOString()
     case MixinsFormItemType.time:
-      return ''
+      return isArrayElement ? '' : undefined
     case MixinsFormItemType.localized:
       return item.localizedVersion === 'v2' ? {} : []
     case MixinsFormItemType.array:

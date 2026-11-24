@@ -119,6 +119,24 @@ describe('MixinsForm enum fields', () => {
   })
 })
 
+describe('MixinsForm text fields', () => {
+  const textItems = [
+    item({ key: 'text', type: MixinsFormItemType.text }),
+    item({ key: 'note', type: MixinsFormItemType.text }),
+  ]
+
+  it('saves untouched and cleared text fields without an empty string', async () => {
+    const { onSave, saveButton } = renderForm(textItems, { note: 'Hello' })
+    fireEvent.change(screen.getByDisplayValue('Hello'), {
+      target: { value: '' },
+    })
+
+    const payload = await savedPayload(onSave, saveButton)
+
+    expect(payload).toEqual({})
+  })
+})
+
 describe('MixinsAccordionForm enum fields', () => {
   const renderAccordion = (stored?: Record<string, unknown>) => {
     const ref = createRef<MixinsAccordionFormHandle>()
