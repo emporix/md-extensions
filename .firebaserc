@@ -18,9 +18,6 @@
         "emporix-dashboard-extension": [
           "emporix-dashboard-extension"
         ],
-        "emporix-customer-groups": [
-          "emporix-customer-groups"
-        ],
         "emporix-brands": [
           "emporix-brands"
         ],
@@ -73,9 +70,6 @@
         "emporix-dashboard-extension-stage": [
           "emporix-dashboard-extension-stage"
         ],
-        "emporix-customer-groups-stage": [
-          "emporix-customer-groups-stage"
-        ],
         "emporix-brands-stage": [
           "emporix-brands-stage"
         ],
@@ -127,9 +121,6 @@
         ],
         "emporix-dashboard-extension-develop": [
           "emporix-dashboard-extension-develop"
-        ],
-        "emporix-customer-groups-develop": [
-          "emporix-customer-groups-develop"
         ],
         "emporix-brands-develop": [
           "emporix-brands-develop"
