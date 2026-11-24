@@ -35,6 +35,8 @@ export default defineConfig({
   build: {
     modulePreload: false,
     target: 'esnext',
+    // Keep minify off: @originjs/vite-plugin-federation 1.4.1 mis-parses Oxc
+    // template literals and emits broken dynamicLoadingCss() calls (issue #740).
     minify: false,
     cssCodeSplit: false,
   },
