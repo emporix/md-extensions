@@ -29,6 +29,16 @@ jobs:
           # workflow_dispatch supplies inputs.tag; tag pushes use github.ref
           ref: ${{ github.event.inputs.tag || github.ref }}
 
+      # workflow_dispatch can deploy an older tag whose deploy action or script differs,
+      # or has none, so take the tooling from the ref this workflow runs from. It sits
+      # outside customers/ and audit-log/, the only folders the build and deploy read
+      # (both come from the tag checkout above).
+      - name: Checkout deploy tooling
+        uses: actions/checkout@v4
+        with:
+          path: .deploy-tooling
+          sparse-checkout: .github
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
@@ -37,6 +47,8 @@ jobs:
 
       - run: npm ci
 
+      # Old per-remote site; removed in COP-7348 stage D, once the host loads customers
+      # from the shared site in production. It runs first and publishes the regular dist/.
       - run: npm run build:prod
       - uses: FirebaseExtended/action-hosting-deploy@v0
         id: firebase-hosting-deploy
@@ -46,3 +58,12 @@ jobs:
           projectId: frontend-extensions
           channelId: live
           target: emporix-customers
+
+      # The deploy action rebuilds dist/ flat for the shared site, so it runs last.
+      - name: Deploy customers to the shared Hosting site
+        uses: ./.deploy-tooling/.github/actions/deploy-remote
+        with:
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA }}
+          site: frontend-extensions
+          remote: customers
+          mode: prod

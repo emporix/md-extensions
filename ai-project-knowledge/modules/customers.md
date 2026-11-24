@@ -3,7 +3,7 @@
 Last scanned: written with COP-7185 (2026-11-12)
 Sources: `customers/README.md`, `customers/package.json`, `customers/vite.config.ts`, `customers/src/RemoteComponent.tsx`, `customers/src/constants/paths.ts`, `customers/src/models/Customer.model.ts`, `customers/src/hooks/api/{customers,coupons,iam,segments,configuration}.ts`, `customers/src/helpers/customerForm.helpers.ts`, `customers/src/components/customers/`, `customers/src/pages/*.page.tsx`, `customers/src/pages/CustomerAddEdit.module.scss`, `customers/src/test/styleRules.ts`, `customers/src/translations/`, `customers/src/**/*.test.ts(x)`, `docs/MIGRATED_MODULES.md`
 
-Management Dashboard (MD) Customer Management → Customers as a Vite federated remote, extracted in COP-7185 (`docs/MIGRATED_MODULES.md`). A customer is a record of the Customer Service (`caas-customer`), with addresses, mixins and B2B legal-entity assignments. Federation name `customers`, exposes `./RemoteComponent` (named and default), local port `5184` with `strictPort` (`customers/vite.config.ts`). Tier 1 providers, session code, column visibility, mixins, audit log, restriction parsing and `useCustomerApi` come from `companies`. Needs component library ≥ 2.26.0 (password `InputText` eye toggle).
+Management Dashboard (MD) Customer Management → Customers as a Vite federated remote, extracted in COP-7185 (`docs/MIGRATED_MODULES.md`). A customer is a record of the Customer Service (`caas-customer`), with addresses, mixins and B2B legal-entity assignments. Federation name `customers`, exposes `./RemoteComponent` (named and default), local port `5184` with `strictPort` (`customers/vite.config.ts`). Tier 1 providers, session code, column visibility, mixins, audit log, restriction parsing and `useCustomerApi` come from `companies`. Needs component library ≥ 2.26.0 (password `InputText` eye toggle); pinned to `2.31.1` (COP-7450).
 
 ## Records
 
@@ -59,7 +59,7 @@ Customers Viewer views; Customers Manager is needed to create, edit, delete, sav
 | Host route `key` → path | `customers` → `/apps/management/customers/*`; MD `CustomersPathRedirect` on `apps/management/customers/:customerId/*` moves former pathname links (`/<id>`, `/add`) and their query into the hash. The MD keys `customersAdd` and `customersEdit` were removed in COP-7185 |
 | Host env var | `VITE_CUSTOMERS_URL` (`management-dashboard` `.env.*`) |
 | Local port | `5184`, `strictPort` |
-| Hosting | Firebase targets `emporix-customers`, `-stage`, `-develop`; `.github/workflows/customers-firebase-*.yaml` |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7450): `https://frontend-extensions-develop.web.app/customers/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod), deployed by `.github/actions/deploy-remote` from `.github/workflows/customers-firebase-*.yaml`. Until COP-7348 stage D the same workflows first deploy the old `emporix-customers-develop`, `emporix-customers-stage` and `emporix-customers` sites (`/assets/remoteEntry.js`), which keep their `firebase.json` / `.firebaserc` targets (`customers/README.md`). The MD host loads dev and stage from the shared site; prod still from `emporix-customers` |
 | Local deviations | none |
 
 ## Not yet scanned
