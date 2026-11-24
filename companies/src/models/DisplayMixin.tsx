@@ -5,6 +5,7 @@ import {
 } from '@emporix/component-library'
 import DateValue from '../components/shared/DateValue'
 import { DateFilterTemplate } from '../components/shared/DateFilterTemplate'
+import { BooleanFilterTemplate } from '../components/shared/BooleanFilterTemplate'
 import Localized from './Localized.model'
 import { SchemaAttributeType } from './Schema.model'
 import { getValueFromPath } from '../helpers/tree'
@@ -55,18 +56,31 @@ export const parseColumnProps = (
     }
   }
 
+  const body = (row: unknown) => {
+    const value = getValueFromPath(row, `mixins.${mixin.key}`)
+    return (
+      <div>
+        {typeof value === 'boolean' || typeof value === 'object'
+          ? JSON.stringify(value)
+          : (value as string)}
+      </div>
+    )
+  }
+
+  if (mixin.type === SchemaAttributeType.BOOLEAN) {
+    return {
+      ...base,
+      filterMatchMode: FilterMatchMode.IN,
+      body,
+      filterElement: (options: DataTableColumnFilterElementOptions) => (
+        <BooleanFilterTemplate filterOptions={options} />
+      ),
+    }
+  }
+
   return {
     ...base,
     filterMatchMode: FilterMatchMode.CONTAINS,
-    body: (row: unknown) => {
-      const value = getValueFromPath(row, `mixins.${mixin.key}`)
-      return (
-        <div>
-          {typeof value === 'boolean' || typeof value === 'object'
-            ? JSON.stringify(value)
-            : (value as string)}
-        </div>
-      )
-    },
+    body,
   }
 }
