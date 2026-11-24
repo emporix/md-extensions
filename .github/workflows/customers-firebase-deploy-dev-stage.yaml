@@ -10,6 +10,10 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-26.04
+    # Queue overlapping runs so an older build cannot finish after a newer one.
+    concurrency:
+      group: customers-firebase-dev-stage
+      cancel-in-progress: false
     defaults:
       run:
         working-directory: ./customers
@@ -30,6 +34,9 @@ jobs:
 
       - run: npm ci
 
+      # Old per-remote sites (dev, then stage); removed in COP-7348 stage D, once the
+      # host loads customers from the shared site in production. Both run before any
+      # shared-site step, so a failing shared deploy cannot skip an old deploy.
       - run: npm run build:dev
       - uses: FirebaseExtended/action-hosting-deploy@v0
         id: firebase-hosting-deploy-dev
@@ -49,3 +56,20 @@ jobs:
           projectId: frontend-extensions-stage
           channelId: live
           target: emporix-customers-stage
+
+      # The deploy action rebuilds dist/ flat for the shared site, so it runs last.
+      - name: Deploy customers to the shared Hosting site (dev)
+        uses: ./.github/actions/deploy-remote
+        with:
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}
+          site: frontend-extensions-develop
+          remote: customers
+          mode: dev
+
+      - name: Deploy customers to the shared Hosting site (stage)
+        uses: ./.github/actions/deploy-remote
+        with:
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_STAGE }}
+          site: frontend-extensions-stage
+          remote: customers
+          mode: stage
