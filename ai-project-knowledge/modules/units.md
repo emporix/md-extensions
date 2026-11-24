@@ -65,7 +65,7 @@ Pinned by `units/src/pages/Unit.page.test.tsx`.
 | Host route `key` → path | `units` → `/apps/management/units/*` (`management-dashboard` `src/router/module-routes.tsx`; the MD key was `unitsNode` with children `units`, `unitsAdd`, `unitsEdit` before COP-7192) |
 | Host env var | `VITE_UNITS_URL` (`management-dashboard` `.env.*`) |
 | Local port | `5182`, `strictPort` |
-| Hosting | Firebase targets `emporix-units`, `-stage`, `-develop`; `.github/workflows/units-firebase-*.yaml` |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7449), no site or `firebase.json` target of its own: `https://frontend-extensions-develop.web.app/units/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod). Deployed by `.github/actions/deploy-remote` from `.github/workflows/units-firebase-*.yaml` (`units/README.md`) |
 | Local deviations | none |
 
 ## Not yet scanned

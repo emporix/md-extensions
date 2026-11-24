@@ -21,9 +21,6 @@
         "emporix-customer-groups": [
           "emporix-customer-groups"
         ],
-        "emporix-brands": [
-          "emporix-brands"
-        ],
         "emporix-returns": [
           "emporix-returns"
         ],
@@ -41,9 +38,6 @@
         ],
         "emporix-companies": [
           "emporix-companies"
-        ],
-        "emporix-units": [
-          "emporix-units"
         ],
         "emporix-catalogs": [
           "emporix-catalogs"
@@ -76,9 +70,6 @@
         "emporix-customer-groups-stage": [
           "emporix-customer-groups-stage"
         ],
-        "emporix-brands-stage": [
-          "emporix-brands-stage"
-        ],
         "emporix-returns-stage": [
           "emporix-returns-stage"
         ],
@@ -96,9 +87,6 @@
         ],
         "emporix-companies-stage": [
           "emporix-companies-stage"
-        ],
-        "emporix-units-stage": [
-          "emporix-units-stage"
         ],
         "emporix-catalogs-stage": [
           "emporix-catalogs-stage"
@@ -131,9 +119,6 @@
         "emporix-customer-groups-develop": [
           "emporix-customer-groups-develop"
         ],
-        "emporix-brands-develop": [
-          "emporix-brands-develop"
-        ],
         "emporix-returns-develop": [
           "emporix-returns-develop"
         ],
@@ -151,9 +136,6 @@
         ],
         "emporix-companies-develop": [
           "emporix-companies-develop"
-        ],
-        "emporix-units-develop": [
-          "emporix-units-develop"
         ],
         "emporix-catalogs-develop": [
           "emporix-catalogs-develop"

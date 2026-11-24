@@ -30,7 +30,7 @@ Hash routes (`status-codes/src/constants/paths.ts`, `status-codes/src/RemoteComp
 `StatusCodesTable` (`status-codes/src/components/statusCodes/StatusCodesTable.tsx`) loads every reason once per tenant or refresh and filters and sorts on the client, as MD did (`lazy={false}`):
 
 - Columns Code and Type, each with a contains filter (placeholders "Filter by code" / "Filter by type") and sorting. No column visibility (MD had none).
-- Row actions (delete) are the component-library `TableActions` (2.25.0), wrapped by `status-codes/src/components/shared/TableActions.tsx` for translated labels and the delete confirmation; the icons take the primary color on hover, and a click on them never opens the row.
+- Row actions (delete) are the component-library `TableActions` (2.25.0; the remote is on 2.31.0), wrapped by `status-codes/src/components/shared/TableActions.tsx` for translated labels and the delete confirmation; the icons take the primary color on hover, and a click on them never opens the row.
 - Row click and row edit open `/:id`. A failed load shows an error toast and an empty table.
 - Delete (row or batch) asks for confirmation, then deletes one reason after another, with a success or error toast per code, clears the selection, and reloads the list.
 
@@ -61,7 +61,7 @@ Pinned by `status-codes/src/pages/StatusCode.page.test.tsx`.
 | Host route `key` → path | `statusCodes` → `/apps/management/status-codes/*` (`management-dashboard` `src/router/module-routes.tsx`; the MD key was `status-codes` before COP-7172) |
 | Host env var | `VITE_STATUS_CODES_URL` (`management-dashboard` `.env.*`) |
 | Local port | `5180`, `strictPort` |
-| Hosting | Firebase targets `emporix-status-codes`, `-stage`, `-develop`; `.github/workflows/status-codes-firebase-*.yaml` |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7446): `https://frontend-extensions-develop.web.app/status-codes/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod), deployed by `.github/actions/deploy-remote` from `.github/workflows/status-codes-firebase-*.yaml`. Those workflows still deploy first to the old targets `emporix-status-codes`, `-stage`, `-develop` until the host uses the shared site in production (`status-codes/README.md`) |
 | Local deviations | none |
 
 ## Not yet scanned

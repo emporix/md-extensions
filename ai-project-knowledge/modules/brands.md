@@ -149,6 +149,7 @@ No page or table specs. Names only:
 | Federation `name` | `brands` (`brands/vite.config.ts`) |
 | Host route `key` → path | `brands` → `/apps/management/brands/*` (inline `ExternalModule moduleName="brands"`) (`management-dashboard` `src/router/module-routes.tsx`) |
 | Host env var | `VITE_BRANDS_URL` (`management-dashboard` `.env.*`) |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7441), no site or `firebase.json` target of its own: `https://frontend-extensions-develop.web.app/brands/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod). Deployed by `.github/actions/deploy-remote` from `.github/workflows/brands-firebase-*.yaml` (`brands/README.md`) |
 | Local port | `5175`, `strictPort` |
 | Local deviations | none |
 
