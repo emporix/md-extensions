@@ -34,6 +34,9 @@ jobs:
       - run: npm ci
 
       - run: npm run build:dev
+
+      # Old per-remote site; removed in COP-7348 stage D, once the host loads labels
+      # from the shared site in production. It runs first and publishes the regular dist/.
       - uses: FirebaseExtended/action-hosting-deploy@v0
         id: firebase-preview
         with:
@@ -43,3 +46,22 @@ jobs:
           target: emporix-labels-develop
           expires: 5d
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
+
+      # The deploy action rebuilds dist/ flat for the shared site, so it runs last.
+      - name: Deploy labels preview to the shared Hosting site
+        id: shared-preview
+        uses: ./.github/actions/deploy-remote
+        with:
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}
+          site: frontend-extensions-develop
+          remote: labels
+          mode: dev
+          channel: pr-${{ github.event.number }}-labels
+
+      - name: Comment the preview URL
+        run: |
+          gh pr comment "$PR_NUMBER" --body "labels preview: $PREVIEW_URL"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+          PREVIEW_URL: ${{ steps.shared-preview.outputs.url }}
