@@ -437,10 +437,12 @@ export const defaultValueForMixinItem = (
     case MixinsFormItemType.text:
       // Only a new array entry starts empty; a field without data stays unset.
       return isArrayElement ? '' : undefined
+    // Number and date fields without data stay unset; only a new array entry
+    // starts with 0 / now.
     case MixinsFormItemType.integer:
-      return 0
+      return isArrayElement ? 0 : undefined
     case MixinsFormItemType.decimal:
-      return 0.0
+      return isArrayElement ? 0.0 : undefined
     case MixinsFormItemType.boolean:
       return false
     case MixinsFormItemType.enum:
@@ -448,9 +450,9 @@ export const defaultValueForMixinItem = (
       if (!isArrayElement) return undefined
       return item.enum && item.enum.length > 0 ? item.enum[0] : ''
     case MixinsFormItemType.date:
-      return new Date().toISOString()
+      return isArrayElement ? new Date().toISOString() : undefined
     case MixinsFormItemType.dateTime:
-      return new Date().toISOString()
+      return isArrayElement ? new Date().toISOString() : undefined
     case MixinsFormItemType.time:
       return isArrayElement ? '' : undefined
     case MixinsFormItemType.localized:

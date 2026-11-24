@@ -137,6 +137,48 @@ describe('MixinsForm text fields', () => {
   })
 })
 
+describe('MixinsForm number and date fields', () => {
+  const items = [
+    item({
+      key: 'weight',
+      name: 'Weight',
+      type: MixinsFormItemType.decimal,
+      isRequired: true,
+    }),
+    item({ key: 'count', type: MixinsFormItemType.integer }),
+    item({
+      key: 'releaseDate',
+      name: 'Release Date',
+      type: MixinsFormItemType.date,
+      isRequired: true,
+    }),
+    item({ key: 'orderedAt', type: MixinsFormItemType.dateTime }),
+  ]
+
+  it('shows empty number and date fields empty and saves none of them', async () => {
+    const optional = items.map((i) => ({ ...i, isRequired: false }))
+    const { onSave, saveButton } = renderForm(optional)
+
+    expect(screen.queryByDisplayValue('0')).toBeNull()
+    const payload = await savedPayload(onSave, saveButton)
+
+    expect(payload).toEqual({})
+  })
+
+  it('blocks Save and names the empty required number and date', async () => {
+    const { saveButton } = renderForm(items)
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          'mixins.labels.requiredFieldsMissing: Release Date, Weight'
+        )
+      ).toBeTruthy()
+    )
+    expect(saveButton().disabled).toBe(true)
+  })
+})
+
 describe('MixinsAccordionForm enum fields', () => {
   const renderAccordion = (stored?: Record<string, unknown>) => {
     const ref = createRef<MixinsAccordionFormHandle>()

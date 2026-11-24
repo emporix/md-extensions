@@ -20,7 +20,7 @@ describe('createForm', () => {
     vi.useRealTimers()
   })
 
-  it('prefills date and date-time fields with the current instant', () => {
+  it('leaves date and date-time fields without data unset', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-08-17T13:08:00.000Z'))
 
@@ -33,8 +33,8 @@ describe('createForm', () => {
       }),
     ])
 
-    expect(form.date).toBe('2026-08-17T13:08:00.000Z')
-    expect(form.dateTime).toBe('2026-08-17T13:08:00.000Z')
+    expect(form.date).toBeUndefined()
+    expect(form.dateTime).toBeUndefined()
   })
 
   it('leaves enum fields without data unset', () => {
@@ -60,19 +60,27 @@ describe('createForm', () => {
     expect(form.time).toBeUndefined()
   })
 
-  it('keeps empty defaults for localized and boolean-off', () => {
+  it('leaves number fields without data unset', () => {
     const form = createForm([
-      item({ key: 'advertisement', type: MixinsFormItemType.localized }),
-      item({ key: 'boolean', type: MixinsFormItemType.boolean }),
       item({
         key: 'number',
         type: MixinsFormItemType.integer,
         isRequired: true,
       }),
+      item({ key: 'decimal', type: MixinsFormItemType.decimal }),
+    ])
+
+    expect(form.number).toBeUndefined()
+    expect(form.decimal).toBeUndefined()
+  })
+
+  it('keeps empty defaults for localized and boolean-off', () => {
+    const form = createForm([
+      item({ key: 'advertisement', type: MixinsFormItemType.localized }),
+      item({ key: 'boolean', type: MixinsFormItemType.boolean }),
     ])
 
     expect(form.boolean).toBe(false)
-    expect(form.number).toBe(0)
   })
 })
 
@@ -130,5 +138,39 @@ describe('text defaults', () => {
     })
 
     expect(defaultValueForMixinItem(arrayItem, true)).toBe('')
+  })
+})
+
+describe('number and date defaults', () => {
+  it('leaves empty number and date fields out of the save payload', () => {
+    const payload = applyDefaultsOnEmptyFields(
+      { int: null, dec: undefined, date: undefined, dateTime: null },
+      [
+        item({ key: 'int', type: MixinsFormItemType.integer }),
+        item({ key: 'dec', type: MixinsFormItemType.decimal }),
+        item({ key: 'date', type: MixinsFormItemType.date }),
+        item({ key: 'dateTime', type: MixinsFormItemType.dateTime }),
+      ]
+    )
+
+    expect(payload).toEqual({})
+  })
+
+  it('keeps a stored 0', () => {
+    const payload = applyDefaultsOnEmptyFields({ int: 0 }, [
+      item({ key: 'int', type: MixinsFormItemType.integer }),
+    ])
+
+    expect(payload).toEqual({ int: 0 })
+  })
+
+  it('starts a newly added number array entry with 0', () => {
+    const arrayItem = item({
+      key: 'ints',
+      type: MixinsFormItemType.array,
+      arrayType: MixinsFormItemType.integer,
+    })
+
+    expect(defaultValueForMixinItem(arrayItem, true)).toBe(0)
   })
 })
