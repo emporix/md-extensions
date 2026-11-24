@@ -34,6 +34,7 @@ import { compareObjects } from '../mixins/mixins.utils'
 import { EmployeeDomains } from '../../configs/accessControls'
 import { StylableProps } from '../../helpers/props'
 import { assignHostLocation, HOST_COMPANY_PATH } from '../../helpers/hostUrls'
+import { getApiErrorDetails } from '../../helpers/api'
 import {
   HOST_CART_PATH,
   HOST_CUSTOMER_PATH,
@@ -52,9 +53,6 @@ import QuotesTabGeneralAddresses from './QuotesTabGeneralAddresses'
 import QuoteChooseCustomerDialog from './QuoteChooseCustomerDialog'
 import { hasSameAddresses } from '../../helpers/quotePricing.helpers'
 import styles from './QuotesTabGeneral.module.scss'
-
-/** MD reads the message straight from the error response. */
-type ErrorWithResponse = { response?: { data?: { message?: string } } }
 
 type ContactOption = {
   label: string
@@ -149,7 +147,10 @@ const QuotesTabGeneral = (props: StylableProps) => {
         })
       } catch (e) {
         console.error('Error syncing customer:', e)
-        toast.showToast(t('quotes.toasts.errorFetchCustomers'), '', 'error')
+        toast.showError(
+          t('quotes.toasts.errorFetchCustomers'),
+          getApiErrorDetails(e)
+        )
       }
     },
     [syncCustomer, setValue, toast, t]
@@ -239,7 +240,10 @@ const QuotesTabGeneral = (props: StylableProps) => {
         return (await getLegalEntity(legalEntityId)) as unknown as LegalEntity
       } catch (e) {
         console.error(e)
-        toast.showToast(t('quotes.toasts.errorLegalEntities'), '', 'error')
+        toast.showError(
+          t('quotes.toasts.errorLegalEntities'),
+          getApiErrorDetails(e)
+        )
         return undefined
       }
     },
@@ -371,11 +375,7 @@ const QuotesTabGeneral = (props: StylableProps) => {
         navigate(quoteDetailPath(id), { replace: true })
       } catch (e: unknown) {
         console.error(e)
-        toast.showToast(
-          t('quotes.toasts.errorCreate'),
-          (e as ErrorWithResponse)?.response?.data?.message || '',
-          'error'
-        )
+        toast.showError(t('quotes.toasts.errorCreate'), getApiErrorDetails(e))
       } finally {
         blockPanel(false)
       }
@@ -404,11 +404,7 @@ const QuotesTabGeneral = (props: StylableProps) => {
         refreshData()
       } catch (e: unknown) {
         console.error(e)
-        toast.showToast(
-          t('quotes.toasts.errorUpdate'),
-          (e as ErrorWithResponse)?.response?.data?.message || '',
-          'error'
-        )
+        toast.showError(t('quotes.toasts.errorUpdate'), getApiErrorDetails(e))
       } finally {
         blockPanel(false)
       }

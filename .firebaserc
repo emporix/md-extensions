@@ -18,15 +18,6 @@
         "emporix-dashboard-extension": [
           "emporix-dashboard-extension"
         ],
-        "emporix-users-and-groups": [
-          "emporix-users-and-groups"
-        ],
-        "emporix-customer-groups": [
-          "emporix-customer-groups"
-        ],
-        "emporix-brands": [
-          "emporix-brands"
-        ],
         "emporix-returns": [
           "emporix-returns"
         ],
@@ -38,18 +29,6 @@
         ],
         "emporix-status-codes": [
           "emporix-status-codes"
-        ],
-        "emporix-coupons": [
-          "emporix-coupons"
-        ],
-        "emporix-companies": [
-          "emporix-companies"
-        ],
-        "emporix-units": [
-          "emporix-units"
-        ],
-        "emporix-catalogs": [
-          "emporix-catalogs"
         ],
         "emporix-customers": [
           "emporix-customers"
@@ -76,15 +55,6 @@
         "emporix-dashboard-extension-stage": [
           "emporix-dashboard-extension-stage"
         ],
-        "emporix-users-and-groups-stage": [
-          "emporix-users-and-groups-stage"
-        ],
-        "emporix-customer-groups-stage": [
-          "emporix-customer-groups-stage"
-        ],
-        "emporix-brands-stage": [
-          "emporix-brands-stage"
-        ],
         "emporix-returns-stage": [
           "emporix-returns-stage"
         ],
@@ -96,18 +66,6 @@
         ],
         "emporix-status-codes-stage": [
           "emporix-status-codes-stage"
-        ],
-        "emporix-coupons-stage": [
-          "emporix-coupons-stage"
-        ],
-        "emporix-companies-stage": [
-          "emporix-companies-stage"
-        ],
-        "emporix-units-stage": [
-          "emporix-units-stage"
-        ],
-        "emporix-catalogs-stage": [
-          "emporix-catalogs-stage"
         ],
         "emporix-customers-stage": [
           "emporix-customers-stage"
@@ -134,15 +92,6 @@
         "emporix-dashboard-extension-develop": [
           "emporix-dashboard-extension-develop"
         ],
-        "emporix-users-and-groups-develop": [
-          "emporix-users-and-groups-develop"
-        ],
-        "emporix-customer-groups-develop": [
-          "emporix-customer-groups-develop"
-        ],
-        "emporix-brands-develop": [
-          "emporix-brands-develop"
-        ],
         "emporix-returns-develop": [
           "emporix-returns-develop"
         ],
@@ -154,18 +103,6 @@
         ],
         "emporix-status-codes-develop": [
           "emporix-status-codes-develop"
-        ],
-        "emporix-coupons-develop": [
-          "emporix-coupons-develop"
-        ],
-        "emporix-companies-develop": [
-          "emporix-companies-develop"
-        ],
-        "emporix-units-develop": [
-          "emporix-units-develop"
-        ],
-        "emporix-catalogs-develop": [
-          "emporix-catalogs-develop"
         ],
         "emporix-customers-develop": [
           "emporix-customers-develop"

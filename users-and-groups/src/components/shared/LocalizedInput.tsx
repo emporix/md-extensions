@@ -49,10 +49,7 @@ const LocalizedInput = ({
 
   const resolvedLanguages = useMemo(() => {
     if (uiLanguages) {
-      return [
-        { id: 'en' },
-        { id: 'de' },
-      ]
+      return [{ id: 'en' }, { id: 'de' }]
     }
     return languages
   }, [languages, uiLanguages])

@@ -60,7 +60,7 @@ Add and edit share `Label.page.tsx`. Calls come straight from `@emporix/api-call
 
 - Edit loads the label on `id` or tenant change; stale responses are dropped. Failure toasts `errorFetch` and replace-navigates to `/`.
 - Tabs are `details` and `media`; active tab is the hash query `tab` (`labels/src/hooks/useTabs.tsx`).
-- Details: `name` (required text), `overlay.position` (dropdown with None, Top left, Top right, Bottom left, Bottom right), `description` (rich-text editor, required, stored as HTML).
+- Details: `name` (required text), `overlay.position` (dropdown with None, Top left, Top right, Bottom left, Bottom right), `description` (rich-text editor, required, stored as HTML). The editor reports only edits made by the user (component library 2.31.0); Quill's rewrite of stored HTML on load and after Discard no longer marks the form dirty (COP-7405).
 - Save is disabled unless the form is dirty, valid, and the user can manage. Discard resets to the last loaded or saved values.
 - Submit sends `{ ...label, ...data }`. An unset overlay position is sent as `{}`, as the old MD form did (comment in `Label.page.tsx`). On edit the fetched `id`, `image`, `cloudinaryUrl`, and `metadata` go back with the payload.
 - Update success replaces local state, resets the form, toasts `successUpdate`, and stays on the page.
@@ -111,7 +111,7 @@ Build scripts run `scripts/ensure-cors-origin.mjs` first (`labels/package.json`)
 
 ## Dependencies
 
-`@emporix/api-calls` 1.2.14 and `@emporix/component-library` 2.18.0 (`labels/package.json`). Calls used from api-calls: `fetchLabel`, `createLabel`, `editLabel`, `deleteLabel`, `removeLabelImageFromCloudinary`, `getAssetsForId`, `postFileAsset`, `delAsset`, `downloadAsset`, `fetchAsset`, `putAsset`, plus IAM, configuration, site, and feature-toggle calls through the hooks. Only the list call is local (`labels/src/api/labels.ts`).
+`@emporix/api-calls` 1.2.14 and `@emporix/component-library` 2.31.0 (`labels/package.json`). Calls used from api-calls: `fetchLabel`, `createLabel`, `editLabel`, `deleteLabel`, `removeLabelImageFromCloudinary`, `getAssetsForId`, `postFileAsset`, `delAsset`, `downloadAsset`, `fetchAsset`, `putAsset`, plus IAM, configuration, site, and feature-toggle calls through the hooks. Only the list call is local (`labels/src/api/labels.ts`).
 
 ## Tests
 
@@ -134,6 +134,7 @@ No page, table, or provider specs.
 | Federation `name` | `labels` (`labels/vite.config.ts`) |
 | Host route `key` → path | `labels` → `/apps/management/labels/*` (`management-dashboard` `src/router/module-routes.tsx`) |
 | Host env var | `VITE_LABELS_URL` (`management-dashboard` `.env.*`) |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348; deploy added in COP-7445, released as `labels-v1.0.2`): `https://frontend-extensions-develop.web.app/labels/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod), deployed by `.github/actions/deploy-remote` from `.github/workflows/labels-firebase-*.yaml`. The Management Dashboard loads it from there in dev and stage (`management-dashboard` `.env.dev`, `.env.dev-test`, `.env.stage`, `emporix/management-dashboard#1714`); `.env.prod` still points at `emporix-labels.web.app` until the prod switch. Until COP-7348 stage D the same workflows first deploy the old `emporix-labels-develop`, `emporix-labels-stage` and `emporix-labels` sites (`/assets/remoteEntry.js`), which keep their `firebase.json` / `.firebaserc` targets (`labels/README.md`) |
 | Local port | `5179`, `strictPort` |
 | Local deviations | the list call is local (`src/api/labels.ts`) because the service ignores the filter params the api-calls `fetchLabels` sends |
 

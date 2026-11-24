@@ -23,7 +23,7 @@ import {
   buildQuoteSendPayload,
 } from '../../helpers/quoteChangeStatus.helpers'
 import { getQuoteOpenBlockers } from '../../helpers/quotePricing.helpers'
-import { getApiErrorMessage } from '../../helpers/api'
+import { getApiErrorDetails } from '../../helpers/api'
 import { quotesListPath } from '../../constants/paths'
 import QuotesChangeStatus from './QuotesChangeStatus'
 import QuotesStartNegotiation from './QuotesStartNegotiation'
@@ -73,7 +73,7 @@ const QuotesTabApproval = (props: StylableProps) => {
       setPdfData(fileURL)
     } catch (e) {
       console.error(e)
-      toast.showToast(t('quotes.toasts.errorPdf'), '', 'error')
+      toast.showError(t('quotes.toasts.errorPdf'), getApiErrorDetails(e))
     } finally {
       blockPanel(false)
     }
@@ -91,10 +91,9 @@ const QuotesTabApproval = (props: StylableProps) => {
         navigate(quotesListPath(), { replace: true })
       } catch (e) {
         console.error(e)
-        toast.showToast(
-          getApiErrorMessage(e) ?? t('quotes.toasts.errorChangeStatus'),
-          '',
-          'error'
+        toast.showError(
+          t('quotes.toasts.errorChangeStatus'),
+          getApiErrorDetails(e)
         )
       } finally {
         blockPanel(false)

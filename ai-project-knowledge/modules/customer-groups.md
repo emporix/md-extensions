@@ -133,6 +133,7 @@ With `Audit Log Viewer`, the third tab loads changelogs for entity `group` and t
 | Federation `name` | `customerGroups` (`customer-groups/vite.config.ts`) |
 | Host route `key` → path | `customerGroups` → `administration/customer-groups/*` (`management-dashboard` `src/router/module-routes.tsx`) |
 | Host env var | `VITE_CUSTOMER_GROUPS_URL` (`management-dashboard` `.env.*`) |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7440), no site or `firebase.json` target of its own: `https://frontend-extensions-develop.web.app/customer-groups/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod). Deployed by `.github/actions/deploy-remote` from `.github/workflows/customer-groups-firebase-*.yaml` (`customer-groups/README.md`). Builds with Vite 8 and CL `2.31.0` (`customer-groups/package.json`) |
 | Local port | `5174`, `strictPort` |
 | Local deviations | none beyond showing `CUSTOMER` groups only |
 

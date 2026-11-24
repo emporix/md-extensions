@@ -1,0 +1,56 @@
+// MD FormGrid / FormGridRow with PrimeFlex `col-N`: a 12-column row grid.
+// CL inputs and dropdowns keep `min-width: 200px`, so the row is a container
+// query (playbook decision 2026-11-20): MD's widths while three controls fit,
+// one field per line below that. The query measures the row, not the window,
+// because the host's side menu takes part of the window.
+$control-min-width: 200px;
+$gap: 16px;
+
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: $gap;
+  align-items: start;
+  container-type: inline-size;
+
+  > * {
+    min-width: 0;
+  }
+}
+
+.span4 {
+  grid-column: span 4;
+}
+
+.span8 {
+  grid-column: span 8;
+}
+
+.span12 {
+  grid-column: span 12;
+}
+
+@container (width < #{3 * $control-min-width + 2 * $gap}) {
+  .span4,
+  .span8 {
+    grid-column: span 12;
+  }
+}
+
+// MD's Active / Default checkboxes (two `col-2`): side by side, left-aligned,
+// at every width.
+.checkboxRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.checkboxField {
+  display: flex;
+  flex-direction: column;
+}

@@ -60,6 +60,27 @@ export const buildQuoteItemsOperations = (
   return operations
 }
 
+/** A new line as match-prices priced it (`useQuotesMatchPrices`). */
+type PricedLine = {
+  readonly price?: {
+    readonly priceId?: string | null
+    readonly tax?: { readonly taxClass?: string | null } | null
+  } | null
+}
+
+/**
+ * New lines the quote service rejects: a matched price (it has a price id)
+ * without a tax class. The service requires `price.tax.taxClass` and answers
+ * "price.tax.taxClass: must not be blank" once per line, naming neither the
+ * line nor the product (COP-7116 QA). A line without a matched price is not
+ * listed: COP-7125 adds such a product without a price ("Price on request")
+ * and blocks only sending the quote.
+ */
+export const findLinesWithoutTaxClass = <T extends PricedLine>(
+  lines: readonly T[]
+): T[] =>
+  lines.filter((line) => !!line.price?.priceId && !line.price.tax?.taxClass)
+
 /**
  * The unit price that gives a line its net value. A line without a quantity
  * has none (MD divided by the zero quantity and got Infinity or NaN).

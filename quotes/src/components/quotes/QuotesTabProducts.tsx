@@ -29,8 +29,9 @@ import { deepClone } from '../../helpers/utils'
 import {
   buildQuoteItemsOperations,
   diffQuoteItems,
+  findLinesWithoutTaxClass,
 } from '../../helpers/quoteItems.helpers'
-import { getApiErrorMessage } from '../../helpers/api'
+import { getApiErrorDetails } from '../../helpers/api'
 import styles from './QuotesTabProducts.module.scss'
 
 export interface QuoteProductsForm {
@@ -83,6 +84,14 @@ const QuotesTabProducts = (props: StylableProps) => {
     } as unknown as ProductRow
   }
 
+  const productNames = (lines: readonly Pick<Partial<Item>, 'product'>[]) =>
+    lines
+      .map(
+        (line) =>
+          getContentLangValue(line.product?.name) || line.product?.productId
+      )
+      .join(', ')
+
   const onSubmit = useCallback(
     async (data: QuoteProductsForm) => {
       if (!quote) return
@@ -99,6 +108,20 @@ const QuotesTabProducts = (props: StylableProps) => {
           ? await getPriceForQuoteItems(quote, newItems)
           : []
 
+        // The quote service rejects these lines without naming them
+        // (COP-7116 QA), so the save stops here and names the products. A
+        // product without a price is allowed ("Price on request", COP-7125).
+        const linesWithoutTaxClass =
+          findLinesWithoutTaxClass(newItemsWithPrices)
+        if (linesWithoutTaxClass.length) {
+          toast.showError(t('quotes.toasts.errorUpdate'), [
+            t('quotes.toasts.errorNoTaxClass', {
+              products: productNames(linesWithoutTaxClass),
+            }),
+          ])
+          return
+        }
+
         const updateOperations = buildQuoteItemsOperations(
           newItemsWithPrices,
           deletedItems
@@ -111,12 +134,11 @@ const QuotesTabProducts = (props: StylableProps) => {
         console.error(e)
         // COP-7125: without a shipping address the match uses the home base or the first
         // ship-to country of the quote's site; with none, nothing is added.
-        toast.showToast(
+        toast.showError(
           isNoShipToCountryError(e)
             ? t('quotes.toasts.errorNoShipToCountry')
-            : (getApiErrorMessage(e) ?? t('quotes.toasts.errorUpdate')),
-          '',
-          'error'
+            : t('quotes.toasts.errorUpdate'),
+          getApiErrorDetails(e)
         )
       } finally {
         blockPanel(false)

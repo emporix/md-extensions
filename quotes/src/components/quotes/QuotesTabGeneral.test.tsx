@@ -119,6 +119,31 @@ const b2bQuote = {
   metadata: { mixins: {} },
 }
 
+/** A company with two locations for shipping and billing. */
+const hqAndWarehouse = () =>
+  company([
+    {
+      id: 'L1',
+      name: 'HQ',
+      contactDetails: {
+        addressLine1: 'Main 1',
+        city: 'Berlin',
+        countryCode: 'DE',
+        tags: ['shipping', 'billing'],
+      },
+    },
+    {
+      id: 'L2',
+      name: 'Warehouse',
+      contactDetails: {
+        addressLine1: 'Dock 2',
+        city: 'Hamburg',
+        countryCode: 'DE',
+        tags: ['shipping', 'billing'],
+      },
+    },
+  ])
+
 const appState: AppState = {
   tenant: 'tenant-a',
   language: 'en',
@@ -370,30 +395,7 @@ describe('QuotesTabGeneral', () => {
       shippingAddress: { id: 'L1' },
       billingAddress: { id: 'L1' },
     })
-    companiesApi.getLegalEntity.mockResolvedValue(
-      company([
-        {
-          id: 'L1',
-          name: 'HQ',
-          contactDetails: {
-            addressLine1: 'Main 1',
-            city: 'Berlin',
-            countryCode: 'DE',
-            tags: ['shipping', 'billing'],
-          },
-        },
-        {
-          id: 'L2',
-          name: 'Warehouse',
-          contactDetails: {
-            addressLine1: 'Dock 2',
-            city: 'Hamburg',
-            countryCode: 'DE',
-            tags: ['shipping', 'billing'],
-          },
-        },
-      ])
-    )
+    companiesApi.getLegalEntity.mockResolvedValue(hqAndWarehouse())
     renderGeneral()
 
     fireEvent.click(await screen.findByTestId('shippingAddressId-L2-input'))
@@ -403,6 +405,45 @@ describe('QuotesTabGeneral', () => {
         (screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement)
           .disabled
       ).toBe(false)
+    )
+  })
+
+  // COP-7116 QA (Maryna): the toast showed only the generic message of the API.
+  it('shows the cause from the API when the update fails', async () => {
+    quotesApi.getQuoteById.mockResolvedValue({
+      ...b2bQuote,
+      shippingAddress: { id: 'L1' },
+      billingAddress: { id: 'L1' },
+    })
+    companiesApi.getLegalEntity.mockResolvedValue(hqAndWarehouse())
+    quotesApi.updateQuote.mockRejectedValue({
+      response: {
+        status: 400,
+        data: {
+          message: 'There is a validation error. Please check the details.',
+          details: [
+            {
+              field: 'shippingAddress',
+              message: 'shippingAddress: must not be null',
+            },
+          ],
+        },
+      },
+    })
+    renderGeneral()
+
+    fireEvent.click(await screen.findByTestId('shippingAddressId-L2-input'))
+    const saveButton = screen.getByRole('button', {
+      name: 'Save',
+    }) as HTMLButtonElement
+    await waitFor(() => expect(saveButton.disabled).toBe(false))
+    fireEvent.click(saveButton)
+
+    await waitFor(() =>
+      expect(toast.showError).toHaveBeenCalledWith(
+        'Error while updating quote',
+        'shippingAddress: must not be null'
+      )
     )
   })
 

@@ -201,10 +201,9 @@ describe('QuotesTabProducts', () => {
     fireEvent.click(save())
 
     await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
+      expect(toast.showError).toHaveBeenCalledWith(
         'Error while updating quote',
-        '',
-        'error'
+        undefined
       )
     )
   })
@@ -255,13 +254,112 @@ describe('QuotesTabProducts', () => {
     fireEvent.click(save())
 
     await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
+      expect(toast.showError).toHaveBeenCalledWith(
         'Error while updating quote',
-        '',
-        'error'
+        undefined
       )
     )
     expect(quotesApi.updateQuote).not.toHaveBeenCalled()
+  })
+
+  // COP-7116 QA (Maryna): the quote service rejects a new line without a tax
+  // class with "price.tax.taxClass: must not be blank", once per line and
+  // naming no product, so the save stops before it and names the products.
+  it('names the products whose price has no tax class and sends nothing', async () => {
+    productsApi.syncPaginatedProducts.mockResolvedValue({
+      data: [
+        { id: 'P1', code: 'CH', name: { en: 'Chair' } },
+        { id: 'P2', code: 'TB', name: { en: 'Table' } },
+        { id: 'P3', code: 'LA', name: { en: 'Lamp' } },
+      ],
+      totalCount: 3,
+    })
+    pricesApi.matchPrices.mockResolvedValue([
+      {
+        priceId: 'PR3',
+        itemId: { itemType: 'PRODUCT', id: 'P3' },
+        originalValue: 40,
+        quantity: { quantity: 1, unitCode: 'pcs' },
+      },
+    ])
+    renderProducts()
+    const browser = await openPicker()
+
+    checkProduct(browser, 'Table')
+    checkProduct(browser, 'Lamp')
+    fireEvent.click(apply())
+    fireEvent.click(save())
+
+    // Table has no price and is not listed (Price on request, COP-7125); only
+    // Lamp, whose matched price has no tax class, stops the save.
+    await waitFor(() =>
+      expect(toast.showError).toHaveBeenCalledWith(
+        'Error while updating quote',
+        ['Price without a tax class: Lamp']
+      )
+    )
+    expect(quotesApi.updateQuote).not.toHaveBeenCalled()
+    expect(toast.showToast).not.toHaveBeenCalled()
+  })
+
+  it('shows the cause from the quote service when it rejects priced lines', async () => {
+    pricesApi.matchPrices.mockResolvedValue([
+      {
+        priceId: 'PR2',
+        itemId: { itemType: 'PRODUCT', id: 'P2' },
+        originalValue: 99,
+        quantity: { quantity: 1, unitCode: 'pcs' },
+        tax: { taxClass: 'STANDARD', taxRate: 19 },
+      },
+    ])
+    quotesApi.updateQuote.mockRejectedValue({
+      response: {
+        status: 400,
+        data: {
+          message: 'There is a validation error. Please check the details.',
+          code: 400,
+          status: 'Bad Request',
+          details: [
+            {
+              field: 'quantity.quantity',
+              message: 'quantity.quantity: must be greater than 0',
+            },
+          ],
+        },
+      },
+    })
+    renderProducts()
+    const browser = await openPicker()
+
+    checkProduct(browser, 'Table')
+    fireEvent.click(apply())
+    fireEvent.click(save())
+
+    await waitFor(() =>
+      expect(toast.showError).toHaveBeenCalledWith(
+        'Error while updating quote',
+        'quantity.quantity: must be greater than 0'
+      )
+    )
+  })
+
+  it('shows the cause when the products of the picker cannot be loaded', async () => {
+    productsApi.syncPaginatedProducts.mockRejectedValue({
+      response: {
+        status: 403,
+        data: { message: 'Missing scope product.product_read' },
+      },
+    })
+    renderProducts()
+
+    fireEvent.click(await screen.findByTestId('quote-select-products'))
+
+    await waitFor(() =>
+      expect(toast.showError).toHaveBeenCalledWith(
+        'Error while loading products',
+        'Missing scope product.product_read'
+      )
+    )
   })
 
   it('removes a dropped line without pricing anything', async () => {
@@ -414,10 +512,9 @@ describe('QuotesTabProducts', () => {
       fireEvent.click(save())
 
       await waitFor(() =>
-        expect(toast.showToast).toHaveBeenCalledWith(
+        expect(toast.showError).toHaveBeenCalledWith(
           'No ship-to countries are set for the site of this quote. Set them in the site settings and try again.',
-          '',
-          'error'
+          undefined
         )
       )
       expect(pricesApi.matchPrices).not.toHaveBeenCalled()
@@ -428,7 +525,7 @@ describe('QuotesTabProducts', () => {
 
   // COP-7125: the other cases of MD quotesNullSafe.test.tsx (emporix/
   // management-dashboard#1707) for this tab, with MD's titles. The remote's
-  // error toasts carry the API message as the title (COP-7116).
+  // error toasts show the API cause under a fixed title (COP-7116).
   describe('MD quotesNullSafe cases', () => {
     const noAddress = { ...quote, shippingAddress: null }
     const addTable = async () => {
@@ -474,10 +571,9 @@ describe('QuotesTabProducts', () => {
         await addTable()
 
         await waitFor(() =>
-          expect(toast.showToast).toHaveBeenCalledWith(
-            'Bad country',
-            '',
-            'error'
+          expect(toast.showError).toHaveBeenCalledWith(
+            'Error while updating quote',
+            'Bad country'
           )
         )
         expect(quotesApi.updateQuote).not.toHaveBeenCalled()
@@ -494,10 +590,9 @@ describe('QuotesTabProducts', () => {
         await addTable()
 
         await waitFor(() =>
-          expect(toast.showToast).toHaveBeenCalledWith(
-            'Update refused',
-            '',
-            'error'
+          expect(toast.showError).toHaveBeenCalledWith(
+            'Error while updating quote',
+            'Update refused'
           )
         )
       })
@@ -513,7 +608,7 @@ describe('QuotesTabProducts', () => {
           ...(tax ? { tax } : {}),
         },
       ]
-      const addTableAndLamp = async () => {
+      const pickTableAndLamp = async () => {
         productsApi.syncPaginatedProducts.mockResolvedValue({
           data: [
             { id: 'P1', code: 'CH', name: { en: 'Chair' } },
@@ -529,6 +624,9 @@ describe('QuotesTabProducts', () => {
         checkProduct(browser, 'Lamp')
         fireEvent.click(apply())
         fireEvent.click(save())
+      }
+      const addTableAndLamp = async () => {
+        await pickTableAndLamp()
         await waitFor(() => expect(quotesApi.updateQuote).toHaveBeenCalled())
         const [quoteId, operations] = quotesApi.updateQuote.mock.calls[0]
         return { quoteId, operations }
@@ -570,22 +668,18 @@ describe('QuotesTabProducts', () => {
         expect(lamp.quantity).toEqual({ quantity: 1, unitCode: '' })
       })
 
-      it('without tax in the match no tax is sent and the backend message is shown', async () => {
+      it('a matched price without a tax class sends nothing and names the product', async () => {
         pricesApi.matchPrices.mockResolvedValue(match())
-        quotesApi.updateQuote.mockRejectedValue({
-          response: { data: { message: 'Tax is required' } },
-        })
 
-        const { operations } = await addTableAndLamp()
+        await pickTableAndLamp()
 
-        expect('tax' in (added(operations, 'P2').price ?? {})).toBe(false)
         await waitFor(() =>
-          expect(toast.showToast).toHaveBeenCalledWith(
-            'Tax is required',
-            '',
-            'error'
+          expect(toast.showError).toHaveBeenCalledWith(
+            'Error while updating quote',
+            ['Price without a tax class: Table']
           )
         )
+        expect(quotesApi.updateQuote).not.toHaveBeenCalled()
       })
     })
   })

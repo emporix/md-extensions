@@ -29,22 +29,21 @@ jobs:
 
       - run: npm ci
 
+      # Type-check and CORS check; the deploy action builds again for the shared site.
       - run: npm run build:dev
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        id: firebase-hosting-deploy-dev
-        with:
-          firebaseToolsVersion: "12.9.1"
-          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}"
-          projectId: frontend-extensions-develop
-          channelId: live
-          target: emporix-brands-develop
 
-      - run: npm run build:stage
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        id: firebase-hosting-deploy-stage
+      - name: Deploy brands to the shared Hosting site (dev)
+        uses: ./.github/actions/deploy-remote
         with:
-          firebaseToolsVersion: "12.9.1"
-          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_STAGE }}"
-          projectId: frontend-extensions-stage
-          channelId: live
-          target: emporix-brands-stage
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}
+          site: frontend-extensions-develop
+          remote: brands
+          mode: dev
+
+      - name: Deploy brands to the shared Hosting site (stage)
+        uses: ./.github/actions/deploy-remote
+        with:
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_STAGE }}
+          site: frontend-extensions-stage
+          remote: brands
+          mode: stage

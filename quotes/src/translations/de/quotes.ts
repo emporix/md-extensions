@@ -84,6 +84,7 @@ export default {
     errorFetchReasons: 'Fehler beim Laden der Gründe',
     errorFetchShippingMethods: 'Fehler beim Laden der Versandarten',
     errorFetchPrices: 'Fehler beim Laden der Preise',
+    errorNoTaxClass: 'Preis ohne Steuerklasse: {{products}}',
     errorPdf:
       'Fehler beim Anzeigen des PDFs, bitte versuchen Sie es später noch einmal',
     successDraftCreate: 'Angebotsentwurf erfolgreich angelegt',

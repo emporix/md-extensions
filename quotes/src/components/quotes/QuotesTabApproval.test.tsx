@@ -267,7 +267,7 @@ describe('QuotesTabApproval', () => {
       )
     })
 
-    it('shows the API message when the status change fails', async () => {
+    it('shows the API cause when the status change fails', async () => {
       quotesApi.getQuoteById.mockResolvedValue(quote('OPEN'))
       quotesApi.changeQuoteStatus.mockRejectedValue({
         isAxiosError: true,
@@ -281,10 +281,9 @@ describe('QuotesTabApproval', () => {
       )
 
       await waitFor(() =>
-        expect(toast.showToast).toHaveBeenCalledWith(
-          'Transition not allowed',
-          '',
-          'error'
+        expect(toast.showError).toHaveBeenCalledWith(
+          'Status cannot be changed',
+          'Transition not allowed'
         )
       )
       expect(toast.showToast).not.toHaveBeenCalledWith(
@@ -305,10 +304,9 @@ describe('QuotesTabApproval', () => {
       await openNegotiation()
 
       await waitFor(() =>
-        expect(toast.showToast).toHaveBeenCalledWith(
+        expect(toast.showError).toHaveBeenCalledWith(
           'Error while loading the reasons',
-          '',
-          'error'
+          undefined
         )
       )
     })
@@ -536,7 +534,7 @@ describe('QuotesTabApproval', () => {
     ).toBe(true)
   })
 
-  it('shows the backend message when sending as pending fails', async () => {
+  it('shows the backend cause when sending as pending fails', async () => {
     quotesApi.getQuoteById.mockResolvedValue(quote('CREATING'))
     quotesApi.changeQuoteStatus.mockRejectedValue({
       response: { data: { message: 'Cannot be pending' } },
@@ -548,10 +546,9 @@ describe('QuotesTabApproval', () => {
     )
 
     await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
-        'Cannot be pending',
-        '',
-        'error'
+      expect(toast.showError).toHaveBeenCalledWith(
+        'Status cannot be changed',
+        'Cannot be pending'
       )
     )
     expect(screen.queryByTestId('list')).toBeNull()
@@ -581,10 +578,9 @@ describe('QuotesTabApproval', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Create Quote' }))
 
     await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
+      expect(toast.showError).toHaveBeenCalledWith(
         'Status cannot be changed',
-        '',
-        'error'
+        undefined
       )
     )
     expect(screen.queryByTestId('list')).toBeNull()
@@ -731,10 +727,9 @@ describe('QuotesTabApproval', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Yes' }))
 
     await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
+      expect(toast.showError).toHaveBeenCalledWith(
         'Status cannot be changed',
-        '',
-        'error'
+        undefined
       )
     )
   })
@@ -763,10 +758,9 @@ describe('QuotesTabApproval', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Yes' }))
 
     await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
-        'Quote is locked',
-        '',
-        'error'
+      expect(toast.showError).toHaveBeenCalledWith(
+        'Status cannot be changed',
+        'Quote is locked'
       )
     )
   })
@@ -782,10 +776,9 @@ describe('QuotesTabApproval', () => {
     )
 
     await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
+      expect(toast.showError).toHaveBeenCalledWith(
         'Error while loading the reasons',
-        '',
-        'error'
+        undefined
       )
     )
   })

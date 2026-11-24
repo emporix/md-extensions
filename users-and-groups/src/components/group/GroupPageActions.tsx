@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import {
+  getGroupRoleType,
   GroupFormFields,
   mapGroupFormToPayload,
 } from '../../helpers/groups/groupForm.helpers'
@@ -22,6 +23,7 @@ import {
 import useCustomNavigate from '../../hooks/useCustomNavigate'
 import GroupAddMembersDialog from './GroupAddMembersDialog'
 import { useGroupData } from '../../context/Group.provider'
+import { useGroupRole } from '../../context/GroupRole.provider'
 import { makeCall } from '../../helpers/api'
 import { GroupUserTypes } from '../../models/Groups.model'
 import { usePermissions } from '../../context/PermissionsProvider'
@@ -52,7 +54,15 @@ const GroupPageActions = (props: Props) => {
   const canAddMembers = managerPermissions && !areManualMutationsRestricted
 
   const { group, syncGroup, groupType } = useGroupData()
+  const { resetRoleType } = useGroupRole()
   const [isMembersDialogOpened, setIsMembersDialogOpened] = useState(false)
+
+  const discard = () => {
+    reset()
+    // The role type radio is not a form field: put it back to the one the
+    // group opens with, matching the values reset() restored (COP-7405).
+    resetRoleType(getGroupRoleType(group))
+  }
 
   const submitCreateGroup = useCallback(
     async (data: GroupFormFields) => {
@@ -162,7 +172,7 @@ const GroupPageActions = (props: Props) => {
           <SecondaryButton
             className={styles.discardButton}
             disabled={!canDiscard}
-            onClick={() => reset()}
+            onClick={discard}
           >
             {t('global.discard')}
           </SecondaryButton>

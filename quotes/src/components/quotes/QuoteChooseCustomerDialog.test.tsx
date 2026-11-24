@@ -126,7 +126,8 @@ describe('QuoteChooseCustomerDialog', () => {
 
     await waitFor(() =>
       expect(toast.showError).toHaveBeenCalledWith(
-        'Error while fetching customers. Please try again later'
+        'Error while fetching customers. Please try again later',
+        undefined
       )
     )
   })

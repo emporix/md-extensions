@@ -79,7 +79,7 @@ Add (`/add`) and edit (`/:id`) share `Brand.page.tsx`.
 - Header subtitle is `brand.name` only when `:id` is present.
 - Back always calls `navigate('/')`. `HeaderSection` reads a `backTo` query only when the `backTo` prop is not a function (`brands/src/components/shared/HeaderSection.tsx`), so the query written by the table is ignored.
 - Tabs are `details` then `media` (`brands/src/hooks/useTabs.tsx`). Active tab is hash query `tab`. Missing or unknown `tab` selects `details` and does not write the query. A user tab change writes `tab` and, when the tab actually changes, resets `page` to 1 and `rows` to 10.
-- Details: `name` (`InputText`) and `description` (`Editor`). Description stores `event.htmlValue ?? ''`. No sanitization in this page. Both are `required`. Without manage permission the name input is `disabled` and the editor is `readOnly`.
+- Details: `name` (`InputText`) and `description` (`Editor`). Description stores `event.htmlValue ?? ''`. The editor reports only edits made by the user (component library 2.31.0): Quill rewrites stored HTML into its own markup (it wraps text in `<p>`) when the value is set on load and after Discard, and before 2.31.0 that rewrite marked the form dirty, so Save and Discard were active without an edit (COP-7405). No sanitization in this page. Both are `required`. Without manage permission the name input is `disabled` and the editor is `readOnly`.
 - Save is disabled unless the form is dirty, valid, and the user can manage. Discard is disabled unless dirty and the user can manage. Discard calls `reset()` to the last `createBrandForm` values (empty on add, last fetched or saved brand on edit).
 - Submit builds `{ ...brand, ...data }`. On edit, fetched `id`, `image`, `cloudinaryUrl`, and `metadata` are sent again with the new name and description (`editBrand`). On add, `brand` is still unset, so the payload is only `name` and `description` (`createBrand`). This page never writes `image` or `cloudinaryUrl`.
 - Update success replaces local brand, resets the form, toasts `successUpdate`, and stays on the page.
@@ -149,6 +149,7 @@ No page or table specs. Names only:
 | Federation `name` | `brands` (`brands/vite.config.ts`) |
 | Host route `key` → path | `brands` → `/apps/management/brands/*` (inline `ExternalModule moduleName="brands"`) (`management-dashboard` `src/router/module-routes.tsx`) |
 | Host env var | `VITE_BRANDS_URL` (`management-dashboard` `.env.*`) |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7441), no site or `firebase.json` target of its own: `https://frontend-extensions-develop.web.app/brands/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod). Deployed by `.github/actions/deploy-remote` from `.github/workflows/brands-firebase-*.yaml` (`brands/README.md`) |
 | Local port | `5175`, `strictPort` |
 | Local deviations | none |
 

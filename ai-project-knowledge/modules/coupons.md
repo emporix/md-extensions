@@ -66,7 +66,7 @@ Pinned by `coupons/src/pages/Coupon.page.test.tsx`.
 | Host env var | `VITE_COUPONS_URL` (`management-dashboard` `.env.*`) |
 | Host deep link | `management-dashboard` `src/helpers/couponsUrl.helpers.ts` (`/apps/management/coupons#/<encoded code>`, audit log) |
 | Local port | `5181`, `strictPort` |
-| Hosting | Firebase targets `emporix-coupons`, `-stage`, `-develop`; `.github/workflows/coupons-firebase-*.yaml` |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7447), no site or `firebase.json` target of its own: `https://frontend-extensions-develop.web.app/coupons/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod). Deployed by `.github/actions/deploy-remote` from `.github/workflows/coupons-firebase-*.yaml` (`coupons/README.md`) |
 | Staying in MD | `src/hooks/api/coupons.ts` for the segments coupon tab and the customer referral coupon |
 | Local deviations | `CurrencyProvider` around the edit page (MD had a host-wide one) |
 

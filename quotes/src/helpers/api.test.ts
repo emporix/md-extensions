@@ -329,3 +329,43 @@ describe('loadLatest', () => {
     expect(onError).toHaveBeenCalledWith(error)
   })
 })
+
+/** Quote service 400 for new lines without a tax class (COP-7116 QA, dev). */
+const quoteValidationBody = {
+  message: 'There is a validation error. Please check the details.',
+  code: 400,
+  status: 'Bad Request',
+  details: [
+    {
+      field: 'price.tax.taxClass',
+      message: 'price.tax.taxClass: must not be blank',
+    },
+    {
+      field: 'price.tax.taxClass',
+      message: 'price.tax.taxClass: must not be blank',
+    },
+  ],
+}
+
+describe('quote service validation errors', () => {
+  it('shows each detail message once instead of the generic message', () => {
+    expect(getApiErrorDetails(axiosLikeError(400, quoteValidationBody))).toBe(
+      'price.tax.taxClass: must not be blank'
+    )
+  })
+
+  it('keeps distinct detail messages in their order', () => {
+    expect(
+      getApiErrorDetailsList(
+        axiosLikeError(400, {
+          ...quoteValidationBody,
+          details: [
+            { field: 'b', message: 'b: must not be blank' },
+            { field: 'a', message: 'a: must not be null' },
+            { field: 'b', message: 'b: must not be blank' },
+          ],
+        })
+      )
+    ).toEqual(['b: must not be blank', 'a: must not be null'])
+  })
+})

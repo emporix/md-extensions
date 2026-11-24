@@ -76,7 +76,7 @@ The dev shell asks for tenant, token and language.
 
 ### Deploying
 
-Firebase Hosting targets `emporix-units-develop`, `emporix-units-stage` and `emporix-units` (root `firebase.json`, `.firebaserc`). Workflows: `.github/workflows/units-firebase-*.yaml` — a preview per PR, dev and stage on merge to `master`, prod on a `units-*` tag. The Firebase Hosting sites must exist before the first deploy.
+Units has no Firebase Hosting site of its own. It is published into the `units/` folder of the shared site of each environment (COP-7348, COP-7449): `https://frontend-extensions-develop.web.app/units/remoteEntry.js`, `https://frontend-extensions-stage.web.app/units/remoteEntry.js` and `https://frontend-extensions.web.app/units/remoteEntry.js` (prod). Workflows: `.github/workflows/units-firebase-*.yaml` — a preview per PR, dev and stage on merge to `master`, prod on a `units-*` tag (roll back by redeploying the previous tag). Each calls `.github/actions/deploy-remote`, which builds the remote flat with base `/units/` (`.github/scripts/hosting/build-remote.mjs`) and replaces only this folder on the site. Local `npm run build:*` and `preview` are unchanged and still serve `/assets/remoteEntry.js`.
 
 ## UI
 

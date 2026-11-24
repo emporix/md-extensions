@@ -472,7 +472,19 @@ describe('Quotes routes', () => {
     it('goes back to the list with an error toast', async () => {
       api.getQuoteById.mockImplementation(() =>
         later(() => {
-          throw new Error('404')
+          throw Object.assign(
+            new Error('Request failed with status code 404'),
+            {
+              response: {
+                status: 404,
+                data: {
+                  code: 404,
+                  status: 'Not Found',
+                  message: 'Quote not found',
+                },
+              },
+            }
+          )
         })
       )
 
@@ -481,10 +493,9 @@ describe('Quotes routes', () => {
 
       expect(location()).toBe('/')
       expect(byTestId('quotes-table')).not.toBeNull()
-      expect(toast.showToast).toHaveBeenCalledWith(
+      expect(toast.showError).toHaveBeenCalledWith(
         'Error while loading quote. Please try again later',
-        '',
-        'error'
+        'Quote not found'
       )
     })
   })
@@ -519,6 +530,7 @@ describe('Quotes routes', () => {
 
       expect(location()).toBe('/')
       expect(toast.showToast).not.toHaveBeenCalled()
+      expect(toast.showError).not.toHaveBeenCalled()
     })
 
     it('ignores the late response for the previous id', async () => {
@@ -536,6 +548,7 @@ describe('Quotes routes', () => {
       expect(location()).toBe('/Q-NEW')
       expect(screen.getByRole('heading', { name: 'Q-NEW' })).toBeTruthy()
       expect(toast.showToast).not.toHaveBeenCalled()
+      expect(toast.showError).not.toHaveBeenCalled()
     })
   })
 

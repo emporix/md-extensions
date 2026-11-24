@@ -15,7 +15,7 @@ import { useQuoteData } from '../../context/Quote.provider'
 import { QuoteChangeStatusType, QuoteReason } from '../../models/Quotes.model'
 import { filterQuoteReasonsByType } from '../../helpers/quoteChangeStatus.helpers'
 import { buildStartNegotiationPayload } from '../../helpers/quotePricing.helpers'
-import { getApiErrorMessage } from '../../helpers/api'
+import { getApiErrorDetails } from '../../helpers/api'
 import styles from './QuotesChangeStatus.module.scss'
 
 interface QuotesStartNegotiationProps {
@@ -56,10 +56,9 @@ const QuotesStartNegotiation = ({
         )
       } catch (e: unknown) {
         console.error(e)
-        toast.showToast(
-          getApiErrorMessage(e) ?? t('quotes.toasts.errorFetchReasons'),
-          '',
-          'error'
+        toast.showError(
+          t('quotes.toasts.errorFetchReasons'),
+          getApiErrorDetails(e)
         )
       }
     })()
@@ -82,10 +81,9 @@ const QuotesStartNegotiation = ({
       refreshData()
     } catch (e: unknown) {
       console.error(e)
-      toast.showToast(
-        getApiErrorMessage(e) ?? t('quotes.toasts.errorChangeStatus'),
-        '',
-        'error'
+      toast.showError(
+        t('quotes.toasts.errorChangeStatus'),
+        getApiErrorDetails(e)
       )
     } finally {
       blockPanel(false)

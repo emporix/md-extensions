@@ -15,6 +15,8 @@ interface Props {
 interface ContextData {
   activeRoleType: RoleType
   setActiveRoleType: (type: RoleType) => void
+  /** Sets the role type and forgets the state kept for the other types. */
+  resetRoleType: (type: RoleType) => void
   switchRoleType: (
     type: RoleType,
     currentState: Partial<GroupFormFields>
@@ -29,6 +31,9 @@ const Context = createContext<ContextData>({
   activeServiceType: ServiceType.DCP,
   accessControlsByRole: [],
   setActiveRoleType: () => {
+    // NOOP
+  },
+  resetRoleType: () => {
     // NOOP
   },
   switchRoleType: () => undefined,
@@ -84,6 +89,13 @@ export const GroupRoleProvider = (props: Props) => {
     return getStateForRoleType(type)
   }
 
+  const resetRoleType = (type: RoleType) => {
+    setLastStandardState(undefined)
+    setTemplatesState(undefined)
+    setVendorState(undefined)
+    setActiveRoleType(type)
+  }
+
   const accessControlsByRole = useMemo(() => {
     if (groupType === 'CUSTOMER') {
       return accessControlsForCustomer
@@ -115,6 +127,7 @@ export const GroupRoleProvider = (props: Props) => {
         activeServiceType,
         accessControlsByRole,
         setActiveRoleType,
+        resetRoleType,
         switchRoleType,
         setActiveServiceType,
       }}

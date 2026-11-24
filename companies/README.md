@@ -79,8 +79,8 @@ The dev shell asks for tenant, token and language.
 
 ### Deploying
 
-Firebase Hosting targets `emporix-companies-develop`, `emporix-companies-stage` and `emporix-companies` (root `firebase.json`, `.firebaserc`). Workflows: `.github/workflows/companies-firebase-*.yaml` — a preview per PR, dev and stage on merge to `master`, prod on a `companies-*` tag. The Firebase Hosting sites must exist before the first deploy.
+Companies has no Firebase Hosting site of its own. It is published into the `companies/` folder of the shared site of each environment (COP-7348, COP-7448): `https://frontend-extensions-develop.web.app/companies/remoteEntry.js`, `https://frontend-extensions-stage.web.app/companies/remoteEntry.js` and `https://frontend-extensions.web.app/companies/remoteEntry.js` (prod). Workflows: `.github/workflows/companies-firebase-*.yaml` — a preview per PR, dev and stage on merge to `master`, prod on a `companies-*` tag (roll back by redeploying the previous tag). Each calls `.github/actions/deploy-remote`, which builds the remote flat with base `/companies/` (`.github/scripts/hosting/build-remote.mjs`) and replaces only this folder on the site. Local `npm run build:*` and `preview` are unchanged and still serve `/assets/remoteEntry.js`. Until the host `VITE_COMPANIES_URL` points at the shared site, it keeps loading the last build from the former `emporix-companies*` sites, which no longer receive deploys.
 
 ## UI
 
-No PrimeReact, PrimeFlex or PrimeIcons dependency. UI comes from `@emporix/component-library` (≥ 2.20.0 for `Chips` and `SplitButton`), whose stylesheet is imported once in `RemoteComponent.tsx`; feature styles are SCSS Modules. See `docs/CL_WIDGET_STATUS.md` for the component-library equivalent of each PrimeReact widget.
+No PrimeReact, PrimeFlex or PrimeIcons dependency. UI comes from `@emporix/component-library` `2.31.1` (≥ 2.20.0 for `Chips` and `SplitButton`), whose stylesheet is imported once in `RemoteComponent.tsx`; feature styles are SCSS Modules. See `docs/CL_WIDGET_STATUS.md` for the component-library equivalent of each PrimeReact widget.

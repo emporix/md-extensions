@@ -73,7 +73,7 @@ Pinned by `catalogs/src/pages/Catalog.page.test.tsx`.
 | Host route `key` → path | `catalogs` → `/apps/management/catalogs/*` (`management-dashboard` `src/router/module-routes.tsx`; MD had built-in `catalogs`, `catalogsAdd`, `catalogsEdit` before COP-7180) |
 | Host env var | `VITE_CATALOGS_URL` (`management-dashboard` `.env.*`) |
 | Local port | `5185`, `strictPort` |
-| Hosting | Firebase targets `emporix-catalogs`, `-stage`, `-develop`; `.github/workflows/catalogs-firebase-*.yaml` |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7451), no site or `firebase.json` target of its own: `https://frontend-extensions-develop.web.app/catalogs/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod). Deployed by `.github/actions/deploy-remote` from `.github/workflows/catalogs-firebase-*.yaml` (`catalogs/README.md`). Builds with Vite 8 and CL `2.31.1` (`catalogs/package.json`). The host `VITE_CATALOGS_URL` names the shared sites in dev and stage; prod still names the former `emporix-catalogs` site until it is switched |
 | Local deviations | none |
 
 ## Not yet scanned

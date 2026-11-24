@@ -82,6 +82,7 @@ export default {
     errorFetchReasons: 'Error while loading the reasons',
     errorFetchShippingMethods: 'Error while loading the shipping methods',
     errorFetchPrices: 'Error while loading the prices',
+    errorNoTaxClass: 'Price without a tax class: {{products}}',
     errorPdf: 'Error while displaying PDF, try later',
     successDraftCreate: 'Quote draft created successfully',
     successCreate: 'Quote created!',

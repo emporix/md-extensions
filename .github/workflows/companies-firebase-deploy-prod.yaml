@@ -29,6 +29,16 @@ jobs:
           # workflow_dispatch supplies inputs.tag; tag pushes use github.ref
           ref: ${{ github.event.inputs.tag || github.ref }}
 
+      # workflow_dispatch can deploy an older tag whose deploy action or script differs,
+      # so take the tooling from the ref this workflow runs from. It sits outside
+      # companies/ and audit-log/, the only folders the build and deploy read (both
+      # come from the tag checkout above).
+      - name: Checkout deploy tooling
+        uses: actions/checkout@v4
+        with:
+          path: .deploy-tooling
+          sparse-checkout: .github
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
@@ -37,12 +47,13 @@ jobs:
 
       - run: npm ci
 
+      # Type-check and CORS check; the deploy action builds again for the shared site.
       - run: npm run build:prod
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        id: firebase-hosting-deploy
+
+      - name: Deploy companies to the shared Hosting site
+        uses: ./.deploy-tooling/.github/actions/deploy-remote
         with:
-          firebaseToolsVersion: "12.9.1"
-          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA }}"
-          projectId: frontend-extensions
-          channelId: live
-          target: emporix-companies
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA }}
+          site: frontend-extensions
+          remote: companies
+          mode: prod

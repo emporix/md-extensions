@@ -479,6 +479,30 @@ describe('Customer add / edit', () => {
       expect(api.editCustomer).not.toHaveBeenCalled()
     })
 
+    // COP-7405: the API leaves out keys it has no value for. The restriction
+    // field still registers, so the form values hold `restriction: undefined`,
+    // a key the loaded customer does not have, and the form-wide isDirty
+    // stayed true after Discard.
+    it('turns Save and Discard inactive on Discard for a customer without a restriction', async () => {
+      const withoutRestriction: Partial<typeof customer> =
+        structuredClone(customer)
+      delete withoutRestriction.restriction
+      api.syncCustomer.mockResolvedValue(withoutRestriction)
+      renderPage('/C1')
+      await customerLoaded()
+      expect(saveButton().disabled).toBe(true)
+
+      typeInto('customer-first-name', 'Anna')
+      await waitFor(() => expect(saveButton().disabled).toBe(false))
+
+      fireEvent.click(button('Discard'))
+      await waitFor(() =>
+        expect(input('customer-first-name').value).toBe('Ann')
+      )
+      expect(saveButton().disabled).toBe(true)
+      expect(button('Discard').disabled).toBe(true)
+    })
+
     it('shows the service message when the update fails', async () => {
       api.editCustomer.mockRejectedValue({
         response: { data: { message: 'conflict' } },

@@ -11,6 +11,7 @@ import QuotesTabApproval from '../components/quotes/QuotesTabApproval'
 import QuoteStatusBadge from '../components/quotes/QuoteStatusBadge'
 import QuotesTabGeneralStatus from '../components/quotes/QuotesTabGeneralStatus'
 import { hasQuoteStatusDetails } from '../helpers/quoteStatus.helpers'
+import { getApiErrorDetails } from '../helpers/api'
 import EntityChangelogTab from '../components/auditLog/EntityChangelogTab'
 import useMixinsForm, {
   MIXINS_LOADING_TAB_ID,
@@ -31,9 +32,6 @@ import styles from './Quotes.page.module.scss'
 
 const TABS = ['general', 'products', 'preview', 'approval']
 const AUDIT_LOG_TAB = 'audit-log'
-
-/** MD reads the message straight from the error response. */
-type ErrorWithResponse = { response?: { data?: { message?: string } } }
 
 /**
  * MD `QuotesAddEditPage`: the quote's tabs (only General before the draft
@@ -113,11 +111,7 @@ const QuotesAddEditPage = () => {
       refreshData()
     } catch (e: unknown) {
       console.error(e)
-      toast.showToast(
-        t('quotes.toasts.errorUpdate'),
-        (e as ErrorWithResponse)?.response?.data?.message || '',
-        'error'
-      )
+      toast.showError(t('quotes.toasts.errorUpdate'), getApiErrorDetails(e))
     } finally {
       blockPanel(false)
     }

@@ -76,7 +76,9 @@ The dev shell asks for tenant, token and language.
 
 ### Deploying
 
-Firebase Hosting targets `emporix-customers-develop`, `emporix-customers-stage` and `emporix-customers` (root `firebase.json`, `.firebaserc`). Workflows: `.github/workflows/customers-firebase-*.yaml` — a preview per PR, dev and stage on merge to `master`, prod on a `customers-*` tag. The Firebase Hosting sites must exist before the first deploy.
+Customers is published into the `customers/` folder of the shared Firebase Hosting site of each environment (COP-7348, COP-7450): `https://frontend-extensions-develop.web.app/customers/remoteEntry.js`, `https://frontend-extensions-stage.web.app/customers/remoteEntry.js` and `https://frontend-extensions.web.app/customers/remoteEntry.js` (prod). Workflows: `.github/workflows/customers-firebase-*.yaml` — a preview per PR (channel `pr-<number>-customers`, URL posted as a PR comment), dev and stage on merge to `master`, prod on a `customers-*` tag (roll back by redeploying the previous tag). A change under `audit-log/` triggers the preview and the dev and stage deploys too. Each calls `.github/actions/deploy-remote`, which builds the remote flat with base `/customers/` (`.github/scripts/hosting/build-remote.mjs`) and replaces only this folder on the site. Local `npm run build:*` and `preview` are unchanged and still serve `/assets/remoteEntry.js`.
+
+Until the Management Dashboard loads customers from the shared site in production, the same workflows also keep deploying the old per-remote sites first (`emporix-customers-develop`, `emporix-customers-stage`, `emporix-customers`, served from `/assets/remoteEntry.js`). Those steps and the `emporix-customers*` targets in `firebase.json` / `.firebaserc` are removed in the last stage of COP-7348.
 
 ## UI
 

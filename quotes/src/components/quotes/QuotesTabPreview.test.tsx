@@ -294,10 +294,9 @@ describe('QuotesTabPreview', () => {
     fireEvent.click(save())
 
     await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
+      expect(toast.showError).toHaveBeenCalledWith(
         'Error while updating quote',
-        '',
-        'error'
+        undefined
       )
     )
   })
@@ -309,10 +308,9 @@ describe('QuotesTabPreview', () => {
     renderPreview()
 
     await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
+      expect(toast.showError).toHaveBeenCalledWith(
         'Error while loading the shipping methods',
-        '',
-        'error'
+        undefined
       )
     )
   })
@@ -335,10 +333,9 @@ describe('QuotesTabPreview', () => {
     })
 
     await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
+      expect(toast.showError).toHaveBeenCalledWith(
         'Error while loading the prices',
-        '',
-        'error'
+        undefined
       )
     )
     // Three chairs at the current €130: €390 net, €464.10 gross.
@@ -777,7 +774,7 @@ describe('QuotesTabPreview', () => {
         })
       })
 
-      it('shows the backend message when saving fails', async () => {
+      it('shows the backend cause when saving fails', async () => {
         load(withAddress())
         quotesApi.updateQuote.mockRejectedValue({
           response: { data: { message: 'Missing scope' } },
@@ -789,10 +786,9 @@ describe('QuotesTabPreview', () => {
         await saved()
 
         await waitFor(() =>
-          expect(toast.showToast).toHaveBeenCalledWith(
-            'Missing scope',
-            '',
-            'error'
+          expect(toast.showError).toHaveBeenCalledWith(
+            'Error while updating quote',
+            'Missing scope'
           )
         )
       })
@@ -1254,7 +1250,7 @@ describe('QuotesTabPreview', () => {
           '400 (EXTERNAL item without a class)',
           'Tax class is missing for item i1',
         ],
-      ])('shows the backend message for %s', async (_name, message) => {
+      ])('shows the backend cause for %s', async (_name, message) => {
         load(withAddress())
         quotesApi.updateQuote.mockRejectedValue({
           response: { data: { message } },
@@ -1266,7 +1262,10 @@ describe('QuotesTabPreview', () => {
         await saved()
 
         await waitFor(() =>
-          expect(toast.showToast).toHaveBeenCalledWith(message, '', 'error')
+          expect(toast.showError).toHaveBeenCalledWith(
+            'Error while updating quote',
+            message
+          )
         )
       })
 
