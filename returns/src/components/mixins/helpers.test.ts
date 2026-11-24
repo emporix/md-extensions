@@ -5,6 +5,7 @@ import {
   defaultValueForMixinItem,
   MixinsFormItem,
   MixinsFormItemType,
+  omitUnsetEmptyValues,
   parseNumberInputText,
 } from './helpers'
 
@@ -75,13 +76,33 @@ describe('createForm', () => {
     expect(form.decimal).toBeUndefined()
   })
 
-  it('keeps empty defaults for localized and boolean-off', () => {
+  it('leaves boolean fields without data unset', () => {
+    const booleanItem = item({
+      key: 'boolean',
+      type: MixinsFormItemType.boolean,
+    })
     const form = createForm([
       item({ key: 'advertisement', type: MixinsFormItemType.localized }),
-      item({ key: 'boolean', type: MixinsFormItemType.boolean }),
+      booleanItem,
     ])
 
-    expect(form.boolean).toBe(false)
+    expect(form.boolean).toBeUndefined()
+    expect(
+      defaultValueForMixinItem(
+        { ...booleanItem, type: MixinsFormItemType.array },
+        false
+      )
+    ).toEqual([])
+    expect(
+      defaultValueForMixinItem(
+        {
+          ...booleanItem,
+          type: MixinsFormItemType.array,
+          arrayType: MixinsFormItemType.boolean,
+        },
+        true
+      )
+    ).toBe(false)
   })
 })
 
@@ -187,5 +208,71 @@ describe('parseNumberInputText', () => {
     expect(parseNumberInputText('', 'en')).toBeNull()
     expect(parseNumberInputText('-', 'en')).toBeNull()
     expect(parseNumberInputText('abc', 'en')).toBeNull()
+  })
+})
+
+describe('omitUnsetEmptyValues', () => {
+  const items = [
+    item({ key: 'text', type: MixinsFormItemType.text, isNullable: true }),
+    item({ key: 'flag', type: MixinsFormItemType.boolean }),
+    item({ key: 'tags', type: MixinsFormItemType.array }),
+    item({
+      key: 'loc',
+      type: MixinsFormItemType.localized,
+      localizedVersion: 'v2',
+    }),
+    item({
+      key: 'ref',
+      type: MixinsFormItemType.reference,
+      referenceType: 'PRODUCT',
+    }),
+    item({
+      key: 'dims',
+      type: MixinsFormItemType.object,
+      items: [
+        item({ key: 'dims.w', type: MixinsFormItemType.integer }),
+        item({
+          key: 'dims.n',
+          type: MixinsFormItemType.text,
+          isNullable: true,
+        }),
+      ],
+    }),
+    item({
+      key: 'rows',
+      type: MixinsFormItemType.array,
+      arrayType: MixinsFormItemType.object,
+      items: [item({ key: 'n', type: MixinsFormItemType.text })],
+    }),
+  ]
+  const emptyPayload = {
+    text: null,
+    flag: false,
+    tags: [],
+    loc: { en: null },
+    ref: { emporixReferenceType: 'PRODUCT', id: '' },
+    dims: { n: null },
+    rows: [{ n: null }],
+  }
+
+  it('leaves out empty values of attributes without stored data', () => {
+    expect(omitUnsetEmptyValues(emptyPayload, undefined, items)).toEqual({
+      flag: false,
+      rows: [{ n: null }],
+    })
+  })
+
+  it('keeps empty values of attributes with stored data (cleared by the user)', () => {
+    const stored = {
+      text: 'a',
+      tags: ['x'],
+      loc: { en: 'Hi' },
+      ref: { emporixReferenceType: 'PRODUCT', id: 'p1' },
+      dims: { n: 'b' },
+    }
+
+    expect(omitUnsetEmptyValues(emptyPayload, stored, items)).toEqual(
+      emptyPayload
+    )
   })
 })

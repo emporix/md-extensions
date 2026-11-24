@@ -20,6 +20,7 @@ import {
   createForm,
   filterOutChangedMixins,
   filterOutDeletedMixins,
+  omitUnsetEmptyValues,
   hasMissingRequiredMixinValues,
   hasMissingRequiredSiteOverlayValues,
   isAttributeOfArraySingleReference,
@@ -144,18 +145,24 @@ const MixinsForm = forwardRef<MixinsFormHandle, MixinFormProps>(
       onDirtyChange?.(formState.isDirty)
     }, [formState.isDirty, onDirtyChange])
 
+    const storedData = mixins[mixinStorageKey(metadata.key, metadata.siteCode)]
     const toPayload = useCallback(
       (data: Mixins): Mixins => {
         const filteredData = filterOutDeletedMixins(data, items || [])
         const withDefaults = useSparseDefaults
           ? filteredData
           : applyDefaultsOnEmptyFields(filteredData, items || [])
-        return serializeLocalizedFields(
+        const payload = serializeLocalizedFields(
           convertFromIdValuePair(withDefaults),
           items || []
         ) as Mixins
+        // Site overlays are compared to their baseline elsewhere; only the
+        // default context drops empty values the user never entered.
+        return useSparseDefaults
+          ? payload
+          : (omitUnsetEmptyValues(payload, storedData, items || []) as Mixins)
       },
-      [items, useSparseDefaults]
+      [items, storedData, useSparseDefaults]
     )
 
     useEffect(() => {

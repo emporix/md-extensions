@@ -316,3 +316,255 @@ describe('MixinsAccordionForm enum fields', () => {
     )
   })
 })
+
+describe('MixinsForm keeps values the user did not edit', () => {
+  const rowItems = [
+    item({ key: 'label', type: MixinsFormItemType.text }),
+    item({ key: 'qty', type: MixinsFormItemType.integer }),
+    item({ key: 'active', type: MixinsFormItemType.boolean }),
+    item({
+      key: 'kind',
+      type: MixinsFormItemType.enum,
+      enum: ['A', 'B'],
+    }),
+    item({ key: 'note', type: MixinsFormItemType.text, isNullable: true }),
+  ]
+  const rowsItem = item({
+    key: 'rows',
+    type: MixinsFormItemType.array,
+    arrayType: MixinsFormItemType.object,
+    items: rowItems,
+  })
+
+  it('leaves an untouched boolean unset and keeps a stored one', async () => {
+    const { onSave, saveButton } = renderForm(
+      [
+        item({ key: 'fragile', type: MixinsFormItemType.boolean }),
+        item({ key: 'stackable', type: MixinsFormItemType.boolean }),
+      ],
+      { stackable: true }
+    )
+
+    const payload = await savedPayload(onSave, saveButton)
+
+    expect(payload).toEqual({ stackable: true })
+  })
+
+  it('leaves untouched empty nullable fields out and keeps a stored null', async () => {
+    const { onSave, saveButton } = renderForm(
+      [
+        item({ key: 'nText', type: MixinsFormItemType.text, isNullable: true }),
+        item({
+          key: 'nCount',
+          type: MixinsFormItemType.integer,
+          isNullable: true,
+        }),
+        item({
+          key: 'nKind',
+          type: MixinsFormItemType.enum,
+          enum: ['A', null],
+          isNullable: true,
+        }),
+        item({ key: 'nDate', type: MixinsFormItemType.date, isNullable: true }),
+        item({ key: 'kept', type: MixinsFormItemType.text, isNullable: true }),
+      ],
+      { kept: null }
+    )
+
+    const payload = await savedPayload(onSave, saveButton)
+
+    expect(payload).toEqual({ kept: null })
+  })
+
+  it('still sends a cleared nullable text as null', async () => {
+    const { onSave, saveButton } = renderForm(
+      [item({ key: 'nText', type: MixinsFormItemType.text, isNullable: true })],
+      { nText: 'Hello' }
+    )
+    fireEvent.change(screen.getByDisplayValue('Hello'), {
+      target: { value: '' },
+    })
+
+    const payload = await savedPayload(onSave, saveButton)
+
+    expect(payload).toEqual({ nText: null })
+  })
+
+  it('leaves an untouched localized object out and keeps a stored one', async () => {
+    const specItem = (key: string) =>
+      item({
+        key,
+        type: MixinsFormItemType.localized,
+        localizedVersion: 'v2',
+        localizedObject: true,
+        items: [item({ key: 'color', type: MixinsFormItemType.text })],
+      })
+    const { onSave, saveButton } = renderForm(
+      [specItem('spec'), specItem('stored')],
+      { stored: { en: { color: 'red' } } }
+    )
+
+    const payload = await savedPayload(onSave, saveButton)
+
+    expect(payload).toEqual({ stored: { en: { color: 'red' } } })
+  })
+
+  it('leaves untouched empty objects and arrays out', async () => {
+    const { onSave, saveButton } = renderForm([
+      item({
+        key: 'dims',
+        type: MixinsFormItemType.object,
+        items: [
+          item({ key: 'dims.w', type: MixinsFormItemType.integer }),
+          item({ key: 'dims.b', type: MixinsFormItemType.boolean }),
+          item({
+            key: 'dims.n',
+            type: MixinsFormItemType.text,
+            isNullable: true,
+          }),
+        ],
+      }),
+      item({
+        key: 'tags',
+        type: MixinsFormItemType.array,
+        arrayType: MixinsFormItemType.text,
+      }),
+      item({
+        key: 'nTags',
+        type: MixinsFormItemType.array,
+        arrayType: MixinsFormItemType.text,
+        isNullable: true,
+      }),
+      item({
+        key: 'nSpec',
+        type: MixinsFormItemType.localized,
+        localizedVersion: 'v2',
+        localizedObject: true,
+        isNullable: true,
+        items: [item({ key: 'color', type: MixinsFormItemType.text })],
+      }),
+    ])
+
+    const payload = await savedPayload(onSave, saveButton)
+
+    expect(payload).toEqual({})
+  })
+
+  it('keeps fields of existing array entries exactly as stored', async () => {
+    const stored = {
+      rows: [{ label: 'first' }, { qty: 3, active: true, note: null }],
+    }
+    const { onSave, saveButton } = renderForm([rowsItem], stored)
+
+    const payload = await savedPayload(onSave, saveButton)
+
+    expect(payload).toEqual(stored)
+  })
+
+  it('stays clean on open: Discard disabled, Save sends exactly the stored values', async () => {
+    const stored = {
+      label: 'kept',
+      qty: 0,
+      active: false,
+      kind: 'B',
+      note: null,
+      rows: [{ label: 'first' }],
+    }
+    const { onSave, saveButton } = renderForm(
+      [
+        ...rowItems,
+        item({ key: 'emptyText', type: MixinsFormItemType.text }),
+        item({ key: 'emptyQty', type: MixinsFormItemType.integer }),
+        item({ key: 'emptyFlag', type: MixinsFormItemType.boolean }),
+        item({ key: 'emptyDate', type: MixinsFormItemType.date }),
+        rowsItem,
+      ],
+      stored
+    )
+    const discardButton = () =>
+      screen.getByRole('button', {
+        name: 'global.discard',
+      }) as HTMLButtonElement
+
+    await waitFor(() => expect(saveButton().disabled).toBe(false))
+    expect(discardButton().disabled).toBe(true)
+    const payload = await savedPayload(onSave, saveButton)
+
+    expect(payload).toEqual(stored)
+  })
+})
+
+describe('MixinsAccordionForm keeps values the user did not edit', () => {
+  it('leaves untouched booleans and nullable fields out of the processed data', async () => {
+    const ref = createRef<MixinsAccordionFormHandle>()
+    render(
+      <MixinsAccordionForm
+        ref={ref}
+        name="Test"
+        items={[
+          item({ key: 'fragile', type: MixinsFormItemType.boolean }),
+          item({
+            key: 'nText',
+            type: MixinsFormItemType.text,
+            isNullable: true,
+          }),
+          item({
+            key: 'rows',
+            type: MixinsFormItemType.array,
+            arrayType: MixinsFormItemType.object,
+            items: [
+              item({ key: 'label', type: MixinsFormItemType.text }),
+              item({ key: 'qty', type: MixinsFormItemType.integer }),
+            ],
+          }),
+        ]}
+        mixins={{ [SCHEMA_KEY]: { rows: [{ label: 'x' }] } } as Mixins}
+        metadata={metadata}
+      />
+    )
+
+    await waitFor(() => expect(ref.current).toBeTruthy())
+    expect(ref.current?.getProcessedData().mixins).toEqual({
+      rows: [{ label: 'x' }],
+    })
+  })
+})
+
+describe('MixinsForm required boolean', () => {
+  const flagItem = item({
+    key: 'flag',
+    name: 'Flag',
+    type: MixinsFormItemType.boolean,
+    isRequired: true,
+  })
+
+  it('blocks Save only while the required boolean is unset', async () => {
+    const { saveButton } = renderForm([flagItem])
+
+    await waitFor(() =>
+      expect(
+        screen.getByText('mixins.labels.requiredFieldsMissing: Flag')
+      ).toBeTruthy()
+    )
+    expect(saveButton().disabled).toBe(true)
+  })
+
+  it('allows Save when false is stored', async () => {
+    const { onSave, saveButton } = renderForm([flagItem], { flag: false })
+
+    const payload = await savedPayload(onSave, saveButton)
+
+    expect(payload).toEqual({ flag: false })
+  })
+
+  it('allows Save when the user chooses false', async () => {
+    const { onSave, saveButton } = renderForm([flagItem])
+    const toggle = screen.getByRole('switch')
+    fireEvent.click(toggle)
+    fireEvent.click(toggle)
+
+    const payload = await savedPayload(onSave, saveButton)
+
+    expect(payload).toEqual({ flag: false })
+  })
+})

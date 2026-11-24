@@ -15,6 +15,7 @@ import {
   createForm,
   filterOutChangedMixins,
   filterOutDeletedMixins,
+  omitUnsetEmptyValues,
   isAttributeOfArraySingleReference,
   MixinsFormItem,
   MixinsFormMetadata,
@@ -97,14 +98,19 @@ const MixinsAccordionForm = forwardRef<
     const data = getValues()
     const filteredData = filterOutDeletedMixins(data, items || [])
     const result = applyDefaultsOnEmptyFields(filteredData, items || [])
+    const payload = serializeLocalizedFields(
+      convertFromIdValuePair(result),
+      items || []
+    )
     return {
-      mixins: serializeLocalizedFields(
-        convertFromIdValuePair(result),
+      mixins: omitUnsetEmptyValues(
+        payload,
+        mixins[metadata.key],
         items || []
       ) as Mixins,
       metadata,
     }
-  }, [metadata, getValues, items])
+  }, [metadata, getValues, items, mixins])
 
   useImperativeHandle(
     ref,

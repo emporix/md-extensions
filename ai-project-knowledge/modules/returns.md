@@ -119,7 +119,7 @@ Saving a mixin sends `patchReturnCall` with `ReturnUpdateRequest` operations (`r
 
 `REMOVE` and `REPLACE` are unused. Whether `ADD` overwrites an existing key is unknown.
 
-Mixin Save and Discard require the form to be dirty, and Save also requires valid, and both require Returns Manager (`returns/src/components/mixins/MixinsForm.tsx`). Inputs on a mixin form are disabled without that permission.
+Mixin Discard requires the form to be dirty, Save requires it to be valid, and both require Returns Manager (`returns/src/components/mixins/MixinsForm.tsx`). Inputs on a mixin form are disabled without that permission.
 
 ## Who can act
 

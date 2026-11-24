@@ -209,6 +209,14 @@ export const buildMixinFieldRules = (
       },
     }
   }
+  if (item.type === MixinsFormItemType.boolean && item.isRequired) {
+    // RHF `required` rejects false; like MD, false is a value and only an
+    // unset boolean is missing.
+    return {
+      validate: (value: unknown) =>
+        (value !== undefined && value !== null) || requiredMessage,
+    }
+  }
   return {
     required:
       item.type !== MixinsFormItemType.unknown && item.isRequired
@@ -488,7 +496,8 @@ export const defaultValueForMixinItem = (
     case MixinsFormItemType.decimal:
       return isArrayElement ? 0.0 : undefined
     case MixinsFormItemType.boolean:
-      return false
+      // Only a new array entry starts switched off; a field without data stays unset.
+      return isArrayElement ? false : undefined
     case MixinsFormItemType.enum:
       // Only a new array entry starts with an option; a field without data stays unset.
       if (!isArrayElement) return undefined
@@ -826,6 +835,61 @@ export const applyDefaultsOnEmptyFields = (
     }
   }
   walkData(result, '', false)
+  return result
+}
+
+const isBlankReference = (value: unknown): boolean => {
+  const id = (value as { id?: unknown } | null | undefined)?.id
+  return typeof id !== 'string' || id.trim() === ''
+}
+
+/** An attribute value that carries no data: null, '', [], {} and the like. */
+const isEmptyMixinValue = (item: MixinsFormItem, value: unknown): boolean => {
+  if (value === undefined || value === null || value === '') return true
+  if (Array.isArray(value)) return value.length === 0
+  if (item.type === MixinsFormItemType.reference) return isBlankReference(value)
+  if (item.type === MixinsFormItemType.localized || item.localizedObject) {
+    return !hasNonBlankValue(value)
+  }
+  return typeof value === 'object' && Object.keys(value).length === 0
+}
+
+/**
+ * Save never changes a value the user did not edit. An empty value (null, '',
+ * [], {}, a reference without id, a localized value without content) is only
+ * sent for an attribute that has stored data, so a cleared field is still
+ * saved as cleared. Without stored data it is left out and the attribute stays
+ * unset. Array entries are not walked: their fields are saved as they are.
+ */
+export const omitUnsetEmptyValues = (
+  payload: any,
+  stored: any,
+  items: MixinsFormItem[] = []
+): any => {
+  const isPlainObject = (value: unknown): value is Record<string, any> =>
+    !!value && typeof value === 'object' && !Array.isArray(value)
+  const walk = (
+    node: Record<string, any>,
+    source: unknown,
+    nodes: MixinsFormItem[]
+  ) => {
+    const storedNode = isPlainObject(source) ? source : undefined
+    for (const item of nodes) {
+      const leaf = item.key.split('.').pop() ?? item.key
+      if (!Object.prototype.hasOwnProperty.call(node, leaf)) continue
+      const value = node[leaf]
+      const storedValue = storedNode?.[leaf]
+      if (isNestedObjectMixinItem(item) && isPlainObject(value)) {
+        walk(value, storedValue, item.items ?? [])
+      }
+      if (storedValue === undefined && isEmptyMixinValue(item, value)) {
+        delete node[leaf]
+      }
+    }
+  }
+  if (!isPlainObject(payload)) return payload
+  const result = deepClone(payload)
+  walk(result, stored, items)
   return result
 }
 
