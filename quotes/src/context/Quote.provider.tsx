@@ -4,7 +4,11 @@ import { useTranslation } from 'react-i18next'
 import { useToast } from '@emporix/component-library'
 import { Customer, Quote } from '../models/Quotes.model'
 import { Props } from '../helpers/props'
-import { createRequestTracker, loadLatest } from '../helpers/api'
+import {
+  createRequestTracker,
+  getApiErrorDetails,
+  loadLatest,
+} from '../helpers/api'
 import { isQuoteCompleted as isCompletedStatus } from '../helpers/quoteStatus.helpers'
 import { useQuotesApi } from '../hooks/api/quotes'
 import useCustomNavigate from '../hooks/useCustomNavigate'
@@ -67,9 +71,9 @@ export const QuoteDataProvider = ({ children }: Props) => {
           setCustomer(fetchedQuote.customer as unknown as Customer)
         }
       },
-      () => {
+      (e) => {
         navigate(quotesListPath())
-        toast.showToast(t('quotes.toasts.errorFetch'), '', 'error')
+        toast.showError(t('quotes.toasts.errorFetch'), getApiErrorDetails(e))
       }
     )
   }

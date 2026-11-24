@@ -5,6 +5,7 @@ import { deepClone } from './utils'
 import {
   buildQuoteItemsOperations,
   diffQuoteItems,
+  findLinesWithoutTaxClass,
   getUnitPriceForNetValue,
   limitItemDiscount,
   mapProductRowToQuoteItem,
@@ -123,5 +124,36 @@ describe('limitItemDiscount', () => {
   it('caps a discount above 100% and raises a negative one to 0', () => {
     expect(limitItemDiscount(125)).toBe(100)
     expect(limitItemDiscount(-5)).toBe(0)
+  })
+})
+
+// COP-7116 QA: the quote service rejects a new line without a tax class.
+describe('findLinesWithoutTaxClass', () => {
+  const line = (
+    productId: string,
+    price?: { priceId?: string; tax?: { taxClass?: string } }
+  ) => ({
+    product: { productId, name: { en: productId } },
+    ...(price ? { price } : {}),
+  })
+
+  // `useQuotesMatchPrices` leaves a placeholder price; COP-7125 (#175) none.
+  it('counts a placeholder price and a missing price as unpriced', () => {
+    const placeholder = line('P1', { priceId: '', tax: { taxClass: '' } })
+    const missing = line('P2')
+    expect(findLinesWithoutTaxClass([placeholder, missing])).toEqual({
+      unpriced: [placeholder, missing],
+      withoutTaxClass: [],
+    })
+  })
+
+  it('finds matched prices without a tax class', () => {
+    const blankClass = line('P3', { priceId: 'PR3', tax: { taxClass: '' } })
+    const noTax = line('P4', { priceId: 'PR4' })
+    const taxed = line('P5', { priceId: 'PR5', tax: { taxClass: 'STANDARD' } })
+    expect(findLinesWithoutTaxClass([blankClass, noTax, taxed])).toEqual({
+      unpriced: [],
+      withoutTaxClass: [blankClass, noTax],
+    })
   })
 })

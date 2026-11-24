@@ -244,10 +244,9 @@ describe('QuotesTabPreview', () => {
     fireEvent.click(save())
 
     await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
+      expect(toast.showError).toHaveBeenCalledWith(
         'Error while updating quote',
-        '',
-        'error'
+        undefined
       )
     )
   })
@@ -259,10 +258,9 @@ describe('QuotesTabPreview', () => {
     renderPreview()
 
     await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
+      expect(toast.showError).toHaveBeenCalledWith(
         'Error while loading the shipping methods',
-        '',
-        'error'
+        undefined
       )
     )
   })
@@ -285,10 +283,9 @@ describe('QuotesTabPreview', () => {
     })
 
     await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
+      expect(toast.showError).toHaveBeenCalledWith(
         'Error while loading the prices',
-        '',
-        'error'
+        undefined
       )
     )
     // Three chairs at the current €130: €390 net, €464.10 gross.

@@ -25,8 +25,9 @@ import { deepClone } from '../../helpers/utils'
 import {
   buildQuoteItemsOperations,
   diffQuoteItems,
+  findLinesWithoutTaxClass,
 } from '../../helpers/quoteItems.helpers'
-import { getApiErrorMessage } from '../../helpers/api'
+import { getApiErrorDetails } from '../../helpers/api'
 import styles from './QuotesTabProducts.module.scss'
 
 export interface QuoteProductsForm {
@@ -79,6 +80,14 @@ const QuotesTabProducts = (props: StylableProps) => {
     } as unknown as ProductRow
   }
 
+  const productNames = (lines: readonly Pick<Partial<Item>, 'product'>[]) =>
+    lines
+      .map(
+        (line) =>
+          getContentLangValue(line.product?.name) || line.product?.productId
+      )
+      .join(', ')
+
   const onSubmit = useCallback(
     async (data: QuoteProductsForm) => {
       if (!quote) return
@@ -95,6 +104,30 @@ const QuotesTabProducts = (props: StylableProps) => {
           ? await getPriceForQuoteItems(quote, newItems)
           : []
 
+        // The quote service rejects these lines without naming them
+        // (COP-7116 QA), so the save stops here and names the products.
+        const rejectedLines = findLinesWithoutTaxClass(newItemsWithPrices)
+        const rejections = [
+          ...(rejectedLines.unpriced.length
+            ? [
+                t('quotes.toasts.errorNoPrice', {
+                  products: productNames(rejectedLines.unpriced),
+                }),
+              ]
+            : []),
+          ...(rejectedLines.withoutTaxClass.length
+            ? [
+                t('quotes.toasts.errorNoTaxClass', {
+                  products: productNames(rejectedLines.withoutTaxClass),
+                }),
+              ]
+            : []),
+        ]
+        if (rejections.length) {
+          toast.showError(t('quotes.toasts.errorUpdate'), rejections)
+          return
+        }
+
         const updateOperations = buildQuoteItemsOperations(
           newItemsWithPrices,
           deletedItems
@@ -105,11 +138,7 @@ const QuotesTabProducts = (props: StylableProps) => {
         refreshData()
       } catch (e) {
         console.error(e)
-        toast.showToast(
-          getApiErrorMessage(e) ?? t('quotes.toasts.errorUpdate'),
-          '',
-          'error'
-        )
+        toast.showError(t('quotes.toasts.errorUpdate'), getApiErrorDetails(e))
       } finally {
         blockPanel(false)
       }

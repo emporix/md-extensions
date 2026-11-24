@@ -269,6 +269,30 @@ describe('QuotesTable', () => {
     expect(screen.queryByText(/of 2$/)).toBeNull()
   })
 
+  // COP-7116 QA (Maryna): error toasts name the cause from the API.
+  it('shows the cause from the API when a delete fails', async () => {
+    quotesApi.getQuotes.mockResolvedValue({
+      data: [quote('Q1', 'Acme')],
+      totalRecords: 1,
+    })
+    quotesApi.deleteQuote.mockRejectedValue({
+      response: { status: 409, data: { message: 'Quote Q1 is locked' } },
+    })
+    renderTable()
+    await waitFor(() => expect(screen.getByText(/of 1$/)).toBeTruthy())
+
+    fireEvent.click(screen.getAllByTestId('delete-button')[0])
+    fireEvent.click(screen.getByRole('button', { name: 'Yes' }))
+
+    await waitFor(() =>
+      expect(toast.showError).toHaveBeenCalledWith(
+        'Error while deleting quote Q1 ',
+        'Quote Q1 is locked'
+      )
+    )
+    expect(rows().some((row) => row.includes('Q1'))).toBe(true)
+  })
+
   // COP-7116: status names instead of the API codes; the filter still sends
   // the code.
   it('names the statuses in the column and the filter, and filters by the API code', async () => {
