@@ -5,6 +5,7 @@ import { getArrayFromEnum } from '../../helpers/utils'
 import GroupDetailsGeneralFormRolesStandard from './GroupDetailsGeneralFormRolesStandard'
 import GroupDetailsGeneralFormRolesTemplates from './GroupDetailsGeneralFormRolesTemplates'
 import {
+  getGroupRoleType,
   GroupFormFields,
   RoleType,
   ServiceType,
@@ -29,13 +30,7 @@ const GroupDetailsGeneralFormRoles = () => {
 
   useEffect(() => {
     if (!group) return
-    let roleType = RoleType.STANDARD
-    if (group.templates?.length > 0) {
-      roleType = RoleType.TEMPLATES
-    } else if (group.vendorId) {
-      roleType = RoleType.VENDOR
-    }
-    setActiveRoleType(roleType)
+    setActiveRoleType(getGroupRoleType(group))
   }, [group, setActiveRoleType])
 
   const handleRoleTypeChange = (roleType: RoleType) => {
