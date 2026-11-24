@@ -114,30 +114,17 @@ You can also set up MCP Server manually with Emporix documentation by adding the
 
 ### Deploying
 
-In order to use the module in the Emporix Management Dashboard, deploy it to a hosting service and then provide the URL to the `remoteEntry.js` in the Emporix Management Dashboard.
+Labels is published into the `labels/` folder of the shared Firebase Hosting site of each environment (COP-7348, COP-7445): `https://frontend-extensions-develop.web.app/labels/remoteEntry.js`, `https://frontend-extensions-stage.web.app/labels/remoteEntry.js` and `https://frontend-extensions.web.app/labels/remoteEntry.js` (prod). Workflows: `.github/workflows/labels-firebase-*.yaml` — a preview per PR (channel `pr-<number>-labels`, URL posted as a PR comment), dev and stage on merge to `master`, prod on a `labels-*` tag (roll back by redeploying the previous tag). Each calls `.github/actions/deploy-remote`, which builds the remote flat with base `/labels/` (`.github/scripts/hosting/build-remote.mjs`) and replaces only this folder on the site.
 
-App hosting should have CORS set up to allow the module to be loaded from emporix domain.
-Example of CORS configuration for Firebase hosting:
+Until the Management Dashboard loads labels from the shared site in production, the same workflows also keep deploying the old per-remote sites first (`emporix-labels-develop`, `emporix-labels-stage`, `emporix-labels`, served from `/assets/remoteEntry.js`). Those steps and the `emporix-labels*` targets in `firebase.json` / `.firebaserc` are removed in the last stage of COP-7348.
 
-```json
-{
-  "hosting": {
-    "public": "dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "headers": [
-      {
-        "source": "**",
-        "headers": [
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
-          }
-        ]
-      }
-    ]
-  }
-}
+Local `npm run build:*` and `preview` are unchanged and still serve `/assets/remoteEntry.js`. To check the shared-site build locally:
+
+```sh
+REMOTE=labels MODE=dev node --input-type=module - < ../.github/scripts/hosting/build-remote.mjs
 ```
+
+It writes `dist/remoteEntry.js` with no `dist/assets/`; run `npm run build:dev` again afterwards for the regular build.
 
 ### Testing standalone module
 This project can be run locally outside of Management Dashboard using the following command:
