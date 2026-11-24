@@ -36,7 +36,7 @@ This is a monorepo of independent Management Dashboard remotes, one Vite app per
 | `status-codes` | playbook-aligned | `statusCodes` | `statusCodes` → `/apps/management/status-codes/*` | `VITE_STATUS_CODES_URL` | `5180` | yes / yes | `2.31.0` / `1.5.1` |
 | `coupons` | playbook-aligned | `coupons` | `coupons` → `/apps/management/coupons/*` | `VITE_COUPONS_URL` | `5181` | yes / yes | `2.22.0` / `1.7.1` |
 | `companies` | playbook-aligned | `companies` | `companies` → `/apps/management/companies/*` | `VITE_COMPANIES_URL` | `5183` | yes / yes | `2.25.0` / `1.7.1` |
-| `units` | playbook-aligned | `units` | `units` → `/apps/management/units/*` | `VITE_UNITS_URL` | `5182` | yes / yes | `2.25.0` / `1.5.1` |
+| `units` | playbook-aligned | `units` | `units` → `/apps/management/units/*` | `VITE_UNITS_URL` | `5182` | yes / yes | `2.31.0` / `1.5.1` |
 | `customers` | playbook-aligned | `customers` | `customers` → `/apps/management/customers/*` | `VITE_CUSTOMERS_URL` | `5184` | yes / yes | `2.26.0` / `1.7.1` |
 | `catalogs` | playbook-aligned | `catalogs` | `catalogs` → `/apps/management/catalogs/*` | `VITE_CATALOGS_URL` | `5185` | yes / yes | `2.25.0` / `1.5.3` |
 | `categories` | playbook-aligned | `categories` | `categories` → `/apps/management/categories/*` | `VITE_CATEGORIES_URL` | `5186` | yes / yes | `2.28.0` / `1.5.3` |
