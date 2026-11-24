@@ -6,6 +6,7 @@ on:
       - master
     types:
       - opened
+      - reopened
       - synchronize
     paths:
       - 'customers/**'
@@ -65,9 +66,18 @@ jobs:
           mode: dev
           channel: pr-${{ github.event.number }}-customers
 
+      # One comment per PR: update the bot's earlier "customers preview:" comment
+      # instead of adding a new one on every push.
       - name: Comment the preview URL
         run: |
-          gh pr comment "$PR_NUMBER" --body "customers preview: $PREVIEW_URL"
+          BODY="customers preview: $PREVIEW_URL"
+          COMMENT_ID=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("customers preview:"))) | .id' | tail -n 1)
+          if [ -n "$COMMENT_ID" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID" -f body="$BODY" > /dev/null
+          else
+            gh pr comment "$PR_NUMBER" --body "$BODY"
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
