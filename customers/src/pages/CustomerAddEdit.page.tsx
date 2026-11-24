@@ -141,7 +141,7 @@ const CustomerAddEdit = () => {
     handleSubmit,
     reset,
     setValue,
-    formState: { isValid, isDirty },
+    formState: { isValid, dirtyFields },
   } = useForm<Customer>({
     mode: 'onChange',
     defaultValues: {
@@ -149,6 +149,10 @@ const CustomerAddEdit = () => {
       preferredCurrency: currency?.id || '',
     },
   })
+  // Changed fields rather than the form-wide isDirty: registered fields the
+  // customer has no value for (such as restriction) sit in the form values as
+  // undefined keys, so after Discard isDirty stayed true (COP-7405).
+  const hasChanges = Object.keys(dirtyFields).length > 0
   const { fields, append, remove, update } = useFieldArray({
     control,
     name: 'addresses',
@@ -523,7 +527,7 @@ const CustomerAddEdit = () => {
           <div className={styles.actions}>
             {customerId && <AssistedBuying customerNumber={customerId} />}
             <SecondaryButton
-              disabled={!isDirty || !canManage}
+              disabled={!hasChanges || !canManage}
               onClick={() => {
                 reset()
                 setIsAutogeneratePassword(false)
@@ -533,7 +537,7 @@ const CustomerAddEdit = () => {
             </SecondaryButton>
             <PrimaryButton
               data-testid="customer-save"
-              disabled={!isDirty || !isValid || !canManage}
+              disabled={!hasChanges || !isValid || !canManage}
               onClick={() => void handleSubmit(onSubmit)()}
             >
               {t('global.save')}
