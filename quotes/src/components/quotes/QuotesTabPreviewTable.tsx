@@ -41,7 +41,7 @@ import {
   getUnitPriceForNetValue,
   limitItemDiscount,
 } from '../../helpers/quoteItems.helpers'
-import { getApiErrorMessage } from '../../helpers/api'
+import { getApiErrorDetails } from '../../helpers/api'
 import styles from './QuotesTabPreviewTable.module.scss'
 
 interface QuotesTabProductsProps extends StylableProps {
@@ -98,10 +98,9 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
         )
       } catch (e) {
         console.error(e)
-        toast.showToast(
-          getApiErrorMessage(e) ?? t('quotes.toasts.errorFetchShippingMethods'),
-          '',
-          'error'
+        toast.showError(
+          t('quotes.toasts.errorFetchShippingMethods'),
+          getApiErrorDetails(e)
         )
       }
     })()
@@ -184,10 +183,9 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
       // MD left this rejection unhandled: no message, and the line kept its
       // old totals. The line is recomputed with its current price instead.
       console.error(e)
-      toast.showToast(
-        getApiErrorMessage(e) ?? t('quotes.toasts.errorFetchPrices'),
-        '',
-        'error'
+      toast.showError(
+        t('quotes.toasts.errorFetchPrices'),
+        getApiErrorDetails(e)
       )
     }
     const currentUnitPrice = getValues(`items.${index}.price.unitPrice`)

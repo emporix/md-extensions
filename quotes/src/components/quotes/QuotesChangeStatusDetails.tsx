@@ -12,7 +12,7 @@ import InputField from '../shared/InputField'
 import { QuoteChangeStatusType, QuoteReason } from '../../models/Quotes.model'
 import { useQuotesApi } from '../../hooks/api/quotes'
 import { StylableProps } from '../../helpers/props'
-import { getApiErrorMessage } from '../../helpers/api'
+import { getApiErrorDetails } from '../../helpers/api'
 import {
   filterQuoteReasonsByType,
   QuoteChangeStatusFormData,
@@ -63,10 +63,9 @@ const QuotesChangeStatusDetails = (props: QuotesChangeStatusDetailsProps) => {
       )
     } catch (e: unknown) {
       console.error(e)
-      toast.showToast(
-        getApiErrorMessage(e) ?? t('quotes.toasts.errorFetchReasons'),
-        '',
-        'error'
+      toast.showError(
+        t('quotes.toasts.errorFetchReasons'),
+        getApiErrorDetails(e)
       )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity

@@ -48,9 +48,16 @@ const formatApiErrorDetailsList = (details: unknown): string[] => {
     return []
   }
   if (Array.isArray(details)) {
-    return details
-      .map((item) => formatDetailItem(item))
-      .filter((item): item is string => item !== undefined)
+    // The quote service sends one detail per invalid line without naming the
+    // line ("price.tax.taxClass: must not be blank" for each item), so a
+    // message is listed once.
+    return Array.from(
+      new Set(
+        details
+          .map((item) => formatDetailItem(item))
+          .filter((item): item is string => item !== undefined)
+      )
+    )
   }
   const single = formatDetailItem(details)
   return single ? [single] : []

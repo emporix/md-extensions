@@ -194,10 +194,9 @@ describe('QuotesTabProducts', () => {
     fireEvent.click(save())
 
     await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
+      expect(toast.showError).toHaveBeenCalledWith(
         'Error while updating quote',
-        '',
-        'error'
+        undefined
       )
     )
   })
@@ -248,13 +247,69 @@ describe('QuotesTabProducts', () => {
     fireEvent.click(save())
 
     await waitFor(() =>
-      expect(toast.showToast).toHaveBeenCalledWith(
+      expect(toast.showError).toHaveBeenCalledWith(
         'Error while updating quote',
-        '',
-        'error'
+        undefined
       )
     )
     expect(quotesApi.updateQuote).not.toHaveBeenCalled()
+  })
+
+  // COP-7116 QA (Maryna): a product without a price (or without a tax
+  // class) goes out with a blank class, and the toast showed only the
+  // generic "Please check the details." of the quote service.
+  it('shows the cause from the quote service when it rejects the new lines', async () => {
+    pricesApi.matchPrices.mockResolvedValue([])
+    quotesApi.updateQuote.mockRejectedValue({
+      response: {
+        status: 400,
+        data: {
+          message: 'There is a validation error. Please check the details.',
+          code: 400,
+          status: 'Bad Request',
+          details: [
+            {
+              field: 'price.tax.taxClass',
+              message: 'price.tax.taxClass: must not be blank',
+            },
+          ],
+        },
+      },
+    })
+    renderProducts()
+    const browser = await openPicker()
+
+    checkProduct(browser, 'Table')
+    fireEvent.click(apply())
+    fireEvent.click(save())
+
+    await waitFor(() =>
+      expect(toast.showError).toHaveBeenCalledWith(
+        'Error while updating quote',
+        'price.tax.taxClass: must not be blank'
+      )
+    )
+    const [, operations] = quotesApi.updateQuote.mock.calls[0]
+    expect(operations[0].value[0].price.tax.taxClass).toBe('')
+  })
+
+  it('shows the cause when the products of the picker cannot be loaded', async () => {
+    productsApi.syncPaginatedProducts.mockRejectedValue({
+      response: {
+        status: 403,
+        data: { message: 'Missing scope product.product_read' },
+      },
+    })
+    renderProducts()
+
+    fireEvent.click(await screen.findByTestId('quote-select-products'))
+
+    await waitFor(() =>
+      expect(toast.showError).toHaveBeenCalledWith(
+        'Error while loading products',
+        'Missing scope product.product_read'
+      )
+    )
   })
 
   it('removes a dropped line without pricing anything', async () => {

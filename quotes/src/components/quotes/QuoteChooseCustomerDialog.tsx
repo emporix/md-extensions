@@ -8,7 +8,7 @@ import {
   useToast,
 } from '@emporix/component-library'
 import usePagination from '../../hooks/usePagination'
-import { makeCall } from '../../helpers/api'
+import { getApiErrorDetails, makeCall } from '../../helpers/api'
 import { useCustomerApi } from '../../hooks/api/customers'
 import { Customer } from '../../models/Customer.model'
 import useQuoteCustomersColumns from '../../hooks/useQuoteCustomersColumns'
@@ -62,7 +62,7 @@ const QuoteChooseCustomerDialog = (props: Props) => {
       setTotalCount(data.totalRecords)
     } catch (e: unknown) {
       console.error(e)
-      showError(t('quotes.toasts.errorFetchCustomers'))
+      showError(t('quotes.toasts.errorFetchCustomers'), getApiErrorDetails(e))
     }
   }
 

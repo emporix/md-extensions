@@ -19,6 +19,7 @@ import { useCategoriesApi } from '../../hooks/api/categories'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import { EmployeeDomains } from '../../configs/accessControls'
 import { apiPagination } from '../../helpers/apiPagination'
+import { getApiErrorDetails } from '../../helpers/api'
 import {
   hasSameIds,
   toQuoteProductRow,
@@ -100,10 +101,10 @@ const QuotesSelectProductsDialog = ({
     (error: unknown, source: 'products' | 'categories') => {
       console.error(error)
       if (source === 'categories') {
-        toast.showError(t('categories.title'), '')
+        toast.showError(t('categories.title'), getApiErrorDetails(error))
         return
       }
-      toast.showToast(t('products.table.loadError'), '', 'error')
+      toast.showError(t('products.table.loadError'), getApiErrorDetails(error))
     },
     [toast, t]
   )

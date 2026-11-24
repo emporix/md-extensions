@@ -19,7 +19,7 @@ import {
   buildQuoteChangeStatusPayload,
   QuoteChangeStatusFormData,
 } from '../../helpers/quoteChangeStatus.helpers'
-import { getApiErrorMessage } from '../../helpers/api'
+import { getApiErrorDetails } from '../../helpers/api'
 import styles from './QuotesChangeStatus.module.scss'
 
 interface QuotesChangeStatusProps {
@@ -63,10 +63,9 @@ const QuotesChangeStatus = (props: QuotesChangeStatusProps) => {
       refreshData()
     } catch (e: unknown) {
       console.error(e)
-      toast.showToast(
-        getApiErrorMessage(e) ?? t('quotes.toasts.errorChangeStatus'),
-        '',
-        'error'
+      toast.showError(
+        t('quotes.toasts.errorChangeStatus'),
+        getApiErrorDetails(e)
       )
     } finally {
       blockPanel(false)
@@ -88,10 +87,9 @@ const QuotesChangeStatus = (props: QuotesChangeStatusProps) => {
       refreshData()
     } catch (e: unknown) {
       console.error(e)
-      toast.showToast(
-        getApiErrorMessage(e) ?? t('quotes.toasts.errorChangeStatus'),
-        '',
-        'error'
+      toast.showError(
+        t('quotes.toasts.errorChangeStatus'),
+        getApiErrorDetails(e)
       )
     } finally {
       blockPanel(false)

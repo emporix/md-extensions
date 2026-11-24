@@ -26,7 +26,7 @@ import {
   buildQuoteItemsOperations,
   diffQuoteItems,
 } from '../../helpers/quoteItems.helpers'
-import { getApiErrorMessage } from '../../helpers/api'
+import { getApiErrorDetails } from '../../helpers/api'
 import styles from './QuotesTabProducts.module.scss'
 
 export interface QuoteProductsForm {
@@ -105,11 +105,7 @@ const QuotesTabProducts = (props: StylableProps) => {
         refreshData()
       } catch (e) {
         console.error(e)
-        toast.showToast(
-          getApiErrorMessage(e) ?? t('quotes.toasts.errorUpdate'),
-          '',
-          'error'
-        )
+        toast.showError(t('quotes.toasts.errorUpdate'), getApiErrorDetails(e))
       } finally {
         blockPanel(false)
       }

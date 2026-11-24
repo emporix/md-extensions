@@ -27,7 +27,7 @@ import { SchemaType } from '../../models/Schema.model'
 import type { ColumnVisibility } from '../../models/Configuration.model'
 import type { DisplayMixin } from '../../models/DisplayMixin'
 import { parseTableColumns } from '../../helpers/tables'
-import { createRequestTracker } from '../../helpers/api'
+import { createRequestTracker, getApiErrorDetails } from '../../helpers/api'
 import { StylableProps } from '../../helpers/props'
 import { canChangeQuoteStatus } from '../../helpers/quoteStatus.helpers'
 import { EmployeeDomains } from '../../configs/accessControls'
@@ -235,7 +235,10 @@ const QuotesTable = (props: StylableProps) => {
       setRefreshValue()
     } catch (e) {
       console.error(e)
-      toast.showToast(t('quotes.toasts.errorDelete', { quoteId }), '', 'error')
+      toast.showError(
+        t('quotes.toasts.errorDelete', { quoteId }),
+        getApiErrorDetails(e)
+      )
     } finally {
       blockPanel(false)
     }
