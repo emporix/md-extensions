@@ -36,9 +36,6 @@
         "emporix-status-codes": [
           "emporix-status-codes"
         ],
-        "emporix-coupons": [
-          "emporix-coupons"
-        ],
         "emporix-companies": [
           "emporix-companies"
         ],
@@ -91,9 +88,6 @@
         "emporix-status-codes-stage": [
           "emporix-status-codes-stage"
         ],
-        "emporix-coupons-stage": [
-          "emporix-coupons-stage"
-        ],
         "emporix-companies-stage": [
           "emporix-companies-stage"
         ],
@@ -145,9 +139,6 @@
         ],
         "emporix-status-codes-develop": [
           "emporix-status-codes-develop"
-        ],
-        "emporix-coupons-develop": [
-          "emporix-coupons-develop"
         ],
         "emporix-companies-develop": [
           "emporix-companies-develop"
