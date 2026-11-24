@@ -18,7 +18,7 @@ Fields present on every opened `AppState`: `tenant`, `language`, `token`.
 | `returns`, `orders`, `categories`, `classifications`, `units`, `taxes` | `tenant`, `language`, `token`, optional `currency`, `contentLanguage`, optional `user`, `onError`. No permissions field. | `appState` required. |
 | `sites-settings` | Same shape plus optional `onSitesChanged` (host reloads its site switcher). No permissions field. | `appState` required. |
 | `products` | Same shape, with `currency` required. No permissions field. | `appState` required. |
-| `brands`, `users-and-groups`, `customer-groups`, `labels`, `status-codes`, `coupons`, `companies`, `quotes` | Same shape as returns/orders. | `appState` optional; fallback tenant/token `'default'`, language and content language `'en'`. |
+| `brands`, `users-and-groups`, `customer-groups`, `labels`, `status-codes`, `system-preferences`, `coupons`, `companies`, `quotes` | Same shape as returns/orders. | `appState` optional; fallback tenant/token `'default'`, language and content language `'en'`. |
 | `dashboard` | `tenant`, `language`, `token`, required `currency` and `user`, optional `permissions`. No `onError`. | Optional. Missing tenant or token renders “Missing required configuration”. Omitted language and content language become `'en'`. Omitted currency becomes `id`/`label` `EUR`, `default: true`. |
 | `statistics` | `tenant`, `language`, `token` only. | Optional; fallback tenant/language/token `'default'`. |
 | `agentic-ai` | `tenant`, `language`, `token`, `contentLanguage` in `agentic-ai/src/types/common.ts`. The provider keeps only those four. | Optional; same four-field fallback, content language `'en'`. UI language is `en` or `de`; anything else becomes `en`. |
