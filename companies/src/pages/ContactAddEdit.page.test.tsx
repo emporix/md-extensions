@@ -391,6 +391,23 @@ describe('Contact add / edit', () => {
     expect(customers.createCustomer).not.toHaveBeenCalled()
   })
 
+  // COP-7405: the loaded address has no streetAppendix, streetNumber or city,
+  // but those fields register, so the form values hold them as undefined keys
+  // and the form-wide isDirty stayed true after Discard.
+  it('turns Save and Discard inactive on Discard', async () => {
+    renderAt('/c1/assignments/contact/as-1')
+    await waitFor(() => expect(input('contact-firstName').value).toBe('Ann'))
+    expect(button('contact-save').disabled).toBe(true)
+
+    typeInto('contact-lastName', 'Leeson')
+    await waitFor(() => expect(button('contact-save').disabled).toBe(false))
+
+    fireEvent.click(button('contact-discard'))
+    await waitFor(() => expect(input('contact-lastName').value).toBe('Lee'))
+    expect(button('contact-save').disabled).toBe(true)
+    expect(button('contact-discard').disabled).toBe(true)
+  })
+
   // Scenario 13
   it('changes the contact type to customer and leaves for the host customer page', async () => {
     renderAt('/c1/assignments/contact/as-1')

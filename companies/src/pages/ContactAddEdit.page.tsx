@@ -138,7 +138,7 @@ const ContactAddEditPage = () => {
     reset,
     setValue,
     handleSubmit,
-    formState: { isValid, isDirty },
+    formState: { isValid, dirtyFields },
   } = useForm<ContactAssignmentForm>({
     defaultValues: {
       type: ContactType.CONTACT,
@@ -147,6 +147,11 @@ const ContactAddEditPage = () => {
       address: DEFAULT_ADDRESS,
     },
   })
+  // Changed fields rather than the form-wide isDirty: registered fields the
+  // loaded customer or address has no value for (an address without city,
+  // for example) sit in the form values as undefined keys, so after Discard
+  // isDirty stayed true (COP-7405).
+  const hasChanges = Object.keys(dirtyFields).length > 0
 
   useEffect(() => {
     ;(async () => {
@@ -295,14 +300,14 @@ const ContactAddEditPage = () => {
           <div className={styles.actions}>
             <SecondaryButton
               data-testid="contact-discard"
-              disabled={!isDirty || !isValid}
+              disabled={!hasChanges || !isValid}
               onClick={() => reset()}
             >
               {t('global.discard')}
             </SecondaryButton>
             <PrimaryButton
               data-testid="contact-save"
-              disabled={!isDirty || !isValid || readOnly}
+              disabled={!hasChanges || !isValid || readOnly}
               onClick={handleSubmit(submit)}
             >
               {t('global.save')}
