@@ -255,11 +255,57 @@ describe('QuotesTabProducts', () => {
     expect(quotesApi.updateQuote).not.toHaveBeenCalled()
   })
 
-  // COP-7116 QA (Maryna): a product without a price (or without a tax
-  // class) goes out with a blank class, and the toast showed only the
-  // generic "Please check the details." of the quote service.
-  it('shows the cause from the quote service when it rejects the new lines', async () => {
-    pricesApi.matchPrices.mockResolvedValue([])
+  // COP-7116 QA (Maryna): the quote service rejects a new line without a tax
+  // class with "price.tax.taxClass: must not be blank", once per line and
+  // naming no product, so the save stops before it and names the products.
+  it('names the products without a price or a tax class and sends nothing', async () => {
+    productsApi.syncPaginatedProducts.mockResolvedValue({
+      data: [
+        { id: 'P1', code: 'CH', name: { en: 'Chair' } },
+        { id: 'P2', code: 'TB', name: { en: 'Table' } },
+        { id: 'P3', code: 'LA', name: { en: 'Lamp' } },
+      ],
+      totalCount: 3,
+    })
+    pricesApi.matchPrices.mockResolvedValue([
+      {
+        priceId: 'PR3',
+        itemId: { itemType: 'PRODUCT', id: 'P3' },
+        originalValue: 40,
+        quantity: { quantity: 1, unitCode: 'pcs' },
+      },
+    ])
+    renderProducts()
+    const browser = await openPicker()
+
+    checkProduct(browser, 'Table')
+    checkProduct(browser, 'Lamp')
+    fireEvent.click(apply())
+    fireEvent.click(save())
+
+    await waitFor(() =>
+      expect(toast.showError).toHaveBeenCalledWith(
+        'Error while updating quote',
+        [
+          "No price for the quote's site, currency and shipping country: Table",
+          'Price without a tax class: Lamp',
+        ]
+      )
+    )
+    expect(quotesApi.updateQuote).not.toHaveBeenCalled()
+    expect(toast.showToast).not.toHaveBeenCalled()
+  })
+
+  it('shows the cause from the quote service when it rejects priced lines', async () => {
+    pricesApi.matchPrices.mockResolvedValue([
+      {
+        priceId: 'PR2',
+        itemId: { itemType: 'PRODUCT', id: 'P2' },
+        originalValue: 99,
+        quantity: { quantity: 1, unitCode: 'pcs' },
+        tax: { taxClass: 'STANDARD', taxRate: 19 },
+      },
+    ])
     quotesApi.updateQuote.mockRejectedValue({
       response: {
         status: 400,
@@ -269,8 +315,8 @@ describe('QuotesTabProducts', () => {
           status: 'Bad Request',
           details: [
             {
-              field: 'price.tax.taxClass',
-              message: 'price.tax.taxClass: must not be blank',
+              field: 'quantity.quantity',
+              message: 'quantity.quantity: must be greater than 0',
             },
           ],
         },
@@ -286,11 +332,9 @@ describe('QuotesTabProducts', () => {
     await waitFor(() =>
       expect(toast.showError).toHaveBeenCalledWith(
         'Error while updating quote',
-        'price.tax.taxClass: must not be blank'
+        'quantity.quantity: must be greater than 0'
       )
     )
-    const [, operations] = quotesApi.updateQuote.mock.calls[0]
-    expect(operations[0].value[0].price.tax.taxClass).toBe('')
   })
 
   it('shows the cause when the products of the picker cannot be loaded', async () => {
