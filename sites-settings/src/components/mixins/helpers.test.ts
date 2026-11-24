@@ -5,6 +5,7 @@ import {
   defaultValueForMixinItem,
   MixinsFormItem,
   MixinsFormItemType,
+  parseNumberInputText,
 } from './helpers'
 
 const item = (
@@ -172,5 +173,19 @@ describe('number and date defaults', () => {
     })
 
     expect(defaultValueForMixinItem(arrayItem, true)).toBe(0)
+  })
+})
+
+describe('parseNumberInputText', () => {
+  it('parses formatted numbers of the given locale', () => {
+    expect(parseNumberInputText('1,234.5', 'en')).toBe(1234.5)
+    expect(parseNumberInputText('1.234,5', 'de')).toBe(1234.5)
+    expect(parseNumberInputText('-7', 'en')).toBe(-7)
+  })
+
+  it('returns null for empty or unparsable text', () => {
+    expect(parseNumberInputText('', 'en')).toBeNull()
+    expect(parseNumberInputText('-', 'en')).toBeNull()
+    expect(parseNumberInputText('abc', 'en')).toBeNull()
   })
 })

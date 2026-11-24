@@ -13,6 +13,7 @@ import {
   getDecimalMaxFractionDigits,
   MixinsFormItem,
   MixinsFormItemType,
+  parseNumberInputText,
 } from './helpers'
 import { fromLocalizedMap, toLocalizedMap } from './localizedMixin.helpers'
 import { formatInheritedDisplayValue } from './siteAwareMixin.helpers'
@@ -119,6 +120,16 @@ const MixinsFormInput = (props: SchemaFormInputProps) => {
         : undefined
 
   const getField = useCallback(() => {
+    // The number input reports edits on key events only. A value that arrives
+    // without one (autofill, drop, browser-native change) is committed on blur.
+    const commitNumberOnBlur = (text: string, locale?: string) => {
+      const next = parseNumberInputText(text, locale)
+      const current = typeof value === 'number' ? value : null
+      if (next !== current) {
+        onInputChange(item.key as string, next)
+      }
+    }
+
     switch (type) {
       case MixinsFormItemType.text: {
         return (
@@ -143,6 +154,7 @@ const MixinsFormInput = (props: SchemaFormInputProps) => {
             onChange={({ value }) => {
               onInputChange(item.key as string, value as number)
             }}
+            onBlur={(e) => commitNumberOnBlur(e.target.value)}
           />
         )
       }
@@ -156,6 +168,7 @@ const MixinsFormInput = (props: SchemaFormInputProps) => {
             onChange={({ value }) => {
               onInputChange(item.key as string, value as number)
             }}
+            onBlur={(e) => commitNumberOnBlur(e.target.value, i18n.language)}
             mode="decimal"
             locale={i18n.language}
             maxFractionDigits={getDecimalMaxFractionDigits(item.multipleOf)}

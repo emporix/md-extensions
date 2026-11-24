@@ -179,6 +179,52 @@ describe('MixinsForm number and date fields', () => {
   })
 })
 
+describe('MixinsForm number input without keypress', () => {
+  const items = [
+    item({ key: 'count', type: MixinsFormItemType.integer }),
+    item({ key: 'weight', type: MixinsFormItemType.decimal }),
+  ]
+
+  it('marks the form dirty and saves values set by change + blur', async () => {
+    const { onSave, saveButton } = renderForm(items)
+    const [countInput, weightInput] = screen.getAllByRole('spinbutton')
+
+    // Autofill / drop: the input value changes without any key event.
+    fireEvent.change(countInput, { target: { value: '42' } })
+    fireEvent.blur(countInput)
+    fireEvent.change(weightInput, { target: { value: '1,234.5' } })
+    fireEvent.blur(weightInput)
+
+    await waitFor(() =>
+      expect(
+        (
+          screen.getByRole('button', {
+            name: 'global.discard',
+          }) as HTMLButtonElement
+        ).disabled
+      ).toBe(false)
+    )
+    const payload = await savedPayload(onSave, saveButton)
+
+    expect(payload).toEqual({ count: 42, weight: 1234.5 })
+  })
+
+  it('saves a pasted number', async () => {
+    const { onSave, saveButton } = renderForm(items)
+    const [countInput] = screen.getAllByRole('spinbutton')
+
+    fireEvent.focus(countInput)
+    fireEvent.paste(countInput, {
+      clipboardData: { getData: () => '7' },
+    })
+    fireEvent.blur(countInput)
+
+    const payload = await savedPayload(onSave, saveButton)
+
+    expect(payload).toEqual({ count: 7 })
+  })
+})
+
 describe('MixinsAccordionForm enum fields', () => {
   const renderAccordion = (stored?: Record<string, unknown>) => {
     const ref = createRef<MixinsAccordionFormHandle>()

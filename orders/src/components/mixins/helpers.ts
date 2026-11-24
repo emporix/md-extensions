@@ -111,6 +111,27 @@ export type MixinFieldRules = {
   validate?: (value: unknown) => true | string
 }
 
+/**
+ * Parses the formatted text of a number input (grouping and decimal
+ * separators of `locale`). Empty or unparsable text gives `null`.
+ */
+export const parseNumberInputText = (
+  text: string,
+  locale?: string
+): number | null => {
+  const parts = new Intl.NumberFormat(locale).formatToParts(12345.6)
+  const group = parts.find((part) => part.type === 'group')?.value ?? ','
+  const decimal = parts.find((part) => part.type === 'decimal')?.value ?? '.'
+  const normalized = text
+    .split(group)
+    .join('')
+    .replace(/\s/g, '')
+    .replace(decimal, '.')
+  if (normalized === '' || normalized === '-') return null
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 export const buildMixinFieldRules = (
   item: MixinsFormItem,
   requiredMessage: string,
