@@ -29,6 +29,16 @@ jobs:
           # workflow_dispatch supplies inputs.tag; tag pushes use github.ref
           ref: ${{ github.event.inputs.tag || github.ref }}
 
+      # workflow_dispatch can deploy an older tag whose deploy action or script differs,
+      # so take the tooling from the ref this workflow runs from. It sits outside
+      # status-codes/, the only folder the build and deploy read (it comes from the tag
+      # checkout above).
+      - name: Checkout deploy tooling
+        uses: actions/checkout@v4
+        with:
+          path: .deploy-tooling
+          sparse-checkout: .github
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
@@ -46,3 +56,13 @@ jobs:
           projectId: frontend-extensions
           channelId: live
           target: emporix-status-codes
+
+      # The old site above stays until the host loads status-codes from the shared site
+      # (COP-7446 phase D). The deploy action rebuilds dist for /status-codes/, so it runs last.
+      - name: Deploy status-codes to the shared Hosting site
+        uses: ./.deploy-tooling/.github/actions/deploy-remote
+        with:
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA }}
+          site: frontend-extensions
+          remote: status-codes
+          mode: prod
