@@ -90,6 +90,8 @@ Pinned by `pages/CategoryAddEdit.page.test.tsx`, `components/categories/Category
 
 `categories/src/translations/{en,de}/` hold `categories`, `global`, `mixins` and `navigation`. The `categories.*` keys are MD's, including `categories.media.*`, which this remote owns (MD's Categories module is where those keys came from). EN and DE key parity, no empty values and the absence of `primereact` are pinned by `categories/src/translations/translations.test.ts`.
 
+A host tenant switch does not remount the remote. `FeatureTogglesProvider` applies toggles, errors and the end of loading only for the tenant that is still current, and `SitesProvider` (guarded since the port) clears `sites` and `currentSite` on a tenant or token change and ignores a late response for the previous tenant (`categories/src/context/tenantSwitch.test.tsx`).
+
 ## Host wiring
 
 | Fact | Value |
