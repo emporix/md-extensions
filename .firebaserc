@@ -39,9 +39,6 @@
         "emporix-companies": [
           "emporix-companies"
         ],
-        "emporix-units": [
-          "emporix-units"
-        ],
         "emporix-catalogs": [
           "emporix-catalogs"
         ],
@@ -91,9 +88,6 @@
         "emporix-companies-stage": [
           "emporix-companies-stage"
         ],
-        "emporix-units-stage": [
-          "emporix-units-stage"
-        ],
         "emporix-catalogs-stage": [
           "emporix-catalogs-stage"
         ],
@@ -142,9 +136,6 @@
         ],
         "emporix-companies-develop": [
           "emporix-companies-develop"
-        ],
-        "emporix-units-develop": [
-          "emporix-units-develop"
         ],
         "emporix-catalogs-develop": [
           "emporix-catalogs-develop"
