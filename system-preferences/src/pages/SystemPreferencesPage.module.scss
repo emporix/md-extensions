@@ -1,0 +1,28 @@
+.page {
+  display: flex;
+  flex-direction: column;
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.info {
+  color: #5c6370;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+// MD showed a stored boolean as a switch that cannot be toggled outside edit
+// mode, at full colour rather than faded.
+.readOnlySwitch {
+  pointer-events: none;
+  opacity: 1;
+}
