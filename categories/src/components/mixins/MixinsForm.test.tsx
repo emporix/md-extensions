@@ -36,6 +36,16 @@ vi.mock('../../hooks/useLocalizedValue', () => ({
   }),
 }))
 
+vi.mock('../../context/ConfigurationProvider', () => ({
+  useConfiguration: () => ({
+    languages: [{ id: 'en' }, { id: 'de' }],
+    contentLanguage: 'en',
+  }),
+}))
+vi.mock('../../context/Dashboard.context', () => ({
+  useDashboardContext: () => ({ tenant: 'tenant', contentLanguage: 'en' }),
+}))
+
 const SCHEMA_KEY = 'testMixin'
 const metadata = { key: SCHEMA_KEY, url: 'https://example.com/test_v1.json' }
 
@@ -223,6 +233,54 @@ describe('MixinsForm number input without keypress', () => {
 
     expect(payload).toEqual({ count: 7 })
   })
+})
+
+describe('MixinsForm nullable localized text', () => {
+  it.each(['v1', 'v2'] as const)(
+    'saves an untouched %s field without null',
+    async (version) => {
+      const { onSave, saveButton } = renderForm(
+        [
+          item({
+            key: 'locNull',
+            type: MixinsFormItemType.localized,
+            localizedVersion: version,
+          }),
+          item({ key: 'text', type: MixinsFormItemType.text }),
+        ],
+        { text: 'Hello' }
+      )
+
+      const payload = await savedPayload(onSave, saveButton)
+
+      expect(payload).toEqual({ text: 'Hello' })
+    }
+  )
+
+  it.each(['v1', 'v2'] as const)(
+    'saves a cleared %s field as an empty value, not null',
+    async (version) => {
+      const stored =
+        version === 'v1' ? [{ language: 'en', value: 'Hi' }] : { en: 'Hi' }
+      const { onSave, saveButton } = renderForm(
+        [
+          item({
+            key: 'locNull',
+            type: MixinsFormItemType.localized,
+            localizedVersion: version,
+          }),
+        ],
+        { locNull: stored }
+      )
+      fireEvent.change(screen.getByDisplayValue('Hi'), {
+        target: { value: '' },
+      })
+
+      const payload = await savedPayload(onSave, saveButton)
+
+      expect(payload).toEqual({ locNull: version === 'v1' ? [] : {} })
+    }
+  )
 })
 
 describe('MixinsAccordionForm enum fields', () => {

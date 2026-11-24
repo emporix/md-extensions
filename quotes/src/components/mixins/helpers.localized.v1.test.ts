@@ -126,14 +126,15 @@ describe('mapLocalizedMixinToLocalized / mapLocalizedToLocalizedMixins v1', () =
 })
 
 describe('defaultValueForMixinItem v1 localized', () => {
-  it('defaults localized fields to an empty array', () => {
+  it('leaves localized fields unset and starts array entries as []', () => {
     const item: MixinsFormItem = {
       name: 'pieces',
       key: 'pieces',
       type: MixinsFormItemType.localized,
       isRequired: false,
     }
-    expect(defaultValueForMixinItem(item)).toEqual([])
+    expect(defaultValueForMixinItem(item)).toBeUndefined()
+    expect(defaultValueForMixinItem(item, true)).toEqual([])
   })
 })
 

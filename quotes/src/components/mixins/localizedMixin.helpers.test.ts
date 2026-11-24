@@ -206,13 +206,13 @@ describe('serializeLocalizedFields', () => {
     ).toEqual({ other: 'kept' })
   })
 
-  it('preserves null for nullable localized fields', () => {
+  it('leaves a null localized TEXT field out instead of sending null', () => {
     expect(
       serializeLocalizedFields({ pieces: null }, [localizedItem('v1')])
-    ).toEqual({ pieces: null })
+    ).toEqual({})
     expect(
       serializeLocalizedFields({ pieces: null }, [localizedItem('v2')])
-    ).toEqual({ pieces: null })
+    ).toEqual({})
   })
 
   it('preserves null elements inside a v1 array of localized values', () => {
@@ -235,8 +235,9 @@ describe('serializeLocalizedFields', () => {
 })
 
 describe('defaultValueForMixinItem v2 localized', () => {
-  it('defaults v2 localized fields to an empty object', () => {
-    expect(defaultValueForMixinItem(localizedItem('v2'))).toEqual({})
+  it('leaves a v2 localized field unset and starts array entries as {}', () => {
+    expect(defaultValueForMixinItem(localizedItem('v2'))).toBeUndefined()
+    expect(defaultValueForMixinItem(localizedItem('v2'), true)).toEqual({})
   })
 })
 

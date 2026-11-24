@@ -447,6 +447,29 @@ export const mapMixinsPropertyToItemArrayType = (
   }
 }
 
+/**
+ * Whether the mixin attribute itself accepts `null`. A localized TEXT field
+ * whose language values reference `languageValueNullable_v1/v2` is not
+ * nullable: only each language's value may be null, the attribute is always
+ * an array (v1) or a language map (v2).
+ */
+export const isMixinFieldNullable = (
+  property: MixinsSchemaProperty,
+  itemType: MixinsFormItemType
+): boolean => {
+  // Check for a null in types array
+  if (Array.isArray(property.type)) {
+    return property.type.includes(MixinsPropertyType.null)
+  }
+  // Fallback to enum check because if enum is nullable,
+  // then values are contained null instead of a type array
+  if (itemType === MixinsFormItemType.enum) {
+    const enumValues = property?.items?.enum ?? property.enum
+    return !!enumValues?.includes(null)
+  }
+  return false
+}
+
 export const defaultValueForMixinItem = (
   item: MixinsFormItem,
   isArrayElement = false,
@@ -477,6 +500,8 @@ export const defaultValueForMixinItem = (
     case MixinsFormItemType.time:
       return isArrayElement ? '' : undefined
     case MixinsFormItemType.localized:
+      // Only a new array entry starts empty; a field without data stays unset.
+      if (!isArrayElement) return undefined
       return item.localizedVersion === 'v2' ? {} : []
     case MixinsFormItemType.array:
       return []
