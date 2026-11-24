@@ -29,7 +29,7 @@ This is a monorepo of independent Management Dashboard remotes, one Vite app per
 | `brands` | playbook-aligned | `brands` | `brands` → `/apps/management/brands/*` | `VITE_BRANDS_URL` | `5175` | yes / yes | `2.6.0` / `1.2.1` |
 | `customer-groups` | playbook-aligned | `customerGroups` | `customerGroups` → `administration/customer-groups/*` | `VITE_CUSTOMER_GROUPS_URL` | `5174` | yes / yes | `2.10.2` / `1.7.1` |
 | `dashboard` | legacy (PrimeReact) | `extension` | `dashboardIndex` → `''` and `dashboard` → `dashboard` | `VITE_DASHBOARD_EXTENSION_URL` | not pinned | no / yes | — / — |
-| `labels` | playbook-aligned | `labels` | `labels` → `/apps/management/labels/*` | `VITE_LABELS_URL` | `5179` | yes / yes | `2.18.0` / `1.2.14` |
+| `labels` | playbook-aligned | `labels` | `labels` → `/apps/management/labels/*` | `VITE_LABELS_URL` | `5179` | yes / yes | `2.31.0` / `1.2.14` |
 | `orders` | playbook-aligned | `orders` | `orders` → `apps/management/orders/*` | `VITE_ORDERS_URL` | `5177` | yes / yes | `2.30.1` / `1.7.1` |
 | `products` | playbook-aligned | `products` | `products` → `apps/management/products/*` | `VITE_PRODUCTS_URL` | `5178` | yes / yes | `2.30.1` / `1.7.1` |
 | `returns` | playbook-aligned | `returns` | `returns` → `/apps/management/returns/*` | `VITE_RETURNS_URL` | `5176` | yes / yes | `2.29.1` / `1.5.1` |
