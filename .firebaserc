@@ -18,9 +18,6 @@
         "emporix-dashboard-extension": [
           "emporix-dashboard-extension"
         ],
-        "emporix-customer-groups": [
-          "emporix-customer-groups"
-        ],
         "emporix-returns": [
           "emporix-returns"
         ],
@@ -64,9 +61,6 @@
         "emporix-dashboard-extension-stage": [
           "emporix-dashboard-extension-stage"
         ],
-        "emporix-customer-groups-stage": [
-          "emporix-customer-groups-stage"
-        ],
         "emporix-returns-stage": [
           "emporix-returns-stage"
         ],
@@ -109,9 +103,6 @@
         ],
         "emporix-dashboard-extension-develop": [
           "emporix-dashboard-extension-develop"
-        ],
-        "emporix-customer-groups-develop": [
-          "emporix-customer-groups-develop"
         ],
         "emporix-returns-develop": [
           "emporix-returns-develop"
