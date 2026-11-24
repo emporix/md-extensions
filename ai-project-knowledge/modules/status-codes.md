@@ -61,7 +61,7 @@ Pinned by `status-codes/src/pages/StatusCode.page.test.tsx`.
 | Host route `key` → path | `statusCodes` → `/apps/management/status-codes/*` (`management-dashboard` `src/router/module-routes.tsx`; the MD key was `status-codes` before COP-7172) |
 | Host env var | `VITE_STATUS_CODES_URL` (`management-dashboard` `.env.*`) |
 | Local port | `5180`, `strictPort` |
-| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7446): `https://frontend-extensions-develop.web.app/status-codes/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod), deployed by `.github/actions/deploy-remote` from `.github/workflows/status-codes-firebase-*.yaml`. Those workflows still deploy first to the old targets `emporix-status-codes`, `-stage`, `-develop` until the host uses the shared site in production (`status-codes/README.md`) |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7446), no site or `firebase.json` target of its own: `https://frontend-extensions-develop.web.app/status-codes/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod), deployed by `.github/actions/deploy-remote` from `.github/workflows/status-codes-firebase-*.yaml` (`status-codes/README.md`) |
 | Local deviations | none |
 
 ## Not yet scanned
