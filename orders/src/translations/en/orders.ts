@@ -180,6 +180,14 @@ export default {
         refund: 'Refund',
         refundEvenSent: 'Refund request sent successfully',
         refundEventError: 'Error occurred while sending refund request',
+        capture: 'Capture',
+        captureSent: 'Payment captured',
+        captureError: 'The payment could not be captured',
+        captureConfirmTitle: 'Capture payment',
+        captureConfirmMessage: 'Capture this amount from the payment:',
+        capturePartialNote:
+          'The amount is less than the authorized amount. Depending on the payment provider, the rest of the authorization may be released and cannot be captured later.',
+        cancel: 'Cancel',
       },
     },
     type: {

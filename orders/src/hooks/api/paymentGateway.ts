@@ -4,6 +4,10 @@ import {
   getPaymentMethodsCall,
   refundCall,
 } from '@emporix/api-calls'
+import {
+  capturePaymentCall,
+  type PaymentCaptureResult,
+} from '@emporix/api-calls/next'
 import { useDashboardContext } from '../../context/Dashboard.context'
 import type {
   PaymentMethod,
@@ -37,5 +41,22 @@ export const usePaymentGatewayApi = () => {
     [tenant]
   )
 
-  return { getPaymentMethods, fetchTransaction, refundTransaction }
+  const captureTransaction = useCallback(
+    async (
+      transactionId: string,
+      amount: number,
+      currency: string
+    ): Promise<PaymentCaptureResult> => {
+      if (!tenant) return Promise.reject(new Error('No tenant'))
+      return capturePaymentCall(transactionId, { amount, currency }, { tenant })
+    },
+    [tenant]
+  )
+
+  return {
+    getPaymentMethods,
+    fetchTransaction,
+    refundTransaction,
+    captureTransaction,
+  }
 }

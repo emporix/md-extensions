@@ -177,6 +177,14 @@ export default {
         refund: 'Erstattung',
         refundEvenSent: 'Erstattungsanfrage erfolgreich geschickt',
         refundEventError: 'Fehler beim Senden der Erstattungsanfrage',
+        capture: 'Einziehen',
+        captureSent: 'Zahlung eingezogen',
+        captureError: 'Die Zahlung konnte nicht eingezogen werden',
+        captureConfirmTitle: 'Zahlung einziehen',
+        captureConfirmMessage: 'Diesen Betrag von der Zahlung einziehen:',
+        capturePartialNote:
+          'Der Betrag ist kleiner als der autorisierte Betrag. Je nach Zahlungsanbieter wird der Rest der Autorisierung freigegeben und kann später nicht mehr eingezogen werden.',
+        cancel: 'Abbrechen',
       },
     },
     type: {
