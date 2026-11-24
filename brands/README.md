@@ -119,30 +119,7 @@ You can also set up MCP Server manually with Emporix documentation by adding the
 
 ### Deploying
 
-In order to use the module in the Emporix Management Dashboard, deploy it to a hosting service and then provide the URL to the `remoteEntry.js` in the Emporix Management Dashboard.
-
-App hosting should have CORS set up to allow the module to be loaded from emporix domain.
-Example of CORS configuration for Firebase hosting:
-
-```json
-{
-  "hosting": {
-    "public": "dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "headers": [
-      {
-        "source": "**",
-        "headers": [
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+Brands has no Firebase Hosting site of its own. It is published into the `brands/` folder of the shared site of each environment (COP-7348, COP-7441): `https://frontend-extensions-develop.web.app/brands/remoteEntry.js`, `https://frontend-extensions-stage.web.app/brands/remoteEntry.js` and `https://frontend-extensions.web.app/brands/remoteEntry.js` (prod). Workflows: `.github/workflows/brands-firebase-*.yaml` — a preview per PR, dev and stage on merge to `master`, prod on a `brands-*` tag (roll back by redeploying the previous tag). Each calls `.github/actions/deploy-remote`, which builds the remote flat with base `/brands/` (`.github/scripts/hosting/build-remote.mjs`) and replaces only this folder on the site. Local `npm run build:*` and `preview` are unchanged and still serve `/assets/remoteEntry.js`.
 
 ### Testing standalone module
 This project can be run locally outside of Management Dashboard using the following command:
