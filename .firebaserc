@@ -32,9 +32,6 @@
         ],
         "emporix-customers": [
           "emporix-customers"
-        ],
-        "emporix-categories": [
-          "emporix-categories"
         ]
       }
     },
@@ -69,9 +66,6 @@
         ],
         "emporix-customers-stage": [
           "emporix-customers-stage"
-        ],
-        "emporix-categories-stage": [
-          "emporix-categories-stage"
         ]
       }
     },
@@ -106,9 +100,6 @@
         ],
         "emporix-customers-develop": [
           "emporix-customers-develop"
-        ],
-        "emporix-categories-develop": [
-          "emporix-categories-develop"
         ]
       }
     }

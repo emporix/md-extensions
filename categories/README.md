@@ -86,7 +86,15 @@ The dev shell asks for tenant, token and language.
 
 ### Deploying
 
-Firebase Hosting targets `emporix-categories-develop`, `emporix-categories-stage` and `emporix-categories` (root `firebase.json`, `.firebaserc`). Workflows: `.github/workflows/categories-firebase-*.yaml` — a preview per PR, dev and stage on merge to `master`, prod on a `categories-*` tag. The Firebase Hosting sites must exist before the first deploy.
+Categories has no Firebase Hosting site of its own. It is published into the `categories/` folder of the shared site of each environment (COP-7348, COP-7452): `https://frontend-extensions-develop.web.app/categories/remoteEntry.js`, `https://frontend-extensions-stage.web.app/categories/remoteEntry.js` and `https://frontend-extensions.web.app/categories/remoteEntry.js` (prod). Workflows: `.github/workflows/categories-firebase-*.yaml` — a preview per PR (channel `pr-<number>-categories`, URL posted as a PR comment), dev and stage on merge to `master`, prod on a `categories-*` tag (roll back by redeploying the previous tag). Each calls `.github/actions/deploy-remote`, which builds the remote flat with base `/categories/` (`.github/scripts/hosting/build-remote.mjs`) and replaces only this folder on the site. Until the host `VITE_CATEGORIES_URL` points at the shared site, it keeps loading the last build from the former `emporix-categories*` sites, which no longer receive deploys.
+
+Local `npm run build:*` and `preview` are unchanged and still serve `/assets/remoteEntry.js`. To check the shared-site build locally:
+
+```sh
+REMOTE=categories MODE=dev node --input-type=module - < ../.github/scripts/hosting/build-remote.mjs
+```
+
+It writes `dist/remoteEntry.js` with no `dist/assets/`; run `npm run build:dev` again afterwards for the regular build.
 
 ## UI
 
