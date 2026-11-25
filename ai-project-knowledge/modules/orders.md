@@ -69,7 +69,7 @@ Delivery time (`orders/src/components/orders/DeliveryTimeForm.tsx`) is editable 
 
 Calculated entries (`orders/src/components/orders/entries/OrderEntries.tsx`): when status is not `COMPLETED` and authorized amount is below `calculatedPrice.finalPrice.grossValue`, a warning is shown. Add entry is hidden when status is `COMPLETED` or the list is read-only, and disabled without manager (`orders/src/components/orders/entries/OrderEntriesList.tsx`). A quantity change posts the full deduplicated entry list immediately via `addEntries` (`orders/src/hooks/orders/useEntriesColumns.tsx`). Quantity `0` is a legal value on that call.
 
-Add-entry dialog (`orders/src/components/orders/entries/AddEntryDialog.tsx`, tests in `AddEntryDialog.test.tsx`), built on the component-library `ProductsBrowser` (CL 2.30.1, `orders/package.json`):
+Add-entry dialog (`orders/src/components/orders/entries/AddEntryDialog.tsx`, tests in `AddEntryDialog.test.tsx`), built on the component-library `ProductsBrowser` (CL 2.31.1, `orders/package.json`):
 
 - Two views, list and tree. Columns: image, name, id, code, product type. The image is the first media item that is an image (or has no content type), resized to a 32x32 thumbnail (`orders/src/helpers/productsBrowser.helpers.ts`).
 - Products load through `syncPaginatedProducts`. A selected category loads the products of its whole branch, via `withCategoryScope` from `@emporix/api-calls` (test `loads the products of the whole branch of a selected category`).
@@ -135,6 +135,7 @@ Behaviour specs: `orders/src/components/orders/entries/AddEntryDialog.test.tsx` 
 | Federation `name` | `orders` (`orders/vite.config.ts`) |
 | Host route `key` → path | `orders` → `apps/management/orders/*` (`management-dashboard` `src/router/module-routes.tsx`) |
 | Host env var | `VITE_ORDERS_URL` (`management-dashboard` `.env.*`) |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7443): `https://frontend-extensions-develop.web.app/orders/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod), deployed by `.github/actions/deploy-remote` from `.github/workflows/orders-firebase-*.yaml`. Until COP-7348 stage D the same workflows first deploy the old `emporix-orders-develop`, `emporix-orders-stage` and `emporix-orders` sites (`/assets/remoteEntry.js`), which keep their `firebase.json` / `.firebaserc` targets; the host loads orders from the old sites until its `.env.*` are switched (`orders/README.md`) |
 | Local port | `5177`, `strictPort` |
 | Local deviations | none |
 
