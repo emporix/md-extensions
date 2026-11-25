@@ -89,27 +89,22 @@ export class LogService {
   async getRequestLogs(requestId: string): Promise<RequestLogs | null> {
     const headers = getApiHeaders()
     const response = await this.api.getWithHeaders<RequestLogs[]>(
-      `/ai-service/${this.tenant}/agentic/logs/requests?q=requestId:${requestId}`,
+      `/ai-service/${this.tenant}/agentic/logs/requests?q=requestId:${encodeURIComponent(requestId)}&fields=id`,
       { headers }
     )
-    return response.data.length > 0 ? response.data[0] : null
+    return response.data[0] ?? null
   }
 
   async getAgentLogsByRequestId(
     requestId: string
   ): Promise<RequestLogs | null> {
-    const headers = getApiHeaders()
-    const result = await this.api.getWithHeaders<RequestLogs>(
-      `/ai-service/${this.tenant}/agentic/logs/requests?q=requestId:${requestId}`,
-      { headers }
-    )
-
-    // Handle case where API returns an array - take the first log
-    if (Array.isArray(result.data)) {
-      return result.data.length > 0 ? result.data[0] : null
+    // The list endpoint no longer returns messages: resolve the id there,
+    // then read the full log (with messages) from the single-log endpoint.
+    const item = await this.getRequestLogs(requestId)
+    if (!item?.id) {
+      return null
     }
-
-    return result.data
+    return this.getAgentLogDetails(item.id)
   }
 
   async getSessions(

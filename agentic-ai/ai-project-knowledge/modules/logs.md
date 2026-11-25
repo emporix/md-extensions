@@ -20,7 +20,10 @@ Request log severity on the type: `INFO | ERROR | WARNING`. `SessionLogs.severit
 7. Metrics panel (all tabs) calls `AnalyticsService.getDashboardSnapshot`. One bundle `GET .../agentic/analytics?agentId=` when an agent is selected. In-memory cache, 5 minutes, key `bundle_{agentId}` or `bundle_all`. `forceRefresh` bypasses the cache. Session severity in the snapshot is `success | warning | error` counts, not the request-log `INFO` enum. Also returns resolution efficiency (requests per session, totals) and session error trend (date, error sessions, total sessions, error rate).
 8. Log analysis is a dialog (`AnalyzeLogsDialog` → `useLogAnalysisAssistant`), not a separate route. It provisions a helper agent, then sends one initial user message built from the visible log entries. Display of assistant/error JSON prefers `formatErrorPayloadMessage`. The dialog body and the rest of the hook after provisioning were not opened.
 
-Lookup by request id exists on `LogService` (`getRequestLogs`, `getAgentLogsByRequestId`) as `q=requestId:{id}`. Both return the first element when the body is an array, else null. Call sites were not traced.
+Lookup by request id exists on `LogService`:
+- `getRequestLogs` calls the list with `q=requestId:{encoded id}&fields=id` and returns the first item or null. It is used by `SessionFlowPage`, which only needs `.id` to open the request log.
+- `getAgentLogsByRequestId` resolves the id the same way, then calls `getAgentLogDetails` (`GET .../logs/requests/{id}`) for the full log with messages. It returns null when the list is empty, and is used by `JobDetailsPage`.
+- Messages are read only from the single-log endpoint, because the ai-service list endpoint stops returning `messages` once its COP-7387 change is deployed. This dashboard change ships first and works with both.
 
 ## Key files
 
@@ -83,8 +86,8 @@ Analytics cache is static on the class, so it survives remounts and is shared ac
 - `useSessionFlow.test.ts`: business logs stay; inbound/response use extracted text; streaming LLM-ended included when not a business log; no duplicate when the response is already a business log.
 - `logAnalysisAssistantHelpers.test.ts`: escaped newlines; last AI turn kept; long prompts without an AI marker truncated; failure tool output kept; large success tool JSON truncated; initial message includes severity counts and the “success does not cancel WARNING/ERROR” rule.
 
-No tests were found for `LogService`, `JobService`, or `AnalyticsService`.
+`src/services/logService.test.ts` pins the two request-id lookups (URLs with `fields=id`, list-then-detail order, null on an empty list). No tests were found for `JobService` or `AnalyticsService`.
 
 ## Not yet scanned
 
-Full `LogsPage` column renderers, `SessionsTab` beyond filters, `SessionFlowPage` chart grouping, `LogDetailsPage` and `JobDetailsPage` bodies, `MetricsPanel` refresh button, `AnalyzeLogsDialog`, `useLogAnalysisAssistant` after the helper-agent setup, `dataTableHelpers` (`convertSeverityFiltersToApi`, `convertJobTypeToApi`), `apiHelpers.buildQueryParams`, `listLoad.helpers.ts`, `SessionSeverityChart`, `SessionErrorTrendChart`. Whether job import/export detail is rendered. `LogService.getRequestLogs` callers.
+Full `LogsPage` column renderers, `SessionsTab` beyond filters, `SessionFlowPage` chart grouping, `LogDetailsPage` and `JobDetailsPage` bodies, `MetricsPanel` refresh button, `AnalyzeLogsDialog`, `useLogAnalysisAssistant` after the helper-agent setup, `dataTableHelpers` (`convertSeverityFiltersToApi`, `convertJobTypeToApi`), `apiHelpers.buildQueryParams`, `listLoad.helpers.ts`, `SessionSeverityChart`, `SessionErrorTrendChart`. Whether job import/export detail is rendered.

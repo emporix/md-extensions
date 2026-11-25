@@ -116,7 +116,7 @@ Logs, prefix `/ai-service/{tenant}/agentic/logs`:
 
 - GET `/requests` cursor list. Field mask omits full message bodies. Exact match on severity and duration. UUID exact match on request id and session id. Agent filter field is `triggerAgentId`.
 - GET `/requests/{logId}`
-- GET `/requests?q=requestId:{id}` for session-flow and job detail
+- GET `/requests?q=requestId:{id}&fields=id` for session-flow (id only) and job detail (resolves the id, then GET `/requests/{logId}` for messages)
 - GET `/sessions` and GET `/sessions/{sessionId}`
 
 List endpoints return the cursor pair with the page. No retry.
