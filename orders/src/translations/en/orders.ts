@@ -180,6 +180,8 @@ export default {
         refund: 'Refund',
         refundEvenSent: 'Refund request sent successfully',
         refundEventError: 'Error occurred while sending refund request',
+        refundableHint: 'Refundable:',
+        fullyRefunded: 'Everything captured has been refunded.',
         capture: 'Capture',
         captureSent: 'Payment captured',
         captureError: 'The payment could not be captured',

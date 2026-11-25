@@ -177,6 +177,8 @@ export default {
         refund: 'Erstattung',
         refundEvenSent: 'Erstattungsanfrage erfolgreich geschickt',
         refundEventError: 'Fehler beim Senden der Erstattungsanfrage',
+        refundableHint: 'Erstattbar:',
+        fullyRefunded: 'Der gesamte eingezogene Betrag wurde erstattet.',
         capture: 'Einziehen',
         captureSent: 'Zahlung eingezogen',
         captureError: 'Die Zahlung konnte nicht eingezogen werden',
