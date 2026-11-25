@@ -43,7 +43,7 @@ Not found → **stop**. Tell the user to add that folder to the Cursor workspace
 Mapped ≠ automatically edited.
 
 - Start from `$DOCS_TARGETS` (minus `--flavors`).
-- Keep a target when the ticket / diff / plan changes behavior that page would describe (API contract → `api-references` + usually `changelog`; a portal guide task → `user-guides`; how-to for integrators → `tutorials`; customer-facing feature, improvement, or deprecation → `release-notes`). A release note is not implied by a user guide or by a changelog entry.
+- Keep a target when the ticket / diff / plan changes behavior that page would describe (API contract → `api-references` + usually `changelog`; a portal guide task → `user-guides`; how-to for integrators → `tutorials`; customer-facing feature, improvement, or deprecation → `release-notes`). A release note is not implied by a user guide or by a changelog entry. An API-only change gets a changelog entry and API reference, not a release note.
 - `release-notes` does not require a `docs.targets` row. When the portal checkout is open, the parent may plan `content/release-notes/README.md`. A `release-notes` row, when present, names the file instead.
 - Skip a mapped target when this change does not affect it. Say why in the plan. Do not skip a could-touch flavor before its candidate pages are listed.
 - One change may update several targets in more than one repo. That is normal.

@@ -24,9 +24,10 @@ Credentials come from a **tenant profile** in `~/.emporix/tenants.json`
 (`--tenant`, or ask once from `tenants.sh list`). The file holds no token:
 the scripts mint a fresh one per run from the profile's `clientId` /
 `clientSecret`, or, for Management Dashboard local-qa, read an
-`employee-token` profile's token file (a signed-in employee, refreshed by the
-user with `tenants.sh refresh <alias>` in their own terminal; check `TOKEN_EXPIRES` covers the dry run
-and the take). No environment variables, no `.env` files, no JWT in chat or
+`employee-token` profile's token file (a signed-in employee; a profile with
+`email` + `password` signs in again by itself when the token is missing or
+expiring, otherwise the user refreshes it with `tenants.sh refresh <alias>` in
+their own terminal; check `TOKEN_EXPIRES` covers the dry run and the take). No environment variables, no `.env` files, no JWT in chat or
 in a `--token` flag (the model will rewrite a payload character). The token
 carries the API client's scopes — a 401 is a scope or tenant problem, see
 `emporix-qa-ui` `references/cockpit-auth.md`.

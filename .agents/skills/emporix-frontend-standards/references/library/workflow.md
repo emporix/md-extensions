@@ -71,10 +71,11 @@ feature plan whose seams name a library change.
    `$ENSURE` or `$RM`.
 
 1. **Confirm it is missing** — no library checkout needed yet. Take
-   `LIB_REPO` and the package from the table above, then read the root
-   exports in three places: the typings of the version installed in this
-   project, the latest published version (its `v*` tag matches
-   `package.json`), and the library's default branch:
+   `LIB_REPO` and the package from the table above, then read the exports in
+   three places: the typings of the version installed in this project, the
+   latest published version (its `v*` tag matches `package.json`), and the
+   library's default branch. For `api-calls`, read the `./next` entry point
+   as well as the package root:
 
    ```bash
    LIB_REPO=emporix/api-calls; PKG=@emporix/api-calls   # or emporix/component-library, @emporix/component-library
@@ -82,13 +83,28 @@ feature plan whose seams name a library change.
    LATEST=$(npm view "$PKG" version)
    gh api "repos/$LIB_REPO/contents/src/index.ts?ref=v$LATEST" -H "Accept: application/vnd.github.raw"
    gh api "repos/$LIB_REPO/contents/src/index.ts" -H "Accept: application/vnd.github.raw"
+   # api-calls only: ./next, the entry point for new calls
+   cat "$PRODUCT_ROOT/node_modules/$PKG/dist/next/index.d.ts"   # absent when not installed or older than 1.6.0
+   gh api "repos/$LIB_REPO/contents/src/next/index.ts?ref=v$LATEST" -H "Accept: application/vnd.github.raw"
+   gh api "repos/$LIB_REPO/contents/src/next/index.ts" -H "Accept: application/vnd.github.raw"
    ```
+
+   `src/next/index.ts` re-exports one module per service
+   (`export * from '../services/<service>/index.js'`). Read the calls of the
+   service that owns the endpoint — `src/services/<service>/<service>.calls.ts`
+   at the same two refs, `dist/services/<service>/<service>.calls.d.ts` in
+   the installed package — and match the endpoint's method and path, which
+   every call names in its JSDoc line. For new code only the new entry
+   points count. A root call is deprecated: its `@deprecated` note names
+   its replacement in `./next` or `./platform`. When the note says there is
+   none, tell the user why and treat the endpoint as missing.
 
    Only a published version counts as available. The default branch can hold
    code that is not on npm yet.
 
-   - **In the installed typings** → tell the user which export to use, apply
-     it in the consuming project, and stop.
+   - **In the installed typings** → tell the user which export to use
+     (api-calls: from `@emporix/api-calls/next`, or `/platform` for an
+     operation), apply it in the consuming project, and stop.
    - **In `v$LATEST`, not installed** → tell the user which export and
      version, move the consuming project onto it (`consumer.md`
      § After the release), and stop.

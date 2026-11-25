@@ -128,20 +128,20 @@ Other icons:
 
 * For the content that requires some subsequent steps, use the stepper block element.
 * As a rule of thumb, add step titles (unless it is too much for the particular steps case).
-* Use `####` (heading level 4) for step titles inside `{% step %}` blocks. Do not use `###` — GitBook adds level-3 headings to the page navigation sidebar.
+* Use `#####` (heading level 5) for step titles inside `{% step %}` blocks. Do not use `###` — GitBook adds level-3 headings to the page navigation sidebar.
 
 Example:
 
 ```
 {% stepper %}
 {% step %}
-#### First step title
+##### First step title
 
 ///step content...
 {% endstep %}
 
 {% step %}
-#### Second step title
+##### Second step title
 
 /// step content
 {% endstep %}

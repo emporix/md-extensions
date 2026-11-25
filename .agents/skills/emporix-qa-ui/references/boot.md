@@ -4,6 +4,61 @@ Run detection first, then resolve `BASE_URL`, then recycle the port, then
 start. Do **not** attach to an already-running preview. Stale Vite/browser
 cache caused false 401s. Always recycle the server.
 
+## Local stack (which services run locally)
+
+The user chooses, once per plan, which services besides the app under test run
+locally (`emporix-local-stack`); everything else comes from develop.
+
+1. **The plan has `**Local stack:**`** → use it. Do not ask again unless the user
+   says they want a different set.
+2. **Otherwise** list the candidates and ask once:
+
+   ```bash
+   STACK=$(skill_script emporix-local-stack stack.py)
+   python3 "$STACK" --workspace "$(dirname "$(git rev-parse --show-toplevel)")" candidates --under-test "$PWD"
+   ```
+
+   Each row is `name kind path selected reason`. Offer them as one multi-select
+   question (AskUserQuestion with `multiSelect` when there are at most four rows;
+   otherwise a numbered list in chat), the `selected = yes` rows preselected (the
+   repo under test, services already running, MD when a remote is picked). Write
+   the answer into the plan as `**Local stack:**` (`none` when only the app under
+   test is wanted).
+3. **`none`** → the fresh boot below, unchanged.
+4. **Services picked:**
+   - `python3 "$STACK" status` and keep the running service names (`STACK_BEFORE`) and
+     MD's mode from its KIND column (`md/ory` or `md/gate`, `MD_AUTH_BEFORE`).
+   - `MD_AUTH_BEFORE` is `ory` → **before any command below** tell the user that MD
+     restarts in QA mode and their open MD tab will need a new sign-in afterwards: the
+     first `up … --md-auth gate` switches a running MD, whatever services it names.
+   - **Database per backend** — the plan has `**Local DB:**` → use it. Otherwise
+     `python3 "$STACK" up {each picked service not running yet} --md-auth gate --dry-run`
+     and ask the user, one question per backend that `--dry-run` lists as `database: choose …`:
+     **Local database** (your MongoDB on localhost; listed first) or **Real database** (URL from
+     the Keychain item `emporix-local-stack.db-url`; say that a local branch then writes to shared
+     data, and Spring Data may create indexes at startup). Pass the answers as `--db local|remote`
+     (`--db <service>=remote` for one service).
+     Write the answers into the plan as `**Local DB:** {service}=local|remote, …` (`none`
+     when no backend asks). A backend already running keeps its database; note it in the
+     report. Missing URL → the user runs `stack.py set-db-url` in their own terminal.
+   - `python3 "$STACK" up {each picked service not running yet} --md-auth gate --db {service}={choice} …`. QA always
+     runs MD in `gate` mode (`serve:local-qa`, the Tenant/Token gate); the stack's default
+     `ory` mode is for the developer's own testing with an Ory sign-in. Never stop a port,
+     never kill a process the stack did not start.
+   - Nothing new to start but MD runs as `md/ory` (already told above) →
+     `python3 "$STACK" add management-dashboard --md-auth gate`.
+   - The app under test already ran in the stack → `python3 "$STACK" restart {name}`
+     (fresh app, as below).
+   - `BASE_URL` = `http://localhost:4200` when MD runs in the stack (a remote under
+     test is opened as its module inside MD; `AUTH=md-token`, `employee-token`
+     profile). Otherwise the port `status` shows for the repo under test.
+   - Skip **Stop whatever is on that port** and **Start** below; continue with
+     **Cockpit / MD credentials**.
+   - **After QA:** `python3 "$STACK" remove {name}` for each service this run
+     added (not in `STACK_BEFORE`), unless the user asked to keep the stack. When MD stays
+     and `MD_AUTH_BEFORE` was `ory`: `python3 "$STACK" add management-dashboard --md-auth ory`.
+     Never `down` a stack this run did not start.
+
 ## Detect auth and start command
 
 ```bash
@@ -27,7 +82,7 @@ and ask. Do not invent a port.
 `BASE_URL_HINT` from detection (MD defaults to `http://localhost:4200`).
 Origin only. Stop only if the resolved URL is still empty.
 
-## Stop whatever is on that port
+## Stop whatever is on that port (fresh boot only)
 
 Parse the port from `BASE_URL` (e.g. `4173`). Then:
 
@@ -54,8 +109,9 @@ Wait until `{BASE_URL}{readyPath}` answers (about 90s). Record
 
 ## After QA (always)
 
-Stop the server this run started — same port kill as above. Do not leave preview
-running unless the user asked to keep it.
+Fresh boot: stop the server this run started — same port kill as above. Do not leave preview
+running unless the user asked to keep it. Local stack: `remove` only what this run added
+(§ Local stack).
 
 ## Cockpit / MD credentials (before browser)
 

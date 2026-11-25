@@ -59,6 +59,15 @@ If run standalone without a plan: resolve the target from `docs.targets`
 4. Write / update the mapped `.md` page. Title `How to {outcome}`.
    Include a complete, realistic `curl` in a `bash` block and link to the API
    reference by path-based GitBook URL. Follow the list rules in `format-and-structure.md`.
+
+   **Guide, do not repeat the spec.** A tutorial tells the reader how to do
+   something and how to configure it: prerequisites, the order of calls,
+   which settings to choose and why, and what to check at the end. Do not copy
+   every response field, status code, error, or optional parameter from the
+   OpenAPI `.yml`. Show only the request fields and response values the next
+   step needs, and link to the API reference for the rest. Update an existing
+   tutorial only where its steps, prerequisites, or configuration change; do
+   not add a new field just because the API gained one.
 5. Link every new page from that space's `SUMMARY.md`.
 6. Use the token placeholders the style guide defines (`{{OAUTH2_ACCESS_TOKEN}}`,
    `{{CUSTOMER_ACCESS_TOKEN}}`, `{{ANONYMOUS_ACCESS_TOKEN}}`). Do not invent
@@ -85,7 +94,10 @@ If run standalone without a plan: resolve the target from `docs.targets`
    tasks, inconsistent naming, or figure/caption mismatches. Also flag: content
    organized around endpoints instead of the reader's goal and workflow, and
    content that does not fit its place in the space or duplicates a neighbouring
-   page. Give each finding `file:line`, the quote, why a reader
+   page; a step the reader cannot run from the page alone (missing scope,
+   header, ID, or value from an earlier step); and sections that do not
+   give an AI assistant enough context, when read alone, to answer the reader's
+   question without guessing. Give each finding `file:line`, the quote, why a reader
    stalls, and what to clarify. Fix every finding you can; leave unanswered
    product-behavior questions as **Open questions** rather than guessing. Do not
    treat style nits here (that is the style review).
@@ -121,6 +133,7 @@ If run standalone without a plan: resolve the target from `docs.targets`
 ## Rules
 
 - Edit only the planned page(s) plus that space's `SUMMARY.md` for a new page.
+- A tutorial guides the reader through a task and its configuration. It does not repeat the response and field details in the OpenAPI `.yml`.
 - Use only the exact bundled standards under `STANDARDS_ROOT`; do not
   restate, fork, or substitute a docs checkout's vendored copy.
 - Do not call `buddy_run_workflow` / **run-workflow**. A Buddy comment is not the change.

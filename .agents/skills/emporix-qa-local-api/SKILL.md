@@ -21,11 +21,15 @@ before its `pr` stage) on `backend` / `fullstack`.
 ## Hard rules
 
 - Recycle the local server: stop the port, start `app.start`, wait until
-  ready, **always stop it again** when QA ends.
-- `api-url` for Newman is the **local** origin (`app.baseUrl` / `--base-url`).
-  Do not silently fall back to stage. If OAuth or the first request 404s on
-  localhost, **stop** and say the local process must serve those collection
-  URLs (or sit behind a local gateway).
+  ready, **always stop it again** when QA ends. With a local stack
+  (`references/boot.md` § Local stack) the service is started or restarted
+  through `emporix-local-stack` instead, only what this run added is removed
+  afterwards, and nothing the stack did not start is stopped.
+- `api-url` for Newman is the **local** origin (`app.baseUrl` / `--base-url`),
+  or the stack's gateway origin when a local stack is used (collections address
+  gateway paths such as `/ai-service/{tenant}/…`; the token request goes through
+  the gateway, which learns the token's scopes). Do not silently fall back to
+  stage. If OAuth or the first request 404s, **stop** and say why.
 - Collections live in the `postman-collections` workspace. Never clone it.
   Resolve files as `emporix-qa-postman` `references/collections.md`.
 - Credentials (tenant, client id, client secret) are still required — the
@@ -42,9 +46,12 @@ before its `pr` stage) on `backend` / `fullstack`.
 - `--service <folder>` / `--folder <name>` / `--sdk` — same as
   `emporix-qa-postman`.
 - `--base-url` (optional) — local API origin. Else `app.baseUrl`.
-- `--tenant`, `--client-id`, `--client-secret` (and storefront pair) — same
-  env names as `emporix-qa-postman`. Do **not** use `EMPORIX_QA_API_URL` as
-  the Newman host; that is the remote API.
+- `--tenant <alias>` — a `client-credentials` profile in `~/.emporix/tenants.json`
+  (tenant, client id and secret, storefront pair; `references/credentials.md`).
+  A value that is not a profile alias is the tenant name, as before.
+- `--client-id`, `--client-secret` (and storefront pair) — override the profile
+  per key; same env names as `emporix-qa-postman`. Do **not** use
+  `EMPORIX_QA_API_URL` as the Newman host; that is the remote API.
 - `--skip-publish` (optional) — write local artifacts only.
 
 ## Workflow
@@ -57,8 +64,9 @@ before its `pr` stage) on `backend` / `fullstack`.
 2. **Credentials** — `references/credentials.md`. Hard stop if tenant or
    client secrets are missing. Do not guess.
 
-3. **Boot** — `references/boot.md`. Empty `app.start` / `baseUrl` → stop and
-   ask. Do not invent a port.
+3. **Boot** — `references/boot.md`. First the local stack choice (§ Local
+   stack: the services that run locally, asked once and recorded). Fresh boot:
+   empty `app.start` / `baseUrl` → stop and ask. Do not invent a port.
 
 4. **Prepare env + Newman** — `references/run.md`. `API_URL` = local
    `BASE_URL`. Copy the collection (not the env) into the artifacts dir.
@@ -66,7 +74,8 @@ before its `pr` stage) on `backend` / `fullstack`.
 5. **Report** — `references/report-templates.md`. Write `report.md`.
 
 6. **Publish** when `{issue_key}` is known and not `--skip-publish` —
-   `references/publish.md`. Then **always** stop the local server.
+   `references/publish.md`. Then **always** stop the local server (local
+   stack: `remove` only what this run added).
 
 ## Scripts (execute, do not rewrite)
 

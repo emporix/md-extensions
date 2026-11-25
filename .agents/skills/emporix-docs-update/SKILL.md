@@ -101,11 +101,13 @@ Docs update progress:
 - Read the named playbook under `references/playbooks/`. Do not invent Task types. Do not write pages yourself (the plan file under `.ai/runs/{TASK_BRANCH}/` is the only direct docs write). A user-asked ticket note goes in that same folder.
 - Do not edit product-repo source.
 - Do not clone a documentation repository. It must already be a Cursor workspace folder.
-- Do not write outside `docs.targets` (and `--flavors`) unless the artifact is release notes in the open portal checkout, or the user names a new path and you persist it in setup config.
+- Do not write outside `docs.targets` (and `--flavors`) unless the artifact is release notes in the open portal checkout, an `api-references` guide under `standard-practices/` or `quickstart/`, or the user names a new path and you persist it in setup config.
+- API-only change → no release note; the changelog and API reference announce and describe it. Tutorials that use the changed endpoints are always reviewed, and updated only when their steps, prerequisites, or configuration change.
 - Use only the exact bundled style under `STANDARDS_ROOT`. Do not substitute files from a docs checkout.
 - Do not call `buddy_run_workflow` / **run-workflow**. Do not ask Buddy to generate, update, or publish documentation.
 - Do not capture the Cursor browser for screenshots. Prefer original file paths / drops over chat paste; skip when asked.
 - Style review is required after a write; pages are not done while a checkout's verdict is `blocked` or has `critical` / `major`.
+- Every generated example is checked against the source and parsed before the pages are done. Pages are written to be clear to people and to AI assistants: easy to follow, with all the information the reader needs and nothing extra. Both checks run in `references/playbooks/style-review.md`.
 - Do not commit as Cursor, Copilot, or any agent. Do not `git config user.*`.
 - Do not merge. Do not **close-issue**. Do not comment on a parent.
 - Do not call `acli` or Jira REST.

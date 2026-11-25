@@ -41,14 +41,49 @@ the safety net must be green), run them now, before any product edit, and
 hold the result the playbook asks for. No such tests → `tests-first –`.
 
 Record progress in the plan file after every phase, on the todos and in a
-line under **Todos**: `Build: tests-first ✓ · cleanup – · scaffold ✓ · pin ✓ · bodies …`.
+line under **Todos**: `Build: tests-first ✓ · cleanup – · scaffold ✓ · pin ✓ · bodies … · coders=sonnet`.
+`coders=` lists every model a delegated phase ran on, in order, with the
+fallback reason when there was one (`coders=sonnet,opus (fallback at bodies:
+sonnet unavailable)`), plus `parent` whenever the parent itself edited
+product or test code (`coders=sonnet,parent`, or `coders=parent` when
+nothing was delegated).
 A resumed conversation continues from that line.
 
 ## Who writes the code
 
-The parent may write each phase itself, or delegate it to **one coder
-subagent per phase** (`--coder-model <slug>`, else the host default). A
-delegated phase prompt is self-contained: absolute tree path, `{KEY}`, plan
+**Delegated work**, one coder subagent each: the tests-first tests (B0),
+every phase B1–B4, and, with a `Skipped:` sketch, the plan's todos as one
+`apply` phase. **Parent work:** loading the sketch, running tests and
+reading their results, verifying every returned diff, and small follow-up
+edits (a fix after a red full suite, a § Deviations correction the user
+agreed to, the targeted removals of a throw-out). Any product or test edit
+the parent makes itself adds `parent` to `coders=`.
+
+Each phase goes to **one coder subagent per phase** on the first slug of the
+coder list: `--coder-model <slug>` for this run, else the developer's
+`coder` role (`references/model-roles.md`; on Claude Code `sonnet`, then
+`opus`). The parent writes the phase itself only when there is no list (no
+flag, no role, no default for this host) or the host cannot set a subagent
+model.
+
+**Coder fallback.** A coder slug the host does not offer, or a coder subagent
+that fails to start or errors on its model (model unavailable, quota, API
+error), → run that phase on the next slug, once per slug, say so in one
+line, and record it in `coders=`. Before the re-run, read `git status` and
+`git diff` (reads only): a coder that errored after editing left a partial
+phase. The next coder continues it: its prompt lists the files the failed
+run created or changed, says they are a partial attempt at this phase, and
+asks it to finish or correct them against the sketch. Nothing is restored,
+reset, or stashed; the parent verifies the final diff as for any phase. The fallback is **sticky**: every later phase of this build
+stays on the fallback model, so the diff has as few coder models as
+possible. A diff that misses the sketch is a deviation (§ Deviations), never
+a fallback trigger. No slug left → the parent writes the remaining phases
+and records `parent` in `coders=`.
+
+The coder subagent is a writing type (Claude Code: `general-purpose`, with
+`model` = the slug), **without** worktree isolation: it edits the ticket
+checkout itself, so its prompt names that checkout's absolute path as the
+only tree it may touch. A delegated phase prompt is self-contained: absolute tree path, `{KEY}`, plan
 path, the phase name and only its step below, the pending todo ids, the
 chosen sketches **verbatim**, `AGENTS.md` style authorities, and the compile
 / test command. The coder: no commit, no `git checkout` / `reset` / `stash`,
@@ -56,8 +91,8 @@ no plan edits, no files outside the tree, stop at any deviation and return
 `before → after` with evidence. The parent verifies every returned diff
 against the sketch; an unreported deviation is still a deviation.
 
-When a coder subagent wrote the code, **Review** must not put the coder's
-model on its reviewer panel (`references/review-loop.md` § Reviewer model).
+When a coder subagent wrote the code, **Review** must not put any model in
+`coders=` on its reviewer panel (`references/review-loop.md` § Reviewer model).
 
 ## B1. Cleanup (optional)
 

@@ -91,11 +91,11 @@ From `AGENTS.md`: stack, layout, every listed code-style authority, generated-co
 
 ## 7. Project knowledge
 
-`references/knowledge.md`. Open the files under **Project knowledge → Update after implementation** and the knowledge file that owns each seam you edited. Fix every statement the diff made wrong. Cite the paths as they are now. Do not touch `Last scanned:`. Nothing applies → `Knowledge: no change needed`. Changed at least one file → push those files to Buddy (`knowledge.md § 3`, **upsert-service-context**, `mode=merge`); a failed push is reported, never blocking.
+`references/knowledge.md`. Open the files under **Project knowledge → Update after implementation** and the knowledge file that owns each seam you edited. Fix every statement the diff made wrong. Cite the paths as they are now. Do not touch `Last scanned:`. Nothing applies → `Knowledge: no change needed`. Do not send them to Buddy; Buddy pulls them after the merge (`knowledge.md § 3`).
 
 ## 8. Report → review
 
-`references/report-templates.md` § Implement. Branch, files, test files, commands and results, `Knowledge:` and `Buddy:` lines, `Mockups:` line, how to try it. Do not `git add`, commit, or push.
+`references/report-templates.md` § Implement. Branch, files, test files, commands and results, `Knowledge:` line, `Mockups:` line, how to try it. Do not `git add`, commit, or push.
 
 Gate green → start `references/review.md` in the same turn. Jira evidence is posted once by the review stage (implement + review together). Gate red → `Ready: no`; post the failed-gate evidence (**comment-issue**, preamble `🤖 emporix-feature — implement`) and stop.
 

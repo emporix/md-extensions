@@ -144,7 +144,7 @@ Each cycle:
 5. **Only in-plan actionable** and `n < 5` → **fix**:
    - Before the first product edit of the cycle, save a restorable snapshot: a binary-safe patch of staged + unstaged tracked changes, plus contents and mode of every non-ignored untracked file.
    - Smallest change per finding, on the plan's change surface. Re-open the cited line; if it moved, fix the current equivalent. No drive-by refactors. No **Out of scope** paths.
-   - A fix that changes behaviour or a contract → write or extend tests. A finding that is itself "tests do not lock the behaviour" → the test is the fix. Knowledge findings → edit the knowledge file per `references/knowledge.md`; after the loop, push the knowledge files any cycle changed to Buddy (`knowledge.md § 3`, one `merge` call) and refresh the `Buddy:` line in the report and Jira comment.
+   - A fix that changes behaviour or a contract → write or extend tests. A finding that is itself "tests do not lock the behaviour" → the test is the fix. Knowledge findings → edit the knowledge file per `references/knowledge.md` (Buddy picks it up after the merge, `knowledge.md § 3`).
    - A repair that would have to leave the plan → treat it as beyond-plan: restore the snapshot (all of this cycle's edits), keep the ledger, Verdict **FAIL reason=beyond-plan**. Do not leave a half-applied cycle.
    - Run the gate (`references/tests.md` § Execute). Red because of this fix → one in-scope repair, re-run once. Still red → Verdict **FAIL reason=gate-red**; stop. Do not start the next cycle on a red gate.
    - Record each row's **Resolution** (`fixed — {what changed}`) and `Fixed in cycle {n}`. Print the fixing line. `n += 1`, fresh diff, next cycle.
@@ -152,7 +152,7 @@ Each cycle:
 ## After the loop
 
 1. Append the **Verdict** block to the ledger (`references/review-ledger.md`).
-2. **Jira evidence** — **comment-issue** on `{KEY}` only, preamble `🤖 emporix-feature — implement + review`, body = the implement report (branch, files, tests, commands, `Knowledge:`, `Buddy:`, how to try) plus the review summary (cycles, findings found / fixed / open, verdict). No diff, no secrets. Skip only if the user cancelled before any edit.
+2. **Jira evidence** — **comment-issue** on `{KEY}` only, preamble `🤖 emporix-feature — implement + review`, body = the implement report (branch, files, tests, commands, `Knowledge:`, how to try) plus the review summary (cycles, findings found / fixed / open, verdict). No diff, no secrets. Skip only if the user cancelled before any edit.
 3. Report per `references/report-templates.md` § Review.
 4. **PASS** → `references/sonar-scan.md` in the same turn (it skips itself on a non-Java repository). The PR question is asked after it: *open the PR now?* Name QA first as an option (`/emporix-qa-ui {KEY}` on `ui`/`fullstack`; `/emporix-qa-local-api {KEY}` on `backend` with `qa.postman`; `/emporix-qa-postman {KEY}` when an HTTP contract changed). Yes → `references/pr.md`. Not now → stop; `/emporix-feature pr {KEY}` later.
 5. **FAIL** → ask once: *fix by hand, waive the listed findings, or stop?*

@@ -19,7 +19,12 @@ and the "Bullet lists" section of
 `$STANDARDS_ROOT/.style-guide/writing-standards/format-and-structure.md` (list
 rules, including the release-notes lead-in exception) before editing.
 
-Follow the bundled template verbatim. The notes below are only workflow mechanics.
+Follow the bundled template verbatim. It owns the content rules (business
+focus, New features table formatting, API links, and API-only changes). The
+notes below are only workflow mechanics.
+
+If the change is API-only, do not write an entry. Return it as skipped, with
+the reason that the changelog and API reference cover it.
 
 ## Project context (required)
 
@@ -58,8 +63,9 @@ stop. Do not clone it.
 6. Fill Overview, New features, Fixes and improvements, Known problems, and
    Documentation and links as the template requires. Under Documentation and
    links, list the docs this plan created or updated, grouped `User Guides:`
-   and `API Guides:`, using link forms from `links.md`. Do not invent features,
-   benefits, or link targets. Unverified → open question.
+   and `API Guides:` as the template allows, using link forms from
+   `links.md`. Do not invent features, benefits, or link targets. Unverified →
+   open question.
 7. Follow the list rules in `format-and-structure.md`. Release notes use the
    template's short labels instead of a full lead-in sentence.
 
@@ -68,6 +74,8 @@ stop. Do not clone it.
 Immediately read and follow `references/playbooks/style-review.md` on the changed release-notes file. If that file is missing, stop. Do not
 wait for the user to request the review. Follow that playbook exactly, including
 its auto-fix and gating behavior. Do not run the user-guide reader-clarity pass.
+The reviewer checks the entry against the release-notes template, including
+its content rules for the New features table and API details.
 
 ## Return
 
@@ -87,6 +95,7 @@ its auto-fix and gating behavior. Do not run the user-guide reader-clarity pass.
 ## Rules
 
 - Edit only the live release-notes file. Do not rewrite existing entries.
+- Follow the template's content rules; do not restate them here.
 - Do not edit user guides, the API changelog, or `SUMMARY.md`.
 - Use only the exact bundled standards under `STANDARDS_ROOT`; do not
   restate, fork, or substitute a docs checkout's vendored copy.

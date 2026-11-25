@@ -72,12 +72,12 @@ Invoking `run {KEY}` directly uses the newest approved `{QA_DIR}/*-{KEY}-qa-plan
 
 Execute the approved plan:
 
-1. **App** — `references/boot.md`. Stop whatever is on the port, start the detected `START` / `app.start` (MD → `serve:local-qa`), wait for ready.
+1. **App** — `references/boot.md`. The plan's `**Local stack:**` decides: `none` → stop whatever is on the port, start the detected `START` / `app.start` (MD → `serve:local-qa`), wait for ready; services listed → start or reuse them through `emporix-local-stack` with `--md-auth gate` (MD in `serve:local-qa`; never a port kill) and restart the app under test. No line yet → list the candidates and ask once (§ Local stack).
 2. **Tenant** — `references/cockpit-auth.md` when `GATE=1`. Resolve the profile named in the plan, run `check-cockpit-token.sh --tenant {alias} --gate {AUTH}` (`AUTH` from `detect-ui-auth.sh`; `md-token` refuses a `client-credentials` profile and prints the `employee-token` profile to add); a bad token is a hard stop, never a UI finding.
 3. **Browser** — `references/browser-howto.md`: `sh "$(skill_script emporix-qa-ui qa-browser.sh)" ensure`, then **open / snapshot / interact / assert / screenshot / close** from `$BROWSER_FILE`, driven by `references/drive.md`. The gate is filled only by `fill-cockpit-gate.sh --tenant {alias}` with snapshot refs.
 4. **Steps** — each plan row in order. Unsure where to click → `references/ask-executor.md`. A skipped step is `not exercised`, never PASS.
 5. **Report** — `references/report-templates.md`; show verdict, failed steps, and screenshots in chat. PASS + key → `references/publish.md`. FAIL → hard stop.
-6. **Close** the session; **stop** the server this run started.
+6. **Close** the session; **stop** the server this run started (local stack: `remove` only what this run added).
 
 ## Hard rules
 
@@ -87,7 +87,7 @@ Execute the approved plan:
 - Fill the gate **only** via `fill-cockpit-gate.sh`. Never add `Bearer` (the client prefixes it). After `open`, clear cookies and storage and reload before the gate.
 - Run only what the approved plan says. A step the plan does not have is not executed; a finding outside the plan's scope is reported as an observation, not a FAIL.
 - **PASS** only if every required step passed. Unsure → ask the executor; do not guess a click.
-- Always recycle the app: stop the port, start, stop again at the end.
+- Always recycle the app under test: fresh boot stops the port, starts, stops again at the end; with a local stack the app under test is restarted through `emporix-local-stack`, only services this run added are removed afterwards, and nothing the stack did not start is stopped.
 - Jira: `qa-jira-publish.sh` only (Buddy HTTP). Never `jira_attach_files` or base64 screenshots through MCP. A filenames-only comment is not done.
 - **FAIL is not published automatically.** Show the user what broke; publish only on **publish** / `--publish-fail`.
 - Read-only on source. Does not commit.

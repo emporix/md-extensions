@@ -35,11 +35,10 @@ Mockups: {MOCKUPS_DIR}/{KEY}-… | none
 Tests: {test files added or extended}
 Gate: {commands} — pass | fail ({command})
 Knowledge: {ai-project-knowledge/… — what changed} | no change needed
-Buddy: updated {service} ({n} replaced, {m} added) | skipped — {reason}
 Ready: review | no
 ```
 
-The `Buddy:` line is present only when a knowledge file changed (`references/knowledge.md § 3`). Add `Knowledge stale: {file} — {statement} — run /emporix-setup --rescan {module}` when you saw unrelated stale content you did not rewrite. `Ready: review` is followed by the review stage in the same turn. `Ready: no` names the failed command or the drifted seam and how to resume (`/emporix-feature implement {KEY}` after the fix).
+Knowledge changes reach Buddy after the merge (`references/knowledge.md § 3`); there is no `Buddy:` line. Add `Knowledge stale: {file} — {statement} — run /emporix-setup --rescan {module}` when you saw unrelated stale content you did not rewrite. `Ready: review` is followed by the review stage in the same turn. `Ready: no` names the failed command or the drifted seam and how to resume (`/emporix-feature implement {KEY}` after the fix).
 
 ## Review
 

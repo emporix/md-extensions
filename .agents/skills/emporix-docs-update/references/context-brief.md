@@ -54,8 +54,11 @@ side effects. Do not return file-by-file implementation notes.
 
 In each mapped docs workspace, search the mapped paths and nearby `SUMMARY.md`
 entries for the feature, view, or service. A `user-guides` target includes
-every mapped `content/` space, including a saved `business-docs` row. List
-candidate pages with paths per flavor. For `release-notes`, list
+every mapped `content/` space, including a saved `business-docs` row. When
+`tutorials` is in scope, list the tutorials that use the changed endpoints.
+When `api-references` is in scope, also search `standard-practices/` and
+`quickstart/` (getting started) in the `api-references` checkout. List candidate pages with paths per
+flavor. For `release-notes`, list
 `content/release-notes/README.md` and the titles of the newest entries only.
 Do not rewrite them. Do not read playbooks.
 

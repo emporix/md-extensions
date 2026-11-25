@@ -233,16 +233,16 @@ out=$(EMPORIX_TENANTS_FILE="$TMP/none/tenants.json" bash "$CHECK" 2>&1) && fail 
 echo "$out" | grep -qE '^  bash ".*/tenants.sh" setup$' || fail "no-file setup hint: $out"
 [ ! -e "$TMP/none/tenants.json" ] || fail "a profiles file was created without asking"
 
-# setup, employee-token: answers come from stdin (kind, tenant, alias default, default? no, Enter
-# after copying); the token is read from the clipboard. Profile and token file are mode 600; the
-# token is never printed.
+# setup, employee-token: answers come from stdin (kind, tenant, alias default, sign-in 2 = paste,
+# default? no, Enter after copying); the token is read from the clipboard. Profile and token file
+# are mode 600; the token is never printed.
 W="$TMP/wizard/tenants.json"
 mkdir -p "$TMP/wizard"
 printf '{"profiles":{"other":{"tenant":"other","clientId":"a","clientSecret":"b"}},"default":"other"}\n' >"$W"
 chmod 600 "$W"
 TOK=$(make_jwt 3600)
 printf '%s\n' "$TOK" >"$TMP/clip"
-out=$(printf '1\nacme\n\nn\n\n' | EMPORIX_TENANTS_FILE="$W" EMPORIX_CLIPBOARD_CMD="cat $TMP/clip" \
+out=$(printf '1\nacme\n\n2\nn\n\n' | EMPORIX_TENANTS_FILE="$W" EMPORIX_CLIPBOARD_CMD="cat $TMP/clip" \
   bash "$TENANTS" setup --api-url "$API" --no-open 2>&1) || fail "employee setup: $out"
 case "$out" in *"$TOK"*) fail "setup printed the token" ;; esac
 echo "$out" | grep -q "Read the token from the clipboard." || fail "clipboard not used: $out"

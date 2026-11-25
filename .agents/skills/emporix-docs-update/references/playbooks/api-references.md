@@ -18,6 +18,8 @@ Read these exact bundled technical-writer sources before editing:
 - `$STANDARDS_ROOT/.style-guide/writing-standards/links.md` and the "Bullet
   lists" section of `format-and-structure.md` (descriptions that contain lists
   or links).
+- `language-and-tone.md` and the rest of `format-and-structure.md`, only when
+  the plan lists a `standard-practices/` or `quickstart/` guide.
 - A neighbouring `.yml` under the mapped service folder for house shape.
 
 Follow the bundled sources verbatim. The notes below are only workflow mechanics.
@@ -35,7 +37,9 @@ Still open the contract and implementation files you cite.
 
 - Approved change plan (from `emporix-docs-update`) or the user's standalone request
 - Context brief (endpoints / fields / scopes / statuses a doc needs), or the diff
-- Exact target OpenAPI file(s) / service folder to edit
+- Exact target paths from the plan: OpenAPI file(s) / service folder, and any
+  `standard-practices/` or `quickstart/` guide pages. A plan may list only
+  guides, only OpenAPI files, or both.
 - Resolved `api-references` workspace root
 
 If run standalone without a plan: resolve the target from `docs.targets`
@@ -43,10 +47,12 @@ If run standalone without a plan: resolve the target from `docs.targets`
 
 ## Process
 
-1. Resolve the `api-references` checkout and the mapped service path. It must
+1. Resolve the `api-references` checkout and the planned paths. It must
    already be a Cursor workspace folder — never clone it.
-2. Read the style sources above and the neighbouring `.yml`.
-3. Edit the mapped service OpenAPI file(s). Stay inside mapped `paths` unless the
+2. Read the style sources above, and the neighbouring `.yml` when the plan
+   lists an OpenAPI file.
+3. **OpenAPI targets** (skip steps 3–6 when the plan lists only guides). Edit
+   the mapped service OpenAPI file(s). Stay inside mapped `paths` unless the
    user asked to add a service.
 4. **New service:** create the folder, add the `.yml`, and add the entry to the
    nearest `SUMMARY.md` (see the style guide for the table shape).
@@ -56,10 +62,18 @@ If run standalone without a plan: resolve the target from `docs.targets`
 6. Do not invent scopes, fields, error codes, or examples. If a fact is
    unverified, leave it out or record it as an open question — do not publish a
    guess. Prefer realistic example values over placeholders like `test` / `1111`.
+7. **Guide targets, and review the guides.** Edit the `standard-practices/`
+   and `quickstart/` pages the plan lists. Then search `standard-practices/` and
+   `quickstart/` (getting started) in the same checkout for the changed
+   behavior (for example pagination, the `q` parameter, mixins, upsert, custom
+   IDs, bulk limits, authentication, the list of API services). If you find another page that the change makes wrong
+   and the plan does not list it, do not edit it; report it under Open
+   questions. Follow `format-and-structure.md`, `language-and-tone.md`, and
+   `links.md` for these `.md` pages.
 
 ## After writing — style review (required)
 
-Immediately read and follow `references/playbooks/style-review.md` on the changed `.yml` files. If that file is missing, stop. Do not wait
+Immediately read and follow `references/playbooks/style-review.md` on every changed file: the `.yml` files and the changed `standard-practices/` and `quickstart/` guides. If that file is missing, stop. Do not wait
 for the user to request the review. Follow that playbook exactly, including its
 auto-fix and gating behavior.
 
@@ -77,6 +91,9 @@ auto-fix and gating behavior.
 ## SUMMARY.md
 - entry added, or none
 
+## Guides reviewed
+- `standard-practices/` and `quickstart/` pages checked: updated / no change needed / needs a plan row
+
 ## Style review
 - verdict + any remaining author-action items (file:line)
 
@@ -86,7 +103,7 @@ auto-fix and gating behavior.
 
 ## Rules
 
-- Edit only the planned OpenAPI file(s) plus the `SUMMARY.md` entry for a new service.
+- Edit only the planned OpenAPI file(s), the planned `standard-practices/` and `quickstart/` guides, plus the `SUMMARY.md` entry for a new service.
 - Use only the exact bundled standards under `STANDARDS_ROOT`; do not
   restate, fork, or substitute a docs checkout's vendored copy.
 - Do not call `buddy_run_workflow` / **run-workflow**. A Buddy comment is not the change.

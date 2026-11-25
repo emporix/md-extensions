@@ -4,9 +4,9 @@ title: Sufficiency and Task-Fit Checks
 
 # Sufficiency and Task-Fit Checks
 
-Use these checks during Cursor docs self-review and GitHub Copilot PR docs review. They complement the style guide. Never invent product facts.
+Use these checks during AI-assisted docs self-review (in any supported AI tool) and GitHub Copilot PR docs review. They complement the style guide. Never invent product facts.
 
-- Cursor self-review: do not auto-apply findings from this file — they are always `Auto-fixable: no`.
+- Self-review (AI assistant): do not auto-apply findings from this file — they are always `Auto-fixable: no`.
 - Copilot PR review: post one inline comment per finding; cite `sufficiency#...` or `task-fit#...`. See `.github/skills/code-review/reference.md`.
 
 Rule prefixes:
@@ -67,11 +67,11 @@ Severity guidance:
 
 ## Task-fit (only when context exists)
 
-Skip this entire lane when `Task context: none`. Include `Task-fit: skipped` in the Cursor findings payload.
+Skip this entire lane when `Task context: none`. Include `Task-fit: skipped` in the self-review findings payload.
 
 When context is provided, check that the docs satisfy that request.
 
-- Cursor: pasted task description, acceptance criteria, or GitHub PR/issue body and file list in the chat
+- AI assistant self-review: pasted task description, acceptance criteria, or GitHub PR/issue body and file list in the chat
 - Copilot PR review: this pull request's title, body, linked issues, and changed-file list (skip only when that text is too thin; then comment `task-fit#insufficient-context`)
 
 ### Acceptance criteria (`task-fit#acceptance-criteria`)

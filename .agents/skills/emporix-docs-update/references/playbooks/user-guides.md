@@ -79,7 +79,7 @@ If run standalone without a plan: resolve the target from `docs.targets` in
    already makes obvious.
 4. Write / update the mapped page: outcome first, then what the reader does and
    why. Use
-   `{% stepper %}` / `{% step %}` with `####` step titles only for a real
+   `{% stepper %}` / `{% step %}` with `#####` step titles only for a real
    multi-step task. Follow the list rules in `format-and-structure.md`.
 5. Link every new page from that space's `SUMMARY.md`.
 6. Only reference assets that exist under that space's `.gitbook/assets/`; omit a
@@ -108,8 +108,10 @@ If run standalone without a plan: resolve the target from `docs.targets` in
    or buttons literally without saying why a reader would use them or what
    they achieve; "where to find it" text that replaces the reason to look for
    an option; quoted UI notifications or hints; statements the UI already
-   makes obvious; and content that does not fit its place in the space or
-   duplicates a neighbouring page. Give each finding `file:line`, the quote,
+   makes obvious; content that does not fit its place in the space or
+   duplicates a neighbouring page; and sections that do not give an
+   AI assistant enough context, when read alone, to answer the reader's question
+   without guessing (missing names, prerequisites, or outcome). Give each finding `file:line`, the quote,
    why a reader stalls, and what to clarify. Fix every finding you can; leave unanswered
    product-behavior questions as **Open questions** rather than guessing. Do not
    treat style nits here (that is the style review).

@@ -11,6 +11,11 @@ steps; it never goes into the todo list.
 Work through these in order. Ask the user only what the code, the ticket,
 and the logs cannot answer.
 
+0. **Requirements review.** With a Jira key, run
+   `references/requirements-review.md` (analyst subagent, in the background)
+   before step 1; its Bugfix checks feed steps 1 and 6. Broad read-only
+   sweeps in steps 3–5 go to the explorer subagent
+   (`references/model-roles.md` § Explorer).
 1. **Symptom.** Observed vs expected, in black-box terms: request and
    response, event, UI state. Where (environment, tenant, endpoint or
    screen), since when, how often, for which input. A symptom you cannot
@@ -50,6 +55,9 @@ Header: replace the `**Source:**` line with these two:
 **Source:** emporix-dev
 **Playbook:** bugfix
 ```
+
+Add the `**Requirements review:**` line under the header and the open
+findings under **Open questions** (`references/requirements-review.md` § 5).
 
 Inside **Approved plan**, add two sections right after **Context** (they go
 to Jira with the plan):

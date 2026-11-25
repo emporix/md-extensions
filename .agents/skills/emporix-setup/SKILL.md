@@ -21,10 +21,10 @@ APIs, docs mapping, or architecture change.
 - `--interactive` — walk through every value and confirm each one.
 - `--set key=value [key=value …]` — change one or more config values in `ai-setup.json` and refresh the affected sections. No detection, no questions. Dotted keys (`jira.project=PIM`, `app.start="npm run dev"`, `validation.commands='["npm test","npm run lint"]'`). JSON values are parsed; everything else is a string.
 - `--rescan [module]` — rebuild `PROJECT.md` and `ai-project-knowledge/` (or one module file) from the current code. Leaves `ai-setup.json` and `AGENTS.md` alone.
-- `--no-scan` — skip the knowledge scan (step 6) and the Buddy sync (step 6b). Use for a very large repo when the user wants to run `--rescan` per module later.
-- `--no-buddy` — skip the Buddy sync (step 6b) for this run only. To turn it off permanently use `--set buddy.sync=false`.
-- `--set-local key=value [--repo [name]]` — change your own machine-wide settings in `~/.emporix/settings.json` (never committed, every repository): `scripts/local-settings.sh set key value [--repo name]`, then print `local-settings.sh show`. No detection, no repository writes, no `ai-setup.json` needed. Keys: `worktree.mode=ALWAYS_WORKTREE|WORKTREE_ON_DIRTY_BRANCH|ASK_USER|IN_PLACE|CURRENT_BRANCH` and `sonar.enabled=true|false` (`references/local-settings.md`). `--repo` alone sets the override for this repository only (its `REPO=` from `emporix-feature` `scripts/resolve-checkout.sh --root . --branch x`); `--repo <name>` names another one. An empty value removes the key.
-- `--sync-buddy` — only push the existing `PROJECT.md` and `ai-project-knowledge/` to Buddy (step 6b). No detection, no scan, no other writes. Use after editing the knowledge files by hand or when an earlier run reported `Buddy: skipped`.
+- `--no-scan` — skip the knowledge scan (step 6) and the Buddy service resolution (step 6b). Use for a very large repo when the user wants to run `--rescan` per module later.
+- `--no-buddy` — skip the Buddy service resolution (step 6b) for this run only. To make Buddy ignore the repository use `--set buddy.sync=false`.
+- `--set-local key=value [--repo [name]]` — change your own machine-wide settings in `~/.emporix/settings.json` (never committed, every repository): `scripts/local-settings.sh set key value [--repo name]`, then print `local-settings.sh show`. No detection, no repository writes, no `ai-setup.json` needed. Keys: `worktree.mode=ALWAYS_WORKTREE|WORKTREE_ON_DIRTY_BRANCH|ASK_USER|IN_PLACE|CURRENT_BRANCH`, `sonar.enabled=true|false`, and the model roles `models.<role>` / `models.<role>.<host>` for `analyst`, `explorer`, `architect`, `coder`, `reviewer` — a slug, a JSON array (first used, the rest fallbacks), or a `{host: …}` map (`--set-local models.analyst=opus`, `--set-local models.coder='["sonnet","opus"]'`, `--set-local models.reviewer.cursor=gpt-5.4-medium`; `references/local-settings.md` § Model roles). After a `models.*` change also print `local-settings.sh models <role> --host <this host>`. `--repo` alone sets the override for this repository only (its `REPO=` from `emporix-feature` `scripts/resolve-checkout.sh --root . --branch x`); `--repo <name>` names another one. An empty value removes the key.
+- `--sync-buddy` — ask Buddy to pull `PROJECT.md` and `ai-project-knowledge/` from the default branch now (step 6b, **sync-service-from-repo**). No detection, no scan, no other writes. Use for a repository without a stage deploy, one set up before the deploy sync existed, or when a deploy did not show up in Buddy.
 
 ## What it writes
 
@@ -101,6 +101,16 @@ skill — see `references/agentic-setup.md`.
    `--set`, `--rescan`, and `--sync-buddy` require an existing `ai-setup.json`;
    `--sync-buddy` also requires `PROJECT.md`.
 
+0c. **Model roles** — every full run (fresh or redo), whatever the worktree
+   mode, no question: `scripts/local-settings.sh init-models`. It writes the
+   built-in defaults to `~/.emporix/settings.json` only for roles that are
+   not set yet and never changes one that is, so it is safe on every run
+   (`references/local-settings.md` § Model roles). A malformed role is left
+   as is with a warning on stderr: show it in the report's `Models:` line
+   with the `--set-local models.<role>=…` fix, and continue setup. Not on `--set`,
+   `--rescan`, `--sync-buddy`, `--check-skills`, or the **Already set up**
+   menu's *Check for new skills* / *Cancel*.
+
 1. **Detect** — `references/detect.md`, `references/app-and-browser.md`,
    `references/docs-mapping.md`, `references/postman-mapping.md`, and for
    `ui` / `fullstack` `references/frontend-rules.md` (rule set plus an old
@@ -157,17 +167,15 @@ skill — see `references/agentic-setup.md`.
    Hand-written sections marked `<!-- keep -->` … `<!-- /keep -->` survive a
    rewrite.
 
-6b. **Sync Buddy service context** — `references/buddy-sync.md`. Skipped
-   with `--no-scan`, `--no-buddy`, or `buddy.sync=false`; the only step of
-   `--sync-buddy`. Resolve the service (`buddy.service`, else **service-list**
-   match, else the `PROJECT.md` title) and call **upsert-service-context**
-   with the `PROJECT.md` intro as `description` and one section per knowledge
-   file. A full run or `--sync-buddy` uses `mode=replace`; `--rescan <module>`
-   uses `mode=merge` with that file only. `action=created` means Buddy had no
-   such service and now does; `action=updated` means its context was
-   refreshed. Write the resolved name back to `buddy.service`. When the Buddy
-   MCP is not connected or the call fails, continue — this is a soft failure
-   reported as `Buddy: skipped — {reason}`; nothing else in the run depends on it.
+6b. **Resolve the Buddy service** — `references/buddy-sync.md`. Skipped
+   with `--no-scan`, `--no-buddy`, or `buddy.sync=false`. Resolve the service
+   (`buddy.service`, else **service-list** match, else the `PROJECT.md` title)
+   and write it to `buddy.service`. Send no knowledge content: Buddy pulls the
+   knowledge from the deployed commit after this setup commit is merged and
+   deployed to stage, and after every later deploy that changes it. `--sync-buddy` only asks Buddy to pull
+   now (**sync-service-from-repo**). When the Buddy MCP is not connected or a
+   call fails, continue — this is a soft failure reported as
+   `Buddy: skipped — {reason}`; nothing else in the run depends on it.
 
 7. **Verify** — `. "$SKILLS_ROOT/emporix-setup/scripts/load-config.sh"` from
    the repo root must succeed and print nothing. For `ui`/`fullstack`,
@@ -188,9 +196,14 @@ skill — see `references/agentic-setup.md`.
    rules enabled (or “none”) and what the legacy migration removed / kept.
    Knowledge files written, modules skipped and why. One `Repo skills:` line
    (installed names, `none`, or `skipped — {reason}`). One `Buddy:` line —
-   `created {name} ({n} sections)`, `updated {name} ({n} replaced, {m} added)`,
-   or `skipped — {reason}` with the fix (`/emporix-setup --sync-buddy` once
-   the Buddy MCP is connected). Every `unknown` the user should fill,
+   `{name} — Buddy syncs the knowledge after this setup is merged to {default branch} and deployed to stage`,
+   `synced {name} from {repo}@{sha} (…)` after `--sync-buddy`, or
+   `skipped — {reason}` with the fix (`/emporix-setup --sync-buddy` once
+   the Buddy MCP is connected). One `Models:` line for this host —
+   `analyst=… · explorer=… · architect=… · coder=… · reviewer=…` from
+   `local-settings.sh models <role> --host {claude-code|cursor}`, a role that
+   resolves to nothing shown as `host default`, and `/emporix-setup
+   --set-local models.<role>=…` to change one. Every `unknown` the user should fill,
    with the exact `--set` key or file to edit. Point at `/emporix-setup --set`,
    `/emporix-setup --rescan`, and `/emporix-setup --sync-buddy`.
 
@@ -216,8 +229,8 @@ apply it (the user can revert with git), in `--interactive` mode ask.
 - Do not write outside the `AGENTS.md` managed block. Do not overwrite `CLAUDE.md` or other instruction files.
 - Do not copy skill scripts or descriptors into the repo. Point at `$SKILLS_ROOT`.
 - Knowledge files cite the source path for every claim and prefer `unknown` to a plausible paragraph. Follow the scan budget and exclusions in `references/project-knowledge.md`; never read `.env*`, credentials, or fixture data with real-looking personal data.
-- Local project knowledge describes **this** repository. Environment-level context (which services call this one, where it runs, platform conventions) comes from Buddy `get_service_context` at task time; link to it in `PROJECT.md`, do not copy it in. The reverse direction is step 6b: the committed knowledge files are pushed to Buddy so the registry mirrors the repo, never the other way round.
-- Buddy sync sends only committed knowledge files (`PROJECT.md`, `ai-project-knowledge/`), never `.ai/`, `AGENTS.md`, `ai-setup.json`, source code, or anything the scan excludes. It never deletes a Buddy service and never removes sections it did not write.
+- Local project knowledge describes **this** repository. Environment-level context (which services call this one, where it runs, platform conventions) comes from Buddy `get_service_context` at task time; link to it in `PROJECT.md`, do not copy it in. The reverse direction is Buddy's deploy sync: Buddy pulls the knowledge files from the deployed default-branch commit so the registry mirrors the repo, never the other way round.
+- Never send knowledge content to Buddy (`service_upsert_context`); Buddy pulls merged files itself. Setup only writes `buddy.service` and, with `--sync-buddy`, asks for a pull. Never delete a Buddy service.
 - Never create a second Buddy service for a repository that already has one under a slightly different name — when **service-list** shows a near match and no exact match, ask once.
 - Do not delete or rewrite any rule file unless `detect-legacy-frontend-rules.sh` lists it as `REMOVE` and the user confirmed. Never configure frontend rules on `backend`.
 - Do not create GitHub or Jira labels. Do not tell the user to install Atlassian CLI; issue operations are Buddy MCP only.

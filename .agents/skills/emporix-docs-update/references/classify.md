@@ -7,6 +7,11 @@ Default is **skip**. A user-guide update does not imply a release note. A
 changelog entry does not imply a release note. Release notes are not the API
 changelog.
 
+**API-only change → no release note.** When the change only touches the API
+contract (no portal, cockpit, or other business-facing behavior a customer
+would notice outside the API), the changelog and API reference are enough.
+Mark `release-notes` **out**.
+
 ## Signal pass
 
 From the change card only, mark each artifact **could-touch** or **out**. Out
@@ -14,10 +19,10 @@ artifacts are not opened.
 
 | Signal in the PR or diff | Could-touch |
 |---|---|
-| Endpoint, field, scope, status, or example changed | `api-references`, and `changelog` if integrators can see the change |
+| Endpoint, field, scope, status, or example changed | `api-references`, `tutorials` (always reviewed), and `changelog` if integrators can see the change |
 | An integrator must follow new or different steps | `tutorials` |
 | A portal guide task changed (cockpit, operator, admin, or dashboard) | `user-guides` |
-| Customers should hear about a feature, improvement, or deprecation, and the portal checkout is open | `release-notes` |
+| Customers should hear about a business-facing feature, improvement, or deprecation (not an API-only change), and the portal checkout is open | `release-notes` |
 | Tests, refactor, or internal-only | none |
 
 `--flavors` drops anything not listed. A mapped flavor the signal pass marks
@@ -34,15 +39,22 @@ it. Follow `references/context-brief.md` in **candidates** mode. When release
 notes could-touch, the candidate is the live release-notes file (titles of the
 newest entries only).
 
+When `api-references` could-touch, candidates also include the guides in the
+`api-references` checkout under `standard-practices/` and `quickstart/`
+(getting started) that describe the changed behavior (for example pagination,
+the `q` parameter, mixins, upsert, custom IDs, authentication). Also list the
+tutorials that use the changed endpoints. Do not skip `tutorials` without
+listing those candidates.
+
 Then keep or skip:
 
 | Artifact | Keep when | Playbook, read only after approval |
 |---|---|---|
-| `api-references` | The contract change is not already documented on the candidate page | `references/playbooks/api-references.md` |
+| `api-references` | The contract change is not already documented on the candidate page, or a `standard-practices/` or `quickstart/` guide is now wrong or missing it | `references/playbooks/api-references.md` |
 | `changelog` | Integrators need the API change announced | `references/playbooks/changelog.md` |
-| `tutorials` | An integrator how-to is missing or now wrong | `references/playbooks/tutorials.md` |
+| `tutorials` | An integrator how-to is missing, now wrong, or needs a new step or configuration | `references/playbooks/tutorials.md` |
 | `user-guides` | A portal guide is missing the change or is now wrong | `references/playbooks/user-guides.md` |
-| `release-notes` | Customers should hear about it, and the newest entries do not already announce it | `references/playbooks/release-notes.md` |
+| `release-notes` | Customers should hear about a business-facing change (not API-only), and the newest entries do not already announce it | `references/playbooks/release-notes.md` |
 
 Prefer updating an existing page over creating a near-duplicate. If nothing is
 kept, the verdict is **no-docs-change**. Explain and stop. That is a successful

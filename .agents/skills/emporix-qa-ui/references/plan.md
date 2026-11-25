@@ -26,6 +26,8 @@ Turn the exploration into one file that `run` can execute without re-deciding an
 **Language:** en
 **Base URL:** {app.baseUrl or detected hint} · **Auth:** cockpit-token | md-token | none
 **Branch / worktree:** {branch} [· {absolute worktree path}]
+**Local stack:** none | {service, service, …}   ← what runs locally besides develop (`references/boot.md` § Local stack)
+**Local DB:** none | {service}=local|remote, …   ← database of each backend the run starts (`references/boot.md` § Local stack)
 
 ## What changed for the user
 
@@ -62,6 +64,7 @@ Scenario coverage: Step 1–2 → Scenario 1; Step 3 → Scenario 2.
 - Expected results a screenshot can show: text, state, count, navigation. Each required step maps to a Scenario or a done-when line.
 - Preconditions with their source. `run` never creates data the plan does not list.
 - The tenant profile **alias** and language.
+- **Local stack** — the services the user chose to run locally (`references/boot.md` § Local stack). `none` keeps today's fresh boot of the app under test only. With a stack, the plan's Base URL is MD (`http://localhost:4200`) when MD runs in it.
 
 ### Leave out
 
@@ -76,6 +79,8 @@ Scenario coverage: Step 1–2 → Scenario 1; Step 3 → Scenario 2.
 - Every required step traces to a Scenario, a done-when line, or the user's brief.
 - Preconditions are `none` or each has a source; an unknown one is a **blocking** open question.
 - Tenant profile alias set and present in `tenants.sh list` (read, not guessed), and its `AUTH` kind fits the app: `employee-token` for Management Dashboard local-qa, `client-credentials` for cockpits.
+- `**Local stack:**` set — `none` or the services the user picked from the candidate list; never guessed.
+- `**Local DB:**` set for every backend the run starts that reads a MongoDB URI — the user's answer, never guessed.
 - No invented routes or labels: each route or control name was seen in `ui.md`, the diff, or confirmed by the user.
 
 A plan whose steps are "open the page, check it works" is a failed plan. Keep exploring.

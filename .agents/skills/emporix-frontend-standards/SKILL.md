@@ -62,7 +62,7 @@ sh "$SKILLS_ROOT/emporix-frontend-standards/scripts/ensure-firebase-hosting.sh" 
 | Exit `3`, `SECRET … missing` or `UNMAPPED …` | Do not push. Name them to the user; a repository or organization admin sets secrets, and the agent never does. |
 | Exit `2` | Do not push. Show the message (no `firebase` CLI, not logged in, or no access to the project). |
 
-Background and the rest of the hosting rules: `module-federation` § Hosting and CI.
+Which deploy model a remote uses (shared Hosting site for Management Dashboard modules, the user's choice otherwise): `module-federation` § Hosting and CI. A remote on a shared Hosting site (md-extensions) has no `firebase.json` entry, so the check reports nothing in scope for it: continue, and do not add an entry or create a site to make it check something. Background and the rest of the hosting rules: `module-federation` § Hosting and CI.
 
 ## Library contributions
 
