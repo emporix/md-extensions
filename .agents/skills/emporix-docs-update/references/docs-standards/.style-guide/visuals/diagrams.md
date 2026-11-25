@@ -8,7 +8,7 @@ icon: diagram-project
 * Use Mermaid code format.
 * Add general configuration to adapt to the specific style.
 * Every diagram must use the Emporix branding: the configuration, the transparent background, and the color palette described on this page. Do not publish a diagram with the default Mermaid theme or with colors outside the palette.
-* Create and validate diagrams with the `emporix-docs-diagrams` skill from [emporix-ai-sdlc-skills](https://github.com/emporix/emporix-ai-sdlc-skills) (it applies the configuration below and validates the code with Mermaid-MCP). Do not write Mermaid styling by hand.
+* Create and validate diagrams with the diagrams playbook of the `emporix-docs-update` skill from [emporix-ai-sdlc-skills](https://github.com/emporix/emporix-ai-sdlc-skills) (it applies the configuration below and validates the code with Mermaid-MCP). Ask for the diagram in the same request as the docs change. Do not write Mermaid styling by hand.
 * Keep labels short and use the same name for the same element across the page.
 * Add a figure caption that follows [Images & Icons](images-and-icons.md#placing-pictures-in-docs) when the diagram needs one.
 
@@ -74,7 +74,7 @@ style subGraph1 color:#FFFFFF
             background: transparent
             lineColor: "#9CBBE3"
             arrowheadColor: "#9CBBE3"
-            edgeLabelBackground: "#FFC128" 
+            edgeLabelBackground: "#FFC128"
             edgeLabelTextColor: "#4C5359"
     ---
     ```
@@ -98,7 +98,7 @@ config:
     actorLineColor: '#4C5359'
     signalColor: '#E86C07'
     signalTextColor: '#7B8B99'
-    background: transparent 
+    background: transparent
 ---
 ```
 
@@ -116,7 +116,7 @@ config:
     background: transparent
     lineColor: "#9CBBE3"
     arrowheadColor: "#9CBBE3"
-    
+
 ---
 classDiagram
     class Approval {
@@ -172,42 +172,42 @@ config:
     background: transparent
     lineColor: "#9CBBE3"
     arrowheadColor: "#9CBBE3"
-    edgeLabelBackground: "#FFC128" 
+    edgeLabelBackground: "#FFC128"
     edgeLabelTextColor: "#4C5359"
 ---
 graph TD
     CUSTOMER1(CUSTOMER)
     PRODUCTS(PRODUCTS)
-    
+
     CUSTOMER1 -->|Browses for products| PRODUCTS
-    
-    PRODUCTS -->|Adds to cart| CART(CART)    
+
+    PRODUCTS -->|Adds to cart| CART(CART)
     PRODUCTS -->|Contacts employee| EMPLOYEE1(EMPLOYEE)
-    
+
     EMPLOYEE1 -->|Creates quote| CREATING(QUOTE: CREATING)
     CART -->|Requests quote| QUOTE_REQUEST(QUOTE: AWAITING)
-    
+
     QUOTE_REQUEST -->|Notifies| EMPLOYEE2(EMPLOYEE)
-    
+
     CREATING -->|Quote created| OPEN(QUOTE: OPEN)
-    
-    IN_PROGRESS -->|Approves| OPEN   
-    EMPLOYEE2 -->|Declines| DECLINED_MERCHANT(QUOTE: DEC_BY_MERCHANT) 
+
+    IN_PROGRESS -->|Approves| OPEN
+    EMPLOYEE2 -->|Declines| DECLINED_MERCHANT(QUOTE: DEC_BY_MERCHANT)
     EMPLOYEE2 -->|Approves| OPEN
-    
+
     DECLINED_MERCHANT -->|Notifies| CUSTOMER3(CUSTOMER)
 
     CUSTOMER2 -->|Validity expired| EXPIRED(QUOTE: EXPIRED)
-    
+
     OPEN -->|Sent to customer| CUSTOMER2(CUSTOMER)
-    
+
     CUSTOMER2 -->|Approves| ACCEPTED(QUOTE: ACCEPTED)
     CUSTOMER2 -->|Rejects| DECLINED(QUOTE: DECLINED)
     CUSTOMER2 -->|Requests changes| EMPLOYEE3(EMPLOYEE)
     EMPLOYEE3 -->|Changes| IN_PROGRESS(QUOTE: IN PROGRESS)
-    
+
     ACCEPTED -->|Triggers| ORDER(Order Created)
-    
+
     style CREATING fill:#F2FAFE, stroke:#4C5359
     style OPEN fill:#F2FAFE, stroke:#4C5359
     style IN_PROGRESS fill:#F2FAFE, stroke:#4C5359

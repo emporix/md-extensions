@@ -2,7 +2,9 @@
 
 **New or changed behaviour. Plan it with the user, design it twice, build against the design, ship through `emporix-feature`.**
 
-1. Explore in plan mode: `emporix-feature` `references/explore.md`, plus `references/plan-rules/feature.md`. Run `how` over an unfamiliar subsystem. Another repository involved → decide the model with `references/multi-repo.md` (dependency change or multi-product ticket).
+At the end of the explore, draft, approve, and implement steps below, fire the repo hooks for that stage (`references/repo-hooks.md` § Fire). Review, PR open, and PR merge fire their own.
+
+1. Explore in plan mode: `emporix-feature` `references/explore.md`, plus `references/plan-rules/feature.md` (§ `explore`: the analyst's requirements review, explorer sweeps). Run `how` over an unfamiliar subsystem. Another repository involved → decide the model with `references/multi-repo.md` (dependency change or multi-product ticket).
 2. Draft: `emporix-feature` `references/draft.md`, plus `references/plan-rules/feature.md`. Hard stop (`ExitPlanMode`, or *approve · change X · cancel*). Feedback → `update` (with `references/plan-rules/feature.md` § `update`), then publish again.
 3. Approve: `emporix-feature` `references/approve.md` (Jira comment, plan in `{RUN_FOLDER}`). Then come back to this list. Do not start `emporix-feature` implement on your own.
 4. Other repositories: `references/multi-repo.md`. Dependency change → `skip: dependency change via {workflow}` (its foundation todo runs in step 7). Multi-product ticket → dev-plan and repositories (§ After approve). Neither → `skip: single repo`.

@@ -36,7 +36,7 @@ apply progress:
 - Honour plan order: for each behaviour Fix, the `*-failing-test` todo **before** the product fix. Write / extend the test, run it, confirm **red**. Then the smallest product change until green.
 - Apply every **Fix** and kept **Nit**. Honour **Out of scope / Disagree / Questions** — no edit for those.
 - Re-open the file and line the comment cites. Line moved → fix the current equivalent; do not recreate deleted code.
-- Stay on the comments' asks and this PR's surface. Match `AGENTS.md` style authorities. No drive-by refactors, dependency bumps, or files the comments did not require (except tests and a knowledge file the change made wrong — `emporix-feature` `references/knowledge.md`; a changed knowledge file is then pushed to Buddy per its § 3, `mode=merge`, soft failure).
+- Stay on the comments' asks and this PR's surface. Match `AGENTS.md` style authorities. No drive-by refactors, dependency bumps, or files the comments did not require (except tests and a knowledge file the change made wrong — `emporix-feature` `references/knowledge.md`; Buddy picks it up after the merge, never pushed from here).
 - Tick todos in the plan file as you go.
 
 ### 3. Test gate

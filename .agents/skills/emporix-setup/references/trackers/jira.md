@@ -207,18 +207,17 @@ Prefer **attach-issue-files** (the shell script) which posts the comment after u
 
 - Optional: `query` (substring on name or slug)
 - Returns id, slug, name, short description, whether a long-form context exists, and the last agent sync (`repo@commit`, section count)
-- Use before **upsert-service-context** to match this repository to an existing service
+- Use to resolve `buddy.service` — match this repository to an existing service
 
-#### upsert-service-context
+#### sync-service-from-repo
 
-`service_upsert_context`
+`service_sync_from_repo`
 
-- Required: `name`, `sections[]` — each `{ title, markdown, source? }`; one knowledge file per section, `source` is the repo-relative path
-- Optional: `service` (existing id or slug — wins over `name`), `description` (short blurb), `mode`: `merge` (default — replace same-titled sections, keep the rest) | `replace` (also drop earlier synced sections missing from this call), `repo` (`owner/name`), `branch`, `commit`, `synced_by`
-- Result line `action=created|updated serviceId=… slug=…`; use `action` for the report
-- Creates the service when neither `service` nor `name` matches; hand-written sections in Buddy are never removed
-- Limits: ≤ 40 sections and ≤ 400k characters per call, ≤ 120k per section — split large knowledge sets into several `merge` calls
-- Content comes from committed files only (`PROJECT.md`, `ai-project-knowledge/`); never from `.ai/`, `.env*`, or anything the knowledge scan excludes
+- Required: `repo` (`owner/name`)
+- Optional: `service` (id, slug, or name — wins over `buddy.service` in the repository's `ai-setup.json`)
+- Buddy reads `PROJECT.md` + `ai-project-knowledge/` at the head of the repository's default branch on GitHub and replaces the service's synced sections — the same job the deploy pipeline triggers after a stage deploy. Hand-written sections are kept; the service is created when missing
+- Result starts with `Created` / `Updated` (sections replaced / added / removed / kept, `commit=…`) or `Skipped … : {reason}` (no `ai-setup.json` on the default branch, `buddy.sync=false`, no service)
+- Skills never send knowledge content themselves; `service_upsert_context` is not a skill operation
 
 #### ask-buddy
 

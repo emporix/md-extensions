@@ -47,6 +47,7 @@ Full body from `references/plan-shape.md`. `**Status:** draft`. In parent + prom
 - Sequencing only when order is a real dependency
 - **Project knowledge**: files read, files to update after implementation, statements already stale
 - A Mermaid diagram in **Approach** when a flow or dependency is clearer than prose
+- `### Repo hooks` when the caller collected any (`emporix-dev` `references/repo-hooks.md`); `update` keeps it and its statuses
 
 ### Leave out (too sharp → conflicts, duplicate work)
 

@@ -2,6 +2,8 @@
 
 **Wrong behaviour that exists today. Reproduce it, find the root cause, prove it with a failing test, fix it at the cause, and change nothing else.**
 
+At the end of the explore, draft, approve, and implement steps below, fire the repo hooks for that stage (`references/repo-hooks.md` § Fire). Review, PR open, and PR merge fire their own.
+
 1. Explore in plan mode: `emporix-feature` `references/explore.md`, plus `references/plan-rules/bugfix.md` § `explore`. Gather the evidence by running **Investigation** steps 2–4 (knowledge and Buddy, `how` over the subsystem, logs only when needed). That covers the symptom as observed vs expected, the shortest reproduction, the root cause at a seam, and the blast radius. Also say whether the fix stays inside one function. Intended behaviour → stop and suggest the **Feature** playbook.
 2. Draft: `emporix-feature` `references/draft.md`, plus `references/plan-rules/bugfix.md` § `draft` (**Reproduction**, **Root cause**, Scenario 1 = the regression, the regression todo first). Hard stop. Feedback → `update` (with `references/plan-rules/bugfix.md` § `update`).
 3. Approve: `emporix-feature` `references/approve.md`. Then come back to this list.

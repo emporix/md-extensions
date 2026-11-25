@@ -5,7 +5,7 @@ description: Embed video content into documentation.
 
 # Videos
 
-To create and edit video content, use the Filmora tool. 
+To create and edit video content, use the Filmora tool.
 
 * To add a video hosted on external platform to documentation, use the **embed URL** block element.
 

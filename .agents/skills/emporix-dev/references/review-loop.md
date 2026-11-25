@@ -47,8 +47,10 @@ the panel finds more than any one member does.
 `--review-model <slug>` alone → a one-member panel of that slug. Given both
 → `--review-models` wins; say so. Default **2**.
 
-**Pick order** (from the host's subagent model list; also the order for
-filling a gap):
+**Pick order** (also the order for filling a gap): the developer's
+`reviewer` role (`references/model-roles.md`; on Claude Code `opus`,
+`sonnet`, `haiku`), slugs the host does not offer skipped. No `reviewer`
+list for this host → the heuristic order from the host's subagent model list:
 
 1. The largest model of a family other than this conversation's (for
    example GPT or Gemini when this session is Claude).
@@ -56,21 +58,23 @@ filling a gap):
 3. The next model of this conversation's family by size.
 
 For Claude models the order is fixed: `opus` → `sonnet` → `haiku`. `fable`
-joins a panel only when `--review-models` names it.
+joins a panel only when `--review-models` or the `reviewer` role names it.
 
-So the default on a multi-family host is "other family + opus", and on
-Claude Code, where only Claude models are offered, `opus` (Opus 5.5) and
-`sonnet` (Sonnet 5.5). Use the slugs or aliases the host takes (Claude
-Code: `opus`, `sonnet`, `haiku`, `fable`), never a hard-coded version id.
+So without a list the default on a multi-family host is "other family +
+opus". Claude Code always has a list (the built-in `reviewer` default), so
+the heuristic order applies there only when the developer's setting is
+malformed. Use the slugs or aliases the host takes (Claude Code: `opus`,
+`sonnet`, `haiku`, `fable`), never a hard-coded version id.
 Host cannot set a model at all → one member on `inherit`, recorded as
 `emporix-feature` review does; the rules below then do not apply.
 
 **Independence**, applied in this order after the pick:
 
-1. **No member is the coder's model** when build delegated a phase to a
-   coder subagent (`references/build.md` § Who writes the code). A coder
-   that ran on `inherit` or the host default ran on a concrete model
-   (on Claude Code, this conversation's): use that model here. This wins
+1. **No member is a coder's model** when build delegated a phase to a
+   coder subagent (`references/build.md` § Who writes the code): every
+   model in the plan's `coders=` is out, a fallback included. A `parent`
+   entry (phases the parent wrote itself) is this conversation's model and
+   follows rule 2, not this rule. This wins
    over everything else, including a slug the user named and the case where
    the coder's model is this conversation's model.
 2. **This conversation's model** may sit on the panel (a fresh subagent
@@ -87,11 +91,17 @@ Host cannot set a model at all → one member on `inherit`, recorded as
    (*name a model to add* / *stop*); unattended (PR watch, Auto), no
    question, `reason=reviewer-unavailable` (or `Ready: no` in a re-ship).
 
-Example: this conversation is `opus` and the coder was `sonnet` → `sonnet`
-is out, so the panel is `opus` plus another family's model, or `opus` plus
-`haiku` on a Claude-only host. Coder and conversation both `opus` → `opus`
-is out, so the panel is `sonnet` plus another family's model, or `sonnet`
-plus `haiku`.
+Example with the Claude Code defaults (`reviewer` = `opus`, `sonnet`,
+`haiku`; coder `sonnet`): `sonnet` is out, so the panel is `opus` + `haiku`.
+The coder fell back to `opus` at some phase (`coders=sonnet,opus`) → both
+are out, so the panel is `haiku` alone; it still has a member that is not
+this conversation's model, so rule 4 runs it and says so. A `reviewer` list
+with another family's model first (on Cursor, for example) → that model
+plus the next eligible one. Without any list: this conversation is `opus`
+and the coder was `sonnet` → the panel is `opus` plus another family's
+model, or `opus` plus `haiku` on a Claude-only host; coder and conversation
+both `opus` → `sonnet` plus another family's model, or `sonnet` plus
+`haiku`.
 
 The re-ship pass (`references/reship.md`) and the PR-comment review loop
 (`references/pr-fix.md`) use the same panel.
@@ -164,7 +174,7 @@ Each cycle:
 5. **Only in-plan actionable, `n < 5`** → fix them (the bullets below cover the actionable rows only). Once their gate is green and `n ≤ 3`, fix the cycle's in-plan LOW rows as a LOW pass on top (§ LOW fixes); a LOW failure there restores only the LOW edits and never changes this cycle's result. At `n == 4` the next cycle is the cap, where a LOW regression could not be told apart from the actionable fix: leave those LOW rows `open (low)`.
    - Before the first product edit of the cycle, save a restorable snapshot: a binary-safe patch of staged + unstaged tracked changes, plus contents and mode of every non-ignored untracked file.
    - Smallest change per finding, on the plan's change surface. Re-open the cited line; if it moved, fix the current equivalent. No drive-by refactors, no **Out of scope** paths.
-   - A fix that changes behaviour or a contract → write or extend tests. "Tests do not lock the behaviour" → the test is the fix. Knowledge findings → `emporix-feature` `references/knowledge.md`; after the loop, push the changed knowledge files to Buddy once (its § 3, `merge`).
+   - A fix that changes behaviour or a contract → write or extend tests. "Tests do not lock the behaviour" → the test is the fix. Knowledge findings → edit the knowledge file per `emporix-feature` `references/knowledge.md`; never send it to Buddy, which pulls it after the merge and stage deploy (its § 3).
    - A repair that would have to leave the plan → beyond-plan: restore the snapshot, keep the ledger, Verdict **FAIL reason=beyond-plan**. Never leave a half-applied cycle.
    - Gate (`emporix-feature` `references/tests.md` § Execute). Red because of this fix → one in-scope repair, re-run once. Still red → Verdict **FAIL reason=gate-red**; stop.
    - Record each row's Resolution (`fixed — {what changed}`) and `Fixed in cycle {n}`. Print the fixing line. `n += 1`, fresh diff, next cycle.

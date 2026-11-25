@@ -101,9 +101,10 @@ BASE_BRANCH=$(jq -r '.baseBranch // "auto"' "$CONFIG")
 JIRA_PROJECT=$(jq -r '.jira.project // "COP"' "$CONFIG")
 JIRA_SITE=$(jq -r '.jira.site // "emporix.atlassian.net"' "$CONFIG")
 BUDDY_URL=$(jq -r '.jira.buddyUrl // "http://ai-buddy.vpn.emporix.io"' "$CONFIG")
-# Name of this repository's service in the Buddy registry (service_upsert_context target).
+# Name of this repository's service in the Buddy registry (Buddy refreshes it after each stage deploy).
 BUDDY_SERVICE=$(jq -r '.buddy.service // empty' "$CONFIG")
-BUDDY_SYNC=$(jq -r '.buddy.sync // true' "$CONFIG")
+# `// true` would turn an explicit false into true; only a missing value defaults to true.
+BUDDY_SYNC=$(jq -r 'if .buddy.sync == false then false else true end' "$CONFIG")
 LABELS_ENABLED=$(jq -r '.labels.enabled // false' "$CONFIG")
 VALIDATION_COMMANDS=$(jq -r '.validation.commands // [] | .[]' "$CONFIG")
 REVIEW_AGENT_TOKEN_ENV=$(jq -r '.review.agentTokenEnv // "EMPORIX_REVIEW_AGENT_TOKEN"' "$CONFIG")

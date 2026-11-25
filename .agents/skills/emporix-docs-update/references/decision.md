@@ -25,17 +25,26 @@ paths, sections, and shot frames. Do not write pages here.
 3. **Default to skip.** Keep a flavor only when this change alters something a
    page of that flavor would describe:
    - `api-references` — an API contract changed (endpoint, field, scope, status,
-     example). Usually pairs with a `changelog` entry.
+     example). Usually pairs with a `changelog` entry. Also review the guides
+     under `standard-practices/` and `quickstart/` (getting started) in the
+     `api-references` checkout, and add a row for each one the change makes
+     wrong or incomplete.
    - `changelog` — a released, user-visible API change worth announcing to
      integrators. This is not a release note.
-   - `tutorials` — an integrator how-to needs adding or updating.
+   - `tutorials` — an integrator how-to needs adding or updating. Always review
+     the tutorials that use the changed endpoints, even when no step obviously
+     changed. Keep one only when the reader's steps, prerequisites, or
+     configuration change. A new response field alone is not a reason; that
+     belongs in the API reference.
    - `user-guides` — a portal guide task changed (cockpit, operator, admin, or
      dashboard). The path is the mapped `content/` space, including cockpit
      spaces. Do not move that page under `content/user-guides/`. This is not a
      release note.
-   - `release-notes` — customers should hear about a feature, improvement, or
-     deprecation. Written later by `references/playbooks/release-notes.md`, after page
-     flavors, so Documentation and links can point at those pages.
+   - `release-notes` — customers should hear about a business-facing feature,
+     improvement, or deprecation. Skip it when the change is API-only: the
+     changelog and API reference are enough. Written later by
+     `references/playbooks/release-notes.md`, after page flavors, so
+     Documentation and links can point at those pages.
 4. Prefer **updating** an existing page over creating a near-duplicate.
 5. **Place the content.** For every kept `user-guides` and `tutorials` page, read
    `$STANDARDS_ROOT/.style-guide/writing-standards/planning-and-structure.md`

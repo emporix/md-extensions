@@ -106,8 +106,8 @@ Missing keys take the defaults below in `scripts/load-config.sh`.
 | `jira.project` | `"COP"` | Jira project key. Not a secret. Used when a skill needs a default project; skills still require a full key such as `COP-123`. |
 | `jira.site` | `"emporix.atlassian.net"` | Jira Cloud host, no scheme. Browse URLs only; Buddy holds credentials. |
 | `jira.buddyUrl` | `"http://ai-buddy.vpn.emporix.io"` | Buddy origin for file upload over HTTP (no `/mcp` suffix). |
-| `buddy.service` | omitted | Name of this repository's service in the Buddy service registry — the target of **upsert-service-context**. Setup fills it (existing registry match, else `PROJECT.md` title) and the skill creates the service in Buddy when it does not exist yet. Empty means "not synced yet"; the next `emporix-setup` run resolves it again. |
-| `buddy.sync` | `true` | When `false`, no skill pushes project knowledge to Buddy (`emporix-setup` step 6b and `emporix-feature` knowledge updates skip the sync and say so in the report). |
+| `buddy.service` | omitted | Name of this repository's service in the Buddy service registry. After each stage deploy of the default branch that changed the knowledge files, Buddy reads it from the deployed `ai-setup.json` to know which service to refresh, and creates the service when it does not exist yet. Setup fills it (existing registry match, else `PROJECT.md` title). Empty: Buddy refreshes the service already linked to this repository, or nothing; the next `emporix-setup` run resolves it again. |
+| `buddy.sync` | `true` | When `false`, Buddy ignores this repository's deploys and `/emporix-setup --sync-buddy` does nothing. |
 | `validation.commands` | `[]` | Ordered shell commands that prove the repo is healthy. Any non-zero exit is a gate failure. |
 | `app.kind` | *(required)* | `ui` \| `backend` \| `fullstack`. UI QA runs only for `ui` / `fullstack`. |
 | `app.auth` | omitted | `cockpit-token` (Emporix cockpit template, tenant + token gate) or `md-token` (Management Dashboard `serve:local-qa`). Omit otherwise. |
@@ -115,6 +115,10 @@ Missing keys take the defaults below in `scripts/load-config.sh`.
 | `app.start` | empty | Command that boots the UI preview or local API. Empty when unknown — QA skills ask at runtime. |
 | `app.baseUrl` | empty | Origin only. For a backend this is what Newman calls. |
 | `app.readyPath` | `"/"` | Path that must respond when the app is up. |
+| `app.stack.start` | omitted | `emporix-local-stack` only: command that starts this repo in a local stack, `{PORT}` replaced by the port it gets (e.g. `uvicorn server:app --port {PORT}`). Omitted: detected per kind. |
+| `app.stack.gatewayBasePath` | omitted | `emporix-local-stack` only: the Apigee base path that routes to this backend (`/ai-service`) when `apigee-x-proxies` is not in the workspace. |
+| `app.stack.port` | omitted | `emporix-local-stack` only: a fixed port for this repo; a busy port stops the stack instead of picking another. |
+| `app.stack.kind` / `app.stack.name` / `app.stack.mdVar` | omitted | `emporix-local-stack` only: override the detected kind (`spring`, `micronaut`, `fastapi`, `remote`, `md`), the service name (default: folder name without a ticket suffix), and the MD variable that loads a remote (`VITE_..._URL`). |
 | `browser.provider` | `"agent-browser"` | Browser descriptor for `ui` / `fullstack`. Ignored for `backend`. |
 | `qa.postman.workspace` | omitted | Cursor folder basename of the Postman checkout (`postman-collections`). |
 | `qa.postman.repo` | omitted | `owner/name` of that checkout, read from its `origin`. |
@@ -133,7 +137,8 @@ Missing keys take the defaults below in `scripts/load-config.sh`.
 
 Per-developer choices that differ between teammates live in
 `~/.emporix/settings.json`, not here — `references/local-settings.md`
-(today: `worktree.mode`, set with `/emporix-setup --set-local`).
+(`worktree.mode`, `sonar.enabled`, and the `models.*` roles, set with
+`/emporix-setup --set-local`).
 
 ## Removed from the previous layout
 

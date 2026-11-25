@@ -71,11 +71,24 @@ opens. Use an `employee-token` profile for MD local-qa:
 }
 ```
 
-The token cannot be minted by a script — it comes from an interactive
-dashboard sign-in (Ory). **The user** creates and refreshes it in their own
-terminal; the agent never signs in, never asks for the token in chat, never
-reads the file, and never runs these commands itself (they wait for the user
-at the keyboard):
+Two ways to get the token, chosen by the user in `tenants.sh setup`:
+
+- **Email + password** of a dedicated test account (no SSO, no MFA): the profile
+  holds `email` and `password`. On macOS the password is a `keychain:<item>` reference
+  (macOS asks to allow every read) or the value, as the user chose in `set-secret`. An email
+  with no password reads the item `emporix-tenants.<alias>.password`. Elsewhere it is the value.
+  The scripts sign in through `POST auth-adapter/login` whenever the token file is
+  missing or expiring and reuse a fresh one otherwise. That call carries the token of
+  an API client (`loginClient`, else the tenant's only `client-credentials` profile on
+  the same `apiUrl`), because the API gateway refuses it without one. A denied
+  Keychain prompt, a missing API client profile, or a rejected sign-in is a hard stop
+  with the fix the script prints.
+- **Pasted token** from an interactive dashboard sign-in (Ory), for any account.
+
+**The user** creates and refreshes the profile in their own terminal; the agent
+never signs in by hand, never asks for a token or password in chat, never reads
+the token file or the Keychain item, and never runs these commands itself (they
+wait for the user at the keyboard):
 
 - No employee-token profile → give the user the `setup` command that the
   failing script or `tenants.sh list` printed (it is prefilled with the kind,
@@ -83,10 +96,11 @@ at the keyboard):
 - Token missing or stale → give them `tenants.sh refresh <alias>` the same
   way and end the turn.
 
-Both commands open the dashboard, tell the user to run
-`copy(localStorage.accessToken)` in the browser console, read the clipboard
-(or a hidden paste), write the file with mode 600 and run `check`. Manual
-fallback: `pbpaste | tenants.sh set-token <alias>`.
+For a pasted-token profile both commands open the dashboard, tell the user to
+run `copy(localStorage.accessToken)` in the browser console, read the clipboard
+(or a hidden paste), write the file with mode 600 and run `check`. For an
+email + password profile `refresh` signs in again (`--paste` forces the paste
+flow). Manual fallback: `pbpaste | tenants.sh set-token <alias>`.
 
 The scripts refuse the token — **hard stop**, ask the user to repeat the
 three steps — when the file is missing, a symlink, readable by anyone but its

@@ -88,13 +88,20 @@ the active sketch format below, and:
 - Cross-repo prompts stay at integration grain (no class trees). In-repo prompts on a multi-product plan cite which Cross-repo contracts they implement.
 
 **Models.** `--models <slug,slug,…>` → those. `--models N` → N perspectives.
-Default **2**. Pick each from a **different model family** in the host's
-subagent model list (for example one Claude, one GPT or Gemini); one may
-share the family of this conversation. A requested slug the host does not
-offer → skip it, say so, pick another family. Fewer than 2 runnable →
-ask once. The host offers **one family only** → two different models of it
-(for example the largest and a mid-size one), or the same model twice, with
-opposite stances named in the prompt; record `Perspectives: single family`.
+Default **2**. Without slugs, the developer's `architect` role
+(`references/model-roles.md`) gives the order: the first N slugs the host
+offers, later slugs filling a gap (a slug not offered, a perspective that
+fails to start or errors on its model). No `architect` list → pick each from
+a **different model family** in the host's subagent model list (for example
+one Claude, one GPT or Gemini); one may share the family of this
+conversation. A requested slug the host does not offer → skip it, say so,
+take the next one in the list (no list: another family). Fewer than 2
+runnable → ask once. All perspectives from **one family** (a single-family
+`architect` list such as the Claude Code default `opus`, `sonnet`, or a host
+that offers one family only) → name opposite stances in the prompts and
+record `Perspectives: single family`; with no list, use two different models
+of that family (for example the largest and a mid-size one), or the same
+model twice.
 Host cannot set a model at all → run 2 perspectives on `inherit`
 with opposite stances named in the prompt (for example "keep the decision in
 the existing service" vs "introduce a new domain type that owns it"), and

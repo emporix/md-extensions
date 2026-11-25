@@ -12,7 +12,8 @@ Do not `git add` this file.
 ## Quality gate (before writing the file)
 
 - Every row’s `workspace` resolved to a real **local** folder already in this Cursor window (`references/mapping.md`). Portal rows require the documentation-portal checkout.
-- Every path is under a mapped `docs.targets[].paths` (or the user named a new path in this run). A release-notes row may use `content/release-notes/README.md` when the portal checkout is open and no `release-notes` target exists.
+- Every path is under a mapped `docs.targets[].paths` (or the user named a new path in this run). A release-notes row may use `content/release-notes/README.md` when the portal checkout is open and no `release-notes` target exists. An `api-references` row may use a guide under `standard-practices/` or `quickstart/` in the `api-references` checkout without a mapped path.
+- No release-notes row when the change is API-only (changelog and API reference are enough).
 - Create / update / skip is chosen per target, with a one-line why.
 - At least one create or update, or the plan is explicitly “no docs change”.
 - No invented API fields, UI labels, or screens.

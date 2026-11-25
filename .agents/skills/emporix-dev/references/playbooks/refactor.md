@@ -4,7 +4,9 @@
 
 A behaviour change found on the way is not part of this playbook. Note it as a follow-up **Bugfix** or **Feature** ticket.
 
-1. Explore in plan mode: `emporix-feature` `references/explore.md`, plus `references/plan-rules/refactor.md` § `explore`. That covers the motivation, every contract the target touches, the tests covering each, and the target structure. Offer `how` once for an unfamiliar subsystem.
+At the end of the explore, draft, approve, and implement steps below, fire the repo hooks for that stage (`references/repo-hooks.md` § Fire). Review, PR open, and PR merge fire their own.
+
+1. Explore in plan mode: `emporix-feature` `references/explore.md`, plus `references/plan-rules/refactor.md` § `explore`. That covers the motivation, every contract the target touches, the tests covering each, and the target structure. Offer `how` once for an unfamiliar subsystem. Broad read-only sweeps (contracts, callers, covering tests) go to the explorer subagent (`references/model-roles.md` § Explorer); no requirements review, the behaviour does not change.
 2. Draft: `emporix-feature` `references/draft.md`, plus `references/plan-rules/refactor.md` § `draft` (Requirements only, a **Safety net** table, the `safety-net` todo first, then `step-…` todos). Hard stop. Feedback → `update` (with `references/plan-rules/refactor.md` § `update`).
 3. Approve: `emporix-feature` `references/approve.md`. Then come back to this list.
 4. Other repositories: `references/multi-repo.md`. Dependency change → `skip: dependency change via {workflow}` (its foundation todo runs in step 7). Multi-product ticket → dev-plan and repositories (§ After approve). Neither → `skip: single repo`.

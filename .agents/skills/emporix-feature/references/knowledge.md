@@ -36,18 +36,9 @@ The plan said `none` but the diff did change one of those → update anyway, and
 
 Keep the edits small. One ticket usually changes a few lines in one or two files. A knowledge edit that describes code outside this change is beyond the plan.
 
-## 3. Sync Buddy
+## 3. Buddy — no call
 
-Buddy's service registry mirrors these files (`emporix-setup` `references/buddy-sync.md`). When step 2 changed at least one knowledge file, push the changed files so `get_service_context` and the system map stop describing the old behaviour. No knowledge edit → no call.
-
-Follow `buddy-sync.md` with these fixed choices:
-
-- Preconditions as written there; `$BUDDY_SERVICE` empty → skip with `Buddy: skipped — buddy.service not set (run /emporix-setup --sync-buddy)`. Never ask which service; never write `ai-setup.json`.
-- **upsert-service-context** with `service` = `$BUDDY_SERVICE`, `name` = `$BUDDY_SERVICE`, `mode=merge`, `sections` = only the files you edited or created (title and `source` from the table in `buddy-sync.md`), `branch` = the ticket branch, `commit` = `HEAD`, `synced_by` = `emporix-feature {KEY}`. Omit `description`. Never `mode=replace`.
-- A new `modules/<name>.md` is a new section; `PROJECT.md` goes along as `Project` when you added its row.
-- The call is a soft step. Any failure → `Buddy: skipped — {reason}`; do not retry more than once, do not block the stage.
-
-The same applies whenever a later stage edits a knowledge file: a review-loop fix (`references/review.md`) or an `emporix-pr apply` fix. Run this section again for those files; `merge` makes repeated calls safe. Buddy then shows the branch and commit it was synced from, so a reader can tell un-merged knowledge from `main`.
+Do not send knowledge files to Buddy. Buddy's service registry mirrors the knowledge **as merged on the default branch** (`emporix-setup` `references/buddy-sync.md`): when this ticket's PR is merged and deployed to stage, the deploy pipeline tells Buddy to pull the files at the deployed commit. Un-merged knowledge never reaches Buddy. The same holds for review-loop fixes (`references/review.md`) and `emporix-pr apply` fixes. Never call `service_upsert_context` or `service_sync_from_repo` from this skill.
 
 ## 4. Report
 
@@ -55,7 +46,6 @@ Add to the implement report and the implement + review Jira comment:
 
 ```text
 Knowledge: ai-project-knowledge/domain.md, ai-project-knowledge/api.md — {one clause per file: what changed}
-Buddy: updated {service} (2 replaced, 0 added) | skipped — {reason}
 ```
 
 or
@@ -64,4 +54,4 @@ or
 Knowledge: no change needed
 ```
 
-(no `Buddy:` line when nothing was synced). When you updated a file the plan did not list, add `(not in plan)` after that file. When you saw unrelated stale content, add a line `Knowledge stale: {file} — {statement} — run /emporix-setup --rescan {module}`.
+When you updated a file the plan did not list, add `(not in plan)` after that file. When you saw unrelated stale content, add a line `Knowledge stale: {file} — {statement} — run /emporix-setup --rescan {module}`.

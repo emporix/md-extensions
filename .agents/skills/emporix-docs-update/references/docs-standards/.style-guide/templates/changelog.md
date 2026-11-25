@@ -40,37 +40,37 @@ Examples:
 ```
 ## Title
 
-#### Overview
+##### Overview
 General description of introduced changes, one or a few sentences.
 
-#### New endpoints
+##### New endpoints
 
 | Endpoint | Description |
 | --- | --- |
 | [Retrieving list of coupons by criteria](/openapi/coupon/#operation/GET-coupon-list-specified-coupons) | New property `referralCoupon` added to the response. |
 | [Retrieving information about particular coupon by code](/openapi/coupon/#operation/GET-coupon-retrieve-coupon) | New property `referralCoupon` added to the response. |
 
-#### Updated endpoints
+##### Updated endpoints
 
 | Endpoint | Description |
 | --- | --- |
 | [Retrieving list of coupons by criteria](/openapi/coupon/#operation/GET-coupon-list-specified-coupons) | New property `referralCoupon` added to the response. |
 | [Retrieving information about particular coupon by code](/openapi/coupon/#operation/GET-coupon-retrieve-coupon) | New property `referralCoupon` added to the response. |
 
-#### Removed endpoints
+##### Removed endpoints
 
 | Endpoint | Description |
 | --- | --- |
 | Retrieving all locations for a site | Endpoint removed. The `GET /availability/{tenant}/locations/{site}` operation is no longer available. Use [Retrieving all availability information for a site](https://developer.emporix.io/api-documentation/api-guides/orders/availability/api-reference/availabilities#get-availability-tenant-availability-site-site) instead. |
 
-#### Deprecated endpoints
+##### Deprecated endpoints
 
 | Endpoint | Description |
 | --- | --- |
 | [Retrieving list of coupons by criteria](/openapi/coupon/#operation/GET-coupon-list-specified-coupons) | New property `referralCoupon` added to the response. |
 | [Retrieving information about particular coupon by code](/openapi/coupon/#operation/GET-coupon-retrieve-coupon) | New property `referralCoupon` added to the response. |
 
-#### Known problems
+##### Known problems
 
 There are no known problems.
 ```
@@ -89,11 +89,11 @@ Examples:
 ## Cart Service - support for external discounts
 ```
 
-* `Overview` h4 section:
+* `Overview` h5 section:
   * Provide a short description with details of what has been changed and what effect it brings - one or a few sentences.
   * Use full sentences, try to use active voice, present or past simple tense.
   * For names of settings, code-phrases etc. use backticks (\`\`).
-* `New/Updated/Deprecated endpoints` h4 sections:
+* `New/Updated/Deprecated endpoints` h5 sections:
   * Use the table format.
   * Provide links to the changed endpoints in the Endpoint column.
   * For displayed link names, use the verb in gerund form (updating, deleting etc) - this should be consistent with the endpoint title in API reference.
@@ -105,12 +105,12 @@ Examples:
     * Use full sentences with a full stop at the end.
     * Focus on explaining the outcomes or the purpose of the change.
     * For code-phrases, use backticks (\`\`).
-* `Removed endpoints` h4 section:
+* `Removed endpoints` h5 section:
   * Use the table format.
   * Do not link removed endpoints in the Endpoint column - the API reference page is gone.
   * In the Description, name the removed operation as `` `OPERATION /path` `` and state that it is no longer available.
   * If a substitute endpoint exists, link to it in the Description. For full rules and examples, see [Removal of deprecated items](#removal-of-deprecated-items).
-* `Known problems` h4 section:
+* `Known problems` h5 section:
   * Indicate if there are any problems at the time of release.
 
 * If you want to highlight any content with a note, use the hint element. You can use warning, info, success and danger styles.
@@ -131,7 +131,7 @@ When previously deprecated endpoints or fields are removed, add a changelog entr
 * Use the `major-change` tag. Do not use `deprecated` - that tag is for announcing deprecation, not completing it.
 * Title convention: `## {Service Name} - removal of deprecated {endpoints|fields|endpoints and fields}`
 * Overview: state that previously deprecated items are now removed, and link to the original deprecation changelog entry.
-* Table heading: `#### Removed endpoints & fields` when both apply. Use `#### Removed endpoints` or `#### Removed fields` if only one type is removed.
+* Table heading: `##### Removed endpoints & fields` when both apply. Use `##### Removed endpoints` or `##### Removed fields` if only one type is removed.
 * Fully removed endpoints:
   * Put the gerund endpoint name in the Endpoint column as plain text. Do not link to the API reference - the page is gone.
   * In the Description, reference the removed endpoint by path, not by link. Use the format `` `OPERATION /path` `` (for example, `` `GET /availability/{tenant}/locations/{site}` ``).
@@ -148,11 +148,11 @@ Example:
 {% update date="RELEASE_DATE" tags="major-change" %}
 ## Brand Service - removal of deprecated endpoints and fields
 
-#### Overview
+##### Overview
 
 All previously deprecated endpoints and fields are now removed ([Brand Service - deprecations](https://developer.emporix.io/changelog/archive/changelog-2025/2025-03-04-brand)).
 
-#### Removed endpoints & fields
+##### Removed endpoints & fields
 
 | Endpoint | Description |
 | --- | --- |
@@ -162,7 +162,7 @@ All previously deprecated endpoints and fields are now removed ([Brand Service -
 | [Updating a brand](https://developer.emporix.io/api-documentation/api-guides/products-labels-and-brands/brand-service/api-reference/brands#put-brands-brandid) | The `image` and `cloudinaryUrl` fields are removed from the request body. |
 | [Partially updating a brand](https://developer.emporix.io/api-documentation/api-guides/products-labels-and-brands/brand-service/api-reference/brands#patch-brands-brandid) | The `image` and `cloudinaryUrl` fields are removed from the request body. |
 
-#### Known problems
+##### Known problems
 
 There are no known problems.
 {% endupdate %}
