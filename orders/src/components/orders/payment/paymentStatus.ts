@@ -64,3 +64,37 @@ export const isCapturable = (
   !transaction?.entries?.some(
     (entry) => entry.type === 'CAPTURE' && entry.successful
   )
+
+const toCents = (value: number) => Math.round(value * 100)
+
+const successfulTotal = (
+  transaction: PaymentTransaction | undefined,
+  type: string
+): number =>
+  (transaction?.entries ?? [])
+    .filter((entry) => entry.type === type && entry.successful)
+    .reduce((sum, entry) => sum + toCents(entry.amount?.amount ?? 0), 0) / 100
+
+/**
+ * What was actually taken from the customer: the successful captures in the transaction log,
+ * or the payment's paid amount while the log is not loaded or holds no capture amounts.
+ */
+export const capturedAmount = (
+  payment: Payment | null,
+  transaction: PaymentTransaction | undefined
+): number => successfulTotal(transaction, 'CAPTURE') || payment?.paidAmount || 0
+
+/**
+ * What can still be refunded: the captured amount less every successful refund, so an
+ * operator can refund in several steps up to what was captured. Failed refunds do not count.
+ */
+export const refundableAmount = (
+  payment: Payment | null,
+  transaction: PaymentTransaction | undefined
+): number =>
+  Math.max(
+    0,
+    (toCents(capturedAmount(payment, transaction)) -
+      toCents(successfulTotal(transaction, 'REFUND'))) /
+      100
+  )
