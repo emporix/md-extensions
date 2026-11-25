@@ -105,6 +105,7 @@ After each extraction:
 
 - [ ] Add/update row in **Playbook-aligned remotes**
 - [ ] Bump **Next free local port** if a new port was claimed
+- [ ] Workflows copied from the `classifications-firebase-*.yaml` trio; no Hosting site, `firebase.json` / `.firebaserc` target or `action-hosting-deploy` step ([playbook §9](./MODULE_MIGRATION_PLAYBOOK.md#9-shared-hosting-site-deploy-all-remotes))
 - [ ] Note reusable deltas (new shared components, CL version, Mode, env var)
 - [ ] Update [REUSABLE_FROM_USERS_AND_GROUPS.md](./REUSABLE_FROM_USERS_AND_GROUPS.md) if Tier 1 inventory changed
 - [ ] Append playbook decisions log (1–3 rows)

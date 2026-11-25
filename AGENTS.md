@@ -18,7 +18,7 @@ This is a monorepo of independent Management Dashboard remotes, one Vite app per
 | Persistence | none (standalone dev shells keep tenant and token in browser storage) | `*/src/helpers/settings.helpers.ts` |
 | Messaging / events | none | `*/package.json` |
 | API technology | none exposed. Remotes call Emporix REST through `@emporix/api-calls` or local `fetch` / axios | `ai-project-knowledge/integrations.md` |
-| Runtime / deployment | Firebase Hosting, three workflows per remote: PR preview, dev + stage on push to `master`, prod on a `{remote}-*` tag | `.github/workflows/{remote}-firebase-*.yaml`, `.firebaserc`, `firebase.json` |
+| Runtime / deployment | Firebase Hosting, three workflows per remote: PR preview, dev + stage on push to `master`, prod on a `{remote}-*` tag. Federated remotes deploy into `/{remote}/` of one shared site per environment (`frontend-extensions-develop`, `-stage`, `frontend-extensions`) through `.github/actions/deploy-remote`; new remotes copy the `classifications` workflows and create no site or Firebase target (`docs/MODULE_MIGRATION_PLAYBOOK.md` §9). `products`, `orders`, `labels`, `customers`, `status-codes` also still deploy to their old sites until COP-7516; `agentic-ai`, `algolia-synonyms`, `dashboard`, `statistics` keep their own sites | `.github/workflows/{remote}-firebase-*.yaml`, `.github/actions/deploy-remote/action.yml`, `.firebaserc`, `firebase.json` |
 
 ## Remotes
 
@@ -111,6 +111,7 @@ Where the repository instructions above are more specific than the frontend rule
 - `primereact` versus `module-federation` § Management Dashboard Remotes and `md-extension-migration.md` § UI policy: never add PrimeReact to a remote. Apply `primereact` only in `agentic-ai`, `dashboard`, `statistics`, `algolia-synonyms`.
 - `testing` runs `npm run test`, which is watch mode here; use `npm run test:run` (`md-module-extraction` Phase 4).
 - `module-federation` asks for a camelCase federation name and a pinned `strictPort`. `agentic-ai`, `dashboard`, `statistics` use `name: 'extension'`, and those three plus `users-and-groups` pin no port. Its § Management Dashboard Remotes says not to change that as a drive-by.
+- `module-federation` § Hosting and CI asks for one `firebase.json` hosting entry per environment and sites created before the first deploy. New remotes have neither: they deploy to the shared site (`md-extension-migration.md` § Deploy, playbook §9). Only `products`, `orders`, `labels`, `customers`, `status-codes` (until the COP-7516 cleanup) and the four legacy remotes still have entries; `ensure-firebase-hosting.sh` finds nothing to check for a shared-site remote.
 - A missing component-library component: `md-extension-migration.md` and the extraction skill name a `migrate-to-component-library` skill that is not installed. The current flow is `emporix-frontend-standards` → `references/library/workflow.md`. Both ask the user first.
 - `core` style (no `React.FC`, `readonly` props, helpers in `src/helpers/`) applies to new code. Ported Management Dashboard and Tier 1 code follows the extraction skill and playbook.
 - `i18n` asks for `feature.section.label` keys; remotes keep the keys of the ported MD screens (`md-extension-migration.md` § i18n).

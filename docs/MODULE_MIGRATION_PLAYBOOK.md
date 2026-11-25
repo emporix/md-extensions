@@ -18,7 +18,7 @@ Living guide for extracting Management Dashboard modules into `md-extensions` fe
   - Toggle name: `{kebab-module}-external-module` (Mode B only — prefer Mode A when there is no built-in fallback)
   - Cross-module consumers that **import** the module folder (Companies, Price Lists, Segments i18n, …) — cleanup must retain those files / re-home keys
   - Unique local Vite port (avoid colliding with U&G `5173`) + matching `VITE_{MODULE}_URL` in MD `.env.local-*`
-  - Firebase / CI URL placeholders **and** Hosting site IDs (must be created in Firebase before first deploy)
+  - Deploy: the shared Hosting site of each environment ([§9](#9-shared-hosting-site-deploy-all-remotes)); no Hosting site or Firebase target to create
   - Default tenant for dev standalone shell
   - Published CL semver for `package.json` (never commit `file:../../component-library` lock entries)
   - Scaffold source: clone **[md-module-template](https://github.com/emporix/md-module-template)** branch **`md-module-migration`** into `md-extensions/{kebab-module}/`, then absorb (remove nested `.git`). Align Tier 1 with **playbook-aligned remotes** in [MIGRATED_MODULES.md](./MIGRATED_MODULES.md) (not template `master`)
@@ -145,29 +145,145 @@ rg "AccessControlDomainGroup|InputField" src/modules/{module}/
 
 Automated gates (both repos): `typecheck`, `lint`, `test:run` / `test`, `build`.
 
-## 9. Firebase Hosting + CI (new remotes)
+## 9. Shared Hosting site deploy (all remotes)
 
-Wire workflows by copying an existing module's trio under `.github/workflows/` (e.g. `users-and-groups-firebase-*.yaml`) and renaming targets/paths.
+Every Management Dashboard module, whether migrated from MD or new, is published into its own folder of **one shared Firebase Hosting site per environment** (COP-7348): the default site of each project. It needs no Hosting site, no Firebase target and no Firebase setup, and the extraction does not ask. Any other new remote: ask the user whether it goes to the shared site or to Hosting sites of its own. `{module}` below is the remote's folder name in md-extensions, lower case with dashes (`classifications`, `customer-groups`).
 
-| Env | Firebase project | Hosting site / target | Trigger |
-|-----|------------------|------------------------|---------|
-| develop (live) | `frontend-extensions-develop` | `emporix-{module}-develop` | push `master` + `paths: '{module}/**'` |
-| stage (live) | `frontend-extensions-stage` | `emporix-{module}-stage` | same workflow after develop build |
-| prod (live) | `frontend-extensions` | `emporix-{module}` | prod workflow |
-| PR preview | `frontend-extensions-develop` | same develop site, preview channel | PR to `master` touching `{module}/**` |
+| Env | Site (`site:`) | Secret (`service-account:`) | `mode:` | Remote entry URL | Trigger |
+|-----|----------------|-----------------------------|---------|------------------|---------|
+| PR preview | `frontend-extensions-develop` | `MD_EXTS_FIREBASE_SA_DEV` | `dev` | channel `pr-<n>-{module}`; the workflow comments its URL on the PR | PR to `master` touching `{module}/**` |
+| dev | `frontend-extensions-develop` | `MD_EXTS_FIREBASE_SA_DEV` | `dev` | `https://frontend-extensions-develop.web.app/{module}/remoteEntry.js` | push `master` + `paths: '{module}/**'` |
+| stage | `frontend-extensions-stage` | `MD_EXTS_FIREBASE_SA_STAGE` | `stage` | `https://frontend-extensions-stage.web.app/{module}/remoteEntry.js` | same workflow, after dev |
+| prod | `frontend-extensions` | `MD_EXTS_FIREBASE_SA` | `prod` | `https://frontend-extensions.web.app/{module}/remoteEntry.js` | `{module}-*` tag, or `workflow_dispatch` with a tag |
 
-### Before first CI deploy
+Tooling (on `master`): `.github/actions/deploy-remote/action.yml` builds the remote flat with base `/{module}/` (`.github/scripts/hosting/build-remote.mjs`) and publishes only that folder through the Hosting REST API (`deploy-remote.mjs`, `hosting-api.mjs`, `manifest.mjs`, `auth.mjs`); the other remotes on the site are carried over unchanged. `hosting-scripts-test.yaml` runs the scripts' tests.
 
-1. **Create Hosting sites** in each Firebase project (CLI or console). Declaring them in `.firebaserc` / `firebase.json` alone is **not** enough — missing sites fail with `HTTP 404 Requested entity was not found` on channel/live deploy:
+### Forbidden
 
-```bash
-firebase hosting:sites:create emporix-{module}-develop --project frontend-extensions-develop
-firebase hosting:sites:create emporix-{module}-stage --project frontend-extensions-stage
-firebase hosting:sites:create emporix-{module} --project frontend-extensions
+- Creating a Firebase Hosting site for a remote.
+- Adding a target to the root `firebase.json` or `.firebaserc`.
+- A `FirebaseExtended/action-hosting-deploy` step in a remote's workflows.
+- `base` or `build.assetsDir` in the remote's `vite.config.ts`, or `--base` in its `package.json` scripts. The base is set only in CI by the deploy action. A build with base `/{module}/` breaks when served from a site root, and local `npm run build:*` / `npm run preview` must keep serving `http://localhost:<port>/assets/remoteEntry.js` for the host's `.env.local-*`.
+
+### Workflows
+
+Copy the three `classifications-firebase-*.yaml` workflows under `.github/workflows/` to `{module}-firebase-*.yaml` and replace `classifications` with `{module}` everywhere (name, `paths`, `working-directory`, `cache-dependency-path`, `remote:`, `channel:`, the PR comment, the prod tag pattern). The templates do not ship workflows: GitHub runs them only from the md-extensions root. Do not copy the workflows of a remote that still has its own site (`products`, `orders`, `labels`, `customers`, `status-codes` until COP-7516; the legacy `agentic-ai`, `algolia-synonyms`, `dashboard`, `statistics`).
+
+Dev and stage, `{module}-firebase-deploy-dev-stage.yaml`, after `npm ci`:
+
+```yaml
+      # Type-check and CORS check; the deploy action builds again for the shared site.
+      - run: npm run build:dev
+
+      - name: Deploy {module} to the shared Hosting site (dev)
+        uses: ./.github/actions/deploy-remote
+        with:
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}
+          site: frontend-extensions-develop
+          remote: {module}
+          mode: dev
+
+      - name: Deploy {module} to the shared Hosting site (stage)
+        uses: ./.github/actions/deploy-remote
+        with:
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_STAGE }}
+          site: frontend-extensions-stage
+          remote: {module}
+          mode: stage
 ```
 
-2. Register targets in root [`.firebaserc`](../.firebaserc) and hosting blocks in root [`firebase.json`](../firebase.json) (public: `{module}/dist`, CORS `Access-Control-Allow-Origin: *`).
-3. Point MD `VITE_{MODULE}_URL` at `https://emporix-{module}-develop.web.app/assets/remoteEntry.js` (adjust host for stage/prod).
+Preview, `{module}-firebase-preview.yaml`. The job needs `permissions:` for the PR comment:
+
+```yaml
+jobs:
+  build_and_deploy_preview:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      pull-requests: write
+    # ... checkout, setup-node, npm ci ...
+      - run: npm run build:dev
+
+      - name: Deploy {module} preview to the shared Hosting site
+        id: shared-preview
+        uses: ./.github/actions/deploy-remote
+        with:
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}
+          site: frontend-extensions-develop
+          remote: {module}
+          mode: dev
+          channel: pr-${{ github.event.number }}-{module}
+
+      - name: Comment the preview URL
+        run: |
+          gh pr comment "$PR_NUMBER" --body "{module} preview: $PREVIEW_URL"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+          PREVIEW_URL: ${{ steps.shared-preview.outputs.url }}
+```
+
+Prod, `{module}-firebase-deploy-prod.yaml`. The tooling comes from the workflow's own ref, so a manual run with an older tag still works:
+
+```yaml
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Checkout deploy tooling
+        uses: actions/checkout@v4
+        with:
+          path: .deploy-tooling
+          sparse-checkout: .github
+
+      # ... setup-node, npm ci ...
+      - run: npm run build:prod
+
+      - name: Deploy {module} to the shared Hosting site
+        uses: ./.deploy-tooling/.github/actions/deploy-remote
+        with:
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA }}
+          site: frontend-extensions
+          remote: {module}
+          mode: prod
+```
+
+The remote's `package.json` needs `build:dev`, `build:stage` and `build:prod` (the template's prod script is `build`; add `build:prod` with the same command).
+
+### Host wiring (management-dashboard)
+
+```bash
+# .env.dev and .env.dev-test
+VITE_{MODULE}_URL=https://frontend-extensions-develop.web.app/{module}/remoteEntry.js
+# .env.stage
+VITE_{MODULE}_URL=https://frontend-extensions-stage.web.app/{module}/remoteEntry.js
+# .env.prod
+VITE_{MODULE}_URL=https://frontend-extensions.web.app/{module}/remoteEntry.js
+# .env.local-* stay on the local preview, with the assets segment
+VITE_{MODULE}_URL=http://localhost:<port>/assets/remoteEntry.js
+```
+
+A route test that pins the env values (as `src/router/classificationsRoute.test.tsx`) matches the deployed environments with:
+
+```ts
+/^https:\/\/frontend-extensions(-develop|-stage)?\.web\.app\/{module}\/remoteEntry\.js$/
+```
+
+The host wiring rule is `management-dashboard/.claude/rules/federated-module-wiring.md`.
+
+### Check the build locally before pushing
+
+In the remote's folder:
+
+```bash
+REMOTE={module} MODE=dev node --input-type=module - < ../.github/scripts/hosting/build-remote.mjs
+```
+
+Expected: `dist/remoteEntry.js` and `dist/index.html` exist, there is no `dist/assets/`, and `dist/index.html` references `/{module}/…`. Then run `npm run build:dev` again to get the regular local build back.
+
+### After merge
+
+`curl -s -o /dev/null -w '%{http_code}\n' https://frontend-extensions-develop.web.app/{module}/remoteEntry.js` must return `200` before the host PR merges (skill Phase 8). A PR preview needs no manual Firebase setup: the first PR's preview is the first deploy.
 
 ### npm / lockfile rules for CI
 
@@ -210,7 +326,7 @@ Do **not** claim "identical to U&G" after a reduce — `diff -rq` will (and shou
 | 2026-06-25 | Hash-relative paths in remote (`/users/:id`) not host absolute paths | Full `/administration/...` paths in HashRouter | users-and-groups |
 | 2026-07-16 | CL ≥ 2.0.0 bundles Pattern B Prime + saga-blue/primeicons CSS; remotes drop `primereact` deps/CSS | Peer + host theme CSS per remote | All new remotes |
 | 2026-07-16 | Lockfile must resolve CL from npm registry (no `file:` links) | Local `file:../../component-library` for CI | All remotes |
-| 2026-07-16 | Provision Firebase Hosting sites before first preview/live deploy | Relying on `.firebaserc` alone | All new remotes |
+| 2026-07-16 | Provision Firebase Hosting sites before first preview/live deploy **Superseded 2026-11-25 by §9 (shared Hosting site, COP-7348 / COP-7516).** | Relying on `.firebaserc` alone | All new remotes |
 | 2026-07-16 | Lean U&G `InputField` is SoT (not MD InputField, not CL FormField) | FormField wording in older rules | All remotes |
 | 2026-07-16 | Phase 3 MD env+route wiring is a hard gate; remote-only ≠ done | Treat playbook as done when remote builds | All modules |
 | 2026-07-16 | Cleanup retains MD files still imported by sibling routes (Customer Groups) | Delete whole MD module folder | users-and-groups + similar |
@@ -236,7 +352,7 @@ Do **not** claim "identical to U&G" after a reduce — `diff -rq` will (and shou
 | 2026-07-29 | Document derived-remote pattern (§11) after COP-6096 | Treat every extraction as green-field MD copy only | All modules |
 | 2026-07-29 | Consolidate overlapping migration docs: playbook is policy SoT, REUSABLE is inventory SoT, MIGRATED_MODULES is registry SoT, skill is workflow SoT, reference.md is FAQ/greps SoT | Duplicating checklists and lessons across all files | All docs |
 | 2026-08-03 | Group details: stabilize tab content + skip `reset()` while `formState.isDirty` so accessControls-only `setValue({ shouldDirty })` enables Save; register `accessControls` and subscribe Save via `useFormState` | Relying on remount-safe tab JSX + templates-gated reset (wipes dirty on parent re-render) | customer-groups + users-and-groups |
-| 2026-08-03 | Post-migration verify (COP-6096): federation triangle + MD Mode A envs pass; develop/stage/prod Firebase hosting sites exist (`emporix-customer-groups*`) — prod may still need first deploy for remoteEntry | Treat site list empty as “site missing”; treat empty site (no deploy) as separate deploy step | customer-groups |
+| 2026-08-03 | Post-migration verify (COP-6096): federation triangle + MD Mode A envs pass; develop/stage/prod Firebase hosting sites exist (`emporix-customer-groups*`) — prod may still need first deploy for remoteEntry **Superseded 2026-11-25 by §9 (shared Hosting site, COP-7348 / COP-7516).** | Treat site list empty as “site missing”; treat empty site (no deploy) as separate deploy step | customer-groups |
 | 2026-08-03 | Access controls assignment: drive updates through `useController`/`field.onChange` (not bare `setValue`); seed form with `mode: 'onChange'` + `trigger()` after reset; Save uses `dirtyFields.accessControls` | Assuming `setValue(..., { shouldDirty: true })` alone flips Save for array fields | customer-groups + users-and-groups |
 | 2026-08-05 | Promote missing widgets to CL (Pattern B) rather than adding `primereact` to a remote — Brands needed rich text + media upload, so CL 2.4.0 added `Editor` / `FileUpload` / `ProgressBar` | Add `primereact` to the remote, or descope the screens | All remotes |
 | 2026-08-05 | Pin `quill@^1.3.7` wherever PrimeReact 8's `Editor` is used: it calls `clipboard.convert(htmlString)` (Quill 1 API), so Quill 2 silently loads no existing content. MD still ships the broken pairing | Assume newest `quill` works; trust that the editor renders = it works | CL + any Editor consumer |
@@ -279,7 +395,7 @@ Do **not** claim "identical to U&G" after a reduce — `diff -rq` will (and shou
 | 2026-10-16 | Cross-remote deep links count in the Phase 3 sweep: `returns` linked to `/apps/management/orders/:id`, which lands on the list once orders is a remote | Sweep only `management-dashboard/src` | All modules |
 | 2026-10-22 | Promote PrimeReact `Tree` to CL as Pattern B (2.12.0) for Products (category view + dynamic-variant hierarchy). Host themes style nodes with 0,4,0 chains, so overrides anchor on a doubled hashed root plus the Prime chain; verified with the leak demo (24/24 properties) | Local Tree copy; adding `primereact` to the remote | products (+ categories, modules trees) |
 | 2026-10-22 | Products ports the **full** MD mixins subsystem (site-aware, classifications, references) instead of the returns/orders subset — product mixins are the only MD screen using `siteAware: true` + `classificationsTab`. `useMixinsForm` returns CL `TabItem`s | Reuse the returns subset (visible regression); reference fields as plain text | products, future modules with site-aware/classification mixins |
-| 2026-10-22 | When an extraction reuses a legacy remote folder (`products` held `emporix-product-module`), delete it and re-scaffold from `md-module-migration`; keep the existing Firebase sites/workflows. A scaffold from template `master` (name `extension`, CL 1.x, nested `.git`) must be redone | Keeping legacy sources; scaffolding from template `master` | Any module whose folder already exists |
+| 2026-10-22 | When an extraction reuses a legacy remote folder (`products` held `emporix-product-module`), delete it and re-scaffold from `md-module-migration`; keep the existing Firebase sites/workflows. A scaffold from template `master` (name `extension`, CL 1.x, nested `.git`) must be redone **Superseded 2026-11-25 by §9 (shared Hosting site, COP-7348 / COP-7516).** | Keeping legacy sources; scaffolding from template `master` | Any module whose folder already exists |
 | 2026-10-22 | `useUpdateEffect` must compare previous dependency values, not a first-run ref: under StrictMode the ref-based version fired on mount and navigated the edit page back to the list | Disabling StrictMode in the dev shell | All remotes |
 | 2026-10-28 | Wrap `NavigationConfirmProvider` **inside** `HashRouter` (it calls `useBlocker` / router hooks). Products omitted it initially and dirty-form navigation confirms never appeared | Putting it outside the router; relying on host-only confirm | Remotes with dirty-form leave guards |
 | 2026-10-28 | Host `AppState.currency` is a Configuration Entry (`{ id, label, default, required }`), not a bare code string — seed EUR defaults in `getStoredSettings` / standalone shell and treat `.id` as the currency code everywhere prices read it | Typing currency as `string`; reading `currency` as the ISO code | products (+ any remote reading host currency) |
@@ -300,3 +416,4 @@ Do **not** claim "identical to U&G" after a reduce — `diff -rq` will (and shou
 | 2026-11-20 | MD Prime `DataTable` with a `<Column expander />` and `rowExpansionTemplate` → CL `DataTable` with an `expander: true` entry in `columns`, `expandedRows` as a `Record<key, boolean>` and `rowExpansionTemplate`; a lazy server-paged parent works with it as long as `dataKey` is a plain field of the row (add `countryCode` to the row instead of `location.countryCode`) | A local Prime table; a custom expander button column | taxes (COP-7191); any remote with expandable rows |
 | 2026-11-20 | A remote that moves several MD calls into one `use*Api` hook keeps the multi-step rule in that hook, not in the page: Taxes `addTaxClass` looks the record up with `getTaxCall` (404 → create, found → update, duplicate class code → `DuplicateTaxClassError`) and `removeTaxClass` re-reads the record before it updates or deletes, so no screen needs a record scan or a stale `metadata.version` | Page-level scans (MD read the first 1000 records); trusting the row's version after an earlier edit | taxes (COP-7191) |
 | 2026-11-23 | A remote that changes data the host shell itself caches gets an optional callback on `AppState` that the host fills from the owning provider: `onSitesChanged` → MD `SitesProvider.refreshSites`, called by Sites Settings after a successful create, update, mixin save or delete (never after a failure). Optional so an older host or another remote is unaffected; the provider keeps the selected site (taking its fresh data only when it changed) and drops a superseded load | A window `CustomEvent` (untyped side channel); the host refetching when leaving the route (the switcher stays stale while the remote is open) | sites-settings (COP-7195); any remote whose entity the host shell caches |
+| 2026-11-25 | Every Management Dashboard module (migrated or new) deploys into `/{module}/` of the shared Hosting site of each environment through `.github/actions/deploy-remote`, without asking: copy the `classifications-firebase-*.yaml` workflows; no Hosting site, Firebase target, `action-hosting-deploy` step, or `base` / `assetsDir` in the remote (§9). Any other new remote deploys where the user chooses (shared site or its own sites) | One Hosting site per remote and environment (Firebase caps a project at 36 sites) | All new MD modules; existing ones as COP-7516 retires their sites |
