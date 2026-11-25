@@ -45,7 +45,7 @@ Do not claim “matches pilot” without `diff -rq` (file counts are not enough)
 
 ## Deploy (shared Hosting site)
 
-The remote deploys only through `.github/actions/deploy-remote` into the shared site of each environment (`docs/MODULE_MIGRATION_PLAYBOOK.md` §9). Each grep below must print nothing (`{module}` = the remote folder):
+A Management Dashboard module (migrated or new) deploys only through `.github/actions/deploy-remote` into the shared site of each environment (`docs/MODULE_MIGRATION_PLAYBOOK.md` §9). For such a remote each grep below must print nothing (`{module}` = the remote folder). A remote whose user chose sites of its own (`md-extension-migration` § Deploy) skips these greps:
 
 ```bash
 grep -n 'action-hosting-deploy' .github/workflows/{module}-firebase-*.yaml

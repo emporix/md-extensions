@@ -93,8 +93,9 @@ When reducing U&G to a subtype: strip leaf screens only; keep models/hooks membe
 
 ## Deploy
 
-- Every remote deploys into `/{module}/` of the shared Firebase Hosting site of each environment (`frontend-extensions-develop`, `frontend-extensions-stage`, `frontend-extensions`) through `.github/actions/deploy-remote`. Copy the three `classifications-firebase-*.yaml` workflows; steps, secrets and URLs are in `docs/MODULE_MIGRATION_PLAYBOOK.md` §9.
-- Never create a Hosting site, add a `firebase.json` / `.firebaserc` target, or add a `FirebaseExtended/action-hosting-deploy` step for a remote.
+- A Management Dashboard module, whether migrated from MD or new, deploys into `/{module}/` of the shared Firebase Hosting site of each environment (`frontend-extensions-develop`, `frontend-extensions-stage`, `frontend-extensions`) through `.github/actions/deploy-remote`. Do not ask. Copy the three `classifications-firebase-*.yaml` workflows; steps, secrets and URLs are in `docs/MODULE_MIGRATION_PLAYBOOK.md` §9.
+- Any other new remote: ask the user once whether it deploys to the shared site or to Hosting sites of its own, and follow the answer. An existing remote keeps its model unless the task is to move it.
+- For a shared-site remote, never create a Hosting site, add a `firebase.json` / `.firebaserc` target, or add a `FirebaseExtended/action-hosting-deploy` step.
 - Never set `base` / `build.assetsDir` in `vite.config.ts` or `--base` in `package.json`: the deploy action sets the base in CI, and local builds keep serving `/assets/remoteEntry.js`.
 
 ## Host wiring
