@@ -90,6 +90,12 @@ Generic frontend rules come from the `emporix-frontend-standards` skill (see the
 
 When reducing U&G to a subtype: strip leaf screens only; keep models/hooks member tables need; **re-diff MD** for subtype-specific fields (e.g. customer `Company` / `b2b.legalEntityId`). See playbook §12.
 
+## Deploy
+
+- Every remote deploys into `/{module}/` of the shared Firebase Hosting site of each environment (`frontend-extensions-develop`, `frontend-extensions-stage`, `frontend-extensions`) through `.github/actions/deploy-remote`. Copy the three `classifications-firebase-*.yaml` workflows; steps, secrets and URLs are in `docs/MODULE_MIGRATION_PLAYBOOK.md` §9.
+- Never create a Hosting site, add a `firebase.json` / `.firebaserc` target, or add a `FirebaseExtended/action-hosting-deploy` step for a remote.
+- Never set `base` / `build.assetsDir` in `vite.config.ts` or `--base` in `package.json`: the deploy action sets the base in CI, and local builds keep serving `/assets/remoteEntry.js`.
+
 ## Host wiring
 
 Do Phase 3 in **management-dashboard** per `federated-module-wiring` (Mode A / Mode B + env matrix + i18n re-home). Remote-only ≠ done.

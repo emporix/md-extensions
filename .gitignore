@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 /.ai
+
+# Firebase CLI cache
+.firebase/
