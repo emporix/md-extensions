@@ -11,13 +11,18 @@ import {
 import LabeledValue from '../../shared/LabeledValue'
 import EmptyContent from '../../shared/EmptyContent'
 import OrderPaymentTransactionLog from './OrderPaymentTransactionLog'
+import OrderPaymentCapture from './OrderPaymentCapture'
 import { useOrderData } from '../../../contexts/OrderData.provider'
 import { usePermissions } from '../../../context/PermissionsProvider'
 import { usePaymentGatewayApi } from '../../../hooks/api/paymentGateway'
 import { getApiErrorMessage } from '../../../helpers/api'
 import { EmployeeDomains, VendorDomains } from '../../../configs/accessControls'
 import type { PaymentTransaction } from '../../../models/PaymentGateway.model'
-import { paymentStatusSeverity, SEVERITY_COLOR } from './paymentStatus'
+import {
+  isCapturable,
+  paymentStatusSeverity,
+  SEVERITY_COLOR,
+} from './paymentStatus'
 import styles from './Payment.module.scss'
 
 /** Currency symbol for the refund prefix (MD used `currency-symbol-map`). */
@@ -36,7 +41,7 @@ const currencySymbol = (currency: string, locale: string) => {
 const OrderPaymentInfo = () => {
   const { t, i18n } = useTranslation()
   const { showSuccess, showError } = useToast()
-  const { order } = useOrderData()
+  const { order, refreshData } = useOrderData()
   const { fetchTransaction, refundTransaction } = usePaymentGatewayApi()
   const { hasPermission } = usePermissions()
   const canManage =
@@ -133,6 +138,22 @@ const OrderPaymentInfo = () => {
           </LabeledValue>
         </div>
       </SectionBox>
+
+      {payment && isCapturable(payment, transaction) && (
+        <OrderPaymentCapture
+          payment={payment}
+          currency={payment.currency || order.currency}
+          fallbackAmount={order.totalPrice}
+          canManage={canManage}
+          currencyPrefix={`${currencySymbol(
+            payment.currency || order.currency,
+            i18n.language
+          )} `}
+          onCaptured={async () => {
+            await Promise.all([getTransaction(), refreshData()])
+          }}
+        />
+      )}
 
       {payment?.status === 'CAPTURE_SUCCESS' && (
         <SectionBox

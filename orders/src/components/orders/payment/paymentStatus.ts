@@ -1,3 +1,6 @@
+import type { Payment } from '../../../models/Order.model'
+import type { PaymentTransaction } from '../../../models/PaymentGateway.model'
+
 /**
  * MD rendered payment/transaction states with PrimeReact `Badge` severities.
  * CL has no Prime-style Badge, so the severity maps to a `StatusBadge` colour
@@ -43,3 +46,21 @@ export const transactionTypeSeverity = (type: string): PaymentSeverity => {
   if (type === 'CAPTURE') return 'success'
   return 'warning'
 }
+
+/** Payment statuses an operator can still capture: authorized, or a capture that failed. */
+const CAPTURABLE_STATUSES = ['AUTHORIZATION_SUCCESS', 'CAPTURE_FAILURE']
+
+/**
+ * The order's payment status follows the gateway asynchronously, so a successful CAPTURE in
+ * the transaction log also counts: the gateway would answer a second capture with
+ * "already found" and `successful: true` without capturing anything.
+ */
+export const isCapturable = (
+  payment: Payment | null,
+  transaction: PaymentTransaction | undefined
+): boolean =>
+  !!payment?.transactionId &&
+  CAPTURABLE_STATUSES.includes(payment.status) &&
+  !transaction?.entries?.some(
+    (entry) => entry.type === 'CAPTURE' && entry.successful
+  )
