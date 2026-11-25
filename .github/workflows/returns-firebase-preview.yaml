@@ -13,6 +13,9 @@ on:
 jobs:
   build_and_deploy_preview:
     runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      pull-requests: write
     defaults:
       run:
         working-directory: ./returns
@@ -33,13 +36,23 @@ jobs:
 
       - run: npm ci
 
+      # Type-check and CORS check; the deploy action builds again for the shared site.
       - run: npm run build:dev
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        id: firebase-preview
+
+      - name: Deploy returns preview to the shared Hosting site
+        id: shared-preview
+        uses: ./.github/actions/deploy-remote
         with:
-          firebaseToolsVersion: "12.9.1"
-          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}"
-          projectId: frontend-extensions-develop
-          target: emporix-returns-develop
-          expires: 5d
-          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}
+          site: frontend-extensions-develop
+          remote: returns
+          mode: dev
+          channel: pr-${{ github.event.number }}-returns
+
+      - name: Comment the preview URL
+        run: |
+          gh pr comment "$PR_NUMBER" --body "returns preview: $PREVIEW_URL"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+          PREVIEW_URL: ${{ steps.shared-preview.outputs.url }}
