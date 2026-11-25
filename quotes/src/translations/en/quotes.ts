@@ -112,7 +112,7 @@ export default {
       sameAddresses: 'Same as shipping',
       noLocations: 'No shipping location for the selected company',
       noLocationsYet:
-        'No locations yet - add them before the customer can accept',
+        'No locations yet - add them before the customer can accept the quote',
       noLocationsButton: 'Add new location',
       noAddresses: 'No shipping address for the selected customer',
       noAddressesButton: 'Add new address',
@@ -176,7 +176,7 @@ export default {
       incompleteIntro: 'The quote cannot be created yet:',
       missingPrice_one: '{{count}} product has no price',
       missingPrice_other: '{{count}} products have no price',
-      missingAddress: 'the billing or shipping address is missing',
+      missingAddress: 'The billing or shipping address is missing',
       approveBtn: 'Approve Quote',
       declineBtn: 'Decline Quote',
     },

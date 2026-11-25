@@ -74,7 +74,7 @@ export default {
     successApprove: 'Angebot freigegeben',
     successDecline: 'Angebot abgelehnt',
     errorNoShipToCountry:
-      'Für die Site dieses Angebots sind keine Lieferländer festgelegt. Legen Sie diese in den Site-Einstellungen fest und versuchen Sie es erneut.',
+      'Für die Site dieses Angebots sind keine Versandländer definiert. Legen Sie diese in den Site-Einstellungen an und versuchen Sie es erneut.',
     shippingUpdated:
       'Die Versandkosten wurden angepasst, da sich die Summen geändert haben',
     successNegotiation: 'Verhandlung gestartet',
@@ -89,7 +89,7 @@ export default {
       'Fehler beim Anzeigen des PDFs, bitte versuchen Sie es später noch einmal',
     successDraftCreate: 'Angebotsentwurf erfolgreich angelegt',
     successCreate: 'Angebot erstellt!',
-    successPending: 'Angebot als ausstehend gesendet!',
+    successPending: 'Angebot als ausstehend gespeichert!',
     errorCreate: 'Fehler beim Erstellen des Angebots',
     errorLegalEntities: 'Unternehmen können nicht geladen werden',
     errorFetchCustomers:
@@ -111,7 +111,7 @@ export default {
       sameAddresses: 'Wie Lieferadresse',
       noLocations: 'Kein Standort für das ausgewählte Unternehmen',
       noLocationsYet:
-        'Noch keine Standorte - fügen Sie sie hinzu, bevor der Kunde annehmen kann',
+        'Noch keine Standorte - fügen Sie sie hinzu, bevor der Kunde das Angebot annehmen kann',
       noLocationsButton: 'Neuen Standort hinzufügen',
       noCompanySelected: 'Um Standorte zu sehen, wählen Sie das Unternehmen',
       orderNumber: 'Bestellnummer',
@@ -147,15 +147,15 @@ export default {
       comment: 'Kommentar',
       subtotal: 'Zwischensumme',
       fallbackCountryNotice:
-        'Das Angebot hat keine Adresse, daher wurden die Preise für {{country}} abgeglichen. Produkte ohne Preis haben möglicherweise Preise für andere Länder.',
+        'Das Angebot hat keine Adresse, daher wurden die Preise mit {{country}} abgeglichen. Produkte ohne Preis haben möglicherweise Preise für andere Länder.',
       unpricedWarning_one:
-        'Die Summen enthalten {{count}} Position ohne Preis nicht',
+        'Die Summen enthalten {{count}} Position ohne Preis',
       unpricedWarning_other:
-        'Die Summen enthalten {{count}} Positionen ohne Preis nicht',
+        'Die Summen enthalten {{count}} Positionen ohne Preis',
       taxClassPlaceholder: 'Steuerklasse wählen',
       taxClassesLoadError:
         'Steuerklassen konnten nicht geladen werden, daher kann keine Steuerklasse gewählt werden. Falls vorhanden, wird die Katalog-Steuerklasse des Produkts verwendet.',
-      taxClassesEmpty: 'Keine Steuerklassen für das Land der Lieferadresse.',
+      taxClassesEmpty: 'Keine Steuerklassen für das Land mit dieser Lieferadresse.',
       shippingCost: 'Lieferkosten',
       total: 'Summe',
       shippingMethod: 'Liefermethode',
@@ -180,7 +180,7 @@ export default {
       incompleteIntro: 'Das Angebot kann noch nicht erstellt werden:',
       missingPrice_one: '{{count}} Produkt hat keinen Preis',
       missingPrice_other: '{{count}} Produkte haben keinen Preis',
-      missingAddress: 'die Rechnungs- oder Lieferadresse fehlt',
+      missingAddress: 'Die Rechnungs- oder Lieferadresse fehlt',
       approveBtn: 'Angebot freigeben',
       declineBtn: 'Angebot ablehnen',
     },
