@@ -144,7 +144,7 @@ curl -s -o /dev/null -w '%{http_code}\n' \
 - Committing `file:../../component-library` or lockfile `"link": true`
 - Creating a Firebase Hosting site, a `firebase.json` / `.firebaserc` target, or an `action-hosting-deploy` step for a remote (the shared site needs none; playbook §9)
 - Setting `base` / `build.assetsDir` in `vite.config.ts` or `--base` in `package.json` (only the deploy action sets the base, in CI)
-- Copying the workflows of a remote that still deploys to its own site (`products`, `orders`, `labels`, `customers`, `status-codes`) instead of the `classifications` trio
+- Copying the workflows of a remote that keeps its own site (`agentic-ai`, `algolia-synonyms`, `dashboard`, `statistics`) instead of the `classifications` trio
 - Marking migration done when only the remote exists (MD env + route wiring missing)
 - Deleting whole MD module folder while siblings share UI / skipping i18n re-home
 - Jest syntax in Vitest tests

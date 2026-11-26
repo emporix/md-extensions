@@ -116,8 +116,6 @@ You can also set up MCP Server manually with Emporix documentation by adding the
 
 Labels is published into the `labels/` folder of the shared Firebase Hosting site of each environment (COP-7348, COP-7445): `https://frontend-extensions-develop.web.app/labels/remoteEntry.js`, `https://frontend-extensions-stage.web.app/labels/remoteEntry.js` and `https://frontend-extensions.web.app/labels/remoteEntry.js` (prod). Workflows: `.github/workflows/labels-firebase-*.yaml` — a preview per PR (channel `pr-<number>-labels`, URL posted as a PR comment), dev and stage on merge to `master`, prod on a `labels-*` tag (roll back by redeploying the previous tag). Each calls `.github/actions/deploy-remote`, which builds the remote flat with base `/labels/` (`.github/scripts/hosting/build-remote.mjs`) and replaces only this folder on the site.
 
-Until the Management Dashboard loads labels from the shared site in production, the same workflows also keep deploying the old per-remote sites first (`emporix-labels-develop`, `emporix-labels-stage`, `emporix-labels`, served from `/assets/remoteEntry.js`). Those steps and the `emporix-labels*` targets in `firebase.json` / `.firebaserc` are removed in the last stage of COP-7348.
-
 Local `npm run build:*` and `preview` are unchanged and still serve `/assets/remoteEntry.js`. To check the shared-site build locally:
 
 ```sh

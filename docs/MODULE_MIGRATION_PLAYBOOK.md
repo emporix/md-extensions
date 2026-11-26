@@ -167,7 +167,7 @@ Tooling (on `master`): `.github/actions/deploy-remote/action.yml` builds the rem
 
 ### Workflows
 
-Copy the three `classifications-firebase-*.yaml` workflows under `.github/workflows/` to `{module}-firebase-*.yaml` and replace `classifications` with `{module}` everywhere (name, `paths`, `working-directory`, `cache-dependency-path`, `remote:`, `channel:`, the PR comment, the prod tag pattern). The templates do not ship workflows: GitHub runs them only from the md-extensions root. Do not copy the workflows of a remote that still has its own site (`products`, `orders`, `labels`, `customers`, `status-codes` until COP-7516; the legacy `agentic-ai`, `algolia-synonyms`, `dashboard`, `statistics`).
+Copy the three `classifications-firebase-*.yaml` workflows under `.github/workflows/` to `{module}-firebase-*.yaml` and replace `classifications` with `{module}` everywhere (name, `paths`, `working-directory`, `cache-dependency-path`, `remote:`, `channel:`, the PR comment, the prod tag pattern). The templates do not ship workflows: GitHub runs them only from the md-extensions root. Do not copy the workflows of a remote that keeps its own site (the legacy `agentic-ai`, `algolia-synonyms`, `dashboard`, `statistics`).
 
 Dev and stage, `{module}-firebase-deploy-dev-stage.yaml`, after `npm ci`:
 

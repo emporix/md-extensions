@@ -59,7 +59,7 @@ Customers Viewer views; Customers Manager is needed to create, edit, delete, sav
 | Host route `key` → path | `customers` → `/apps/management/customers/*`; MD `CustomersPathRedirect` on `apps/management/customers/:customerId/*` moves former pathname links (`/<id>`, `/add`) and their query into the hash. The MD keys `customersAdd` and `customersEdit` were removed in COP-7185 |
 | Host env var | `VITE_CUSTOMERS_URL` (`management-dashboard` `.env.*`) |
 | Local port | `5184`, `strictPort` |
-| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7450): `https://frontend-extensions-develop.web.app/customers/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod), deployed by `.github/actions/deploy-remote` from `.github/workflows/customers-firebase-*.yaml`. Until COP-7348 stage D the same workflows first deploy the old `emporix-customers-develop`, `emporix-customers-stage` and `emporix-customers` sites (`/assets/remoteEntry.js`), which keep their `firebase.json` / `.firebaserc` targets (`customers/README.md`) |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7450): `https://frontend-extensions-develop.web.app/customers/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod), deployed by `.github/actions/deploy-remote` from `.github/workflows/customers-firebase-*.yaml`. The old `emporix-customers*` sites, targets and deploy steps were retired in COP-7516; the Management Dashboard loads customers from the shared site in every environment (`customers/README.md`) |
 | Local deviations | none |
 
 ## Not yet scanned

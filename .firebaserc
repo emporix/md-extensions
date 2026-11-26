@@ -6,9 +6,6 @@
         "emporix-algolia-synonyms": [
           "emporix-algolia-synonyms"
         ],
-        "emporix-products": [
-          "emporix-products"
-        ],
         "emporix-statistics": [
           "emporix-statistics"
         ],
@@ -17,18 +14,6 @@
         ],
         "emporix-dashboard-extension": [
           "emporix-dashboard-extension"
-        ],
-        "emporix-orders": [
-          "emporix-orders"
-        ],
-        "emporix-labels": [
-          "emporix-labels"
-        ],
-        "emporix-status-codes": [
-          "emporix-status-codes"
-        ],
-        "emporix-customers": [
-          "emporix-customers"
         ]
       }
     },
@@ -36,9 +21,6 @@
       "hosting": {
         "emporix-algolia-synonyms-stage": [
           "emporix-algolia-synonyms-stage"
-        ],
-        "emporix-products-stage": [
-          "emporix-products-stage"
         ],
         "emporix-statistics-stage": [
           "emporix-statistics-stage"
@@ -48,18 +30,6 @@
         ],
         "emporix-dashboard-extension-stage": [
           "emporix-dashboard-extension-stage"
-        ],
-        "emporix-orders-stage": [
-          "emporix-orders-stage"
-        ],
-        "emporix-labels-stage": [
-          "emporix-labels-stage"
-        ],
-        "emporix-status-codes-stage": [
-          "emporix-status-codes-stage"
-        ],
-        "emporix-customers-stage": [
-          "emporix-customers-stage"
         ]
       }
     },
@@ -67,9 +37,6 @@
       "hosting": {
         "emporix-algolia-synonyms-develop": [
           "emporix-algolia-synonyms-develop"
-        ],
-        "emporix-products-develop": [
-          "emporix-products-develop"
         ],
         "emporix-statistics-develop": [
           "emporix-statistics-develop"
@@ -79,18 +46,6 @@
         ],
         "emporix-dashboard-extension-develop": [
           "emporix-dashboard-extension-develop"
-        ],
-        "emporix-orders-develop": [
-          "emporix-orders-develop"
-        ],
-        "emporix-labels-develop": [
-          "emporix-labels-develop"
-        ],
-        "emporix-status-codes-develop": [
-          "emporix-status-codes-develop"
-        ],
-        "emporix-customers-develop": [
-          "emporix-customers-develop"
         ]
       }
     }

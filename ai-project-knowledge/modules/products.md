@@ -124,7 +124,7 @@ The remote reads permissions itself: user access controls, tenant access control
 | Host route `key` → path | `products` → `apps/management/products/*` (`management-dashboard` `src/router/module-routes.tsx`) |
 | Host env var | `VITE_PRODUCTS_URL` (`management-dashboard` `.env.*`) |
 | Local port | `5178`, `strictPort` |
-| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7444): `https://frontend-extensions-develop.web.app/products/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod), deployed by `.github/actions/deploy-remote` from `.github/workflows/products-firebase-*.yaml`. Until COP-7348 stage D the same workflows first deploy the old `emporix-products-develop`, `emporix-products-stage` and `emporix-products` sites (`/assets/remoteEntry.js`), which keep their `firebase.json` / `.firebaserc` targets (`products/README.md`) |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7444): `https://frontend-extensions-develop.web.app/products/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod), deployed by `.github/actions/deploy-remote` from `.github/workflows/products-firebase-*.yaml`. The old `emporix-products*` sites, targets and deploy steps were retired in COP-7516; the Management Dashboard loads products from the shared site in every environment (`products/README.md`) |
 | Local deviations | none |
 
 ## Not yet scanned
