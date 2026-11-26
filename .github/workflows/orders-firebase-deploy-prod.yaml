@@ -51,19 +51,9 @@ jobs:
 
       - run: npm ci
 
-      # Old per-remote site; removed in COP-7348 stage D, once the host loads orders
-      # from the shared site in production. It runs first and publishes the regular dist/.
+      # Type-check and CORS check; the deploy action builds again for the shared site.
       - run: npm run build:prod
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        id: firebase-hosting-deploy
-        with:
-          firebaseToolsVersion: "12.9.1"
-          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA }}"
-          projectId: frontend-extensions
-          channelId: live
-          target: emporix-orders
 
-      # The deploy action rebuilds dist/ flat for the shared site, so it runs last.
       - name: Deploy orders to the shared Hosting site
         uses: ./.deploy-tooling/.github/actions/deploy-remote
         with:

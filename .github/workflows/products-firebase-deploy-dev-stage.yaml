@@ -34,30 +34,9 @@ jobs:
 
       - run: npm ci
 
-      # Old per-remote sites (dev, then stage); removed in COP-7348 stage D, once the
-      # host loads products from the shared site in production. Both run before any
-      # shared-site step, so a failing shared deploy cannot skip an old deploy.
+      # Type-check and CORS check; the deploy action builds again for the shared site.
       - run: npm run build:dev
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        id: firebase-hosting-deploy-dev
-        with:
-          firebaseToolsVersion: "12.9.1"
-          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}"
-          projectId: frontend-extensions-develop
-          channelId: live
-          target: emporix-products-develop
 
-      - run: npm run build:stage
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        id: firebase-hosting-deploy-stage
-        with:
-          firebaseToolsVersion: "12.9.1"
-          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_STAGE }}"
-          projectId: frontend-extensions-stage
-          channelId: live
-          target: emporix-products-stage
-
-      # The deploy action rebuilds dist/ flat for the shared site, so it runs last.
       - name: Deploy products to the shared Hosting site (dev)
         uses: ./.github/actions/deploy-remote
         with:

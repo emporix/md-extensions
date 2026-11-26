@@ -78,7 +78,7 @@ The dev shell asks for tenant, token and language.
 
 Status codes is published into the `status-codes/` folder of the shared site of each environment (COP-7348): `https://frontend-extensions-develop.web.app/status-codes/remoteEntry.js`, `https://frontend-extensions-stage.web.app/status-codes/remoteEntry.js` and `https://frontend-extensions.web.app/status-codes/remoteEntry.js` (prod). Workflows: `.github/workflows/status-codes-firebase-*.yaml` — a preview per PR (a `pr-<number>-status-codes` channel, its URL commented on the PR), dev and stage on merge to `master`, prod on a `status-codes-*` tag. Each calls `.github/actions/deploy-remote`, which builds the remote flat with base `/status-codes/` (`.github/scripts/hosting/build-remote.mjs`) and replaces only this folder on the site. A remote is rolled back by redeploying its previous `status-codes-*` tag.
 
-Until the Management Dashboard loads status-codes from the shared site in production, the same workflows also deploy, first, to the old Firebase Hosting targets `emporix-status-codes-develop`, `emporix-status-codes-stage` and `emporix-status-codes` (root `firebase.json`, `.firebaserc`). Those steps, targets and sites are removed in COP-7446 phase D. Local `npm run build:*` and `preview` are unchanged and still serve `/assets/remoteEntry.js`.
+Local `npm run build:*` and `preview` are unchanged and still serve `/assets/remoteEntry.js`.
 
 ## UI
 
