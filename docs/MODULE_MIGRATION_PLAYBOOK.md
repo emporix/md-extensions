@@ -151,7 +151,7 @@ Every Management Dashboard module, whether migrated from MD or new, is published
 
 | Env | Site (`site:`) | Secret (`service-account:`) | `mode:` | Remote entry URL | Trigger |
 |-----|----------------|-----------------------------|---------|------------------|---------|
-| PR preview | `frontend-extensions-develop` | `MD_EXTS_FIREBASE_SA_DEV` | `dev` | channel `pr-<n>-{module}`; the workflow comments its URL on the PR | PR to `master` touching `{module}/**` |
+| PR preview | `frontend-extensions-develop` | `MD_EXTS_FIREBASE_SA_DEV` | `dev` | channel `pr-<n>-{module}`, up for 5 days after its last deploy; the workflow comments its URL on the PR | PR to `master` touching `{module}/**` |
 | dev | `frontend-extensions-develop` | `MD_EXTS_FIREBASE_SA_DEV` | `dev` | `https://frontend-extensions-develop.web.app/{module}/remoteEntry.js` | push `master` + `paths: '{module}/**'` |
 | stage | `frontend-extensions-stage` | `MD_EXTS_FIREBASE_SA_STAGE` | `stage` | `https://frontend-extensions-stage.web.app/{module}/remoteEntry.js` | same workflow, after dev |
 | prod | `frontend-extensions` | `MD_EXTS_FIREBASE_SA` | `prod` | `https://frontend-extensions.web.app/{module}/remoteEntry.js` | `{module}-*` tag, or `workflow_dispatch` with a tag |
