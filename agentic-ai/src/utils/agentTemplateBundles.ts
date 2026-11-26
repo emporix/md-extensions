@@ -8,6 +8,10 @@ export const ANTI_FRAUD_TEMPLATE_ID = 'anti-fraud'
 export const ANTI_FRAUD_SCORING_TEMPLATE_ID = 'anti-fraud-scoring'
 export const ANTI_FRAUD_AUDIT_TEMPLATE_ID = 'anti-fraud-audit'
 
+export const IMPORT_COPILOT_TEMPLATE_ID = 'import-copilot'
+export const IMPORT_MAPPING_DSL_TEMPLATE_ID = 'import-mapping-dsl'
+export const IMPORT_DIAGNOSTICS_TEMPLATE_ID = 'import-diagnostics'
+
 export const AGENT_TEMPLATE_BUNDLES: Readonly<
   Record<string, readonly string[]>
 > = {
@@ -18,6 +22,10 @@ export const AGENT_TEMPLATE_BUNDLES: Readonly<
   [ANTI_FRAUD_TEMPLATE_ID]: [
     ANTI_FRAUD_SCORING_TEMPLATE_ID,
     ANTI_FRAUD_AUDIT_TEMPLATE_ID,
+  ],
+  [IMPORT_COPILOT_TEMPLATE_ID]: [
+    IMPORT_MAPPING_DSL_TEMPLATE_ID,
+    IMPORT_DIAGNOSTICS_TEMPLATE_ID,
   ],
 }
 
