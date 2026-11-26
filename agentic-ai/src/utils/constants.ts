@@ -166,6 +166,7 @@ export const MCP_SERVERS = {
       'restore-mapping-version',
       'retry-failed-records',
       'sample-connection',
+      'sample-stream',
       'search-imported-data',
       'set-import-schedule',
       'set-stream-mappings',
