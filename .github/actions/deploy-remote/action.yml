@@ -19,7 +19,7 @@ inputs:
     required: false
     default: ''
   ttl:
-    description: Preview channel time to live, used only with channel
+    description: Preview channel time to live, counted from each deploy; used only with channel
     required: false
     default: 432000s
 

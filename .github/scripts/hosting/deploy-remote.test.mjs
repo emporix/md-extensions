@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
-import { listFiles, getLiveVersion } from './hosting-api.mjs'
+import { listFiles, getLiveVersion, ensureChannel } from './hosting-api.mjs'
 import { releaseWithRetry, run } from './deploy-remote.mjs'
 
 const ctx = { token: 't', site: 's' }
@@ -119,6 +119,91 @@ test('getLiveVersion returns the version name', async () => {
     () => json({ release: { version: { name: 'sites/s/versions/v9' } } }),
     async () => assert.equal(await getLiveVersion(ctx), 'sites/s/versions/v9')
   )
+})
+
+const CHANNELS = 'https://firebasehosting.googleapis.com/v1beta1/sites/s/channels'
+const TTL = '432000s'
+
+// Answers the fetch calls with the responses in order, records each call and the logged lines.
+const withFetchSequence = async (responses, fn) => {
+  const calls = []
+  const lines = []
+  const { fetch } = globalThis
+  const { log } = console
+  globalThis.fetch = async (url, init) => {
+    const call = `${init.method} ${url}`
+    calls.push({ call, body: init.body === undefined ? undefined : JSON.parse(init.body) })
+    return responses.shift() ?? assert.fail(`unexpected ${call}`)
+  }
+  console.log = (line) => lines.push(line)
+  try {
+    return { calls, lines, result: await fn() }
+  } finally {
+    globalThis.fetch = fetch
+    console.log = log
+  }
+}
+
+test('ensureChannel creates a missing channel with the ttl', async () => {
+  const created = { url: 'https://s--pr-1-labels-a1.web.app', expireTime: '2999-01-06T00:00:00Z' }
+  const { calls, lines, result } = await withFetchSequence([json({}, 404), json(created)], () =>
+    ensureChannel(ctx, 'pr-1-labels', TTL)
+  )
+  assert.equal(result, created.url)
+  assert.deepEqual(calls, [
+    { call: `GET ${CHANNELS}/pr-1-labels`, body: undefined },
+    { call: `POST ${CHANNELS}?channelId=pr-1-labels`, body: { ttl: TTL } },
+  ])
+  assert.deepEqual(lines, ['Channel pr-1-labels expires at 2999-01-06T00:00:00Z'])
+})
+
+test('ensureChannel refreshes the ttl of an existing channel', async () => {
+  const channel = { url: 'https://s--pr-1-labels-a1.web.app', expireTime: '2999-01-01T00:00:00Z' }
+  const refreshed = { ...channel, expireTime: '2999-01-06T00:00:00Z' }
+  const { calls, lines, result } = await withFetchSequence([json(channel), json(refreshed)], () =>
+    ensureChannel(ctx, 'pr-1-labels', TTL)
+  )
+  assert.equal(result, channel.url)
+  assert.deepEqual(calls, [
+    { call: `GET ${CHANNELS}/pr-1-labels`, body: undefined },
+    { call: `PATCH ${CHANNELS}/pr-1-labels?updateMask=ttl`, body: { ttl: TTL } },
+  ])
+  assert.deepEqual(lines, ['Channel pr-1-labels expires at 2999-01-06T00:00:00Z'])
+})
+
+test('ensureChannel deletes and creates again an expired channel that rejects the ttl', async () => {
+  const expired = { url: 'https://s--pr-1-labels-a1.web.app', expireTime: '2000-01-01T00:00:00Z' }
+  const rejected = json(
+    { error: { code: 400, message: 'channel expired.', status: 'FAILED_PRECONDITION' } },
+    400
+  )
+  const created = { url: 'https://s--pr-1-labels-b2.web.app', expireTime: '2999-01-06T00:00:00Z' }
+  const { calls, lines, result } = await withFetchSequence(
+    [json(expired), rejected, json({}), json(created)],
+    () => ensureChannel(ctx, 'pr-1-labels', TTL)
+  )
+  assert.equal(result, created.url)
+  assert.deepEqual(calls, [
+    { call: `GET ${CHANNELS}/pr-1-labels`, body: undefined },
+    { call: `PATCH ${CHANNELS}/pr-1-labels?updateMask=ttl`, body: { ttl: TTL } },
+    { call: `DELETE ${CHANNELS}/pr-1-labels`, body: undefined },
+    { call: `POST ${CHANNELS}?channelId=pr-1-labels`, body: { ttl: TTL } },
+  ])
+  assert.equal(lines.length, 2)
+  assert.match(lines[0], /pr-1-labels expired at 2000-01-01T00:00:00Z.*FAILED_PRECONDITION/)
+  assert.equal(lines[1], 'Channel pr-1-labels expires at 2999-01-06T00:00:00Z')
+})
+
+test('ensureChannel keeps a channel that has not expired when the ttl update fails', async () => {
+  const channel = { url: 'https://s--pr-1-labels-a1.web.app', expireTime: '2999-01-01T00:00:00Z' }
+  const { calls, lines } = await withFetchSequence([json(channel), json({}, 503)], () =>
+    assert.rejects(ensureChannel(ctx, 'pr-1-labels', TTL), /updateMask=ttl failed: 503/)
+  )
+  assert.deepEqual(
+    calls.map((c) => c.call),
+    [`GET ${CHANNELS}/pr-1-labels`, `PATCH ${CHANNELS}/pr-1-labels?updateMask=ttl`]
+  )
+  assert.deepEqual(lines, [])
 })
 
 test('releaseWithRetry propagates a failing getLiveVersion without side effects', async () => {
