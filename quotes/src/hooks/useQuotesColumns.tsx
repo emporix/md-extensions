@@ -54,8 +54,8 @@ const useQuotesColumns = () => {
         sortable: true,
         showFilterMenu: false,
         showClearButton: false,
-        headerStyle: { minWidth: '160px' },
-        style: { whiteSpace: 'nowrap' },
+        headerStyle: { minWidth: '160px', whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'nowrap' }
       },
       {
         columnKey: 'metadata.createdAt',
