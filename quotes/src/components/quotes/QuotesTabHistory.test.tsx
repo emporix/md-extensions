@@ -51,7 +51,7 @@ const history = [
       value: 'IN_PROGRESS',
       comment: 'Please give as agreed 10% discount!',
       quoteReason: {
-        code: 'PRICE',
+        code: 'PROVIDED_PRICE_TO_HIGH',
         message: { en: 'Provided price too high' },
       },
     },
@@ -107,7 +107,7 @@ describe('QuotesTabHistory', () => {
     renderTab()
 
     expect(await screen.findByText('Reason')).toBeTruthy()
-    expect(screen.getByText('PRICE')).toBeTruthy()
+    expect(screen.getByText('PROVIDED PRICE TO HIGH')).toBeTruthy()
   })
 
   it('shows the request alone while there is no status change', async () => {

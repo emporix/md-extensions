@@ -42,7 +42,7 @@ const QuotesTabApproval = (props: StylableProps) => {
   const { blockPanel } = useUIBlocker()
   const { getQuotePdf, changeQuoteStatus, sendQuoteToCustomer } = useQuotesApi()
   const { navigate } = useCustomNavigate()
-  const { quote } = useQuoteData()
+  const { quote, refreshData } = useQuoteData()
   const toast = useToast()
   const [quoteUpdateType, setQuoteUpdateType] =
     useState<QuoteChangeStatusType>()
@@ -83,15 +83,25 @@ const QuotesTabApproval = (props: StylableProps) => {
   }
 
   // Sends the quote shown now (MD kept the one of the first render, so Create
-  // did nothing when the tab opened before the quote loaded).
+  // did nothing when the tab opened before the quote loaded). It leaves for
+  // the list, or with `stay` reloads the quote and shows the buttons of its
+  // new status.
   const sendQuote = useCallback(
-    async (payload: QuoteUpdateStatusValue, successMessage: string) => {
+    async (
+      payload: QuoteUpdateStatusValue,
+      successMessage: string,
+      stay = false
+    ) => {
       if (!quote) return
       try {
         blockPanel(true)
         await changeQuoteStatus(quote.id, payload)
         toast.showToast(successMessage, '', 'success')
-        navigate(quotesListPath(), { replace: true })
+        if (stay) {
+          await refreshData()
+        } else {
+          navigate(quotesListPath(), { replace: true })
+        }
       } catch (e) {
         console.error(e)
         toast.showError(
@@ -136,10 +146,15 @@ const QuotesTabApproval = (props: StylableProps) => {
   )
 
   // COP-7125: an incomplete quote (no prices or addresses yet) cannot be OPEN;
-  // it is sent as pending (IN_PROGRESS) and completed later.
+  // it is sent as pending (IN_PROGRESS) and completed later. The employee
+  // stays on the quote, which now shows the buttons of a pending quote.
   const onPendingSubmit = useCallback(
     () =>
-      sendQuote(buildQuotePendingPayload(), t('quotes.toasts.successPending')),
+      sendQuote(
+        buildQuotePendingPayload(),
+        t('quotes.toasts.successPending'),
+        true
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `t` follows i18n.language
     [sendQuote]
   )

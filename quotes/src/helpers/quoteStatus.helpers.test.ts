@@ -3,6 +3,7 @@ import { QuoteStatus, QuoteStatusColor } from '../models/Quotes.model'
 import {
   canChangeQuoteStatus,
   canSendQuoteToCustomer,
+  formatQuoteReasonCode,
   getQuoteApprovalActions,
   hasQuoteStatusDetails,
   isQuoteAwaitingDecision,
@@ -153,5 +154,18 @@ describe('canSendQuoteToCustomer', () => {
       expect(canSendQuoteToCustomer(status, false)).toBe(false)
     }
     expect(canSendQuoteToCustomer(undefined, true)).toBe(false)
+  })
+})
+
+describe('formatQuoteReasonCode', () => {
+  it('replaces the underscores of a reason code with spaces', () => {
+    expect(formatQuoteReasonCode('PROVIDED_PRICE_TO_HIGH')).toBe(
+      'PROVIDED PRICE TO HIGH'
+    )
+  })
+
+  it('leaves a code without underscores and an absent code', () => {
+    expect(formatQuoteReasonCode('PRICE')).toBe('PRICE')
+    expect(formatQuoteReasonCode(undefined)).toBe('')
   })
 })

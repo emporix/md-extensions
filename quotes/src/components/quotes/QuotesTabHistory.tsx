@@ -10,6 +10,7 @@ import {
   buildQuoteHistoryRows,
   type QuoteHistoryRow,
 } from '../../helpers/quoteHistory.helpers'
+import { formatQuoteReasonCode } from '../../helpers/quoteStatus.helpers'
 import { Quote } from '../../models/Quotes.model'
 import { StylableProps } from '../../helpers/props'
 import QuoteStatusBadge from './QuoteStatusBadge'
@@ -96,7 +97,8 @@ const QuotesTabHistory = ({ className = '', quote }: QuotesTabHistoryProps) => {
       {
         columnKey: 'reason',
         header: t('quotes.tabs.general.reason'),
-        body: (row: QuoteHistoryRow) => row.reasonCode || NOTHING,
+        body: (row: QuoteHistoryRow) =>
+          formatQuoteReasonCode(row.reasonCode) || NOTHING,
       },
       {
         columnKey: 'comment',

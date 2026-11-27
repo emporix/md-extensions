@@ -492,8 +492,10 @@ describe('QuotesTabApproval', () => {
   })
 
   // COP-7125: an incomplete quote is sent as pending (IN_PROGRESS) instead of OPEN.
-  it('sends a quote that is being created as pending and returns to the list', async () => {
-    quotesApi.getQuoteById.mockResolvedValue(quote('CREATING'))
+  it('sends a quote that is being created as pending and stays on it with the buttons of a pending quote', async () => {
+    quotesApi.getQuoteById
+      .mockResolvedValueOnce(quote('CREATING'))
+      .mockResolvedValue(quote('IN_PROGRESS'))
     renderApproval({ openAfterLoad: true })
 
     fireEvent.click(
@@ -510,7 +512,17 @@ describe('QuotesTabApproval', () => {
       '',
       'success'
     )
-    expect(await screen.findByTestId('list')).toBeTruthy()
+    // The quote is reloaded and the tab offers what a pending quote offers.
+    expect(
+      await screen.findByRole('button', { name: 'Send quote to customer' })
+    ).toBeTruthy()
+    expect(button('Decline Quote')).toBeTruthy()
+    expect(button('Approve Quote')).toBeTruthy()
+    expect(
+      screen.queryByRole('button', { name: 'Save as Pending Quote' })
+    ).toBeNull()
+    expect(screen.queryByTestId('list')).toBeNull()
+    expect(quotesApi.getQuoteById).toHaveBeenCalledTimes(2)
   })
 
   it('offers both Create Quote and Save as Pending Quote for a quote being created', async () => {

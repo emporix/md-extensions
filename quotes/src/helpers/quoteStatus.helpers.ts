@@ -22,6 +22,10 @@ export const hasQuoteStatusDetails = (status: Status | undefined): boolean =>
     !!status.comment?.trim() ||
     !!status.quoteReason?.code)
 
+/** A reason code for people: `PROVIDED_PRICE_TO_HIGH` reads `PROVIDED PRICE TO HIGH`. */
+export const formatQuoteReasonCode = (code: string | undefined): string =>
+  code?.replaceAll('_', ' ') ?? ''
+
 /** The merchant still has to approve or decline the quote. */
 export const isQuoteAwaitingDecision = (
   status: QuoteStatus | undefined
