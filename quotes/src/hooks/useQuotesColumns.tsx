@@ -26,6 +26,10 @@ const statusTemplate = (option: StatusOption | null) =>
 const useQuotesColumns = () => {
   const { t, i18n } = useTranslation()
 
+  // The other columns get their width from their filters (180px and more), so
+  // without a minimum the table squeezed these two. With it the table scrolls
+  // sideways instead, as the orders and products lists do: a company name may
+  // wrap, the quote number stays on one line (orders id, products list name).
   const columns: DataTableColumnProps[] = useMemo(
     () => [
       {
@@ -38,6 +42,7 @@ const useQuotesColumns = () => {
         sortable: true,
         showFilterMenu: false,
         showClearButton: false,
+        headerStyle: { minWidth: '200px' },
       },
       {
         columnKey: '_id',
@@ -49,7 +54,8 @@ const useQuotesColumns = () => {
         sortable: true,
         showFilterMenu: false,
         showClearButton: false,
-        style: { minWidth: '120px' },
+        headerStyle: { minWidth: '160px', whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'nowrap' }
       },
       {
         columnKey: 'metadata.createdAt',
