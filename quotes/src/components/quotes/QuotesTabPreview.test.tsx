@@ -1044,8 +1044,8 @@ describe('QuotesTabPreview', () => {
 
       describe('German plural of the unpriced warning', () => {
         it.each([
-          [1, 'Die Summen enthalten 1 Position ohne Preis nicht'],
-          [2, 'Die Summen enthalten 2 Positionen ohne Preis nicht'],
+          [1, 'Die Summen enthalten 1 Position ohne Preis'],
+          [2, 'Die Summen enthalten 2 Positionen ohne Preis'],
         ])('%i unpriced item(s)', async (count, expected) => {
           await i18n.changeLanguage('de')
           const value = unpricedQuote()

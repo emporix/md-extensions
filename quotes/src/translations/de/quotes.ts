@@ -148,14 +148,14 @@ export default {
       subtotal: 'Zwischensumme',
       fallbackCountryNotice:
         'Das Angebot hat keine Adresse, daher wurden die Preise mit {{country}} abgeglichen. Produkte ohne Preis haben möglicherweise Preise für andere Länder.',
-      unpricedWarning_one:
-        'Die Summen enthalten {{count}} Position ohne Preis',
+      unpricedWarning_one: 'Die Summen enthalten {{count}} Position ohne Preis',
       unpricedWarning_other:
         'Die Summen enthalten {{count}} Positionen ohne Preis',
       taxClassPlaceholder: 'Steuerklasse wählen',
       taxClassesLoadError:
         'Steuerklassen konnten nicht geladen werden, daher kann keine Steuerklasse gewählt werden. Falls vorhanden, wird die Katalog-Steuerklasse des Produkts verwendet.',
-      taxClassesEmpty: 'Keine Steuerklassen für das Land mit dieser Lieferadresse.',
+      taxClassesEmpty:
+        'Keine Steuerklassen für das Land mit dieser Lieferadresse.',
       shippingCost: 'Lieferkosten',
       total: 'Summe',
       shippingMethod: 'Liefermethode',

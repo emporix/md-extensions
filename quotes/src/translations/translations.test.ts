@@ -80,7 +80,7 @@ describe('corrected texts', () => {
 describe('quote improvement texts (COP-7125)', () => {
   it('uses the agreed hint for a company without locations', () => {
     expect(en.quotes.tabs.general.noLocationsYet).toBe(
-      'No locations yet - add them before the customer can accept'
+      'No locations yet - add them before the customer can accept the quote'
     )
   })
 

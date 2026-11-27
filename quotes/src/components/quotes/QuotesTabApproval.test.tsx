@@ -605,7 +605,7 @@ describe('QuotesTabApproval', () => {
       fireEvent.mouseEnter(screen.getByTestId('quote-create-wrapper'))
       expect(
         await screen.findByText(
-          'The quote cannot be created yet: 2 products have no price, the billing or shipping address is missing.'
+          'The quote cannot be created yet: 2 products have no price, The billing or shipping address is missing.'
         )
       ).toBeTruthy()
     })
@@ -640,7 +640,7 @@ describe('QuotesTabApproval', () => {
       fireEvent.mouseEnter(screen.getByTestId('quote-create-wrapper'))
       expect(
         await screen.findByText(
-          'The quote cannot be created yet: the billing or shipping address is missing.'
+          'The quote cannot be created yet: The billing or shipping address is missing.'
         )
       ).toBeTruthy()
     })
@@ -690,7 +690,7 @@ describe('QuotesTabApproval', () => {
     fireEvent.mouseEnter(screen.getByTestId('quote-approve-wrapper'))
     expect(
       await screen.findByText(
-        'The quote cannot be created yet: 2 products have no price, the billing or shipping address is missing.'
+        'The quote cannot be created yet: 2 products have no price, The billing or shipping address is missing.'
       )
     ).toBeTruthy()
   })

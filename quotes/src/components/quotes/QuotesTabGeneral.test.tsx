@@ -225,7 +225,7 @@ describe('QuotesTabGeneral', () => {
       // COP-7125: a company without any location gets the new hint.
       expect(
         await screen.findByText(
-          'No locations yet - add them before the customer can accept'
+          'No locations yet - add them before the customer can accept the quote'
         )
       ).toBeTruthy()
       fireEvent.click(screen.getByRole('button', { name: 'Add new location' }))
@@ -541,7 +541,7 @@ describe('QuotesTabGeneral', () => {
       companiesApi.getLegalEntity.mockResolvedValue(twoContacts([]))
       renderGeneral()
       await screen.findByText(
-        'No locations yet - add them before the customer can accept'
+        'No locations yet - add them before the customer can accept the quote'
       )
 
       fireEvent.click(screen.getByTestId('quote-contact-person-control'))
@@ -631,7 +631,7 @@ describe('QuotesTabGeneral', () => {
       const { container } = renderGeneral()
 
       await screen.findByText(
-        'No locations yet - add them before the customer can accept'
+        'No locations yet - add them before the customer can accept the quote'
       )
       expect(container.textContent).not.toMatch(/NaN|undefined|null/)
     })
@@ -680,7 +680,7 @@ describe('QuotesTabGeneral', () => {
         )
         expect(
           await screen.findByText(
-            'No locations yet - add them before the customer can accept'
+            'No locations yet - add them before the customer can accept the quote'
           )
         ).toBeTruthy()
         fireEvent.click(screen.getByTestId('quote-contact-person-control'))
