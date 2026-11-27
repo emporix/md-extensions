@@ -5,6 +5,7 @@ export default {
     lastName: 'Nachname',
     contactEmail: 'Email Ansprechpartner',
     contactPhone: 'Telefonischer Ansprechpartner',
+    owningSite: 'Eigentümer Standort',
   },
   address: {
     street: 'Straße',
@@ -20,6 +21,7 @@ export default {
       firstName: 'Vorname',
       lastName: 'Nachname',
       emailAddress: 'Emailadresse',
+      siteCode: 'Eigentümer Standort',
     },
   },
 }

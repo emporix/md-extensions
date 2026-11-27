@@ -56,6 +56,7 @@ const TEXT_COLUMNS = [
   'lastName',
   'contactEmail',
   'preferredSite',
+  'siteCode',
 ] as const
 
 /** Port of the table in MD `modules/Customers.module.tsx`. */

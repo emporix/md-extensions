@@ -79,6 +79,7 @@ const customers = [
     lastName: 'Baker',
     contactEmail: 'bob@example.com',
     preferredSite: 'outlet',
+    siteCode: 'dealer_a',
   },
 ]
 
@@ -221,6 +222,38 @@ describe('Customers list', () => {
         expect.objectContaining({
           filters: expect.objectContaining({
             firstName: expect.objectContaining({ value: 'Ann' }),
+          }),
+        })
+      )
+    )
+  })
+
+  it('shows the owning site of each customer, empty when it has none', async () => {
+    renderList()
+    await screen.findByText('Ann')
+
+    expect(
+      within(table()).getAllByText(i18n.t('customers.table.columns.siteCode'))
+        .length
+    ).toBeGreaterThan(0)
+    const owningSites = within(table())
+      .getAllByRole('row')
+      .filter((row) => within(row).queryByText(/@example\.com$/))
+      .map((row) => within(row).getAllByRole('cell').at(-2)?.textContent)
+    expect(owningSites).toEqual(['', 'dealer_a'])
+  })
+
+  it('sends an owning-site filter to the service', async () => {
+    renderList()
+    await screen.findByText('Ann')
+    const filterInputs = within(table()).getAllByRole('textbox')
+    fireEvent.change(filterInputs[5], { target: { value: 'dealer_a' } })
+
+    await waitFor(() =>
+      expect(api.syncCustomers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            siteCode: expect.objectContaining({ value: 'dealer_a' }),
           }),
         })
       )

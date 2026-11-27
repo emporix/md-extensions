@@ -104,7 +104,7 @@ A company is a legal entity of the Customer Management Service: type `COMPANY` o
 
 ## Customers
 
-A customer is a record of the Customer Service with contact data, preferred site and currency, an optional restriction, B2B legal-entity assignments, addresses and mixins (`customers/src/models/Customer.model.ts`). Restricted users (`customer.customer_*` scopes with a site suffix) only assign their own restrictions; when the tenant syncs restrictions with site codes, the preferred site is required and sets the restriction. Viewing needs Customers Viewer, changing needs Customers Manager. Rules: `ai-project-knowledge/modules/customers.md`.
+A customer is a record of the Customer Service with contact data, preferred site and currency, an optional restriction, B2B legal-entity assignments, addresses and mixins (`customers/src/models/Customer.model.ts`). When the tenant configuration `customerAccountScope` is `SITE`, a customer also has an owning site (`siteCode`): chosen on create (customer and contact forms), never changed afterwards, and separate from the editable preferred site; with `TENANT` (or no readable value) the screens neither show nor send it (`customers/src/helpers/customerForm.helpers.ts`, `companies/src/helpers/owningSite.helpers.ts`). Restricted users (`customer.customer_*` scopes with a site suffix) only assign their own restrictions; when the tenant syncs restrictions with site codes, the preferred site is required and sets the restriction. Viewing needs Customers Viewer, changing needs Customers Manager. Rules: `ai-project-knowledge/modules/customers.md`.
 
 ## Catalogs
 

@@ -57,6 +57,16 @@ const useQuoteCustomersTableColumns = () => {
         showClearButton: false,
       },
       {
+        columnKey: 'siteCode',
+        header: t(`${COLUMN_PATH}.siteCode`),
+        field: 'siteCode',
+        filter: true,
+        filterMatchMode: FilterMatchMode.CONTAINS,
+        sortable: true,
+        showFilterMenu: false,
+        showClearButton: false,
+      },
+      {
         columnKey: 'status',
         header: t(`${COLUMN_PATH}.status`),
         field: 'status',

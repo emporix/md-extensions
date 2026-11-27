@@ -42,6 +42,7 @@ const segmentsApi = vi.hoisted(() => ({ getAllSegments: vi.fn() }))
 const configurationApi = vi.hoisted(() => ({
   getRestrictions: vi.fn(),
   getSyncBetweenRestrictionsAndSiteCodes: vi.fn(),
+  getCustomerAccountScope: vi.fn(),
 }))
 const toast = vi.hoisted(() => ({
   showSuccess: vi.fn(),
@@ -295,6 +296,9 @@ describe('Customer add / edit', () => {
     })
     configurationApi.getSyncBetweenRestrictionsAndSiteCodes.mockResolvedValue({
       value: false,
+    })
+    configurationApi.getCustomerAccountScope.mockResolvedValue({
+      value: 'TENANT',
     })
   })
 
@@ -666,6 +670,162 @@ describe('Customer add / edit', () => {
           restriction: 'outlet',
         })
       )
+    })
+  })
+
+  describe('owning site', () => {
+    const owningSiteDropdown = () =>
+      screen.queryByTestId('customer-owning-site-control')
+    const siteScope = () =>
+      configurationApi.getCustomerAccountScope.mockResolvedValue({
+        value: 'SITE',
+      })
+    const scopeLoaded = () =>
+      waitFor(() =>
+        expect(configurationApi.getCustomerAccountScope).toHaveBeenCalled()
+      )
+
+    it('hides the owning site and sends none when the account scope is TENANT', async () => {
+      renderPage('/add')
+      await scopeLoaded()
+
+      typeInto('customer-email', 'cleo@example.com')
+      await waitFor(() => expect(saveButton().disabled).toBe(false))
+      expect(owningSiteDropdown()).toBeNull()
+      expect(input('customer-owning-site')).toBeNull()
+      fireEvent.click(saveButton())
+
+      await waitFor(() => expect(api.createCustomer).toHaveBeenCalled())
+      expect(lastPayload(api.createCustomer)).not.toHaveProperty('siteCode')
+    })
+
+    it('hides the owning site when the account scope cannot be read', async () => {
+      configurationApi.getCustomerAccountScope.mockRejectedValue(
+        new Error('not found')
+      )
+      vi.spyOn(console, 'error').mockImplementation(() => undefined)
+      renderPage('/add')
+      await scopeLoaded()
+
+      typeInto('customer-email', 'cleo@example.com')
+      await waitFor(() => expect(saveButton().disabled).toBe(false))
+      expect(owningSiteDropdown()).toBeNull()
+    })
+
+    it('requires an owning site on create when the account scope is SITE', async () => {
+      siteScope()
+      renderPage('/add')
+      await waitFor(() => expect(owningSiteDropdown()).not.toBeNull())
+
+      typeInto('customer-email', 'cleo@example.com')
+      await waitFor(() => expect(saveButton().disabled).toBe(true))
+      expect(
+        screen.getByText(i18n.t('customers.details.owningSite'))
+      ).toBeTruthy()
+    })
+
+    it('creates the customer with the chosen owning site, apart from the preferred site', async () => {
+      siteScope()
+      renderPage('/add')
+      await waitFor(() => expect(owningSiteDropdown()).not.toBeNull())
+
+      typeInto('customer-email', 'cleo@example.com')
+      pickOption('customer-site', 0)
+      pickOption('customer-owning-site', 1)
+      await waitFor(() => expect(saveButton().disabled).toBe(false))
+      fireEvent.click(saveButton())
+
+      await waitFor(() => expect(api.createCustomer).toHaveBeenCalled())
+      expect(lastPayload(api.createCustomer)).toMatchObject({
+        siteCode: 'outlet',
+        preferredSite: 'main',
+      })
+    })
+
+    it('offers every site as owning site without synced restrictions', async () => {
+      siteScope()
+      permissions.userScopes = ['customer.customer_manage--outlet']
+      renderPage('/add')
+      await waitFor(() => expect(owningSiteDropdown()).not.toBeNull())
+
+      expect(optionLabels('customer-owning-site')).toEqual([
+        'Main - main',
+        'Outlet - outlet',
+      ])
+    })
+
+    it('offers a restricted user only their sites as owning site when restrictions are synced', async () => {
+      siteScope()
+      permissions.userScopes = ['customer.customer_manage--outlet']
+      configurationApi.getSyncBetweenRestrictionsAndSiteCodes.mockResolvedValue(
+        { value: true }
+      )
+      renderPage('/add')
+      await waitFor(() => expect(owningSiteDropdown()).not.toBeNull())
+
+      await waitFor(() =>
+        expect(optionLabels('customer-owning-site')).toEqual([
+          'Outlet - outlet',
+        ])
+      )
+    })
+
+    it('shows the owning site read-only on an existing customer and keeps the preferred site editable', async () => {
+      siteScope()
+      api.syncCustomer.mockResolvedValue({
+        ...structuredClone(customer),
+        siteCode: 'outlet',
+      })
+      renderPage('/C1')
+      await customerLoaded()
+
+      await waitFor(() =>
+        expect(input('customer-owning-site')?.value).toBe('outlet')
+      )
+      expect(input('customer-owning-site').readOnly).toBe(true)
+      expect(owningSiteDropdown()).toBeNull()
+      expect(
+        screen
+          .getByTestId('customer-site-control')
+          .getAttribute('aria-disabled')
+      ).not.toBe('true')
+    })
+
+    it('neither changes nor clears the owning site when an existing customer is saved', async () => {
+      siteScope()
+      api.syncCustomer.mockResolvedValue({
+        ...structuredClone(customer),
+        siteCode: 'outlet',
+      })
+      renderPage('/C1')
+      await customerLoaded()
+      await waitFor(() =>
+        expect(input('customer-owning-site')?.value).toBe('outlet')
+      )
+
+      typeInto('customer-first-name', 'Anna')
+      pickOption('customer-site', 1)
+      await waitFor(() => expect(saveButton().disabled).toBe(false))
+      fireEvent.click(saveButton())
+
+      await waitFor(() => expect(api.editCustomer).toHaveBeenCalled())
+      expect(lastPayload(api.editCustomer)).toMatchObject({
+        firstName: 'Anna',
+        preferredSite: 'outlet',
+      })
+      expect(lastPayload(api.editCustomer)).not.toHaveProperty('siteCode')
+    })
+
+    it('hides the owning site of an existing customer when the account scope is TENANT', async () => {
+      api.syncCustomer.mockResolvedValue({
+        ...structuredClone(customer),
+        siteCode: 'outlet',
+      })
+      renderPage('/C1')
+      await customerLoaded()
+      await scopeLoaded()
+
+      expect(input('customer-owning-site')).toBeNull()
     })
   })
 

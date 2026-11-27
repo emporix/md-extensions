@@ -4,6 +4,7 @@ import {
   buildAssistedBuyingUrl,
   generateRandomPassword,
   getAssistedBuyingSites,
+  getOwningSiteMode,
   getRestrictionOptions,
   getSiteOptions,
   toCustomerPayload,
@@ -37,6 +38,32 @@ describe('customerForm.helpers', () => {
     expect(
       toCustomerPayload({ ...DEFAULT_CUSTOMER, password: 'secret' }).password
     ).toBe('secret')
+  })
+
+  it('requires an owning site on create only when the account scope is SITE', () => {
+    expect(getOwningSiteMode('SITE', true)).toBe('required')
+    expect(getOwningSiteMode('SITE', false)).toBe('readOnly')
+  })
+
+  it.each([['TENANT'], [undefined], [null], [''], ['site'], [true]])(
+    'hides the owning site when the account scope is %j',
+    (scope) => {
+      expect(getOwningSiteMode(scope, true)).toBe('hidden')
+      expect(getOwningSiteMode(scope, false)).toBe('hidden')
+    }
+  )
+
+  it('sends the owning site only on a create that requires it', () => {
+    const customer = { ...DEFAULT_CUSTOMER, siteCode: 'outlet' }
+    expect(toCustomerPayload(customer, 'required').siteCode).toBe('outlet')
+    expect(toCustomerPayload(customer, 'readOnly')).not.toHaveProperty(
+      'siteCode'
+    )
+    expect(toCustomerPayload(customer, 'hidden')).not.toHaveProperty('siteCode')
+    expect(toCustomerPayload(customer)).not.toHaveProperty('siteCode')
+    expect(
+      toCustomerPayload({ ...DEFAULT_CUSTOMER, siteCode: '' }, 'required')
+    ).not.toHaveProperty('siteCode')
   })
 
   it('adds missing mixin containers', () => {

@@ -55,6 +55,7 @@ import {
   PASSWORD_MIN_LENGTH,
   TITLE_OPTIONS,
   generateRandomPassword,
+  getOwningSiteMode,
   getRestrictionOptions,
   getSiteOptions,
   toCustomerPayload,
@@ -116,8 +117,11 @@ const CustomerAddEdit = () => {
   const { getReferralCoupon } = useCouponsApi()
   const { getAllGroupsForUser } = useIamApi()
   const { getAllSegments } = useSegmentsApi()
-  const { getRestrictions, getSyncBetweenRestrictionsAndSiteCodes } =
-    useConfigurationApi()
+  const {
+    getRestrictions,
+    getSyncBetweenRestrictionsAndSiteCodes,
+    getCustomerAccountScope,
+  } = useConfigurationApi()
   const { currenciesDropdownOptions } = useCurrencies()
   const { sites } = useSites()
   const { getUiLangValue, getContentLangValue } = useLocalizedValue()
@@ -134,6 +138,8 @@ const CustomerAddEdit = () => {
     { label: string; value: string }[]
   >([])
   const [enableSync, setEnableSync] = useState(false)
+  const [accountScope, setAccountScope] = useState<unknown>()
+  const owningSiteMode = getOwningSiteMode(accountScope, !customerId)
   const trackRequest = useRef(createRequestTracker()).current
 
   const {
@@ -263,6 +269,18 @@ const CustomerAddEdit = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
   }, [customerRestrictions])
 
+  useEffect(() => {
+    let current = true
+    getCustomerAccountScope()
+      .then((config) => current && setAccountScope(config?.value))
+      .catch((error) =>
+        console.error('Error fetching customerAccountScope:', error)
+      )
+    return () => {
+      current = false
+    }
+  }, [getCustomerAccountScope])
+
   const handleDelete = useCallback(async () => {
     if (!customerId) return
     try {
@@ -291,7 +309,7 @@ const CustomerAddEdit = () => {
 
   const onSubmit = useCallback(
     async (formValues: Customer) => {
-      const payload = toCustomerPayload(formValues)
+      const payload = toCustomerPayload(formValues, owningSiteMode)
       try {
         blockPanel(true)
         if (customerId) {
@@ -319,6 +337,7 @@ const CustomerAddEdit = () => {
       customerId,
       editCustomer,
       navigate,
+      owningSiteMode,
       reloadData,
       showError,
       showSuccess,
@@ -465,6 +484,7 @@ const CustomerAddEdit = () => {
     [sites, enableSync, customerRestrictions]
   )
   const isSiteRequired = enableSync && !hasFullRestrictionAccess
+  const hasOwningSite = owningSiteMode !== 'hidden'
 
   const handleAutogenerateChange = (checked: boolean) => {
     setIsAutogeneratePassword(checked)
@@ -731,13 +751,47 @@ const CustomerAddEdit = () => {
             </div>
           )}
 
+          {owningSiteMode === 'required' && (
+            <Controller
+              control={control}
+              name="siteCode"
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Dropdown
+                  className={`${styles.span4} ${styles.rowStart}`}
+                  inputId="customer-owning-site"
+                  data-testid="customer-owning-site"
+                  label={t('customers.details.owningSite')}
+                  required
+                  disabled={!canManage}
+                  filter
+                  options={siteOptions}
+                  value={field.value ?? ''}
+                  onChange={(e) => field.onChange(e.value)}
+                />
+              )}
+            />
+          )}
+          {owningSiteMode === 'readOnly' && (
+            <InputText
+              className={`${styles.span4} ${styles.rowStart}`}
+              inputId="customer-owning-site"
+              label={t('customers.details.owningSite')}
+              readOnly
+              value={customer?.siteCode ?? ''}
+            />
+          )}
           <Controller
             control={control}
             name="preferredSite"
             rules={{ required: isSiteRequired }}
             render={({ field }) => (
               <Dropdown
-                className={`${styles.span6} ${styles.rowStart}`}
+                className={
+                  hasOwningSite
+                    ? styles.span4
+                    : `${styles.span6} ${styles.rowStart}`
+                }
                 inputId="customer-site"
                 data-testid="customer-site"
                 label={t('customers.details.preferredSite')}
@@ -763,7 +817,7 @@ const CustomerAddEdit = () => {
             rules={{ required: true }}
             render={({ field }) => (
               <Dropdown
-                className={styles.span6}
+                className={hasOwningSite ? styles.span4 : styles.span6}
                 inputId="customer-currency"
                 data-testid="customer-currency"
                 label={t('customers.details.preferredCurrency')}

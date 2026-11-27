@@ -64,6 +64,8 @@ export interface Customer {
   preferredCurrency?: string
   preferredLanguage?: string
   preferredSite?: string
+  /** Owning site: set on create when `customerAccountScope` is `SITE`, fixed afterwards. */
+  siteCode?: string
   title: string
   type?: string
   addresses: CustomerAddress[]
