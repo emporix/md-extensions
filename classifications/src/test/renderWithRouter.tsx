@@ -21,11 +21,11 @@ const LocationDisplay = () => {
   )
 }
 
-const appStateFor = (tenant: string): AppState => ({
+const appStateFor = (tenant: string, contentLanguage: string): AppState => ({
   tenant,
   language: 'en',
   token: '',
-  contentLanguage: 'en',
+  contentLanguage,
   onError: () => {
     // NOOP
   },
@@ -36,13 +36,17 @@ const appStateFor = (tenant: string): AppState => ({
  * `switchTenant` re-renders the same tree with another host tenant, the way
  * the host does without remounting the remote. `hashRouter` uses the real
  * `HashRouter` (as `RemoteComponent` does) for code that reads the live
- * `window.location.hash`, e.g. the pagination URL sync.
+ * `window.location.hash`, e.g. the pagination URL sync. `contentLanguage` is
+ * the host's content language, as the host configuration spells it.
  */
 export const renderAt = (
   path: string,
   routes: { list: ReactNode; detail: ReactNode },
   tenant = '',
-  { hashRouter = false }: { hashRouter?: boolean } = {}
+  {
+    hashRouter = false,
+    contentLanguage = 'en',
+  }: { hashRouter?: boolean; contentLanguage?: string } = {}
 ) => {
   if (hashRouter) window.location.hash = `#${path}`
   const Router = ({ children }: { children: ReactNode }) =>
@@ -52,7 +56,7 @@ export const renderAt = (
       <MemoryRouter initialEntries={[path]}>{children}</MemoryRouter>
     )
   const tree = (currentTenant: string) => (
-    <DashboardProvider appState={appStateFor(currentTenant)}>
+    <DashboardProvider appState={appStateFor(currentTenant, contentLanguage)}>
       <Router>
         <RefreshValuesProvider>
           <Routes>

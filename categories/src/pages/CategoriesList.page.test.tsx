@@ -103,7 +103,7 @@ const categories = [
   category('shirts', 'Shirts', { parentId: 'clothes', published: false }),
 ]
 
-const renderList = (path = '/', options?: { hashRouter?: boolean }) =>
+const renderList = (path = '/', options?: Parameters<typeof renderAt>[3]) =>
   renderAt(
     path,
     { list: <CategoriesListPage />, detail: <div /> },
@@ -331,6 +331,194 @@ describe('Categories list', () => {
       expect(screen.getByTestId('search').textContent).toContain('view=tree')
     )
     expect(await screen.findByTestId('categories-tree')).toBeTruthy()
+  })
+
+  // Scenario 9 (COP-7480): the service keeps the tree a category had as a
+  // root after it got a parent.
+  it('shows a category once in the tree when the service still lists its old root tree', async () => {
+    const node = (id: string, position: number, subcategories: object[]) => ({
+      id,
+      position,
+      published: true,
+      localizedName: { en: id.charAt(0).toUpperCase() + id.slice(1) },
+      subcategories,
+    })
+    vi.mocked(getCategoryTreesCall).mockResolvedValue([
+      node('clothes', 0, [node('shoes', 0, [node('boots', 0, [])])]),
+      node('food', 1, []),
+      // `shoes` was a root before it got the parent `clothes`.
+      node('shoes', 4, [node('boots', 0, [])]),
+    ] as never)
+    renderList('/?view=tree&categoryId=shoes', { hashRouter: true })
+
+    await screen.findByText('Food')
+    const tree = screen.getByTestId('categories-tree')
+    const topLevel = [
+      ...tree.querySelectorAll(
+        '.p-tree-container > .p-treenode > .p-treenode-content'
+      ),
+    ].map((treeNode) => treeNode.textContent?.trim())
+    expect(topLevel).toEqual(['Clothes', 'Food'])
+    // The selected category is revealed under its parent, once.
+    expect(await within(tree).findAllByText('Shoes')).toHaveLength(1)
+  })
+
+  // Scenario 8 (COP-7480): `validityFrom` / `validityTo` are not Category
+  // Service fields; a filter on them matched nothing.
+  describe('validity filters', () => {
+    const calendarInputs = () =>
+      [
+        ...table().querySelectorAll<HTMLInputElement>(
+          'thead .p-calendar input'
+        ),
+      ].slice(0, 2)
+
+    const pickDay = async (input: HTMLInputElement, day: string) => {
+      fireEvent.focus(input)
+      fireEvent.click(input)
+      const cell = await waitFor(() => {
+        const found = [
+          ...document.querySelectorAll<HTMLElement>(
+            '.p-datepicker td:not(.p-datepicker-other-month) span'
+          ),
+        ].find((span) => span.textContent?.trim() === day)
+        if (!found) throw new Error('no day in the calendar')
+        return found
+      })
+      fireEvent.click(cell)
+    }
+
+    const lastFilters = () =>
+      (vi.mocked(getCategories).mock.lastCall?.[1].filters ?? {}) as Record<
+        string,
+        { value: unknown }
+      >
+
+    it('filters the validity dates on the fields the service knows', async () => {
+      renderList()
+      await screen.findByText('Shoes')
+
+      await waitFor(() =>
+        expect(Object.keys(lastFilters())).toEqual(
+          expect.arrayContaining(['validity.from', 'validity.to'])
+        )
+      )
+      expect(lastFilters()).not.toHaveProperty('validityFrom')
+      expect(lastFilters()).not.toHaveProperty('validityTo')
+    })
+
+    it('sends a picked Valid from and Valid to day as a range on that field', async () => {
+      renderList()
+      await screen.findByText('Shoes')
+      const [validFrom, validTo] = calendarInputs()
+
+      await pickDay(validFrom, '11')
+      await waitFor(() =>
+        expect(lastFilters()['validity.from']?.value).toEqual([
+          expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+          expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+        ])
+      )
+
+      await pickDay(validTo, '17')
+      await waitFor(() =>
+        expect(lastFilters()['validity.to']?.value).toEqual([
+          expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+          expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+        ])
+      )
+    })
+  })
+
+  // COP-7488 / COP-7332: the host passes the content language as the tenant
+  // configuration spells it (`de-at`), the service stores BCP-47 keys (`de-AT`).
+  describe('content language', () => {
+    const regional = [
+      category('shoes', 'Shoes', {
+        localizedName: { en: 'Shoes', 'de-AT': 'Schuhe' },
+      }),
+      category('shirts', 'Shirts'),
+      category('blank', 'Blank', { localizedName: {} }),
+    ]
+
+    const header = (text: string) => {
+      const cell = within(table())
+        .getAllByRole('columnheader')
+        .find((th) => th.textContent?.includes(text))
+      if (!cell) throw new Error(`no ${text} header`)
+      return cell
+    }
+
+    const nameCell = (rowIndex: number) => {
+      const column = within(table())
+        .getAllByRole('columnheader')
+        .findIndex((th) => th.textContent?.includes('Category Name'))
+      const rows = within(table()).getAllByRole('row').slice(-regional.length)
+      return rows[rowIndex].querySelectorAll('td')[column]
+    }
+
+    const lastQuery = () => vi.mocked(getCategories).mock.lastCall?.[1]
+
+    beforeEach(() => {
+      vi.mocked(getCategories).mockResolvedValue({
+        values: regional as never,
+        totalRecords: regional.length,
+      })
+    })
+
+    // Scenario 1
+    it('shows the name saved under de-AT when the content language is de-at', async () => {
+      renderList('/', { contentLanguage: 'de-at' })
+
+      expect(await screen.findByText('Schuhe')).toBeTruthy()
+    })
+
+    // Scenario 1
+    it('labels tree nodes with the name saved under de-AT', async () => {
+      vi.mocked(getCategoryTreesCall).mockResolvedValue([
+        {
+          id: 'clothes',
+          position: 0,
+          published: true,
+          localizedName: { en: 'Clothes', 'de-AT': 'Kleidung' },
+          subcategories: [],
+        },
+      ] as never)
+      renderList('/?view=tree', { hashRouter: true, contentLanguage: 'de-at' })
+
+      expect(await screen.findByText('Kleidung')).toBeTruthy()
+    })
+
+    // Scenario 2
+    it('falls back to another language with its code, and shows -- without a name', async () => {
+      renderList('/', { contentLanguage: 'de-at' })
+      await screen.findByText('Schuhe')
+
+      expect(nameCell(1).textContent).toBe('Shirts(en)')
+      expect(nameCell(2).textContent).toBe('--')
+    })
+
+    // Scenario 4
+    it('sorts by the name and the slug in the content language', async () => {
+      renderList('/', { contentLanguage: 'de-at' })
+      await screen.findByText('Schuhe')
+
+      fireEvent.click(header('Category Name'))
+      await waitFor(() =>
+        expect(lastQuery()).toMatchObject({
+          sortField: 'localizedName.de-AT',
+          sortOrder: 1,
+        })
+      )
+
+      fireEvent.click(header('Slug'))
+      await waitFor(() =>
+        expect(lastQuery()).toMatchObject({
+          sortField: 'localizedSlug.de-AT',
+          sortOrder: 1,
+        })
+      )
+    })
   })
 
   // Scenario 10

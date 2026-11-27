@@ -60,19 +60,21 @@ vi.mock('../context/ConfigurationProvider', () => ({
   useConfiguration: () => ({ languages: [{ id: 'en' }] }),
 }))
 
-// The parent picker is the CL PaginatedSelector; a button stands in for it.
+// The parent picker is the CL PaginatedSelector; a button stands in for it:
+// a click picks `food`, a double click clears the parent.
 vi.mock('../components/shared/CategoriesSelector', () => ({
   default: ({
     value,
     onChange,
   }: {
     value?: string
-    onChange: (value: string) => void
+    onChange: (value?: string) => void
   }) => (
     <button
       type="button"
       data-testid="category-parent"
       onClick={() => onChange('food')}
+      onDoubleClick={() => onChange(undefined)}
     >
       {value ?? 'none'}
     </button>
@@ -194,7 +196,9 @@ describe('Category add / edit', () => {
       validity: {},
       published: false,
     })
-    expect(rebuildCategoryTreeCall).toHaveBeenCalledWith('tnt', 'clothes')
+    // Scenario 12: created without a parent, so it is its own root.
+    expect(rebuildCategoryTreeCall).toHaveBeenCalledWith('tnt', 'boots')
+    expect(getCategoryParentsCall).not.toHaveBeenCalled()
     expect(toast.showSuccess).toHaveBeenCalledWith('Created category!')
   })
 
@@ -271,6 +275,109 @@ describe('Category add / edit', () => {
     expect(getCategoryParentsCall).toHaveBeenCalledWith('tnt', 'clothes', true)
     // The page reloads the saved category.
     await waitFor(() => expect(fetchCategory).toHaveBeenCalledTimes(2))
+  })
+
+  // The service keeps codes unique per tenant, the empty one included: a
+  // second category saved with `code: ""` gets 409 (found with COP-7488).
+  const savedBody = () =>
+    JSON.parse(JSON.stringify(vi.mocked(modifyCategory).mock.lastCall?.[1]))
+
+  // Scenario 5
+  it('saves a category without a code without sending a code', async () => {
+    // The service leaves an empty code out of the response.
+    const withoutCode: Partial<typeof loaded> = { ...loaded }
+    delete withoutCode.code
+    vi.mocked(fetchCategory).mockResolvedValue(withoutCode as never)
+    renderDetail('/shoes')
+    await screen.findByText('Shoes')
+
+    type(inputIn('category-name'), 'Boots')
+    await waitFor(() => expect(button('category-save').disabled).toBe(false))
+    fireEvent.click(button('category-save'))
+
+    await waitFor(() =>
+      expect(toast.showSuccess).toHaveBeenCalledWith('Updated category!')
+    )
+    expect(savedBody()).not.toHaveProperty('code')
+    expect(savedBody()).toMatchObject({ id: 'shoes', position: 3 })
+  })
+
+  // Requirement 6
+  it('drops a cleared code and sends a typed one as typed', async () => {
+    renderDetail('/shoes')
+    await screen.findByText('Shoes')
+
+    type(inputIn('category-code'), '   ')
+    await waitFor(() => expect(button('category-save').disabled).toBe(false))
+    fireEvent.click(button('category-save'))
+    await waitFor(() => expect(modifyCategory).toHaveBeenCalledTimes(1))
+    expect(savedBody()).not.toHaveProperty('code')
+
+    type(inputIn('category-code'), ' SHO-3')
+    await waitFor(() => expect(button('category-save').disabled).toBe(false))
+    fireEvent.click(button('category-save'))
+    await waitFor(() => expect(modifyCategory).toHaveBeenCalledTimes(2))
+    expect(savedBody().code).toBe(' SHO-3')
+  })
+
+  // Scenario 11 (COP-7480): an automated run or a dropped text changes the
+  // field without key presses; the save must send what the field shows.
+  it('saves the position the field shows when it was entered without key presses', async () => {
+    renderDetail('/shoes')
+    await screen.findByText('Shoes')
+
+    const position = inputIn('category-position')
+    fireEvent.focus(position)
+    type(position, '8')
+    fireEvent.blur(position)
+    await waitFor(() => expect(button('category-save').disabled).toBe(false))
+    fireEvent.click(button('category-save'))
+
+    await waitFor(() => expect(modifyCategory).toHaveBeenCalled())
+    expect(savedBody()).toMatchObject({ id: 'shoes', position: 8 })
+  })
+
+  // Scenario 12 (COP-7480): a category without a parent is its own root, and
+  // the service answers a request for its parents with 404.
+  it('rebuilds a top-level category without asking for its parents', async () => {
+    vi.mocked(fetchCategory).mockResolvedValue({
+      ...loaded,
+      parentId: undefined,
+    } as never)
+    renderDetail('/shoes')
+    await screen.findByText('Shoes')
+
+    type(inputIn('category-name'), 'Boots')
+    await waitFor(() => expect(button('category-save').disabled).toBe(false))
+    fireEvent.click(button('category-save'))
+
+    await waitFor(() =>
+      expect(toast.showSuccess).toHaveBeenCalledWith('Updated category!')
+    )
+    expect(rebuildCategoryTreeCall).toHaveBeenCalledTimes(1)
+    expect(rebuildCategoryTreeCall).toHaveBeenCalledWith('tnt', 'shoes')
+    expect(getCategoryParentsCall).not.toHaveBeenCalled()
+  })
+
+  // Scenario 12
+  it('rebuilds a category moved to the top level and the root it left', async () => {
+    renderDetail('/shoes')
+    await screen.findByText('Shoes')
+
+    fireEvent.doubleClick(screen.getByTestId('category-parent'))
+    await waitFor(() => expect(button('category-save').disabled).toBe(false))
+    fireEvent.click(button('category-save'))
+
+    await waitFor(() =>
+      expect(toast.showSuccess).toHaveBeenCalledWith('Updated category!')
+    )
+    const rebuilt = vi
+      .mocked(rebuildCategoryTreeCall)
+      .mock.calls.map(([, root]) => root)
+    expect(rebuilt).toEqual(['shoes', 'clothes'])
+    // Only the parent it left is looked up.
+    expect(getCategoryParentsCall).toHaveBeenCalledTimes(1)
+    expect(getCategoryParentsCall).toHaveBeenCalledWith('tnt', 'clothes', true)
   })
 
   it('warns when the category is saved but its tree cannot be rebuilt', async () => {

@@ -11,11 +11,11 @@ const LocationDisplay = () => {
   return <div data-testid="location">{location.pathname}</div>
 }
 
-const appStateFor = (tenant: string): AppState => ({
+const appStateFor = (tenant: string, contentLanguage: string): AppState => ({
   tenant,
   language: 'en',
   token: '',
-  contentLanguage: 'en',
+  contentLanguage,
   currency: DEFAULT_APP_CURRENCY,
   onError: () => {
     // NOOP
@@ -25,15 +25,17 @@ const appStateFor = (tenant: string): AppState => ({
 /**
  * Renders the remote's hash routes in memory, starting at `path`.
  * `switchTenant` re-renders the same tree with another host tenant, the way
- * the host does without remounting the remote.
+ * the host does without remounting the remote. `contentLanguage` is the
+ * host's content language, as the host configuration spells it.
  */
 export const renderAt = (
   path: string,
   routes: { list: ReactNode; detail: ReactNode },
-  tenant = ''
+  tenant = '',
+  { contentLanguage = 'en' }: { contentLanguage?: string } = {}
 ) => {
   const tree = (currentTenant: string) => (
-    <DashboardProvider appState={appStateFor(currentTenant)}>
+    <DashboardProvider appState={appStateFor(currentTenant, contentLanguage)}>
       <MemoryRouter initialEntries={[path]}>
         <RefreshValuesProvider>
           <Routes>

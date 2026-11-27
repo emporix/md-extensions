@@ -31,7 +31,7 @@ The Classification tab holds one tile per schema of the classification (`src/com
 
 ### Component library pieces
 
-Tree drag and drop (`dragdropScope` / `onDragDrop`), `Tabs` and the table settings (`TableExtensions`) come from `@emporix/component-library` 2.29.0. The data behind them stays in the remote: the move handler in `CategoryTreeBase.tsx` (`categoryTreeMove.helpers.ts`) and `useClassificationsTableConfig`. The table settings offer the three columns only (no mixin column picker).
+Tree drag and drop (`dragdropScope` / `onDragDrop`), `Tabs` and the table settings (`TableExtensions`) come from `@emporix/component-library` (2.31.2 in `package.json`); dragging a tree node with the mouse needs ≥ 2.31.2 (earlier releases never start the drag in Chrome, Edge and Safari). The data behind them stays in the remote: the move handler in `CategoryTreeBase.tsx` (`categoryTreeMove.helpers.ts`) and `useClassificationsTableConfig`. The table settings offer the three columns only (no mixin column picker).
 
 ## AppState
 

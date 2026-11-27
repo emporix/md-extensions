@@ -111,7 +111,8 @@ const useCategoriesColumns = () => {
         columnKey: 'validity.from',
         header: t(`${TABLE_COLUMNS_PATH}.validity.from`),
         field: 'validity.from',
-        filterField: 'validityFrom',
+        // The Category Service field; MD's `validityFrom` matched nothing.
+        filterField: 'validity.from',
         filterElement: (options: DataTableColumnFilterElementOptions) => (
           <DateFilterTemplate filterOptions={options} />
         ),
@@ -131,7 +132,7 @@ const useCategoriesColumns = () => {
         columnKey: 'validity.to',
         header: t(`${TABLE_COLUMNS_PATH}.validity.to`),
         field: 'validity.to',
-        filterField: 'validityTo',
+        filterField: 'validity.to',
         filterElement: (options: DataTableColumnFilterElementOptions) => (
           <DateFilterTemplate filterOptions={options} />
         ),

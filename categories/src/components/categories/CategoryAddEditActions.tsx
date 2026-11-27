@@ -33,7 +33,7 @@ const CategoryAddEditActions = ({ onInvalid }: CategoryAddEditActionsProps) => {
     useFormContext<CategoryFormFields>()
   const { category, syncCategory } = useCategoryData()
   const { createCategory, updateCategory } = useCategoriesApi()
-  const { rebuildForCategories } = useCategoryTreeRebuild()
+  const { resolveRoots, rebuildRoots } = useCategoryTreeRebuild()
   const { blockPanel } = useUIBlocker()
   const { showSuccess, showError, showToast } = useToast()
   const { navigate } = useCustomNavigate()
@@ -41,11 +41,25 @@ const CategoryAddEditActions = ({ onInvalid }: CategoryAddEditActionsProps) => {
   const canManage = hasPermission(EmployeeDomains.CATEGORIES_MANAGER)
   const [isSaving, setIsSaving] = useState(false)
 
-  // The category is saved by then, so a failed rebuild leaves only its tree
-  // stale. One toast only: two shown at once replace each other.
-  const rebuildAndNotify = async (categoryIds: string[], title: string) => {
+  // Rebuilds the tree of the saved category and of a parent it left. The
+  // category is saved by then, so a failed rebuild leaves only its tree stale.
+  // One toast only: two shown at once replace each other.
+  // A category without a parent is its own root and is rebuilt as such: the
+  // service answers a request for the parents of a root with 404 (COP-7480).
+  const rebuildAndNotify = async (
+    saved: { id: string; parentId?: string },
+    leftParentId: string | undefined,
+    title: string
+  ) => {
     try {
-      await rebuildForCategories(categoryIds)
+      const lookedUpRoots = await resolveRoots([
+        ...(saved.parentId ? [saved.id] : []),
+        ...(leftParentId ? [leftParentId] : []),
+      ])
+      await rebuildRoots([
+        ...(saved.parentId ? [] : [saved.id]),
+        ...lookedUpRoots,
+      ])
       showSuccess(title)
     } catch (e) {
       console.error(e)
@@ -62,19 +76,19 @@ const CategoryAddEditActions = ({ onInvalid }: CategoryAddEditActionsProps) => {
         // Rebuild the category's root, and after a move also the old one.
         const oldParentId = category.parentId
         await rebuildAndNotify(
-          [
-            category.id,
-            ...(oldParentId && oldParentId !== payload.parentId
-              ? [oldParentId]
-              : []),
-          ],
+          { id: category.id, parentId: payload.parentId },
+          oldParentId !== payload.parentId ? oldParentId : undefined,
           t('categories.edit.toast.update.success')
         )
         reset(data)
         await syncCategory()
       } else {
         const id = await makeCall(() => createCategory(payload), blockPanel)
-        await rebuildAndNotify([id], t('categories.edit.toast.create.success'))
+        await rebuildAndNotify(
+          { id, parentId: payload.parentId },
+          undefined,
+          t('categories.edit.toast.create.success')
+        )
         navigate(categoryDetailPath(id), {
           replace: true,
           preserveAllQuery: true,
