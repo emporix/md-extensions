@@ -10,6 +10,7 @@ export type QuoteHistoryRow = {
   readonly changedBy: string
   readonly status?: QuoteStatus
   readonly comment?: string
+  readonly reasonCode?: string
   readonly reason?: Localized
 }
 
@@ -34,6 +35,7 @@ export const toQuoteStatusHistoryRows = (
         changedBy: entry.userType ? `${name} (${entry.userType})`.trim() : name,
         status: status.value,
         comment: status.comment?.trim() || undefined,
+        reasonCode: status.quoteReason?.code,
         reason: status.quoteReason?.message,
       }
     })

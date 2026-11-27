@@ -94,6 +94,11 @@ const QuotesTabHistory = ({ className = '', quote }: QuotesTabHistoryProps) => {
           row.status ? <QuoteStatusBadge status={row.status} /> : NOTHING,
       },
       {
+        columnKey: 'reason',
+        header: t('quotes.tabs.general.reason'),
+        body: (row: QuoteHistoryRow) => row.reasonCode || NOTHING,
+      },
+      {
         columnKey: 'comment',
         header: t('quotes.tabs.history.comment'),
         body: (row: QuoteHistoryRow) => {

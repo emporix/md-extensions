@@ -102,6 +102,14 @@ describe('QuotesTabHistory', () => {
     ).toBeTruthy()
   })
 
+  it('shows the reason code of a status change in its own column', async () => {
+    quotesApi.getQuoteHistory.mockResolvedValue(history)
+    renderTab()
+
+    expect(await screen.findByText('Reason')).toBeTruthy()
+    expect(screen.getByText('PRICE')).toBeTruthy()
+  })
+
   it('shows the request alone while there is no status change', async () => {
     quotesApi.getQuoteHistory.mockResolvedValue([])
     renderTab()

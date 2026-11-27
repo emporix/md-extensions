@@ -54,6 +54,7 @@ describe('quote history rows', () => {
       }),
     ])
     expect(row.reason).toEqual(message)
+    expect(row.reasonCode).toBe('PRICE')
     expect(row.changedBy).toContain('(CUSTOMER)')
   })
 
