@@ -143,6 +143,7 @@ const customers = [
     contactEmail: 'bob@example.com',
     contactPhone: '',
     type: 'CUSTOMER',
+    siteCode: 'dealer_a',
   },
 ]
 const assignment = {
@@ -229,6 +230,32 @@ describe('Customer assignment add / edit', () => {
     expect(screen.queryByTestId('customer-select-cust-2')).toBeNull()
     expect(radio('cust-1').checked).toBe(false)
     expect(screen.getByTestId('legalEntity').textContent).toBe('Acme')
+  })
+
+  it('shows the owning site of each customer and filters on it', async () => {
+    renderAt('/c1/assignments/customer')
+    await waitForTable()
+
+    expect(
+      screen.getAllByText(i18n.t('customers.table.columns.siteCode')).length
+    ).toBeGreaterThan(0)
+    expect(screen.getByText('dealer_a')).toBeTruthy()
+
+    const filterInputs = screen
+      .getAllByRole('textbox')
+      .filter((element) => element.closest('thead'))
+    fireEvent.change(filterInputs[filterInputs.length - 1], {
+      target: { value: 'dealer_a' },
+    })
+    await waitFor(() =>
+      expect(customersApi.syncCustomers).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            siteCode: expect.objectContaining({ value: 'dealer_a' }),
+          }),
+        })
+      )
+    )
   })
 
   it('assigns the selected customer and opens the new assignment', async () => {

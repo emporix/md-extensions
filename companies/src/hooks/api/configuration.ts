@@ -8,6 +8,7 @@ import {
 import { ConfigSchema } from '../../models/Settings.model'
 import { useDashboardContext } from '../../context/Dashboard.context'
 import { AxiosError } from 'axios'
+import { CUSTOMER_ACCOUNT_SCOPE_KEY } from '../../helpers/owningSite.helpers'
 
 export const useConfigurationApi = () => {
   const { tenant } = useDashboardContext()
@@ -76,6 +77,11 @@ export const useConfigurationApi = () => {
     [tenant]
   )
 
+  const getCustomerAccountScope = useCallback(
+    () => getSingleConfiguration(CUSTOMER_ACCOUNT_SCOPE_KEY),
+    [getSingleConfiguration]
+  )
+
   return {
     getSingleConfiguration,
     updateConfiguration,
@@ -83,5 +89,6 @@ export const useConfigurationApi = () => {
     deleteConfiguration,
     getRestrictions,
     getSyncBetweenRestrictionsAndSiteCodes,
+    getCustomerAccountScope,
   }
 }

@@ -13,6 +13,7 @@ export default {
     firstName: 'First name',
     lastName: 'Last name',
     preferredSite: 'Preferred site',
+    owningSite: 'Owning site',
     title: 'Title',
     preferredCurrency: 'Preferred currency',
     onHold: 'On hold',
@@ -57,6 +58,7 @@ export default {
       lastName: 'Last name',
       contactEmail: 'Contact email',
       preferredSite: 'Preferred site',
+      siteCode: 'Owning site',
     },
   },
   tabs: {

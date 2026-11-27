@@ -14,6 +14,7 @@ export default {
         firstName: 'First Name',
         lastName: 'Last Name',
         email: 'User Email',
+        siteCode: 'Owning site',
         status: 'Status',
       },
     },

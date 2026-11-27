@@ -7,6 +7,25 @@ export const CUSTOMER_RESTRICTION_SCOPES = [
   'customer.customer_read',
 ]
 
+/** Tenant configuration key: whether a customer account is unique per tenant or per site. */
+export const CUSTOMER_ACCOUNT_SCOPE_KEY = 'customerAccountScope'
+
+/** How the owning-site (`siteCode`) field behaves on the customer form. */
+export type OwningSiteMode = 'hidden' | 'required' | 'readOnly'
+
+/**
+ * Only a tenant whose `customerAccountScope` is exactly `SITE` has an owning
+ * site: it is chosen on create and cannot change afterwards. `TENANT`, a
+ * missing or unreadable key, or any other value hides the field.
+ */
+export const getOwningSiteMode = (
+  accountScope: unknown,
+  isCreate: boolean
+): OwningSiteMode => {
+  if (accountScope !== 'SITE') return 'hidden'
+  return isCreate ? 'required' : 'readOnly'
+}
+
 /** MD `CustomersAddEdit` `DEFAULT_CUSTOMER`. */
 export const DEFAULT_CUSTOMER: Customer = {
   customerNumber: '',
@@ -66,15 +85,22 @@ export const withMixinContainers = (customer: Customer): Customer => ({
 
 /**
  * MD `onSubmit`: an empty restriction is sent as `null` (clears it) and an
- * empty password is left out.
+ * empty password is left out. The owning site is sent only when the form
+ * asks for it (a create in `SITE` scope): the customer service rejects it in
+ * `TENANT` scope, and an update must neither change nor clear it.
  */
-export const toCustomerPayload = (customer: Customer): Customer => {
-  const payload = { ...customer }
+export const toCustomerPayload = (
+  customer: Customer,
+  owningSiteMode: OwningSiteMode = 'hidden'
+): Customer => {
+  const { siteCode, ...payload } = customer
   payload.restriction = payload.restriction || null
   if (payload.password === '') {
     payload.password = undefined
   }
-  return payload
+  return owningSiteMode === 'required' && siteCode
+    ? { ...payload, siteCode }
+    : payload
 }
 
 /**

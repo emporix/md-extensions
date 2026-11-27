@@ -16,9 +16,11 @@ import HeaderSection from '../components/shared/HeaderSection'
 import InputField from '../components/shared/InputField'
 import { useCustomerManagementApi } from '../hooks/api/customerManagement'
 import { useCustomerApi } from '../hooks/api/customers'
+import { useConfigurationApi } from '../hooks/api/configuration'
 import { useCountries } from '../hooks/useCountries'
 import useCustomNavigate from '../hooks/useCustomNavigate'
 import { usePermissions } from '../context/PermissionsProvider'
+import { useSites } from '../context/SitesProvider'
 import { EmployeeDomains } from '../configs/accessControls'
 import {
   ContactAssignment,
@@ -33,6 +35,13 @@ import {
 } from '../models/Customer.model'
 import { Metadata } from '../models/Metadata.model'
 import { getApiErrorDetails, getApiErrorMessage } from '../helpers/api'
+import { parseRestrictions } from '../helpers/restrictions'
+import {
+  CUSTOMER_RESTRICTION_SCOPES,
+  getOwningSiteMode,
+  getSiteOptions,
+  toContactCustomerPayload,
+} from '../helpers/owningSite.helpers'
 import useUpdateEffect from '../hooks/useUpdateEffect'
 import { useDashboardContext } from '../context/Dashboard.context'
 import {
@@ -128,10 +137,49 @@ const ContactAddEditPage = () => {
   useUpdateEffect(() => {
     simpleNavigate(companiesListPath())
   }, [tenant])
-  const { hasPermission } = usePermissions()
+  const { hasPermission, userScopes } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.COMPANIES_MANAGER)
   const canManageCustomers = hasPermission(EmployeeDomains.CUSTOMERS_MANAGER)
   const readOnly = !canManage || !canManageCustomers
+
+  const { sites } = useSites()
+  const { getSyncBetweenRestrictionsAndSiteCodes, getCustomerAccountScope } =
+    useConfigurationApi()
+  const [accountScope, setAccountScope] = useState<unknown>()
+  const [enableSync, setEnableSync] = useState(false)
+  const owningSiteMode = getOwningSiteMode(
+    accountScope,
+    contactAssignmentId === undefined
+  )
+  const customerRestrictions = useMemo(
+    () => parseRestrictions(CUSTOMER_RESTRICTION_SCOPES, userScopes),
+    [userScopes]
+  )
+  const owningSiteOptions = useMemo(
+    () => getSiteOptions(sites ?? [], enableSync, customerRestrictions),
+    [sites, enableSync, customerRestrictions]
+  )
+
+  useEffect(() => {
+    let current = true
+    getCustomerAccountScope()
+      .then((config) => current && setAccountScope(config?.value))
+      .catch((error) =>
+        console.error('Error fetching customerAccountScope:', error)
+      )
+    getSyncBetweenRestrictionsAndSiteCodes()
+      .then((config) => {
+        if (current && config && typeof config.value === 'boolean') {
+          setEnableSync(config.value)
+        }
+      })
+      .catch((error) =>
+        console.error('Error fetching enableSync configuration:', error)
+      )
+    return () => {
+      current = false
+    }
+  }, [getCustomerAccountScope, getSyncBetweenRestrictionsAndSiteCodes])
 
   const {
     control,
@@ -236,7 +284,9 @@ const ContactAddEditPage = () => {
             )
             await loadData()
           } else {
-            const customerResponse = await createCustomer(data.customer)
+            const customerResponse = await createCustomer(
+              toContactCustomerPayload(data.customer, owningSiteMode)
+            )
             data.address.contactName = `${data.customer.firstName} ${data.customer.lastName}`
             await createCustomerAddress(customerResponse.id, data.address)
             data.legalEntity = legalEntity
@@ -259,7 +309,7 @@ const ContactAddEditPage = () => {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
-    [legalEntity, currentAssignment]
+    [legalEntity, currentAssignment, owningSiteMode]
   )
 
   const handleConvertContactToCustomer = useCallback(
@@ -477,6 +527,46 @@ const ContactAddEditPage = () => {
             )}
           />
         </div>
+        {owningSiteMode !== 'hidden' && (
+          <div className={styles.row}>
+            {owningSiteMode === 'required' ? (
+              <Controller
+                control={control}
+                name="customer.siteCode"
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <Dropdown
+                    inputId="contact-owningSite"
+                    data-testid="owningSite"
+                    className={styles.third}
+                    label={t('customers.details.owningSite')}
+                    required
+                    disabled={readOnly}
+                    filter
+                    options={owningSiteOptions}
+                    value={field.value ?? ''}
+                    onChange={(event) => field.onChange(event.value)}
+                  />
+                )}
+              />
+            ) : (
+              <Controller
+                control={control}
+                name="customer.siteCode"
+                render={({ field }) => (
+                  <InputText
+                    inputId="contact-owningSite"
+                    data-testid="owningSite"
+                    className={styles.third}
+                    label={t('customers.details.owningSite')}
+                    readOnly
+                    value={field.value ?? ''}
+                  />
+                )}
+              />
+            )}
+          </div>
+        )}
         <div className={styles.row}>
           <Controller
             control={control}

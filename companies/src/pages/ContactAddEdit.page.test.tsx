@@ -47,7 +47,15 @@ const toast = vi.hoisted(() => ({
   showError: vi.fn(),
   showSuccess: vi.fn(),
 }))
-const permissions = vi.hoisted(() => ({ granted: [] as string[] }))
+const permissions = vi.hoisted(() => ({
+  granted: [] as string[],
+  userScopes: [] as string[],
+}))
+const configurationApi = vi.hoisted(() => ({
+  getSyncBetweenRestrictionsAndSiteCodes: vi.fn(),
+  getCustomerAccountScope: vi.fn(),
+}))
+const sites = vi.hoisted(() => ({ list: [] as unknown[] }))
 
 vi.mock('../hooks/api/customerManagement', () => ({
   useCustomerManagementApi: () => management,
@@ -66,7 +74,14 @@ vi.mock('../hooks/useCountries', () => ({
 vi.mock('../context/PermissionsProvider', () => ({
   usePermissions: () => ({
     hasPermission: (domain: string) => permissions.granted.includes(domain),
+    userScopes: permissions.userScopes,
   }),
+}))
+vi.mock('../hooks/api/configuration', () => ({
+  useConfigurationApi: () => configurationApi,
+}))
+vi.mock('../context/SitesProvider', () => ({
+  useSites: () => ({ sites: sites.list }),
 }))
 vi.mock('@emporix/component-library', async () => {
   const actual = await vi.importActual<
@@ -183,6 +198,17 @@ describe('Contact add / edit', () => {
       EmployeeDomains.COMPANIES_MANAGER,
       EmployeeDomains.CUSTOMERS_MANAGER,
     ]
+    permissions.userScopes = []
+    sites.list = [
+      { code: 'main', name: 'Main' },
+      { code: 'outlet', name: 'Outlet' },
+    ]
+    configurationApi.getCustomerAccountScope.mockResolvedValue({
+      value: 'TENANT',
+    })
+    configurationApi.getSyncBetweenRestrictionsAndSiteCodes.mockResolvedValue({
+      value: false,
+    })
     Object.defineProperty(window, 'location', {
       configurable: true,
       value: { ...originalLocation, assign },
@@ -355,6 +381,112 @@ describe('Contact add / edit', () => {
     expect(customers.createCustomerAddress).not.toHaveBeenCalled()
     expect(management.createContactWithAssignment).not.toHaveBeenCalled()
     expect(currentPath()).toBe('/c1/assignments/contact')
+  })
+
+  describe('owning site', () => {
+    const siteScope = () =>
+      configurationApi.getCustomerAccountScope.mockResolvedValue({
+        value: 'SITE',
+      })
+    const companyLoaded = () =>
+      waitFor(() =>
+        expect(screen.getByTestId('legalEntity').textContent).toBe('Acme')
+      )
+    const optionLabels = (testId: string) => {
+      fireEvent.click(screen.getByTestId(`${testId}-control`))
+      return screen
+        .queryAllByTestId(new RegExp(`^${testId}-option-\\d+$`))
+        .map((option) => option.textContent)
+    }
+
+    it('hides the owning site and creates the customer without one when the account scope is TENANT', async () => {
+      renderAt('/c1/assignments/contact')
+      await companyLoaded()
+      await waitFor(() =>
+        expect(configurationApi.getCustomerAccountScope).toHaveBeenCalled()
+      )
+
+      expect(screen.queryByTestId('owningSite-control')).toBeNull()
+      fillNewContact()
+      await waitFor(() => expect(button('contact-save').disabled).toBe(false))
+      fireEvent.click(button('contact-save'))
+
+      await waitFor(() => expect(customers.createCustomer).toHaveBeenCalled())
+      expect(customers.createCustomer.mock.calls[0][0]).not.toHaveProperty(
+        'siteCode'
+      )
+    })
+
+    it('requires an owning site and creates the customer with it when the account scope is SITE', async () => {
+      siteScope()
+      renderAt('/c1/assignments/contact')
+      await companyLoaded()
+      await waitFor(() =>
+        expect(screen.getByTestId('owningSite-control')).toBeTruthy()
+      )
+
+      fillNewContact()
+      await waitFor(() => expect(button('contact-save').disabled).toBe(true))
+      pickOption('owningSite', 1)
+      await waitFor(() => expect(button('contact-save').disabled).toBe(false))
+      fireEvent.click(button('contact-save'))
+
+      await waitFor(() => expect(customers.createCustomer).toHaveBeenCalled())
+      expect(customers.createCustomer.mock.calls[0][0]).toMatchObject({
+        siteCode: 'outlet',
+        restriction: 'restriction-a',
+      })
+    })
+
+    it('offers every site without synced restrictions', async () => {
+      siteScope()
+      permissions.userScopes = ['customer.customer_manage--outlet']
+      renderAt('/c1/assignments/contact')
+      await waitFor(() =>
+        expect(screen.getByTestId('owningSite-control')).toBeTruthy()
+      )
+
+      expect(optionLabels('owningSite')).toEqual([
+        'Main - main',
+        'Outlet - outlet',
+      ])
+    })
+
+    it('offers a restricted user only their sites when restrictions are synced', async () => {
+      siteScope()
+      permissions.userScopes = ['customer.customer_manage--outlet']
+      configurationApi.getSyncBetweenRestrictionsAndSiteCodes.mockResolvedValue(
+        { value: true }
+      )
+      renderAt('/c1/assignments/contact')
+      await waitFor(() =>
+        expect(screen.getByTestId('owningSite-control')).toBeTruthy()
+      )
+
+      await waitFor(() =>
+        expect(optionLabels('owningSite')).toEqual(['Outlet - outlet'])
+      )
+    })
+
+    it('shows the owning site of an existing contact read-only and keeps it on save', async () => {
+      siteScope()
+      customers.syncCustomer.mockImplementation(
+        tracked('syncCustomer', () => ({ ...customer, siteCode: 'outlet' }))
+      )
+      renderAt('/c1/assignments/contact/as-1')
+      await waitFor(() => expect(input('contact-firstName').value).toBe('Ann'))
+      await waitFor(() =>
+        expect(input('contact-owningSite')?.value).toBe('outlet')
+      )
+      expect(input('contact-owningSite').readOnly).toBe(true)
+
+      typeInto('contact-lastName', 'Leeson')
+      await waitFor(() => expect(button('contact-save').disabled).toBe(false))
+      fireEvent.click(button('contact-save'))
+
+      await waitFor(() => expect(customers.editCustomer).toHaveBeenCalled())
+      expect(customers.editCustomer.mock.calls[0][0].siteCode).toBe('outlet')
+    })
   })
 
   it('edits assignment, then customer, then address', async () => {

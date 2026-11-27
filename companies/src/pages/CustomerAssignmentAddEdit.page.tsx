@@ -410,6 +410,14 @@ const CustomerAssignmentAddEditPage = () => {
       sortable: true,
       showFilterMenu: false,
     },
+    {
+      header: t('customers.table.columns.siteCode'),
+      field: 'siteCode',
+      filterField: 'siteCode',
+      filter: true,
+      sortable: true,
+      showFilterMenu: false,
+    },
   ]
 
   // Register a filter slot per filterable column (MdDataTable did this).

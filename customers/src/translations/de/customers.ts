@@ -14,6 +14,7 @@ export default {
     firstName: 'Vorname',
     lastName: 'Nachname',
     preferredSite: 'Präferierte Site',
+    owningSite: 'Eigentümer Standort',
     title: 'Anrede',
     preferredCurrency: 'Präferierte Währung',
     onHold: 'Pausiert',
@@ -58,6 +59,7 @@ export default {
       lastName: 'Nachname',
       contactEmail: 'Email Ansprechpartner',
       preferredSite: 'Präferierte Site',
+      siteCode: 'Eigentümer Standort',
     },
   },
   tabs: {

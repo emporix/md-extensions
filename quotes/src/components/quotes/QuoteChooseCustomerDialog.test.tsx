@@ -43,6 +43,7 @@ const tom = {
   lastName: 'Fox',
   contactEmail: 'tom@x.io',
   active: false,
+  siteCode: 'dealer_a',
 }
 
 const renderDialog = () => {
@@ -85,6 +86,14 @@ describe('QuoteChooseCustomerDialog', () => {
       expect.objectContaining({ currentPage: 1, rows: 10 })
     )
     expect(addCustomer().disabled).toBe(true)
+  })
+
+  it('shows the owning site of each customer', async () => {
+    renderDialog()
+    await screen.findByText('elle@x.io')
+
+    expect(screen.getByText('Owning site')).toBeTruthy()
+    expect(screen.getByText('dealer_a')).toBeTruthy()
   })
 
   it('keeps its height and scrolls only the customer rows', async () => {
