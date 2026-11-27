@@ -3,6 +3,7 @@ import type Localized from '../models/Localized.model'
 import { useConfiguration } from '../context/ConfigurationProvider'
 import { useTranslation } from 'react-i18next'
 import { useDashboardContext } from '../context/Dashboard.context.tsx'
+import { findLocalizedEntry } from '../helpers/localized'
 
 export type LocalizedInput = Localized | string | undefined
 
@@ -11,23 +12,29 @@ export const useLocalizedValue = () => {
   const { contentLanguage } = useDashboardContext()
   const { i18n } = useTranslation()
 
+  // MD `useLocalizedValue` (COP-6374): the host passes the content language as
+  // the tenant configuration spells it (`de-at`) while the services store
+  // BCP-47 keys (`de-AT`), so the key is matched ignoring case.
   const getContentLangValue = useCallback(
     (val: LocalizedInput) => {
-      if (
-        val &&
-        contentLanguage &&
-        typeof val !== 'string' &&
-        Object.keys(val).includes(contentLanguage)
-      ) {
-        return (
-          val[contentLanguage] ||
-          `${Object.values(val)[0]}(${Object.keys(val)[0]})`
-        )
-      } else if (val && contentLanguage && typeof val === 'string') {
-        return val
-      } else {
+      if (!val) {
         return '--'
       }
+      if (typeof val === 'string') {
+        return val
+      }
+      if (!contentLanguage) {
+        return '--'
+      }
+      const entry = findLocalizedEntry(val, contentLanguage)
+      if (entry && entry[1]) {
+        return entry[1]
+      }
+      const fallbackEntry = Object.entries(val).find(([, v]) => !!v)
+      if (fallbackEntry) {
+        return `${fallbackEntry[1]}(${fallbackEntry[0]})`
+      }
+      return '--'
     },
     [contentLanguage]
   )

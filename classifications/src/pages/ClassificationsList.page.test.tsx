@@ -121,7 +121,7 @@ const trees = () => [
 const notFound = () =>
   Object.assign(new Error('404'), { response: { status: 404 } })
 
-const renderList = (path = '/', options?: { hashRouter?: boolean }) =>
+const renderList = (path = '/', options?: Parameters<typeof renderAt>[3]) =>
   renderAt(
     path,
     { list: <ClassificationsListPage />, detail: <div>detail</div> },
@@ -131,7 +131,8 @@ const renderList = (path = '/', options?: { hashRouter?: boolean }) =>
 
 // The pagination keeps page and rows in the live hash, so the tree view, which
 // shares the query string with it, is rendered in the real hash router.
-const renderTreeView = (path: string) => renderList(path, { hashRouter: true })
+const renderTreeView = (path: string, contentLanguage?: string) =>
+  renderList(path, { hashRouter: true, contentLanguage })
 
 const searchParam = (name: string) =>
   new URLSearchParams(screen.getByTestId('search').textContent ?? '').get(name)
@@ -417,6 +418,108 @@ describe('Classifications list', () => {
     })
   })
 
+  // COP-7488 / COP-7332: the host passes the content language as the tenant
+  // configuration spells it (`de-at`), the service stores BCP-47 keys (`de-AT`).
+  describe('content language', () => {
+    const regional = [
+      classification('slim', 'Slim', {
+        localizedName: { en: 'Slim', 'de-AT': 'Schmal' },
+      }),
+      classification('wide', 'Wide', { localizedName: { en: 'Wide' } }),
+      classification('blank', 'Blank', { localizedName: {} }),
+    ]
+
+    const nameCell = (rowIndex: number) => {
+      const headerTexts = within(table())
+        .getAllByRole('columnheader')
+        .map((header) => header.textContent ?? '')
+      const column = headerTexts.findIndex((text) => text.includes('Name'))
+      const rows = within(table()).getAllByRole('row').slice(-regional.length)
+      return rows[rowIndex].querySelectorAll('td')[column]
+    }
+
+    const nameHeader = () => {
+      const header = within(table())
+        .getAllByRole('columnheader')
+        .find((cell) => cell.textContent?.includes('Name'))
+      if (!header) throw new Error('no Name header')
+      return header
+    }
+
+    beforeEach(() => {
+      vi.mocked(getCategories).mockResolvedValue({
+        values: regional as never,
+        totalRecords: regional.length,
+      })
+    })
+
+    // Scenario 1
+    it('shows the name saved under de-AT when the content language is de-at', async () => {
+      renderList('/', { contentLanguage: 'de-at' })
+
+      expect(await screen.findByText('Schmal')).toBeTruthy()
+    })
+
+    // Scenario 1
+    it('labels tree nodes with the name saved under de-AT', async () => {
+      vi.mocked(getCategoryTreesCall).mockResolvedValue([
+        {
+          ...treeNode('material', 0),
+          localizedName: { en: 'Material', 'de-AT': 'Werkstoff' },
+        },
+      ] as never)
+      renderTreeView('/?view=tree', 'de-at')
+
+      expect(await screen.findByText('Werkstoff')).toBeTruthy()
+    })
+
+    // Scenario 2
+    it('falls back to another language with its code, and shows -- without a name', async () => {
+      renderList('/', { contentLanguage: 'de-at' })
+      await screen.findByText('Schmal')
+
+      expect(nameCell(1).textContent).toBe('Wide(en)')
+      expect(nameCell(2).textContent).toBe('--')
+    })
+
+    // Scenario 3
+    it('sorts by the name in the content language, A–Z then Z–A', async () => {
+      renderList('/', { contentLanguage: 'de-at' })
+      await screen.findByText('Schmal')
+
+      fireEvent.click(nameHeader())
+      await waitFor(() =>
+        expect(vi.mocked(getCategories).mock.lastCall?.[1]).toMatchObject({
+          sortField: 'localizedName.de-AT',
+          sortOrder: 1,
+        })
+      )
+
+      fireEvent.click(nameHeader())
+      await waitFor(() =>
+        expect(vi.mocked(getCategories).mock.lastCall?.[1]).toMatchObject({
+          sortField: 'localizedName.de-AT',
+          sortOrder: -1,
+        })
+      )
+    })
+
+    // Scenario 3
+    it('sorts by the plain content language code as it is', async () => {
+      renderList()
+      await screen.findByText('Slim')
+
+      fireEvent.click(nameHeader())
+
+      await waitFor(() =>
+        expect(vi.mocked(getCategories).mock.lastCall?.[1]).toMatchObject({
+          sortField: 'localizedName.en',
+          sortOrder: 1,
+        })
+      )
+    })
+  })
+
   describe('column settings', () => {
     it('hides the columns hidden in the ext_classifications configuration', async () => {
       tableConfig.columns = [
@@ -697,6 +800,27 @@ describe('Classifications list', () => {
       await screen.findByText('Slim')
 
       expect(batchDeleteButton().textContent).toBe('Delete')
+    })
+
+    // Scenario 9 (COP-7480): the service keeps the tree a classification had
+    // as a root after it got a parent.
+    it('shows a classification once when the service still lists its old root tree', async () => {
+      vi.mocked(getCategoryTreesCall).mockResolvedValue([
+        ...trees(),
+        treeNode('slim', 5, [treeNode('narrow', 0)]),
+      ] as never)
+      renderTreeView('/?view=tree&categoryId=slim')
+
+      await screen.findByText('Material')
+      const tree = screen.getByTestId('categories-tree')
+      const topLevel = [
+        ...tree.querySelectorAll(
+          '.p-tree-container > .p-treenode > .p-treenode-content'
+        ),
+      ].map((node) => node.textContent?.trim())
+      expect(topLevel).toEqual(['Fit', 'Material'])
+      // The selected classification is revealed under its parent, once.
+      expect(await within(tree).findAllByText('Slim')).toHaveLength(1)
     })
 
     it('shows the tree for ?view=tree and keeps a clicked classification in the URL', async () => {

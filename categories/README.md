@@ -26,7 +26,7 @@ Media asset links leave the remote with `window.location.assign('/media-assets/<
 
 ### Component library pieces
 
-Tree drag and drop (`dragdropScope` / `onDragDrop`), the media tab (`AssetsViewer`, `MediaAssetUpload`) and the table settings (`TableExtensions`) come from `@emporix/component-library` 2.28.0. The data behind them stays in the remote: the move handler in `CategoryTreeBase.tsx` (`categoryTreeMove.helpers.ts`), `useCategoryMedia` and `useCategoriesTableConfig`; the mixin column picker (`components/shared/MixinColumns.tsx`) fills the `TableExtensions` `children` slot.
+Tree drag and drop (`dragdropScope` / `onDragDrop`), the media tab (`AssetsViewer`, `MediaAssetUpload`) and the table settings (`TableExtensions`) come from `@emporix/component-library` 2.28.0; dragging a tree node with the mouse needs ≥ 2.31.2 (earlier releases never start the drag in Chrome, Edge and Safari). The data behind them stays in the remote: the move handler in `CategoryTreeBase.tsx` (`categoryTreeMove.helpers.ts`), `useCategoryMedia` and `useCategoriesTableConfig`; the mixin column picker (`components/shared/MixinColumns.tsx`) fills the `TableExtensions` `children` slot.
 
 ## AppState
 

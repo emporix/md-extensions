@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import type { TreeNode } from '@emporix/component-library'
 import { CategoryTree } from '../../models/Category.model'
 import {
+  dropLeftoverRootTrees,
   findAncestorKeys,
   findInsertLocation,
   findNodeLocation,
@@ -358,6 +359,66 @@ describe('pickCategorySubtrees', () => {
   test('skips ids that are not in the trees', () => {
     expect(pickCategorySubtrees(trees, ['missing'])).toEqual([])
     expect(pickCategorySubtrees([], ['a'])).toEqual([])
+  })
+})
+
+describe('dropLeftoverRootTrees', () => {
+  const ids = (trees: CategoryTree[]) => trees.map(({ id }) => id)
+
+  test('drops the old root tree of a category that got a parent', () => {
+    // `shoes` was a root; it now hangs below `clothes`, with its child.
+    const trees = [
+      category('clothes', 0, [category('shoes', 0, [category('boots', 0)])]),
+      category('food', 1),
+      category('shoes', 4, [category('boots', 0)]),
+    ]
+    expect(ids(dropLeftoverRootTrees(trees))).toEqual(['clothes', 'food'])
+  })
+
+  test('drops a chain of leftovers, however outdated they are', () => {
+    // Real: root -> a -> b. The service still lists `a` (without `b`) and `b`.
+    const trees = [
+      category('root', 0, [category('a', 0, [category('b', 0)])]),
+      category('a', 1),
+      category('b', 2),
+    ]
+    expect(ids(dropLeftoverRootTrees(trees))).toEqual(['root'])
+  })
+
+  test('keeps a real root that only a leftover still lists', () => {
+    // `old` got the parent `root`; later its child `free` became a root.
+    const trees = [
+      category('root', 0, [category('old', 0)]),
+      category('free', 1, [category('leaf', 0)]),
+      category('old', 2, [category('free', 0)]),
+    ]
+    expect(ids(dropLeftoverRootTrees(trees))).toEqual(['root', 'free'])
+  })
+
+  test('drops what a root lists once that root turns out to be real', () => {
+    // As above, and the service also keeps an old tree of `leaf`.
+    const trees = [
+      category('root', 0, [category('old', 0)]),
+      category('old', 1, [category('free', 0)]),
+      category('free', 2, [category('leaf', 0)]),
+      category('leaf', 3),
+    ]
+    expect(ids(dropLeftoverRootTrees(trees))).toEqual(['root', 'free'])
+  })
+
+  test('keeps two roots that list each other', () => {
+    const trees = [
+      category('a', 0, [category('b', 0)]),
+      category('b', 1, [category('a', 0)]),
+      category('c', 2),
+    ]
+    expect(ids(dropLeftoverRootTrees(trees))).toEqual(['a', 'b', 'c'])
+  })
+
+  test('returns the same trees in the same order when nothing is left over', () => {
+    const trees = [category('b', 1, [category('b1', 0)]), category('a', 0)]
+    expect(dropLeftoverRootTrees(trees)).toBe(trees)
+    expect(dropLeftoverRootTrees([])).toEqual([])
   })
 })
 

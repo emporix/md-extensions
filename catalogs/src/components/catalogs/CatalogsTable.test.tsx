@@ -88,8 +88,10 @@ const catalogs = [
   },
 ]
 
-const renderList = (tenant = 'tenant-a') =>
-  renderAt('/', { list: <CatalogsPage />, detail: <div>detail</div> }, tenant)
+const renderList = (tenant = 'tenant-a', contentLanguage?: string) =>
+  renderAt('/', { list: <CatalogsPage />, detail: <div>detail</div> }, tenant, {
+    contentLanguage,
+  })
 
 const table = () => screen.getByTestId('catalogs-table')
 
@@ -171,6 +173,46 @@ describe('Catalogs list', () => {
       'tenant-a',
       expect.objectContaining({ currentPage: 1, rows: 10 })
     )
+  })
+
+  // COP-7488: the host passes the content language as the tenant configuration
+  // spells it (`de-at`), the service stores BCP-47 keys (`de-AT`).
+  describe('content language', () => {
+    const catalogNames = () => {
+      const nameColumn = headers().findIndex((text) =>
+        text.includes('Catalog name')
+      )
+      return within(table())
+        .getAllByRole('row')
+        .slice(-3)
+        .map((row) => row.querySelectorAll('td')[nameColumn]?.textContent)
+    }
+
+    beforeEach(() => {
+      vi.mocked(fetchCatalogs).mockResolvedValue({
+        values: [
+          { ...catalogs[0], name: { en: 'Summer', 'de-AT': 'Sommer AT' } },
+          catalogs[1],
+          { ...catalogs[2], name: {} },
+        ] as never,
+        totalRecords: 3,
+      })
+    })
+
+    // Scenario 1
+    it('shows the name saved under de-AT when the content language is de-at', async () => {
+      renderList('tenant-a', 'de-at')
+
+      expect(await screen.findByText('Sommer AT')).toBeTruthy()
+    })
+
+    // Scenario 2
+    it('falls back to another language with its code, and shows -- without a name', async () => {
+      renderList('tenant-a', 'de-at')
+      await screen.findByText('Sommer AT')
+
+      expect(catalogNames()).toEqual(['Sommer AT', 'Winter(en)', '--'])
+    })
   })
 
   it('shows one site code, a count for several sites, and a dash for none', async () => {

@@ -39,8 +39,8 @@ This is a monorepo of independent Management Dashboard remotes, one Vite app per
 | `units` | playbook-aligned | `units` | `units` → `/apps/management/units/*` | `VITE_UNITS_URL` | `5182` | yes / yes | `2.31.0` / `1.5.1` |
 | `customers` | playbook-aligned | `customers` | `customers` → `/apps/management/customers/*` | `VITE_CUSTOMERS_URL` | `5184` | yes / yes | `2.31.1` / `1.7.1` |
 | `catalogs` | playbook-aligned | `catalogs` | `catalogs` → `/apps/management/catalogs/*` | `VITE_CATALOGS_URL` | `5185` | yes / yes | `2.31.1` / `1.5.3` |
-| `categories` | playbook-aligned | `categories` | `categories` → `/apps/management/categories/*` | `VITE_CATEGORIES_URL` | `5186` | yes / yes | `2.31.1` / `1.5.3` |
-| `classifications` | playbook-aligned | `classifications` | `classifications` → `/apps/management/classifications/*` | `VITE_CLASSIFICATIONS_URL` | `5187` | yes / yes | `2.29.0` / `1.5.3` |
+| `categories` | playbook-aligned | `categories` | `categories` → `/apps/management/categories/*` | `VITE_CATEGORIES_URL` | `5186` | yes / yes | `2.31.2` / `1.5.3` |
+| `classifications` | playbook-aligned | `classifications` | `classifications` → `/apps/management/classifications/*` | `VITE_CLASSIFICATIONS_URL` | `5187` | yes / yes | `2.31.2` / `1.5.3` |
 | `quotes` | playbook-aligned | `quotes` | `quotes` → `/apps/management/quotes/*` | `VITE_QUOTES_URL` | `5188` | yes / yes | `2.29.2` / `1.7.1` |
 | `taxes` | playbook-aligned | `taxes` | `taxes` → `/apps/management/taxes/*` | `VITE_TAXES_URL` | `5189` | yes / yes | `2.29.2` / `1.7.1` |
 | `sites-settings` | playbook-aligned | `sitesSettings` | `sitesSettings` → `/apps/management/sites-settings/*` | `VITE_SITES_SETTINGS_URL` | `5190` | yes / yes | `2.30.1` / `1.7.1` |

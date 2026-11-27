@@ -34,6 +34,7 @@ import {
 import { EmployeeDomains } from '../../configs/accessControls'
 import {
   type NewCategoryPlacement,
+  dropLeftoverRootTrees,
   findAncestorKeys,
   findInsertLocation,
   findNodeLocation,
@@ -157,7 +158,9 @@ const CategoryTreeBase = (
       try {
         setIsLoading(true)
         // MD's tree lists unpublished categories too (api-calls default).
-        const trees = await getCategoryTrees({ type })
+        // The service keeps the tree a category had as a root after it got a
+        // parent; shown as it comes, the category would be in the tree twice.
+        const trees = dropLeftoverRootTrees(await getCategoryTrees({ type }))
         if (loadId !== loadIdRef.current) return
         const nodes = mapCategoryTreesToNodes(
           trees,

@@ -276,3 +276,50 @@ export const pickCategorySubtrees = (
   categoryIds
     .map((id) => findCategory(trees, id))
     .filter((category): category is CategoryTree => !!category)
+
+const collectDescendantIds = (
+  category: CategoryTree,
+  ids = new Set<string>()
+): Set<string> => {
+  for (const child of category.subcategories ?? []) {
+    ids.add(child.id)
+    collectDescendantIds(child, ids)
+  }
+  return ids
+}
+
+/**
+ * `/category-trees` keeps the tree a category had as a root after the category
+ * got a parent: the service has no call to remove it and does not refresh it
+ * (COP-7480). Shown as it comes, that category and its subcategories appear
+ * twice, as a root and under the new parent.
+ *
+ * A root tree is such a leftover when its category is listed inside the tree
+ * of a root that is itself kept. The roots nobody lists are settled first and
+ * the roots they list are dropped; that repeats, because a leftover can still
+ * list a category that is a real root by now, and that one must stay. Roots
+ * that only list each other all stay: nothing tells which of them is current.
+ * Without leftovers the same array comes back.
+ */
+export const dropLeftoverRootTrees = (
+  trees: CategoryTree[]
+): CategoryTree[] => {
+  const idsInside = new Map(
+    trees.map((tree) => [tree, collectDescendantIds(tree)])
+  )
+  const isListedBy = (tree: CategoryTree, roots: CategoryTree[]) =>
+    roots.some((root) => root !== tree && idsInside.get(root)?.has(tree.id))
+
+  let kept = trees
+  for (;;) {
+    const current = kept
+    const settled = current.filter((tree) => !isListedBy(tree, current))
+    const leftovers = new Set(
+      current.filter((tree) => isListedBy(tree, settled))
+    )
+    if (leftovers.size === 0) {
+      return current
+    }
+    kept = current.filter((tree) => !leftovers.has(tree))
+  }
+}

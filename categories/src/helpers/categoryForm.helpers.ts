@@ -65,15 +65,20 @@ const NEW_CATEGORY_DEFAULTS: Partial<Category> = {
 
 // The update replaces the whole category, so the form goes on top of the
 // loaded one. The API generates the id of a new category when none is given.
+// Codes are unique per tenant, the empty one included (409 for the second
+// category saved with `code: ""`), so a blank code is left out; on an update
+// that also clears the loaded code.
 export const mapCategoryFormToPayload = (
   form: CategoryFormFields,
   category?: Category
 ): Partial<Category> => {
   const id = form.id.trim()
+  const base: Partial<Category> = { ...(category ?? NEW_CATEGORY_DEFAULTS) }
+  delete base.code
   return {
-    ...(category ?? NEW_CATEGORY_DEFAULTS),
+    ...base,
     ...(id ? { id } : {}),
-    ...(category || form.code ? { code: form.code } : {}),
+    ...(form.code.trim() ? { code: form.code } : {}),
     localizedName: form.localizedName,
     localizedSlug: form.localizedSlug,
     localizedDescription: form.localizedDescription,

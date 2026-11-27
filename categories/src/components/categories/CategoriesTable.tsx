@@ -29,6 +29,7 @@ import { useDashboardContext } from '../../context/Dashboard.context'
 import { useUIBlocker } from '../../context/UIBlcoker'
 import { StylableProps } from '../../helpers/props'
 import { parseTableColumns } from '../../helpers/tables'
+import { withLocalizedSort } from '../../helpers/localized'
 import { toColumnVisibility } from '../../helpers/categoriesTable.helpers'
 import type { DisplayMixin } from '../../models/DisplayMixin'
 import { SchemaType } from '../../models/Schema.model'
@@ -56,7 +57,7 @@ const CategoriesTable = ({ className = '', treeRef }: CategoriesTableProps) => {
   const { showSuccess, showError } = useToast()
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.CATEGORIES_MANAGER)
-  const { tenant } = useDashboardContext()
+  const { tenant, contentLanguage } = useDashboardContext()
   const { blockPanel } = useUIBlocker()
   const {
     paginationParams,
@@ -90,19 +91,25 @@ const CategoriesTable = ({ className = '', treeRef }: CategoriesTableProps) => {
     setSelectedCategories([])
   }, [tenant])
 
+  // The query the service gets: a Name (or Slug) sort in the content language.
+  const listQuery = useMemo(
+    () => withLocalizedSort(paginationParams, contentLanguage),
+    [paginationParams, contentLanguage]
+  )
+
   useEffect(() => {
     if (displayType === 'list') {
       void loadCategories()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refresh, paginationParams, tenant, displayType])
+  }, [refresh, listQuery, tenant, displayType])
 
   const loadCategories = async () => {
     const loadId = ++loadIdRef.current
     try {
       setIsLoading(true)
       const { values, totalRecords } = await getCategoriesPaginated(
-        paginationParams,
+        listQuery,
         CategoryType.STANDARD,
         false,
         true
