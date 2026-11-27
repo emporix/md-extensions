@@ -141,3 +141,58 @@ describe('ApiClient.postSse', () => {
     expect(headers['session-id']).toBe('session-1')
   })
 })
+
+describe('ApiClient request headers', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  const jsonResponse = () =>
+    new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })
+
+  const sentHeaders = (fetchMock: ReturnType<typeof vi.fn>) =>
+    fetchMock.mock.calls[0][1].headers as Record<string, string>
+
+  it.each([
+    ['get', (client: ApiClient, init: RequestInit) => client.get('/x', init)],
+    [
+      'post',
+      (client: ApiClient, init: RequestInit) => client.post('/x', {}, init),
+    ],
+    [
+      'put',
+      (client: ApiClient, init: RequestInit) => client.put('/x', {}, init),
+    ],
+    [
+      'patch',
+      (client: ApiClient, init: RequestInit) => client.patch('/x', {}, init),
+    ],
+    [
+      'delete',
+      (client: ApiClient, init: RequestInit) => client.delete('/x', init),
+    ],
+  ])(
+    'keeps the auth, tenant and content headers when %s gets extra headers',
+    async (_method, call) => {
+      const fetchMock = vi.fn().mockResolvedValue(jsonResponse())
+      vi.stubGlobal('fetch', fetchMock)
+      const controller = new AbortController()
+
+      await call(new ApiClient(appState), {
+        headers: { 'session-id': 'session-1' },
+        signal: controller.signal,
+      })
+
+      expect(sentHeaders(fetchMock)).toMatchObject({
+        Authorization: 'Bearer token',
+        'Emporix-tenant': 'testtenant',
+        'Content-Type': 'application/json',
+        'session-id': 'session-1',
+      })
+      expect(fetchMock.mock.calls[0][1].signal).toBe(controller.signal)
+    }
+  )
+})
