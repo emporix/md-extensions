@@ -58,6 +58,8 @@ Hash routes (`sites-settings/src/constants/paths.ts`): `/` list, `/add`, `/:site
 
 `sites` (MD `modules/sites/translations`, without `select`, which stays in MD for the switcher) plus `global`, `auditLog`, `confirmBox`, `errors`, `mixins`, `navigation` (the keys the copied mixins and audit-log code use, from `customers`). `translations.test.ts` checks EN/DE key parity, the MD `sites` keys, and that every literal `t('…')` key in the source has an EN and a DE text.
 
+A host tenant switch does not remount the remote. `FeatureTogglesProvider` applies toggles, errors and the end of loading only for the tenant that is still current, and `SitesProvider` clears `sites` and `currentSite` on a tenant or token change and ignores a late response for the previous tenant, so no other tenant's site code reaches a form (`sites-settings/src/context/tenantSwitch.test.tsx`).
+
 ## Host wiring
 
 MD route `sitesSettings` → `/apps/management/sites-settings/*` as an `ExternalModule` with `VITE_SITES_SETTINGS_URL` (`frontend-extensions{-develop,-stage,}.web.app/sites-settings/remoteEntry.js`, local `http://localhost:5190/assets/remoteEntry.js`). `SitesPathRedirect` moves former pathname links (`/add`, `/:siteCode`) into the hash; the MD audit log links a site to `/apps/management/sites-settings#/{code}`. The keys `sitesSettingsAdd` / `sitesSettingsEdit` are gone. Deploy: `.github/workflows/sites-settings-firebase-*.yaml` into the shared Hosting site folder `sites-settings/`; the workflows include `audit-log/**`.

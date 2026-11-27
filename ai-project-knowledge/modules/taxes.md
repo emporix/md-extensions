@@ -75,6 +75,8 @@ Pinned by `taxes/src/pages/TaxClass.page.test.tsx`.
 
 `taxes/src/translations/{en,de}/taxes.ts` keep MD's `taxes.*` keys (`title`, `singular`, `plural`, `addTaxClass`, `editTaxClass`, `label.*`, `toast.success*`), plus `placeholder.country`, `validation.*` and `toast.error*`. EN and DE key parity and the absence of `primereact` are pinned by `taxes/src/translations/translations.test.ts`.
 
+A host tenant switch does not remount the remote. `FeatureTogglesProvider` applies toggles, errors and the end of loading only for the tenant that is still current, and `SitesProvider` clears `sites` and `currentSite` on a tenant or token change and ignores a late response for the previous tenant; no taxes screen reads sites today (`taxes/src/context/tenantSwitch.test.tsx`).
+
 ## Host wiring
 
 | Fact | Value |

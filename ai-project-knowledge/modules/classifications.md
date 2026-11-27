@@ -105,6 +105,8 @@ Pinned by `helpers/classificationSchema.helpers.test.ts` and the `schema tiles` 
 
 `classifications/src/translations/{en,de}/` hold `categories`, `classifications`, `global` and `mixins`. The `classifications.*` keys are MD's; the tree copy reads `categories.*` keys (`categories.tree.*`, `categories.edit.tab.*`, `categories.actions.rebuild.error`) and the version buttons `mixins.buttons.keepOld` / `newVersion`. EN and DE key parity, no empty values and the absence of `primereact` are pinned by `classifications/src/translations/translations.test.ts`.
 
+A host tenant switch does not remount the remote. `FeatureTogglesProvider` applies toggles, errors and the end of loading only for the tenant that is still current, and `SitesProvider` (guarded since the port) clears `sites` and `currentSite` on a tenant or token change and ignores a late response for the previous tenant (`classifications/src/context/tenantSwitch.test.tsx`).
+
 ## Host wiring
 
 | Fact | Value |
