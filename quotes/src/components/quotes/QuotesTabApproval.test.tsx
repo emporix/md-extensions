@@ -26,7 +26,9 @@ const quotesApi = vi.hoisted(() => ({
   getQuotePdf: vi.fn(),
   changeQuoteStatus: vi.fn(),
   getQuotesReasons: vi.fn(),
+  sendQuoteToCustomer: vi.fn(),
 }))
+const blocker = vi.hoisted(() => ({ blockPanel: vi.fn() }))
 const toast = vi.hoisted(() => ({
   showToast: vi.fn(),
   showError: vi.fn(),
@@ -35,6 +37,7 @@ const toast = vi.hoisted(() => ({
 const permissions = vi.hoisted(() => ({ granted: [] as string[] }))
 
 vi.mock('../../hooks/api/quotes', () => ({ useQuotesApi: () => quotesApi }))
+vi.mock('../../context/UIBlocker', () => ({ useUIBlocker: () => blocker }))
 vi.mock('../../context/PermissionsProvider', () => ({
   usePermissions: () => ({
     hasPermission: (domain: string) => permissions.granted.includes(domain),
@@ -111,6 +114,7 @@ describe('QuotesTabApproval', () => {
     permissions.granted = [EmployeeDomains.QUOTES_MANAGER]
     quotesApi.getQuotePdf.mockResolvedValue('%PDF')
     quotesApi.changeQuoteStatus.mockResolvedValue({})
+    quotesApi.sendQuoteToCustomer.mockResolvedValue(undefined)
     URL.createObjectURL = vi.fn(() => 'blob:quote-pdf')
     URL.revokeObjectURL = vi.fn()
   })
@@ -664,13 +668,14 @@ describe('QuotesTabApproval', () => {
     })
   })
 
-  // COP-7125: a pending quote offers only Decline and Approve.
+  // COP-7125: a pending quote offers Send, Decline and Approve (Send: see below).
   it('offers Decline and Approve for a pending quote', async () => {
     quotesApi.getQuoteById.mockResolvedValue(quote('IN_PROGRESS'))
     renderApproval({ openAfterLoad: true })
 
     await screen.findByRole('button', { name: 'Approve Quote' })
     expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual([
+      'Send quote to customer',
       'Decline Quote',
       'Approve Quote',
     ])
@@ -844,5 +849,104 @@ describe('QuotesTabApproval', () => {
 
     expect(button('Approve Quote').disabled).toBe(false)
     expect(button('Decline Quote').disabled).toBe(false)
+  })
+
+  // COP-7125: a pending quote can be mailed to the customer as it is.
+  describe('Send quote to customer', () => {
+    const SEND = 'Send quote to customer'
+
+    it('is offered left of Decline and Approve for a pending quote', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('IN_PROGRESS'))
+      renderApproval({ openAfterLoad: true })
+
+      await screen.findByRole('button', { name: SEND })
+      expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual([
+        SEND,
+        'Decline Quote',
+        'Approve Quote',
+      ])
+      expect(button(SEND).disabled).toBe(false)
+    })
+
+    it.each([
+      'AWAITING',
+      'OPEN',
+      'CREATING',
+      'ACCEPTED',
+      'DECLINED_BY_MERCHANT',
+    ])('is not offered for a %s quote', async (status) => {
+      quotesApi.getQuoteById.mockResolvedValue(quote(status))
+      renderApproval({ openAfterLoad: true })
+
+      await waitFor(() => expect(quotesApi.getQuotePdf).toHaveBeenCalled())
+      expect(screen.queryByRole('button', { name: SEND })).toBeNull()
+    })
+
+    it('is not offered without Quotes Manager', async () => {
+      permissions.granted = []
+      quotesApi.getQuoteById.mockResolvedValue(quote('IN_PROGRESS'))
+      renderApproval({ openAfterLoad: true })
+
+      await screen.findByRole('button', { name: 'Approve Quote' })
+      expect(screen.queryByRole('button', { name: SEND })).toBeNull()
+    })
+
+    it('sends the quote, shows the success toast and unblocks the panel', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('IN_PROGRESS'))
+      renderApproval({ openAfterLoad: true })
+
+      fireEvent.click(await screen.findByRole('button', { name: SEND }))
+
+      await waitFor(() =>
+        expect(toast.showToast).toHaveBeenCalledWith(
+          'Quote sent to the customer!',
+          '',
+          'success'
+        )
+      )
+      expect(quotesApi.sendQuoteToCustomer).toHaveBeenCalledWith('Q1')
+      expect(quotesApi.changeQuoteStatus).not.toHaveBeenCalled()
+      expect(blocker.blockPanel).toHaveBeenLastCalledWith(false)
+      expect(screen.queryByTestId('list')).toBeNull()
+    })
+
+    it('shows the backend cause when sending fails and unblocks the panel', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(quote('IN_PROGRESS'))
+      quotesApi.sendQuoteToCustomer.mockRejectedValue({
+        response: { data: { message: 'Quote is not pending' } },
+      })
+      renderApproval({ openAfterLoad: true })
+
+      fireEvent.click(await screen.findByRole('button', { name: SEND }))
+
+      await waitFor(() =>
+        expect(toast.showError).toHaveBeenCalledWith(
+          'The quote could not be sent',
+          'Quote is not pending'
+        )
+      )
+      expect(toast.showToast).not.toHaveBeenCalledWith(
+        'Quote sent to the customer!',
+        '',
+        'success'
+      )
+      expect(blocker.blockPanel).toHaveBeenLastCalledWith(false)
+    })
+
+    it('stays enabled for a quote without prices and address, while Approve is disabled', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(
+        unpricedQuote(QuoteStatus.IN_PROGRESS)
+      )
+      renderApproval({ openAfterLoad: true })
+      await screen.findByRole('button', { name: SEND })
+
+      expect(button('Approve Quote').disabled).toBe(true)
+      expect(button(SEND).disabled).toBe(false)
+
+      fireEvent.click(button(SEND))
+      await waitFor(() =>
+        expect(quotesApi.sendQuoteToCustomer).toHaveBeenCalledWith('q1')
+      )
+    })
   })
 })

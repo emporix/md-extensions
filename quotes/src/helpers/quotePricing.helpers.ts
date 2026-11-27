@@ -36,6 +36,14 @@ export const getQuoteOpenBlockers = (
   addressMissing: !quote.billingAddress || !quote.shippingAddress,
 })
 
+/** True while the quote service would reject it as OPEN. */
+export const isQuoteIncomplete = (
+  quote: Pick<Quote, 'items' | 'billingAddress' | 'shippingAddress'>
+): boolean => {
+  const { unpricedItems, addressMissing } = getQuoteOpenBlockers(quote)
+  return unpricedItems > 0 || addressMissing
+}
+
 /** The row's tax rate as `19%`, blank while the backend has not set one. */
 export const formatTaxRate = (item: Item): string => {
   const rate = item.price?.tax?.taxRate

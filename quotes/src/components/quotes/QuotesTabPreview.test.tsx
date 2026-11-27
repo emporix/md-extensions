@@ -440,12 +440,12 @@ describe('QuotesTabPreview', () => {
       expect(screen.queryByTestId('quote-unpriced-warning')).toBeNull()
     })
 
-    it('shows unpriced rows as "Price on request" without NaN, undefined or null', async () => {
+    it('shows unpriced rows as "No price" without NaN, undefined or null', async () => {
       quotesApi.getQuoteById.mockResolvedValue(unpricedQuote())
       renderPreview()
 
       await waitFor(async () =>
-        expect((await tableText()).match(/PRICE ON REQUEST/g)).toHaveLength(2)
+        expect((await tableText()).match(/NO PRICE/g)).toHaveLength(2)
       )
       expect(await tableText()).toContain('Unpriced product')
       expect(totals()).not.toMatch(/NaN|undefined|null/)

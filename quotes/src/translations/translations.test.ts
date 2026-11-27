@@ -100,6 +100,6 @@ describe('quote improvement texts (COP-7125)', () => {
     expect(en.quotes.tabs.preview.unpricedWarning_other).toBe(
       'Totals exclude {{count}} unpriced items'
     )
-    expect(en.quotes.priceOnRequest).toBe('Price on request')
+    expect(en.quotes.priceOnRequest).toBe('No price')
   })
 })

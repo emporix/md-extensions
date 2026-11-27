@@ -90,6 +90,8 @@ export default {
     successDraftCreate: 'Angebotsentwurf erfolgreich angelegt',
     successCreate: 'Angebot erstellt!',
     successPending: 'Angebot als ausstehend gespeichert!',
+    successSendToCustomer: 'Angebot an den Kunden gesendet!',
+    errorSendToCustomer: 'Das Angebot konnte nicht gesendet werden',
     errorCreate: 'Fehler beim Erstellen des Angebots',
     errorLegalEntities: 'Unternehmen können nicht geladen werden',
     errorFetchCustomers:
@@ -97,7 +99,7 @@ export default {
     siteRestrictionError:
       'Sie haben keine Berechtigung, auf Angebote für Site {{siteCode}} zuzugreifen. Bitte wenden Sie sich an Ihren Administrator, um weitere Unterstützung zu erhalten.',
   },
-  priceOnRequest: 'Preis auf Anfrage',
+  priceOnRequest: 'Kein Preis',
   tabs: {
     general: {
       title: 'Allgemein',
@@ -172,11 +174,23 @@ export default {
         taxClass: 'Steuerklasse',
       },
     },
+    history: {
+      title: 'Verlauf',
+      changeDate: 'Änderungsdatum',
+      event: 'Ereignis',
+      changedBy: 'Geändert von',
+      status: 'Status',
+      comment: 'Kommentar',
+      initialRequest: 'Erste Angebotsanfrage',
+      statusChanged: 'Status geändert zu {{status}}',
+      loadError: 'Der Angebotsverlauf konnte nicht geladen werden',
+    },
     approval: {
       title: 'Freigabe',
       startNegotiationBtn: 'Verhandlung starten',
       createBtn: 'Angebot erstellen',
       pendingBtn: 'Als ausstehendes Angebot speichern',
+      sendToCustomerBtn: 'Angebot an den Kunden senden',
       incompleteIntro: 'Das Angebot kann noch nicht erstellt werden:',
       missingPrice_one: '{{count}} Produkt hat keinen Preis',
       missingPrice_other: '{{count}} Produkte haben keinen Preis',

@@ -130,7 +130,7 @@ export interface Status {
 export interface Item {
   itemId: string
   quantity: Quantity
-  /** Absent or null for a product without a price ("Price on request"). */
+  /** Absent or null for a product without a price ("No price"). */
   price?: Price | null
   priceStatus?: PriceStatus
   product: Product

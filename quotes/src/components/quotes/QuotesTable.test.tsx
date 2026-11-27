@@ -362,6 +362,59 @@ describe('QuotesTable', () => {
     }
   })
 
+  describe('approve of a pending quote (COP-7125)', () => {
+    const address = { country: 'DE' }
+    const pricedItem = {
+      itemId: 'I1',
+      product: { productId: 'P1', name: { en: 'Chair' } },
+      quantity: { quantity: 1, unitCode: 'pcs' },
+      price: { totalNetValue: 8 },
+    }
+    const pending = (id: string, over: Record<string, unknown> = {}) => ({
+      ...quote(id, id),
+      status: { value: 'IN_PROGRESS' },
+      items: [pricedItem],
+      billingAddress: address,
+      shippingAddress: address,
+      ...over,
+    })
+    const isDisabled = (testId: string) => {
+      const el = screen.getByTestId(testId)
+      return (
+        (el as HTMLButtonElement).disabled ||
+        !!el.closest('button')?.disabled ||
+        el.getAttribute('aria-disabled') === 'true'
+      )
+    }
+
+    it('keeps approve and decline active when prices and addresses are complete', async () => {
+      quotesApi.getQuotes.mockResolvedValue({
+        data: [pending('Q1')],
+        totalRecords: 1,
+      })
+      renderTable()
+      await waitFor(() => expect(screen.getByText(/of 1$/)).toBeTruthy())
+
+      expect(isDisabled('quote-approve-Q1')).toBe(false)
+      expect(isDisabled('quote-decline-Q1')).toBe(false)
+    })
+
+    it.each([
+      ['an address is missing', { shippingAddress: null }],
+      ['an item has no price', { items: [{ ...pricedItem, price: null }] }],
+    ])('disables approve, not decline, when %s', async (_name, over) => {
+      quotesApi.getQuotes.mockResolvedValue({
+        data: [pending('Q1', over)],
+        totalRecords: 1,
+      })
+      renderTable()
+      await waitFor(() => expect(screen.getByText(/of 1$/)).toBeTruthy())
+
+      expect(isDisabled('quote-approve-Q1')).toBe(true)
+      expect(isDisabled('quote-decline-Q1')).toBe(false)
+    })
+  })
+
   // COP-7125 (ported from MD quotesNullSafe.test.tsx, emporix/
   // management-dashboard#1707): totals while the tax is unknown and items
   // without a price.
@@ -410,7 +463,7 @@ describe('QuotesTable', () => {
 
       fireEvent.click(screen.getByRole('button', { name: /expand/i }))
 
-      expect(await screen.findByText('PRICE ON REQUEST')).toBeTruthy()
+      expect(await screen.findByText('NO PRICE')).toBeTruthy()
     })
 
     // The list cases of MD quotesNullSafe.test.tsx (emporix/
@@ -424,7 +477,7 @@ describe('QuotesTable', () => {
       )
 
       expect(await screen.findByText('Unpriced product')).toBeTruthy()
-      expect(screen.getAllByText('PRICE ON REQUEST')).toHaveLength(2)
+      expect(screen.getAllByText('NO PRICE')).toHaveLength(2)
       expect(container.textContent).not.toMatch(/NaN|undefined|null/)
     })
 

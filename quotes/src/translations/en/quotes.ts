@@ -87,6 +87,8 @@ export default {
     successDraftCreate: 'Quote draft created successfully',
     successCreate: 'Quote created!',
     successPending: 'Quote saved as pending!',
+    successSendToCustomer: 'Quote sent to the customer!',
+    errorSendToCustomer: 'The quote could not be sent',
     errorCreate: 'Error while creating quote',
     errorLegalEntities: 'Cannot load companies',
     errorFetchCustomers:
@@ -94,7 +96,7 @@ export default {
     siteRestrictionError:
       'You do not have permission to access Quotes for site {{siteCode}}. Please contact your administrator for further assistance.',
   },
-  priceOnRequest: 'Price on request',
+  priceOnRequest: 'No price',
   tabs: {
     general: {
       title: 'General',
@@ -168,11 +170,23 @@ export default {
         taxClass: 'Tax class',
       },
     },
+    history: {
+      title: 'History',
+      changeDate: 'Change Date',
+      event: 'Event',
+      changedBy: 'Changed By',
+      status: 'Status',
+      comment: 'Comment',
+      initialRequest: 'Initial Quote Request',
+      statusChanged: 'Status Changed to {{status}}',
+      loadError: 'The quote history could not be loaded',
+    },
     approval: {
       title: 'Approval',
       startNegotiationBtn: 'Start negotiation',
       createBtn: 'Create Quote',
       pendingBtn: 'Save as Pending Quote',
+      sendToCustomerBtn: 'Send quote to customer',
       incompleteIntro: 'The quote cannot be created yet:',
       missingPrice_one: '{{count}} product has no price',
       missingPrice_other: '{{count}} products have no price',

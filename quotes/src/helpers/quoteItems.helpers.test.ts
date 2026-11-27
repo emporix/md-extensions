@@ -137,7 +137,7 @@ describe('findLinesWithoutTaxClass', () => {
     ...(price ? { price } : {}),
   })
 
-  it('does not list a placeholder price or a missing price (Price on request)', () => {
+  it('does not list a placeholder price or a missing price (No price)', () => {
     const placeholder = line('P1', { priceId: '', tax: { taxClass: '' } })
     const missing = line('P2')
     expect(findLinesWithoutTaxClass([placeholder, missing])).toEqual([])

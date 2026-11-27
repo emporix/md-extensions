@@ -17,7 +17,7 @@ interface QuotesTabProductsSelectedProps extends StylableProps {
 }
 
 /**
- * The picked products: name, id, a "Price on request" badge for saved items
+ * The picked products: name, id, a "No price" badge for saved items
  * without a price (COP-7125) and a remove button.
  */
 const QuotesTabProductsSelected = (props: QuotesTabProductsSelectedProps) => {

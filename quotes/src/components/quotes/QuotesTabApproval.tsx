@@ -17,7 +17,10 @@ import {
 } from '../../models/Quotes.model'
 import { EmployeeDomains } from '../../configs/accessControls'
 import { StylableProps } from '../../helpers/props'
-import { getQuoteApprovalActions } from '../../helpers/quoteStatus.helpers'
+import {
+  canSendQuoteToCustomer,
+  getQuoteApprovalActions,
+} from '../../helpers/quoteStatus.helpers'
 import {
   buildQuotePendingPayload,
   buildQuoteSendPayload,
@@ -37,7 +40,7 @@ const QuotesTabApproval = (props: StylableProps) => {
   const { className = '' } = props
   const { t } = useTranslation()
   const { blockPanel } = useUIBlocker()
-  const { getQuotePdf, changeQuoteStatus } = useQuotesApi()
+  const { getQuotePdf, changeQuoteStatus, sendQuoteToCustomer } = useQuotesApi()
   const { navigate } = useCustomNavigate()
   const { quote } = useQuoteData()
   const toast = useToast()
@@ -100,6 +103,29 @@ const QuotesTabApproval = (props: StylableProps) => {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the hooks' functions are stable
+    [quote]
+  )
+
+  // COP-7125: mails the pending quote to the customer; the status stays, so
+  // there is nothing to reload. Missing prices or addresses do not matter.
+  const onSendToCustomer = useCallback(
+    async () => {
+      if (!quote) return
+      try {
+        blockPanel(true)
+        await sendQuoteToCustomer(quote.id)
+        toast.showToast(t('quotes.toasts.successSendToCustomer'), '', 'success')
+      } catch (e) {
+        console.error(e)
+        toast.showError(
+          t('quotes.toasts.errorSendToCustomer'),
+          getApiErrorDetails(e)
+        )
+      } finally {
+        blockPanel(false)
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the hooks' functions are stable; `t` follows i18n.language
     [quote]
   )
 
@@ -173,6 +199,11 @@ const QuotesTabApproval = (props: StylableProps) => {
     } else if (actions === 'decide') {
       return (
         <>
+          {canSendQuoteToCustomer(quote?.status.value, canManage) && (
+            <SecondaryButton onClick={onSendToCustomer}>
+              {t('quotes.tabs.approval.sendToCustomerBtn')}
+            </SecondaryButton>
+          )}
           <SecondaryButton
             disabled={!canManage}
             onClick={() => setQuoteUpdateType(QuoteChangeStatusType.decline)}
@@ -199,7 +230,14 @@ const QuotesTabApproval = (props: StylableProps) => {
     // Permissions may arrive after the quote (a deep link); MD memoized on
     // the quote alone and kept the buttons disabled.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `t` follows i18n.language
-  }, [quote, canManage, onCreateSubmit, onPendingSubmit, incompleteReason])
+  }, [
+    quote,
+    canManage,
+    onCreateSubmit,
+    onPendingSubmit,
+    onSendToCustomer,
+    incompleteReason,
+  ])
 
   return (
     <div className={className}>

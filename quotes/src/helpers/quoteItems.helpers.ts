@@ -73,7 +73,7 @@ type PricedLine = {
  * without a tax class. The service requires `price.tax.taxClass` and answers
  * "price.tax.taxClass: must not be blank" once per line, naming neither the
  * line nor the product (COP-7116 QA). A line without a matched price is not
- * listed: COP-7125 adds such a product without a price ("Price on request")
+ * listed: COP-7125 adds such a product without a price ("No price")
  * and blocks only sending the quote.
  */
 export const findLinesWithoutTaxClass = <T extends PricedLine>(

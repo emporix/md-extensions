@@ -189,6 +189,27 @@ describe('useQuotesApi on @emporix/api-calls/next', () => {
     })
   })
 
+  it('sends the quote to the customer with a bodiless POST', async () => {
+    await renderApi().sendQuoteToCustomer('Q1')
+
+    expect(requests).toHaveLength(1)
+    expect(requests[0]).toMatchObject({
+      method: 'POST',
+      url: '/quote/mytenant/quotes/Q1/send',
+      headers: { 'Emporix-Tenant': 'mytenant' },
+    })
+    expect(requests[0].data).toBeUndefined()
+  })
+
+  it('does not send the quote without a tenant', async () => {
+    dashboard.tenant = null
+
+    await expect(renderApi().sendQuoteToCustomer('Q1')).rejects.toBe(
+      'no config'
+    )
+    expect(requests).toHaveLength(0)
+  })
+
   it('loads every reason in one page of 1000, as MD did', async () => {
     response = {
       data: [{ id: 'r1', type: 'DECLINE' }],
@@ -208,6 +229,19 @@ describe('useQuotesApi on @emporix/api-calls/next', () => {
     })
   })
 
+  it('loads the history of one quote as the array the endpoint returns', async () => {
+    response = { data: [{ id: 'h1', path: '/status' }] }
+
+    const result = await renderApi().getQuoteHistory('Q1')
+
+    expect(requests).toHaveLength(1)
+    expect(requests[0]).toMatchObject({
+      method: 'GET',
+      url: '/quote/mytenant/quotes/Q1/history',
+    })
+    expect(result).toEqual([{ id: 'h1', path: '/status' }])
+  })
+
   it('sends nothing without a tenant', async () => {
     dashboard.tenant = null
     const api = renderApi()
@@ -215,6 +249,7 @@ describe('useQuotesApi on @emporix/api-calls/next', () => {
     await expect(api.getQuotes(listState, 'main')).rejects.toBe('no config')
     await expect(api.getQuoteById('Q1')).rejects.toBe('no config')
     await expect(api.getQuotesReasons()).rejects.toBe('no config')
+    await expect(api.getQuoteHistory('Q1')).rejects.toBe('no config')
     expect(requests).toHaveLength(0)
   })
 })

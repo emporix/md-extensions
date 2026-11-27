@@ -110,7 +110,7 @@ const QuotesTabProducts = (props: StylableProps) => {
 
         // The quote service rejects these lines without naming them
         // (COP-7116 QA), so the save stops here and names the products. A
-        // product without a price is allowed ("Price on request", COP-7125).
+        // product without a price is allowed ("No price", COP-7125).
         const linesWithoutTaxClass =
           findLinesWithoutTaxClass(newItemsWithPrices)
         if (linesWithoutTaxClass.length) {
@@ -162,7 +162,7 @@ const QuotesTabProducts = (props: StylableProps) => {
   }
 
   const products = watch('products') ?? []
-  // COP-7125: saved items without a price are marked "Price on request".
+  // COP-7125: saved items without a price are marked "No price".
   const unpricedProductIds = (quote?.items ?? [])
     .filter((item) => !item.price)
     .map((item) => item.product.productId)

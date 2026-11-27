@@ -290,7 +290,7 @@ describe('QuotesTabProducts', () => {
     fireEvent.click(apply())
     fireEvent.click(save())
 
-    // Table has no price and is not listed (Price on request, COP-7125); only
+    // Table has no price and is not listed (No price, COP-7125); only
     // Lamp, whose matched price has no tax class, stops the save.
     await waitFor(() =>
       expect(toast.showError).toHaveBeenCalledWith(
@@ -449,7 +449,7 @@ describe('QuotesTabProducts', () => {
   describe('products without a price', () => {
     const noAddress = { ...quote, shippingAddress: null }
 
-    it('marks a saved item without a price as "Price on request"', async () => {
+    it('marks a saved item without a price as "No price"', async () => {
       quotesApi.getQuoteById.mockResolvedValue({
         ...quote,
         items: [
@@ -466,9 +466,7 @@ describe('QuotesTabProducts', () => {
 
       const selected = await screen.findByTestId('quote-selected-items')
       await waitFor(() =>
-        expect(within(selected).getAllByText('PRICE ON REQUEST')).toHaveLength(
-          1
-        )
+        expect(within(selected).getAllByText('NO PRICE')).toHaveLength(1)
       )
     })
 
@@ -540,12 +538,12 @@ describe('QuotesTabProducts', () => {
 
       const selected = await screen.findByTestId('quote-selected-items')
       await within(selected).findByText('Chair')
-      expect(within(selected).queryByText('PRICE ON REQUEST')).toBeNull()
+      expect(within(selected).queryByText('NO PRICE')).toBeNull()
       // Name, id and remove: no badge column.
       expect(selected.firstElementChild?.children).toHaveLength(3)
     })
 
-    it('products tab marks unpriced products as price on request', async () => {
+    it('products tab marks unpriced products as no price', async () => {
       // One item with `price: null`, one without a `price` key.
       quotesApi.getQuoteById.mockResolvedValue(unpricedQuote())
       renderProducts()
@@ -553,9 +551,7 @@ describe('QuotesTabProducts', () => {
       const selected = await screen.findByTestId('quote-selected-items')
       expect(await within(selected).findByText('Unpriced product')).toBeTruthy()
       await waitFor(() =>
-        expect(within(selected).getAllByText('PRICE ON REQUEST')).toHaveLength(
-          2
-        )
+        expect(within(selected).getAllByText('NO PRICE')).toHaveLength(2)
       )
       expect(document.body.textContent).not.toMatch(/NaN|undefined|null/)
     })

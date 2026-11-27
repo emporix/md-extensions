@@ -34,6 +34,12 @@ export const canChangeQuoteStatus = (
   canManage: boolean
 ): boolean => canManage && isQuoteAwaitingDecision(status)
 
+/** COP-7125: only a pending (`IN_PROGRESS`) quote can be sent as it is. */
+export const canSendQuoteToCustomer = (
+  status: QuoteStatus | undefined,
+  canManage: boolean
+): boolean => canManage && status === QuoteStatus.IN_PROGRESS
+
 export type QuoteApprovalActions = 'create' | 'decide' | 'negotiate'
 
 /**

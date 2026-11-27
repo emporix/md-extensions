@@ -3,7 +3,9 @@ import {
   createQuoteCall,
   deleteQuoteCall,
   generateQuotePdfCall,
+  getApiClient,
   getQuoteCall,
+  listQuoteHistoryCall,
   listQuoteReasonsCall,
   listQuotesCall,
   patchQuoteCall,
@@ -136,6 +138,24 @@ export const useQuotesApi = () => {
     [tenant]
   )
 
+  // COP-7125: `POST /quote/{tenant}/quotes/{quoteId}/send` mails the quote
+  // (with its PDF) to the customer and changes nothing on the quote. Local
+  // until @emporix/api-calls has `sendQuoteCall`; it uses the library's
+  // client, so base URL, auth and tenant header match the other calls.
+  const sendQuoteToCustomer = useCallback(
+    async (quoteId: string): Promise<void> => {
+      if (!tenant) {
+        return Promise.reject('no config')
+      }
+      await getApiClient().post(
+        `/quote/${encodeURIComponent(tenant)}/quotes/${encodeURIComponent(quoteId)}/send`,
+        undefined,
+        { headers: { 'Emporix-Tenant': tenant } }
+      )
+    },
+    [tenant]
+  )
+
   const getQuotesReasons = useCallback(async () => {
     if (!tenant) {
       return Promise.reject('no config')
@@ -147,6 +167,16 @@ export const useQuotesApi = () => {
     return { data: values as unknown as QuoteReason[], totalRecords }
   }, [tenant])
 
+  const getQuoteHistory = useCallback(
+    (quoteId: string) => {
+      if (!tenant) {
+        return Promise.reject('no config')
+      }
+      return listQuoteHistoryCall(quoteId, { tenant })
+    },
+    [tenant]
+  )
+
   return {
     getQuotes,
     getQuoteById,
@@ -155,6 +185,8 @@ export const useQuotesApi = () => {
     createQuote,
     updateQuote,
     getQuotePdf,
+    sendQuoteToCustomer,
     getQuotesReasons,
+    getQuoteHistory,
   }
 }

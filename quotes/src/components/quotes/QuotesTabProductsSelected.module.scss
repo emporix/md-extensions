@@ -25,7 +25,7 @@
   border-bottom: 1px solid $grey-1;
 }
 
-// The "Price on request" tag (COP-7125) gets a column of its own, the same
+// The "No price" tag (COP-7125) gets a column of its own, the same
 // width in every row, whether the row shows a badge or not.
 .selectedItemWithBadge {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 9.5rem 2.5rem;

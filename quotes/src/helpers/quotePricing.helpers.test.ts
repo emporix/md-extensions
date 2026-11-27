@@ -10,6 +10,7 @@ import {
   hasTaxCalculated,
   hasSameAddresses,
   isExternalPrice,
+  isQuoteIncomplete,
   isSameShipping,
   sumGrossValues,
   withEditableTax,
@@ -373,5 +374,28 @@ describe('isSameShipping', () => {
     expect(isSameShipping(shipping, { ...shipping, methodId: 'x' })).toBe(false)
     expect(isSameShipping(shipping, { ...shipping, value: 0 })).toBe(false)
     expect(isSameShipping(shipping, { ...shipping, grossValue: 7 })).toBe(false)
+  })
+})
+
+describe('isQuoteIncomplete', () => {
+  const address = { country: 'DE' } as never
+  const complete = {
+    items: [pricedItem()],
+    billingAddress: address,
+    shippingAddress: address,
+  }
+  test('is false with every price and both addresses', () => {
+    expect(isQuoteIncomplete(complete)).toBe(false)
+  })
+  test('is true when an address is missing', () => {
+    expect(isQuoteIncomplete({ ...complete, shippingAddress: null })).toBe(true)
+    expect(isQuoteIncomplete({ ...complete, billingAddress: undefined })).toBe(
+      true
+    )
+  })
+  test('is true when an item has no price', () => {
+    expect(
+      isQuoteIncomplete({ ...complete, items: [pricedItem({ price: null })] })
+    ).toBe(true)
   })
 })
