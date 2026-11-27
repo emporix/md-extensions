@@ -88,7 +88,7 @@ Each finding must include:
 7. Auto-fixable: `yes` or `no`
 
 For structural findings marked `Auto-fixable: no`, include:
-8. Reworked structure suggestion: a concrete block-level rewrite blueprint that follows the applicable style rule and can be copied/adapted directly (for example `{% stepper %}` + `{% step %}` + `####` titles for `format-and-structure#steps`)
+8. Reworked structure suggestion: a concrete block-level rewrite blueprint that follows the applicable style rule and can be copied/adapted directly (for example `{% stepper %}` + `{% step %}` + `#####` titles for `format-and-structure#steps`)
 
 Grammar and spelling findings must include the original snippet and corrected snippet in the suggested fix field when auto-fixable.
 
@@ -126,7 +126,7 @@ After applying auto-fixes, return the structured **Docs Self-Review** report. Do
 
 Required sections:
 
-1. Header: Verdict, Ready for peer review, Reviewed files, Task context, Counts
+1. Header: Verdict, Ready for peer review, Reviewed files, Task context, Example and Clarity checks, Counts
 2. **Applied auto-fixes** — every applied fix with `file:line`, rule reference, what was wrong, and what changed. Note Keep/Undo.
 3. **Needs your decision** — remaining items grouped by severity (style structural, product judgment, sufficiency, task-fit). Include `file:line`, issue, and suggested fix. Structural items include the `Reworked structure suggestion` when available.
 4. **Needs more information** — items that cannot be judged without extra input. Omit the section if N = 0.
@@ -143,6 +143,7 @@ Chat report format:
 **Ready for peer review:** yes | no
 **Reviewed files:** list of paths
 **Task context:** none (task-fit skipped) | listed sources
+**Example and Clarity checks:** ran, N findings (included in the counts)
 **Counts:** applied N, remaining critical N, remaining major N, remaining minor N
 
 ### Applied auto-fixes (N)
@@ -150,7 +151,7 @@ Chat report format:
    - Issue: what was wrong
    - Change: what was applied
 
-Keep or Undo each edit in Cursor.
+Accept (Keep) or reject (Undo) each edit in your tool's diff view.
 
 ### Needs your decision (N)
 

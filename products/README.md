@@ -10,7 +10,7 @@ Management Dashboard "Products" module (list, create, edit), extracted into an `
 | Exposes | `./RemoteComponent` → `src/RemoteComponent.tsx` (named **and** default export) |
 | Local dev port | `5178` (`strictPort`) |
 | Host env var | `VITE_PRODUCTS_URL` → `.../assets/remoteEntry.js` |
-| Component library | `@emporix/component-library` `2.30.1` |
+| Component library | `@emporix/component-library` `2.31.1` |
 | MD wiring mode | A — permanent remote (`url:` on the route) |
 
 ## Screens
@@ -111,4 +111,4 @@ Running `npm run dev` and opening the port directly gives a standalone shell tha
 
 ### Deploying
 
-Firebase Hosting sites (`emporix-products-develop`, `emporix-products-stage`, `emporix-products`) are declared in the repo root `.firebaserc` / `firebase.json` and deployed by the workflows under `.github/workflows/`. Hosting must send `Access-Control-Allow-Origin: *` so the dashboard can load `remoteEntry.js`.
+Products is published into the `products/` folder of the shared Firebase Hosting site of each environment (COP-7348, COP-7444): `https://frontend-extensions-develop.web.app/products/remoteEntry.js`, `https://frontend-extensions-stage.web.app/products/remoteEntry.js` and `https://frontend-extensions.web.app/products/remoteEntry.js` (prod). Workflows: `.github/workflows/products-firebase-*.yaml` — a preview per PR (channel `pr-<number>-products`, URL posted as a PR comment), dev and stage on merge to `master`, prod on a `products-*` tag (roll back by redeploying the previous tag). A change under `audit-log/` triggers the preview and the dev and stage deploys too. Each calls `.github/actions/deploy-remote`, which builds the remote flat with base `/products/` (`.github/scripts/hosting/build-remote.mjs`) and replaces only this folder on the site. Local `npm run build:*` and `preview` are unchanged and still serve `/assets/remoteEntry.js`.

@@ -116,7 +116,7 @@ rg "pi pi-" "management-dashboard/src/modules/{Module}"*   # exact glyphs to mat
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' \
-  "https://emporix-$MODULE-develop.web.app/assets/remoteEntry.js"   # want 200
+  "https://frontend-extensions-develop.web.app/$MODULE/remoteEntry.js"   # want 200
 ```
 
 ## Common anti-patterns
@@ -142,7 +142,9 @@ curl -s -o /dev/null -w '%{http_code}\n' \
 - Host absolute paths in HashRouter
 - Adding `primereact` to remote `package.json`
 - Committing `file:../../component-library` or lockfile `"link": true`
-- Assuming Firebase works from `.firebaserc` alone (create Hosting sites first)
+- Creating a Firebase Hosting site, a `firebase.json` / `.firebaserc` target, or an `action-hosting-deploy` step for a remote (the shared site needs none; playbook §9)
+- Setting `base` / `build.assetsDir` in `vite.config.ts` or `--base` in `package.json` (only the deploy action sets the base, in CI)
+- Copying the workflows of a remote that keeps its own site (`agentic-ai`, `algolia-synonyms`, `dashboard`, `statistics`) instead of the `classifications` trio
 - Marking migration done when only the remote exists (MD env + route wiring missing)
 - Deleting whole MD module folder while siblings share UI / skipping i18n re-home
 - Jest syntax in Vitest tests

@@ -3,7 +3,7 @@
 Last scanned: 05d8d1d (2026-11-06)
 Sources: `products/package.json`, `products/vite.config.ts`, `products/README.md`, `products/src/RemoteComponent.tsx`, `products/src/App.tsx`, `products/src/Products.module.tsx`, `products/src/api/`, `products/src/constants/paths.ts`, `products/src/context/`, `products/src/pages/ProductsList.page.tsx`, `products/src/components/products/`, `products/src/components/products/dynamicVariants/`, `products/src/components/mixins/`, `products/src/components/shared/`, `products/src/components/auditLog/`, `products/src/hooks/`, `products/src/helpers/`, `products/src/configs/`, `products/src/models/Category.model.ts`, and the `*.test.ts(x)` files named below.
 
-Management Dashboard (MD) remote for product list, create and edit. It replaced the legacy `emporix-product-module` remote (COP-6993). It is a port of the MD code: comments say "MD parity", and `products/README.md` describes the extraction. It does not own product persistence; every call goes to Emporix REST through `@emporix/api-calls` 1.7.1 and UI comes from `@emporix/component-library` (CL) 2.30.1 (`products/package.json`). Federation name `products`, exposes `./RemoteComponent` (named and default export), dev port 5178, MD wiring mode A (`products/vite.config.ts`, `products/README.md`). Unit tests are Vitest.
+Management Dashboard (MD) remote for product list, create and edit. It replaced the legacy `emporix-product-module` remote (COP-6993). It is a port of the MD code: comments say "MD parity", and `products/README.md` describes the extraction. It does not own product persistence; every call goes to Emporix REST through `@emporix/api-calls` 1.7.1 and UI comes from `@emporix/component-library` (CL) 2.31.1 (`products/package.json`). Federation name `products`, exposes `./RemoteComponent` (named and default export), dev port 5178, MD wiring mode A (`products/vite.config.ts`, `products/README.md`). Unit tests are Vitest.
 
 ## Boot and host contract
 
@@ -124,6 +124,7 @@ The remote reads permissions itself: user access controls, tenant access control
 | Host route `key` → path | `products` → `apps/management/products/*` (`management-dashboard` `src/router/module-routes.tsx`) |
 | Host env var | `VITE_PRODUCTS_URL` (`management-dashboard` `.env.*`) |
 | Local port | `5178`, `strictPort` |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7444): `https://frontend-extensions-develop.web.app/products/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod), deployed by `.github/actions/deploy-remote` from `.github/workflows/products-firebase-*.yaml`. The old `emporix-products*` sites, targets and deploy steps were retired in COP-7516; the Management Dashboard loads products from the shared site in every environment (`products/README.md`) |
 | Local deviations | none |
 
 ## Not yet scanned

@@ -91,17 +91,40 @@ export const finalizeVersion = async (ctx, version) => {
   })
 }
 
-// GET channel, else POST sites/SITE/channels?channelId=ID {ttl}; returns Channel.url
+// Hosting deletes an expired channel only some time after its expireTime and rejects
+// releases to it until then ("channel expired").
+const hasExpired = ({ expireTime }) => Date.parse(expireTime) <= Date.now()
+
+// GET channel, then PATCH ?updateMask=ttl {ttl} when it exists, else
+// POST sites/SITE/channels?channelId=ID {ttl}; returns Channel.url. Like
+// `firebase hosting:channel:deploy --expires`, every deploy keeps the channel for ttl from now.
+// An expired channel that rejects the PATCH is deleted and created again.
 export const ensureChannel = async (ctx, channel, ttl) => {
-  const existing = await request(ctx, `${API}/sites/${ctx.site}/channels/${channel}`, {
-    allow404: true,
-  })
-  if (existing) return existing.url
+  const url = `${API}/sites/${ctx.site}/channels/${channel}`
+  const existing = await request(ctx, url, { allow404: true })
+  if (existing) {
+    if (!ttl) return existing.url
+    try {
+      const updated = await request(ctx, `${url}?updateMask=ttl`, {
+        method: 'PATCH',
+        body: { ttl },
+      })
+      console.log(`Channel ${channel} expires at ${updated.expireTime}`)
+      return existing.url
+    } catch (error) {
+      if (!hasExpired(existing)) throw error
+      console.log(
+        `Channel ${channel} expired at ${existing.expireTime}, creating it again. ${error.message}`
+      )
+      await request(ctx, url, { method: 'DELETE', allow404: true })
+    }
+  }
   const created = await request(
     ctx,
     `${API}/sites/${ctx.site}/channels?channelId=${encodeURIComponent(channel)}`,
     { method: 'POST', body: ttl ? { ttl } : {} }
   )
+  console.log(`Channel ${channel} expires at ${created.expireTime}`)
   return created.url
 }
 

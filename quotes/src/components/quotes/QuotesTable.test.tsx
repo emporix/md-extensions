@@ -443,6 +443,26 @@ describe('QuotesTable', () => {
     })
   })
 
+  // The filters give the other columns 180px and more; without a minimum the
+  // table squeezed the company and the quote number instead of scrolling.
+  it('keeps the company and quote number columns wide enough to read', async () => {
+    renderTable()
+    await waitFor(() =>
+      expect(rows().some((row) => row.includes('tenant-a-Q1'))).toBe(true)
+    )
+
+    const header = (text: string) =>
+      screen
+        .getAllByRole('columnheader')
+        .find((cell) => cell.textContent?.includes(text)) as HTMLElement
+    expect(header('Company').style.minWidth).toBe('200px')
+    expect(header('Quote number').style.minWidth).toBe('160px')
+    expect(header('Quote number').style.whiteSpace).toBe('nowrap')
+    expect(
+      screen.getByText('tenant-a-Q1').closest('td')?.style.whiteSpace
+    ).toBe('nowrap')
+  })
+
   // COP-7116 QA: MD read `price.tax.prices` unchecked, so a line whose price
   // came back without `tax` broke the expanded row.
   it('expands a quote whose line has a price without tax', async () => {

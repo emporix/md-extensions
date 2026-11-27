@@ -207,9 +207,9 @@ Plus post-port anti-pattern greps (see reference.md § Validation greps).
 - Switch to ExternalModule-only if using Mode B.
 - Update playbook decisions log.
 
-## Phase 6 — Firebase + CI (before first deploy)
+## Phase 6 — Shared Hosting site deploy + CI (before first deploy)
 
-Create Hosting sites, register `.firebaserc` + `firebase.json`, copy workflow YAMLs, confirm lockfile resolves CL from npm. Details: playbook §9.
+Copy the three `classifications-firebase-*.yaml` workflows to `{module}-firebase-*.yaml` and rename `classifications` to `{module}`. They deploy into `/{module}/` of the shared Hosting site of each environment through `.github/actions/deploy-remote`. No Firebase setup: do **not** create a Hosting site, add a `firebase.json` / `.firebaserc` target, add an `action-hosting-deploy` step, or set `base` / `build.assetsDir` / `--base` in the remote. Run the local `build-remote.mjs` check and confirm the lockfile resolves CL from npm. Steps, secrets, URLs and host `.env` values: playbook §9.
 
 ## Phase 7 — Cross-model review + knowledge capture
 
@@ -222,7 +222,7 @@ Bugbot + second model on full diff. Append 1–3 rows to playbook decisions log.
 **Merge order is a hard gate.** The host PR deletes MD's built-in screens and points at the remote's URLs, so:
 
 1. Merge the **md-extensions** PR first and let `deploy-dev-stage` finish.
-2. Confirm the remote actually serves — `curl -o /dev/null -w '%{http_code}' https://emporix-{module}-develop.web.app/assets/remoteEntry.js` must return `200`. A green workflow only proves it deployed, not that the entry resolves.
+2. Confirm the remote actually serves — `curl -o /dev/null -w '%{http_code}' https://frontend-extensions-develop.web.app/{module}/remoteEntry.js` must return `200`. A green workflow only proves it deployed, not that the entry resolves.
 3. Only then merge the **management-dashboard** PR. Merged first, the module's menu entry 404s in every environment.
 4. Production needs a `{module}-*` tag to trigger `deploy-prod`.
 

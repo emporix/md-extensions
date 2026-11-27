@@ -18,8 +18,9 @@ cwd = `PRODUCT_ROOT`. Follow the `npm-dependencies` rule of
 2. Install from the registry to refresh the lockfile. Confirm the lockfile has
    no `"link": true` entry for the package.
 3. Replace the custom call or local component with the library export,
-   imported from the package root. Delete the local copy when nothing else
-   uses it.
+   imported from the entry point its playbook names (api-calls:
+   `@emporix/api-calls/next`; component-library: the package root). Delete
+   the local copy when nothing else uses it.
 4. Run the project's checks (lint, typecheck, tests, build from `AGENTS.md`).
 5. Leave the project change for the calling flow (`emporix-feature`) or the
    user to commit.

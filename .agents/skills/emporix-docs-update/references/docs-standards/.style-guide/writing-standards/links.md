@@ -59,12 +59,15 @@ Example:
 | Partner Library guides | `emporix-documentation-portal/content/partner-library-guides` | `aAxCFK0JJRlhIPufuXz8` |
 | Import Tool guides | `emporix-documentation-portal/content/import-tool-guides` | `9VS91qn3Ylwd58YivX1A` |
 | Order Intake Cockpit guides | `emporix-documentation-portal/content/order-intake-guides` | `NXembrzntBOyi7ynrVRB` |
-| Document Intake Cockpit guides | `emporix-documentation-portal/content/document-intake-guides` | `PBaf05o2vgbdikMFDTyz` |
+| Document Intake Cockpit guides | `emporix-documentation-portal/content/document-intake-guides` | `b6iUa9wfWBxy5wal39oT` |
 | Search Cockpit guides | `emporix-documentation-portal/content/search-cockpit-guides` | `ERIsr5d67LF0wtgPlnHs` |
+| Agentic Engineering | `emporix-documentation-portal/content/agentic-engineering` | `70NipkjopA8CkfsRQVCZ` |
 | API Documentation (API guides and tutorials) | `api-references` | `d4POTWomuSS7d3dnh4Dg` |
 | Changelog (API) | `api-references/changelog` | `T7xSS33IeCxcZw0eXU0D` |
 | Product Features (release notes) | `emporix-documentation-portal/content/release-notes` | `9BZA5q5EbkPLw3JiAtOl` |
 | Welcome | `emporix-documentation-portal/content/welcome` | `6GTRpjfleJymwcc6AX3v` |
+| Certifications | Managed in GitBook, no repository folder | `PcXjvTEV0ikJervx99Q9` |
+| API References | Managed in GitBook, no repository folder | `szVPeRqMQEuc2ne7pmdJ` |
 
 * The IDs above are taken from links that already exist in the published documentation.
 * When a target space is not in the registry, do not guess the ID. Copy it from an existing link to that space, or ask the maintainers, and add it to the registry.

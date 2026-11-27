@@ -42,7 +42,20 @@ Do not claim “matches pilot” without `diff -rq` (file counts are not enough)
 ## Lockfile / CI
 
 - Published `@emporix/component-library` semver — no `file:` / `"link": true`
-- Firebase Hosting **sites created** before first deploy (not only `.firebaserc`)
+
+## Deploy (shared Hosting site)
+
+A Management Dashboard module (migrated or new) deploys only through `.github/actions/deploy-remote` into the shared site of each environment (`docs/MODULE_MIGRATION_PLAYBOOK.md` §9). For such a remote each grep below must print nothing (`{module}` = the remote folder). A remote whose user chose sites of its own (`md-extension-migration` § Deploy) skips these greps:
+
+```bash
+grep -n 'action-hosting-deploy' .github/workflows/{module}-firebase-*.yaml
+grep -n '"public": "{module}/' firebase.json
+grep -n 'emporix-{module}' .firebaserc
+grep -nE '\b(base|assetsDir)\s*:' {module}/vite.config.ts
+grep -n -- '--base' {module}/package.json
+```
+
+And each of the three workflows uses `./.github/actions/deploy-remote` (prod: `./.deploy-tooling/.github/actions/deploy-remote`) with the `MD_EXTS_FIREBASE_SA_DEV` / `_STAGE` / `MD_EXTS_FIREBASE_SA` secret of its site.
 
 ## Skill
 

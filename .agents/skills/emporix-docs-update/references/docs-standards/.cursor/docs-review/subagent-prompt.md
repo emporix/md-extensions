@@ -58,7 +58,7 @@ Style checks that are frequently missed (always run them on changed pages):
 - Quoted UI text and obvious statements (`language-and-tone#describe-what-happens-do-not-quote-the-screen`, `language-and-tone#skip-the-obvious`): report under lane `sufficiency` with rule `sufficiency#obvious`.
 - User perspective (`language-and-tone#write-from-the-users-goal`): report under lane `sufficiency` with rule `sufficiency#user-goal`.
 - Links (`links`): same-space links are relative file paths with `.md`; links to another space are `https://app.gitbook.com/s/<spaceId>/<path>` with the space ID from the registry in `links.md`; links to API reference endpoints are the path-based `https://developer.emporix.io/api-documentation/...#<method>-<endpoint-path>` URLs described in `links.md` (not an app path, not an `operationId` anchor). Check that every changed link resolves (the file exists in the same space, or the space ID matches the registry and the path exists when the target checkout is available). When the target cannot be checked, emit a `Needs more information` finding.
-- Diagrams (`diagrams`): every Mermaid block uses the brand configuration for its diagram type as defined in `diagrams.md` (`theme: base`, transparent background, and that type's brand theme variables, for example `lineColor` and `arrowheadColor` for flowcharts and graphs, or the actor and signal variables for sequence diagrams) and only colors from the palette in `diagrams.md`. Flag the default theme and off-palette colors. Do not rewrite the styling by hand; recommend regenerating the diagram with the `emporix-docs-diagrams` skill.
+- Diagrams (`diagrams`): every Mermaid block uses the brand configuration for its diagram type as defined in `diagrams.md` (`theme: base`, transparent background, and that type's brand theme variables, for example `lineColor` and `arrowheadColor` for flowcharts and graphs, or the actor and signal variables for sequence diagrams) and only colors from the palette in `diagrams.md`. Flag the default theme and off-palette colors. Do not rewrite the styling by hand; recommend regenerating the diagram with the diagrams playbook of the `emporix-docs-update` skill.
 
 Line reference rules (required for every finding):
 - Every finding heading must use `path/to/file.md:LINE` — never omit the line number.
@@ -92,13 +92,13 @@ Not auto-fixable (mark `Auto-fixable: no`):
 - All `sufficiency` findings (including `sufficiency#user-goal`, `sufficiency#fit-in-set`, `sufficiency#obvious`)
 - Missing or broken list lead-in sentences and lists that mix noun phrases, commands, and descriptions
 - Figure caption rewrites
-- Diagram branding (regenerate with the `emporix-docs-diagrams` skill)
+- Diagram branding (regenerate with the diagrams playbook of the `emporix-docs-update` skill)
 - Link targets that do not exist, or space IDs that are not in the registry
 - All `task-fit` findings
 
 Structural finding requirement:
 - If the issue is a structural format violation (especially `format-and-structure#steps`), provide a concrete `Reworked structure suggestion`.
-- For step violations that use headings like `## Step 1 - ...`, propose a GitBook stepper rewrite using `{% stepper %}`, `{% step %}`, and `####` step titles.
+- For step violations that use headings like `## Step 1 - ...`, propose a GitBook stepper rewrite using `{% stepper %}`, `{% step %}`, and `#####` step titles.
 - Keep this as `Auto-fixable: no` even when the rewrite is concrete.
 
 Severity policy:
@@ -137,13 +137,13 @@ When applicable for structural findings:
   ```md
   {% stepper %}
   {% step %}
-  #### First step title
+  ##### First step title
 
   Step content...
   {% endstep %}
 
   {% step %}
-  #### Second step title
+  ##### Second step title
 
   Step content...
   {% endstep %}

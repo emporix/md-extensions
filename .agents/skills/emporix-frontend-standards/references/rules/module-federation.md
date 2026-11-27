@@ -63,12 +63,30 @@ These rules (and the port rule above) apply to new remotes and to remotes a task
 
 ### Hosting and CI
 
+Two deploy models exist. Pick one per remote before writing its workflows:
+
+- **Management Dashboard module** — a module migrated out of the Management Dashboard, or a new Management Dashboard module → the shared Hosting site. Do not ask.
+- **Any other remote** → ask the user once whether it deploys to the shared Hosting site or to Hosting sites of its own, and follow the answer. Do not choose for them.
+
+An existing remote keeps the model it already has, unless the task is to move it.
+
+**Shared Hosting site (md-extensions, COP-7348).** Each remote on it is published into its own folder of one shared Firebase Hosting site per environment (`frontend-extensions-develop`, `frontend-extensions-stage`, `frontend-extensions`) by the repository's deploy action (`.github/actions/deploy-remote`). For such a remote:
+
+- Copy the workflows of a remote that already deploys this way (in md-extensions: the `classifications-firebase-*.yaml` trio) and rename the remote. Steps, secrets and URLs: the repository's migration playbook (md-extensions `docs/MODULE_MIGRATION_PLAYBOOK.md` §9).
+- Never create a Hosting site, add a `firebase.json` hosting entry or a `.firebaserc` target, or add a `FirebaseExtended/action-hosting-deploy` step for such a remote.
+- Never set `base` or `build.assetsDir` in `vite.config.ts`, or `--base` in a `package.json` script: the deploy action sets the base in CI. Local `build` and `preview` keep serving `/assets/remoteEntry.js`.
+- Host `.env.dev` / `.env.dev-test` / `.env.stage` / `.env.prod` load `https://frontend-extensions(-develop|-stage)?.web.app/<remote-folder>/remoteEntry.js`; `.env.local-*` stay on `http://localhost:<port>/assets/remoteEntry.js`.
+- `ensure-firebase-hosting.sh` finds no hosting entry for such a remote and reports nothing in scope; that is the expected result, not a gap to fill.
+
+**One site per remote and environment.** For older remotes that keep their own sites, and for a remote whose user chose sites of its own, the rest of this section applies:
+
 - A remote deployed to Firebase Hosting has one hosting entry per environment in `firebase.json` (`target`, `public` inside the remote folder), each target mapped to a site in `.firebaserc` `targets`, and deploy workflows that name those targets.
 - The sites must exist in their Firebase projects, and the workflows' service-account secrets must be available to the repository, **before the first push of a new remote**. The PR preview workflow deploys to a channel of the develop site and fails when the site is missing. Adding the target to `.firebaserc` does not create the site.
 - Check with `$SKILLS_ROOT/emporix-frontend-standards/scripts/ensure-firebase-hosting.sh --changed` from the repository root (`--remote <folder>` for one remote) before every push that opens or updates a pull request (`SKILL.md` § Before a pull request). Exit `3` lists `SITE … missing`, `SECRET … missing`, or `UNMAPPED …`.
 - A missing site: ask the user, then re-run with `--create`. Creating a site writes to a shared Firebase project and needs the user's Firebase login with access to it. Never create one unasked, and never guess another site name to make the check pass.
 - A missing secret or an unmapped target: stop and tell the user. Secrets are set by a repository or organization admin; the agent never creates them.
-- Never commit `.firebase/` (the CLI deploy cache).
+
+In both models, never commit `.firebase/` (the CLI deploy cache).
 
 ### Styling and widgets
 

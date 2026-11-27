@@ -6,6 +6,7 @@ on:
       - master
     types:
       - opened
+      - reopened
       - synchronize
     paths:
       - 'orders/**'
@@ -14,6 +15,9 @@ on:
 jobs:
   build_and_deploy_preview:
     runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      pull-requests: write
     defaults:
       run:
         working-directory: ./orders
@@ -34,13 +38,32 @@ jobs:
 
       - run: npm ci
 
+      # Type-check and CORS check; the deploy action builds again for the shared site.
       - run: npm run build:dev
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        id: firebase-preview
+
+      - name: Deploy orders preview to the shared Hosting site
+        id: shared-preview
+        uses: ./.github/actions/deploy-remote
         with:
-          firebaseToolsVersion: "12.9.1"
-          firebaseServiceAccount: "${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}"
-          projectId: frontend-extensions-develop
-          target: emporix-orders-develop
-          expires: 5d
-          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          service-account: ${{ secrets.MD_EXTS_FIREBASE_SA_DEV }}
+          site: frontend-extensions-develop
+          remote: orders
+          mode: dev
+          channel: pr-${{ github.event.number }}-orders
+
+      # One comment per PR: update the bot's earlier "orders preview:" comment
+      # instead of adding a new one on every push.
+      - name: Comment the preview URL
+        run: |
+          BODY="orders preview: $PREVIEW_URL"
+          COMMENT_ID=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("orders preview:"))) | .id' | tail -n 1)
+          if [ -n "$COMMENT_ID" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID" -f body="$BODY" > /dev/null
+          else
+            gh pr comment "$PR_NUMBER" --body "$BODY"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+          PREVIEW_URL: ${{ steps.shared-preview.outputs.url }}

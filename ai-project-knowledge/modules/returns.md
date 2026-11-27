@@ -180,6 +180,8 @@ Wizard and edit behaviour above is from the implementation, not from tests.
 | Host route `key` → path | `returns` → `/apps/management/returns/*` (`management-dashboard` `src/router/module-routes.tsx`) |
 | Host env var | `VITE_RETURNS_URL` (`management-dashboard` `.env.*`) |
 | Local port | `5176`, `strictPort` |
+| Hosting | Shared Firebase Hosting site per environment (COP-7348, moved under COP-7442), no site or `firebase.json` target of its own: `https://frontend-extensions-develop.web.app/returns/remoteEntry.js`, `frontend-extensions-stage`, `frontend-extensions` (prod). Deployed by `.github/actions/deploy-remote` from `.github/workflows/returns-firebase-*.yaml` (`returns/README.md`). The host `VITE_RETURNS_URL` still names the former `emporix-returns*` sites until it is switched |
+| Component library | `@emporix/component-library` `2.31.1` (`returns/package.json`) |
 | Local deviations | none |
 
 ## Not yet scanned

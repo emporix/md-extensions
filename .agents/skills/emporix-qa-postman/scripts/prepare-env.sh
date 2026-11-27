@@ -3,9 +3,14 @@
 # Never prints secret values. Never overwrites the template.
 #
 # Usage:
-#   prepare-env.sh --template <env.json> --out <generated.json>
+#   prepare-env.sh --template <env.json> --out <generated.json> [--tenant <alias>]
 #
-# Required env (first wins):
+# --tenant <alias>: take tenant, api-url, client_id, client_secret and the storefront pair from that
+# profile in ~/.emporix/tenants.json (emporix-setup; keychain: references are resolved, so macOS may
+# ask to allow the read). An env variable below that is set still wins for its key (the skill's CLI
+# flags arrive that way); unset leftovers before calling.
+#
+# Without --tenant, required env (first wins):
 #   EMPORIX_QA_API_URL | API_URL
 #   EMPORIX_QA_TENANT | TENANT
 #   EMPORIX_QA_CLIENT_ID | CLIENT_ID
@@ -18,6 +23,7 @@ set -eu
 
 TEMPLATE=""
 OUT=""
+PROFILE=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -29,8 +35,12 @@ while [ $# -gt 0 ]; do
       OUT="${2:-}"
       shift 2
       ;;
+    --tenant)
+      PROFILE="${2:-}"
+      shift 2
+      ;;
     -h|--help)
-      echo "Usage: prepare-env.sh --template <env.json> --out <generated.json>" >&2
+      echo "Usage: prepare-env.sh --template <env.json> --out <generated.json> [--tenant <alias>]" >&2
       exit 0
       ;;
     *)
@@ -61,6 +71,21 @@ fi
 OUT_DIR=$(dirname "$OUT")
 mkdir -p "$OUT_DIR"
 
+if [ -n "$PROFILE" ]; then
+  here=$(cd "$(dirname "$0")" && pwd)
+  ENV_SH="${EMPORIX_SKILLS_ROOT:-$here/../..}/emporix-setup/scripts/emporix-env.sh"
+  [ -f "$ENV_SH" ] || die "emporix-setup is not installed next to this skill ($ENV_SH); it reads the tenant profiles."
+  # The profile values reach Python through its environment, never through arguments.
+  exec env EMPORIX_PROFILE="$PROFILE" ENV_SH="$ENV_SH" PY="$PY" bash -c '
+    . "$ENV_SH" || exit 1
+    emporix_load_api_clients || exit 1
+    PROFILE_TENANT=$EMPORIX_TENANT PROFILE_API_URL=$EMPORIX_API_URL \
+    PROFILE_CLIENT_ID=$EMPORIX_CLIENT_ID PROFILE_CLIENT_SECRET=$EMPORIX_CLIENT_SECRET \
+    PROFILE_CLIENT_ID_STOREFRONT=$EMPORIX_STOREFRONT_CLIENT_ID \
+    PROFILE_CLIENT_SECRET_STOREFRONT=$EMPORIX_STOREFRONT_CLIENT_SECRET \
+    PREPARE_ENV_REENTRY=1 exec sh "$0" "$@"' "$0" --template "$TEMPLATE" --out "$OUT"
+fi
+
 "$PY" - "$TEMPLATE" "$OUT" <<'PY'
 import json
 import os
@@ -71,24 +96,29 @@ template_path, out_path = sys.argv[1], sys.argv[2]
 
 def first_of(*names):
     for name in names:
+        if name.startswith("PROFILE_") and os.environ.get("PREPARE_ENV_REENTRY") != "1":
+            continue
         value = os.environ.get(name)
         if value:
             return value
     return ""
 
 
+# Explicit env (the skill's CLI flags, or the legacy EMPORIX_QA_* / plain names) wins; a --tenant
+# profile fills whatever is left (PROFILE_* set by the --tenant re-entry above).
 mapping = {
-    "api-url": first_of("EMPORIX_QA_API_URL", "API_URL"),
-    "tenant": first_of("EMPORIX_QA_TENANT", "TENANT"),
-    "client_id": first_of("EMPORIX_QA_CLIENT_ID", "CLIENT_ID"),
-    "client_secret": first_of("EMPORIX_QA_CLIENT_SECRET", "CLIENT_SECRET"),
+    "api-url": first_of("EMPORIX_QA_API_URL", "API_URL", "PROFILE_API_URL"),
+    "tenant": first_of("EMPORIX_QA_TENANT", "TENANT", "PROFILE_TENANT"),
+    "client_id": first_of("EMPORIX_QA_CLIENT_ID", "CLIENT_ID", "PROFILE_CLIENT_ID"),
+    "client_secret": first_of("EMPORIX_QA_CLIENT_SECRET", "CLIENT_SECRET", "PROFILE_CLIENT_SECRET"),
     "client_id_storefront": first_of(
-        "EMPORIX_QA_CLIENT_ID_STOREFRONT", "CLIENT_ID_STOREFRONT"
+        "EMPORIX_QA_CLIENT_ID_STOREFRONT", "CLIENT_ID_STOREFRONT", "PROFILE_CLIENT_ID_STOREFRONT"
     ),
     "client_secret_storefront": first_of(
         "EMPORIX_QA_CLIENT_SECRET_STOREFRONT",
         "CLIENT_SECRET_STOREFRONT",
         "CLIENT_ID_SECRET",
+        "PROFILE_CLIENT_SECRET_STOREFRONT",
     ),
 }
 

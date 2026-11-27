@@ -8,11 +8,12 @@ title: Docs Self-Review Workflow
 
 ## Overview
 
-Single-turn flow with native Cursor Keep/Undo for auto-fixes:
+Single-turn flow with native accept/reject (Keep/Undo) of each auto-fix in the AI tool's diff view. It is not tied to one tool; it needs an assistant that can load the `emporix-docs-update` skill, run a readonly subagent, and show each edit for review (Cursor does all three):
 
 1. **Review** — readonly subagent returns findings (no file writes)
-2. **Apply** — parent applies `Auto-fixable: yes` findings in the same turn
-3. **Report** — unified chat report: applied changes, remaining decisions, needs more information
+2. **Parent checks** — parent runs the Example check and the Clarity check on the same files and adds their findings
+3. **Apply** — parent applies `Auto-fixable: yes` findings in the same turn
+4. **Report** — unified chat report: applied changes, remaining decisions, needs more information
 
 ## Manual trigger
 
@@ -35,10 +36,17 @@ Similar phrasing also works (for example `run self review on the changes`).
 
 The review subagent does not modify files.
 
+## Parent checks (every run)
+
+The parent agent, not the readonly subagent, runs these two checks on the same changed files every time, even when the subagent found nothing. The Example check needs the source (product diff, OpenAPI contract, implementation). Findings carry `file:line` headings and severities and join the subagent's findings before anything is applied or reported.
+
+- **Example check:** every `curl` request, JSON or YAML body, OpenAPI `example`, code snippet, configuration value, and sample ID is correct against the source, parses (JSON and YAML with a local parser), is consistent across the page, and is complete. A wrong or unparseable example is `critical`. If the source does not confirm a value, remove it and record an open question; never keep a guess.
+- **Clarity check:** the page has all the information the reader needs (prerequisites, scopes or roles, required fields, defaults, limits, units, expected outcome) and nothing extra, with no ambiguous references, so a person and an AI assistant both understand it without other context.
+
 ## Apply (same turn)
 
 1. Parent immediately applies only `Auto-fixable: yes` findings. No "Yes" confirmation.
-2. One `StrReplace` per fix — each appears in Cursor's diff UI.
+2. One targeted replacement per fix (for example one `StrReplace` call) — each appears separately in the tool's diff view.
 3. Author accepts (Keep) or rejects (Undo) each change.
 4. Sufficiency, task-fit, and structural findings are not auto-applied.
 
@@ -49,6 +57,7 @@ This includes obvious grammar and spelling corrections.
 - **Obvious fixes:** applies only findings marked `Auto-fixable: yes` (style/grammar).
 - **Reader sufficiency:** always runs; always `Auto-fixable: no`.
 - **Task-fit:** runs only when task context is in this chat or the trigger; always `Auto-fixable: no`.
+- **Example and Clarity checks:** always run by the parent; fixes the source confirms are `Auto-fixable: yes`, everything else stays for the author.
 - **Guided structural:** runs only after explicit author confirmation in a follow-up, and applies approved `Reworked structure suggestion` items as targeted section-level edits.
 
 Structural findings remain `Auto-fixable: no` even when a concrete rewrite is provided.
@@ -69,13 +78,13 @@ Compliant rewrite:
 ```md
 {% stepper %}
 {% step %}
-#### Open the storefront
+##### Open the storefront
 
 ...
 {% endstep %}
 
 {% step %}
-#### Approve the quote
+##### Approve the quote
 
 ...
 {% endstep %}

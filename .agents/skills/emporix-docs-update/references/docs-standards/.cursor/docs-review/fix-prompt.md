@@ -9,7 +9,7 @@ Immediately after review findings are complete, in the same turn. Do not wait fo
 
 ## Rules
 1. Apply ONLY findings marked `Auto-fixable: yes`.
-2. Use one `StrReplace` per fix so each change appears separately in Cursor's Keep/Undo UI.
+2. Use one targeted replacement per fix (for example one `StrReplace` call) so each change appears separately in the tool's Keep/Undo (accept/reject) UI.
 3. Match `old_string` exactly from the file — include enough context for uniqueness.
 4. Replace with the suggested fix text from the review findings.
 5. Do not apply fixes marked `Auto-fixable: no`.
@@ -25,7 +25,7 @@ In guided structural mode:
 2. Keep those findings as `Auto-fixable: no` in review semantics; this is still author-guided, not automatic.
 3. Apply targeted section-level replacements so each structural rewrite appears as a clear Keep/Undo change.
 4. Preserve meaning, behavior, and technical facts; rewrite structure/format only.
-5. Prefer exact rule-compliant patterns when relevant (for example `{% stepper %}` + `{% step %}` + `####` titles for `format-and-structure#steps`).
+5. Prefer exact rule-compliant patterns when relevant (for example `{% stepper %}` + `{% step %}` + `#####` titles for `format-and-structure#steps`).
 
 ## Auto-fixable examples
 - Title case: `# bad title` -> `# Good Title`

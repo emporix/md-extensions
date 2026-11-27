@@ -10,7 +10,7 @@ Management Dashboard "Orders" module, extracted into an `md-extensions` federate
 | Exposes | `./RemoteComponent` → `src/RemoteComponent.tsx` (named **and** default export) |
 | Local dev port | `5177` (`strictPort`) |
 | Host env var | `VITE_ORDERS_URL` → `.../assets/remoteEntry.js` |
-| Component library | `@emporix/component-library` `2.30.1` |
+| Component library | `@emporix/component-library` `2.31.1` |
 | MD wiring mode | A — permanent remote (`url:` on the route) |
 
 ## Screens
@@ -107,4 +107,12 @@ Running `npm run dev` and opening the port directly gives a standalone shell tha
 
 ### Deploying
 
-Firebase Hosting sites (`emporix-orders-develop`, `emporix-orders-stage`, `emporix-orders`) are declared in the repo root `.firebaserc` / `firebase.json` and deployed by the workflows under `.github/workflows/`. Hosting must send `Access-Control-Allow-Origin: *` so the dashboard can load `remoteEntry.js`.
+Orders is published into the `orders/` folder of the shared Firebase Hosting site of each environment (COP-7348, COP-7443): `https://frontend-extensions-develop.web.app/orders/remoteEntry.js`, `https://frontend-extensions-stage.web.app/orders/remoteEntry.js` and `https://frontend-extensions.web.app/orders/remoteEntry.js` (prod). Workflows: `.github/workflows/orders-firebase-*.yaml` — a preview per PR (channel `pr-<number>-orders`, URL posted as a PR comment), dev and stage on merge to `master`, prod on an `orders-*` tag (roll back by redeploying the previous tag). A change under `audit-log/` triggers the preview and the dev and stage deploys too. Each calls `.github/actions/deploy-remote`, which builds the remote flat with base `/orders/` (`.github/scripts/hosting/build-remote.mjs`) and replaces only this folder on the site. Local `npm run build:*` and `preview` are unchanged and still serve `/assets/remoteEntry.js`.
+
+To check the shared-site build locally:
+
+```sh
+REMOTE=orders MODE=dev node --input-type=module - < ../.github/scripts/hosting/build-remote.mjs
+```
+
+It writes `dist/remoteEntry.js` with no `dist/assets/`; run `npm run build:dev` again afterwards for the regular build.

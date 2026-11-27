@@ -8,6 +8,16 @@ Newman `api-url` is the local origin (`--base-url` or `app.baseUrl`). Do not
 take it from `EMPORIX_QA_API_URL` or `API_URL`. Those name the remote platform.
 `references/run.md` exports `API_URL="$BASE_URL"` for `prepare-env.sh` only.
 
+## Tenant profile (preferred)
+
+`prepare-env.sh --tenant <alias>` fills `tenant`, `client_id`, `client_secret`,
+and the storefront pair from a `client-credentials` profile in
+`~/.emporix/tenants.json` (`emporix-setup` `tenants.sh setup`; optional
+`storefrontClientId` / `storefrontClientSecret`). `keychain:` references are
+resolved (macOS asks to allow the read). `api-url` still comes from `API_URL`
+(the run step) or the profile's `apiUrl`. An env variable below that is set
+wins over the profile for its key, so unset leftovers.
+
 ## Values (first wins)
 
 | Postman key | CLI | Env names |

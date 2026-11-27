@@ -55,13 +55,15 @@ Avoid:
 ## Approval workflow for purchase orders
 ```
 
+* Write for customers and business users: what they can now do and why it matters. Do not describe endpoints, fields, scopes, status codes, or request and response shapes, and do not restate the API changelog in other words. Those details belong in the [API changelog](changelog.md) and the API reference.
+* Do not write a release note for a change that only affects the API, with no business-facing effect. The API changelog entry and the API reference cover it.
 * Use the following doc structure
 
 ```
-#### Overview
+##### Overview
 
 ...
-#### New features
+##### New features
 
 | Feature | Function | Benefit |
 | ------- | -------- | ------- |
@@ -69,19 +71,19 @@ Avoid:
 | **Feature two** | One or more sentences describing what the feature does or how it works. | One or more sentences describing its benefits. |
 | ... | ... | ... |
 
-#### Fixes and improvements
+##### Fixes and improvements
 
 None as this is a new feature/improvement.
 
-#### Known problems
+##### Known problems
 
 No known problems at the time of release.
 
-#### Documentation and links
+##### Documentation and links
 
 User Guides:
 *
-* 
+*
 *
 
 API Guides:
@@ -93,6 +95,9 @@ API Guides:
   * Feature: bold, sentence case
   * Function: one or more sentences describing what the feature does or how it works (capability/behavior, not user value).
   * Benefit: one or more sentences for description of its benefits.
+  * Bold only the Feature name. Do not use bold anywhere else in the table: no bold UI labels, button names, step names, or emphasis in the Function and Benefit cells.
+  * Do not put Markdown steps, numbered or bulleted lists, or line breaks in table cells. Each cell is one or more plain sentences. Procedures belong in the user guide; link to it under `Documentation and links`.
 * `Fixes and improvements` section – if there are any fixes to the existing features, state briefly what they are. If not applicable, state "None as this is a new feature."
 * `Known problems` - if there are any known issues, state what they are. If there are no known issues, state "No known problems at the time of release."
 * `Documentation and links` section – list all the relevant links to docs that have been created/updated in relation to the announcement. Introduce each group with the label `User Guides:` or `API Guides:`. Release notes are exempt from the full lead-in sentence rule (see [Lead-in sentence](../writing-standards/format-and-structure.md#lead-in-sentence)).
+  * Add the `API Guides:` group only when the entry is tagged `new-feature` or `major-change`. For other tags, leave it out. A link is never a reason to describe the API change in the entry.

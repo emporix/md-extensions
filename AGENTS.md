@@ -18,7 +18,7 @@ This is a monorepo of independent Management Dashboard remotes, one Vite app per
 | Persistence | none (standalone dev shells keep tenant and token in browser storage) | `*/src/helpers/settings.helpers.ts` |
 | Messaging / events | none | `*/package.json` |
 | API technology | none exposed. Remotes call Emporix REST through `@emporix/api-calls` or local `fetch` / axios | `ai-project-knowledge/integrations.md` |
-| Runtime / deployment | Firebase Hosting, three workflows per remote: PR preview, dev + stage on push to `master`, prod on a `{remote}-*` tag | `.github/workflows/{remote}-firebase-*.yaml`, `.firebaserc`, `firebase.json` |
+| Runtime / deployment | Firebase Hosting, three workflows per remote: PR preview, dev + stage on push to `master`, prod on a `{remote}-*` tag. Federated remotes deploy into `/{remote}/` of one shared site per environment (`frontend-extensions-develop`, `-stage`, `frontend-extensions`) through `.github/actions/deploy-remote`; new remotes copy the `classifications` workflows and create no site or Firebase target (`docs/MODULE_MIGRATION_PLAYBOOK.md` §9). `agentic-ai`, `algolia-synonyms`, `dashboard`, `statistics` keep their own sites | `.github/workflows/{remote}-firebase-*.yaml`, `.github/actions/deploy-remote/action.yml`, `.firebaserc`, `firebase.json` |
 
 ## Remotes
 
@@ -30,16 +30,16 @@ This is a monorepo of independent Management Dashboard remotes, one Vite app per
 | `customer-groups` | playbook-aligned | `customerGroups` | `customerGroups` → `administration/customer-groups/*` | `VITE_CUSTOMER_GROUPS_URL` | `5174` | yes / yes | `2.31.0` / `1.7.1` |
 | `dashboard` | legacy (PrimeReact) | `extension` | `dashboardIndex` → `''` and `dashboard` → `dashboard` | `VITE_DASHBOARD_EXTENSION_URL` | not pinned | no / yes | — / — |
 | `labels` | playbook-aligned | `labels` | `labels` → `/apps/management/labels/*` | `VITE_LABELS_URL` | `5179` | yes / yes | `2.31.0` / `1.2.14` |
-| `orders` | playbook-aligned | `orders` | `orders` → `apps/management/orders/*` | `VITE_ORDERS_URL` | `5177` | yes / yes | `2.30.1` / `1.7.1` |
-| `products` | playbook-aligned | `products` | `products` → `apps/management/products/*` | `VITE_PRODUCTS_URL` | `5178` | yes / yes | `2.30.1` / `1.7.1` |
-| `returns` | playbook-aligned | `returns` | `returns` → `/apps/management/returns/*` | `VITE_RETURNS_URL` | `5176` | yes / yes | `2.29.1` / `1.5.1` |
+| `orders` | playbook-aligned | `orders` | `orders` → `apps/management/orders/*` | `VITE_ORDERS_URL` | `5177` | yes / yes | `2.31.1` / `1.7.1` |
+| `products` | playbook-aligned | `products` | `products` → `apps/management/products/*` | `VITE_PRODUCTS_URL` | `5178` | yes / yes | `2.31.1` / `1.7.1` |
+| `returns` | playbook-aligned | `returns` | `returns` → `/apps/management/returns/*` | `VITE_RETURNS_URL` | `5176` | yes / yes | `2.31.1` / `1.5.1` |
 | `status-codes` | playbook-aligned | `statusCodes` | `statusCodes` → `/apps/management/status-codes/*` | `VITE_STATUS_CODES_URL` | `5180` | yes / yes | `2.31.0` / `1.5.1` |
 | `coupons` | playbook-aligned | `coupons` | `coupons` → `/apps/management/coupons/*` | `VITE_COUPONS_URL` | `5181` | yes / yes | `2.31.0` / `1.7.1` |
 | `companies` | playbook-aligned | `companies` | `companies` → `/apps/management/companies/*` | `VITE_COMPANIES_URL` | `5183` | yes / yes | `2.31.1` / `1.7.1` |
 | `units` | playbook-aligned | `units` | `units` → `/apps/management/units/*` | `VITE_UNITS_URL` | `5182` | yes / yes | `2.31.0` / `1.5.1` |
 | `customers` | playbook-aligned | `customers` | `customers` → `/apps/management/customers/*` | `VITE_CUSTOMERS_URL` | `5184` | yes / yes | `2.31.1` / `1.7.1` |
 | `catalogs` | playbook-aligned | `catalogs` | `catalogs` → `/apps/management/catalogs/*` | `VITE_CATALOGS_URL` | `5185` | yes / yes | `2.31.1` / `1.5.3` |
-| `categories` | playbook-aligned | `categories` | `categories` → `/apps/management/categories/*` | `VITE_CATEGORIES_URL` | `5186` | yes / yes | `2.28.0` / `1.5.3` |
+| `categories` | playbook-aligned | `categories` | `categories` → `/apps/management/categories/*` | `VITE_CATEGORIES_URL` | `5186` | yes / yes | `2.31.1` / `1.5.3` |
 | `classifications` | playbook-aligned | `classifications` | `classifications` → `/apps/management/classifications/*` | `VITE_CLASSIFICATIONS_URL` | `5187` | yes / yes | `2.29.0` / `1.5.3` |
 | `quotes` | playbook-aligned | `quotes` | `quotes` → `/apps/management/quotes/*` | `VITE_QUOTES_URL` | `5188` | yes / yes | `2.29.2` / `1.7.1` |
 | `taxes` | playbook-aligned | `taxes` | `taxes` → `/apps/management/taxes/*` | `VITE_TAXES_URL` | `5189` | yes / yes | `2.29.2` / `1.7.1` |

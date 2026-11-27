@@ -19,14 +19,17 @@ Use the basename as-is when it matches `[A-Za-z0-9._-]`. Do not copy
 ## Prepare env (local api-url)
 
 ```bash
-export API_URL="$BASE_URL"
-# plus TENANT / CLIENT_ID / CLIENT_SECRET (and storefront if required)
+export API_URL="$BASE_URL"   # the local origin, or the gateway origin with a local stack
 # do not export EMPORIX_QA_API_URL into this process if it would win
 unset EMPORIX_QA_API_URL
 PREPARE=$(skill_script emporix-qa-postman prepare-env.sh)
+# Profile (preferred): tenant, client id/secret, storefront pair from ~/.emporix/tenants.json
 sh "$PREPARE" \
   --template "$POSTMAN_ROOT/{dir}/{template}.postman_environment.json" \
-  --out "$QA_DIR/local-api/{dir}.postman_environment.json"
+  --out "$QA_DIR/local-api/{dir}.postman_environment.json" \
+  --tenant "{alias}"
+# Without a profile: export TENANT / CLIENT_ID / CLIENT_SECRET (and storefront if required)
+# and drop --tenant.
 ```
 
 ## Newman

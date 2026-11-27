@@ -38,7 +38,9 @@ Skip this rule if the project uses only GraphQL or another data layer — adapt 
 - Prefer `async`/`await` over raw promise chains in API modules.
 - Keep API functions deterministic for a given input — side effects like token refresh belong in the shared client.
 - When using React Query, SWR, or similar, put data-fetching hooks next to the API module (or under `src/api/`); keep components thin.
-- Before adding or changing a custom API request, first check whether the endpoint is already implemented in `@emporix/api-calls`.
+- Before adding or changing a custom API request, first check whether the endpoint is already implemented in `@emporix/api-calls`. Step 1 of the library workflow (`$RULES_ROOT/../library/workflow.md`) shows where to look.
+- New code imports calls and their types from `@emporix/api-calls/next` (version 1.6.0 and later), and operations that combine several requests from `@emporix/api-calls/platform`. How they take the tenant, request options, and list parameters: the library [README](https://github.com/emporix/api-calls/blob/master/README.md) § `./next` entry point.
+- Root methods are the deprecated 1.x API, which 2.0 removes, so a root method is not a match for new code. Its `@deprecated` note names the replacement, or says why there is none. Root imports the project already has can stay until it moves that domain to the new entry points, by hand and one domain at a time ([`migration/README.md`](https://github.com/emporix/api-calls/blob/master/migration/README.md)).
 - If `package.json` already lists `@emporix/api-calls` and a matching method exists, use the library method by default — do not ask. Write a custom call only when the user asks for one or the library method cannot cover the request.
 - If the project does not depend on `@emporix/api-calls` yet and a matching method exists, ask the user whether to add the library and use that method instead of a custom call. If the user declines, continue with the custom API call.
 - If no matching `@emporix/api-calls` method exists, follow **Endpoint missing from `@emporix/api-calls`** below before writing a custom call.

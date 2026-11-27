@@ -5,15 +5,23 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import OrderPaymentInfo from './OrderPaymentInfo'
 
 const mocks = vi.hoisted(() => ({
+  // Net prices: totalPrice (390.95) leaves out the item tax; 464.10 was captured.
   order: {
     id: 'order-1',
     currency: 'EUR',
-    totalPrice: 100,
+    totalPrice: 390.95,
     payments: [
-      { transactionId: 'tx-1', status: 'CAPTURE_SUCCESS', currency: 'EUR' },
+      {
+        transactionId: 'tx-1',
+        status: 'CAPTURE_SUCCESS',
+        currency: 'EUR',
+        paidAmount: 464.1,
+        authorizedAmount: 464.1,
+      },
     ],
   },
   fetchTransaction: vi.fn(),
+  refreshData: vi.fn(),
   refundTransaction: vi.fn(),
   showSuccess: vi.fn(),
   showError: vi.fn(),
@@ -33,7 +41,10 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 vi.mock('../../../contexts/OrderData.provider', () => ({
-  useOrderData: () => ({ order: mocks.order }),
+  useOrderData: () => ({
+    order: mocks.order,
+    refreshData: mocks.refreshData,
+  }),
 }))
 vi.mock('../../../context/PermissionsProvider', () => ({
   usePermissions: () => ({ hasPermission: () => true }),
@@ -45,20 +56,44 @@ vi.mock('../../../hooks/api/paymentGateway', () => ({
   }),
 }))
 
-beforeEach(() => {
-  // 20 of the 100 total were refunded already, so at most 80 is left.
-  mocks.fetchTransaction.mockResolvedValue({
-    entries: [
-      {
-        id: 'entry-1',
-        type: 'REFUND',
-        successful: true,
-        remoteResponse: '{}',
-        amount: { amount: 20, currency: 'EUR' },
-      },
-    ],
+const entry = (type: string, amount: number, successful = true) => ({
+  id: `${type}-${amount}-${successful}`,
+  type,
+  successful,
+  remoteResponse: '{}',
+  amount: { amount, currency: 'EUR' },
+})
+
+const renderInfo = async () => {
+  await act(async () => {
+    render(
+      <MemoryRouter>
+        <OrderPaymentInfo />
+      </MemoryRouter>
+    )
   })
+}
+
+const enterRefund = (value: string) => {
+  const input = screen.getByRole('spinbutton') as HTMLInputElement
+  input.setSelectionRange(0, input.value.length)
+  fireEvent.paste(input, { clipboardData: { getData: () => value } })
+  return input
+}
+
+const clickRefund = async () => {
+  await act(async () => {
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'orders.data.label.paymentInfo.refund',
+      })
+    )
+  })
+}
+
+beforeEach(() => {
   mocks.refundTransaction.mockResolvedValue(undefined)
+  mocks.refreshData.mockResolvedValue(undefined)
 })
 
 afterEach(() => {
@@ -66,30 +101,56 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 
-describe('OrderPaymentInfo', () => {
-  it('refunds at most what is left when a larger amount is entered', async () => {
-    await act(async () => {
-      render(
-        <MemoryRouter>
-          <OrderPaymentInfo />
-        </MemoryRouter>
-      )
+describe('OrderPaymentInfo refund', () => {
+  it('allows refunding the whole captured amount, including tax missing from totalPrice', async () => {
+    mocks.fetchTransaction.mockResolvedValue({
+      entries: [entry('CAPTURE', 464.1)],
     })
-    const input = screen.getByRole('spinbutton') as HTMLInputElement
+    await renderInfo()
 
-    input.setSelectionRange(0, input.value.length)
-    fireEvent.paste(input, { clipboardData: { getData: () => '150' } })
+    expect(enterRefund('500').value).toBe('€ 464.10')
+    await clickRefund()
 
-    expect(input.value).toBe('€ 80.00')
+    expect(mocks.refundTransaction).toHaveBeenCalledWith('tx-1', 464.1, 'EUR')
+  })
 
-    await act(async () => {
-      fireEvent.click(
-        screen.getByRole('button', {
-          name: 'orders.data.label.paymentInfo.refund',
-        })
-      )
+  it('limits the next refund to what is left and ignores failed refunds', async () => {
+    mocks.fetchTransaction.mockResolvedValue({
+      entries: [
+        entry('CAPTURE', 464.1),
+        entry('REFUND', 100),
+        entry('REFUND', 50, false),
+      ],
     })
+    await renderInfo()
 
-    expect(mocks.refundTransaction).toHaveBeenCalledWith('tx-1', 80, 'EUR')
+    expect(enterRefund('500').value).toBe('€ 364.10')
+  })
+
+  it('keeps the refund box after a refund and reloads the log and the order', async () => {
+    mocks.fetchTransaction
+      .mockResolvedValueOnce({ entries: [entry('CAPTURE', 464.1)] })
+      .mockResolvedValue({
+        entries: [entry('CAPTURE', 464.1), entry('REFUND', 100)],
+      })
+    await renderInfo()
+
+    enterRefund('100')
+    await clickRefund()
+
+    expect(mocks.refreshData).toHaveBeenCalled()
+    expect(enterRefund('500').value).toBe('€ 364.10')
+  })
+
+  it('says so when everything captured has been refunded', async () => {
+    mocks.fetchTransaction.mockResolvedValue({
+      entries: [entry('CAPTURE', 464.1), entry('REFUND', 464.1)],
+    })
+    await renderInfo()
+
+    expect(screen.queryByRole('spinbutton')).toBeNull()
+    expect(
+      screen.getByText('orders.data.label.paymentInfo.fullyRefunded')
+    ).toBeTruthy()
   })
 })

@@ -10,7 +10,7 @@ Management Dashboard "Returns" module, extracted into an `md-extensions` federat
 | Exposes | `./RemoteComponent` → `src/RemoteComponent.tsx` (named **and** default export) |
 | Local dev port | `5176` (`strictPort`) |
 | Host env var | `VITE_RETURNS_URL` → `.../assets/remoteEntry.js` |
-| Component library | `@emporix/component-library` `2.29.1` |
+| Component library | `@emporix/component-library` `2.31.1` |
 | MD wiring mode | A — permanent remote (`url:` on the route) |
 
 ## Screens
@@ -107,4 +107,4 @@ Running `npm run dev` and opening the port directly gives a standalone shell tha
 
 ### Deploying
 
-Firebase Hosting sites (`emporix-returns-develop`, `emporix-returns-stage`, `emporix-returns`) are declared in the repo root `.firebaserc` / `firebase.json` and deployed by the workflows under `.github/workflows/`. Hosting must send `Access-Control-Allow-Origin: *` so the dashboard can load `remoteEntry.js`.
+Returns has no Firebase Hosting site of its own. It is published into the `returns/` folder of the shared site of each environment (COP-7348, COP-7442): `https://frontend-extensions-develop.web.app/returns/remoteEntry.js`, `https://frontend-extensions-stage.web.app/returns/remoteEntry.js` and `https://frontend-extensions.web.app/returns/remoteEntry.js` (prod). Workflows: `.github/workflows/returns-firebase-*.yaml` — a preview per PR, dev and stage on merge to `master`, prod on a `returns-*` tag (roll back by redeploying the previous tag). Each calls `.github/actions/deploy-remote`, which builds the remote flat with base `/returns/` (`.github/scripts/hosting/build-remote.mjs`) and replaces only this folder on the site; the site sends `Access-Control-Allow-Origin: *` so the dashboard can load `remoteEntry.js`. Local `npm run build:*` and `preview` are unchanged and still serve `/assets/remoteEntry.js`. Until the host `VITE_RETURNS_URL` points at the shared site, it keeps loading the last build from the former `emporix-returns*` sites, which no longer receive deploys.

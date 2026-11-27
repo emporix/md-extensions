@@ -11,13 +11,20 @@ import {
 import LabeledValue from '../../shared/LabeledValue'
 import EmptyContent from '../../shared/EmptyContent'
 import OrderPaymentTransactionLog from './OrderPaymentTransactionLog'
+import OrderPaymentCapture from './OrderPaymentCapture'
 import { useOrderData } from '../../../contexts/OrderData.provider'
 import { usePermissions } from '../../../context/PermissionsProvider'
 import { usePaymentGatewayApi } from '../../../hooks/api/paymentGateway'
 import { getApiErrorMessage } from '../../../helpers/api'
 import { EmployeeDomains, VendorDomains } from '../../../configs/accessControls'
 import type { PaymentTransaction } from '../../../models/PaymentGateway.model'
-import { paymentStatusSeverity, SEVERITY_COLOR } from './paymentStatus'
+import {
+  capturedAmount,
+  isCapturable,
+  paymentStatusSeverity,
+  refundableAmount,
+  SEVERITY_COLOR,
+} from './paymentStatus'
 import styles from './Payment.module.scss'
 
 /** Currency symbol for the refund prefix (MD used `currency-symbol-map`). */
@@ -36,7 +43,7 @@ const currencySymbol = (currency: string, locale: string) => {
 const OrderPaymentInfo = () => {
   const { t, i18n } = useTranslation()
   const { showSuccess, showError } = useToast()
-  const { order } = useOrderData()
+  const { order, refreshData } = useOrderData()
   const { fetchTransaction, refundTransaction } = usePaymentGatewayApi()
   const { hasPermission } = usePermissions()
   const canManage =
@@ -61,20 +68,22 @@ const OrderPaymentInfo = () => {
 
   if (!order) return null
 
-  const maxRefundValue = () => {
-    const refunded =
-      transaction?.entries
-        ?.filter((entry) => entry.type === 'REFUND')
-        .reduce((sum, entry) => sum + (entry.amount?.amount || 0), 0) || 0
-    return order.totalPrice - refunded
-  }
+  // Refunds are limited by what was captured, not by the order total: totalPrice leaves out
+  // the item tax on orders with net prices. The box stays while anything is left, so an
+  // operator can refund in several steps.
+  const captured = capturedAmount(payment, transaction)
+  const refundable = refundableAmount(payment, transaction)
+  // Gross total of the order, used only when the payment has no authorized amount.
+  const orderGrossTotal =
+    order.calculatedPrice?.finalPrice?.grossValue ?? order.totalPrice
 
   const handleRefundSubmit = async () => {
     if (refund == null || payment == null) return
     try {
       await refundTransaction(payment.transactionId, refund, order.currency)
       showSuccess(t('orders.data.label.paymentInfo.refundEvenSent'))
-      await getTransaction()
+      setRefund(0)
+      await Promise.all([getTransaction(), refreshData()])
     } catch (e: unknown) {
       showError(
         t('orders.data.label.paymentInfo.refundEventError'),
@@ -134,32 +143,58 @@ const OrderPaymentInfo = () => {
         </div>
       </SectionBox>
 
-      {payment?.status === 'CAPTURE_SUCCESS' && (
+      {payment && isCapturable(payment, transaction) && (
+        <OrderPaymentCapture
+          payment={payment}
+          currency={payment.currency || order.currency}
+          fallbackAmount={orderGrossTotal}
+          canManage={canManage}
+          currencyPrefix={`${currencySymbol(
+            payment.currency || order.currency,
+            i18n.language
+          )} `}
+          onCaptured={async () => {
+            await Promise.all([getTransaction(), refreshData()])
+          }}
+        />
+      )}
+
+      {payment?.transactionId && captured > 0 && (
         <SectionBox
           className={styles.section}
           name={t('orders.data.label.paymentInfo.refund')}
         >
-          <div className={styles.refund}>
-            <InputNumber
-              className={styles.refundInput}
-              readOnly={!canManage}
-              locale={i18n.language}
-              value={refund}
-              allowEmpty={false}
-              prefix={`${currencySymbol(order.currency, i18n.language)} `}
-              min={0}
-              max={maxRefundValue()}
-              minFractionDigits={2}
-              maxFractionDigits={2}
-              onChange={(e) => setRefund(e.value)}
-            />
-            <PrimaryButton
-              disabled={!refund || !canManage}
-              onClick={handleRefundSubmit}
-            >
-              {t('orders.data.label.paymentInfo.refund')}
-            </PrimaryButton>
-          </div>
+          {refundable > 0 ? (
+            <div className={styles.refund}>
+              <InputNumber
+                className={styles.refundInput}
+                readOnly={!canManage}
+                locale={i18n.language}
+                value={refund}
+                allowEmpty={false}
+                prefix={`${currencySymbol(order.currency, i18n.language)} `}
+                min={0}
+                max={refundable}
+                minFractionDigits={2}
+                maxFractionDigits={2}
+                onChange={(e) => setRefund(e.value)}
+              />
+              <PrimaryButton
+                disabled={!refund || !canManage}
+                onClick={handleRefundSubmit}
+              >
+                {t('orders.data.label.paymentInfo.refund')}
+              </PrimaryButton>
+              <span className={styles.refundHint}>
+                {t('orders.data.label.paymentInfo.refundableHint')}{' '}
+                {money(refundable, payment.currency || order.currency)}
+              </span>
+            </div>
+          ) : (
+            <span className={styles.refundHint}>
+              {t('orders.data.label.paymentInfo.fullyRefunded')}
+            </span>
+          )}
         </SectionBox>
       )}
 
