@@ -237,12 +237,13 @@ export class ApiClient {
   }
 
   async get<T>(path: string, init?: RequestInit): Promise<T> {
+    const { headers: extraHeaders, ...restInit } = init ?? {}
     const response = await fetch(this.buildUrl(path), {
       method: 'GET',
       headers: this.buildHeaders(
-        init?.headers as Record<string, string> | undefined
+        extraHeaders as Record<string, string> | undefined
       ),
-      ...init,
+      ...restInit,
     })
     return this.handleResponse<T>(response)
   }
@@ -264,13 +265,14 @@ export class ApiClient {
   }
 
   async post<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
+    const { headers: extraHeaders, ...restInit } = init ?? {}
     const response = await fetch(this.buildUrl(path), {
       method: 'POST',
       headers: this.buildHeaders(
-        init?.headers as Record<string, string> | undefined
+        extraHeaders as Record<string, string> | undefined
       ),
       body: body !== undefined ? JSON.stringify(body) : undefined,
-      ...init,
+      ...restInit,
     })
     return this.handleResponse<T>(response)
   }
@@ -328,36 +330,39 @@ export class ApiClient {
   }
 
   async put<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
+    const { headers: extraHeaders, ...restInit } = init ?? {}
     const response = await fetch(this.buildUrl(path), {
       method: 'PUT',
       headers: this.buildHeaders(
-        init?.headers as Record<string, string> | undefined
+        extraHeaders as Record<string, string> | undefined
       ),
       body: body !== undefined ? JSON.stringify(body) : undefined,
-      ...init,
+      ...restInit,
     })
     return this.handleResponse<T>(response)
   }
 
   async patch<T>(path: string, body?: unknown, init?: RequestInit): Promise<T> {
+    const { headers: extraHeaders, ...restInit } = init ?? {}
     const response = await fetch(this.buildUrl(path), {
       method: 'PATCH',
       headers: this.buildHeaders(
-        init?.headers as Record<string, string> | undefined
+        extraHeaders as Record<string, string> | undefined
       ),
       body: body !== undefined ? JSON.stringify(body) : undefined,
-      ...init,
+      ...restInit,
     })
     return this.handleResponse<T>(response)
   }
 
   async delete(path: string, init?: RequestInit): Promise<void> {
+    const { headers: extraHeaders, ...restInit } = init ?? {}
     const response = await fetch(this.buildUrl(path), {
       method: 'DELETE',
       headers: this.buildHeaders(
-        init?.headers as Record<string, string> | undefined
+        extraHeaders as Record<string, string> | undefined
       ),
-      ...init,
+      ...restInit,
     })
     await this.handleResponse<void>(response)
   }
