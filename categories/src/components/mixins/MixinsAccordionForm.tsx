@@ -15,6 +15,7 @@ import {
   createForm,
   filterOutChangedMixins,
   filterOutDeletedMixins,
+  omitUnsetEmptyValues,
   isAttributeOfArraySingleReference,
   MixinsFormItem,
   MixinsFormMetadata,
@@ -59,8 +60,9 @@ const MixinsAccordionForm = forwardRef<
     newVersion,
   } = props
   const methods = useForm<FieldValues>()
-  const { control, reset, formState, getValues } = methods
+  const { control, reset, formState, getValues, trigger } = methods
   const [isExpanded, setIsExpanded] = useState(true)
+  const [resetGeneration, setResetGeneration] = useState(0)
 
   useEffect(() => {
     resetForm()
@@ -74,7 +76,14 @@ const MixinsAccordionForm = forwardRef<
   const resetForm = () => {
     const defaultFormValues = prepareData()
     reset(defaultFormValues)
+    setResetGeneration((generation) => generation + 1)
   }
+
+  // Empty required fields are not auto-filled: validate after each reset so
+  // they show why the form cannot be saved.
+  useEffect(() => {
+    void trigger()
+  }, [resetGeneration, trigger])
 
   const prepareData = () => {
     const schemaData = createForm(sortTree(items) ?? [])
@@ -89,14 +98,19 @@ const MixinsAccordionForm = forwardRef<
     const data = getValues()
     const filteredData = filterOutDeletedMixins(data, items || [])
     const result = applyDefaultsOnEmptyFields(filteredData, items || [])
+    const payload = serializeLocalizedFields(
+      convertFromIdValuePair(result),
+      items || []
+    )
     return {
-      mixins: serializeLocalizedFields(
-        convertFromIdValuePair(result),
+      mixins: omitUnsetEmptyValues(
+        payload,
+        mixins[metadata.key],
         items || []
       ) as Mixins,
       metadata,
     }
-  }, [metadata, getValues, items])
+  }, [metadata, getValues, items, mixins])
 
   useImperativeHandle(
     ref,

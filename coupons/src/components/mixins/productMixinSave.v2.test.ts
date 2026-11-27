@@ -72,8 +72,9 @@ describe('product mixin v2 mapping', () => {
     expect(getLocalizedSchemaVersion(v2TitleProperty)).toBe('v2')
   })
 
-  it('defaults a v2 localized field to an empty object', () => {
-    expect(defaultValueForMixinItem(titleItem())).toEqual({})
+  it('leaves a v2 localized field unset and starts array entries as {}', () => {
+    expect(defaultValueForMixinItem(titleItem())).toBeUndefined()
+    expect(defaultValueForMixinItem(titleItem(), true)).toEqual({})
   })
 
   it('treats localized items with an empty items array as a field, not a nested object', () => {

@@ -290,6 +290,12 @@ export const serializeLocalizedFields = (
     if (item.type === 'localized') {
       if (!Object.prototype.hasOwnProperty.call(node, leaf)) return
       const current = node[leaf]
+      // Localized TEXT is always an array (v1) or a language map (v2); null is
+      // never valid, so leave the attribute out instead.
+      if (current === null && !item.localizedObject) {
+        delete node[leaf]
+        return
+      }
       if (current == null || typeof current !== 'object') return
       node[leaf] = emitLocalizedValue(current, version, kind)
       return

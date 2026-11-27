@@ -20,6 +20,7 @@ import {
   createForm,
   filterOutChangedMixins,
   filterOutDeletedMixins,
+  omitUnsetEmptyValues,
   hasMissingRequiredMixinValues,
   hasMissingRequiredSiteOverlayValues,
   isAttributeOfArraySingleReference,
@@ -33,6 +34,8 @@ import { normalizeSiteOverlay } from './siteAwareMixin.helpers'
 import { Mixins } from '../../models/Mixins.model'
 import MixinsFormItemTemplate from './MixinsFormItemTemplate'
 import { deepMerge } from './mixins.utils'
+import { useLocalizedValue } from '../../hooks/useLocalizedValue'
+import { textToTitleCase } from '../../helpers/utils'
 import styles from './Mixins.module.scss'
 
 export type MixinsFormHandle = {
@@ -82,6 +85,7 @@ const MixinsForm = forwardRef<MixinsFormHandle, MixinFormProps>(
       siteLabel,
     } = props
     const { t } = useTranslation()
+    const { getUiLangValue } = useLocalizedValue()
     const isSiteContext = !!metadata.siteCode
     // Site-aware batch editing compares live payloads to API baselines; synthesizing
     // schema defaults would mark untouched fields dirty in the default context too.
@@ -125,6 +129,13 @@ const MixinsForm = forwardRef<MixinsFormHandle, MixinFormProps>(
       setFormResetGeneration((generation) => generation + 1)
     }
 
+    // Empty required fields are not auto-filled: validate after each reset (once
+    // the fields are registered again) so they show their error and the Save
+    // hint explains why Save is disabled.
+    useEffect(() => {
+      void trigger()
+    }, [formResetGeneration, trigger])
+
     useEffect(() => {
       resetForm()
       // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
@@ -134,18 +145,24 @@ const MixinsForm = forwardRef<MixinsFormHandle, MixinFormProps>(
       onDirtyChange?.(formState.isDirty)
     }, [formState.isDirty, onDirtyChange])
 
+    const storedData = mixins[mixinStorageKey(metadata.key, metadata.siteCode)]
     const toPayload = useCallback(
       (data: Mixins): Mixins => {
         const filteredData = filterOutDeletedMixins(data, items || [])
         const withDefaults = useSparseDefaults
           ? filteredData
           : applyDefaultsOnEmptyFields(filteredData, items || [])
-        return serializeLocalizedFields(
+        const payload = serializeLocalizedFields(
           convertFromIdValuePair(withDefaults),
           items || []
         ) as Mixins
+        // Site overlays are compared to their baseline elsewhere; only the
+        // default context drops empty values the user never entered.
+        return useSparseDefaults
+          ? payload
+          : (omitUnsetEmptyValues(payload, storedData, items || []) as Mixins)
       },
-      [items, useSparseDefaults]
+      [items, storedData, useSparseDefaults]
     )
 
     useEffect(() => {
@@ -201,6 +218,11 @@ const MixinsForm = forwardRef<MixinsFormHandle, MixinFormProps>(
       [onSave, metadata, toPayload]
     )
 
+    // Top-level fields with a validation error; nested errors name their parent.
+    const invalidFieldNames = (items || [])
+      .filter((i) => formState.errors[i.key.split('.').pop() ?? i.key])
+      .map((i) => textToTitleCase(getUiLangValue(i.name)))
+
     const formFields = (
       <div className={styles.fieldsWrap}>
         {(items || []).map((i) => (
@@ -229,6 +251,15 @@ const MixinsForm = forwardRef<MixinsFormHandle, MixinFormProps>(
           actions={
             headerActions ?? (
               <div className={styles.actions}>
+                {invalidFieldNames.length > 0 &&
+                managerPermissions &&
+                !readOnly ? (
+                  <span className={styles.saveHint} role="status">
+                    {t('mixins.labels.requiredFieldsMissing', {
+                      fields: invalidFieldNames.join(', '),
+                    })}
+                  </span>
+                ) : null}
                 <SecondaryButton
                   onClick={() => resetForm()}
                   disabled={

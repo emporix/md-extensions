@@ -27,6 +27,7 @@ export default {
     hasSiteOverlay: 'Has site-specific values',
     unsavedChanges: 'Unsaved changes',
     defaultValueHint: 'Default: {{value}}',
+    requiredFieldsMissing: 'Fill in the required fields to save: {{fields}}',
     useDefaultValue: 'Use default',
     selectReference: 'Select a {{referenceType}}',
     unsupportedType: 'Unsupported reference type',

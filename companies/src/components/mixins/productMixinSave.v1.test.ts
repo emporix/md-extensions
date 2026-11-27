@@ -128,8 +128,9 @@ describe('product mixin v1 PATCH shape (MixinsForm submit chain)', () => {
     expect(getLocalizedSchemaVersion(v1LocalizedTitleProperty)).toBe('v1')
   })
 
-  it('defaults a localized field without localizedVersion to an empty array', () => {
-    expect(defaultValueForMixinItem(titleItem())).toEqual([])
+  it('starts a localized array entry without localizedVersion as an empty array', () => {
+    expect(defaultValueForMixinItem(titleItem())).toBeUndefined()
+    expect(defaultValueForMixinItem(titleItem(), true)).toEqual([])
   })
 
   it('renders a v1 localized field as an input, not a nested object', () => {

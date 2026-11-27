@@ -28,6 +28,8 @@ export default {
     hasSiteOverlay: 'Hat site-spezifische Werte',
     unsavedChanges: 'Ungespeicherte Änderungen',
     defaultValueHint: 'Standard: {{value}}',
+    requiredFieldsMissing:
+      'Pflichtfelder ausfüllen, um zu speichern: {{fields}}',
     useDefaultValue: 'Standard verwenden',
     selectReference: '{{referenceType}} auswählen',
     unsupportedType: 'Nicht unterstützter Referenztyp',

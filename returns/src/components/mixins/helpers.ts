@@ -111,6 +111,27 @@ export type MixinFieldRules = {
   validate?: (value: unknown) => true | string
 }
 
+/**
+ * Parses the formatted text of a number input (grouping and decimal
+ * separators of `locale`). Empty or unparsable text gives `null`.
+ */
+export const parseNumberInputText = (
+  text: string,
+  locale?: string
+): number | null => {
+  const parts = new Intl.NumberFormat(locale).formatToParts(12345.6)
+  const group = parts.find((part) => part.type === 'group')?.value ?? ','
+  const decimal = parts.find((part) => part.type === 'decimal')?.value ?? '.'
+  const normalized = text
+    .split(group)
+    .join('')
+    .replace(/\s/g, '')
+    .replace(decimal, '.')
+  if (normalized === '' || normalized === '-') return null
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 export const buildMixinFieldRules = (
   item: MixinsFormItem,
   requiredMessage: string,
@@ -186,6 +207,14 @@ export const buildMixinFieldRules = (
           : hasMissingRequiredMixinValues(data, [mapItem])
         return missing ? requiredMessage : true
       },
+    }
+  }
+  if (item.type === MixinsFormItemType.boolean && item.isRequired) {
+    // RHF `required` rejects false; like MD, false is a value and only an
+    // unset boolean is missing.
+    return {
+      validate: (value: unknown) =>
+        (value !== undefined && value !== null) || requiredMessage,
     }
   }
   return {
@@ -426,6 +455,29 @@ export const mapMixinsPropertyToItemArrayType = (
   }
 }
 
+/**
+ * Whether the mixin attribute itself accepts `null`. A localized TEXT field
+ * whose language values reference `languageValueNullable_v1/v2` is not
+ * nullable: only each language's value may be null, the attribute is always
+ * an array (v1) or a language map (v2).
+ */
+export const isMixinFieldNullable = (
+  property: MixinsSchemaProperty,
+  itemType: MixinsFormItemType
+): boolean => {
+  // Check for a null in types array
+  if (Array.isArray(property.type)) {
+    return property.type.includes(MixinsPropertyType.null)
+  }
+  // Fallback to enum check because if enum is nullable,
+  // then values are contained null instead of a type array
+  if (itemType === MixinsFormItemType.enum) {
+    const enumValues = property?.items?.enum ?? property.enum
+    return !!enumValues?.includes(null)
+  }
+  return false
+}
+
 export const defaultValueForMixinItem = (
   item: MixinsFormItem,
   isArrayElement = false,
@@ -435,22 +487,30 @@ export const defaultValueForMixinItem = (
   const type = isArrayElement && item.arrayType ? item.arrayType : item.type
   switch (type) {
     case MixinsFormItemType.text:
-      return ''
+      // Only a new array entry starts empty; a field without data stays unset.
+      return isArrayElement ? '' : undefined
+    // Number and date fields without data stay unset; only a new array entry
+    // starts with 0 / now.
     case MixinsFormItemType.integer:
-      return 0
+      return isArrayElement ? 0 : undefined
     case MixinsFormItemType.decimal:
-      return 0.0
+      return isArrayElement ? 0.0 : undefined
     case MixinsFormItemType.boolean:
-      return false
+      // Only a new array entry starts switched off; a field without data stays unset.
+      return isArrayElement ? false : undefined
     case MixinsFormItemType.enum:
+      // Only a new array entry starts with an option; a field without data stays unset.
+      if (!isArrayElement) return undefined
       return item.enum && item.enum.length > 0 ? item.enum[0] : ''
     case MixinsFormItemType.date:
-      return new Date().toISOString()
+      return isArrayElement ? new Date().toISOString() : undefined
     case MixinsFormItemType.dateTime:
-      return new Date().toISOString()
+      return isArrayElement ? new Date().toISOString() : undefined
     case MixinsFormItemType.time:
-      return ''
+      return isArrayElement ? '' : undefined
     case MixinsFormItemType.localized:
+      // Only a new array entry starts empty; a field without data stays unset.
+      if (!isArrayElement) return undefined
       return item.localizedVersion === 'v2' ? {} : []
     case MixinsFormItemType.array:
       return []
@@ -472,6 +532,22 @@ export const setAtPath = (obj: any, path: string, value: any) => {
     cursor = cursor[k]
   }
   cursor[keys[keys.length - 1]] = value
+}
+
+/** Like setAtPath, but an `undefined` value removes the key so it is left out of the payload. */
+const setOrOmitAtPath = (obj: any, path: string, value: any) => {
+  if (value !== undefined) {
+    setAtPath(obj, path, value)
+    return
+  }
+  const keys = path.split('.')
+  let cursor = obj
+  for (let i = 0; i < keys.length - 1; i++) {
+    cursor = cursor?.[keys[i]]
+  }
+  if (cursor && typeof cursor === 'object') {
+    delete cursor[keys[keys.length - 1]]
+  }
 }
 
 export const hasValue = (val: any) => {
@@ -722,7 +798,7 @@ export const applyDefaultsOnEmptyFields = (
         const item = findItemForPath(path, items)
         if (item) {
           if (!hasValue(value)) {
-            setAtPath(
+            setOrOmitAtPath(
               result,
               path,
               item.isNullable
@@ -748,7 +824,7 @@ export const applyDefaultsOnEmptyFields = (
     if (!hasValue(node) && basePath) {
       const item = findItemForPath(basePath, items)
       if (item) {
-        setAtPath(
+        setOrOmitAtPath(
           result,
           basePath,
           item.isNullable
@@ -759,6 +835,61 @@ export const applyDefaultsOnEmptyFields = (
     }
   }
   walkData(result, '', false)
+  return result
+}
+
+const isBlankReference = (value: unknown): boolean => {
+  const id = (value as { id?: unknown } | null | undefined)?.id
+  return typeof id !== 'string' || id.trim() === ''
+}
+
+/** An attribute value that carries no data: null, '', [], {} and the like. */
+const isEmptyMixinValue = (item: MixinsFormItem, value: unknown): boolean => {
+  if (value === undefined || value === null || value === '') return true
+  if (Array.isArray(value)) return value.length === 0
+  if (item.type === MixinsFormItemType.reference) return isBlankReference(value)
+  if (item.type === MixinsFormItemType.localized || item.localizedObject) {
+    return !hasNonBlankValue(value)
+  }
+  return typeof value === 'object' && Object.keys(value).length === 0
+}
+
+/**
+ * Save never changes a value the user did not edit. An empty value (null, '',
+ * [], {}, a reference without id, a localized value without content) is only
+ * sent for an attribute that has stored data, so a cleared field is still
+ * saved as cleared. Without stored data it is left out and the attribute stays
+ * unset. Array entries are not walked: their fields are saved as they are.
+ */
+export const omitUnsetEmptyValues = (
+  payload: any,
+  stored: any,
+  items: MixinsFormItem[] = []
+): any => {
+  const isPlainObject = (value: unknown): value is Record<string, any> =>
+    !!value && typeof value === 'object' && !Array.isArray(value)
+  const walk = (
+    node: Record<string, any>,
+    source: unknown,
+    nodes: MixinsFormItem[]
+  ) => {
+    const storedNode = isPlainObject(source) ? source : undefined
+    for (const item of nodes) {
+      const leaf = item.key.split('.').pop() ?? item.key
+      if (!Object.prototype.hasOwnProperty.call(node, leaf)) continue
+      const value = node[leaf]
+      const storedValue = storedNode?.[leaf]
+      if (isNestedObjectMixinItem(item) && isPlainObject(value)) {
+        walk(value, storedValue, item.items ?? [])
+      }
+      if (storedValue === undefined && isEmptyMixinValue(item, value)) {
+        delete node[leaf]
+      }
+    }
+  }
+  if (!isPlainObject(payload)) return payload
+  const result = deepClone(payload)
+  walk(result, stored, items)
   return result
 }
 

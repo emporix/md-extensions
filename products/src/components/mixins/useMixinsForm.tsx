@@ -6,7 +6,6 @@ import { useMixinsApi } from '../../hooks/api/mixins'
 import {
   ClassificationMixin,
   Mixins,
-  MixinsPropertyType,
   MixinsSchemaProperty,
 } from '../../models/Mixins.model'
 import { Reference, Schema } from '../../models/Schema.model'
@@ -16,6 +15,7 @@ import {
   getReferenceIdAndVersion,
   getSchemaIdAndVersion,
   isEmporixReferenceUrl,
+  isMixinFieldNullable,
   isEmporixSchemaUrl,
   mapMixinsPropertyToItemArrayType,
   mapMixinsPropertyToItemType,
@@ -32,7 +32,6 @@ import {
   getLocalizedObjectValueSchema,
   getLocalizedSchemaVersion,
   isLocalizedLanguageValueRef,
-  isLocalizedNullableRef,
 } from './localizedMixin.helpers'
 import Localized from '../../models/Localized.model'
 import { sortById, textToTitleCase } from '../../helpers/utils'
@@ -446,26 +445,6 @@ const useMixinsForm = (props: MixinsProps) => {
             : undefined
         }
 
-        const isNullable = () => {
-          if (
-            isLocalizedNullableRef(property.$ref) ||
-            isLocalizedNullableRef(property.items?.$ref)
-          ) {
-            return true
-          }
-          // Check for a null in types array
-          if (Array.isArray(property.type)) {
-            return property.type.includes(MixinsPropertyType.null)
-          }
-          // Fallback to enum check because if enum is nullable,
-          // then values are contained null instead of a type array
-          else if (itemType === 'enum') {
-            const enumValues = property?.items?.enum ?? property.enum
-            return enumValues?.includes(null)
-          }
-          return false
-        }
-
         items.push({
           name: path in names ? names[path] : key,
           key: rootKey ? `${rootKey}.${key}` : `${key}`,
@@ -476,7 +455,7 @@ const useMixinsForm = (props: MixinsProps) => {
           arrayType: arrayType,
           isReadonly: !!property.readOnly,
           isRequired: !!required?.includes(key),
-          isNullable: isNullable(),
+          isNullable: isMixinFieldNullable(property, itemType),
           referenceType,
           referenceTypeEnum,
           multipleOf: property.multipleOf ?? property.items?.multipleOf,
