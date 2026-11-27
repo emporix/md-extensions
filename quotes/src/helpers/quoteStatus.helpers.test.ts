@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { QuoteStatus, QuoteStatusColor } from '../models/Quotes.model'
 import {
   canChangeQuoteStatus,
+  canSendQuoteToCustomer,
+  formatQuoteReasonCode,
   getQuoteApprovalActions,
   hasQuoteStatusDetails,
   isQuoteAwaitingDecision,
@@ -104,9 +106,13 @@ describe('getQuoteApprovalActions', () => {
     expect(getQuoteApprovalActions(QuoteStatus.IN_PROGRESS)).toBe('decide')
   })
 
+  // COP-7125: the employee can start a negotiation round on an open quote.
+  it('offers to start a negotiation for an open quote', () => {
+    expect(getQuoteApprovalActions(QuoteStatus.OPEN)).toBe('negotiate')
+  })
+
   it('offers no action for the other statuses', () => {
     for (const status of [
-      QuoteStatus.OPEN,
       QuoteStatus.ACCEPTED,
       QuoteStatus.DECLINED,
       QuoteStatus.DECLINED_BY_MERCHANT,
@@ -130,5 +136,36 @@ describe('status badge colours', () => {
       AWAITING: '#6C9192',
       CREATING: '#E6C20B',
     })
+  })
+})
+
+// COP-7125: the backend sends a quote to the customer only while IN_PROGRESS.
+describe('canSendQuoteToCustomer', () => {
+  it('is true for a manager on a pending quote only', () => {
+    for (const status of ALL_STATUSES) {
+      expect(canSendQuoteToCustomer(status, true)).toBe(
+        status === QuoteStatus.IN_PROGRESS
+      )
+    }
+  })
+
+  it('is never true without the manager permission or a status', () => {
+    for (const status of ALL_STATUSES) {
+      expect(canSendQuoteToCustomer(status, false)).toBe(false)
+    }
+    expect(canSendQuoteToCustomer(undefined, true)).toBe(false)
+  })
+})
+
+describe('formatQuoteReasonCode', () => {
+  it('replaces the underscores of a reason code with spaces', () => {
+    expect(formatQuoteReasonCode('PROVIDED_PRICE_TO_HIGH')).toBe(
+      'PROVIDED PRICE TO HIGH'
+    )
+  })
+
+  it('leaves a code without underscores and an absent code', () => {
+    expect(formatQuoteReasonCode('PRICE')).toBe('PRICE')
+    expect(formatQuoteReasonCode(undefined)).toBe('')
   })
 })

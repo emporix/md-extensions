@@ -137,23 +137,19 @@ describe('findLinesWithoutTaxClass', () => {
     ...(price ? { price } : {}),
   })
 
-  // `useQuotesMatchPrices` leaves a placeholder price; COP-7125 (#175) none.
-  it('counts a placeholder price and a missing price as unpriced', () => {
+  it('does not list a placeholder price or a missing price (No price)', () => {
     const placeholder = line('P1', { priceId: '', tax: { taxClass: '' } })
     const missing = line('P2')
-    expect(findLinesWithoutTaxClass([placeholder, missing])).toEqual({
-      unpriced: [placeholder, missing],
-      withoutTaxClass: [],
-    })
+    expect(findLinesWithoutTaxClass([placeholder, missing])).toEqual([])
   })
 
   it('finds matched prices without a tax class', () => {
     const blankClass = line('P3', { priceId: 'PR3', tax: { taxClass: '' } })
     const noTax = line('P4', { priceId: 'PR4' })
     const taxed = line('P5', { priceId: 'PR5', tax: { taxClass: 'STANDARD' } })
-    expect(findLinesWithoutTaxClass([blankClass, noTax, taxed])).toEqual({
-      unpriced: [],
-      withoutTaxClass: [blankClass, noTax],
-    })
+    expect(findLinesWithoutTaxClass([blankClass, noTax, taxed])).toEqual([
+      blankClass,
+      noTax,
+    ])
   })
 })

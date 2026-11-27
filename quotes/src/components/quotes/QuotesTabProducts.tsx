@@ -9,13 +9,17 @@ import {
   useToast,
 } from '@emporix/component-library'
 import EmptyContent from '../shared/EmptyContent'
+import FallbackCountryNotice from './FallbackCountryNotice'
 import QuotesTabProductsSelected from './QuotesTabProductsSelected'
 import QuotesSelectProductsDialog from './QuotesSelectProductsDialog'
 import { useQuoteData } from '../../context/Quote.provider'
 import { useUIBlocker } from '../../context/UIBlocker'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { useQuotesApi } from '../../hooks/api/quotes'
-import { useQuotesMatchPrices } from '../../hooks/useQuotesMatchPrices'
+import {
+  isNoShipToCountryError,
+  useQuotesMatchPrices,
+} from '../../hooks/useQuotesMatchPrices'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import { Item } from '../../models/Quotes.model'
 import { ProductType } from '../../models/Category.model'
@@ -105,26 +109,16 @@ const QuotesTabProducts = (props: StylableProps) => {
           : []
 
         // The quote service rejects these lines without naming them
-        // (COP-7116 QA), so the save stops here and names the products.
-        const rejectedLines = findLinesWithoutTaxClass(newItemsWithPrices)
-        const rejections = [
-          ...(rejectedLines.unpriced.length
-            ? [
-                t('quotes.toasts.errorNoPrice', {
-                  products: productNames(rejectedLines.unpriced),
-                }),
-              ]
-            : []),
-          ...(rejectedLines.withoutTaxClass.length
-            ? [
-                t('quotes.toasts.errorNoTaxClass', {
-                  products: productNames(rejectedLines.withoutTaxClass),
-                }),
-              ]
-            : []),
-        ]
-        if (rejections.length) {
-          toast.showError(t('quotes.toasts.errorUpdate'), rejections)
+        // (COP-7116 QA), so the save stops here and names the products. A
+        // product without a price is allowed ("No price", COP-7125).
+        const linesWithoutTaxClass =
+          findLinesWithoutTaxClass(newItemsWithPrices)
+        if (linesWithoutTaxClass.length) {
+          toast.showError(t('quotes.toasts.errorUpdate'), [
+            t('quotes.toasts.errorNoTaxClass', {
+              products: productNames(linesWithoutTaxClass),
+            }),
+          ])
           return
         }
 
@@ -138,7 +132,14 @@ const QuotesTabProducts = (props: StylableProps) => {
         refreshData()
       } catch (e) {
         console.error(e)
-        toast.showError(t('quotes.toasts.errorUpdate'), getApiErrorDetails(e))
+        // COP-7125: without a shipping address the match uses the home base or the first
+        // ship-to country of the quote's site; with none, nothing is added.
+        toast.showError(
+          isNoShipToCountryError(e)
+            ? t('quotes.toasts.errorNoShipToCountry')
+            : t('quotes.toasts.errorUpdate'),
+          getApiErrorDetails(e)
+        )
       } finally {
         blockPanel(false)
       }
@@ -161,9 +162,14 @@ const QuotesTabProducts = (props: StylableProps) => {
   }
 
   const products = watch('products') ?? []
+  // COP-7125: saved items without a price are marked "No price".
+  const unpricedProductIds = (quote?.items ?? [])
+    .filter((item) => !item.price)
+    .map((item) => item.product.productId)
 
   return (
     <div className={className}>
+      <FallbackCountryNotice quote={quote} className={styles.notice} />
       <SectionBox
         name={t('quotes.tabs.products.selectedItems')}
         actions={
@@ -201,6 +207,7 @@ const QuotesTabProducts = (props: StylableProps) => {
             <QuotesTabProductsSelected
               products={products}
               removeProduct={removeProduct}
+              unpricedProductIds={unpricedProductIds}
             />
           ) : (
             <EmptyContent

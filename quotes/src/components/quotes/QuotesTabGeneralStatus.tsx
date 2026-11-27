@@ -2,7 +2,10 @@ import { useTranslation } from 'react-i18next'
 import { SectionBox } from '@emporix/component-library'
 import { Quote, QuoteStatus } from '../../models/Quotes.model'
 import { assignHostLocation, orderDetailUrl } from '../../helpers/hostUrls'
-import { isQuoteCompleted } from '../../helpers/quoteStatus.helpers'
+import {
+  formatQuoteReasonCode,
+  isQuoteCompleted,
+} from '../../helpers/quoteStatus.helpers'
 import { StylableProps } from '../../helpers/props'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { EmployeeDomains } from '../../configs/accessControls'
@@ -67,7 +70,7 @@ const QuotesTabGeneralStatus = (props: QuotesTabGeneralStatusProps) => {
         <div className={styles.col}>
           <div className={styles.label}>{t('quotes.tabs.general.reason')}</div>
           <div className={styles.value}>
-            {quote.status.quoteReason?.code || '--'}
+            {formatQuoteReasonCode(quote.status.quoteReason?.code) || '--'}
           </div>
         </div>
 

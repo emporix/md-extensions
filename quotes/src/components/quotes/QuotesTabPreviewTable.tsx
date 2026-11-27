@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Control,
@@ -16,21 +16,25 @@ import {
   useToast,
   type DataTableColumnProps,
 } from '@emporix/component-library'
-import { Item, Quote } from '../../models/Quotes.model'
+import { Item, Quote, Shipping } from '../../models/Quotes.model'
 import { ShippingMethod } from '../../models/Shipping.model'
+import { TaxClass } from '../../models/Taxes.model'
 import type { QuotePreviewForm } from './QuotesTabPreview'
 import { useQuoteData } from '../../context/Quote.provider'
 import { usePermissions } from '../../context/PermissionsProvider'
-import { useQuotesMatchPrices } from '../../hooks/useQuotesMatchPrices'
+import {
+  isNoShipToCountryError,
+  useQuotesMatchPrices,
+} from '../../hooks/useQuotesMatchPrices'
 import { useLocalizedValue } from '../../hooks/useLocalizedValue'
 import { useShippingApi } from '../../hooks/api/shipping'
 import { useTaxesApi } from '../../hooks/api/taxes'
 import { numericColumn } from '../shared/NumericColumn'
 import InputField from '../shared/InputField'
+import PriceOnRequestBadge from './PriceOnRequestBadge'
 import { EmployeeDomains } from '../../configs/accessControls'
 import { StylableProps } from '../../helpers/props'
 import {
-  calculateQuoteItemsSubtotal,
   filterQuoteShippingMethods,
   getZoneShippingMethods,
   selectShippingFee,
@@ -41,6 +45,16 @@ import {
   getUnitPriceForNetValue,
   limitItemDiscount,
 } from '../../helpers/quoteItems.helpers'
+import {
+  calculateDiscount,
+  formatTaxRate,
+  grossFromNet,
+  hasTaxCalculated,
+  isExternalPrice,
+  isSameShipping,
+  sumGrossValues,
+  sumNetValues,
+} from '../../helpers/quotePricing.helpers'
 import { getApiErrorDetails } from '../../helpers/api'
 import styles from './QuotesTabPreviewTable.module.scss'
 
@@ -49,6 +63,10 @@ interface QuotesTabProductsProps extends StylableProps {
   getValues: UseFormGetValues<QuotePreviewForm>
   watch: UseFormWatch<QuotePreviewForm>
   setValue: UseFormSetValue<QuotePreviewForm>
+  /** Classes of the shipping country, for unpriced and EXTERNAL rows. */
+  taxClasses?: TaxClass[]
+  taxClassesLoadFailed?: boolean
+  taxClassesLoaded?: boolean
 }
 
 interface RowOption {
@@ -65,10 +83,21 @@ const PREVIEW_ROWS_PER_PAGE_OPTIONS = [5, 10, 15]
 /**
  * MD `QuotesTabPreviewTable`: the quote lines with editable quantity, net
  * price and discount, the shipping method of the shipping country's zones
- * and the totals.
+ * and the totals. Items without a price, quotes without an address and the
+ * tax class of hand-entered prices follow COP-7125
+ * (emporix/management-dashboard#1707).
  */
 const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
-  const { className = '', control, getValues, watch, setValue } = props
+  const {
+    className = '',
+    control,
+    getValues,
+    watch,
+    setValue,
+    taxClasses = [],
+    taxClassesLoadFailed = false,
+    taxClassesLoaded = false,
+  } = props
   const { t, i18n } = useTranslation()
   const { getPriceForQuoteItems } = useQuotesMatchPrices()
   const { quote, isQuoteCompleted } = useQuoteData()
@@ -85,6 +114,34 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
   const [rows, setRows] = useState(PREVIEW_ROWS)
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.QUOTES_MANAGER)
+  // Without a shipping address the tax is unknown (price matching used a
+  // fallback country), so only net values are shown: tax rate, tax and gross
+  // stay blank. Computing gross here would default the rate to 0 and show a
+  // gross equal to net, which is misleading.
+  const hasShippingAddress = !!quote?.shippingAddress
+  // A class chosen but not saved yet: the loaded rate and gross belong to the
+  // old class, so they are not shown (the backend recalculates on save).
+  const hasChangedTaxClass = (item: Item, index: number) => {
+    const chosen = item.price?.tax?.taxClass
+    return (
+      typeof chosen === 'string' &&
+      chosen.trim() !== '' &&
+      chosen !== quote?.items?.[index]?.price?.tax?.taxClass
+    )
+  }
+  // Gross values (subtotal, shipping) only when the whole quote is calculated
+  // with tax; otherwise the totals are net, as the backend calculates them.
+  const isTaxShown = (items: Item[]) =>
+    hasShippingAddress &&
+    hasTaxCalculated(items) &&
+    !items.some((item, i) => hasChangedTaxClass(item, i))
+  const isTaxShownFor = (item: Item, index: number) =>
+    hasShippingAddress && !hasChangedTaxClass(item, index)
+  // Subscribes the table to every change of the rows (tax class included).
+  const chosenClasses = (watch('items') ?? [])
+    .map((item) => item.price?.tax?.taxClass ?? '')
+    .join('|')
+  const notifiedShipping = useRef<string | undefined>(undefined)
 
   useEffect(() => {
     if (!quote) return
@@ -108,9 +165,18 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
   }, [])
 
   useEffect(() => {
-    setSubtotal(calculateQuoteItemsSubtotal(getValues('items')))
+    const items = getValues('items')
+    // Gross only when the backend returned a rate for every priced row: a
+    // missing class is not a missing address (the quote stays net only).
+    setSubtotal(isTaxShown(items) ? sumGrossValues(items) : sumNetValues(items))
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
-  }, [calcSubtotal, shippingMethods])
+  }, [calcSubtotal, shippingMethods, chosenClasses])
+
+  useEffect(() => {
+    // The parent resets the form in its own effect, which runs after this
+    // one; the state change re-runs the subtotal effect on the reset values.
+    setCalcSubtotal(new Date().getTime())
+  }, [quote])
 
   useEffect(() => {
     updateFilteredShippingMethods()
@@ -124,18 +190,16 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
   }, [filteredShippingMethods])
 
-  const calculateDiscount = (unitPrice: number, newUnitPrice: number) => {
-    return ((unitPrice - newUnitPrice) / unitPrice) * 100
-  }
-
-  const mapShippingMethodToQuoteShipping = async (method: ShippingMethod) => {
+  const mapShippingMethodToQuoteShipping = async (
+    method: ShippingMethod
+  ): Promise<Shipping> => {
     const fee = selectShippingFee(method, subtotal)
     const value = fee.cost.amount
     const grossValue = !method.shippingTaxCode
       ? value
       : await calculateTax(
           value,
-          quote?.shippingAddress.countryCode,
+          quote?.shippingAddress?.countryCode,
           method.shippingTaxCode
         )
     return {
@@ -158,21 +222,50 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
   }
 
   const updateSelectedShippingMethod = async () => {
-    if (!shippingMethods) return
+    if (!shippingMethods || !hasShippingAddress) return
     const availableShippingMethod = filteredShippingMethods?.find(
       (m) => m.id === getValues('shipping')?.methodId
     )
-    if (availableShippingMethod) {
-      const methodWithNewPrices = await mapShippingMethodToQuoteShipping(
-        availableShippingMethod
-      )
-      setValue('shipping', methodWithNewPrices)
-    } else {
-      setValue('shipping', undefined)
+    const picked = availableShippingMethod
+      ? await mapShippingMethodToQuoteShipping(availableShippingMethod)
+      : undefined
+    applyPickedShipping(picked)
+  }
+
+  /**
+   * Writes the re-picked shipping into the form. When it differs from the
+   * stored `quote.shipping` (the totals moved to another fee, or the method is
+   * no longer allowed) the field is marked dirty, so Save is enabled and the
+   * next save sends `/shipping`, and the employee is told once. A result equal
+   * to the stored shipping stays clean and silent (plain open or refresh).
+   */
+  const applyPickedShipping = (picked: Shipping | undefined) => {
+    // Read-only views (completed quote, no manage permission) never mark the
+    // form dirty or toast, even when the tenant's shipping setup has drifted.
+    if (
+      isQuoteCompleted ||
+      !canManage ||
+      isSameShipping(picked, quote?.shipping ?? undefined)
+    ) {
+      setValue('shipping', picked)
+      return
     }
+    // Validated, so a cleared method disables Save again (it is required with
+    // an address). react-hook-form 7.91 keeps `isValid` as it was after a
+    // plain `setValue`, which left Save enabled; MD (7.54) disables it.
+    setValue('shipping', picked, { shouldDirty: true, shouldValidate: true })
+    const key = JSON.stringify(picked ?? null)
+    if (notifiedShipping.current === key) return
+    notifiedShipping.current = key
+    toast.showToast(t('quotes.toasts.shippingUpdated'), '', 'info')
   }
 
   const onQuantityChange = async (quantity: number, index: number) => {
+    // An unpriced row has nothing to re-price.
+    if (!getValues(`items.${index}.price`)) {
+      setCalcSubtotal(new Date().getTime())
+      return
+    }
     let matchedUnitPrice: number | undefined
     try {
       const itemsWithNewPrice = await getPriceForQuoteItems(quote as Quote, [
@@ -184,11 +277,13 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
       // old totals. The line is recomputed with its current price instead.
       console.error(e)
       toast.showError(
-        t('quotes.toasts.errorFetchPrices'),
+        isNoShipToCountryError(e)
+          ? t('quotes.toasts.errorNoShipToCountry')
+          : t('quotes.toasts.errorFetchPrices'),
         getApiErrorDetails(e)
       )
     }
-    const currentUnitPrice = getValues(`items.${index}.price.unitPrice`)
+    const currentUnitPrice = getValues(`items.${index}.price.unitPrice`) ?? 0
     const unitPrice = matchedUnitPrice || currentUnitPrice
     const currentNewUnitPrice =
       getValues(`items.${index}.price.newUnitPrice`) ?? 0
@@ -207,7 +302,7 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
     setValue(`items.${index}.price.totalNetValue`, totalNetValue, {
       shouldDirty: true,
     })
-    setValue(`items.${index}.price.unitPrice`, unitPrice, {
+    setValue(`items.${index}.price.unitPrice`, unitPrice ?? 0, {
       shouldDirty: true,
     })
     setValue(`items.${index}.price.newUnitPrice`, newUnitPrice, {
@@ -244,7 +339,7 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
 
   const onDiscountChange = (discount: number, index: number) => {
     const newUnitPrice =
-      getValues(`items.${index}.price.unitPrice`) * (1 - discount / 100)
+      (getValues(`items.${index}.price.unitPrice`) ?? 0) * (1 - discount / 100)
     const newTotalNetValue =
       newUnitPrice * getValues(`items.${index}.quantity.quantity`)
     setValue(`items.${index}.price.totalNetValue`, newTotalNetValue, {
@@ -255,6 +350,49 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
     })
     setCalcSubtotal(new Date().getTime())
   }
+
+  /**
+   * Net price of a row without a price: a form field of its own
+   * (`enteredNetValues`), never a synthetic `price` object. Saving sends it as
+   * an EXTERNAL price (`buildItemsUpdateOperations`).
+   */
+  const unpricedNetPriceInput = (rowIndex: number) => (
+    <Controller
+      name={`enteredNetValues.${rowIndex}`}
+      control={control}
+      render={({ field }) => (
+        <InputNumber
+          className={styles.netPriceInput}
+          readOnly={isQuoteCompleted || !canManage}
+          locale={i18n.language}
+          value={field.value ?? null}
+          prefix={getSymbolFromCurrency(quote?.currency ?? '') + ' '}
+          min={0}
+          maxFractionDigits={2}
+          minFractionDigits={2}
+          onChange={(e) => field.onChange(e.value ?? null)}
+          data-testid={`quote-item-entered-net-price-${rowIndex}`}
+        />
+      )}
+    />
+  )
+
+  // Only a hand-entered (EXTERNAL) price carries a class chosen by the
+  // employee, and only once the country of the address is known. An item
+  // without a price becomes EXTERNAL when its net price is entered.
+  const wantsTaxClass = (item: Item) =>
+    hasShippingAddress && (!item.price || isExternalPrice(item.price))
+  const needsTaxClass = (item: Item) =>
+    wantsTaxClass(item) && taxClasses.length > 0
+  const taxClassOptions = taxClasses.map((taxClass) => ({
+    label: getContentLangValue(taxClass.name) || taxClass.code,
+    value: taxClass.code,
+  }))
+  const hasLoadedNoClasses = taxClasses.length === 0 && taxClassesLoaded
+  const rowsNeedTaxClass =
+    canManage &&
+    !isQuoteCompleted &&
+    (getValues('items') ?? []).some(wantsTaxClass)
 
   const columns = (): DataTableColumnProps[] => {
     if (!quote?.currency) return []
@@ -303,7 +441,8 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
       {
         columnKey: 'unitPrice',
         header: t(`${TABLE_NAME}.unitPrice`),
-        body: (_: Item, o: RowOption) => {
+        body: (rowData: Item, o: RowOption) => {
+          if (!rowData.price) return <PriceOnRequestBadge />
           return (
             <MoneyValue
               currency={currency}
@@ -317,7 +456,8 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
       {
         columnKey: 'newUnitPrice',
         header: t(`${TABLE_NAME}.newUnitPrice`),
-        body: (_: Item, o: RowOption) => {
+        body: (rowData: Item, o: RowOption) => {
+          if (!rowData.price) return null
           return (
             <MoneyValue
               currency={currency}
@@ -331,7 +471,8 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
       {
         columnKey: 'netPrice',
         header: t(`${TABLE_NAME}.netPrice`),
-        body: (_: Item, o: RowOption) => {
+        body: (rowData: Item, o: RowOption) => {
+          if (!rowData.price) return unpricedNetPriceInput(o.rowIndex)
           return (
             <Controller
               name={`items.${o.rowIndex}.price.totalNetValue`}
@@ -360,13 +501,45 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
         ...numericColumn,
         headerStyle: { paddingRight: '24px' },
       },
+      ...(rowsNeedTaxClass && taxClasses.length > 0
+        ? [
+            {
+              columnKey: 'taxClass',
+              header: t(`${TABLE_NAME}.taxClass`),
+              body: (rowData: Item, o: RowOption) => {
+                if (!needsTaxClass(rowData)) return null
+                const name = !rowData.price
+                  ? (`enteredTaxClasses.${o.rowIndex}` as const)
+                  : (`items.${o.rowIndex}.price.tax.taxClass` as const)
+                return (
+                  <Controller
+                    name={name}
+                    control={control}
+                    render={({ field }) => (
+                      <Dropdown
+                        className={styles.taxClassDropdown}
+                        disabled={isQuoteCompleted || !canManage}
+                        placeholder={t(
+                          'quotes.tabs.preview.taxClassPlaceholder'
+                        )}
+                        options={taxClassOptions}
+                        value={(field.value as string | null) ?? null}
+                        onChange={(e) => field.onChange(e.value)}
+                        data-testid={`quote-item-tax-class-${o.rowIndex}`}
+                      />
+                    )}
+                  />
+                )
+              },
+            },
+          ]
+        : []),
       {
         columnKey: 'tax',
         header: t(`${TABLE_NAME}.tax`),
-        // A price can come back without `tax` (MD showed "undefined%").
-        body: (rowData: Item) =>
-          typeof rowData.price?.tax?.taxRate === 'number'
-            ? `${rowData.price.tax.taxRate}%`
+        body: (rowData: Item, o: RowOption) =>
+          isTaxShownFor(getValues(`items.${o.rowIndex}`) ?? rowData, o.rowIndex)
+            ? formatTaxRate(rowData)
             : '',
         ...numericColumn,
         bodyStyle: { paddingRight: '14px' },
@@ -374,7 +547,8 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
       {
         columnKey: 'discount',
         header: t(`${TABLE_NAME}.discount`),
-        body: (_: Item, o: RowOption) => {
+        body: (rowData: Item, o: RowOption) => {
+          if (!rowData.price) return null
           return (
             <Controller
               name={`items.${o.rowIndex}.price.discount`}
@@ -416,14 +590,18 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
         columnKey: 'grossPrice',
         header: t(`${TABLE_NAME}.grossPrice`),
         body: (rowData: Item, o: RowOption) => {
-          // Without a tax rate the gross is unknown. MD read
-          // `price.tax.taxRate` unchecked, so a line without `tax` crashed the
-          // page (COP-7116 QA).
-          const taxRate = rowData.price?.tax?.taxRate
-          if (typeof taxRate !== 'number') return null
-          const value =
-            watch(`items.${o.rowIndex}.price.totalNetValue`) *
-            (1 + taxRate / 100)
+          if (typeof rowData.price?.tax?.taxRate !== 'number') return null
+          if (
+            !isTaxShownFor(
+              getValues(`items.${o.rowIndex}`) ?? rowData,
+              o.rowIndex
+            )
+          )
+            return null
+          const value = grossFromNet(
+            watch(`items.${o.rowIndex}.price.totalNetValue`) ?? 0,
+            rowData.price.tax?.taxRate
+          )
           return (
             <MoneyValue
               currency={currency}
@@ -444,6 +622,16 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
 
   return (
     <div className={className}>
+      {rowsNeedTaxClass && taxClassesLoadFailed && (
+        <small className={styles.taxClassMessage}>
+          {t('quotes.tabs.preview.taxClassesLoadError')}
+        </small>
+      )}
+      {rowsNeedTaxClass && !taxClassesLoadFailed && hasLoadedNoClasses && (
+        <small className={styles.taxClassMessage}>
+          {t('quotes.tabs.preview.taxClassesEmpty')}
+        </small>
+      )}
       <DataTable
         value={getValues('items')}
         columns={columns()}
@@ -465,12 +653,14 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
         <InputField
           label={t('quotes.tabs.preview.shippingMethod')}
           className={styles.shippingField}
-          required
+          // Without a shipping address there are no methods; shipping stays
+          // optional (COP-7125).
+          required={hasShippingAddress}
         >
           <Controller
             name={`shipping`}
             control={control}
-            rules={{ required: true }}
+            rules={{ required: hasShippingAddress }}
             render={({ field }) => (
               <Dropdown
                 disabled={isQuoteCompleted || !canManage}
@@ -495,7 +685,11 @@ const QuotesTabPreviewTable = (props: QuotesTabProductsProps) => {
         </InputField>
         <TableTotalCost
           subtotal={subtotal}
-          shippingCost={watch('shipping')?.grossValue}
+          shippingCost={
+            isTaxShown(getValues('items') ?? [])
+              ? watch('shipping')?.grossValue
+              : watch('shipping')?.value
+          }
           currency={quote?.currency as string}
         ></TableTotalCost>
       </div>

@@ -49,3 +49,8 @@ export const buildQuoteChangeStatusPayload = (
 export const buildQuoteSendPayload = (): QuoteUpdateStatusValue => ({
   value: QuoteStatus.OPEN,
 })
+
+/** "Send as Pending Quote" on the Approval tab sends an incomplete quote as IN_PROGRESS (shown as Pending). */
+export const buildQuotePendingPayload = (): QuoteUpdateStatusValue => ({
+  value: QuoteStatus.IN_PROGRESS,
+})

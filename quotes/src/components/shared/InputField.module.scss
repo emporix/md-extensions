@@ -14,7 +14,14 @@
   margin-bottom: 0;
 }
 
-.labelRow > label {
+// Keeps the label a direct flex item of the row; it is named by the group
+// below it (`aria-labelledby`).
+.labelWrap {
+  display: contents;
+}
+
+.labelRow > label,
+.labelWrap > label {
   margin-bottom: 0;
 }
 

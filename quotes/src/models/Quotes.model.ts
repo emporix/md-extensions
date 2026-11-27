@@ -33,9 +33,10 @@ export interface CurrencyValue {
 
 export interface TotalPrice {
   currency: string
-  grossValue: number
+  /** Null while the tax is unknown (COP-7125: no address, unpriced items). */
+  grossValue?: number | null
   netValue: number
-  taxValue: number
+  taxValue?: number | null
 }
 
 export interface TaxAggregate {
@@ -92,13 +93,16 @@ export interface Quote {
   validTo: string
   mixins?: Mixins
   orderId?: string
-  shippingAddress: Address
-  billingAddress: Address
+  /** A quote may be created without addresses (COP-7125). */
+  shippingAddress?: Address | null
+  billingAddress?: Address | null
+  /** True while at least one item has no price (COP-7125). */
+  incompletePricing?: boolean
   siteCode: string
   company: { name: string }
   legalEntityId?: string
   comment: Comment
-  shipping: Shipping
+  shipping?: Shipping | null
   businessModel: CustomerBusinessModel
   restriction?: string
   customerReference?: string
@@ -126,21 +130,29 @@ export interface Status {
 export interface Item {
   itemId: string
   quantity: Quantity
-  price: Price
+  /** Absent or null for a product without a price ("No price"). */
+  price?: Price | null
+  priceStatus?: PriceStatus
   product: Product
 }
+
+export type PriceStatus = 'MISSING' | 'PRICED'
 
 export interface Quantity {
   quantity: number
   unitCode?: string
 }
 
+export type PriceType = 'INTERNAL' | 'EXTERNAL'
+
 export interface Price {
-  priceId: string
+  priceId?: string | null
+  /** EXTERNAL: a net price entered by hand (COP-7125). */
+  type?: PriceType
   unitPrice: number
   newUnitPrice: number
   totalNetValue: number
-  tax: Tax
+  tax?: Tax | null
   discount: number
   currency: string
 }
@@ -161,8 +173,9 @@ export interface Prices {
 }
 
 export interface Tax {
-  taxClass: string
-  taxRate: number
+  taxClass: string | null
+  /** Absent until the backend calculated it (no address yet). */
+  taxRate?: number
   prices?: Prices
 }
 
@@ -176,8 +189,9 @@ export interface QuoteCreateRequest {
   currency: string
   customerId: string
   legalEntityId?: string
-  shippingAddressId: string
-  billingAddressId: string
+  /** Omitted, never "", when no address is chosen (COP-7125). */
+  shippingAddressId?: string
+  billingAddressId?: string
   restriction?: string | null
 }
 

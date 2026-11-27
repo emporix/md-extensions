@@ -94,7 +94,8 @@ describe('QuotesTabGeneralStatus', () => {
     })
 
     const box = screen.getByTestId('quote-status-box')
-    expect(box.textContent).toContain('PRICE_TOO_HIGH')
+    expect(box.textContent).toContain('PRICE TOO HIGH')
+    expect(box.textContent).not.toContain('PRICE_TOO_HIGH')
     expect(box.textContent).toContain('Please lower the price')
     expect(box.textContent).not.toContain('Order number')
   })

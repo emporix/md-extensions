@@ -16,7 +16,12 @@ import { DashboardProvider } from '../../context/Dashboard.context'
 import { QuoteDataProvider } from '../../context/Quote.provider'
 import type { AppState } from '../../models/AppState.model'
 import { DEFAULT_APP_CURRENCY } from '../../constants/currency'
+import { useForm } from 'react-hook-form'
+import type { QuoteGeneralForm } from '../../helpers/quoteGeneralForm.helpers'
+import type { Location } from '../../models/LegalEntity.model'
+import { unpricedQuote } from '../../test/quoteNullFixtures'
 import QuotesTabGeneral from './QuotesTabGeneral'
+import QuotesTabGeneralAddresses from './QuotesTabGeneralAddresses'
 
 const quotesApi = vi.hoisted(() => ({
   getQuoteById: vi.fn(),
@@ -66,6 +71,24 @@ vi.mock('../../context/PermissionsProvider', () => ({
   }),
 }))
 vi.mock('../../context/SitesProvider', () => ({ useSites: () => sites.value }))
+/** Lets a test pick company LE1 with one click instead of the selector. */
+const companyPicker = vi.hoisted(() => ({ fake: false }))
+vi.mock('../shared/CompaniesSelector', async (importOriginal) => {
+  const { createElement } = await import('react')
+  const actual =
+    await importOriginal<typeof import('../shared/CompaniesSelector')>()
+  const Selector = actual.default
+  return {
+    default: (props: Parameters<typeof Selector>[0]) =>
+      companyPicker.fake
+        ? createElement(
+            'button',
+            { type: 'button', onClick: () => props.onChange('LE1') },
+            'pick company'
+          )
+        : createElement(Selector, props),
+  }
+})
 vi.mock('@emporix/component-library', async () => {
   const actual = await vi.importActual<
     typeof import('@emporix/component-library')
@@ -199,8 +222,11 @@ describe('QuotesTabGeneral', () => {
       companiesApi.getLegalEntity.mockResolvedValue(company([]))
       renderGeneral()
 
+      // COP-7125: a company without any location gets the new hint.
       expect(
-        await screen.findByText('No shipping location for the selected company')
+        await screen.findByText(
+          'No locations yet - add them before the customer can accept the quote'
+        )
       ).toBeTruthy()
       fireEvent.click(screen.getByRole('button', { name: 'Add new location' }))
 
@@ -223,6 +249,11 @@ describe('QuotesTabGeneral', () => {
         addresses: [],
       })
       renderGeneral()
+
+      // The label of the customer name is tied to its field.
+      expect(
+        await screen.findByLabelText(/customer/i, { selector: 'input' })
+      ).toBe(screen.getByTestId('quote-customer-name-input'))
 
       // The synced customer is the last update of the form.
       await waitFor(() =>
@@ -310,8 +341,9 @@ describe('QuotesTabGeneral', () => {
 
     expect(await screen.findByText('Ann Lee')).toBeTruthy()
     expect(screen.getByText('a@x.io')).toBeTruthy()
-    expect(screen.getByText('HQ')).toBeTruthy()
-    expect(screen.getByText('Main 1, Berlin, DE')).toBeTruthy()
+    // The locations load separately from the customer.
+    expect(await screen.findByText('HQ')).toBeTruthy()
+    expect(await screen.findByText('Main 1, Berlin, DE')).toBeTruthy()
     expect(
       (screen.getByTestId('shippingAddressId-L1-input') as HTMLInputElement)
         .checked
@@ -487,6 +519,192 @@ describe('QuotesTabGeneral', () => {
     } finally {
       sites.value = withSite
     }
+  })
+
+  // COP-7125 (ported from MD quotesNullSafe.test.tsx, emporix/
+  // management-dashboard#1707): a company without locations.
+  describe('company without locations', () => {
+    const twoContacts = (locations: unknown[]) => ({
+      ...company(locations),
+      contacts: [
+        ...company([]).contacts,
+        {
+          id: 'A2',
+          customer: { id: 'CU8', name: 'Bob', surname: 'Ray', email: 'b@x.io' },
+        },
+      ],
+    })
+
+    it('saves without addresses and sends no address operation', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(b2bQuote)
+      quotesApi.updateQuote.mockResolvedValue({})
+      companiesApi.getLegalEntity.mockResolvedValue(twoContacts([]))
+      renderGeneral()
+      await screen.findByText(
+        'No locations yet - add them before the customer can accept the quote'
+      )
+
+      fireEvent.click(screen.getByTestId('quote-contact-person-control'))
+      fireEvent.mouseDown(
+        await screen.findByRole('option', { name: 'Bob Ray' })
+      )
+      const save = screen.getByRole('button', {
+        name: 'Save',
+      }) as HTMLButtonElement
+      await waitFor(() => expect(save.disabled).toBe(false))
+      fireEvent.click(save)
+
+      await waitFor(() =>
+        expect(quotesApi.updateQuote).toHaveBeenCalledWith('Q1', [
+          { op: 'REPLACE', path: '/customerId', value: 'CU8' },
+        ])
+      )
+    })
+
+    it('keeps the old hint and the address rule for locations without a shipping tag', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(b2bQuote)
+      companiesApi.getLegalEntity.mockResolvedValue(
+        twoContacts([
+          {
+            id: 'L9',
+            name: 'Office',
+            contactDetails: { addressLine1: 'Side 9', tags: ['billing'] },
+          },
+        ])
+      )
+      renderGeneral()
+
+      expect(
+        await screen.findByText('No shipping location for the selected company')
+      ).toBeTruthy()
+      fireEvent.click(screen.getByTestId('quote-contact-person-control'))
+      fireEvent.mouseDown(
+        await screen.findByRole('option', { name: 'Bob Ray' })
+      )
+      await waitFor(() =>
+        expect(
+          (
+            screen.getByRole('button', {
+              name: 'Discard',
+            }) as HTMLButtonElement
+          ).disabled
+        ).toBe(false)
+      )
+      expect(
+        (screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement)
+          .disabled
+      ).toBe(true)
+    })
+
+    it('does not tick "Same as shipping" for a quote without addresses', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(b2bQuote)
+      companiesApi.getLegalEntity.mockResolvedValue(
+        company([
+          {
+            id: 'L1',
+            name: 'HQ',
+            contactDetails: {
+              addressLine1: 'Main 1',
+              tags: ['shipping', 'billing'],
+            },
+          },
+        ])
+      )
+      renderGeneral()
+
+      // Unticked, so the billing list shows next to the shipping list.
+      expect(await screen.findAllByText('HQ')).toHaveLength(2)
+      expect(
+        (document.getElementById('sameAddresses') as HTMLInputElement).checked
+      ).toBe(false)
+    })
+
+    // The other General cases of MD quotesNullSafe.test.tsx (emporix/
+    // management-dashboard#1707), with MD's titles.
+    it('general tab', async () => {
+      quotesApi.getQuoteById.mockResolvedValue(unpricedQuote())
+      companiesApi.getLegalEntity.mockResolvedValue({
+        ...company([]),
+        id: 'le1',
+        name: 'ACME',
+      })
+      const { container } = renderGeneral()
+
+      await screen.findByText(
+        'No locations yet - add them before the customer can accept the quote'
+      )
+      expect(container.textContent).not.toMatch(/NaN|undefined|null/)
+    })
+
+    it('address list tolerates a location without contact details', () => {
+      const Host = () => {
+        const { control } = useForm<QuoteGeneralForm>()
+        return (
+          <QuotesTabGeneralAddresses
+            addresses={[{ id: 'a1', name: 'HQ' } as Location]}
+            control={control}
+            name="shippingAddressId"
+          />
+        )
+      }
+      const { container } = render(<Host />)
+
+      expect(screen.getByText('HQ')).toBeTruthy()
+      expect(container.textContent).not.toMatch(/NaN|undefined|null/)
+    })
+
+    it('creating a quote for a company without locations omits the address ids', async () => {
+      companyPicker.fake = true
+      quotesApi.createQuote.mockResolvedValue('new-id')
+      companiesApi.getLegalEntity.mockResolvedValue(company([]))
+      try {
+        render(
+          <DashboardProvider appState={appState}>
+            <MemoryRouter initialEntries={['/add']}>
+              <Routes>
+                <Route
+                  path="/add"
+                  element={
+                    <QuoteDataProvider>
+                      <QuotesTabGeneral />
+                    </QuoteDataProvider>
+                  }
+                />
+              </Routes>
+            </MemoryRouter>
+          </DashboardProvider>
+        )
+
+        fireEvent.click(
+          await screen.findByRole('button', { name: 'pick company' })
+        )
+        expect(
+          await screen.findByText(
+            'No locations yet - add them before the customer can accept the quote'
+          )
+        ).toBeTruthy()
+        fireEvent.click(screen.getByTestId('quote-contact-person-control'))
+        fireEvent.mouseDown(
+          await screen.findByRole('option', { name: 'Ann Lee' })
+        )
+        const save = screen.getByRole('button', {
+          name: 'Save',
+        }) as HTMLButtonElement
+        await waitFor(() => expect(save.disabled).toBe(false))
+        fireEvent.click(save)
+
+        await waitFor(() =>
+          expect(quotesApi.createQuote).toHaveBeenCalledTimes(1)
+        )
+        const [request] = quotesApi.createQuote.mock.calls[0]
+        expect(request.legalEntityId).toBe('LE1')
+        expect(request.customerId).toBe('CU9')
+        expect('shippingAddressId' in request).toBe(false)
+        expect('billingAddressId' in request).toBe(false)
+      } finally {
+        companyPicker.fake = false
+      }
+    })
   })
 
   // COP-7116: MD showed the label "Address" untranslated.

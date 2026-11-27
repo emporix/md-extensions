@@ -49,3 +49,16 @@
 .total {
   font-weight: 700;
 }
+
+// MD `.tax-class-dropdown w-full` (COP-7125).
+.taxClassDropdown {
+  width: 100%;
+  min-width: 10rem;
+}
+
+// MD `small.p-error.block.mb-2` above the table (COP-7125).
+.taxClassMessage {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--color-danger, #e24c4c);
+}

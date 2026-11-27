@@ -11,6 +11,7 @@ export default {
     clearLanguage: 'Sprache leeren',
   },
   labels: {
+    fieldNotAvailable: 'Feld nicht verfügbar',
     classifications: 'Klassifikationen',
     added: 'Hinzugefügt',
     deleted: 'Gelöscht',

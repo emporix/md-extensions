@@ -8,6 +8,7 @@ import QuotesTabGeneral from '../components/quotes/QuotesTabGeneral'
 import QuotesTabProducts from '../components/quotes/QuotesTabProducts'
 import QuotesTabPreview from '../components/quotes/QuotesTabPreview'
 import QuotesTabApproval from '../components/quotes/QuotesTabApproval'
+import QuotesTabHistory from '../components/quotes/QuotesTabHistory'
 import QuoteStatusBadge from '../components/quotes/QuoteStatusBadge'
 import QuotesTabGeneralStatus from '../components/quotes/QuotesTabGeneralStatus'
 import { hasQuoteStatusDetails } from '../helpers/quoteStatus.helpers'
@@ -31,6 +32,7 @@ import { quotesListPath } from '../constants/paths'
 import styles from './Quotes.page.module.scss'
 
 const TABS = ['general', 'products', 'preview', 'approval']
+const HISTORY_TAB = 'history'
 const AUDIT_LOG_TAB = 'audit-log'
 
 /**
@@ -133,6 +135,7 @@ const QuotesAddEditPage = () => {
       ...TABS,
       ...(JSON.parse(mixinTabIds) as string[]),
       ...(canViewAuditLog ? [AUDIT_LOG_TAB] : []),
+      HISTORY_TAB,
     ],
     [mixinTabIds, canViewAuditLog]
   )
@@ -200,6 +203,12 @@ const QuotesAddEditPage = () => {
           },
         ]
       : []),
+    {
+      id: HISTORY_TAB,
+      label: t('quotes.tabs.history.title'),
+      disabled: !quoteId,
+      content: quote ? <QuotesTabHistory quote={quote} /> : null,
+    },
   ]
 
   return (

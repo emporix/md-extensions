@@ -109,4 +109,4 @@ If you have any questions about this Disclaimer, you can contact us:
   * by email: 
     * info@emporix.com
     * support@emporix.com
-  * through the [Emporix Support Portal](http://support.emporix.com) 
+  * through the [Emporix Support Portal](http://support.emporix.com)

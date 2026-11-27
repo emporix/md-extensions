@@ -30,6 +30,7 @@ import { parseTableColumns } from '../../helpers/tables'
 import { createRequestTracker, getApiErrorDetails } from '../../helpers/api'
 import { StylableProps } from '../../helpers/props'
 import { canChangeQuoteStatus } from '../../helpers/quoteStatus.helpers'
+import { isQuoteIncomplete } from '../../helpers/quotePricing.helpers'
 import { EmployeeDomains } from '../../configs/accessControls'
 import { quoteDetailPath } from '../../constants/paths'
 import TableActions from '../shared/TableActions'
@@ -268,7 +269,10 @@ const QuotesTable = (props: StylableProps) => {
                 quoteId: rowData.id,
                 type: QuoteChangeStatusType.change,
               }),
-            disabled: !canChangeQuoteStatus(rowData.status.value, canManage),
+            // The quote service rejects OPEN while a price or an address is missing.
+            disabled:
+              !canChangeQuoteStatus(rowData.status.value, canManage) ||
+              isQuoteIncomplete(rowData),
             tooltip: t('quotes.tooltip.approve'),
             dataTestId: `quote-approve-${rowData.id}`,
           },

@@ -13,15 +13,24 @@ import {
 import EmptyContent from '../shared/EmptyContent'
 import InputField from '../shared/InputField'
 import QuotesTabPreviewTable from './QuotesTabPreviewTable'
+import FallbackCountryNotice from './FallbackCountryNotice'
+import UnpricedItemsWarning from './UnpricedItemsWarning'
 import { useQuoteData } from '../../context/Quote.provider'
 import { useUIBlocker } from '../../context/UIBlocker'
 import { usePermissions } from '../../context/PermissionsProvider'
 import { useQuotesApi } from '../../hooks/api/quotes'
+import { useQuoteTaxClasses } from '../../hooks/useQuoteTaxClasses'
 import { Item, QuoteEditOp, Shipping } from '../../models/Quotes.model'
 import { compareObjects } from '../mixins/mixins.utils'
 import { EmployeeDomains } from '../../configs/accessControls'
 import { StylableProps } from '../../helpers/props'
 import { getApiErrorDetails } from '../../helpers/api'
+import {
+  buildItemsUpdateOperations,
+  countUnpricedItems,
+  isExternalPrice,
+  withEditableTax,
+} from '../../helpers/quotePricing.helpers'
 import styles from './QuotesTabPreview.module.scss'
 
 export interface QuotePreviewForm {
@@ -30,12 +39,18 @@ export interface QuotePreviewForm {
   customerReference: string
   customerComment: string
   items: Item[]
+  /** Net prices typed for rows without a price (COP-7125). */
+  enteredNetValues: (number | null)[]
+  /** Tax classes chosen for rows without a price (COP-7125). */
+  enteredTaxClasses: (string | null)[]
   shipping: Shipping | undefined
 }
 
 /**
  * MD `QuotesTabPreview`: the priced lines with shipping (Preview table), the
- * validity and comment, and the customer's reference and comment.
+ * validity and comment, and the customer's reference and comment. Items
+ * without a price get a typed net price and an optional tax class (COP-7125,
+ * emporix/management-dashboard#1707).
  */
 const QuotesTabPreview = (props: StylableProps) => {
   const { className = '' } = props
@@ -46,6 +61,14 @@ const QuotesTabPreview = (props: StylableProps) => {
   const { updateQuote } = useQuotesApi()
   const { hasPermission } = usePermissions()
   const canManage = hasPermission(EmployeeDomains.QUOTES_MANAGER)
+  const { taxClasses, loadFailed, loaded } = useQuoteTaxClasses(
+    quote?.shippingAddress?.countryCode,
+    canManage &&
+      !isQuoteCompleted &&
+      (quote?.items ?? []).some(
+        (item) => !item.price || isExternalPrice(item.price)
+      )
+  )
   const {
     reset,
     control,
@@ -61,6 +84,8 @@ const QuotesTabPreview = (props: StylableProps) => {
       customerReference: '',
       customerComment: '',
       items: [],
+      enteredNetValues: [],
+      enteredTaxClasses: [],
       shipping: undefined,
     },
   })
@@ -72,8 +97,10 @@ const QuotesTabPreview = (props: StylableProps) => {
       comment: quote.comment?.employeeComment,
       customerReference: quote.customerReference ?? '',
       customerComment: quote.customerComment ?? '',
-      items: quote.items || [],
-      shipping: quote.shipping,
+      items: withEditableTax(quote.items || []),
+      enteredNetValues: (quote.items || []).map(() => null),
+      enteredTaxClasses: (quote.items || []).map(() => null),
+      shipping: quote.shipping ?? undefined,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
   }, [quote])
@@ -108,12 +135,15 @@ const QuotesTabPreview = (props: StylableProps) => {
           value: data.customerReference || '',
         })
       }
-      if ('items' in dirtyFields) {
-        updateOperations.push({
-          op: QuoteEditOp.replace,
-          path: '/items',
-          value: data.items,
-        })
+      if ('items' in dirtyFields || 'enteredNetValues' in dirtyFields) {
+        updateOperations.push(
+          ...buildItemsUpdateOperations(
+            quote.items,
+            data.items,
+            data.enteredNetValues,
+            data.enteredTaxClasses
+          )
+        )
       }
       if ('shipping' in dirtyFields) {
         updateOperations.push({
@@ -121,6 +151,13 @@ const QuotesTabPreview = (props: StylableProps) => {
           path: '/shipping',
           value: data.shipping,
         })
+      }
+
+      if (updateOperations.length === 0) {
+        // Nothing to send (for example a rounding-only difference): drop the
+        // edit so the form is clean and Save is not left enabled.
+        reset()
+        return
       }
 
       blockPanel(true)
@@ -136,7 +173,13 @@ const QuotesTabPreview = (props: StylableProps) => {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- MD parity
-    [formState]
+    [formState, quote, reset]
+  )
+
+  // A class picked for a row without a net price changes nothing on the
+  // service: it alone does not make the form saveable.
+  const hasSavableChange = Object.keys(formState.dirtyFields).some(
+    (key) => key !== 'enteredTaxClasses'
   )
 
   const formActions = (
@@ -151,6 +194,7 @@ const QuotesTabPreview = (props: StylableProps) => {
         disabled={
           !formState.isValid ||
           !formState.isDirty ||
+          !hasSavableChange ||
           isQuoteCompleted ||
           !canManage
         }
@@ -170,12 +214,22 @@ const QuotesTabPreview = (props: StylableProps) => {
             name={t('quotes.tabs.preview.selectedProducts')}
             actions={formActions}
           />
+          {quote.incompletePricing && (
+            <UnpricedItemsWarning
+              className={styles.warning}
+              count={countUnpricedItems(quote.items)}
+            />
+          )}
+          <FallbackCountryNotice quote={quote} className={styles.warning} />
           <QuotesTabPreviewTable
             className={styles.table}
             control={control}
             getValues={getValues}
             watch={watch}
             setValue={setValue}
+            taxClasses={taxClasses}
+            taxClassesLoadFailed={loadFailed}
+            taxClassesLoaded={loaded}
           />
         </>
       ) : (
@@ -198,6 +252,7 @@ const QuotesTabPreview = (props: StylableProps) => {
         <InputField
           className={styles.field}
           label={t('quotes.tabs.preview.validity')}
+          name="quote-valid-to-input"
           required={true}
         >
           <Controller
@@ -206,6 +261,7 @@ const QuotesTabPreview = (props: StylableProps) => {
             rules={{ required: true }}
             render={({ field }) => (
               <Calendar
+                inputId="quote-valid-to-input"
                 showTime
                 disabled={isQuoteCompleted || !canManage}
                 hideOnDateTimeSelect
@@ -224,12 +280,14 @@ const QuotesTabPreview = (props: StylableProps) => {
         <InputField
           className={styles.editor}
           label={t('quotes.tabs.preview.comment')}
+          name="quote-comment-input"
         >
           <Controller
             name="comment"
             control={control}
             render={({ field }) => (
               <InputText
+                inputId="quote-comment-input"
                 textarea
                 rows={6}
                 value={field.value ?? ''}
@@ -249,12 +307,14 @@ const QuotesTabPreview = (props: StylableProps) => {
         <InputField
           className={styles.field}
           label={t('quotes.tabs.preview.customerReference')}
+          name="quote-customer-reference-input"
         >
           <Controller
             name="customerReference"
             control={control}
             render={({ field }) => (
               <InputText
+                inputId="quote-customer-reference-input"
                 value={field.value}
                 readOnly={isQuoteCompleted || !canManage}
                 onChange={(ev) => field.onChange(ev.target.value || '')}
@@ -266,12 +326,14 @@ const QuotesTabPreview = (props: StylableProps) => {
         <InputField
           className={styles.editor}
           label={t('quotes.tabs.preview.customerComment')}
+          name="quote-customer-comment-input"
         >
           <Controller
             name="customerComment"
             control={control}
             render={({ field }) => (
               <InputText
+                inputId="quote-customer-comment-input"
                 textarea
                 rows={4}
                 value={field.value}

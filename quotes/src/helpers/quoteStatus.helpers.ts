@@ -22,6 +22,10 @@ export const hasQuoteStatusDetails = (status: Status | undefined): boolean =>
     !!status.comment?.trim() ||
     !!status.quoteReason?.code)
 
+/** A reason code for people: `PROVIDED_PRICE_TO_HIGH` reads `PROVIDED PRICE TO HIGH`. */
+export const formatQuoteReasonCode = (code: string | undefined): string =>
+  code?.replace(/_/g, ' ') ?? ''
+
 /** The merchant still has to approve or decline the quote. */
 export const isQuoteAwaitingDecision = (
   status: QuoteStatus | undefined
@@ -34,16 +38,24 @@ export const canChangeQuoteStatus = (
   canManage: boolean
 ): boolean => canManage && isQuoteAwaitingDecision(status)
 
-export type QuoteApprovalActions = 'create' | 'decide'
+/** COP-7125: only a pending (`IN_PROGRESS`) quote can be sent as it is. */
+export const canSendQuoteToCustomer = (
+  status: QuoteStatus | undefined,
+  canManage: boolean
+): boolean => canManage && status === QuoteStatus.IN_PROGRESS
+
+export type QuoteApprovalActions = 'create' | 'decide' | 'negotiate'
 
 /**
  * Buttons of the Approval tab: `create` sends a quote that is still being
- * created, `decide` offers decline and approve.
+ * created, `decide` offers decline and approve, `negotiate` starts a
+ * negotiation round on an open quote (COP-7125).
  */
 export const getQuoteApprovalActions = (
   status: QuoteStatus | undefined
 ): QuoteApprovalActions | undefined => {
   if (status === QuoteStatus.CREATING) return 'create'
   if (isQuoteAwaitingDecision(status)) return 'decide'
+  if (status === QuoteStatus.OPEN) return 'negotiate'
   return undefined
 }

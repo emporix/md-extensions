@@ -11,6 +11,7 @@ export default {
     company: 'Unternehmen',
     quoteNumber: 'Angebotsnummer',
     totalPrice: 'Gesamtpreis',
+    netSuffix: 'netto',
     status: 'Status',
     versionNumber: 'Versionsnummer',
     creationDate: 'Erstelldatum',
@@ -58,6 +59,12 @@ export default {
       },
     },
     addCustomer: 'Kunde hinzufügen',
+    negotiation: {
+      title: 'Verhandlung starten',
+      reason: 'Grund (optional)',
+      comment: 'Kommentar',
+      submit: 'Verhandlung starten',
+    },
   },
   toasts: {
     errorFetch:
@@ -66,19 +73,25 @@ export default {
     errorDelete: 'Fehler beim Löschen des Angebotes {{quoteId}} ',
     successApprove: 'Angebot freigegeben',
     successDecline: 'Angebot abgelehnt',
+    errorNoShipToCountry:
+      'Für die Site dieses Angebots sind keine Versandländer definiert. Legen Sie diese in den Site-Einstellungen an und versuchen Sie es erneut.',
+    shippingUpdated:
+      'Die Versandkosten wurden angepasst, da sich die Summen geändert haben',
+    successNegotiation: 'Verhandlung gestartet',
     successUpdate: 'Angebot aktualisiert',
     errorUpdate: 'Fehler beim Aktualisieren des Angebots',
     errorChangeStatus: 'Status kann nicht geändert werden',
     errorFetchReasons: 'Fehler beim Laden der Gründe',
     errorFetchShippingMethods: 'Fehler beim Laden der Versandarten',
     errorFetchPrices: 'Fehler beim Laden der Preise',
-    errorNoPrice:
-      'Kein Preis für Site, Währung und Lieferland des Angebots: {{products}}',
     errorNoTaxClass: 'Preis ohne Steuerklasse: {{products}}',
     errorPdf:
       'Fehler beim Anzeigen des PDFs, bitte versuchen Sie es später noch einmal',
     successDraftCreate: 'Angebotsentwurf erfolgreich angelegt',
     successCreate: 'Angebot erstellt!',
+    successPending: 'Angebot als ausstehend gespeichert!',
+    successSendToCustomer: 'Angebot an den Kunden gesendet!',
+    errorSendToCustomer: 'Das Angebot konnte nicht gesendet werden',
     errorCreate: 'Fehler beim Erstellen des Angebots',
     errorLegalEntities: 'Unternehmen können nicht geladen werden',
     errorFetchCustomers:
@@ -86,6 +99,7 @@ export default {
     siteRestrictionError:
       'Sie haben keine Berechtigung, auf Angebote für Site {{siteCode}} zuzugreifen. Bitte wenden Sie sich an Ihren Administrator, um weitere Unterstützung zu erhalten.',
   },
+  priceOnRequest: 'Kein Preis',
   tabs: {
     general: {
       title: 'Allgemein',
@@ -98,6 +112,8 @@ export default {
       billingAddress: 'Rechnungsadresse',
       sameAddresses: 'Wie Lieferadresse',
       noLocations: 'Kein Standort für das ausgewählte Unternehmen',
+      noLocationsYet:
+        'Noch keine Standorte - fügen Sie sie hinzu, bevor der Kunde das Angebot annehmen kann',
       noLocationsButton: 'Neuen Standort hinzufügen',
       noCompanySelected: 'Um Standorte zu sehen, wählen Sie das Unternehmen',
       orderNumber: 'Bestellnummer',
@@ -132,6 +148,16 @@ export default {
       validity: 'Gültigkeit',
       comment: 'Kommentar',
       subtotal: 'Zwischensumme',
+      fallbackCountryNotice:
+        'Das Angebot hat keine Adresse, daher wurden die Preise mit {{country}} abgeglichen. Produkte ohne Preis haben möglicherweise Preise für andere Länder.',
+      unpricedWarning_one: 'Die Summen enthalten {{count}} Position ohne Preis',
+      unpricedWarning_other:
+        'Die Summen enthalten {{count}} Positionen ohne Preis',
+      taxClassPlaceholder: 'Steuerklasse wählen',
+      taxClassesLoadError:
+        'Steuerklassen konnten nicht geladen werden, daher kann keine Steuerklasse gewählt werden. Falls vorhanden, wird die Katalog-Steuerklasse des Produkts verwendet.',
+      taxClassesEmpty:
+        'Keine Steuerklassen für das Land mit dieser Lieferadresse.',
       shippingCost: 'Lieferkosten',
       total: 'Summe',
       shippingMethod: 'Liefermethode',
@@ -145,11 +171,30 @@ export default {
         tax: 'Steuer',
         discount: 'Nachlass',
         grossPrice: 'Bruttopreis',
+        taxClass: 'Steuerklasse',
       },
+    },
+    history: {
+      title: 'Verlauf',
+      changeDate: 'Änderungsdatum',
+      event: 'Ereignis',
+      changedBy: 'Geändert von',
+      status: 'Status',
+      comment: 'Kommentar',
+      initialRequest: 'Erste Angebotsanfrage',
+      statusChanged: 'Status geändert zu {{status}}',
+      loadError: 'Der Angebotsverlauf konnte nicht geladen werden',
     },
     approval: {
       title: 'Freigabe',
+      startNegotiationBtn: 'Verhandlung starten',
       createBtn: 'Angebot erstellen',
+      pendingBtn: 'Als ausstehendes Angebot speichern',
+      sendToCustomerBtn: 'Angebot an den Kunden senden',
+      incompleteIntro: 'Das Angebot kann noch nicht erstellt werden:',
+      missingPrice_one: '{{count}} Produkt hat keinen Preis',
+      missingPrice_other: '{{count}} Produkte haben keinen Preis',
+      missingAddress: 'Die Rechnungs- oder Lieferadresse fehlt',
       approveBtn: 'Angebot freigeben',
       declineBtn: 'Angebot ablehnen',
     },
